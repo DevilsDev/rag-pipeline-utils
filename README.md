@@ -1,11 +1,11 @@
 # rag-pipeline-utils
 
-/**
- * Version: 0.1.0
- * Path: /project-root
- * Description: Project folder structure for @yourorg/rag-pipeline-utils
- * Author: Ali Kahwaji
- */
+
+ ###### Version: 0.1.0
+ ###### Path: /project-root
+ ###### Description: Project folder structure for @DevDevil/rag-pipeline-utils
+ ###### Author: Ali Kahwaji
+ 
 
 /project-root
 ├── /src
