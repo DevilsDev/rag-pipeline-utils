@@ -1,7 +1,7 @@
 /**
- * Version: 0.1.1
+ * Version: 0.1.2
  * Path: /bin/cli.js
- * Description: CLI entrypoint for ingesting documents and querying the RAG pipeline
+ * Description: CLI entrypoint with integrated structured logging
  * Author: Ali Kahwaji
  */
 
@@ -10,41 +10,45 @@
 import { Command } from 'commander';
 import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
 import { loadRagConfig } from '../src/config/load-config.js';
+import { logger } from '../src/utils/logger.js';
 
-/**
- * Register default plugins for demo/testing purposes.
- */
+// Mock plugins for demonstration
 class PDFLoader {
   async load(path) {
+    logger.info({ path }, 'Loading document');
     return [{ chunk: () => ['Sample PDF chunk.'] }];
   }
 }
 
 class OpenAIEmbedder {
   async embed(chunks) {
+    logger.debug({ count: chunks.length }, 'Embedding document chunks');
     return chunks.map((text, i) => ({ id: `v${i}`, values: [0.1, 0.2, 0.3], metadata: { text } }));
   }
   async embedQuery(prompt) {
+    logger.debug({ prompt }, 'Embedding query');
     return [0.1, 0.2, 0.3];
   }
 }
 
 class PineconeRetriever {
   async store(vectors) {
-    console.log(`Stored ${vectors.length} vectors.`);
+    logger.info({ count: vectors.length }, 'Storing vectors');
   }
   async retrieve(vector) {
+    logger.info({ queryVector: vector }, 'Retrieving context');
     return [{ id: 'v0', text: 'Retrieved context chunk', metadata: {} }];
   }
 }
 
 class OpenAILLM {
   async generate(prompt, context) {
+    logger.info({ prompt, contextCount: context.length }, 'Generating LLM response');
     return `Generated answer using context: ${context.map(d => d.text).join(', ')}`;
   }
 }
 
-// Register mock plugins
+// Register test plugins
 registry.register('loader', 'pdf', new PDFLoader());
 registry.register('embedder', 'openai', new OpenAIEmbedder());
 registry.register('retriever', 'pinecone', new PineconeRetriever());
@@ -54,14 +58,14 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.1');
+  .version('0.1.2');
 
 function resolveConfig(cliOpts) {
   try {
     const fileConfig = loadRagConfig();
     return { ...fileConfig, ...cliOpts };
   } catch (err) {
-    console.warn(`Config file fallback failed: ${err.message}`);
+    logger.warn({ error: err.message }, 'Config file fallback failed');
     return cliOpts;
   }
 }
@@ -75,11 +79,12 @@ program
   .action(async (path, opts) => {
     try {
       const config = resolveConfig(opts);
+      logger.info({ config }, 'Starting ingestion');
       const pipeline = createRagPipeline(config);
       await pipeline.ingest(path);
-      console.log('Ingestion complete');
+      logger.info('Ingestion complete');
     } catch (err) {
-      console.error('Ingestion failed:', err.message);
+      logger.error({ error: err.message }, 'Ingestion failed');
       process.exit(1);
     }
   });
@@ -93,11 +98,13 @@ program
   .action(async (prompt, opts) => {
     try {
       const config = resolveConfig(opts);
+      logger.info({ config }, 'Starting query');
       const pipeline = createRagPipeline(config);
       const answer = await pipeline.query(prompt);
+      logger.info({ answer }, 'Query complete');
       console.log('\n Answer:\n', answer);
     } catch (err) {
-      console.error('Query failed:', err.message);
+      logger.error({ error: err.message }, 'Query failed');
       process.exit(1);
     }
   });
