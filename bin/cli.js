@@ -1,5 +1,5 @@
 /**
- * Version: 0.1.0
+ * Version: 0.1.1
  * Path: /bin/cli.js
  * Description: CLI entrypoint for ingesting documents and querying the RAG pipeline
  * Author: Ali Kahwaji
@@ -9,10 +9,10 @@
 
 import { Command } from 'commander';
 import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
+import { loadRagConfig } from '../src/config/load-config.js';
 
 /**
  * Register default plugins for demo/testing purposes.
- * Real implementations should be injected externally.
  */
 class PDFLoader {
   async load(path) {
@@ -54,11 +54,18 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.0');
+  .version('0.1.1');
 
-/**
- * CLI: Ingest documents using configured components
- */
+function resolveConfig(cliOpts) {
+  try {
+    const fileConfig = loadRagConfig();
+    return { ...fileConfig, ...cliOpts };
+  } catch (err) {
+    console.warn(`Config file fallback failed: ${err.message}`);
+    return cliOpts;
+  }
+}
+
 program
   .command('ingest')
   .argument('<path>', 'Path to document(s)')
@@ -67,18 +74,16 @@ program
   .option('--retriever <type>', 'Vector store retriever type')
   .action(async (path, opts) => {
     try {
-      const pipeline = createRagPipeline(opts);
+      const config = resolveConfig(opts);
+      const pipeline = createRagPipeline(config);
       await pipeline.ingest(path);
-      console.log(' Ingestion complete');
+      console.log('Ingestion complete');
     } catch (err) {
-      console.error(' Ingestion failed:', err.message);
+      console.error('Ingestion failed:', err.message);
       process.exit(1);
     }
   });
 
-/**
- * CLI: Query documents using configured components
- */
 program
   .command('query')
   .argument('<prompt>', 'Prompt to submit')
@@ -87,13 +92,15 @@ program
   .option('--llm <type>', 'LLM type')
   .action(async (prompt, opts) => {
     try {
-      const pipeline = createRagPipeline(opts);
+      const config = resolveConfig(opts);
+      const pipeline = createRagPipeline(config);
       const answer = await pipeline.query(prompt);
       console.log('\n Answer:\n', answer);
     } catch (err) {
-      console.error(' Query failed:', err.message);
+      console.error('Query failed:', err.message);
       process.exit(1);
     }
   });
 
 program.parse();
+
