@@ -8,7 +8,7 @@
   },
   "type": "module",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test": "node ./scripts/setup.js && cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint .",
     "prepare": "husky install"

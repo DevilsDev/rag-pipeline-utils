@@ -9,6 +9,7 @@ export default {
     testEnvironment: 'node',
     transform: {}, // Native ESM — no Babel used
     roots: ['<rootDir>/__tests__'],
-    verbose: true
+    verbose: true,
+    globalSetup: './__tests__/setup/global.js'
   };
   
