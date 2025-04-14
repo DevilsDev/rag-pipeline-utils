@@ -1,0 +1,58 @@
+/*
+ * Version: 0.2.0
+ * Path: /docs-site/src/components/HomepageFeatures/styles.module.css
+ * Description: Modular styles for homepage feature section
+ * Author: Ali Kahwaji
+ */
+
+ .features {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 3rem 1rem;
+  gap: 2rem;
+  width: 100%;
+}
+
+.feature {
+  flex: 1 1 300px;
+  max-width: 400px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.feature:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.featureSvg {
+  height: 180px;
+  width: 180px;
+  margin-bottom: 1rem;
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.featureText {
+  font-size: 1rem;
+  color: #666;
+}
+
+[data-theme='dark'] .feature {
+  background-color: #1c1e21;
+  border-color: #333;
+}
+
+[data-theme='dark'] .featureText {
+  color: #ccc;
+}
