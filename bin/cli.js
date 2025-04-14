@@ -27,7 +27,11 @@ class PDFLoader {
 }
 class OpenAIEmbedder {
   async embed(chunks) {
-    return chunks.map((text, i) => ({ id: `v${i}`, values: [0.1, 0.2, 0.3], metadata: { text } }));
+    return chunks.map((text, i) => ({
+      id: `v${i}`,
+      values: [0.1, 0.2, 0.3],
+      metadata: { text }
+    }));
   }
   async embedQuery(prompt) {
     return [0.1, 0.2, 0.3];
@@ -127,10 +131,14 @@ program
       const avgROUGE = results.reduce((sum, r) => sum + r.scores.rouge, 0) / results.length;
 
       results.forEach((r, i) => {
-        console.log(`\nCase ${i + 1}:\nPrompt: ${r.prompt}\nPass: ${r.success}\nBLEU: ${r.scores.bleu.toFixed(2)}\nROUGE: ${r.scores.rouge.toFixed(2)}`);
+        console.log(
+          `\nCase ${i + 1}:\nPrompt: ${r.prompt}\nPass: ${r.success}\nBLEU: ${r.scores.bleu.toFixed(2)}\nROUGE: ${r.scores.rouge.toFixed(2)}`
+        );
       });
 
-      console.log(`\n Summary:\nPassed: ${Math.round(passRate * 100)}%\nAvg BLEU: ${avgBLEU.toFixed(2)}\nAvg ROUGE: ${avgROUGE.toFixed(2)}`);
+      console.log(
+        `\n Summary:\nPassed: ${Math.round(passRate * 100)}%\nAvg BLEU: ${avgBLEU.toFixed(2)}\nAvg ROUGE: ${avgROUGE.toFixed(2)}`
+      );
     } catch (err) {
       logger.error({ error: err.message }, 'Evaluation failed');
       process.exit(1);

@@ -39,7 +39,7 @@ export class DAGNode {
      * @returns {Promise<any>} - Final output from sink(s)
      */
     async execute(seed) {
-      const visited = new Set();
+      // const visited = new Set();
       const order = this.topoSort();
       const results = new Map();
   
