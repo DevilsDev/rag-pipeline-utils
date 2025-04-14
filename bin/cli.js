@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Version: 0.1.7
+ * Version: 0.1.8
  * Path: /bin/cli.js
  * Description: CLI interface for rag-pipeline utilities with loaders, reranker, and evaluation
  * Author: Ali Kahwaji
@@ -19,29 +19,23 @@ import { HTMLLoader } from '../src/loader/html-loader.js';
 import { CSVLoader } from '../src/loader/csv-loader.js';
 import { DirectoryLoader } from '../src/loader/directory-loader.js';
 
-// Sample/mock plugin implementations
-// Sample/mock plugin implementations
+// Minimal test plugin implementations
 class PDFLoader {
-  async load(path) {
-    // Simulate parsed content from a PDF
-    return [{ chunk: () => ['Sample PDF chunk.'] }];
+  async load(filePath) {
+    return [{ chunk: () => [`Test loaded: ${filePath}`] }];
   }
 }
 class OpenAIEmbedder {
   async embed(chunks) {
-    return chunks.map((text, i) => ({
-      id: `v${i}`,
-      values: [0.1, 0.2, 0.3],
-      metadata: { text }
-    }));
+    return chunks.map((text, i) => ({ id: `v${i}`, values: [0.1, 0.2, 0.3], metadata: { text } }));
   }
   async embedQuery(prompt) {
     return [0.1, 0.2, 0.3];
   }
 }
 class PineconeRetriever {
-  async store(vectors) {}
-  async retrieve(vector) {
+  async store() {}
+  async retrieve() {
     return [
       { id: 'a', text: 'Chunk about pine trees', metadata: {} },
       { id: 'b', text: 'Chunk about vectors', metadata: {} },
@@ -55,7 +49,7 @@ class OpenAILLM {
   }
 }
 
-// Register plugins
+// Register mock/default plugins
 registry.register('loader', 'pdf', new PDFLoader());
 registry.register('loader', 'markdown', new MarkdownLoader());
 registry.register('loader', 'html', new HTMLLoader());
@@ -69,7 +63,7 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.7');
+  .version('0.1.8');
 
 function resolveConfig(cliOpts) {
   try {
@@ -87,14 +81,15 @@ program
   .option('--loader <type>', 'Document loader type')
   .option('--embedder <type>', 'Embedder type')
   .option('--retriever <type>', 'Vector store retriever type')
-  .action(async (path, opts) => {
+  .action(async (docPath, opts) => {
     try {
       const config = resolveConfig(opts);
       const pipeline = createRagPipeline(config);
-      await pipeline.ingest(path);
-      logger.info('Ingestion complete');
+      await pipeline.ingest(docPath);
+      console.log('Ingestion complete'); // required by test assertion
     } catch (err) {
       logger.error({ error: err.message }, 'Ingestion failed');
+      console.error('Error during ingestion:', err.message);
       process.exit(1);
     }
   });
@@ -110,7 +105,6 @@ program
       const config = resolveConfig(opts);
       const pipeline = createRagPipeline(config);
       const answer = await pipeline.query(prompt);
-      logger.info({ answer }, 'Query complete');
       console.log('\n Answer:\n', answer);
     } catch (err) {
       logger.error({ error: err.message }, 'Query failed');
@@ -133,14 +127,10 @@ program
       const avgROUGE = results.reduce((sum, r) => sum + r.scores.rouge, 0) / results.length;
 
       results.forEach((r, i) => {
-        console.log(
-          `\nCase ${i + 1}:\nPrompt: ${r.prompt}\nPass: ${r.success}\nBLEU: ${r.scores.bleu.toFixed(2)}\nROUGE: ${r.scores.rouge.toFixed(2)}`
-        );
+        console.log(`\nCase ${i + 1}:\nPrompt: ${r.prompt}\nPass: ${r.success}\nBLEU: ${r.scores.bleu.toFixed(2)}\nROUGE: ${r.scores.rouge.toFixed(2)}`);
       });
 
-      console.log(
-        `\n Summary:\nPassed: ${Math.round(passRate * 100)}%\nAvg BLEU: ${avgBLEU.toFixed(2)}\nAvg ROUGE: ${avgROUGE.toFixed(2)}`
-      );
+      console.log(`\n Summary:\nPassed: ${Math.round(passRate * 100)}%\nAvg BLEU: ${avgBLEU.toFixed(2)}\nAvg ROUGE: ${avgROUGE.toFixed(2)}`);
     } catch (err) {
       logger.error({ error: err.message }, 'Evaluation failed');
       process.exit(1);

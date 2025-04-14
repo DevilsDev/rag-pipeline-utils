@@ -5,11 +5,17 @@
  * Author: Ali Kahwaji
  */
 
+// jest.config.js
+
 export default {
-    testEnvironment: 'node',
-    transform: {}, // Native ESM — no Babel used
-    roots: ['<rootDir>/__tests__'],
-    verbose: true,
-    globalSetup: './__tests__/setup/global.js'
-  };
+  verbose: true,
+  testEnvironment: 'node',
+  transform: {},
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  moduleFileExtensions: ['js', 'json'],
+  testMatch: ['**/__tests__/**/*.test.js'],
+  roots: ['<rootDir>/__tests__'],
+};
+
   
