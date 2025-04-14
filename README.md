@@ -7,7 +7,7 @@
 
 ---
 
-##  Features
+## Features
 
 - ✅ Plugin-based architecture for RAG pipelines
 - ✅ Embedding + retrieval abstraction
@@ -20,7 +20,7 @@
 
 ---
 
-##  Installation
+## Installation
 
 ```bash
 npm install @yourorg/rag-pipeline-utils
@@ -28,7 +28,7 @@ npm install @yourorg/rag-pipeline-utils
 
 ---
 
-##  Usage
+## Usage
 
 ```js
 import { createRagPipeline } from '@yourorg/rag-pipeline-utils';
@@ -47,7 +47,7 @@ console.log(answer);
 
 ---
 
-##  Testing
+## Testing
 
 ```bash
 npm test
@@ -55,7 +55,7 @@ npm test
 
 ---
 
-##  CLI
+## CLI
 
 ```bash
 rag-pipeline ingest ./docs/my.pdf --loader pdf
@@ -78,7 +78,7 @@ Supports `.ragrc.json` fallback configuration:
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 /src
@@ -95,7 +95,7 @@ Supports `.ragrc.json` fallback configuration:
 
 ---
 
-##  Evaluation Dashboard
+## Evaluation Dashboard
 
 ```bash
 node server.js
@@ -105,7 +105,7 @@ Visit: [http://localhost:3000](http://localhost:3000) → Visualizes metrics, BL
 
 ---
 
-##  License
+## License
 
 Apache-2.0
 
