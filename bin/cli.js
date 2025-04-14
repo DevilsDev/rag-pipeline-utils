@@ -1,11 +1,11 @@
+#!/usr/bin/env node
+
 /**
- * Version: 0.1.6
+ * Version: 0.1.7
  * Path: /bin/cli.js
- * Description: CLI extended with rerank command for post-retrieval reordering
+ * Description: CLI interface for rag-pipeline utilities with loaders, reranker, and evaluation
  * Author: Ali Kahwaji
  */
-
-//#!/usr/bin/env node
 
 import { Command } from 'commander';
 import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
@@ -16,7 +16,10 @@ import { LLMReranker } from '../src/reranker/llm-reranker.js';
 
 import { MarkdownLoader } from '../src/loader/markdown-loader.js';
 import { HTMLLoader } from '../src/loader/html-loader.js';
+import { CSVLoader } from '../src/loader/csv-loader.js';
+import { DirectoryLoader } from '../src/loader/directory-loader.js';
 
+// Sample/mock plugin implementations
 class PDFLoader {
   async load(path) {
     return [{ chunk: () => ['Sample PDF chunk.'] }];
@@ -46,9 +49,12 @@ class OpenAILLM {
   }
 }
 
+// Register plugins
 registry.register('loader', 'pdf', new PDFLoader());
 registry.register('loader', 'markdown', new MarkdownLoader());
 registry.register('loader', 'html', new HTMLLoader());
+registry.register('loader', 'csv', new CSVLoader());
+registry.register('loader', 'directory', new DirectoryLoader());
 registry.register('embedder', 'openai', new OpenAIEmbedder());
 registry.register('retriever', 'pinecone', new PineconeRetriever());
 registry.register('llm', 'openai-gpt-4', new OpenAILLM());
@@ -57,7 +63,7 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.6');
+  .version('0.1.7');
 
 function resolveConfig(cliOpts) {
   try {
@@ -160,4 +166,3 @@ program
   });
 
 program.parse();
-
