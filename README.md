@@ -4,7 +4,6 @@
 [![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
 ![Release](https://img.shields.io/github/v/release/DevilsDev/rag-pipeline-utils?label=release)
 
-
 **A modular Node.js toolkit for building RAG (Retrieval-Augmented Generation) pipelines with clean abstractions, pluggable components, and scalable architecture.**
 
 ---
