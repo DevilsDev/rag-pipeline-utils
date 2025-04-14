@@ -1,37 +1,18 @@
 /**
- * Version: 0.1.1
+ * Version: 0.1.2
  * Path: /src/core/create-pipeline.js
- * Description: Factory function to create a RAG pipeline instance with integrated logging
+ * Description: RAG pipeline factory with retry logic for retriever and LLM
  * Author: Ali Kahwaji
  */
 
 import { PluginRegistry } from './plugin-registry.js';
 import { logger } from '../utils/logger.js';
+import { withRetry } from '../utils/retry.js';
 
-// Shared singleton instance of plugin registry
 const registry = new PluginRegistry();
 
-/**
- * Factory function to construct a RAG pipeline instance.
- *
- * SOLID Compliance:
- * - SRP: Only responsible for composing the pipeline
- * - DIP: Depends on plugin interfaces
- * - OCP: New plugins don't require changes here
- *
- * @param {Object} config - Plugin configuration
- * @param {string} config.loader - Loader plugin name
- * @param {string} config.embedder - Embedder plugin name
- * @param {string} config.retriever - Retriever plugin name
- * @param {string} config.llm - LLM plugin name
- * @returns {Object} - RAG pipeline instance
- */
 export function createRagPipeline({ loader, embedder, retriever, llm }) {
   return {
-    /**
-     * Ingests and processes documents for vector storage
-     * @param {string} path - Path to documents
-     */
     async ingest(path) {
       logger.info({ loader, embedder, retriever }, 'Pipeline ingest start');
 
@@ -48,15 +29,15 @@ export function createRagPipeline({ loader, embedder, retriever, llm }) {
       const vectors = await embedderInstance.embed(chunks);
       logger.debug({ vectorCount: vectors.length }, 'Vectors generated');
 
-      await retrieverInstance.store(vectors);
+      await withRetry(() => retrieverInstance.store(vectors), {
+        label: 'vector-store',
+        retries: 3,
+        initialDelay: 500
+      });
+
       logger.info('Ingestion pipeline completed');
     },
 
-    /**
-     * Runs query against retriever and returns generated LLM response
-     * @param {string} prompt - User prompt
-     * @returns {Promise<string>} - LLM-generated answer
-     */
     async query(prompt) {
       logger.info({ embedder, retriever, llm, prompt }, 'Pipeline query start');
 
@@ -67,16 +48,26 @@ export function createRagPipeline({ loader, embedder, retriever, llm }) {
       const queryVector = await embedderInstance.embedQuery(prompt);
       logger.debug({ vector: queryVector }, 'Query vector embedded');
 
-      const retrievedDocs = await retrieverInstance.retrieve(queryVector);
+      const retrievedDocs = await withRetry(() => retrieverInstance.retrieve(queryVector), {
+        label: 'vector-retrieve',
+        retries: 3,
+        initialDelay: 500
+      });
+
       logger.info({ contextCount: retrievedDocs.length }, 'Context retrieved');
 
-      const result = await llmInstance.generate(prompt, retrievedDocs);
-      logger.info('LLM response generated');
+      const result = await withRetry(() => llmInstance.generate(prompt, retrievedDocs), {
+        label: 'llm-generate',
+        retries: 3,
+        initialDelay: 500
+      });
 
+      logger.info('LLM response generated');
       return result;
     }
   };
 }
 
 export { registry };
+
 
