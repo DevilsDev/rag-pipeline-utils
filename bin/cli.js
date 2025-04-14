@@ -1,7 +1,7 @@
 /**
- * Version: 0.1.4
+ * Version: 0.1.5
  * Path: /bin/cli.js
- * Description: CLI entrypoint with evaluate command for batch prompt assessment
+ * Description: CLI evaluate command with per-item scores and aggregate metrics
  * Author: Ali Kahwaji
  */
 
@@ -16,10 +16,9 @@ import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
 import { MarkdownLoader } from '../src/loader/markdown-loader.js';
 import { HTMLLoader } from '../src/loader/html-loader.js';
 
-// Mock plugins (to be replaced with real implementations)
+// Mock plugins for example use
 class PDFLoader {
   async load(path) {
-    logger.info({ path }, 'Loading PDF document');
     return [{ chunk: () => ['Sample PDF chunk.'] }];
   }
 }
@@ -32,9 +31,7 @@ class OpenAIEmbedder {
   }
 }
 class PineconeRetriever {
-  async store(vectors) {
-    logger.info({ count: vectors.length }, 'Storing vectors');
-  }
+  async store(vectors) {}
   async retrieve(vector) {
     return [{ id: 'v0', text: 'Relevant chunk', metadata: {} }];
   }
@@ -45,7 +42,7 @@ class OpenAILLM {
   }
 }
 
-// Register core plugins
+// Plugin registration
 registry.register('loader', 'pdf', new PDFLoader());
 registry.register('loader', 'markdown', new MarkdownLoader());
 registry.register('loader', 'html', new HTMLLoader());
@@ -57,7 +54,7 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.4');
+  .version('0.1.5');
 
 function resolveConfig(cliOpts) {
   try {
@@ -74,15 +71,15 @@ program
   .argument('<path>', 'Path to document(s)')
   .option('--loader <type>', 'Document loader type')
   .option('--embedder <type>', 'Embedder type')
-  .option('--retriever <type>', 'Retriever type')
+  .option('--retriever <type>', 'Vector store retriever type')
   .action(async (path, opts) => {
     try {
       const config = resolveConfig(opts);
       const pipeline = createRagPipeline(config);
       await pipeline.ingest(path);
-      logger.info('Ingestion complete');
+      logger.info(' Ingestion complete');
     } catch (err) {
-      logger.error({ error: err.message }, 'Ingestion failed');
+      logger.error({ error: err.message }, ' Ingestion failed');
       process.exit(1);
     }
   });
@@ -116,8 +113,26 @@ program
     try {
       const config = resolveConfig(opts);
       const results = await evaluateRagDataset(dataset, config);
-      const passed = results.filter(r => r.success).length;
-      console.log(`\n Evaluation Summary: ${passed}/${results.length} passed`);
+
+      console.log('\n Evaluation Results:');
+      results.forEach(({ prompt, expected, actual, scores, success }, idx) => {
+        console.log(`\nCase ${idx + 1}:`);
+        console.log(`Prompt:    ${prompt}`);
+        console.log(`Expected:  ${expected}`);
+        console.log(`Actual:    ${actual}`);
+        console.log(`BLEU:      ${scores.bleu.toFixed(2)}`);
+        console.log(`ROUGE-L:   ${scores.rouge.toFixed(2)}`);
+        console.log(`Pass:      ${success ? 'Yes' : 'No'}`);
+      });
+
+      const passRate = results.filter(r => r.success).length / results.length;
+      const avgBLEU = results.reduce((sum, r) => sum + r.scores.bleu, 0) / results.length;
+      const avgROUGE = results.reduce((sum, r) => sum + r.scores.rouge, 0) / results.length;
+
+      console.log(`\n Summary:`);
+      console.log(`Passed:     ${Math.round(passRate * 100)}%`);
+      console.log(`Avg BLEU:   ${avgBLEU.toFixed(2)}`);
+      console.log(`Avg ROUGE:  ${avgROUGE.toFixed(2)}`);
     } catch (err) {
       logger.error({ error: err.message }, 'Evaluation failed');
       process.exit(1);
