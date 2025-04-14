@@ -20,8 +20,10 @@ import { CSVLoader } from '../src/loader/csv-loader.js';
 import { DirectoryLoader } from '../src/loader/directory-loader.js';
 
 // Sample/mock plugin implementations
+// Sample/mock plugin implementations
 class PDFLoader {
   async load(path) {
+    // Simulate parsed content from a PDF
     return [{ chunk: () => ['Sample PDF chunk.'] }];
   }
 }
