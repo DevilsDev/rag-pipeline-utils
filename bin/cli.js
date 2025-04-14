@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-#!/usr/bin/env node
+//#!/usr/bin/env node
 
 import { Command } from 'commander';
 import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
