@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LLMReranker output snapshot 1`] = `
+[
+  {
+    "text": "B",
+  },
+  {
+    "text": "A",
+  },
+  {
+    "text": "C",
+  },
+]
+`;
