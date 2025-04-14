@@ -51,9 +51,6 @@ jobs:
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-rag-pipeline-utils
-          fail_ci_if_error: true
+          slug: DevilsDev/rag-pipeline-utils
+
       
