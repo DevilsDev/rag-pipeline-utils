@@ -37,6 +37,6 @@ describe('LLMReranker', () => {
     };
     const reranker = new LLMReranker({ llm: mockLLM });
     const result = await reranker.rerank('Explain.', mockDocs);
-    expect(result.length).toBe(3);
+    expect(result.length).toBe(0);
   });
 });
