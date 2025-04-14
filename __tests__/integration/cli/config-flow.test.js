@@ -33,7 +33,7 @@ describe('CLI integration with .ragrc.json config fallback', () => {
   });
 
   test('executes CLI ingest using config fallback', () => {
-    const result = execSync(`node ${CLI_PATH} ingest ./sample.pdf`, { encoding: 'utf-8' });
+    const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, { encoding: "utf-8" });
     expect(result).toContain('Ingestion complete');
   });
 
