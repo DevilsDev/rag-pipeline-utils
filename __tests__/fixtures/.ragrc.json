@@ -1,0 +1,7 @@
+{
+    "loader": "pdf",
+    "embedder": "openai",
+    "retriever": "pinecone",
+    "llm": "openai-gpt-4"
+  }
+  

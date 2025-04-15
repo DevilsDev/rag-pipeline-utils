@@ -1,19 +1,19 @@
 /**
- * Version: 0.1.9
+ * Version: 1.0.0
  * Description: Enables dynamic plugin configuration from JSON with validation
  * Author: Ali Kahwaji
  */
 
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import registry from '../core/plugin-registry.js';
 import { validatePluginSchema } from './validate-plugin-schema.js';
 import { logger } from '../utils/logger.js';
 
 /**
- * Loads plugins from a user-defined JSON file and registers them into the registry.
- *
- * @param {string} configPath - Absolute path to the JSON config file.
+ * Dynamically loads plugins from JSON and registers them in the registry.
+ * @param {string} configPath - Absolute path to JSON config
  */
 export async function loadPluginsFromJson(configPath) {
   if (!fs.existsSync(configPath)) {
@@ -40,12 +40,20 @@ export async function loadPluginsFromJson(configPath) {
   for (const [type, plugins] of Object.entries(pluginConfig)) {
     for (const [name, modulePath] of Object.entries(plugins)) {
       const absPath = path.resolve(modulePath);
+      const fileUrl = pathToFileURL(absPath).href;
+
       try {
-        const PluginClass = (await import(absPath)).default;
-        if (!PluginClass) {
-          throw new Error(`Missing default export in: ${absPath}`);
+        const module = await import(fileUrl);
+        const PluginClass = module?.default;
+
+        if (typeof PluginClass !== 'function') {
+          throw new TypeError(`Plugin ${name} must export a class as default`);
         }
-        registry.register(type, name, new PluginClass());
+
+        const instance = new PluginClass();
+        console.log(`[DEBUG] Loading plugin: ${type}:${name} from ${absPath}`);
+        registry.register(type, name, instance);
+        console.log(`[DEBUG] Successfully registered: ${type}:${name}`);
         logger.info({ type, name }, 'Plugin registered from JSON config');
       } catch (err) {
         logger.error({ err, type, name, absPath }, 'Failed to import plugin from path');

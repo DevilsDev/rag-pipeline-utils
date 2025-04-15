@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-export class OpenAIEmbedder {
+export default class OpenAIEmbedder {
   /**
    * Returns static vector embeddings for input chunks
    * @param {string[]} chunks

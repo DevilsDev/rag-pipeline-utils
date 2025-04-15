@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-export class OpenAILLM {
+export default class OpenAILLM {
     /**
      * Generates a static answer from input prompt and context
      * @param {string} prompt

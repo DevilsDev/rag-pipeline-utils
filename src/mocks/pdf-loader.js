@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-export class PDFLoader {
+export default class PDFLoader {
   /**
    * Loads a mock PDF file and returns an array of chunked content.
    * @param {string} filePath - Path to the PDF file

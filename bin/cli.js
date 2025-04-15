@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Version: 0.1.9
+ * Version: 0.2.0
  * Path: /bin/cli.js
- * Description: CLI interface for rag-pipeline utilities with JSON-based plugin registration
+ * Description: CLI interface for rag-pipeline utilities with JSON-based plugin registration and modular middleware
  * Author: Ali Kahwaji
  */
 
 import { Command } from 'commander';
-import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
+import { createRagPipeline } from '../src/core/create-pipeline.js';
 import { loadRagConfig } from '../src/config/load-config.js';
 import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
 import { LLMReranker } from '../src/reranker/llm-reranker.js';
@@ -29,13 +29,8 @@ const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.9');
+  .version('0.2.0');
 
-/**
- * Loads merged config (file + CLI).
- * @param {object} cliOpts - CLI options
- * @returns {object} - Full resolved configuration
- */
 function resolveConfig(cliOpts) {
   try {
     const fileConfig = loadRagConfig();
@@ -46,7 +41,14 @@ function resolveConfig(cliOpts) {
   }
 }
 
-// Command: ingest
+function buildOptions(config) {
+  return {
+    retry: true,
+    logging: true,
+    useReranker: config.useReranker || false,
+  };
+}
+
 program
   .command('ingest')
   .argument('<path>', 'Path to document(s)')
@@ -56,7 +58,7 @@ program
   .action(async (docPath, opts) => {
     try {
       const config = resolveConfig(opts);
-      const pipeline = createRagPipeline(config);
+      const pipeline = createRagPipeline(config, buildOptions(config));
       await pipeline.ingest(docPath);
       console.log('Ingestion complete');
     } catch (err) {
@@ -66,17 +68,17 @@ program
     }
   });
 
-// Command: query
 program
   .command('query')
   .argument('<prompt>', 'Prompt to submit')
   .option('--embedder <type>', 'Embedder type')
   .option('--retriever <type>', 'Retriever type')
   .option('--llm <type>', 'LLM type')
+  .option('--useReranker', 'Enable reranking with LLM', false)
   .action(async (prompt, opts) => {
     try {
       const config = resolveConfig(opts);
-      const pipeline = createRagPipeline(config);
+      const pipeline = createRagPipeline(config, buildOptions(config));
       const answer = await pipeline.query(prompt);
       console.log('\n Answer:\n', answer);
     } catch (err) {
@@ -85,13 +87,13 @@ program
     }
   });
 
-// Command: evaluate
 program
   .command('evaluate')
   .argument('<dataset>', 'Path to JSON file of evaluation cases')
   .option('--embedder <type>', 'Embedder type')
   .option('--retriever <type>', 'Retriever type')
   .option('--llm <type>', 'LLM type')
+  .option('--useReranker', 'Enable reranking with LLM', false)
   .action(async (dataset, opts) => {
     try {
       const config = resolveConfig(opts);
@@ -111,7 +113,6 @@ program
     }
   });
 
-// Command: rerank
 program
   .command('rerank')
   .argument('<prompt>', 'Prompt to rerank context for')
@@ -121,14 +122,14 @@ program
   .action(async (prompt, opts) => {
     try {
       const config = resolveConfig(opts);
-      const retriever = registry.get('retriever', config.retriever);
-      const llm = registry.get('llm', config.llm);
+      const pipeline = createRagPipeline(config, buildOptions(config));
+      const reranker = new LLMReranker({ llm: registry.get('llm', config.llm) });
+
       const embedder = registry.get('embedder', config.embedder);
+      const retriever = registry.get('retriever', config.retriever);
 
       const queryVector = await embedder.embedQuery(prompt);
       const docs = await retriever.retrieve(queryVector);
-
-      const reranker = new LLMReranker({ llm });
       const reranked = await reranker.rerank(prompt, docs);
 
       console.log('\n Reranked Results:');

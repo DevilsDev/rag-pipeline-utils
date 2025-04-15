@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-export class PineconeRetriever {
+export default class PineconeRetriever {
     /**
      * Mocks vector storage (no-op).
      */

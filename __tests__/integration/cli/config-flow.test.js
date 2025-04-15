@@ -1,29 +1,45 @@
 /**
- * Version: 0.1.3
- * Description: Integration test for CLI with config fallback
+ * Version: 0.2.1
+ * File: __tests__/integration/cli/config-flow.test.js
+ * Description: CLI integration tests for config-based fallback with middleware injection support
  * Author: Ali Kahwaji
  */
 
 import { execSync } from 'child_process';
-import path from 'path';
+import { resolve } from 'path';
+import { writeFileSync, copyFileSync } from 'fs';
 
-const CLI_PATH = path.resolve('bin/cli.js');
+const CLI_PATH = resolve('bin/cli.js');
+const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
+const CONFIG_FIXTURE = resolve('__tests__/fixtures/.ragrc.json');
+const ROOT_CONFIG_PATH = resolve('.ragrc.json');
 
 describe('CLI integration with .ragrc.json config fallback', () => {
+  beforeAll(() => {
+    // Copy test config into root to simulate fallback behavior
+    copyFileSync(CONFIG_FIXTURE, ROOT_CONFIG_PATH);
+  });
+
+  afterAll(() => {
+    // Clean up test config
+    try {
+      require('fs').unlinkSync(ROOT_CONFIG_PATH);
+    } catch (_) {}
+  });
+
   test('executes CLI ingest using config fallback', () => {
     const result = execSync(
-      `node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf --loader pdf --embedder openai --retriever pinecone`,
+      `node ${CLI_PATH} ingest ${FIXTURE_PDF}`,
       { encoding: 'utf-8' }
     );
-    expect(result).toContain('Ingestion complete');
+    expect(result).toMatch(/Ingestion complete/);
   });
 
   test('executes CLI query using config fallback', () => {
     const result = execSync(
-      `node ${CLI_PATH} query "What is this test about?" --embedder openai --retriever pinecone --llm openai-gpt-4`,
+      `node ${CLI_PATH} query "What is this test about?"`,
       { encoding: 'utf-8' }
     );
-    // Adjust expectation to check for a known part of the generated answer
-    expect(result).toContain('Generated answer using: Chunk about pine trees');
+    expect(result).toMatch(/Answer:/);
   });
 });

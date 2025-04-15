@@ -14,12 +14,6 @@ export class PluginRegistry {
     reranker: new Map(),
   };
 
-  /**
-   * Registers a plugin instance under a specific type and name.
-   * @param {'loader' | 'embedder' | 'retriever' | 'llm' | 'reranker'} type - Plugin type category.
-   * @param {string} name - Unique name/key for this plugin.
-   * @param {object} plugin - Plugin implementation (e.g., instance or factory).
-   */
   register(type, name, plugin) {
     const group = this.#registry[type];
     if (!group) {
@@ -28,12 +22,6 @@ export class PluginRegistry {
     group.set(name, plugin);
   }
 
-  /**
-   * Retrieves a plugin by type and name.
-   * @param {'loader' | 'embedder' | 'retriever' | 'llm' | 'reranker'} type - Plugin type.
-   * @param {string} name - Plugin name/key.
-   * @returns {object} - The plugin instance.
-   */
   get(type, name) {
     const group = this.#registry[type];
     if (!group) {
@@ -46,11 +34,6 @@ export class PluginRegistry {
     return plugin;
   }
 
-  /**
-   * Lists all registered plugin names for a type.
-   * @param {'loader' | 'embedder' | 'retriever' | 'llm' | 'reranker'} type - Plugin category.
-   * @returns {string[]} - Array of registered plugin names.
-   */
   list(type) {
     const group = this.#registry[type];
     if (!group) {
@@ -59,3 +42,7 @@ export class PluginRegistry {
     return [...group.keys()];
   }
 }
+
+const registry = new PluginRegistry();
+
+export default registry;
