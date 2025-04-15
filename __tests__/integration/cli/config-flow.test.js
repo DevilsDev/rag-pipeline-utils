@@ -1,26 +1,17 @@
 /**
- * Version: 0.2.2
+ * Version: 0.2.3
  * File: __tests__/integration/cli/config-flow.test.js
- * Description: CLI integration tests for config-based fallback with middleware injection support
- * Author: Ali Kahwaji
+ * Description: CLI integration test with config fallback and root-level .ragrc.json
  */
 
 import { execSync } from 'child_process';
-import { resolve, dirname } from 'path';
+import { resolve } from 'path';
 import { copyFileSync, unlinkSync } from 'fs';
-import { fileURLToPath } from 'url';
-
-// Fix for __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const CLI_PATH = resolve('bin/cli.js');
 const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
-const FIXTURES_DIR = resolve(__dirname, '../../fixtures');
 const CONFIG_FIXTURE = resolve('__tests__/fixtures/.ragrc.json');
 const ROOT_CONFIG_PATH = resolve('.ragrc.json');
-const ROOT_PATH = resolve(process.cwd());
-
 
 describe('CLI integration with .ragrc.json config fallback', () => {
   beforeAll(() => {
@@ -30,24 +21,24 @@ describe('CLI integration with .ragrc.json config fallback', () => {
   afterAll(() => {
     try {
       unlinkSync(ROOT_CONFIG_PATH);
-    } catch {
-      // silent cleanup
+    } catch (_) {
+      // silent fail
     }
   });
 
   test('executes CLI ingest using config fallback', () => {
-    const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, {
-      encoding: 'utf-8',
-      cwd: ROOT_PATH
-    });
+    const result = execSync(
+      `node ${CLI_PATH} ingest ${FIXTURE_PDF}`,
+      { encoding: 'utf-8', cwd: resolve('.') }
+    );
     expect(result).toMatch(/Ingestion complete/);
   });
 
   test('executes CLI query using config fallback', () => {
-    const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, {
-      encoding: 'utf-8',
-      cwd: ROOT_PATH
-    });
+    const result = execSync(
+      `node ${CLI_PATH} query "What is this test about?"`,
+      { encoding: 'utf-8', cwd: resolve('.') }
+    );
     expect(result).toMatch(/Answer:/);
   });
 });
