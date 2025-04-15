@@ -3,16 +3,16 @@
  * File: __tests__/integration/cli/config-flow.test.js
  * Description: CLI integration tests for config-based fallback with middleware injection support
  * Author: Ali Kahwaji
- *
- * Changelog:
- * - 0.2.0: Initial stable fallback CLI test using cwd override
- * - 0.2.1: Improved reliability via root-level config injection and cleanup
- * - 0.2.2: Finalized cleanup handling and directory resolution with __dirname for CI safety
  */
 
 import { execSync } from 'child_process';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { copyFileSync, unlinkSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+// Fix for __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const CLI_PATH = resolve('bin/cli.js');
 const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
@@ -29,15 +29,14 @@ describe('CLI integration with .ragrc.json config fallback', () => {
     try {
       unlinkSync(ROOT_CONFIG_PATH);
     } catch {
-      // Allow file not found errors (already deleted)
+      // silent cleanup
     }
   });
 
   test('executes CLI ingest using config fallback', () => {
-    const result = execSync(
-      `node ${CLI_PATH} ingest ${FIXTURE_PDF}`,
-      { encoding: 'utf-8' }
-    );
+    const result = execSync(`node ${CLI_PATH} ingest ${FIXTURE_PDF}`, {
+      encoding: 'utf-8'
+    });
     expect(result).toMatch(/Ingestion complete/);
   });
 
@@ -46,7 +45,7 @@ describe('CLI integration with .ragrc.json config fallback', () => {
       `node ${CLI_PATH} query "What is this test about?"`,
       {
         encoding: 'utf-8',
-        cwd: FIXTURES_DIR,
+        cwd: FIXTURES_DIR
       }
     );
     expect(result).toMatch(/Answer:/);
