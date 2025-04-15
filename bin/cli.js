@@ -13,7 +13,7 @@ import { loadRagConfig } from '../src/config/load-config.js';
 import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
 import { LLMReranker } from '../src/reranker/llm-reranker.js';
 import { logger } from '../src/utils/logger.js';
-import { loadPluginsFromJson } from '../src/mocks/load-plugin-config.js';
+import { loadPluginsFromJson } from '../config/load-plugin-config.js';
 
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
