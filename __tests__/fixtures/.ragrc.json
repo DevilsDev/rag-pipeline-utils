@@ -1,7 +1,14 @@
 {
-    "loader": "pdf",
-    "embedder": "openai",
-    "retriever": "pinecone",
-    "llm": "openai-gpt-4"
+  "loader": {
+    "pdf": "../../src/mocks/pdf-loader.js"
+  },
+  "embedder": {
+    "openai": "../../src/mocks/openai-embedder.js"
+  },
+  "retriever": {
+    "pinecone": "../../src/mocks/pinecone-retriever.js"
+  },
+  "llm": {
+    "openai-gpt-4": "../../src/mocks/openai-llm.js"
   }
-  
+}
