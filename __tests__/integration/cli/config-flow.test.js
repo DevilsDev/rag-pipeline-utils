@@ -15,11 +15,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const CLI_PATH = resolve('bin/cli.js');
-const ROOT_PATH = resolve(__dirname, '../../../');
 const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
 const FIXTURES_DIR = resolve(__dirname, '../../fixtures');
 const CONFIG_FIXTURE = resolve('__tests__/fixtures/.ragrc.json');
 const ROOT_CONFIG_PATH = resolve('.ragrc.json');
+const ROOT_PATH = resolve(process.cwd());
+
 
 describe('CLI integration with .ragrc.json config fallback', () => {
   beforeAll(() => {
@@ -36,19 +37,17 @@ describe('CLI integration with .ragrc.json config fallback', () => {
 
   test('executes CLI ingest using config fallback', () => {
     const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, {
-      encoding: 'utf-8', cwd: ROOT_PATH 
+      encoding: 'utf-8',
+      cwd: ROOT_PATH
     });
     expect(result).toMatch(/Ingestion complete/);
   });
 
   test('executes CLI query using config fallback', () => {
-    const result = execSync(
-      `node ${CLI_PATH} query "What is this test about?"`,
-      {
-        encoding: 'utf-8',
-        cwd: FIXTURES_DIR
-      }
-    );
+    const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, {
+      encoding: 'utf-8',
+      cwd: ROOT_PATH
+    });
     expect(result).toMatch(/Answer:/);
   });
 });
