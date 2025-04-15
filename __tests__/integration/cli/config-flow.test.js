@@ -7,7 +7,7 @@
 
 import { execSync } from 'child_process';
 import { resolve } from 'path';
-import { writeFileSync, copyFileSync } from 'fs';
+import { copyFileSync } from 'fs';
 
 const CLI_PATH = resolve('bin/cli.js');
 const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
@@ -24,7 +24,9 @@ describe('CLI integration with .ragrc.json config fallback', () => {
     // Clean up test config
     try {
       require('fs').unlinkSync(ROOT_CONFIG_PATH);
-    } catch (_) {}
+    } catch (_) {
+       // intentionally left empty for fallback coverage
+    }
   });
 
   test('executes CLI ingest using config fallback', () => {

@@ -8,7 +8,7 @@
  */
 
 import { Command } from 'commander';
-import { createRagPipeline } from '../src/core/create-pipeline.js';
+import { createRagPipeline,  registry } from '../src/core/create-pipeline.js';
 import { loadRagConfig } from '../src/config/load-config.js';
 import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
 import { LLMReranker } from '../src/reranker/llm-reranker.js';
@@ -122,7 +122,7 @@ program
   .action(async (prompt, opts) => {
     try {
       const config = resolveConfig(opts);
-      const pipeline = createRagPipeline(config, buildOptions(config));
+      //const pipeline = createRagPipeline(config, buildOptions(config));
       const reranker = new LLMReranker({ llm: registry.get('llm', config.llm) });
 
       const embedder = registry.get('embedder', config.embedder);
