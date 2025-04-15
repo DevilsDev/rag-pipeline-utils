@@ -1,70 +1,41 @@
 #!/usr/bin/env node
 
 /**
- * Version: 0.1.8
+ * Version: 0.1.9
  * Path: /bin/cli.js
- * Description: CLI interface for rag-pipeline utilities with loaders, reranker, and evaluation
+ * Description: CLI interface for rag-pipeline utilities with JSON-based plugin registration
  * Author: Ali Kahwaji
  */
 
 import { Command } from 'commander';
 import { createRagPipeline, registry } from '../src/core/create-pipeline.js';
 import { loadRagConfig } from '../src/config/load-config.js';
-import { logger } from '../src/utils/logger.js';
 import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
 import { LLMReranker } from '../src/reranker/llm-reranker.js';
+import { logger } from '../src/utils/logger.js';
+import { loadPluginsFromJson } from '../src/mocks/load-plugin-config.js';
 
-import { MarkdownLoader } from '../src/loader/markdown-loader.js';
-import { HTMLLoader } from '../src/loader/html-loader.js';
-import { CSVLoader } from '../src/loader/csv-loader.js';
-import { DirectoryLoader } from '../src/loader/directory-loader.js';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-// Minimal test plugin implementations
-class PDFLoader {
-  async load(filePath) {
-    return [{ chunk: () => [`Test loaded: ${filePath}`] }];
-  }
-}
-class OpenAIEmbedder {
-  async embed(chunks) {
-    return chunks.map((text, i) => ({ id: `v${i}`, values: [0.1, 0.2, 0.3], metadata: { text } }));
-  }
-  async embedQuery(prompt) {
-    return [0.1, 0.2, 0.3];
-  }
-}
-class PineconeRetriever {
-  async store() {}
-  async retrieve() {
-    return [
-      { id: 'a', text: 'Chunk about pine trees', metadata: {} },
-      { id: 'b', text: 'Chunk about vectors', metadata: {} },
-      { id: 'c', text: 'Chunk about databases', metadata: {} }
-    ];
-  }
-}
-class OpenAILLM {
-  async generate(prompt, context) {
-    return `Generated answer using: ${context.map(d => d.text).join(', ')}`;
-  }
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-// Register mock/default plugins
-registry.register('loader', 'pdf', new PDFLoader());
-registry.register('loader', 'markdown', new MarkdownLoader());
-registry.register('loader', 'html', new HTMLLoader());
-registry.register('loader', 'csv', new CSVLoader());
-registry.register('loader', 'directory', new DirectoryLoader());
-registry.register('embedder', 'openai', new OpenAIEmbedder());
-registry.register('retriever', 'pinecone', new PineconeRetriever());
-registry.register('llm', 'openai-gpt-4', new OpenAILLM());
+// Load plugin config if available
+const pluginConfigPath = resolve(__dirname, '../plugin.config.json');
+await loadPluginsFromJson(pluginConfigPath);
 
 const program = new Command();
 program
   .name('rag-pipeline')
   .description('CLI for RAG pipeline utilities')
-  .version('0.1.8');
+  .version('0.1.9');
 
+/**
+ * Loads merged config (file + CLI).
+ * @param {object} cliOpts - CLI options
+ * @returns {object} - Full resolved configuration
+ */
 function resolveConfig(cliOpts) {
   try {
     const fileConfig = loadRagConfig();
@@ -75,6 +46,7 @@ function resolveConfig(cliOpts) {
   }
 }
 
+// Command: ingest
 program
   .command('ingest')
   .argument('<path>', 'Path to document(s)')
@@ -86,7 +58,7 @@ program
       const config = resolveConfig(opts);
       const pipeline = createRagPipeline(config);
       await pipeline.ingest(docPath);
-      console.log('Ingestion complete'); // required by test assertion
+      console.log('Ingestion complete');
     } catch (err) {
       logger.error({ error: err.message }, 'Ingestion failed');
       console.error('Error during ingestion:', err.message);
@@ -94,6 +66,7 @@ program
     }
   });
 
+// Command: query
 program
   .command('query')
   .argument('<prompt>', 'Prompt to submit')
@@ -112,6 +85,7 @@ program
     }
   });
 
+// Command: evaluate
 program
   .command('evaluate')
   .argument('<dataset>', 'Path to JSON file of evaluation cases')
@@ -137,11 +111,13 @@ program
     }
   });
 
+// Command: rerank
 program
   .command('rerank')
   .argument('<prompt>', 'Prompt to rerank context for')
   .option('--retriever <type>', 'Retriever type')
   .option('--llm <type>', 'LLM type')
+  .option('--embedder <type>', 'Embedder type')
   .action(async (prompt, opts) => {
     try {
       const config = resolveConfig(opts);
