@@ -6,7 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { registry } from '../core/plugin-registry.js';
+import registry from '../core/plugin-registry.js';
 import { validatePluginSchema } from './validate-plugin-schema.js';
 import { logger } from '../utils/logger.js';
 
