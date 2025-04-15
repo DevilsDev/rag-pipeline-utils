@@ -15,6 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const CLI_PATH = resolve('bin/cli.js');
+const ROOT_PATH = resolve(__dirname, '../../../');
 const FIXTURE_PDF = resolve('__tests__/fixtures/sample.pdf');
 const FIXTURES_DIR = resolve(__dirname, '../../fixtures');
 const CONFIG_FIXTURE = resolve('__tests__/fixtures/.ragrc.json');
@@ -34,8 +35,8 @@ describe('CLI integration with .ragrc.json config fallback', () => {
   });
 
   test('executes CLI ingest using config fallback', () => {
-    const result = execSync(`node ${CLI_PATH} ingest ${FIXTURE_PDF}`, {
-      encoding: 'utf-8'
+    const result = execSync(`node ${CLI_PATH} ingest ./__tests__/fixtures/sample.pdf`, {
+      encoding: 'utf-8', cwd: ROOT_PATH 
     });
     expect(result).toMatch(/Ingestion complete/);
   });
