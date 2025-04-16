@@ -1,7 +1,31 @@
-import fs from 'fs';
-const fixturePath = './__tests__/fixtures/sample.pdf';
+/**
+ * Version: 1.1.0
+ * Description: Test setup script to ensure fixtures exist and validate mocks before running tests.
+ * Author: Ali Kahwaji
+ */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+
+// Resolve __dirname in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const fixturePath = path.resolve(__dirname, '../__tests__/fixtures/sample.pdf');
+
+// Ensure PDF test fixture
 if (!fs.existsSync(fixturePath)) {
-  fs.mkdirSync('./__tests__/fixtures', { recursive: true });
+  fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
   fs.writeFileSync(fixturePath, 'Dummy PDF content for test');
+  console.log('[setup] Created sample.pdf fixture');
+}
+
+// Validate plugin fixture presence
+try {
+  execSync('node ./scripts/verify-fixtures.js', { stdio: 'inherit' });
+} catch (err) {
+  console.error('[setup] Fixture verification failed. Please check missing mocks.');
+  process.exit(1);
 }

@@ -47,6 +47,13 @@ jobs:
 
       - name: 🧪 Run Tests with Coverage
         run: npm test
+
+      - name: Validate Fixtures
+        run: npm run validate-fixtures
+      
+      - name: Lint code
+        run: npm run lint
+      
       
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v5
