@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.0.0...v2.0.1) (2025-04-17)
+
+
+### Bug Fixes
+
+* add @docusaurus/preset-classic to enable CI builds ([ed5e771](https://github.com/DevilsDev/rag-pipeline-utils/commit/ed5e771f919face4693a6a7abfed4cf0fe1325ca))
+
 ## [2.0.0] - 2025-04-17 (2025-04-17)
 
 
