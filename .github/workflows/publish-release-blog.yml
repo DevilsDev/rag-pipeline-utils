@@ -1,5 +1,5 @@
 # .github/workflows/publish-release-blog.yml
-# Version: 1.0.0
+# Version: 1.1.0
 # Description: Auto-publish blog post from CHANGELOG or prepared .md after NPM release
 # Author: Ali Kahwaji
 
@@ -15,8 +15,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout code
+      - name: ⬇️ Checkout main branch
         uses: actions/checkout@v4
+        with:
+          ref: main         # ✅ Ensures blog is committed to 'main'
+          fetch-depth: 0
 
       - name: 🔧 Set up Node.js
         uses: actions/setup-node@v4
@@ -36,13 +39,12 @@ jobs:
           echo "tags: [release, changelog]" >> $FILE
           echo "---" >> $FILE
           echo >> $FILE
-
           echo "RAG Pipeline Utils v${VERSION} is now available on NPM!" >> $FILE
           echo >> $FILE
           echo "#### Highlights" >> $FILE
-          echo "- Automated blog generation on GitHub releases" >> $FILE
-          echo "- Version bump: ${VERSION}" >> $FILE
-          echo "- Ensure CHANGELOG.md is synced" >> $FILE
+          echo "- 🚀 Auto-published blog from GitHub release" >> $FILE
+          echo "- 📦 Version bump: ${VERSION}" >> $FILE
+          echo "- 📘 See CHANGELOG.md for full details" >> $FILE
 
       - name: 📋 Commit blog post
         uses: stefanzweifel/git-auto-commit-action@v5
