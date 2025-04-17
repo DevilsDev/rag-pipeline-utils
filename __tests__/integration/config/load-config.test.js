@@ -1,52 +1,67 @@
 /**
- * Version: 0.1.0
- * Path: /__tests__/integration/config/load-config.test.js
- * Description: Integration tests for loading and validating .ragrc.json config
+ * Version: 1.1.1
+ * Description: Integration tests for loading and validating .ragrc.json via loadRagConfig()
  * Author: Ali Kahwaji
+ * File: __tests__/integration/config/load-config.test.js
  */
 
 import fs from 'fs';
-import path from 'path';
+import { copyFileSync, mkdirSync, rmSync, existsSync } from 'fs';
+import { join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { loadRagConfig } from '../../../src/config/load-config.js';
 
-const FIXTURE_PATH = path.resolve(process.cwd(), '.ragrc.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = resolve(__filename, '..');
 
-const validConfig = {
-  loader: 'pdf',
-  embedder: 'openai',
-  retriever: 'pinecone',
-  llm: 'openai-gpt-4',
-  chunk: {
-    strategy: 'semantic',
-    size: 500
-  }
-};
+// Fixture paths
+const FIXTURE_DIR = resolve(__dirname, '../../fixtures');
+const VALID_FIXTURE = join(FIXTURE_DIR, 'valid-ragrc.json');
+const INVALID_FIXTURE = join(FIXTURE_DIR, 'invalid-ragrc.json');
 
-const invalidConfig = {
-  loader: 'pdf',
-  chunk: { size: 'large' } // Missing required keys + invalid type
-};
+// Temp directory used during tests
+const TEMP_DIR = resolve('__tests__', '__temp__', 'load-config');
+const TEMP_CONFIG = join(TEMP_DIR, '.ragrc.json');
+
+// Ensure fixtures are available before copying
+function assertFixturesExist() {
+  const required = [VALID_FIXTURE, INVALID_FIXTURE];
+  required.forEach(file => {
+    if (!existsSync(file)) {
+      throw new Error(`❌ Required test fixture missing: ${file}`);
+    }
+  });
+}
 
 describe('loadRagConfig()', () => {
-  afterEach(() => {
-    if (fs.existsSync(FIXTURE_PATH)) {
-      fs.unlinkSync(FIXTURE_PATH);
-    }
+  beforeAll(() => {
+    rmSync(TEMP_DIR, { recursive: true, force: true });
+    mkdirSync(TEMP_DIR, { recursive: true });
+
+    assertFixturesExist();
+  });
+
+  afterAll(() => {
+    rmSync(TEMP_DIR, { recursive: true, force: true });
   });
 
   test('loads a valid .ragrc.json config file successfully', () => {
-    fs.writeFileSync(FIXTURE_PATH, JSON.stringify(validConfig, null, 2));
-    const result = loadRagConfig();
-    expect(result).toMatchObject(validConfig);
+    copyFileSync(VALID_FIXTURE, TEMP_CONFIG);
+
+    const config = loadRagConfig(TEMP_CONFIG);
+    expect(config).toBeDefined();
+    expect(config.namespace).toBe('cli-config-test');
+    expect(config.loader?.pdf).toBe('./src/mocks/pdf-loader.js');
+    expect(config.pipeline).toEqual(expect.arrayContaining(['loader', 'embedder', 'retriever']));
   });
 
   test('throws validation error for invalid .ragrc.json config', () => {
-    fs.writeFileSync(FIXTURE_PATH, JSON.stringify(invalidConfig, null, 2));
-    expect(() => loadRagConfig()).toThrow(/Invalid config/);
+    copyFileSync(INVALID_FIXTURE, TEMP_CONFIG);
+    expect(() => loadRagConfig(TEMP_CONFIG)).toThrow(/Config validation failed/);
   });
 
   test('throws error if config file does not exist', () => {
-    expect(() => loadRagConfig()).toThrow(/Config file not found/);
+    const NON_EXISTENT = join(TEMP_DIR, 'missing.json');
+    expect(() => loadRagConfig(NON_EXISTENT)).toThrow(/Config file not found/);
   });
 });
-

@@ -3,22 +3,13 @@
 exports[`LLMReranker output snapshot 1`] = `
 [
   {
-    "metadata": {
-      "source": "test-b.md",
-    },
-    "pageContent": "Document B",
+    "text": "B",
   },
   {
-    "metadata": {
-      "source": "test-a.md",
-    },
-    "pageContent": "Document A",
+    "text": "A",
   },
   {
-    "metadata": {
-      "source": "test-c.md",
-    },
-    "pageContent": "Document C",
+    "text": "C",
   },
 ]
 `;

@@ -1,145 +1,62 @@
-#!/usr/bin/env node
-
 /**
- * Version: 0.2.0
- * Path: /bin/cli.js
- * Description: CLI interface for rag-pipeline utilities with JSON-based plugin registration and modular middleware
+ * Version: 1.1.0
+ * Description: Final CLI entrypoint with dynamic plugin loading and full config validation
  * Author: Ali Kahwaji
  */
 
-import { Command } from 'commander';
-import { createRagPipeline,  registry } from '../src/core/create-pipeline.js';
-import { loadRagConfig } from '../src/config/load-config.js';
-import { evaluateRagDataset } from '../src/evaluate/evaluator.js';
-import { LLMReranker } from '../src/reranker/llm-reranker.js';
-import { logger } from '../src/utils/logger.js';
-import { loadPluginsFromJson } from '../src/config/load-plugin-config.js';
-
+import { resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { loadRagConfig } from '../src/config/load-config.js';
+import { loadPluginsFromJson } from '../src/config/load-plugin-config.js';
+import registry from '../src/core/plugin-registry.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = resolve(__filename, '..');
+const CONFIG_PATH = resolve('.ragrc.json');
 
-// Load plugin config if available
-const pluginConfigPath = resolve(__dirname, '../plugin.config.json');
-await loadPluginsFromJson(pluginConfigPath);
+const args = process.argv.slice(2);
+const command = args[0];
 
-const program = new Command();
-program
-  .name('rag-pipeline')
-  .description('CLI for RAG pipeline utilities')
-  .version('0.2.0');
-
-function resolveConfig(cliOpts) {
+async function runCLI() {
   try {
-    const fileConfig = loadRagConfig();
-    return { ...fileConfig, ...cliOpts };
+    const config = loadRagConfig(CONFIG_PATH);
+    await loadPluginsFromJson(CONFIG_PATH);
+
+    switch (command) {
+      case 'ingest': {
+        const input = args[1];
+        const loader = registry.get('loader', Object.keys(config.loader)[0]);
+        const embedder = registry.get('embedder', Object.keys(config.embedder)[0]);
+        const retriever = registry.get('retriever', Object.keys(config.retriever)[0]);
+
+        const docs = await loader.load(input);
+        const vectors = await embedder.embed(docs);
+        await retriever.store(vectors, config.namespace);
+
+        console.log('Ingestion complete');
+        break;
+      }
+      case 'query': {
+        const question = args.slice(1).join(' ');
+        const embedder = registry.get('embedder', Object.keys(config.embedder)[0]);
+        const retriever = registry.get('retriever', Object.keys(config.retriever)[0]);
+        const llm = registry.get('llm', Object.keys(config.llm)[0]);
+
+        const queryVec = await embedder.embedQuery(question);
+        const docs = await retriever.search(queryVec, config.namespace);
+        const answer = await llm.ask(question, docs);
+
+        console.log('Answer:', answer);
+        break;
+      }
+      default:
+        console.error('Unknown command:', command);
+        process.exit(1);
+    }
   } catch (err) {
-    logger.warn({ error: err.message }, 'Config file fallback failed');
-    return cliOpts;
+    console.error('Error during execution:', err.message);
+    process.exit(1);
   }
 }
 
-function buildOptions(config) {
-  return {
-    retry: true,
-    logging: true,
-    useReranker: config.useReranker || false,
-  };
-}
-
-program
-  .command('ingest')
-  .argument('<path>', 'Path to document(s)')
-  .option('--loader <type>', 'Document loader type')
-  .option('--embedder <type>', 'Embedder type')
-  .option('--retriever <type>', 'Vector store retriever type')
-  .action(async (docPath, opts) => {
-    try {
-      const config = resolveConfig(opts);
-      const pipeline = createRagPipeline(config, buildOptions(config));
-      await pipeline.ingest(docPath);
-      console.log('Ingestion complete');
-    } catch (err) {
-      logger.error({ error: err.message }, 'Ingestion failed');
-      console.error('Error during ingestion:', err.message);
-      process.exit(1);
-    }
-  });
-
-program
-  .command('query')
-  .argument('<prompt>', 'Prompt to submit')
-  .option('--embedder <type>', 'Embedder type')
-  .option('--retriever <type>', 'Retriever type')
-  .option('--llm <type>', 'LLM type')
-  .option('--useReranker', 'Enable reranking with LLM', false)
-  .action(async (prompt, opts) => {
-    try {
-      const config = resolveConfig(opts);
-      const pipeline = createRagPipeline(config, buildOptions(config));
-      const answer = await pipeline.query(prompt);
-      console.log('\n Answer:\n', answer);
-    } catch (err) {
-      logger.error({ error: err.message }, 'Query failed');
-      process.exit(1);
-    }
-  });
-
-program
-  .command('evaluate')
-  .argument('<dataset>', 'Path to JSON file of evaluation cases')
-  .option('--embedder <type>', 'Embedder type')
-  .option('--retriever <type>', 'Retriever type')
-  .option('--llm <type>', 'LLM type')
-  .option('--useReranker', 'Enable reranking with LLM', false)
-  .action(async (dataset, opts) => {
-    try {
-      const config = resolveConfig(opts);
-      const results = await evaluateRagDataset(dataset, config);
-      const passRate = results.filter(r => r.success).length / results.length;
-      const avgBLEU = results.reduce((sum, r) => sum + r.scores.bleu, 0) / results.length;
-      const avgROUGE = results.reduce((sum, r) => sum + r.scores.rouge, 0) / results.length;
-
-      results.forEach((r, i) => {
-        console.log(`\nCase ${i + 1}:\nPrompt: ${r.prompt}\nPass: ${r.success}\nBLEU: ${r.scores.bleu.toFixed(2)}\nROUGE: ${r.scores.rouge.toFixed(2)}`);
-      });
-
-      console.log(`\n Summary:\nPassed: ${Math.round(passRate * 100)}%\nAvg BLEU: ${avgBLEU.toFixed(2)}\nAvg ROUGE: ${avgROUGE.toFixed(2)}`);
-    } catch (err) {
-      logger.error({ error: err.message }, 'Evaluation failed');
-      process.exit(1);
-    }
-  });
-
-program
-  .command('rerank')
-  .argument('<prompt>', 'Prompt to rerank context for')
-  .option('--retriever <type>', 'Retriever type')
-  .option('--llm <type>', 'LLM type')
-  .option('--embedder <type>', 'Embedder type')
-  .action(async (prompt, opts) => {
-    try {
-      const config = resolveConfig(opts);
-      //const pipeline = createRagPipeline(config, buildOptions(config));
-      const reranker = new LLMReranker({ llm: registry.get('llm', config.llm) });
-
-      const embedder = registry.get('embedder', config.embedder);
-      const retriever = registry.get('retriever', config.retriever);
-
-      const queryVector = await embedder.embedQuery(prompt);
-      const docs = await retriever.retrieve(queryVector);
-      const reranked = await reranker.rerank(prompt, docs);
-
-      console.log('\n Reranked Results:');
-      reranked.forEach((doc, i) => {
-        console.log(`\n#${i + 1}: ${doc.text}`);
-      });
-    } catch (err) {
-      logger.error({ error: err.message }, 'Rerank failed');
-      process.exit(1);
-    }
-  });
-
-program.parse();
+await runCLI();

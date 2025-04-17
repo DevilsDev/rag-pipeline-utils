@@ -1,6 +1,6 @@
 /**
- * Version: 1.0.0
- * Description: Enables dynamic plugin configuration from JSON with validation
+ * Version: 1.1.1
+ * Description: Dynamic plugin loader with direct type:name registry mapping
  * Author: Ali Kahwaji
  */
 
@@ -8,55 +8,47 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import registry from '../core/plugin-registry.js';
-import { validatePluginSchema } from './validate-plugin-schema.js';
+import { validatePluginSchema } from './validate-schema.js';
 import { logger } from '../utils/logger.js';
 
 /**
- * Dynamically loads plugins from JSON and registers them in the registry.
- * @param {string} configPath - Absolute path to JSON config
+ * Loads plugins from validated config path and registers them.
+ * @param {string} configPath
  */
 export async function loadPluginsFromJson(configPath) {
   if (!fs.existsSync(configPath)) {
-    logger.warn({ configPath }, 'Plugin config file not found');
-    return;
+    throw new Error(`Plugin config missing: ${configPath}`);
   }
 
-  const content = fs.readFileSync(configPath, 'utf-8');
-  let pluginConfig;
+  const raw = fs.readFileSync(configPath, 'utf-8');
+  const config = JSON.parse(raw);
 
-  try {
-    pluginConfig = JSON.parse(content);
-  } catch (err) {
-    logger.error({ err }, 'Invalid JSON in plugin config');
-    throw new Error('Failed to parse plugin config JSON');
-  }
-
-  const validation = validatePluginSchema(pluginConfig);
+  const validation = validatePluginSchema(config);
   if (!validation.valid) {
-    logger.error({ errors: validation.errors }, 'Invalid plugin config schema');
+    logger.error({ errors: validation.errors }, 'Invalid plugin config');
     throw new Error('Plugin config validation failed');
   }
 
-  for (const [type, plugins] of Object.entries(pluginConfig)) {
-    for (const [name, modulePath] of Object.entries(plugins)) {
-      const absPath = path.resolve(modulePath);
+  for (const [type, namedPlugins] of Object.entries(config)) {
+    if (!['loader', 'embedder', 'retriever', 'llm'].includes(type)) continue;
+
+    for (const [name, relPath] of Object.entries(namedPlugins)) {
+      const absPath = path.resolve(path.dirname(configPath), relPath);
       const fileUrl = pathToFileURL(absPath).href;
 
       try {
-        const module = await import(fileUrl);
-        const PluginClass = module?.default;
-
+        const mod = await import(fileUrl);
+        const PluginClass = mod?.default;
         if (typeof PluginClass !== 'function') {
-          throw new TypeError(`Plugin ${name} must export a class as default`);
+          throw new Error(`Invalid export in plugin [${type}:${name}] at ${absPath}`);
         }
 
         const instance = new PluginClass();
-        console.log(`[DEBUG] Loading plugin: ${type}:${name} from ${absPath}`);
         registry.register(type, name, instance);
-        console.log(`[DEBUG] Successfully registered: ${type}:${name}`);
-        logger.info({ type, name }, 'Plugin registered from JSON config');
+
+        logger.info({ type, name }, `Registered plugin: ${type}:${name}`);
       } catch (err) {
-        logger.error({ err, type, name, absPath }, 'Failed to import plugin from path');
+        logger.error({ type, name, err }, `Failed to register plugin [${type}:${name}]`);
         throw err;
       }
     }

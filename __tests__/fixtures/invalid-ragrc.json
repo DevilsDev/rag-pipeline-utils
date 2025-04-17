@@ -1,0 +1,4 @@
+{
+  "loader": "./src/mocks/pdf-loader.js",
+  "namespace": 12345
+}

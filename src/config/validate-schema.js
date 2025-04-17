@@ -1,49 +1,107 @@
 /**
- * Version: 0.1.0
- * Path: /src/config/validate-schema.js
- * Description: JSON schema validation for `.ragrc.json` config using AJV
+ * Version: 1.3.0
+ * Description: AJV-powered validators for .ragrc.json full config and plugin-only structure
  * Author: Ali Kahwaji
+ * File: /src/config/validate-schema.js
  */
 
 import Ajv from 'ajv';
 
-// Define allowed config structure
-const schema = {
+/**
+ * Full .ragrc.json schema (used in load-config.js)
+ */
+const ragrcSchema = {
   type: 'object',
+  required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
   properties: {
-    loader: { type: 'string' },
-    embedder: { type: 'string' },
-    retriever: { type: 'string' },
-    llm: { type: 'string' },
-    chunk: {
+    loader: {
       type: 'object',
-      properties: {
-        strategy: { type: 'string' },
-        size: { type: 'number' }
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    embedder: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    retriever: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    llm: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    namespace: {
+      type: 'string',
+      minLength: 1
+    },
+    pipeline: {
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: ['loader', 'embedder', 'retriever']
       },
-      required: ['strategy', 'size'],
-      additionalProperties: false
+      minItems: 1,
+      uniqueItems: true
     }
   },
-  required: ['loader', 'embedder', 'retriever', 'llm'],
   additionalProperties: false
 };
 
-const ajv = new Ajv();
-const validateSchema = ajv.compile(schema);
+/**
+ * Minimal plugin-only schema (used in load-plugin-config.js)
+ */
+const pluginSchema = {
+  type: 'object',
+  required: ['loader', 'embedder', 'retriever', 'llm'],
+  properties: {
+    loader: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    embedder: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    retriever: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    },
+    llm: {
+      type: 'object',
+      minProperties: 1,
+      additionalProperties: { type: 'string' }
+    }
+  },
+  additionalProperties: true // allow namespace, pipeline, etc.
+};
 
 /**
- * Validates a given config object against the `.ragrc.json` schema.
- * Throws if the schema is invalid.
- *
- * @param {object} config - Configuration object
- * @throws {Error} - Validation errors, if any
+ * Validates the full .ragrc.json config structure
+ * @param {object} config
+ * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validate(config) {
-  const valid = validateSchema(config);
-  if (!valid) {
-    const messages = validateSchema.errors.map(e => `${e.instancePath} ${e.message}`).join(', ');
-    throw new Error(`Invalid config: ${messages}`);
-  }
+export function validateRagrcSchema(config) {
+  const ajv = new Ajv({ allErrors: true });
+  const validate = ajv.compile(ragrcSchema);
+  const valid = validate(config);
+  return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
 
+/**
+ * Validates a plugin-only structure (for runtime plugin loading)
+ * @param {object} config
+ * @returns {{ valid: boolean, errors?: any[] }}
+ */
+export function validatePluginSchema(config) {
+  const ajv = new Ajv({ allErrors: true });
+  const validate = ajv.compile(pluginSchema);
+  const valid = validate(config);
+  return valid ? { valid: true } : { valid: false, errors: validate.errors };
+}

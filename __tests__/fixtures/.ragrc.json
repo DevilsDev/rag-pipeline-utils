@@ -1,7 +1,8 @@
- {
-  "loader": "./src/mocks/pdf-loader.js",
-  "embedder": "./src/mocks/openai-embedder.js",
-  "retriever": "./src/mocks/pinecone-retriever.js",
-  "reranker": "./src/mocks/llm-reranker.js",
-  "llm": "./src/mocks/openai-llm.js"
+{
+  "loader": { "pdf": "./src/mocks/pdf-loader.js" },
+  "embedder": { "openai": "./src/mocks/openai-embedder.js" },
+  "retriever": { "pinecone": "./src/mocks/pinecone-retriever.js" },
+  "llm": { "openai": "./src/mocks/openai-llm.js" },
+  "namespace": "cli-config-test",
+  "pipeline": ["loader", "embedder", "retriever"]
 }
