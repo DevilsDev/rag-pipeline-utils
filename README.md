@@ -120,7 +120,7 @@ Each plugin must implement the following interface:
 
 ## Use Cases
 
-Explore real-world DevX-focused examples in [USE_CASES.md](./USE_CASES.md), including:
+Explore real-world DevX-focused examples in [USE_CASES.md](./Use-Cases.md), including:
 
 - Mock-driven plugin TDD
 - CI-based interface validation

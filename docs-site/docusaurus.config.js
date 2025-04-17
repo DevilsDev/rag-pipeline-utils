@@ -35,7 +35,8 @@ export default {
       },
       items: [
         { to: '/docs/Introduction', label: 'Docs', position: 'left' },
-        { href: 'https://github.com/DevilsDev/rag-pipeline-utils', label: 'GitHub', position: 'right' }
+        { to: '/blog', label: 'Blog', position: 'left' },
+        { href: 'https://github.com/DevilsDev/rag-pipeline-utils', label: 'GitHub', position: 'right' },
       ]
     },
     footer: {
@@ -46,7 +47,6 @@ export default {
 
   organizationName: 'DevilsDev',
   projectName: 'rag-pipeline-utils',
-  deploymentBranch: 'gh-pages',
 
   presets: [
     [
