@@ -1,5 +1,31 @@
 # Changelog
 
+# [2.0.0](https://github.com/DevilsDev/rag-pipeline-utils/compare/v1.0.1...v2.0.0) (2025-04-17)
+
+
+### Bug Fixes
+
+* **ci:** correct .ragrc.json plugin paths and CLI test cwd to resolve plugin loading in CI ([911c23b](https://github.com/DevilsDev/rag-pipeline-utils/commit/911c23b1d3ddb9e2d938b37f4422a5d81995e97f))
+* **ci:** resolve plugin path error in .ragrc.json for GitHub Actions compatibility ([affc739](https://github.com/DevilsDev/rag-pipeline-utils/commit/affc739d5c4ff2070b1a1ca0ccf3f9137d6cee5a))
+* **ci:** resolve plugin path failures in .ragrc.json during CLI integration tests ([04b977b](https://github.com/DevilsDev/rag-pipeline-utils/commit/04b977b3b745fa3d3ab47c84b2aeee3285896068))
+* **cli:** correct path to load-plugin-config.js after moving to /src/config ([f743498](https://github.com/DevilsDev/rag-pipeline-utils/commit/f743498ec32e03151eda9ba7fe5886bda8da792f))
+* **config:** use default export when importing plugin registry ([ef8dce1](https://github.com/DevilsDev/rag-pipeline-utils/commit/ef8dce12bfab62bc9faec764198b98c0c356472e))
+* **test:** ensure .ragrc.json copied to project root for CLI fallback in CI ([31bd2b8](https://github.com/DevilsDev/rag-pipeline-utils/commit/31bd2b844279fb0404056d9929e5f28f9127eb12))
+* **tests:** define __dirname manually for ESM compatibility in CLI integration test ([18b8dad](https://github.com/DevilsDev/rag-pipeline-utils/commit/18b8dadabb852243dda2b78de048c71106a759fc))
+
+
+### Features
+
+* **ci:** integrate full fixture validation, schema contracts, and CLI test flow ([2b57fe9](https://github.com/DevilsDev/rag-pipeline-utils/commit/2b57fe90e64a806815c1f66f5e2a745780270ce6))
+* **cli:** dynamic plugin registration with config fallback and middleware injection ([cc24b7e](https://github.com/DevilsDev/rag-pipeline-utils/commit/cc24b7e74d0a2630eb1c6d2def69b370329dcc2b))
+* **plugins:** enable dynamic plugin registration from JSON config ([d81d6d7](https://github.com/DevilsDev/rag-pipeline-utils/commit/d81d6d7d5f2d21b5a46b379b530c162ba9c30398))
+* **testing:** integrate full fixture and validation setup for CLI + reranker ([ab96037](https://github.com/DevilsDev/rag-pipeline-utils/commit/ab9603765594e7718e2688b80797e1f5e8afe86f))
+
+
+### BREAKING CHANGES
+
+* **cli:**  now requires named options for middleware injection; existing usage must be updated.
+
 ## [1.0.2] - 2025-04-15
 ### Fixed
 - Corrected plugin path resolution in `.ragrc.json` fixture for CI compatibility.

@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "A modular toolkit for building RAG (Retrieval-Augmented Generation) pipelines in Node.js",
   "main": "src/core/create-pipeline.js",
   "bin": {
@@ -17,7 +17,7 @@
     "lint-staged": "lint-staged",
     "postinstall": "husky install",
     "verify:mocks": "node scripts/verify-fixture-mocks.js",
-     "ci": "node scripts/ci-runner.js"
+    "ci": "node scripts/ci-runner.js"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
