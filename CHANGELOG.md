@@ -1,6 +1,6 @@
 # Changelog
 
-# [2.0.0](https://github.com/DevilsDev/rag-pipeline-utils/compare/v1.0.1...v2.0.0) (2025-04-17)
+## [2.0.0] - 2025-04-17 (2025-04-17)
 
 
 ### Bug Fixes

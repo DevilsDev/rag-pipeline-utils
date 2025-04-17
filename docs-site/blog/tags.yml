@@ -17,3 +17,12 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+release:
+  label: Release
+  permalink: /blog/tags/release
+
+changelog:
+  label: Changelog
+  permalink: /blog/tags/changelog
+

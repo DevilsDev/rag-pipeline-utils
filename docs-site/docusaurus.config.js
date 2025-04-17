@@ -18,6 +18,13 @@ export default {
   // ✅ Final favicon and social card for branding
   favicon: 'img/favicon.ico',
   themeConfig: {
+    
+    // algolia: {
+    //   appId: 'YOUR_APP_ID',
+    //   apiKey: 'YOUR_PUBLIC_API_KEY',
+    //   indexName: 'rag_pipeline_utils',
+    //   contextualSearch: true,
+    // },
     image: 'img/social-card.jpg',
     navbar: {
       title: 'RAG Utils',
@@ -48,6 +55,12 @@ export default {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/'
         },
+
+        blog: {
+          showReadingTime: true,
+          editUrl: 'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/blog/',
+        },
+        
         theme: {
           customCss: require.resolve('./src/css/custom.css')
         }

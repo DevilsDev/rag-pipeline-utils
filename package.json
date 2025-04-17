@@ -17,7 +17,12 @@
     "lint-staged": "lint-staged",
     "postinstall": "husky install",
     "verify:mocks": "node scripts/verify-fixture-mocks.js",
-    "ci": "node scripts/ci-runner.js"
+    "build:docs": "npx docusaurus build docs-site",
+    "ci": "node scripts/ci-runner.js",
+    "docs:dev": "npx docusaurus start docs-site",
+    "docs:build": "npx docusaurus build docs-site",
+    "docs:deploy": "npx docusaurus deploy docs-site",
+    "docs:version": "npx docusaurus docs:version"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
@@ -48,6 +53,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@docusaurus/core": "^3.7.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
@@ -57,6 +63,7 @@
     "@types/jest": "^29.5.14",
     "codecov": "^3.8.2",
     "cross-env": "^7.0.3",
+    "docusaurus": "^1.14.7",
     "esbuild": "^0.25.2",
     "eslint": "^8.57.1",
     "husky": "^8.0.3",

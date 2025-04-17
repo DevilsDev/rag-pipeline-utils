@@ -3,3 +3,4 @@
 
 npm run validate-fixtures && npm run lint
 npx lint-staged
+node scripts/validate-changelog-version.js

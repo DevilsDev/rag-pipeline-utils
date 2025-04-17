@@ -1,0 +1,51 @@
+# .github/workflows/publish-release-blog.yml
+# Version: 1.0.0
+# Description: Auto-publish blog post from CHANGELOG or prepared .md after NPM release
+# Author: Ali Kahwaji
+
+name: ✨ Publish Release Blog Post
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-blog-post:
+    name: Generate & Commit Blog Post
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: ✏️ Generate blog post
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          DATE=$(date +'%Y-%m-%d')
+          FILE="docs-site/blog/${DATE}-release-${VERSION}.md"
+
+          echo "---" > $FILE
+          echo "slug: release-${VERSION}" >> $FILE
+          echo "title: ✨ Version ${VERSION} Released" >> $FILE
+          echo "authors: [ali]" >> $FILE
+          echo "tags: [release, changelog]" >> $FILE
+          echo "---" >> $FILE
+          echo >> $FILE
+
+          echo "RAG Pipeline Utils v${VERSION} is now available on NPM!" >> $FILE
+          echo >> $FILE
+          echo "#### Highlights" >> $FILE
+          echo "- Automated blog generation on GitHub releases" >> $FILE
+          echo "- Version bump: ${VERSION}" >> $FILE
+          echo "- Ensure CHANGELOG.md is synced" >> $FILE
+
+      - name: 📋 Commit blog post
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(blog): add release post for ${{ github.ref_name }}"
+          file_pattern: "docs-site/blog/*.md"
