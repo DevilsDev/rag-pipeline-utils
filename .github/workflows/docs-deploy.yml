@@ -1,19 +1,28 @@
-name: Deploy Docusaurus to GitHub Pages
+# .github/workflows/docs-deploy.yml
+# Version: 1.1.0
+# Description: Deploys Docusaurus to GitHub Pages on changes to documentation files
+# Author: Ali Kahwaji
+
+name: 📚 Deploy Docusaurus Docs
 
 on:
   push:
     branches: [main]
     paths:
-                - 'docs-site/**'
-                - 'blog/**'
-                - 'sidebars.js'
-                - 'docusaurus.config.js'
+      - 'docs-site/**'
+      - 'docs/**'
+      - 'blog/**'
+      - 'sidebars.js'
+      - 'docusaurus.config.js'
+      - 'package.json'
 
 jobs:
   deploy:
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
+
     steps:
-      - name: 📥 Checkout
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
       - name: ⚙️ Setup Node.js
@@ -24,13 +33,14 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🛠️ Build static site
-        run: npm run build:docs
+      - name: 🛠️ Build Docusaurus site
+        run: npm run docs:build
 
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs-site/build
-              
-          
+          publish_branch: gh-pages
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com

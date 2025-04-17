@@ -12,6 +12,7 @@ export default {
   tagline: 'Composable RAG pipelines with Node.js',
   url: 'https://devilsdev.github.io',
   baseUrl: '/rag-pipeline-utils/',
+  deploymentBranch: 'gh-pages',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 

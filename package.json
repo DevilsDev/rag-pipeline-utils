@@ -22,7 +22,8 @@
     "docs:dev": "npx docusaurus start docs-site",
     "docs:build": "npx docusaurus build docs-site",
     "docs:deploy": "npx docusaurus deploy docs-site",
-    "docs:version": "npx docusaurus docs:version"
+    "docs:version": "npx docusaurus docs:version",
+    "docs:serve": "npx docusaurus serve docs-site"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
