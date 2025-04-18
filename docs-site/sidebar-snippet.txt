@@ -1,0 +1,5 @@
+{
+  type: 'link',
+  label: '📰 Blog',
+  href: '/blog',
+},

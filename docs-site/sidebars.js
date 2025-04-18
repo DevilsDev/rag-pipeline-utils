@@ -28,6 +28,11 @@ const sidebars = {
       collapsed: true,
       items: ['Evaluation', 'FAQ'],
     },
+    {
+      type: 'link',
+      label: '📰 Blog',
+      href: '/blog',
+    },    
   ],
 };
 

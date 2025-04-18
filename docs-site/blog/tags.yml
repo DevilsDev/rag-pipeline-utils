@@ -1,28 +1,30 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
+# docs-site/blog/tags.yml
+# Description: Central tag definitions for Docusaurus blog filtering and grouping
 
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
-
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
-
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
-
-release:
-  label: Release
+- label: Release
+  slug: release
   permalink: /blog/tags/release
 
-changelog:
-  label: Changelog
+- label: Architecture
+  slug: architecture
+  permalink: /blog/tags/architecture
+
+- label: Prompt Engineering
+  slug: prompt-engineering
+  permalink: /blog/tags/prompt-engineering
+
+- label: Evaluation
+  slug: evaluation
+  permalink: /blog/tags/evaluation
+
+- label: Tutorials
+  slug: tutorials
+  permalink: /blog/tags/tutorials
+
+- label: Changelog
+  slug: changelog
   permalink: /blog/tags/changelog
 
+- label: Design
+  slug: design
+  permalink: /blog/tags/design
