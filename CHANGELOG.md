@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.1.0](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.0.2...v2.1.0) (2025-04-18)
+
+
+### Features
+
+* **docs-site:** add Storybook integration with BlogCard + LQIP image automation ([80965b8](https://github.com/DevilsDev/rag-pipeline-utils/commit/80965b8ef1d26372852ee0f39b56a73f337e0cea))
+
 ## [2.0.1](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.0.0...v2.0.1) (2025-04-17)
 
 
