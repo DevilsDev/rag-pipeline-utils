@@ -4,7 +4,7 @@ This guide covers how to use `@yourorg/rag-pipeline-utils` programmatically via 
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install @yourorg/rag-pipeline-utils
@@ -12,7 +12,7 @@ npm install @yourorg/rag-pipeline-utils
 
 ---
 
-## 🔧 Programmatic API
+## Programmatic API
 
 Import and instantiate a RAG pipeline:
 
@@ -33,14 +33,14 @@ console.log(answer);
 
 ---
 
-## 🔁 Pipeline Methods
+##  Pipeline Methods
 
 - `pipeline.ingest(path: string)` → Load, chunk, embed, and store vectors
 - `pipeline.query(prompt: string)` → Retrieve context, rerank (optional), and call LLM
 
 ---
 
-## 🧩 Plugin Configuration
+##  Plugin Configuration
 
 You can customize the pipeline by registering plugins:
 
@@ -51,7 +51,7 @@ registry.register('retriever', 'opensearch', new MyOpenSearchRetriever());
 
 ---
 
-## ⚙️ Configuration via `.ragrc.json`
+## Configuration via `.ragrc.json`
 
 Create a JSON file at your root:
 

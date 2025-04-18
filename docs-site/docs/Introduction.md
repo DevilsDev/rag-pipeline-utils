@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to **@yourorg/rag-pipeline-utils**, a modular Node.js toolkit for building scalable, pluggable Retrieval-Augmented Generation (RAG) systems.
+Welcome to **@DevilsDev/rag-pipeline-utils**, a modular Node.js toolkit for building scalable, pluggable Retrieval-Augmented Generation (RAG) systems.
 
 ---
 
-## 🚀 What is RAG?
+##  What is RAG?
 
 RAG combines information retrieval with large language models to enhance generation with factual grounding. It typically involves:
 
@@ -19,7 +19,7 @@ This project provides all the composable parts to build your own RAG pipeline.
 
 ---
 
-## 🔧 Why Use This Toolkit?
+##  Why Use This Toolkit?
 
 - **Plugin-based**: Swap in your own loaders, retrievers, LLMs
 - **Streaming-ready**: Async-friendly, token-by-token output
@@ -29,7 +29,7 @@ This project provides all the composable parts to build your own RAG pipeline.
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 Each RAG pipeline includes:
 
@@ -43,13 +43,13 @@ The pipeline can be used via code or via CLI commands.
 
 ---
 
-## ✅ Status
+## Status
 
 This project is:
-- ✅ Production-ready
-- ✅ Covered by unit/integration tests
-- ✅ Compatible with Node.js `>=18`
-- ✅ Published to npm under `@yourorg`
+- Production-ready
+- Covered by unit/integration tests
+- Compatible with Node.js `>=18`
+- Published to npm under `DevilsDev`
 
 ---
 

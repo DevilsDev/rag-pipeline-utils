@@ -4,7 +4,7 @@ This module allows you to evaluate the quality of generated LLM responses in a R
 
 ---
 
-## 🎯 Objective
+## Objective
 
 Quantify how well the pipeline performs on question-answer pairs using:
 - **BLEU**: Precision on matching tokens
@@ -13,7 +13,7 @@ Quantify how well the pipeline performs on question-answer pairs using:
 
 ---
 
-## 📄 Dataset Format
+## Dataset Format
 
 Each entry in your JSON dataset should include:
 
@@ -28,20 +28,20 @@ Saved as: `sample-eval-dataset.json`
 
 ---
 
-## 🚀 CLI Evaluation
+## CLI Evaluation
 
 ```bash
 rag-pipeline evaluate ./fixtures/sample-eval-dataset.json
 ```
 
 Outputs:
-- ✅ Pass/fail per item
-- 📊 BLEU/ROUGE scores
-- 📈 Aggregated metrics
+- Pass/fail per item
+- BLEU/ROUGE scores
+- Aggregated metrics
 
 ---
 
-## 📊 Dashboard Visualization
+## Dashboard Visualization
 
 Use the React dashboard under `/public`:
 

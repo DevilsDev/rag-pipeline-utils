@@ -14,7 +14,7 @@ npx rag-pipeline <command>
 
 ---
 
-## 🔧 Commands
+## Commands
 
 ### `ingest`
 ```bash
@@ -42,7 +42,7 @@ rag-pipeline rerank "What is RAG?" --retriever pinecone
 
 ---
 
-## ⚙️ `.ragrc.json` Config
+## `.ragrc.json` Config
 
 Defaults can be set in a file:
 ```json
@@ -57,7 +57,7 @@ Defaults can be set in a file:
 
 ---
 
-## 🐳 Docker Usage
+##  Docker Usage
 
 ```bash
 docker build -t rag-pipeline .

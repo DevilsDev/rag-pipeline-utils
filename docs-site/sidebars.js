@@ -14,7 +14,7 @@ const sidebars = {
       type: 'category',
       label: 'Overview',
       collapsed: false,
-      items: ['Introduction', 'Architecture', 'Use-Cases'],
+      items: ['Introduction', 'Architecture', 'Tutorials', 'Use-Cases'],
     },
     {
       type: 'category',

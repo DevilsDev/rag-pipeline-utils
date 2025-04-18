@@ -4,7 +4,7 @@ This page outlines the internal architecture of the RAG pipeline utilities, emph
 
 ---
 
-## 🧩 Core Design Philosophy
+## Core Design Philosophy
 
 The architecture adheres to enterprise-grade practices:
 
@@ -16,7 +16,7 @@ The architecture adheres to enterprise-grade practices:
 
 ---
 
-## 🏗️ Layered Components
+## Layered Components
 
 ```
 +-------------------------+
@@ -36,7 +36,7 @@ The architecture adheres to enterprise-grade practices:
 
 ---
 
-## 📦 Core Interfaces
+## Core Interfaces
 
 Each plugin is registered via the `PluginRegistry` and looked up by key.
 
@@ -65,7 +65,7 @@ interface Retriever {
 
 ---
 
-## 🔁 DAG Support
+## DAG Support
 
 The `dag-engine.js` module supports chaining multiple components:
 - Example: Summarize → Retrieve → Rerank → LLM

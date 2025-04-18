@@ -4,7 +4,7 @@ The toolkit is fully modular. You can inject your own loaders, retrievers, embed
 
 ---
 
-## 🔌 Plugin Architecture
+## Plugin Architecture
 
 All plugins follow a strict interface pattern. Each is registered under a namespace using the plugin registry:
 
@@ -21,7 +21,7 @@ You can register plugins for:
 
 ---
 
-## 🧱 Loader Example
+## Loader Example
 
 ```ts
 class MyMarkdownLoader {
@@ -39,7 +39,7 @@ registry.register('loader', 'md', new MyMarkdownLoader());
 
 ---
 
-## ⚡ Runtime Override
+## Runtime Override
 
 CLI and API will resolve plugin names from `pluginRegistry`. Use:
 
