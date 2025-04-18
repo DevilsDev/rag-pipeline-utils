@@ -1,30 +1,31 @@
 # docs-site/blog/tags.yml
 # Description: Central tag definitions for Docusaurus blog filtering and grouping
 
-- label: Release
-  slug: release
+release:
+  label: Release
   permalink: /blog/tags/release
 
-- label: Architecture
-  slug: architecture
+architecture:
+  label: Architecture
   permalink: /blog/tags/architecture
 
-- label: Prompt Engineering
-  slug: prompt-engineering
+prompt-engineering:
+  label: Prompt Engineering
   permalink: /blog/tags/prompt-engineering
 
-- label: Evaluation
-  slug: evaluation
+evaluation:
+  label: Evaluation
   permalink: /blog/tags/evaluation
 
-- label: Tutorials
-  slug: tutorials
+tutorials:
+  label: Tutorials
   permalink: /blog/tags/tutorials
 
-- label: Changelog
-  slug: changelog
+changelog:
+  label: Changelog
   permalink: /blog/tags/changelog
 
-- label: Design
-  slug: design
+design:
+  label: Design
   permalink: /blog/tags/design
+
