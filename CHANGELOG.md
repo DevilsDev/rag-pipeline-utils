@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.0...v2.1.1) (2025-04-18)
+
+
+### Bug Fixes
+
+* **blog:** convert tags.yml to valid object format for Docusaurus v3 ([6a7a9bf](https://github.com/DevilsDev/rag-pipeline-utils/commit/6a7a9bfa3501d30529b21e36fa51ab47d151f7a3))
+* **blog:** convert tags.yml to valid object format for Docusaurus v3 ([fa2fff9](https://github.com/DevilsDev/rag-pipeline-utils/commit/fa2fff969dc242e66d92a80b4aa2ff8e07f9fd0f))
+
 ## [2.1.0] - 2025-04-18 (2025-04-18)
 
 
