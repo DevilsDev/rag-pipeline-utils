@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.1...v2.1.2) (2025-04-21)
+
+
+### Bug Fixes
+
+* resolve build/test errors, update jest configuration, and ensure compatibility with ECMAScript modules ([e6259f9](https://github.com/DevilsDev/rag-pipeline-utils/commit/e6259f924f38da66f9fc9cb7c01a8d6665bf5cbd))
+
 ## [2.1.1](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.0...v2.1.1) (2025-04-18)
 
 
