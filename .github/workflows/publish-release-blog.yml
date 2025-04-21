@@ -1,9 +1,4 @@
-# .github/workflows/publish-release-blog.yml
-# Version: 1.4.0
-# Description: Auto-publish blog post from GitHub Release event with metadata, compare link, and authorship info
-# Author: Ali Kahwaji
-
-name: ✨ Publish Release Blog Post
+name: Publish Release Blog Post
 
 on:
   release:
@@ -11,60 +6,39 @@ on:
 
 jobs:
   publish-blog-post:
-    name: Generate & Commit Blog Post
     runs-on: ubuntu-latest
 
     steps:
       - name: ⬇️ Checkout main branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - name: 🛠 Setup GitHub CLI
-        uses: cli/cli-action@v2
-
-      - name: 🔧 Setup Node.js
+      - name: 🔧 Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
       - name: ✏️ Generate blog post
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          PREV_TAG=$(git tag --sort=creatordate | grep -B1 "$VERSION" | head -n1)
           DATE=$(date +'%Y-%m-%d')
           FILE="docs-site/blog/${DATE}-release-${VERSION}.md"
 
-          COMPARE_URL="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${VERSION}"
-          COMMITS=$(gh api repos/${{ github.repository }}/compare/${PREV_TAG}...${VERSION} --jq '.total_commits')
-          CONTRIBUTORS=$(gh api repos/${{ github.repository }}/compare/${PREV_TAG}...${VERSION} --jq '[.commits[].author.login] | unique | join(", ")')
-
-          echo "---" > "$FILE"
-          echo "slug: release-${VERSION}" >> "$FILE"
-          echo "title: \"✨ Version ${VERSION} Released\"" >> "$FILE"
-          echo "authors: [ali]" >> "$FILE"
-          echo "tags: [release, changelog]" >> "$FILE"
-          echo "---" >> "$FILE"
-          echo >> "$FILE"
-          echo "🎉 **RAG Pipeline Utils \`${VERSION}\` is now available!**" >> "$FILE"
-          echo >> "$FILE"
-          echo "## 🔍 Metadata" >> "$FILE"
-          echo "| Key           | Value            |" >> "$FILE"
-          echo "|----------------|------------------|" >> "$FILE"
-          echo "| Version       | \`${VERSION}\`     |" >> "$FILE"
-          echo "| Previous Tag  | \`${PREV_TAG}\`     |" >> "$FILE"
-          echo "| Commit Count  | ${COMMITS:-N/A}   |" >> "$FILE"
-          echo "| Contributors  | ${CONTRIBUTORS:-N/A} |" >> "$FILE"
-          echo "| GitHub Diff   | [${PREV_TAG}...${VERSION}](${COMPARE_URL}) |" >> "$FILE"
-          echo >> "$FILE"
-          echo "## 🚀 Highlights" >> "$FILE"
-          echo "- Auto-published blog post from GitHub Release" >> "$FILE"
-          echo "- GitHub diff for full history: [${COMPARE_URL}](${COMPARE_URL})" >> "$FILE"
-          echo "- Semantic versioning with changelog tracking" >> "$FILE"
-          echo "- See full [CHANGELOG.md](../../CHANGELOG.md)" >> "$FILE"
+          echo "---" > $FILE
+          echo "slug: release-${VERSION}" >> $FILE
+          echo "title: ✨ Version ${VERSION} Released" >> $FILE
+          echo "authors: [ali]" >> $FILE
+          echo "tags: [release, changelog]" >> $FILE
+          echo "---" >> $FILE
+          echo >> $FILE
+          echo "RAG Pipeline Utils v${VERSION} is now available on NPM!" >> $FILE
+          echo >> $FILE
+          echo "#### Highlights" >> $FILE
+          echo "- 🚀 Auto-published blog from GitHub Release" >> $FILE
+          echo "- 📦 Version bump: ${VERSION}" >> $FILE
+          echo "- 📘 See CHANGELOG.md for full details" >> $FILE
 
       - name: 📋 Commit blog post
         uses: stefanzweifel/git-auto-commit-action@v5
