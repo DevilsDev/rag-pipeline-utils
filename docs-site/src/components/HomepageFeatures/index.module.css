@@ -1,0 +1,57 @@
+/**
+ * Version: 1.4.1
+ * Description: HomepageFeatures styles with consistent spacing, mint theming, and animation polish
+ * Author: Ali Kahwaji
+ */
+
+ .features {
+  padding: 4rem 0;
+  background-color: var(--ifm-background-color);
+  transition: background-color 0.3s ease;
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem 1rem;
+  transition: transform 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-4px);
+}
+
+.featureSvg {
+  height: 100px;
+  width: auto;
+  margin-bottom: 1rem;
+  fill: var(--ifm-color-primary);
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ifm-heading-color);
+  margin-bottom: 0.5rem;
+}
+
+.featureText {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ifm-font-color-base);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .features {
+    padding: 2rem 0;
+  }
+
+  .feature {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .featureSvg {
+    height: 80px;
+  }
+}

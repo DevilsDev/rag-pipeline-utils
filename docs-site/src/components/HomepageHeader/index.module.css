@@ -1,0 +1,77 @@
+/**
+ * Version: 1.4.0
+ * Path: docs-site/src/components/HomepageHeader/index.module.css
+ * Description: Styles for responsive hero banner with mint green CTA
+ * Author: Ali Kahwaji
+ */
+
+ :root {
+  --hero-accent: #3EF4B6;
+}
+
+.heroBanner {
+  padding: 5rem 2rem;
+  background: var(--ifm-background-color);
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ifm-heading-color);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.heroSubtitle {
+  font-size: 1.2rem;
+  color: var(--ifm-font-color-base);
+  max-width: 720px;
+  margin: 0 auto 2rem auto;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.ctaButton {
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  transition: all 0.25s ease-in-out;
+}
+
+.ctaButton.button--primary {
+  background-color: var(--hero-accent);
+  border: none;
+  color: black;
+}
+
+.ctaButton.button--primary:hover {
+  background-color: #33e3a6;
+  box-shadow: 0 0 0 4px rgba(62, 244, 182, 0.3);
+}
+
+.ctaButton.button--outline {
+  border-color: var(--hero-accent);
+  color: var(--hero-accent);
+}
+
+.ctaButton.button--outline:hover {
+  background-color: rgba(62, 244, 182, 0.1);
+  border-color: var(--hero-accent);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+}

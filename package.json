@@ -6,7 +6,6 @@
   "bin": {
     "rag-pipeline": "./bin/cli.js"
   },
-  "type": "module",
   "scripts": {
     "validate-fixtures": "node ./scripts/verify-fixtures.js",
     "setup": "node ./scripts/setup.js",
@@ -20,12 +19,13 @@
     "build:docs": "npx docusaurus build docs-site",
     "ci": "node scripts/ci-runner.js",
     "docs:dev": "npx docusaurus start docs-site",
-    "docs:build": "npx docusaurus build docs-site",
-    "docs:deploy": "npx docusaurus deploy docs-site",
     "docs:version": "npx docusaurus docs:version",
-    "docs:serve": "npx docusaurus serve docs-site",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "watch:lqip": "node docs-site/scripts/watch-images.js",
+    "docs:clear": "docusaurus clear --site-dir docs-site",
+    "docs:start": "docusaurus start docs-site",
+    "docs:build": "docusaurus build docs-site",
+    "docs:serve": "docusaurus serve docs-site",
+    "docs:deploy": "docusaurus deploy docs-site"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
@@ -97,6 +97,7 @@
     "csv-parse": "^5.6.0",
     "dotenv": "^16.5.0",
     "fast-glob": "^3.3.3",
+    "framer-motion": "^12.7.4",
     "jsdom": "^26.1.0",
     "openai": "^4.93.0",
     "pino": "^9.6.0",

@@ -1,11 +1,12 @@
-# .github/workflows/docs-deploy.yml
-# Version: 1.1.0
-# Description: Deploys Docusaurus to GitHub Pages on changes to documentation files
+# Version: 2.1.0
+# Description: Validates lint, test, and code coverage before deploy
 # Author: Ali Kahwaji
 
-name: 📚 Deploy Docusaurus Docs
+name: 🧪 Docs CI
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -17,15 +18,19 @@ on:
       - 'package.json'
 
 jobs:
-  deploy:
-    name: Deploy to GitHub Pages
+  validate:
+    name: Validate Build & Test
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: docs-site
+
     steps:
-      - name: 📥 Checkout repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -33,14 +38,19 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🛠️ Build Docusaurus site
+      - name: 🧹 Lint
+        run: npm run lint
+
+      - name: 🛠️ Build
         run: npm run docs:build
 
-      - name: 🚀 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: ✅ Test
+        run: npm test
+
+      - name: 📊 Upload coverage
+        uses: codecov/codecov-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs-site/build
-          publish_branch: gh-pages
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          flags: docusaurus
+          fail_ci_if_error: true

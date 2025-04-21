@@ -1,7 +1,7 @@
 /**
- * Version: 0.3.0
+ * Version: 0.4.0
  * Path: /docs-site/docusaurus.config.js
- * Description: Final production config with cleaned branding and image setup
+ * Description: Tailwind integration, sticky navbar, and dark/light toggle support
  * Author: Ali Kahwaji
  */
 
@@ -9,36 +9,50 @@
 
 export default {
   title: 'RAG Pipeline Utils',
-  tagline: 'Composable RAG pipelines with Node.js',
+  tagline: 'Composable pipelines for LLMs',
   url: 'https://devilsdev.github.io',
   baseUrl: '/rag-pipeline-utils/',
   deploymentBranch: 'gh-pages',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
-  // ✅ Final favicon and social card for branding
   favicon: 'img/favicon.ico',
+
   themeConfig: {
-    
-    // algolia: {
-    //   appId: 'YOUR_APP_ID',
-    //   apiKey: 'YOUR_PUBLIC_API_KEY',
-    //   indexName: 'rag_pipeline_utils',
-    //   contextualSearch: true,
-    // },
+    metadata: [
+      { name: 'keywords', content: 'rag, llm, langchain, pipeline, openai, nodejs' },
+      { name: 'author', content: 'Ali Kahwaji' },
+      { name: 'theme-color', content: '#3EF4B6' }
+    ],
+    // ✅ OpenGraph / Twitter image
     image: 'img/social-card.jpg',
+
+    // ✅ Color mode toggle support
+    colorMode: {
+      defaultMode: 'light',
+      disableSwitch: false,
+      respectPrefersColorScheme: true
+    },
+
+    // ✅ Sticky header
     navbar: {
       title: 'RAG Utils',
+      hideOnScroll: false,
       logo: {
-        alt: '', // ✅ Clean alt to avoid raw rendering
+        alt: '',
         src: '/img/logo.svg'
       },
       items: [
         { to: '/docs/Introduction', label: 'Docs', position: 'left' },
         { to: '/blog', label: 'Blog', position: 'left' },
-        { href: 'https://github.com/DevilsDev/rag-pipeline-utils', label: 'GitHub', position: 'right' },
+        {
+          href: 'https://github.com/DevilsDev/rag-pipeline-utils',
+          label: 'GitHub',
+          position: 'right'
+        }
       ]
     },
+
     footer: {
       style: 'dark',
       copyright: `© ${new Date().getFullYear()} Ali Kahwaji`
@@ -54,14 +68,17 @@ export default {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/'
+          editUrl:
+            'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/'
         },
-
         blog: {
           showReadingTime: true,
-          editUrl: 'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/blog/',
+          blogSidebarTitle: 'All Posts',
+          blogSidebarCount: 'ALL',
+          onUntruncatedBlogPosts: 'ignore',
+          editUrl:
+            'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/blog/'
         },
-        
         theme: {
           customCss: require.resolve('./src/css/custom.css')
         }

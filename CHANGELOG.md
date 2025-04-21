@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.1] - 2025-04-21
+
+### Added
+- 🎨 Global theme refinement for mint green across light/dark modes
+- 🌀 Scroll-based Framer Motion animations on homepage sections
+- 📝 GitHub Release → Blog post CI auto-commit logic
+- 🔗 Compare link support in release markdown
+
+### Fixed
+- 🧭 `Get Started` button now links to correct `/docs/introduction`
+- 💡 Light theme was rendering with incorrect background after build
+- 🚫 Prevented SVG crash from invalid optimize block on logo
+
+---
+
+
 ## [2.1.0] - 2025-04-18 (2025-04-18)
 
 

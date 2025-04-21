@@ -1,8 +1,7 @@
 {
-  "name": "docs-site",
+  "name": "rag-docs-test",
   "version": "0.0.0",
   "private": true,
-   "type": "module",
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
@@ -12,21 +11,18 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
-    "watch:images": "node scripts/watch-images.js"
+    "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
+    "@docusaurus/core": "3.7.0",
     "@docusaurus/preset-classic": "3.7.0",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
-    "plaiceholder": "^3.0.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "sharp": "^0.34.1"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@docusaurus/core": "^3.7.0",
     "@docusaurus/module-type-aliases": "3.7.0",
     "@docusaurus/types": "3.7.0"
   },

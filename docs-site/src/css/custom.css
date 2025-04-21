@@ -1,81 +1,104 @@
-/*
- * Version: 0.2.0
- * Path: /docs-site/src/css/custom.css
- * Description: Customized global styles for RAG Pipeline Utils Docusaurus site
+/**
+ * Version: 1.4.2
+ * Path: docs-site/src/css/custom.css
+ * Description: Robust theme override for SSR support in Docusaurus static build with correct light/dark contrast.
  * Author: Ali Kahwaji
  */
 
-/* Infima overrides */
-:root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.05);
-
-  /* Custom enhancements */
-  --ifm-font-family-base: 'Segoe UI', Roboto, sans-serif;
-  --ifm-spacing-horizontal: 1.2rem;
-  --ifm-container-width: 90%;
-}
-
-[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-}
-
-/* Hero section styling */
-main.container {
-  padding-top: 3rem;
-}
-
-.hero__subtitle {
-  font-size: 1.25rem;
-  color: #444;
-  margin-bottom: 2rem;
-}
-
-[data-theme='dark'] .hero__subtitle {
-  color: #ccc;
-}
-
-/* Button enhancements */
-.button--info {
-  background-color: #e0f2ff !important;
-  color: #0366d6 !important;
-  border: 1px solid #b6e0fe !important;
-  font-weight: 500;
-}
-
-.button--info:hover {
-  background-color: #d2ecfc !important;
-  border-color: #a4d7fa !important;
-}
-
-/* Footer padding */
-.footer {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-
-/* Improve readability of inline code */
-code {
-  background-color: rgba(27,31,35,.05);
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-size: 90%;
-}
-
-[data-theme='dark'] code {
-  background-color: rgba(255,255,255,0.08);
-}
+/* ----------------------
+ * Explicit Light Theme Scope (SSR Safe)
+ * ---------------------- */
+ html[data-theme='light'],
+ :root {
+   --ifm-color-primary: #3EF4B6;
+   --ifm-color-primary-dark: #33e3a6;
+   --ifm-color-primary-darker: #2fd29b;
+   --ifm-color-primary-light: #55f7c0;
+   --ifm-color-primary-lighter: #69f9ca;
+   --ifm-color-primary-lightest: #86fbd6;
+ 
+   --ifm-background-color: #ffffff;
+   --ifm-navbar-background-color: #f8f8f8;
+   --ifm-footer-background-color: #f4f4f4;
+ 
+   --ifm-font-color-base: #1a1a1a;
+   --ifm-heading-color: #121212;
+   --ifm-link-color: var(--ifm-color-primary);
+ }
+ 
+ /* ----------------------
+  * Dark Theme Overrides
+  * ---------------------- */
+ html[data-theme='dark'] {
+   --ifm-background-color: #0d0d0d;
+   --ifm-navbar-background-color: #151515;
+   --ifm-footer-background-color: #121212;
+ 
+   --ifm-font-color-base: #f2f2f2;
+   --ifm-heading-color: #ffffff;
+   --ifm-link-color: var(--ifm-color-primary);
+ }
+ 
+ /* ------------------
+  * Typography
+  * ------------------ */
+ body {
+   font-family: 'Inter', system-ui, sans-serif;
+   line-height: 1.6;
+   font-size: 16px;
+   background-color: var(--ifm-background-color);
+   color: var(--ifm-font-color-base);
+   transition: background-color 0.3s ease, color 0.3s ease;
+ }
+ 
+ /* ------------------
+  * Buttons
+  * ------------------ */
+ .button--primary {
+   background-color: var(--ifm-color-primary);
+   color: black;
+   border: none;
+   font-weight: 500;
+   transition: background-color 0.2s ease;
+ }
+ .button--primary:hover {
+   background-color: var(--ifm-color-primary-dark);
+   box-shadow: 0 0 0 3px rgba(62, 244, 182, 0.25);
+ }
+ .button--outline {
+   border: 2px solid var(--ifm-color-primary);
+   color: var(--ifm-color-primary);
+ }
+ .button--outline:hover {
+   background-color: rgba(62, 244, 182, 0.05);
+ }
+ 
+ /* ------------------
+  * Code Blocks
+  * ------------------ */
+ pre {
+   background-color: #f5f5f5;
+   border-radius: 8px;
+   padding: 1rem;
+   font-size: 0.95rem;
+   overflow-x: auto;
+ }
+ html[data-theme='dark'] pre {
+   background-color: #1e1e1e;
+ }
+ 
+ /* ------------------
+  * Scrollbars
+  * ------------------ */
+ ::-webkit-scrollbar {
+   width: 8px;
+   height: 8px;
+ }
+ ::-webkit-scrollbar-thumb {
+   background-color: rgba(62, 244, 182, 0.45);
+   border-radius: 4px;
+ }
+ ::-webkit-scrollbar-track {
+   background: transparent;
+ }
+ 

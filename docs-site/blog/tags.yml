@@ -29,3 +29,32 @@ design:
   label: Design
   permalink: /blog/tags/design
 
+rag:
+  label: RAG
+  permalink: /blog/tags/rag
+
+developer-tools:
+  label: Developer Tools
+  permalink: /blog/tags/developer-tools
+
+modular:
+  label: Modular
+  permalink: /blog/tags/modular
+
+image:
+  label: Image
+  permalink: /blog/tags/image
+
+facebook:
+  label: Facebook
+  permalink: /blog/tags/facebook
+
+hello:
+  label: Hello
+  permalink: /blog/tags/hello
+
+docusaurus:
+  label: Docusaurus
+  permalink: /blog/tags/docusaurus
+
+

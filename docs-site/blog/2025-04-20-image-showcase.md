@@ -1,23 +1,14 @@
 ---
 slug: image-showcase
-title: Blog Image Component Showcase
+title: Image Showcase with LQIP
 authors: [ali]
-tags: [tutorials, design, image]
-description: Demonstrating LQIP-powered blog images using the BlogImage component.
+tags: [image, tutorials]
 ---
 
-import BlogImage from '@site/src/components/BlogImage';
+Demonstration of how low-quality image placeholders (LQIP) improve blog UX and optimize web performance.
 
-This post demonstrates the reusable **`<BlogImage />`** component, which displays optimized blurred placeholders (LQIPs) for faster rendering.
+<!-- truncate -->
 
-## Example
+## Details
 
-<BlogImage srcKey="img_hero" alt="Hero demonstration" />
-
----
-
-## Benefits Recap
-
-- Blurred placeholder loading for faster perception
-- Fallback to default cache when missing
-- Ready for automation via `watch-images.js`
+This post showcases `BlogImage` and `BlogCard` with LQIP integration via Plaiceholder and SSR-safe fallbacks.

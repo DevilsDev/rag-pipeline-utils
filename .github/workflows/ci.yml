@@ -1,17 +1,15 @@
 # .github/workflows/ci.yml
-# Version: 0.1.0
-# Description: GitHub Actions CI pipeline for lint, test, and coverage
+# Version: 1.0.0
+# Description: Clean CI pipeline with lint, test, fixtures, coverage, and release
 # Author: Ali Kahwaji
 
 name: CI & Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-test-release:
@@ -38,27 +36,18 @@ jobs:
       - name: ✅ Run tests with coverage
         run: npm test
 
-      - name: 🚀 Semantic Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # 👈 critical for npm publi
-        run: npx semantic-release
-
-      - name: 🧪 Run Tests with Coverage
-        run: npm test
-
-      - name: Validate Fixtures
+      - name: 🧪 Validate Fixtures
         run: npm run validate-fixtures
-      
-      - name: Lint code
-        run: npm run lint
-      
-      
+
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: DevilsDev/rag-pipeline-utils
 
-      
+      - name: 🚀 Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
