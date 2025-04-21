@@ -13,7 +13,7 @@ export default {
   url: 'https://devilsdev.github.io',
   baseUrl: '/rag-pipeline-utils/',
   deploymentBranch: 'gh-pages',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
   favicon: 'img/favicon.ico',

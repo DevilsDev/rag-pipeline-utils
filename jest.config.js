@@ -8,9 +8,12 @@
 // jest.config.js
 
 export default {
+  transform: {
+    '^.+\\.[t|j]sx?$': 'babel-jest', // Existing transform for JS files
+    '\\.(png|jpg|jpeg|gif|eot|ttf|woff|woff2)$': 'jest-transform-stub', // this for static files
+  },
   verbose: true,
   testEnvironment: 'node',
-  transform: {},
   collectCoverage: true,
   coverageDirectory: 'coverage',
   moduleFileExtensions: ['js', 'json'],
