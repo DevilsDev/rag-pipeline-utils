@@ -1,0 +1,6 @@
+<!-- docs-site/static/img/logo.svg -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="32" cy="32" r="30" stroke="#3EF4B6" stroke-width="4"/>
+  <path d="M22 32C22 26.48 26.48 22 32 22C37.52 22 42 26.48 42 32C42 37.52 37.52 42 32 42C26.48 42 22 37.52 22 32Z" fill="#3EF4B6"/>
+  <line x1="44" y1="44" x2="58" y2="58" stroke="#3EF4B6" stroke-width="4" stroke-linecap="round"/>
+</svg>
