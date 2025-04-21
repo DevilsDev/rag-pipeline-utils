@@ -1,35 +1,50 @@
-name: Deploy Documentation to GitHub Pages
+# .github/workflows/docs-deploy.yml
+# Version: 1.0.0
+# Description: Deploys Docusaurus docs site to GitHub Pages
+# Author: Ali Kahwaji
+
+name: 📚 Deploy Docusaurus Docs
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - 'docs/**'
+      - 'blog/**'
+      - 'sidebars.js'
+      - 'docusaurus.config.js'
+      - 'package.json'
+
+permissions:
+  contents: write  # Required for GitHub Pages deployment
 
 jobs:
   deploy:
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: docs-site
 
     steps:
-      - name: ⬇️ Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build docs
+      - name: Build docs
         run: npm run docs:build
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs-site/build
+          publish_dir: docs-site/build
+          publish_branch: gh-pages
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com

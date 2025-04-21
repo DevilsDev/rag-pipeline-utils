@@ -1,3 +1,8 @@
+# .github/workflows/docs-ci.yml
+# Version: 1.0.0
+# Description: CI pipeline for linting, testing, and building docs
+# Author: Ali Kahwaji
+
 name: Docs CI
 
 on:
@@ -7,31 +12,38 @@ on:
     branches: [main]
 
 jobs:
-  build-docs:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: docs-site
 
     steps:
-      - name: ⬇️ Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build docs
+      - name: Lint codebase
+        run: npm run lint
+
+      - name: Validate docs build
         run: npm run docs:build
 
-      - name: 🚀 Deploy to GitHub Pages (or similar)
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Run tests (optional)
+        run: npm test
+        if: ${{ always() }}
+
+      - name: Upload build artifacts (optional)
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs-site/build
+          name: docusaurus-build
+          path: docs-site/build
