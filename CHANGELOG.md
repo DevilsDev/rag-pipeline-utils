@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.2...v2.1.3) (2025-04-21)
+
+
+### Bug Fixes
+
+* Refactor CI workflows for better separation of concerns ([ef2954b](https://github.com/DevilsDev/rag-pipeline-utils/commit/ef2954b9161a73367cafa04d29f2e56164e4b1c0))
+
 ## [2.1.2](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.1...v2.1.2) (2025-04-21)
 
 
