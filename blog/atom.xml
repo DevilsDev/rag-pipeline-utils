@@ -14,10 +14,30 @@
         <updated>2025-04-21T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[RAG Pipeline Utils vv2.1.3 is now available on NPM!]]></summary>
         <content type="html"><![CDATA[<p>RAG Pipeline Utils vv2.1.3 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_Hn46" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
 <ul>
 <li>🚀 Auto-published blog from GitHub Release</li>
 <li>📦 Version bump: v2.1.3</li>
+<li>📘 See CHANGELOG.md for full details</li>
+</ul>]]></content>
+        <author>
+            <name>Ali Kahwaji</name>
+            <uri>https://github.com/alikahwaji</uri>
+        </author>
+        <category label="Release" term="Release"/>
+        <category label="Changelog" term="Changelog"/>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[✨ Version v2.1.4 Released]]></title>
+        <id>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4</id>
+        <link href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4"/>
+        <updated>2025-04-21T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[RAG Pipeline Utils vv2.1.4 is now available on NPM!]]></summary>
+        <content type="html"><![CDATA[<p>RAG Pipeline Utils vv2.1.4 is now available on NPM!</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<ul>
+<li>🚀 Auto-published blog from GitHub Release</li>
+<li>📦 Version bump: v2.1.4</li>
 <li>📘 See CHANGELOG.md for full details</li>
 </ul>]]></content>
         <author>
@@ -34,7 +54,7 @@
         <updated>2025-04-20T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Demonstration of how low-quality image placeholders (LQIP) improve blog UX and optimize web performance.]]></summary>
         <content type="html"><![CDATA[<p>Demonstration of how low-quality image placeholders (LQIP) improve blog UX and optimize web performance.</p>
-<h2 class="anchor anchorWithStickyNavbar_Hn46" id="details">Details<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/image-showcase#details" class="hash-link" aria-label="Direct link to Details" title="Direct link to Details">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="details">Details<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/image-showcase#details" class="hash-link" aria-label="Direct link to Details" title="Direct link to Details">​</a></h2>
 <p>This post showcases <code>BlogImage</code> and <code>BlogCard</code> with LQIP integration via Plaiceholder and SSR-safe fallbacks.</p>]]></content>
         <author>
             <name>Ali Kahwaji</name>
@@ -54,12 +74,12 @@
 <strong>Contributors:</strong> <code>3</code><br>
 <strong>Commits:</strong> <code>17</code></p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_Hn46" id="-whats-new">📦 What's New<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-whats-new" class="hash-link" aria-label="Direct link to 📦 What's New" title="Direct link to 📦 What's New">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-whats-new">📦 What's New<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-whats-new" class="hash-link" aria-label="Direct link to 📦 What's New" title="Direct link to 📦 What's New">​</a></h2>
 <ul>
 <li>Placeholder for changelog details or highlights.</li>
 </ul>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_Hn46" id="-changelog">📘 Changelog<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-changelog" class="hash-link" aria-label="Direct link to 📘 Changelog" title="Direct link to 📘 Changelog">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changelog">📘 Changelog<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-changelog" class="hash-link" aria-label="Direct link to 📘 Changelog" title="Direct link to 📘 Changelog">​</a></h2>
 <p>See full details in <a href="https://devilsdev.github.io/rag-pipeline-utils/CHANGELOG.md">CHANGELOG.md</a></p>]]></content>
     </entry>
     <entry>
@@ -69,7 +89,7 @@
         <updated>2025-04-19T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Design better prompts for your LLM-driven RAG workflows using templating, in-context examples, and task-specific embeddings.]]></summary>
         <content type="html"><![CDATA[<p>Design better prompts for your LLM-driven RAG workflows using templating, in-context examples, and task-specific embeddings.</p>
-<h2 class="anchor anchorWithStickyNavbar_Hn46" id="tips">Tips<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/prompt-engineering-best-practices#tips" class="hash-link" aria-label="Direct link to Tips" title="Direct link to Tips">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="tips">Tips<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/prompt-engineering-best-practices#tips" class="hash-link" aria-label="Direct link to Tips" title="Direct link to Tips">​</a></h2>
 <ul>
 <li>Use instructions + context</li>
 <li>Dynamically inject retrieved passages</li>
@@ -89,7 +109,7 @@
         <updated>2025-04-18T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Explore the modular RAG pipeline architecture. Components like loaders, embedders, retrievers, and generators are pluggable and testable.]]></summary>
         <content type="html"><![CDATA[<p>Explore the modular RAG pipeline architecture. Components like loaders, embedders, retrievers, and generators are pluggable and testable.</p>
-<h2 class="anchor anchorWithStickyNavbar_Hn46" id="key-concepts">Key Concepts<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/architecture-overview#key-concepts" class="hash-link" aria-label="Direct link to Key Concepts" title="Direct link to Key Concepts">​</a></h2>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="key-concepts">Key Concepts<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/architecture-overview#key-concepts" class="hash-link" aria-label="Direct link to Key Concepts" title="Direct link to Key Concepts">​</a></h2>
 <ul>
 <li>Plugin registry for clean composition</li>
 <li>Evaluation layer for metrics like BLEU and recall</li>
@@ -109,7 +129,7 @@
         <updated>2025-04-18T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[RAG Pipeline Utils vv2.1.1 is now available on NPM!]]></summary>
         <content type="html"><![CDATA[<p>RAG Pipeline Utils vv2.1.1 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_Hn46" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.1#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.1#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
 <ul>
 <li>🚀 Auto-published blog from GitHub release</li>
 <li>📦 Version bump: v2.1.1</li>
