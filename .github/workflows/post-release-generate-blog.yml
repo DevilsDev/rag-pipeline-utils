@@ -1,38 +1,57 @@
 # .github/workflows/post-release-generate-blog.yml
-# Version: 2.1.0
-# Description: Generates changelog + blog entry on release or tag push
+# Version: 2.2.0
+# Description: Auto-generate changelog + blog post from GitHub release or tag
 # Author: Ali Kahwaji
 
-name: 📝 Auto Generate Blog Post
+name: Auto Generate Blog + Changelog
 
 on:
   release:
-    types: [published]
+    types: [published]     # Trigger when a GitHub release is published
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*'            # Also support tag-only releases
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
-  generate:
+  generate-blog:
+    name: 📘 Generate Blog Post + Changelog
     runs-on: ubuntu-latest
+
     steps:
-      - name: ↓ Checkout repo
+      - name: 📅 Checkout code
         uses: actions/checkout@v4
-
-      - name: ⚖ Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          fetch-depth: 0     # Needed for git tag diffing
 
-      - name: 📦 Install deps
+      - name: 🛠 Setup Git identity
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "docs@autobot.local"
+
+      - name: 📆 Get current version from tag
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: 📓 Install dependencies
         run: npm ci
 
-      - name: 📝 Generate Blog & Changelog
-        run: |
-          NEW_TAG=${GITHUB_REF#refs/tags/}
-          node scripts/generate-release-note.js $NEW_TAG
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🔄 Generate blog + changelog
+        run: node scripts/generate-release-note.js ${{ steps.version.outputs.tag }}
+
+      - name: 🔒 Commit & Push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(release): blog + changelog for ${{ steps.version.outputs.tag }}"
+          file_pattern: "CHANGELOG.md docs-site/blog/*.md"
+
+      - name: 🌟 Set success output for badge
+        run: echo "blog_generated=true" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      blog_generated: true
