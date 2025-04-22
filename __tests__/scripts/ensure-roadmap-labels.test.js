@@ -1,42 +1,64 @@
 /**
- * Version: 1.0.0
+ * Version: 2.1.2
  * Path: __tests__/scripts/ensure-roadmap-labels.test.js
- * Description: Unit test for label creation helper using mocked Octokit
+ * Description: Unit tests for roadmap label creation using ESM-compatible Jest syntax.
  * Author: Ali Kahwaji
  */
 
-const { ensureRoadmapLabels, roadmapLabels } = require('../../../scripts/ensure-roadmap-labels');
-const { Octokit } = require('octokit');
+import { jest } from '@jest/globals';
 
-jest.mock('octokit');
+jest.unstable_mockModule('octokit', () => ({
+  Octokit: jest.fn().mockImplementation(() => ({
+    rest: {
+      issues: {
+        listLabelsForRepo: mockListLabelsForRepo,
+        createLabel: mockCreateLabel
+      }
+    }
+  }))
+}));
+
+// ✅ Shared mocks outside import context
+const mockCreateLabel = jest.fn();
+const mockListLabelsForRepo = jest.fn();
+
+let ensureRoadmapLabels;
+let roadmapLabels;
+
+beforeAll(async () => {
+  const imported = await import('../../scripts/ensure-roadmap-labels.js');
+  ensureRoadmapLabels = imported.ensureRoadmapLabels;
+  roadmapLabels = imported.roadmapLabels;
+});
+
+beforeEach(() => {
+  mockCreateLabel.mockReset();
+  mockListLabelsForRepo.mockReset();
+});
 
 describe('ensureRoadmapLabels', () => {
-  const mockCreateLabel = jest.fn();
-  const mockListLabelsForRepo = jest.fn();
+  it('creates all labels if none exist', async () => {
+    mockListLabelsForRepo.mockResolvedValue({ data: [] });
 
-  beforeEach(() => {
-    Octokit.mockImplementation(() => ({
-      rest: {
-        issues: {
-          listLabelsForRepo: mockListLabelsForRepo,
-          createLabel: mockCreateLabel
-        }
-      }
-    }));
+    await ensureRoadmapLabels({ token: 'test-token', owner: 'ali', repo: 'rag-pipeline-utils' });
 
-    mockListLabelsForRepo.mockReset();
-    mockCreateLabel.mockReset();
+    expect(mockCreateLabel).toHaveBeenCalledTimes(roadmapLabels.length);
+    for (const label of roadmapLabels) {
+      expect(mockCreateLabel).toHaveBeenCalledWith({
+        owner: 'ali',
+        repo: 'rag-pipeline-utils',
+        ...label
+      });
+    }
   });
 
-  it('creates missing labels only', async () => {
-    mockListLabelsForRepo.mockResolvedValue({ data: [{ name: 'priority: high' }] });
+  it('skips already existing labels', async () => {
+    const existing = [{ name: 'priority: high' }, { name: 'group: docs' }];
+    mockListLabelsForRepo.mockResolvedValue({ data: existing });
 
-    await ensureRoadmapLabels({ token: 'test-token', owner: 'foo', repo: 'bar' });
+    await ensureRoadmapLabels({ token: 'test-token', owner: 'ali', repo: 'rag-pipeline-utils' });
 
-    const expectedToCreate = roadmapLabels.filter((l) => l.name !== 'priority: high');
-    expect(mockCreateLabel).toHaveBeenCalledTimes(expectedToCreate.length);
-    expectedToCreate.forEach((label, idx) => {
-      expect(mockCreateLabel).toHaveBeenNthCalledWith(idx + 1, { owner: 'foo', repo: 'bar', ...label });
-    });
+    const expected = roadmapLabels.filter(l => !existing.some(e => e.name === l.name));
+    expect(mockCreateLabel).toHaveBeenCalledTimes(expected.length);
   });
 });

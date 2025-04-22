@@ -163,6 +163,10 @@ For full validation of roadmap sync, changelog automation, CI/CD, and blog gener
 
 ➡️ [View Manual Test Checklist](scripts/manual-test-checklist.md)
 
+## Manual CI Rollout
+
+git commit --allow-empty -m "ci(test): trigger all CI workflows"
+git push origin main
 
 
 ## License

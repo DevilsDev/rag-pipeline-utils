@@ -7,7 +7,7 @@ on:
       - '.github/roadmap-labels.yml'
       - '.github/PROJECT_ROADMAP.md'
       - 'scripts/create-roadmap-issues.js'
-      - 'scripts/sync-roadmap-labels.js'
+      - 'scripts/ensure-roadmap-labels.js'
 
   workflow_dispatch:
 
@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: 🔖 Sync GitHub labels from roadmap-labels.yml
-        run: node scripts/sync-roadmap-labels.js
+        run: node scripts/ensure-roadmap-labels.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

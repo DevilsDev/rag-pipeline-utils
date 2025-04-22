@@ -11,7 +11,10 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "lint": "echo 'Lint skipped for docs-site'",
+    "test": "echo 'No tests in docs-site. Run from root.'",
+    "docs:build": "npm run --workspace ../ docs:build"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",

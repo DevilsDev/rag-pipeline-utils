@@ -14,6 +14,8 @@ on:
       - 'scripts/create-roadmap-issues.js'
       - 'scripts/label-roadmap-issues.js'
       - 'scripts/close-done-roadmap-issues.js'
+      - 'scripts/sync-roadmap-labels.js'
+
 
 permissions:
   contents: write
@@ -55,3 +57,9 @@ jobs:
         run: node scripts/close-done-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🔁 Sync roadmap labels + issues
+        run: node scripts/sync-roadmap-labels.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
