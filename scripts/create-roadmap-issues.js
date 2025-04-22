@@ -1,77 +1,47 @@
+// scripts/create-roadmap-issues.js
+
 /**
- * Version: 1.4.0
- * Path: scripts/create-roadmap-issues.js
- * Description: Parses roadmap markdown, creates GitHub Issues, links labels, and closes Done items
+ * Version: 2.0.0
+ * Description: Parses PROJECT_ROADMAP.md and syncs GitHub issues
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Octokit } = require('octokit');
-const yaml = require('js-yaml');
-const { ensureRoadmapLabels } = require('./ensure-roadmap-labels');
+import fs from 'fs/promises';
+import path from 'path';
+import { Octokit } from 'octokit';
+import yaml from 'js-yaml';
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO = process.env.GITHUB_REPOSITORY || 'DevilsDev/rag-pipeline-utils';
-const [owner, repo] = REPO.split('/');
+const roadmapPath = new URL('../.github/PROJECT_ROADMAP.md', import.meta.url);
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+export async function createRoadmapIssues({ token, owner, repo }) {
+  const octokit = new Octokit({ auth: token });
+  const content = await fs.readFile(roadmapPath, 'utf-8');
 
-async function createIssuesFromRoadmap() {
-  const filePath = path.join('.github', 'PROJECT_ROADMAP.md');
-  const contents = fs.readFileSync(filePath, 'utf-8');
+  const blocks = content.split(/^##\s+/gm).slice(1);
 
-  const blocks = contents.split(/^---$/gm).filter(Boolean).map((s) => s.trim());
-  const frontmatters = blocks.map((block) => yaml.load(block));
+  for (const block of blocks) {
+    const [header, ...bodyLines] = block.trim().split('\n');
+    const title = header.trim();
+    const metadata = {};
+    const description = [];
 
-  for (const meta of frontmatters) {
-    if (!meta || !meta.title) continue;
-
-    const labels = [];
-    if (meta.priority) labels.push(`priority: ${meta.priority.toLowerCase()}`);
-    if (meta.group) labels.push(`group: ${meta.group}`);
-
-    const existing = await octokit.rest.issues.listForRepo({ owner, repo, state: 'open' });
-    const found = existing.data.find((issue) => issue.title === meta.title);
-
-    if (meta.status === '\u2705 Done' && found) {
-      await octokit.rest.issues.update({ owner, repo, issue_number: found.number, state: 'closed' });
-      console.log(`Closed Done issue: ${meta.title}`);
-      continue;
+    for (const line of bodyLines) {
+      if (line.includes(':') && line.includes('**')) {
+        const [key, val] = line.split(':');
+        metadata[key.trim()] = val.replace(/\*\*/g, '').trim();
+      } else {
+        description.push(line);
+      }
     }
 
-    if (!found) {
-      await octokit.rest.issues.create({
-        owner,
-        repo,
-        title: meta.title,
-        body: meta.description || '_No details provided._',
-        labels,
-        milestone: meta.milestone || undefined
-      });
-      console.log(`Created new roadmap issue: ${meta.title}`);
-    } else {
-      await octokit.rest.issues.update({
-        owner,
-        repo,
-        issue_number: found.number,
-        labels
-      });
-      console.log(`Updated existing issue: ${meta.title}`);
-    }
-  }
-}
+    const issue = await octokit.rest.issues.create({
+      owner,
+      repo,
+      title,
+      body: description.join('\n'),
+      labels: [metadata.Priority, metadata.Group].filter(Boolean),
+    });
 
-async function main() {
-  try {
-    await ensureRoadmapLabels({ token: GITHUB_TOKEN, owner, repo });
-    await createIssuesFromRoadmap();
-  } catch (err) {
-    console.error('Sync failed:', err);
-    process.exit(1);
+    console.log(`✅ Created: ${issue.data.title}`);
   }
-}
-
-if (require.main === module) {
-  main();
 }
