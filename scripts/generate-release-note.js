@@ -13,47 +13,42 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const [, , versionArg] = process.argv;
+const [, , newVersionArg, previousVersionArg] = process.argv;
 
-if (!versionArg) {
-  console.error('❌ Usage: node scripts/generate-release-note.js <version>');
+if (!newVersionArg) {
+  console.error('❌ Usage: node scripts/generate-release-note.js <new-tag> <previous-tag?>');
   process.exit(1);
 }
 
-const currentVersion = versionArg.startsWith('v') ? versionArg : `v${versionArg}`;
-const dryRun = process.env.DRY_RUN === 'true'; // Optional toggle via env
+const newVersion = newVersionArg.startsWith('v') ? newVersionArg : `v${newVersionArg}`;
 
-function getPreviousTag() {
+function resolvePreviousTag() {
   try {
-    return execSync('git describe --abbrev=0 --tags HEAD^', { encoding: 'utf-8' }).trim();
+    const tags = execSync('git tag --sort=-creatordate', { encoding: 'utf-8' })
+      .split('\n')
+      .filter(Boolean);
+    const index = tags.indexOf(newVersion);
+    return tags[index + 1] || tags[1] || null;
   } catch {
     return null;
   }
 }
 
-const previousTag = getPreviousTag();
-if (!previousTag) {
-  console.error('❌ Could not determine previous version tag');
+const prevVersion = previousVersionArg || resolvePreviousTag();
+if (!prevVersion) {
+  console.error('❌ Could not resolve previous tag.');
   process.exit(1);
 }
 
-// Safely fallback to HEAD if the current tag doesn’t exist yet
-function getCommits(from, to = 'HEAD') {
-  const range = `${from}..${to}`;
-  try {
-    return execSync(`git log ${range} --pretty=format:"- %s"`, { encoding: 'utf-8' });
-  } catch (err) {
-    console.error(`❌ Failed to collect commits for range ${range}`);
-    console.error(err.message);
-    process.exit(1);
-  }
+function getCommits(from, to) {
+  return execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
 }
 
-function generateChangelog(commits) {
-  return `## ${currentVersion}\n\n${commits}\n\n---\n`;
+function generateChangelogSection(commits) {
+  return `## ${newVersion}\n\n${commits}\n\n---\n`;
 }
 
-function generateBlogPost(version, commits) {
+function generateBlogMarkdown(version, commits) {
   const date = new Date().toISOString().slice(0, 10);
   const slug = `release-${version}`;
   return `---
@@ -71,38 +66,34 @@ ${commits}
 
 ## 🔗 Resources
 
-- GitHub Compare: [${previousTag}...${version}](https://github.com/DevilsDev/rag-pipeline-utils/compare/${previousTag}...${version})
+- GitHub Compare: [${prevVersion}...${version}](https://github.com/DevilsDev/rag-pipeline-utils/compare/${prevVersion}...${version})
 - View full [CHANGELOG.md](../../CHANGELOG.md)
 `;
 }
 
-const commits = getCommits(previousTag, currentVersion);
-const blogContent = generateBlogPost(currentVersion, commits);
-const changelogSection = generateChangelog(commits);
+const commits = getCommits(prevVersion, newVersion);
+const blogContent = generateBlogMarkdown(newVersion, commits);
+const changelogSection = generateChangelogSection(commits);
 
-// Paths
-const blogDate = new Date().toISOString().slice(0, 10);
-const blogPath = path.join(__dirname, `../docs-site/blog/${blogDate}-${currentVersion}.md`);
-const changelogPath = path.join(__dirname, '../CHANGELOG.md');
-
-// Write output
+const blogPath = path.join(__dirname, `../docs-site/blog/${new Date().toISOString().slice(0, 10)}-${newVersion}.md`);
 fs.writeFileSync(blogPath, blogContent, 'utf-8');
+
+const changelogPath = path.join(__dirname, '../CHANGELOG.md');
 fs.appendFileSync(changelogPath, `\n${changelogSection}`, 'utf-8');
 
-// Optionally push to Git
-if (!dryRun) {
-  try {
-    execSync('git add CHANGELOG.md docs-site/blog/*.md');
-    execSync(`git commit -m "docs(release): publish changelog and blog for ${currentVersion}"`);
-    execSync(`git tag ${currentVersion}`);
-    execSync('git push origin main --follow-tags');
-    console.log(`✅ Release ${currentVersion} committed + tagged + pushed.`);
-  } catch (err) {
-    console.error('❌ Git push failed:', err.message);
-    process.exit(1);
-  }
-} else {
-  console.log('\n📝 [DRY RUN] Blog Markdown:\n', blogContent);
-  console.log('\n📘 [DRY RUN] Changelog:\n', changelogSection);
-  console.log('\n🚫 Skipping Git operations in dry-run mode.\n');
+try {
+  execSync('git config user.name "github-actions[bot]"');
+  execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
+  execSync('git add CHANGELOG.md docs-site/blog/*.md');
+  execSync(`git commit -m "docs(release): publish changelog and blog for ${newVersion}"`);
+  execSync('git push origin main');
+  console.log(`✅ Blog + changelog committed for ${newVersion}`);
+} catch (err) {
+  console.warn('⚠️ Git commit skipped (may already be pushed or working tree clean).');
 }
+
+console.log('\n📘 Blog Preview:\n');
+console.log(blogContent);
+
+console.log('\n📘 Changelog Section:\n');
+console.log(changelogSection);

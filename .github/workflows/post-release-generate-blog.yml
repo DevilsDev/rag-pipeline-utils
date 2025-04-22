@@ -1,50 +1,38 @@
-# Version: 2.0.0
-# Description: Auto-generate blog post markdown after GitHub Release or tag push
+# .github/workflows/post-release-generate-blog.yml
+# Version: 2.1.0
+# Description: Generates changelog + blog entry on release or tag push
 # Author: Ali Kahwaji
 
 name: 📝 Auto Generate Blog Post
 
 on:
-  push:
-    tags:
-      - 'v*'
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: write
 
 jobs:
-  generate-blog:
-    name: Generate blog markdown from release
+  generate:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 Checkout repo
+      - name: ↓ Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Needed for git logs
 
-      - name: 🛠 Setup Node.js
+      - name: ⚖ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install deps
         run: npm ci
 
-      - name: 📅 Generate blog post from release
+      - name: 📝 Generate Blog & Changelog
         run: |
-          NEW_TAG=$(git describe --tags --abbrev=0)
-          PREV_TAG=$(git tag --sort=-creatordate | grep '^v' | grep -B1 "$NEW_TAG" | head -n1)
-
-          echo "New tag: $NEW_TAG"
-          echo "Previous tag: $PREV_TAG"
-
-          node scripts/generate-release-note.js ${NEW_TAG#v} $PREV_TAG
-
-      - name: ✅ Commit blog post
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "docs(blog): auto-generate release notes for latest tag"
-          file_pattern: docs-site/blog/*.md
+          NEW_TAG=${GITHUB_REF#refs/tags/}
+          node scripts/generate-release-note.js $NEW_TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
