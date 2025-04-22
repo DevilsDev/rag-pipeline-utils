@@ -1,89 +1,102 @@
 /**
- * File: scripts/banner-injector.js
- * Description: Script to programmatically inject file-level banners into specified project files
- * Author: Ali Kahwaji
  * Version: 1.0.0
+ * Description: Syncs roadmap items from a structured Markdown file into GitHub Issues with labels and assignees.
+ * Author: Ali Kahwaji
  */
 
 import fs from 'fs';
 import path from 'path';
-import glob from 'glob';
+import { Octokit } from 'octokit';
+import dotenv from 'dotenv';
 
-const banners = {
-  '__tests__/unit/reranker/llm-reranker.test.js': `/**
- * File: __tests__/unit/reranker/llm-reranker.test.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+dotenv.config();
 
-  '__tests__/unit/reranker/reranker.snapshot.test.js': `/**
- * File: __tests__/unit/reranker/reranker.snapshot.test.js
- * Description: Snapshot tests for LLM reranker
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+/**
+ * GitHub Personal Access Token required via .env or CI secrets
+ * Ensure the token has 'repo' scope for private issue creation.
+ */
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_REPO = process.env.GITHUB_REPO; // e.g. DevilsDev/rag-pipeline-utils
+const ROADMAP_PATH = path.resolve('.github/PROJECT_ROADMAP.md');
 
-  '__tests__/unit/core/plugin-registry.test.js': `/**
- * File: __tests__/unit/core/plugin-registry.test.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+if (!GITHUB_TOKEN || !GITHUB_REPO) {
+  console.error('❌ GITHUB_TOKEN and GITHUB_REPO must be defined in environment.');
+  process.exit(1);
+}
 
-  '__tests__/integration/config/load-config.test.js': `/**
- * File: __tests__/integration/config/load-config.test.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-  '__tests__/integration/cli/config-flow.test.js': `/**
- * File: __tests__/integration/cli/config-flow.test.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+/**
+ * Parse roadmap Markdown file into structured issue definitions
+ */
+function parseRoadmapMarkdown(markdown) {
+  const lines = markdown.split('\n');
+  const issues = [];
 
-  'src/mocks/pdf-loader.js': `/**
- * File: src/mocks/pdf-loader.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+  for (const line of lines) {
+    if (line.startsWith('|')) {
+      const cells = line.split('|').map(c => c.trim());
 
-  'src/mocks/openai-embedder.js': `/**
- * File: src/mocks/openai-embedder.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`,
+      if (cells.length < 6 || cells[0] === 'Phase') continue;
 
-  'src/mocks/pinecone-retriever.js': `/**
- * File: src/mocks/pinecone-retriever.js
- * Description: Unit and integration tests with mocks for RAG pipeline
- * Author: Ali Kahwaji
- * Version: 1.0.4
- */\n\n`
-};
+      const [, phase, priority, feature, group, tags] = cells;
 
-Object.entries(banners).forEach(([filePath, banner]) => {
-  const resolvedPath = path.resolve(filePath);
-
-  if (!fs.existsSync(resolvedPath)) {
-    console.warn(`[SKIPPED] ${filePath} does not exist.`);
-    return;
+      issues.push({
+        title: `${phase.trim()}: ${feature.trim()}`,
+        body: `**Feature Group:** ${group}\n**Priority:** ${priority}`,
+        labels: [phase, priority, ...tags.split(',').map(tag => tag.trim())].filter(Boolean),
+      });
+    }
   }
 
-  const originalContent = fs.readFileSync(resolvedPath, 'utf-8');
+  return issues;
+}
 
-  // Skip if banner already present
-  if (originalContent.startsWith('/**')) {
-    console.log(`[SKIPPED] ${filePath} already contains a banner.`);
-    return;
+/**
+ * Create an issue in GitHub if it doesn't already exist
+ */
+async function createOrUpdateIssues(issues) {
+  const [owner, repo] = GITHUB_REPO.split('/');
+
+  const { data: existingIssues } = await octokit.rest.issues.listForRepo({
+    owner,
+    repo,
+    state: 'all',
+    per_page: 100,
+  });
+
+  for (const issue of issues) {
+    const exists = existingIssues.find(i => i.title === issue.title);
+    if (exists) {
+      console.log(`✅ Skipped (exists): ${issue.title}`);
+      continue;
+    }
+
+    await octokit.rest.issues.create({
+      owner,
+      repo,
+      title: issue.title,
+      body: issue.body,
+      labels: issue.labels,
+    });
+
+    console.log(`➕ Created: ${issue.title}`);
   }
+}
 
-  const newContent = banner + originalContent;
-  fs.writeFileSync(resolvedPath, newContent, 'utf-8');
-  console.log(`[INJECTED] Banner added to ${filePath}`);
-});
+/**
+ * Entrypoint
+ */
+async function main() {
+  try {
+    const roadmap = fs.readFileSync(ROADMAP_PATH, 'utf-8');
+    const issues = parseRoadmapMarkdown(roadmap);
+    await createOrUpdateIssues(issues);
+    console.log(`🎯 Synced ${issues.length} roadmap issues.`);
+  } catch (err) {
+    console.error('🚨 Roadmap sync failed:', err.message);
+    process.exit(1);
+  }
+}
+
+main();

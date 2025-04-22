@@ -10,6 +10,9 @@
 [![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
 ![Release](https://img.shields.io/github/v/release/DevilsDev/rag-pipeline-utils?label=release)
 ![License](https://img.shields.io/github/license/devilsdev/rag-pipeline-utils)
+![Release Review Passed](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/enforce-release-review.yml/badge.svg?branch=main)
+
+
 
 ## Description
 
@@ -134,6 +137,24 @@ Explore real-world DevX-focused examples in [USE_CASES.md](./Use-Cases.md), incl
 
 We welcome contributions via PRs, especially new mock providers, validation helpers, and runtime extensions. Please follow the test + CI conventions before submitting.
 
+---
+
+## Contributors Guide
+
+For active maintainers and collaborators:
+
+- **Roadmap & Feature Planning**  
+  See [.github/PROJECT_ROADMAP.md](.github/PROJECT_ROADMAP.md) for the implementation phases, priorities, and tracking tags for all major developer-facing features.
+
+- **Milestone Tags**
+  | Tag         | Description                        |
+  |-------------|------------------------------------|
+  | `phase-1`   | Foundation – testing, CI, tutorials |
+  | `phase-2`   | Community, blog, discussions       |
+  | `phase-3`   | CLI, VS Code tools, theming        |
+  | `phase-4`   | i18n, integrations, case studies   |
+
+_Note: This file is not included in public documentation builds._
 
 
 ## License

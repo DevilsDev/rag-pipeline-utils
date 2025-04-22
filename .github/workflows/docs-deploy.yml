@@ -1,5 +1,5 @@
 # .github/workflows/docs-deploy.yml
-# Version: 1.0.0
+# Version: 1.1.0
 # Description: Deploys Docusaurus docs site to GitHub Pages
 # Author: Ali Kahwaji
 
@@ -40,6 +40,11 @@ jobs:
       - name: Build docs
         run: npm run docs:build
 
+      - name: Configure Git user
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -47,4 +52,4 @@ jobs:
           publish_dir: docs-site/build
           publish_branch: gh-pages
           user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          user_email: github-actions[bot]@users.noreply.github.com

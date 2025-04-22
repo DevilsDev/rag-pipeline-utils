@@ -1,0 +1,67 @@
+# Version: 1.0.0
+# Description: Ensures roadmap labels (priority, group) exist in the repo
+# Author: Ali Kahwaji
+
+name: 🔖 Sync Roadmap Labels
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/roadmap-labels.yml'
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install octokit
+        run: npm install octokit
+
+      - name: 🔖 Run label sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          node <<EOF
+          const { Octokit } = require("octokit");
+
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          const [owner, repo] = process.env.GITHUB_REPO.split("/");
+
+          const labels = [
+            { name: "priority: high", color: "e11d48", description: "High priority roadmap item" },
+            { name: "priority: medium", color: "f59e0b", description: "Medium priority roadmap item" },
+            { name: "priority: low", color: "10b981", description: "Low priority roadmap item" },
+            { name: "group: docs", color: "6366f1", description: "Documentation features" },
+            { name: "group: devx", color: "06b6d4", description: "Developer experience improvements" },
+            { name: "group: community", color: "ec4899", description: "Community tools & engagement" },
+            { name: "group: blog", color: "f97316", description: "Blog & SEO enhancements" },
+            { name: "group: infra", color: "64748b", description: "Infrastructure & deployment features" }
+          ];
+
+          (async () => {
+            const existing = await octokit.rest.issues.listLabelsForRepo({ owner, repo });
+            const existingNames = new Set(existing.data.map(l => l.name));
+
+            for (const label of labels) {
+              if (!existingNames.has(label.name)) {
+                console.log(`➕ Creating label: ${label.name}`);
+                await octokit.rest.issues.createLabel({ owner, repo, ...label });
+              } else {
+                console.log(`✅ Label already exists: ${label.name}`);
+              }
+            }
+          })().catch(err => {
+            console.error("Label sync failed:", err);
+            process.exit(1);
+          });
+          EOF

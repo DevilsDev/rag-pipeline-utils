@@ -1,0 +1,69 @@
+# Version: 1.0.0
+# Description: Sync roadmap issues + labels from PROJECT_ROADMAP.md automatically
+# Author: Ali Kahwaji
+
+name: 🚀 Sync Roadmap to GitHub Issues
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/PROJECT_ROADMAP.md'
+      - '.github/workflows/sync-roadmap.yml'
+      - 'scripts/create-roadmap-issues.js'
+
+jobs:
+  sync-roadmap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: npm install octokit js-yaml
+
+      - name: 🔖 Ensure roadmap labels
+        run: |
+          node <<EOF
+          const { Octokit } = require("octokit");
+          const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+          const labels = [
+            { name: "priority: high", color: "e11d48", description: "High priority roadmap item" },
+            { name: "priority: medium", color: "f59e0b", description: "Medium priority roadmap item" },
+            { name: "priority: low", color: "10b981", description: "Low priority roadmap item" },
+            { name: "group: docs", color: "6366f1", description: "Documentation features" },
+            { name: "group: devx", color: "06b6d4", description: "Developer experience improvements" },
+            { name: "group: community", color: "ec4899", description: "Community tools & engagement" },
+            { name: "group: blog", color: "f97316", description: "Blog & SEO enhancements" },
+            { name: "group: infra", color: "64748b", description: "Infrastructure & deployment features" }
+          ];
+
+          (async () => {
+            const existing = await octokit.rest.issues.listLabelsForRepo({ owner, repo });
+            const existingNames = new Set(existing.data.map(l => l.name));
+
+            for (const label of labels) {
+              if (!existingNames.has(label.name)) {
+                await octokit.rest.issues.createLabel({ owner, repo, ...label });
+              }
+            }
+          })().catch(err => {
+            console.error("Label creation failed:", err);
+            process.exit(1);
+          });
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🗂 Sync roadmap issues
+        run: node scripts/create-roadmap-issues.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
