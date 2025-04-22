@@ -137,7 +137,7 @@ Explore real-world DevX-focused examples in [USE_CASES.md](./Use-Cases.md), incl
 
 We welcome contributions via PRs, especially new mock providers, validation helpers, and runtime extensions. Please follow the test + CI conventions before submitting.
 
----
+
 
 ## Contributors Guide
 
@@ -155,6 +155,14 @@ For active maintainers and collaborators:
   | `phase-4`   | i18n, integrations, case studies   |
 
 _Note: This file is not included in public documentation builds._
+
+
+## Manual Test Checklist
+
+For full validation of roadmap sync, changelog automation, CI/CD, and blog generation:
+
+➡️ [View Manual Test Checklist](scripts/manual-test-checklist.md)
+
 
 
 ## License

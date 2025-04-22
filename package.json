@@ -28,7 +28,9 @@
     "docs:build": "docusaurus build docs-site",
     "docs:serve": "docusaurus serve docs-site",
     "docs:deploy": "docusaurus deploy docs-site",
-    "release:tag": "node scripts/tag-release.js"
+    "release:tag": "node scripts/tag-release.js",
+    "roadmap:close": "node scripts/close-done-roadmap-issues.js",
+    "labels:sync": "node scripts/ensure-roadmap-labels.js"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

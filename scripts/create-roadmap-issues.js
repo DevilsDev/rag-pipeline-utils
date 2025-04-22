@@ -1,63 +1,77 @@
 /**
- * Script: create-roadmap-issues.js
- *  Version: 1.0.0
- * Description: Parses `.github/PROJECT_ROADMAP.md` and creates GitHub Issues per feature
- * Requirements: Set GH_TOKEN in env or .env file
+ * Version: 1.4.0
+ * Path: scripts/create-roadmap-issues.js
+ * Description: Parses roadmap markdown, creates GitHub Issues, links labels, and closes Done items
  * Author: Ali Kahwaji
  */
 
-import { Octokit } from 'octokit';
-import fs from 'fs';
-import dotenv from 'dotenv';
-import readline from 'readline';
+const fs = require('fs');
+const path = require('path');
+const { Octokit } = require('octokit');
+const yaml = require('js-yaml');
+const { ensureRoadmapLabels } = require('./ensure-roadmap-labels');
 
-// Load .env if exists
-dotenv.config();
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO = process.env.GITHUB_REPOSITORY || 'DevilsDev/rag-pipeline-utils';
+const [owner, repo] = REPO.split('/');
 
-const TOKEN = process.env.GH_TOKEN;
-const REPO = 'rag-pipeline-utils';
-const OWNER = 'DevilsDev';
-const ROADMAP_PATH = '.github/PROJECT_ROADMAP.md';
-const MILESTONE_CACHE = {}; // optional
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-const octokit = new Octokit({ auth: TOKEN });
+async function createIssuesFromRoadmap() {
+  const filePath = path.join('.github', 'PROJECT_ROADMAP.md');
+  const contents = fs.readFileSync(filePath, 'utf-8');
 
-function parseRoadmapMarkdown(markdown) {
-  const lines = markdown.split('\n');
-  const issues = [];
+  const blocks = contents.split(/^---$/gm).filter(Boolean).map((s) => s.trim());
+  const frontmatters = blocks.map((block) => yaml.load(block));
 
-  for (const line of lines) {
-    if (line.startsWith('| Phase')) continue;
-    if (!line.startsWith('|')) continue;
-    const parts = line.split('|').map((x) => x.trim());
-    if (parts.length < 4) continue;
-    const [_, phase, priority, feature] = parts;
-    issues.push({ phase, priority, feature });
+  for (const meta of frontmatters) {
+    if (!meta || !meta.title) continue;
+
+    const labels = [];
+    if (meta.priority) labels.push(`priority: ${meta.priority.toLowerCase()}`);
+    if (meta.group) labels.push(`group: ${meta.group}`);
+
+    const existing = await octokit.rest.issues.listForRepo({ owner, repo, state: 'open' });
+    const found = existing.data.find((issue) => issue.title === meta.title);
+
+    if (meta.status === '\u2705 Done' && found) {
+      await octokit.rest.issues.update({ owner, repo, issue_number: found.number, state: 'closed' });
+      console.log(`Closed Done issue: ${meta.title}`);
+      continue;
+    }
+
+    if (!found) {
+      await octokit.rest.issues.create({
+        owner,
+        repo,
+        title: meta.title,
+        body: meta.description || '_No details provided._',
+        labels,
+        milestone: meta.milestone || undefined
+      });
+      console.log(`Created new roadmap issue: ${meta.title}`);
+    } else {
+      await octokit.rest.issues.update({
+        owner,
+        repo,
+        issue_number: found.number,
+        labels
+      });
+      console.log(`Updated existing issue: ${meta.title}`);
+    }
   }
-  return issues;
-}
-
-async function createIssue({ phase, priority, feature }) {
-  const title = `[${phase}] ${feature} (${priority} Priority)`;
-  const labels = ['roadmap', `phase/${phase.split(' ')[1]}`, `priority/${priority.toLowerCase()}`];
-
-  const res = await octokit.rest.issues.create({
-    owner: OWNER,
-    repo: REPO,
-    title,
-    labels,
-    body: `Feature from roadmap\n\n**Phase**: ${phase}\n**Priority**: ${priority}\n\n> Auto-generated from PROJECT_ROADMAP.md`
-  });
-
-  console.log(`Created issue #${res.data.number}: ${res.data.title}`);
 }
 
 async function main() {
-  const content = fs.readFileSync(ROADMAP_PATH, 'utf-8');
-  const features = parseRoadmapMarkdown(content);
-  for (const feature of features) {
-    await createIssue(feature);
+  try {
+    await ensureRoadmapLabels({ token: GITHUB_TOKEN, owner, repo });
+    await createIssuesFromRoadmap();
+  } catch (err) {
+    console.error('Sync failed:', err);
+    process.exit(1);
   }
 }
 
-main().catch(console.error);
+if (require.main === module) {
+  main();
+}
