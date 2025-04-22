@@ -1,5 +1,5 @@
 /**
- * Version: 1.0.0
+ * Version: 1.1.0
  * Description: Closes GitHub issues marked as ✅ Done in the PROJECT_ROADMAP.md
  * Author: Ali Kahwaji
  */
@@ -17,41 +17,45 @@ const octokit = new Octokit({ auth: GITHUB_TOKEN });
 async function closeDoneIssues() {
   const content = fs.readFileSync(ROADMAP_PATH, 'utf-8');
   const lines = content.split('\n').filter(line => line.startsWith('|'));
-  const headers = lines[0].split('|').map(h => h.trim());
-  const rows = lines.slice(2); // skip header and separator
+  if (lines.length < 3) {
+    console.log('⚠️ No roadmap rows found to evaluate.');
+    return;
+  }
+
+  const rows = lines.slice(2); // Skip header and separator
+
+  const { data: issues } = await octokit.rest.issues.listForRepo({
+    owner: OWNER,
+    repo: REPO,
+    state: 'open',
+    per_page: 100
+  });
 
   for (const row of rows) {
     const cols = row.split('|').map(col => col.trim());
-    const [phase, priority, group, title, description, status] = cols;
+    const [, , , title, , status] = cols;
 
-    if (status.toLowerCase().includes('✅')) {
-      const { data: issues } = await octokit.rest.issues.listForRepo({
-        owner: OWNER,
-        repo: REPO,
-        state: 'open',
-        per_page: 100
-      });
+    const safeStatus = status?.toLowerCase?.();
+    if (!safeStatus || !safeStatus.includes('✅')) continue;
 
-      const match = issues.find(issue => issue.title === title);
+    const match = issues.find(issue => issue.title.trim() === title.trim());
+    if (!match) continue;
 
-      if (match) {
-        await octokit.rest.issues.createComment({
-          owner: OWNER,
-          repo: REPO,
-          issue_number: match.number,
-          body: '✅ Automatically closed from roadmap sync.'
-        });
+    await octokit.rest.issues.createComment({
+      owner: OWNER,
+      repo: REPO,
+      issue_number: match.number,
+      body: '✅ Automatically closed from roadmap sync.'
+    });
 
-        await octokit.rest.issues.update({
-          owner: OWNER,
-          repo: REPO,
-          issue_number: match.number,
-          state: 'closed'
-        });
+    await octokit.rest.issues.update({
+      owner: OWNER,
+      repo: REPO,
+      issue_number: match.number,
+      state: 'closed'
+    });
 
-        console.log(`🔒 Closed: #${match.number} "${title}"`);
-      }
-    }
+    console.log(`🔒 Closed: #${match.number} "${title}"`);
   }
 }
 
