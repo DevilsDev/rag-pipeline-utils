@@ -8,7 +8,7 @@ name: 🖍 Blog Badge Verification
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["📝 Generate Blog Post After Release"]
+    workflows: ["Generate Blog Post After Release"]
     types:
       - completed
 
