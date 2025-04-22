@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.4](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.3...v2.1.4) (2025-04-21)
+
+
+### Bug Fixes
+
+* update CI and deployment workflows for docs build and GitHub Pages deployment ([11739ba](https://github.com/DevilsDev/rag-pipeline-utils/commit/11739ba222669e359232807e461bc84d68d913cb))
+* update CI and deployment workflows for docs build and GitHub Pages deployment ([8de276f](https://github.com/DevilsDev/rag-pipeline-utils/commit/8de276f8cb6c91a291322783dc944b0f4799974f))
+
 ## [2.1.3](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.2...v2.1.3) (2025-04-21)
 
 
