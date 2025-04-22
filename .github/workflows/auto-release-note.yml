@@ -1,0 +1,65 @@
+# .github/workflows/auto-release-note.yml
+# Version: 1.0.0
+# Description: Unified workflow to generate changelog + blog post from Git tag
+# Author: Ali Kahwaji
+
+name: ✫ Auto Release Note
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-note:
+    name: 🖍 Generate Blog + Changelog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📑 Generate release note from tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Generating blog + changelog for v$VERSION"
+
+          git fetch --tags --force
+
+          node scripts/generate-release-note.js v$VERSION
+
+      - name: 📄 Auto-commit blog + changelog
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(release): auto-publish blog and changelog"
+          file_pattern: "CHANGELOG.md docs-site/blog/*.md"
+          push_options: '--follow-tags'
+
+      - name: 🚀 Confirm complete
+        run: echo "Release blog + changelog committed and pushed."
+
+      - name: 📈 Emit Blog Badge Trigger
+        run: echo "::set-output name=blog::generated"
+
+      - name: 🌟 Trigger Badge (Optional)
+        if: always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: 1
+          body: "Blog Post + Changelog updated for ${{ github.ref_name }} :rocket:"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

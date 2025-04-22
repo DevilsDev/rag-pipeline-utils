@@ -11,7 +11,9 @@
 ![Release](https://img.shields.io/github/v/release/DevilsDev/rag-pipeline-utils?label=release)
 ![License](https://img.shields.io/github/license/devilsdev/rag-pipeline-utils)
 ![Release Review Passed](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/enforce-release-review.yml/badge.svg?branch=main)
-![Blog Generated](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml/badge.svg)
+[![Blog & Changelog Generator](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml)
+
+
 
 
 

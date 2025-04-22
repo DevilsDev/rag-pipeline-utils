@@ -1,33 +1,36 @@
 # .github/workflows/enforce-release-review.yml
-# Version: 1.0.1
-# Description: Prevents merge if changelog/blog updates not reviewed. Supports badge + manual trigger.
+# Version: 1.1.0
+# Description: Validates CHANGELOG.md and blog edits on PRs and tag pushes. Emits status badge.
 # Author: Ali Kahwaji
 
-name: 🛡 Release Review Enforcement
+name: 🛡 Release Review Passed
 
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch:  # ✅ Manual trigger from Actions tab
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
-  review-check:
-    name: Validate Changelog & Blog Updates
+  review:
+    name: 📝 Release Review Check
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🔍 Scan for changelog/blog edits
+      - name: 🔍 Scan for changelog or blog edits
         id: check
         run: |
           git fetch origin main --depth=1
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD || true)
 
           echo "Changed files:"
           echo "$CHANGED_FILES"
@@ -40,7 +43,7 @@ jobs:
             echo "result=fail" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: 🚫 Fail if missing changelog or blog updates
+      - name: 🚫 Fail if missing changelog or blog
         if: steps.check.outputs.result == 'fail'
         run: |
           echo "Missing required changelog or blog post for release."
