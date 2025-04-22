@@ -4,10 +4,26 @@
         <title>RAG Pipeline Utils Blog</title>
         <link>https://devilsdev.github.io/rag-pipeline-utils/blog</link>
         <description>RAG Pipeline Utils Blog</description>
-        <lastBuildDate>Mon, 21 Apr 2025 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 22 Apr 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[✨ Version v2.1.5 Released]]></title>
+            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</link>
+            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</guid>
+            <pubDate>Tue, 22 Apr 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[RAG Pipeline Utils vv2.1.5 is now available on NPM!]]></description>
+            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.5 is now available on NPM!</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<ul>
+<li>🚀 Auto-published blog from GitHub Release</li>
+<li>📦 Version bump: v2.1.5</li>
+<li>📘 See CHANGELOG.md for full details</li>
+</ul>]]></content:encoded>
+            <category>Release</category>
+            <category>Changelog</category>
+        </item>
         <item>
             <title><![CDATA[✨ Version v2.1.3 Released]]></title>
             <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3</link>
