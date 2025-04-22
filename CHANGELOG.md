@@ -1,5 +1,6 @@
 # Changelog
 
+<<<<<<< HEAD
 ## 2.1.5 - 2025-04-22
 ### Features
 - Synced roadmap labels + issues via CI
@@ -14,6 +15,15 @@
 - CLI tools support changelog generation + blog linking
 
 
+=======
+## [2.1.5](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.4...v2.1.5) (2025-04-22)
+
+
+### Bug Fixes
+
+* **scripts:** prevent null status crash in roadmap issue closer ([89d5a0b](https://github.com/DevilsDev/rag-pipeline-utils/commit/89d5a0bc4cac554975974558b97974297816f169))
+
+>>>>>>> 6475a97d362f7cd9779e1268f1c816764a7fd62c
 ## [2.1.4](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.3...v2.1.4) (2025-04-21)
 
 
