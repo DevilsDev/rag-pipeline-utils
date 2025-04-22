@@ -1,5 +1,5 @@
 # .github/workflows/sync-roadmap.yml
-# Version: 2.0.0
+# Version: 2.1.0
 # Description: Unified workflow to sync roadmap issues, labels, and states
 # Author: Ali Kahwaji
 
@@ -41,18 +41,22 @@ jobs:
         run: node scripts/ensure-roadmap-labels.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: 🗂 Sync roadmap issues
         run: node scripts/create-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: 🏷 Apply labels to roadmap issues
         run: node scripts/label-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: ✅ Close completed issues
         run: node scripts/close-done-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
