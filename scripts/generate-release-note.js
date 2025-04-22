@@ -1,40 +1,96 @@
-// File: scripts/generate-release-note.js
 /**
- * Version: 1.2.0
- * Description: Injects release metadata into markdown template
+ * Version: 2.1.0
+ * Path: scripts/generate-release-note.js
+ * Description: Generates GitHub-style markdown release notes between two tags
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const [,, version, previousTag] = process.argv;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-if (!version || !previousTag) {
-  console.error('Usage: node scripts/generate-release-note.js <version> <previousTag>');
-  process.exit(1);
+// ----------- CI Git History Safeguard (shallow clones) -----------
+try {
+  execSync('git fetch --tags --unshallow', { stdio: 'inherit' });
+} catch {
+  execSync('git fetch --tags', { stdio: 'inherit' });
 }
 
-const templatePath = path.join(__dirname, '../.github/release-template.md');
-const outputPath = path.join(__dirname, `../docs-site/blog/${new Date().toISOString().split('T')[0]}-release-${version}.md`);
+// ----------- Utility Functions -----------
+function getCommits(fromTag, toTag) {
+  const log = execSync(
+    `git log ${fromTag}..${toTag} --pretty=format:"- %s"`,
+    { encoding: 'utf-8' }
+  );
+  return log.trim();
+}
 
-const template = fs.readFileSync(templatePath, 'utf-8');
+function getCompareLink(fromTag, toTag) {
+  return `https://github.com/DevilsDev/rag-pipeline-utils/compare/${fromTag}...${toTag}`;
+}
 
-// Count contributors
-const contributors = execSync(`git shortlog -sne ${previousTag}..HEAD | wc -l`).toString().trim();
-// Count commits
-const commits = execSync(`git rev-list --count ${previousTag}..HEAD`).toString().trim();
-// ISO date
-const date = new Date().toISOString().split('T')[0];
+function getAuthorStats(fromTag, toTag) {
+  const output = execSync(
+    `git shortlog -sne ${fromTag}..${toTag}`,
+    { encoding: 'utf-8' }
+  );
+  const contributors = output.split('\n').filter(Boolean).length;
+  const commits = execSync(
+    `git rev-list --count ${fromTag}..${toTag}`,
+    { encoding: 'utf-8' }
+  );
+  return { contributors, commits: commits.trim() };
+}
 
-// Inject into template
-const filled = template
-  .replace(/{{VERSION}}/g, version)
-  .replace(/{{PREVIOUS_TAG}}/g, previousTag)
-  .replace(/{{DATE}}/g, date)
-  .replace(/{{CONTRIBUTORS}}/g, contributors)
-  .replace(/{{COMMITS}}/g, commits);
+function formatReleaseNote(version, fromTag, toTag, commits) {
+  const compareUrl = getCompareLink(fromTag, toTag);
+  const { contributors, commits: commitCount } = getAuthorStats(fromTag, toTag);
+  const today = new Date().toISOString().split('T')[0];
 
-fs.writeFileSync(outputPath, filled);
-console.log(`✅ Generated release blog: ${outputPath}`);
+  return `---
+slug: release-${version}
+title: "✨ Version ${version} Released"
+authors: [ali]
+tags: [release, changelog]
+---
+
+**Published:** \`${today}\`  
+**Compare changes:** [View diff](${compareUrl})  
+**Contributors:** \`${contributors}\`  
+**Commits:** \`${commitCount}\`
+
+---
+
+## 📦 What's New
+
+${commits || '- No commits detected.'}
+
+---
+
+## 📘 Changelog
+
+See full details in [CHANGELOG.md](../../CHANGELOG.md)
+`;
+}
+
+// ----------- Main Execution -----------
+function main() {
+  const [version, fromTag] = process.argv.slice(2);
+  if (!version || !fromTag) {
+    console.error('❌ Usage: node scripts/generate-release-note.js <newTag> <fromTag>');
+    process.exit(1);
+  }
+
+  const toTag = `v${version}`;
+  const commits = getCommits(fromTag, toTag);
+  const markdown = formatReleaseNote(version, fromTag, toTag, commits);
+
+  const file = path.join(__dirname, `../docs-site/blog/${new Date().toISOString().slice(0, 10)}-release-${version}.md`);
+  fs.writeFileSync(file, markdown);
+  console.log(`✅ Release note generated: ${file}`);
+}
+
+main();

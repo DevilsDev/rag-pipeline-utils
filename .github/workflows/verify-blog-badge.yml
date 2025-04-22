@@ -1,0 +1,43 @@
+# .github/workflows/verify-blog-badge.yml
+# Version: 1.1.0
+# Description: Verifies that the blog post + badge exist after a release
+# Author: Ali Kahwaji
+
+name: 🖍 Blog Badge Verification
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["📝 Generate Blog Post After Release"]
+    types:
+      - completed
+
+jobs:
+  verify:
+    name: 🌟 Verify Blog Badge
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🌐 Check for latest blog badge presence
+        run: |
+          BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/generate-release-blog.yml/badge.svg?branch=main"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
+
+          echo "Badge status: $RESPONSE"
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Blog badge not reachable or invalid."
+            exit 1
+          fi
+
+      - name: ✅ Confirm README includes badge
+        run: |
+          grep -q "generate-release-blog.yml/badge.svg" README.md || {
+            echo "❌ Missing blog badge in README.md"
+            exit 1
+          }
+
+      - name: ✨ Passed blog badge validation
+        run: echo "🌟 Blog badge is present and valid."

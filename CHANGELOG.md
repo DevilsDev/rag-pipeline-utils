@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.1.5 - 2025-04-22
+### Features
+- Synced roadmap labels + issues via CI
+- Added auto-close for Done roadmap entries
+
+### Fixes
+- ES module compatibility fixes for roadmap scripts
+- Improved test isolation and mocking for Octokit
+
+### DevOps
+- CI chain includes roadmap validation and label sync
+- CLI tools support changelog generation + blog linking
+
+
 ## [2.1.4](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.3...v2.1.4) (2025-04-21)
 
 
