@@ -1,6 +1,6 @@
 # .github/workflows/post-release-generate-blog.yml
-# Version: 2.4.0
-# Description: Auto-generate blog + changelog from release tags with improved fallback and badge support
+# Version: 2.5.1
+# Description: Auto-generates changelog + blog post from tag or GitHub release with dry-run safety and badge output
 # Author: Ali Kahwaji
 
 name: Auto Generate Blog + Changelog
@@ -11,51 +11,68 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run generator in dry-run mode (no git push)'
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   generate:
-    name: Generate Blog Post & Changelog
+    name: 📓 Generate Blog + Changelog
     runs-on: ubuntu-latest
-
     outputs:
-      blog_generated: ${{ steps.generate.outputs.success == 'true' }}
+      blog_generated: ${{ steps.done.outputs.blog_generated }}
 
     steps:
-      - name: 📥 Checkout repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required to resolve previous tag history
+          fetch-depth: 0
 
-      - name: 🛠 Configure Git identity
+      - name: 🛠 Setup Git identity
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "docs@autobot.local"
 
-      - name: 📦 Install Node dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🏷 Determine current version tag
+      - name: 🏷 Extract tag version
         id: version
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-
-      - name: 📓 Generate Blog + Changelog
-        id: generate
         run: |
-          echo "🔍 Attempting to generate blog and changelog for ${{ steps.version.outputs.tag }}"
-          node scripts/generate-release-note.js "${{ steps.version.outputs.tag }}" || {
-            echo "⚠️ No changes or generation failed."
-            echo "success=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          }
-          echo "success=true" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "dry_run=${{ github.event.inputs.dry_run || 'false' }}" >> "$GITHUB_OUTPUT"
 
-      - name: 🔐 Commit blog + changelog files
-        if: steps.generate.outputs.success == 'true'
+      - name: 📝 Generate release note
+        id: note
+        run: |
+          echo "🚧 Running release note generator..."
+          node scripts/generate-release-note.js "${{ steps.version.outputs.tag }}"
+        env:
+          DRY_RUN: ${{ steps.version.outputs.dry_run }}
+
+      - name: 🔐 Commit blog & changelog
+        if: ${{ steps.version.outputs.dry_run != 'true' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs(release): blog + changelog for ${{ steps.version.outputs.tag }}"
           file_pattern: "CHANGELOG.md docs-site/blog/*.md"
+
+      - name: 💬 Add PR/Issue comment (optional)
+        if: ${{ steps.version.outputs.dry_run != 'true' }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: 1
+          body: "📝 Blog Post + Changelog updated for `${{ steps.version.outputs.tag }}` 🚀"
+        continue-on-error: true
+
+      - name: ✅ Output badge flag
+        id: done
+        run: echo "blog_generated=true" >> "$GITHUB_OUTPUT"

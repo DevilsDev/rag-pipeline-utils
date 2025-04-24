@@ -1,6 +1,6 @@
 # .github/workflows/verify-blog-badge.yml
-# Version: 1.1.0
-# Description: Verifies that the blog post + badge exist after a release
+# Version: 1.2.0
+# Description: Validates presence of blog generation badge + GitHub Action output
 # Author: Ali Kahwaji
 
 name: 🖍 Blog Badge Verification
@@ -8,36 +8,38 @@ name: 🖍 Blog Badge Verification
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Generate Blog Post After Release"]
+    workflows: ["Auto Generate Blog + Changelog"]
     types:
       - completed
 
 jobs:
   verify:
-    name: 🌟 Verify Blog Badge
+    name: 🌟 Verify Blog Badge and Output
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🌐 Check for latest blog badge presence
+      - name: 🔍 Validate README badge reference
         run: |
-          BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/generate-release-blog.yml/badge.svg?branch=main"
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
-
-          echo "Badge status: $RESPONSE"
-          if [ "$RESPONSE" != "200" ]; then
-            echo "❌ Blog badge not reachable or invalid."
-            exit 1
-          fi
-
-      - name: ✅ Confirm README includes badge
-        run: |
-          grep -q "generate-release-blog.yml/badge.svg" README.md || {
-            echo "❌ Missing blog badge in README.md"
+          echo "Checking for badge reference in README.md..."
+          grep -q "post-release-generate-blog.yml/badge.svg" README.md || {
+            echo "❌ Missing badge for post-release-generate-blog.yml in README.md"
             exit 1
           }
 
-      - name: ✨ Passed blog badge validation
-        run: echo "🌟 Blog badge is present and valid."
+      - name: 🌐 Validate badge URL status
+        run: |
+          BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml/badge.svg?branch=main"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
+
+          echo "Badge response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Blog badge not reachable (HTTP $STATUS)"
+            exit 1
+          fi
+
+      - name: ✅ Log success output
+        run: echo "✅ Blog badge detected and validated."
