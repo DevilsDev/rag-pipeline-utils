@@ -1,5 +1,5 @@
 # .github/workflows/ci.yml
-# Version: 1.0.0
+# Version: 1.1.0
 # Description: Clean CI pipeline with lint, test, fixtures, coverage, and release
 # Author: Ali Kahwaji
 
@@ -31,7 +31,7 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🧹 Lint
+      - name: 🧹 Lint codebase
         run: npm run lint
 
       - name: ✅ Run tests with coverage
@@ -48,7 +48,8 @@ jobs:
 
       - name: 🚀 Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}            # ✅ Required by @semantic-release/github
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}        # ✅ Used by GitHub Actions
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release

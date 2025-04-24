@@ -74,7 +74,7 @@ ${commits}
 ## 🔗 Resources
 
 - GitHub Compare: [${prevVersion}...${version}](https://github.com/DevilsDev/rag-pipeline-utils/compare/${prevVersion}...${version})
-- View full [CHANGELOG.md](../../CHANGELOG.md)
+- View full [CHANGELOG on GitHub](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)
 `;
 }
 
