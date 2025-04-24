@@ -112,3 +112,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Semantic Versioning](https://semver.org/), and this project uses [semantic-release](https://github.com/semantic-release/semantic-release) for automated versioning and changelog generation.
+
+## v2.1.6
+
+- chore: remove legacy changelog workflow and finalize blog badge
+- ci(workflows): add blog badge verification workflow
+- ci(workflows): add blog badge verification workflow
+- ci(workflows): add blog badge verification workflow
+- docs(blog): add release post for v2.1.5
+
+---
