@@ -1,6 +1,6 @@
 # .github/workflows/docs-deploy.yml
-# Version: 1.1.0
-# Description: Deploys Docusaurus docs site to GitHub Pages
+# Version: 1.2.0
+# Description: Deploys Docusaurus docs site to GitHub Pages with CNAME and post-release chaining
 # Author: Ali Kahwaji
 
 name: 📚 Deploy Docusaurus Docs
@@ -17,39 +17,48 @@ on:
       - 'package.json'
 
 permissions:
-  contents: write  # Required for GitHub Pages deployment
+  contents: write
 
 jobs:
   deploy:
-    name: Deploy to GitHub Pages
+    name: 🚀 Publish to GitHub Pages
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ✅ Full git history for tag diff or changelog sync
 
-      - name: Setup Node.js
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Build docs
-        run: npm run docs:build
-
-      - name: Configure Git user
+      - name: 🛠 Git Identity
         run: |
           git config --global user.name "GitHub Actions"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "github-actions@github.com"
 
-      - name: Deploy to GitHub Pages
+      - name: 🛠 Build docs
+        run: npm run docs:build
+
+      - name: ✅ Auto-generate release blog + changelog (if not triggered by tag)
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          node scripts/generate-release-note.js "$TAG" || echo "🔁 Skipped blog generation fallback"
+        if: success() && !startsWith(github.ref, 'refs/tags/')
+
+      - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build
           publish_branch: gh-pages
+          cname: docs.rag-utils.dev  # 🔧 CHANGE THIS if you use a custom domain
           user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
