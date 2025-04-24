@@ -1,7 +1,7 @@
 // scripts/generate-release-note.js
 /**
- * Version: 2.2.0
- * Description: Generate release blog + changelog section and auto-push to Git
+ * Version: 2.3.0
+ * Description: Generate release blog + changelog section, auto-push to Git, fallback to safe defaults
  * Author: Ali Kahwaji
  */
 
@@ -22,13 +22,14 @@ if (!newVersionArg) {
 
 const newVersion = newVersionArg.startsWith('v') ? newVersionArg : `v${newVersionArg}`;
 
+// 🔁 Fallback to previous git tag
 function resolvePreviousTag() {
   try {
     const tags = execSync('git tag --sort=-creatordate', { encoding: 'utf-8' })
       .split('\n')
       .filter(Boolean);
-    const index = tags.indexOf(newVersion);
-    return tags[index + 1] || tags[1] || null;
+    const idx = tags.indexOf(newVersion);
+    return tags[idx + 1] || tags[1] || null;
   } catch {
     return null;
   }
@@ -40,8 +41,14 @@ if (!prevVersion) {
   process.exit(1);
 }
 
+// 📦 Get commits between versions
 function getCommits(from, to) {
-  return execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
+  try {
+    return execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
+  } catch (err) {
+    console.error('❌ Failed to fetch commits:', err.message);
+    process.exit(1);
+  }
 }
 
 function generateChangelogSection(commits) {
@@ -75,12 +82,16 @@ const commits = getCommits(prevVersion, newVersion);
 const blogContent = generateBlogMarkdown(newVersion, commits);
 const changelogSection = generateChangelogSection(commits);
 
-const blogPath = path.join(__dirname, `../docs-site/blog/${new Date().toISOString().slice(0, 10)}-${newVersion}.md`);
-fs.writeFileSync(blogPath, blogContent, 'utf-8');
-
+// 📍 Paths
+const today = new Date().toISOString().slice(0, 10);
+const blogPath = path.join(__dirname, `../docs-site/blog/${today}-${newVersion}.md`);
 const changelogPath = path.join(__dirname, '../CHANGELOG.md');
+
+// 📝 Write blog + changelog
+fs.writeFileSync(blogPath, blogContent, 'utf-8');
 fs.appendFileSync(changelogPath, `\n${changelogSection}`, 'utf-8');
 
+// 🔐 Commit and push
 try {
   execSync('git config user.name "github-actions[bot]"');
   execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
@@ -89,11 +100,11 @@ try {
   execSync('git push origin main');
   console.log(`✅ Blog + changelog committed for ${newVersion}`);
 } catch (err) {
-  console.warn('⚠️ Git commit skipped (may already be pushed or working tree clean).');
+  console.warn('⚠️ Git commit skipped (already committed or no changes).');
 }
 
+// 📦 Local preview
 console.log('\n📘 Blog Preview:\n');
 console.log(blogContent);
-
 console.log('\n📘 Changelog Section:\n');
 console.log(changelogSection);
