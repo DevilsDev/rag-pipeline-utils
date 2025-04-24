@@ -4,10 +4,33 @@
         <title>RAG Pipeline Utils Blog</title>
         <link>https://devilsdev.github.io/rag-pipeline-utils/blog</link>
         <description>RAG Pipeline Utils Blog</description>
-        <lastBuildDate>Tue, 22 Apr 2025 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 24 Apr 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[🚀 Version v2.1.6 Released]]></title>
+            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</link>
+            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</guid>
+            <pubDate>Thu, 24 Apr 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[RAG Pipeline Utils v2.1.6 is now available on NPM!]]></description>
+            <content:encoded><![CDATA[<p>RAG Pipeline Utils <strong>v2.1.6</strong> is now available on NPM!</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changes">🔧 Changes<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-changes" class="hash-link" aria-label="Direct link to 🔧 Changes" title="Direct link to 🔧 Changes">​</a></h2>
+<ul>
+<li>chore: remove legacy changelog workflow and finalize blog badge</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>docs(blog): add release post for v2.1.5</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-resources">🔗 Resources<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-resources" class="hash-link" aria-label="Direct link to 🔗 Resources" title="Direct link to 🔗 Resources">​</a></h2>
+<ul>
+<li>GitHub Compare: <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.5...v2.1.6" target="_blank" rel="noopener noreferrer">v2.1.5...v2.1.6</a></li>
+<li>View full <a href="https://devilsdev.github.io/CHANGELOG.md">CHANGELOG.md</a></li>
+</ul>]]></content:encoded>
+            <category>Release</category>
+            <category>Changelog</category>
+        </item>
         <item>
             <title><![CDATA[✨ Version v2.1.5 Released]]></title>
             <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</link>

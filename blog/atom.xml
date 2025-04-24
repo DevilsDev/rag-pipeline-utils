@@ -2,11 +2,38 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://devilsdev.github.io/rag-pipeline-utils/blog</id>
     <title>RAG Pipeline Utils Blog</title>
-    <updated>2025-04-22T00:00:00.000Z</updated>
+    <updated>2025-04-24T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://devilsdev.github.io/rag-pipeline-utils/blog"/>
     <subtitle>RAG Pipeline Utils Blog</subtitle>
     <icon>https://devilsdev.github.io/rag-pipeline-utils/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[🚀 Version v2.1.6 Released]]></title>
+        <id>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</id>
+        <link href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6"/>
+        <updated>2025-04-24T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[RAG Pipeline Utils v2.1.6 is now available on NPM!]]></summary>
+        <content type="html"><![CDATA[<p>RAG Pipeline Utils <strong>v2.1.6</strong> is now available on NPM!</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changes">🔧 Changes<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-changes" class="hash-link" aria-label="Direct link to 🔧 Changes" title="Direct link to 🔧 Changes">​</a></h2>
+<ul>
+<li>chore: remove legacy changelog workflow and finalize blog badge</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>ci(workflows): add blog badge verification workflow</li>
+<li>docs(blog): add release post for v2.1.5</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-resources">🔗 Resources<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-resources" class="hash-link" aria-label="Direct link to 🔗 Resources" title="Direct link to 🔗 Resources">​</a></h2>
+<ul>
+<li>GitHub Compare: <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.5...v2.1.6" target="_blank" rel="noopener noreferrer">v2.1.5...v2.1.6</a></li>
+<li>View full <a href="https://devilsdev.github.io/CHANGELOG.md">CHANGELOG.md</a></li>
+</ul>]]></content>
+        <author>
+            <name>Ali Kahwaji</name>
+            <uri>https://github.com/alikahwaji</uri>
+        </author>
+        <category label="Release" term="Release"/>
+        <category label="Changelog" term="Changelog"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[✨ Version v2.1.5 Released]]></title>
         <id>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</id>
