@@ -1,5 +1,5 @@
 # .github/workflows/post-release-generate-blog.yml
-# Version: 2.5.1
+# Version: 2.5.2
 # Description: Auto-generates changelog + blog post from tag or GitHub release with dry-run safety and badge output
 # Author: Ali Kahwaji
 
@@ -44,35 +44,28 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🏷 Extract tag version
-        id: version
+      - name: 🏷 Extract version and dry_run mode
+        id: context
         run: |
-          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          echo "dry_run=${{ github.event.inputs.dry_run || 'false' }}" >> "$GITHUB_OUTPUT"
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "dry_run=${{ github.event.inputs.dry_run == 'true' && 'true' || 'false' }}" >> $GITHUB_OUTPUT
 
       - name: 📝 Generate release note
         id: note
         run: |
           echo "🚧 Running release note generator..."
-          node scripts/generate-release-note.js "${{ steps.version.outputs.tag }}"
+          node scripts/generate-release-note.js "${{ steps.context.outputs.tag }}"
         env:
-          DRY_RUN: ${{ steps.version.outputs.dry_run }}
+          DRY_RUN: ${{ steps.context.outputs.dry_run }}
 
       - name: 🔐 Commit blog & changelog
-        if: ${{ steps.version.outputs.dry_run != 'true' }}
+        if: ${{ steps.context.outputs.dry_run != 'true' }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs(release): blog + changelog for ${{ steps.version.outputs.tag }}"
+          commit_message: "docs(release): blog + changelog for ${{ steps.context.outputs.tag }}"
           file_pattern: "CHANGELOG.md docs-site/blog/*.md"
 
-      - name: 💬 Add PR/Issue comment (optional)
-        if: ${{ steps.version.outputs.dry_run != 'true' }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: 1
-          body: "📝 Blog Post + Changelog updated for `${{ steps.version.outputs.tag }}` 🚀"
-        continue-on-error: true
-
-      - name: ✅ Output badge flag
+      - name: ✅ Output badge result
         id: done
         run: echo "blog_generated=true" >> "$GITHUB_OUTPUT"

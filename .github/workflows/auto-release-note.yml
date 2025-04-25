@@ -63,3 +63,11 @@ jobs:
           body: "Blog Post + Changelog updated for ${{ github.ref_name }} :rocket:"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💬 Comment on PR (optional)
+        if: github.event.pull_request.number != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+            issue-number: ${{ github.event.pull_request.number }}
+            body: "📢 Blog + Changelog updated for ${{ github.ref_name }} 🎉"
+        
