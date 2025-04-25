@@ -1,5 +1,5 @@
 # .github/workflows/verify-blog-badge.yml
-# Version: 1.2.0
+# Version: 1.3.0
 # Description: Validates presence of blog generation badge + GitHub Action output
 # Author: Ali Kahwaji
 
@@ -41,5 +41,10 @@ jobs:
             exit 1
           fi
 
-      - name: ✅ Log success output
-        run: echo "✅ Blog badge detected and validated."
+      - name: 🧾 Log assumed blog generation output (manual mapping)
+        run: |
+          echo "⚠️ Outputs from 'workflow_run' do not include job outputs."
+          echo "Assuming blog_generated=true based on successful workflow completion."
+
+      - name: ✅ Blog badge verified
+        run: echo "✅ Blog badge verified and present in README."
