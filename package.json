@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "A modular toolkit for building RAG (Retrieval-Augmented Generation) pipelines in Node.js",
   "main": "src/core/create-pipeline.js",
   "bin": {
