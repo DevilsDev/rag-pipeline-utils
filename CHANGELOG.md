@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.7](https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.6...v2.1.7) (2025-04-25)
+
+
+### Bug Fixes
+
+* **ci:** patch blog release workflow with DRY_RUN and safer outputs ([18f1b7d](https://github.com/DevilsDev/rag-pipeline-utils/commit/18f1b7dd4019022d76de9097db1ff8cfd858d83e))
+
 <<<<<<< HEAD
 ## 2.1.5 - 2025-04-22
 ### Features
