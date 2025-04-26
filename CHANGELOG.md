@@ -137,3 +137,11 @@ The format is based on [Semantic Versioning](https://semver.org/), and this proj
 - docs(blog): add release post for v2.1.7
 
 ---
+
+## v2.1.8
+
+- chore(ci): remove legacy blog generator in favor of unified post-release workflow
+- chore(ci): remove legacy blog generator in favor of unified post-release workflow
+- docs(blog): add release post for v2.1.7
+
+---
