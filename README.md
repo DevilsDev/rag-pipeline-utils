@@ -150,8 +150,7 @@ We welcome contributions via PRs, especially new mock providers, validation help
 
 For active maintainers and collaborators:
 
-- **Roadmap & Feature Planning**  
-  See [.github/PROJECT_ROADMAP.md](.github/PROJECT_ROADMAP.md) for the implementation phases, priorities, and tracking tags for all major developer-facing features.
+
 
 - **Milestone Tags**
   | Tag         | Description                        |

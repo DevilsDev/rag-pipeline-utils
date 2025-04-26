@@ -1,47 +1,49 @@
-// scripts/create-roadmap-issues.js
-
 /**
- * Version: 2.0.0
- * Description: Parses PROJECT_ROADMAP.md and syncs GitHub issues
+ * Version: 2.2.0
+ * Description: Create GitHub issues from roadmap file
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs/promises';
-import path from 'path';
 import { Octokit } from 'octokit';
-import yaml from 'js-yaml';
+import { readFileSync } from 'fs';
 
-const roadmapPath = new URL('../.github/PROJECT_ROADMAP.md', import.meta.url);
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_REPO = process.env.GITHUB_REPOSITORY || 'DevilsDev/rag-pipeline-utils';
+const [owner, repo] = GITHUB_REPO.split('/');
+const ROADMAP_FILE = '.github/PROJECT_ROADMAP.md';
 
-export async function createRoadmapIssues({ token, owner, repo }) {
-  const octokit = new Octokit({ auth: token });
-  const content = await fs.readFile(roadmapPath, 'utf-8');
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-  const blocks = content.split(/^##\s+/gm).slice(1);
+async function createRoadmapIssues() {
+  const content = readFileSync(ROADMAP_FILE, 'utf-8');
+  const lines = content.split('\n').filter(line => line.startsWith('|'));
+  const rows = lines.slice(2);
 
-  for (const block of blocks) {
-    const [header, ...bodyLines] = block.trim().split('\n');
-    const title = header.trim();
-    const metadata = {};
-    const description = [];
+  for (const row of rows) {
+    const cols = row.split('|').map(col => col.trim());
+    const title = cols[3];
+    const description = cols[4];
+    const status = cols[5];
 
-    for (const line of bodyLines) {
-      if (line.includes(':') && line.includes('**')) {
-        const [key, val] = line.split(':');
-        metadata[key.trim()] = val.replace(/\*\*/g, '').trim();
-      } else {
-        description.push(line);
-      }
+    if (!title || status.toLowerCase().includes('✅')) continue;
+
+    const { data: issues } = await octokit.rest.issues.listForRepo({ owner, repo, per_page: 100 });
+    const exists = issues.some(issue => issue.title === title);
+
+    if (!exists) {
+      await octokit.rest.issues.create({
+        owner,
+        repo,
+        title,
+        body: description,
+        labels: ['roadmap']
+      });
+      console.log(`✅ Created issue: ${title}`);
     }
-
-    const issue = await octokit.rest.issues.create({
-      owner,
-      repo,
-      title,
-      body: description.join('\n'),
-      labels: [metadata.Priority, metadata.Group].filter(Boolean),
-    });
-
-    console.log(`✅ Created: ${issue.data.title}`);
   }
 }
+
+createRoadmapIssues().catch(err => {
+  console.error('❌ Error creating roadmap issues:', err);
+  process.exit(1);
+});

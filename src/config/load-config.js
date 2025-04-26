@@ -1,33 +1,43 @@
 /**
- * Version: 1.1.0
- * Description: Loads validated .ragrc.json config from disk
+ * Version: 1.2.0
+ * Description: Loads and validates RAG pipeline configuration
  * Author: Ali Kahwaji
  */
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { validateRagrcSchema } from './validate-schema.js';
-import { logger } from '../utils/logger.js';
+import logger from '../utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const CONFIG_FILENAME = '.ragrc.json';
 
 /**
- * Loads and validates a RAG config file.
- * @param {string} configPath - Absolute path to .ragrc.json
- * @returns {object} Parsed config object
- * @throws {Error} If file is missing or invalid
+ * Load and validate a RAG configuration file.
+ * @param {string} [cwd=process.cwd()] - Directory to resolve the config from
+ * @returns {object} Validated configuration object
  */
-export function loadRagConfig(configPath) {
+export function loadRagConfig(cwd = process.cwd()) {
+  const configPath = path.resolve(cwd, CONFIG_FILENAME);
+
   if (!fs.existsSync(configPath)) {
-    throw new Error(`Config file not found: ${configPath}`);
+    logger.error(` Missing required configuration file: ${configPath}`);
+    throw new Error(`Missing config: ${configPath}`);
   }
 
   const raw = fs.readFileSync(configPath, 'utf-8');
-  const parsed = JSON.parse(raw);
+  let config;
 
-  const result = validateRagrcSchema(parsed);
-  if (!result.valid) {
-    logger.error({ errors: result.errors }, 'Invalid .ragrc.json schema');
-    throw new Error('Config validation failed');
+  try {
+    config = JSON.parse(raw);
+  } catch (err) {
+    logger.error('Failed to parse JSON configuration.');
+    throw new Error('Invalid JSON in config file.');
   }
 
-  return parsed;
+  validateRagrcSchema(config);
+  return config;
 }
