@@ -4,10 +4,47 @@
         <title>RAG Pipeline Utils Blog</title>
         <link>https://devilsdev.github.io/rag-pipeline-utils/blog</link>
         <description>RAG Pipeline Utils Blog</description>
-        <lastBuildDate>Thu, 24 Apr 2025 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Sat, 26 Apr 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
+        <item>
+            <title><![CDATA[🚀 Version v2.1.8 Released]]></title>
+            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8</link>
+            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8</guid>
+            <pubDate>Sat, 26 Apr 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[RAG Pipeline Utils v2.1.8 is now available on NPM!]]></description>
+            <content:encoded><![CDATA[<p>RAG Pipeline Utils <strong>v2.1.8</strong> is now available on NPM!</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changes">🔧 Changes<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8#-changes" class="hash-link" aria-label="Direct link to 🔧 Changes" title="Direct link to 🔧 Changes">​</a></h2>
+<ul>
+<li>chore(ci): remove legacy blog generator in favor of unified post-release workflow</li>
+<li>chore(ci): remove legacy blog generator in favor of unified post-release workflow</li>
+<li>docs(blog): add release post for v2.1.7</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-resources">🔗 Resources<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8#-resources" class="hash-link" aria-label="Direct link to 🔗 Resources" title="Direct link to 🔗 Resources">​</a></h2>
+<ul>
+<li>GitHub Compare: <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.7...v2.1.8" target="_blank" rel="noopener noreferrer">v2.1.7...v2.1.8</a></li>
+<li>View full <a href="https://devilsdev.github.io/CHANGELOG.md">CHANGELOG.md</a></li>
+</ul>]]></content:encoded>
+            <category>Release</category>
+            <category>Changelog</category>
+        </item>
+        <item>
+            <title><![CDATA[✨ Version v2.1.7 Released]]></title>
+            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7</link>
+            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7</guid>
+            <pubDate>Fri, 25 Apr 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[RAG Pipeline Utils vv2.1.7 is now available on NPM!]]></description>
+            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.7 is now available on NPM!</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<ul>
+<li>🚀 Auto-published blog from GitHub Release</li>
+<li>📦 Version bump: v2.1.7</li>
+<li>📘 See CHANGELOG.md for full details</li>
+</ul>]]></content:encoded>
+            <category>Release</category>
+            <category>Changelog</category>
+        </item>
         <item>
             <title><![CDATA[🚀 Version v2.1.6 Released]]></title>
             <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</link>
