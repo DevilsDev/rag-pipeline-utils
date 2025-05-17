@@ -15,10 +15,12 @@ import { pluginContracts } from '../core/plugin-contracts.js';
  * @throws {Error} if any required method is missing or not a function
  */
 export function validatePluginContract(type, instance, filePath) {
-  const expectedMethods = pluginContracts[type];
-  if (!expectedMethods) {
+  const contract = pluginContracts[type];
+  if (!contract) {
     throw new Error(`[validatePluginContract] Unknown plugin type: ${type}`);
   }
+
+  const expectedMethods = contract.requiredMethods;
 
   const missing = expectedMethods.filter(method =>
     typeof instance[method] !== 'function'
