@@ -10,7 +10,7 @@ import { logger } from '../utils/logger.js';
 import { withRetry } from '../utils/retry.js';
 import { LLMReranker } from '../reranker/llm-reranker.js';
 import { ParallelEmbedder, ParallelRetriever } from './performance/parallel-processor.js';
-import { StreamingProcessor, BackpressureController } from './performance/streaming-safeguards.js';
+import { StreamingProcessor } from './performance/streaming-safeguards.js';
 
 /**
  * Pipeline options to toggle middleware.

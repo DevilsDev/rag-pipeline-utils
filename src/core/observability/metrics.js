@@ -3,7 +3,7 @@
  * Tracks performance metrics, resource usage, and operational statistics
  */
 
-import { eventLogger, EventTypes, EventSeverity } from './event-logger.js';
+import { eventLogger } from './event-logger.js';
 
 /**
  * Metric types
@@ -465,7 +465,7 @@ export class PipelineMetrics {
    * @param {string} pluginType - Plugin type
    * @param {string} pluginName - Plugin name
    */
-  recordOperationStart(operation, pluginType, pluginName) {
+  recordOperationStart(operation, _pluginType, _pluginName) {
     this.concurrentOperations.inc(1, { operation_type: operation });
   }
 
