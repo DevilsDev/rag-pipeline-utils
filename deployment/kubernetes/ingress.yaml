@@ -1,0 +1,127 @@
+# Kubernetes Ingress for RAG Pipeline Utils
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rag-pipeline-ingress
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  tls:
+  - hosts:
+    - rag-pipeline.yourdomain.com
+    - api.rag-pipeline.yourdomain.com
+    secretName: rag-pipeline-tls
+  rules:
+  - host: rag-pipeline.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rag-pipeline-service
+            port:
+              number: 80
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: rag-pipeline-service
+            port:
+              number: 3001
+      - path: /metrics
+        pathType: Exact
+        backend:
+          service:
+            name: rag-pipeline-service
+            port:
+              number: 3001
+  - host: api.rag-pipeline.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rag-pipeline-service
+            port:
+              number: 80
+
+---
+# Service Account for RAG Pipeline Utils
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rag-pipeline-service-account
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+automountServiceAccountToken: false
+
+---
+# Role for RAG Pipeline Utils
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rag-pipeline-role
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: role
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for RAG Pipeline Utils
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rag-pipeline-rolebinding
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: rolebinding
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+subjects:
+- kind: ServiceAccount
+  name: rag-pipeline-service-account
+  namespace: rag-pipeline
+roleRef:
+  kind: Role
+  name: rag-pipeline-role
+  apiGroup: rbac.authorization.k8s.io

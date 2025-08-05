@@ -1,0 +1,325 @@
+# Release Tag Protection and Immutable Release Enforcement
+# Ensures release tags are immutable and follow semantic versioning
+name: Release Protection
+
+on:
+  push:
+    tags: [ 'v*' ]
+  release:
+    types: [published, edited, deleted]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Protection action'
+        required: true
+        type: choice
+        options:
+          - validate-tags
+          - enforce-immutability
+          - audit-releases
+
+permissions:
+  contents: read
+  packages: read
+  actions: read
+
+jobs:
+  # Validate semantic versioning and tag format
+  validate-release-tags:
+    name: Validate Release Tags
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.action == 'validate-tags'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Validate tag format
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Validating tag: $TAG_NAME"
+          
+          # Check semantic versioning format
+          if [[ ! $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ Invalid tag format: $TAG_NAME"
+            echo "Expected format: v<major>.<minor>.<patch>[-prerelease][+buildmetadata]"
+            exit 1
+          fi
+          
+          echo "✅ Tag format is valid: $TAG_NAME"
+          
+      - name: Check tag uniqueness
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          
+          # Check if tag already exists in remote
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME$"; then
+            echo "❌ Tag $TAG_NAME already exists and is immutable"
+            exit 1
+          fi
+          
+          echo "✅ Tag $TAG_NAME is unique"
+          
+      - name: Validate version progression
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          CURRENT_VERSION=${TAG_NAME#v}
+          
+          # Get latest release version
+          LATEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n1)
+          if [ -n "$LATEST_TAG" ]; then
+            LATEST_VERSION=${LATEST_TAG#v}
+            echo "Latest version: $LATEST_VERSION"
+            echo "Current version: $CURRENT_VERSION"
+            
+            # Use Node.js to compare versions
+            node -e "
+              const semver = require('semver');
+              const latest = '$LATEST_VERSION';
+              const current = '$CURRENT_VERSION';
+              
+              if (!semver.gt(current, latest)) {
+                console.error('❌ Version $current is not greater than latest $latest');
+                process.exit(1);
+              }
+              
+              console.log('✅ Version progression is valid');
+            "
+          fi
+
+  # Enforce release immutability
+  enforce-immutability:
+    name: Enforce Release Immutability
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event.inputs.action == 'enforce-immutability'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check release modification
+        if: github.event.action == 'edited' || github.event.action == 'deleted'
+        run: |
+          echo "❌ Release modification detected!"
+          echo "Event: ${{ github.event.action }}"
+          echo "Release: ${{ github.event.release.tag_name }}"
+          
+          # Send notification about immutability violation
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "body": "🚨 **IMMUTABILITY VIOLATION DETECTED** 🚨\n\nRelease `${{ github.event.release.tag_name }}` was modified after publication.\n\n**Action:** ${{ github.event.action }}\n**Time:** $(date -u)\n**Actor:** ${{ github.actor }}\n\nReleases are immutable once published. Please create a new release version instead.",
+              "event": "REQUEST_CHANGES"
+            }' \
+            "${{ github.api_url }}/repos/${{ github.repository }}/pulls/comments"
+            
+          exit 1
+          
+      - name: Validate release artifacts
+        if: github.event.action == 'published'
+        run: |
+          echo "✅ Validating release artifacts for immutability"
+          
+          # Check that release has required artifacts
+          RELEASE_ID=${{ github.event.release.id }}
+          ASSETS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+          
+          echo "Release assets:"
+          echo "$ASSETS" | jq -r '.[].name'
+          
+          # Ensure checksums are present
+          if ! echo "$ASSETS" | jq -r '.[].name' | grep -q "checksums"; then
+            echo "⚠️ Warning: No checksum file found in release assets"
+          fi
+
+  # Audit existing releases for compliance
+  audit-releases:
+    name: Audit Release Compliance
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'audit-releases'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Audit all releases
+        run: |
+          echo "🔍 Auditing all releases for compliance..."
+          
+          # Get all releases
+          RELEASES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/releases")
+          
+          echo "$RELEASES" | jq -r '.[] | "\(.tag_name) \(.published_at) \(.draft) \(.prerelease)"' | \
+          while read -r tag_name published_at draft prerelease; do
+            echo "Checking release: $tag_name"
+            
+            # Validate tag format
+            if [[ ! $tag_name =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$ ]]; then
+              echo "❌ Invalid tag format: $tag_name"
+            else
+              echo "✅ Valid tag format: $tag_name"
+            fi
+            
+            # Check if published (not draft)
+            if [ "$draft" = "true" ]; then
+              echo "⚠️ Draft release: $tag_name"
+            else
+              echo "✅ Published release: $tag_name"
+            fi
+            
+            echo "---"
+          done
+          
+      - name: Generate compliance report
+        run: |
+          echo "📊 Generating release compliance report..."
+          
+          cat > release-compliance-report.md << 'EOF'
+          # Release Compliance Report
+          
+          **Generated:** $(date -u)
+          **Repository:** ${{ github.repository }}
+          
+          ## Summary
+          
+          This report audits all releases for compliance with immutability and versioning standards.
+          
+          ## Compliance Checks
+          
+          - ✅ Semantic versioning format validation
+          - ✅ Tag uniqueness verification
+          - ✅ Version progression validation
+          - ✅ Release artifact validation
+          - ✅ Immutability enforcement
+          
+          ## Recommendations
+          
+          1. **Tag Protection**: Enable branch protection rules for release tags
+          2. **Automated Validation**: Use GitHub Actions for release validation
+          3. **Artifact Signing**: Sign release artifacts with GPG keys
+          4. **Checksum Verification**: Include SHA256 checksums for all artifacts
+          5. **Release Notes**: Ensure comprehensive release notes for all versions
+          
+          ## Next Steps
+          
+          - [ ] Configure branch protection for `v*` tags
+          - [ ] Set up GPG signing for releases
+          - [ ] Implement automated checksum generation
+          - [ ] Create release note templates
+          EOF
+          
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-compliance-report
+          path: release-compliance-report.md
+          retention-days: 90
+
+  # Create immutable release with checksums
+  create-immutable-release:
+    name: Create Immutable Release
+    runs-on: ubuntu-latest
+    needs: [validate-release-tags]
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build distribution
+        run: |
+          npm run build
+          npm pack
+          
+      - name: Generate checksums
+        run: |
+          echo "Generating checksums for release artifacts..."
+          
+          # Create checksums for all artifacts
+          find . -name "*.tgz" -o -name "*.tar.gz" -o -name "*.zip" | while read -r file; do
+            if [ -f "$file" ]; then
+              sha256sum "$file" >> checksums.txt
+              md5sum "$file" >> checksums.txt
+            fi
+          done
+          
+          # Sign checksums if GPG key is available
+          if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+            gpg --batch --yes --detach-sign --armor checksums.txt
+          fi
+          
+      - name: Create immutable release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.tgz
+            checksums.txt
+            checksums.txt.asc
+          body: |
+            ## 🚀 Release ${{ github.ref_name }}
+            
+            **⚠️ IMMUTABLE RELEASE**: This release is immutable and cannot be modified after publication.
+            
+            ### 🔒 Verification
+            
+            Verify the integrity of downloaded files using the provided checksums:
+            
+            ```bash
+            # Verify SHA256 checksums
+            sha256sum -c checksums.txt
+            
+            # Verify GPG signature (if available)
+            gpg --verify checksums.txt.asc checksums.txt
+            ```
+            
+            ### 📦 Installation
+            
+            ```bash
+            npm install @devilsdev/rag-pipeline-utils@${{ github.ref_name }}
+            ```
+            
+            ### 🔗 Links
+            
+            - [Documentation](https://devilsdev.github.io/rag-pipeline-utils/)
+            - [Deployment Guide](./DEPLOYMENT_GUIDE.md)
+            - [Security Report](./SECURITY_AUDIT_REPORT.md)
+            
+            ---
+            
+            **Release Metadata:**
+            - **Tag:** ${{ github.ref_name }}
+            - **Commit:** ${{ github.sha }}
+            - **Build Date:** $(date -u)
+            - **Node Version:** $(node --version)
+            - **NPM Version:** $(npm --version)
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

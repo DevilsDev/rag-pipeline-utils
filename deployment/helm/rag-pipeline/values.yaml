@@ -1,0 +1,300 @@
+# Default values for RAG Pipeline Utils Helm Chart
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Application configuration
+app:
+  name: rag-pipeline-utils
+  version: "2.1.7"
+  
+# Image configuration
+image:
+  registry: docker.io
+  repository: devilsdev/rag-pipeline-utils
+  tag: "2.1.7"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Deployment configuration
+deployment:
+  replicaCount: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  
+  # Pod configuration
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3001"
+    prometheus.io/path: "/metrics"
+  
+  podLabels: {}
+  
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    capabilities:
+      drop:
+        - ALL
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+  healthPort: 3001
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3001"
+    prometheus.io/path: "/metrics"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  hosts:
+    - host: rag-pipeline.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: api.rag-pipeline.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: rag-pipeline-tls
+      hosts:
+        - rag-pipeline.yourdomain.com
+        - api.rag-pipeline.yourdomain.com
+
+# Resource configuration
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Health checks
+healthChecks:
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: health
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  startupProbe:
+    httpGet:
+      path: /health
+      port: health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+
+# Environment variables
+env:
+  NODE_ENV: "production"
+  RAG_PIPELINE_ENV: "production"
+  RAG_LOG_LEVEL: "info"
+  RAG_ENABLE_METRICS: "true"
+  RAG_HEALTH_CHECK_PORT: "3001"
+  RAG_MAX_CONCURRENCY: "5"
+  RAG_BATCH_SIZE: "10"
+  RAG_ENABLE_STREAMING: "true"
+  RAG_MAX_MEMORY_MB: "512"
+  RAG_TOKEN_LIMIT: "100000"
+
+# Secrets configuration
+secrets:
+  openaiApiKey: ""  # Set this value or use external secret management
+  pineconeApiKey: ""  # Optional
+  postgresUrl: ""
+  jwtSecret: ""
+
+# ConfigMap data
+config:
+  ragrc: |
+    {
+      "loader": {
+        "pdf": "@devilsdev/pdf-loader",
+        "markdown": "@devilsdev/markdown-loader",
+        "text": "@devilsdev/text-loader"
+      },
+      "embedder": {
+        "openai": "@devilsdev/openai-embedder"
+      },
+      "retriever": {
+        "chroma": "@devilsdev/chroma-retriever",
+        "pinecone": "@devilsdev/pinecone-retriever"
+      },
+      "llm": {
+        "openai": "@devilsdev/openai-llm"
+      },
+      "reranker": {
+        "cross-encoder": "@devilsdev/cross-encoder-reranker"
+      },
+      "pipeline": {
+        "loader": "pdf",
+        "embedder": "openai",
+        "retriever": "chroma",
+        "llm": "openai",
+        "reranker": "cross-encoder"
+      },
+      "performance": {
+        "maxConcurrency": 5,
+        "batchSize": 10,
+        "enableStreaming": true,
+        "enableObservability": true,
+        "maxMemoryMB": 512,
+        "tokenLimit": 100000
+      },
+      "observability": {
+        "enableLogging": true,
+        "enableTracing": true,
+        "enableMetrics": true,
+        "logLevel": "info",
+        "exportFormat": "json"
+      }
+    }
+
+# Persistence configuration
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+
+# Node selection
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - rag-pipeline-utils
+          topologyKey: kubernetes.io/hostname
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+  automountServiceAccountToken: false
+
+# RBAC configuration
+rbac:
+  create: true
+  rules:
+    - apiGroups: [""]
+      resources: ["configmaps", "secrets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list", "watch"]
+
+# Dependencies configuration
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "ragpass"
+    username: "raguser"
+    password: "ragpass"
+    database: "ragdb"
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      path: /metrics
+      port: health
+  grafana:
+    enabled: true
+    dashboards:
+      enabled: true
+
+# Network policies
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1

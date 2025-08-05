@@ -1,0 +1,168 @@
+# Kubernetes Deployment for RAG Pipeline Utils
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-pipeline-app
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rag-pipeline-utils
+      app.kubernetes.io/component: application
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rag-pipeline-utils
+        app.kubernetes.io/instance: production
+        app.kubernetes.io/version: "2.1.7"
+        app.kubernetes.io/component: application
+        app.kubernetes.io/part-of: rag-pipeline-utils
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: rag-pipeline-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: rag-pipeline
+        image: devilsdev/rag-pipeline-utils:2.1.7
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: health
+          containerPort: 3001
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: RAG_PIPELINE_ENV
+          value: "production"
+        - name: RAG_LOG_LEVEL
+          value: "info"
+        - name: RAG_ENABLE_METRICS
+          value: "true"
+        - name: RAG_HEALTH_CHECK_PORT
+          value: "3001"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rag-pipeline-secrets
+              key: openai-api-key
+        - name: PINECONE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rag-pipeline-secrets
+              key: pinecone-api-key
+              optional: true
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: rag-pipeline-config
+              key: redis-url
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: rag-pipeline-secrets
+              key: postgres-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: health
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: data-volume
+          mountPath: /app/data
+        - name: tmp-volume
+          mountPath: /app/tmp
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rag-pipeline-config
+      - name: logs-volume
+        emptyDir: {}
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: rag-pipeline-data-pvc
+      - name: tmp-volume
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "kubernetes.io/arch"
+        operator: "Equal"
+        value: "amd64"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - rag-pipeline-utils
+              topologyKey: kubernetes.io/hostname

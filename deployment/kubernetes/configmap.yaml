@@ -1,0 +1,114 @@
+# Kubernetes ConfigMap for RAG Pipeline Utils
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-pipeline-config
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: configuration
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+data:
+  # Application configuration
+  NODE_ENV: "production"
+  RAG_PIPELINE_ENV: "production"
+  RAG_LOG_LEVEL: "info"
+  RAG_ENABLE_METRICS: "true"
+  RAG_HEALTH_CHECK_PORT: "3001"
+  
+  # Service URLs
+  redis-url: "redis://rag-redis-service:6379"
+  chroma-url: "http://rag-chroma-service:8000"
+  prometheus-url: "http://rag-prometheus-service:9090"
+  
+  # Performance settings
+  RAG_MAX_CONCURRENCY: "5"
+  RAG_BATCH_SIZE: "10"
+  RAG_ENABLE_STREAMING: "true"
+  RAG_MAX_MEMORY_MB: "512"
+  RAG_TOKEN_LIMIT: "100000"
+  
+  # Observability settings
+  RAG_ENABLE_LOGGING: "true"
+  RAG_ENABLE_TRACING: "true"
+  RAG_EXPORT_FORMAT: "json"
+  
+  # Default .ragrc.json configuration
+  ragrc.json: |
+    {
+      "loader": {
+        "pdf": "@devilsdev/pdf-loader",
+        "markdown": "@devilsdev/markdown-loader",
+        "text": "@devilsdev/text-loader"
+      },
+      "embedder": {
+        "openai": "@devilsdev/openai-embedder"
+      },
+      "retriever": {
+        "chroma": "@devilsdev/chroma-retriever",
+        "pinecone": "@devilsdev/pinecone-retriever"
+      },
+      "llm": {
+        "openai": "@devilsdev/openai-llm"
+      },
+      "reranker": {
+        "cross-encoder": "@devilsdev/cross-encoder-reranker"
+      },
+      "pipeline": {
+        "loader": "pdf",
+        "embedder": "openai",
+        "retriever": "chroma",
+        "llm": "openai",
+        "reranker": "cross-encoder"
+      },
+      "performance": {
+        "maxConcurrency": 5,
+        "batchSize": 10,
+        "enableStreaming": true,
+        "enableObservability": true,
+        "maxMemoryMB": 512,
+        "tokenLimit": 100000
+      },
+      "observability": {
+        "enableLogging": true,
+        "enableTracing": true,
+        "enableMetrics": true,
+        "logLevel": "info",
+        "exportFormat": "json"
+      }
+    }
+
+---
+# Kubernetes Secret template (values should be base64 encoded)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rag-pipeline-secrets
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: secrets
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+type: Opaque
+data:
+  # Base64 encoded secrets (replace with actual values)
+  # echo -n "your-openai-api-key" | base64
+  openai-api-key: "eW91ci1vcGVuYWktYXBpLWtleQ=="
+  
+  # echo -n "your-pinecone-api-key" | base64  
+  pinecone-api-key: "eW91ci1waW5lY29uZS1hcGkta2V5"
+  
+  # echo -n "postgresql://raguser:ragpass@rag-postgres-service:5432/ragdb" | base64
+  postgres-url: "cG9zdGdyZXNxbDovL3JhZ3VzZXI6cmFncGFzc0ByYWctcG9zdGdyZXMtc2VydmljZTo1NDMyL3JhZ2Ri"
+  
+  # echo -n "ragpass" | base64
+  postgres-password: "cmFncGFzcw=="
+  
+  # echo -n "your-jwt-secret" | base64
+  jwt-secret: "eW91ci1qd3Qtc2VjcmV0"

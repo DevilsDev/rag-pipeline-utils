@@ -1,0 +1,15 @@
+# Kubernetes Namespace for RAG Pipeline Utils
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    kubernetes.io/description: "RAG Pipeline Utils production namespace"
+    kubernetes.io/managed-by: "DevSecOps Team"

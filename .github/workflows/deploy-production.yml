@@ -1,0 +1,297 @@
+# Production Deployment Workflow
+# Automated deployment to Kubernetes with security scanning and monitoring
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+      force_deploy:
+        description: 'Force deployment (skip some checks)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  HELM_VERSION: v3.12.0
+  KUBECTL_VERSION: v1.28.0
+
+jobs:
+  # Security and quality checks
+  security-checks:
+    name: Security & Quality Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run security audit
+        run: |
+          npm run security:audit:critical
+          npm run security:report
+          
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run tests
+        run: npm test
+        
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: security-audit-report.json
+          retention-days: 30
+
+  # Build and push Docker image
+  build-and-push:
+    name: Build & Push Container Image
+    runs-on: ubuntu-latest
+    needs: security-checks
+    permissions:
+      contents: read
+      packages: write
+      
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: runtime
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.meta.outputs.tags }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  # Container security scanning
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      contents: read
+      security-events: write
+      
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.image-tag }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push, container-security]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    environment: 
+      name: staging
+      url: https://staging.rag-pipeline.yourdomain.com
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+          
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+          
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl cluster-info
+          
+      - name: Deploy with Helm
+        run: |
+          export KUBECONFIG=kubeconfig
+          helm upgrade --install rag-pipeline-staging ./deployment/helm/rag-pipeline \
+            --namespace rag-pipeline-staging \
+            --create-namespace \
+            --set image.tag=${{ github.sha }} \
+            --set ingress.hosts[0].host=staging.rag-pipeline.yourdomain.com \
+            --set secrets.openaiApiKey="${{ secrets.OPENAI_API_KEY }}" \
+            --set secrets.pineconeApiKey="${{ secrets.PINECONE_API_KEY }}" \
+            --wait --timeout=10m
+            
+      - name: Run smoke tests
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=rag-pipeline-utils -n rag-pipeline-staging --timeout=300s
+          curl -f https://staging.rag-pipeline.yourdomain.com/health || exit 1
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
+    environment: 
+      name: production
+      url: https://rag-pipeline.yourdomain.com
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+          
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+          
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl cluster-info
+          
+      - name: Deploy with Helm
+        run: |
+          export KUBECONFIG=kubeconfig
+          helm upgrade --install rag-pipeline ./deployment/helm/rag-pipeline \
+            --namespace rag-pipeline \
+            --create-namespace \
+            --set image.tag=${{ github.sha }} \
+            --set ingress.hosts[0].host=rag-pipeline.yourdomain.com \
+            --set secrets.openaiApiKey="${{ secrets.OPENAI_API_KEY }}" \
+            --set secrets.pineconeApiKey="${{ secrets.PINECONE_API_KEY }}" \
+            --set autoscaling.enabled=true \
+            --set autoscaling.minReplicas=3 \
+            --set autoscaling.maxReplicas=10 \
+            --wait --timeout=15m
+            
+      - name: Run production health checks
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=rag-pipeline-utils -n rag-pipeline --timeout=600s
+          curl -f https://rag-pipeline.yourdomain.com/health || exit 1
+          curl -f https://rag-pipeline.yourdomain.com/metrics || exit 1
+          
+      - name: Update deployment status
+        run: |
+          echo "✅ Production deployment successful!"
+          echo "🔗 Application URL: https://rag-pipeline.yourdomain.com"
+          echo "📊 Metrics URL: https://rag-pipeline.yourdomain.com/metrics"
+          echo "🏥 Health Check: https://rag-pipeline.yourdomain.com/health"
+
+  # Post-deployment monitoring
+  post-deployment:
+    name: Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && (needs.deploy-production.result == 'success')
+    
+    steps:
+      - name: Wait for application startup
+        run: sleep 60
+        
+      - name: Monitor application health
+        run: |
+          for i in {1..10}; do
+            if curl -f https://rag-pipeline.yourdomain.com/health; then
+              echo "✅ Health check $i/10 passed"
+            else
+              echo "❌ Health check $i/10 failed"
+              exit 1
+            fi
+            sleep 30
+          done
+          
+      - name: Send deployment notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow

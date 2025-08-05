@@ -1,0 +1,62 @@
+# Kubernetes Service for RAG Pipeline Utils
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-pipeline-service
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3001"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: health
+    port: 3001
+    targetPort: health
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/component: application
+
+---
+# LoadBalancer Service for external access
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-pipeline-loadbalancer
+  namespace: rag-pipeline
+  labels:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "2.1.7"
+    app.kubernetes.io/component: loadbalancer
+    app.kubernetes.io/part-of: rag-pipeline-utils
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: http
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: rag-pipeline-utils
+    app.kubernetes.io/component: application
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Restrict this in production

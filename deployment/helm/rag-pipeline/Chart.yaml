@@ -1,0 +1,43 @@
+# Helm Chart for RAG Pipeline Utils
+apiVersion: v2
+name: rag-pipeline-utils
+description: Enterprise-grade RAG pipeline toolkit for Node.js
+type: application
+version: 2.1.7
+appVersion: "2.1.7"
+home: https://github.com/DevilsDev/rag-pipeline-utils
+sources:
+  - https://github.com/DevilsDev/rag-pipeline-utils
+maintainers:
+  - name: Ali Kahwaji
+    email: ali@devilsdev.com
+    url: https://github.com/alikahwaji
+keywords:
+  - rag
+  - retrieval-augmented-generation
+  - llm
+  - ai
+  - machine-learning
+  - vector-database
+  - embeddings
+  - nodejs
+annotations:
+  category: AI/ML
+  licenses: Apache-2.0
+dependencies:
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: prometheus
+    version: "23.x.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.prometheus.enabled
+  - name: grafana
+    version: "6.x.x"
+    repository: https://grafana.github.io/helm-charts
+    condition: monitoring.grafana.enabled

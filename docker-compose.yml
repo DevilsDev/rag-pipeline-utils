@@ -1,0 +1,189 @@
+# Docker Compose for RAG Pipeline Utils
+# Local development and testing environment
+version: '3.8'
+
+services:
+  # Main RAG Pipeline application
+  rag-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: rag-pipeline-dev
+    ports:
+      - "3000:3000"    # Main application port
+      - "3001:3001"    # Health check port
+      - "9229:9229"    # Node.js debugger port
+    environment:
+      - NODE_ENV=development
+      - RAG_PIPELINE_ENV=development
+      - RAG_LOG_LEVEL=debug
+      - RAG_ENABLE_METRICS=true
+      - RAG_HEALTH_CHECK_PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - PINECONE_API_KEY=${PINECONE_API_KEY:-}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://raguser:ragpass@postgres:5432/ragdb
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - rag-logs:/app/logs
+      - rag-data:/app/data
+    depends_on:
+      - redis
+      - postgres
+      - prometheus
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for metadata and configuration storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: rag-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ragdb
+      - POSTGRES_USER=raguser
+      - POSTGRES_PASSWORD=ragpass
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deployment/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raguser -d ragdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: rag-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - rag-network
+    restart: unless-stopped
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: rag-grafana
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=ragpipeline
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deployment/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deployment/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - rag-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Vector database (Chroma)
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: rag-chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - CHROMA_DB_IMPL=clickhouse
+    volumes:
+      - chroma-data:/chroma/chroma
+    networks:
+      - rag-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: rag-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - rag-network
+    restart: unless-stopped
+    depends_on:
+      - rag-pipeline
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  chroma-data:
+    driver: local
+  rag-logs:
+    driver: local
+  rag-data:
+    driver: local
+
+networks:
+  rag-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
