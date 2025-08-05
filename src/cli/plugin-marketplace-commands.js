@@ -7,9 +7,10 @@ import { Command } from 'commander';
 import fs from 'fs/promises';
 import path from 'path';
 import { PluginPublisher, PublishingUtils } from '../core/plugin-marketplace/plugin-publisher.js';
-import { PluginVersionResolver, createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
-import { metadataExtractor, MetadataUtils } from '../core/plugin-marketplace/plugin-metadata.js';
-import { DEFAULT_REGISTRY_URLS, LOCAL_REGISTRY_FILE } from '../core/plugin-marketplace/plugin-registry-format.js';
+import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
+import { MetadataUtils } from '../core/plugin-marketplace/plugin-metadata.js';
+import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
+// REGISTRY_SCHEMA and LOCAL_REGISTRY_FILE unused - reserved for future use
 import { logger } from '../utils/logger.js';
 
 /**

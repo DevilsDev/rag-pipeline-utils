@@ -8,8 +8,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { validateEnhancedRagrcSchema, extractPluginDependencies } from '../config/enhanced-ragrc-schema.js';
 import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
-import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
-import { logger } from '../utils/logger.js';
+// Version resolver and logger imports - reserved for future use
+// import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
+// import { logger } from '../utils/logger.js';
 
 /**
  * Interactive wizard for RAG pipeline setup

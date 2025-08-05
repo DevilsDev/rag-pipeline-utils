@@ -8,7 +8,7 @@ import path from 'path';
 import { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency } from '../config/enhanced-ragrc-schema.js';
 import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
 import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
-import { logger } from '../utils/logger.js';
+// import { logger } from '../utils/logger.js'; // Reserved for future logging
 
 /**
  * Diagnostic categories

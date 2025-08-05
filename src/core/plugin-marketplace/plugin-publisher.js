@@ -6,7 +6,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { createReadStream } from 'fs';
 import { metadataExtractor, metadataValidator } from './plugin-metadata.js';
 import { validatePluginRegistry, createEmptyRegistry } from './plugin-registry-format.js';
 import { VersionUtils } from './version-resolver.js';
