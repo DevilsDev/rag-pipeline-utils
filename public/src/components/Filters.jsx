@@ -56,24 +56,37 @@ export default function Filters({
                           scoreRange.max < 1;
 
   return (
-    <div className="mt-4 border-t border-gray-200 pt-4">
-      {/* Filter Toggle */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="mt-6 border-t border-gray-200/60 pt-6">
+      {/* Enhanced Filter Toggle */}
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+          className="group flex items-center space-x-3 px-4 py-2.5 bg-gradient-to-r from-gray-50 to-blue-50/30 hover:from-gray-100 hover:to-blue-100/50 rounded-xl border border-gray-200/50 hover:border-blue-200/60 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-all duration-200"
+          aria-expanded={isExpanded}
+          aria-controls="advanced-filters"
         >
-          <Filter size={16} />
+          <Filter size={16} className="text-blue-600 group-hover:rotate-12 transition-transform" />
           <span>Advanced Filters</span>
-          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          <div className="flex items-center space-x-2">
+            {hasActiveFilters && (
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                {(selectedCategories.length + selectedModels.length + (scoreRange.min > 0 || scoreRange.max < 1 ? 1 : 0))}
+              </span>
+            )}
+            {isExpanded ? 
+              <ChevronUp size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" /> : 
+              <ChevronDown size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+            }
+          </div>
         </button>
         
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-800"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 text-red-600 hover:text-red-700 rounded-xl border border-red-200/50 hover:border-red-300 text-sm font-semibold transition-all duration-200 hover:scale-105 transform"
+            aria-label="Clear all active filters"
           >
-            <X size={14} />
+            <X size={14} className="hover:rotate-90 transition-transform" />
             <span>Clear All</span>
           </button>
         )}
