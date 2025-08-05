@@ -1,17 +1,100 @@
 /**
- * Version: 1.0.0
+ * Version: 2.0.0
  * Path: /src/query.js
- * Description: Handles querying the RAG pipeline (mocked for now)
+ * Description: Handles querying the RAG pipeline with streaming support
  * Author: Ali Kahwaji
  */
 
-export async function queryPipeline(prompt) {
-    if (!prompt) {
-      throw new Error('No prompt provided for query.');
-    }
-  
-    console.log(`[QUERY] Pretending to query pipeline: "${prompt}"`);
-    // Placeholder for real query logic
-    return `Mocked answer to: "${prompt}"`;
+import { createRagPipeline } from './core/create-pipeline.js';
+import { loadPluginsFromJson } from './config/load-plugin-config.js';
+import { logger } from './utils/logger.js';
+
+/**
+ * Query the RAG pipeline with a standard response
+ * @param {string} prompt - Query prompt
+ * @param {object} config - Pipeline configuration
+ * @returns {Promise<string>} Generated response
+ */
+export async function queryPipeline(prompt, config) {
+  if (!prompt) {
+    throw new Error('No prompt provided for query.');
   }
-  
+
+  if (!config) {
+    throw new Error('No configuration provided for query.');
+  }
+
+  try {
+    // Load plugins from configuration
+    await loadPluginsFromJson(process.cwd());
+
+    // Extract plugin names from config
+    const loaderName = Object.keys(config.loader)[0];
+    const embedderName = Object.keys(config.embedder)[0];
+    const retrieverName = Object.keys(config.retriever)[0];
+    const llmName = Object.keys(config.llm)[0];
+
+    // Create pipeline instance
+    const pipeline = createRagPipeline({
+      loader: loaderName,
+      embedder: embedderName,
+      retriever: retrieverName,
+      llm: llmName
+    }, {
+      useRetry: true,
+      useLogging: true,
+      useReranker: config.useReranker || false
+    });
+
+    // Execute query
+    return await pipeline.query(prompt);
+  } catch (error) {
+    logger.error('Query pipeline failed', { error: error.message, prompt });
+    throw error;
+  }
+}
+
+/**
+ * Query the RAG pipeline with streaming response
+ * @param {string} prompt - Query prompt
+ * @param {object} config - Pipeline configuration
+ * @returns {AsyncIterable<string>} Stream of response tokens
+ */
+export async function* queryPipelineStream(prompt, config) {
+  if (!prompt) {
+    throw new Error('No prompt provided for streaming query.');
+  }
+
+  if (!config) {
+    throw new Error('No configuration provided for streaming query.');
+  }
+
+  try {
+    // Load plugins from configuration
+    await loadPluginsFromJson(process.cwd());
+
+    // Extract plugin names from config
+    const loaderName = Object.keys(config.loader)[0];
+    const embedderName = Object.keys(config.embedder)[0];
+    const retrieverName = Object.keys(config.retriever)[0];
+    const llmName = Object.keys(config.llm)[0];
+
+    // Create pipeline instance
+    const pipeline = createRagPipeline({
+      loader: loaderName,
+      embedder: embedderName,
+      retriever: retrieverName,
+      llm: llmName
+    }, {
+      useRetry: true,
+      useLogging: true,
+      useReranker: config.useReranker || false
+    });
+
+    // Execute streaming query
+    yield* pipeline.queryStream(prompt);
+  } catch (error) {
+    logger.error('Streaming query pipeline failed', { error: error.message, prompt });
+    throw error;
+  }
+}

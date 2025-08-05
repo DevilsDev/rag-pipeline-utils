@@ -52,12 +52,19 @@ export const pluginContracts = {
   },
   llm: {
     requiredMethods: ['generate'],
+    optionalMethods: ['generateStream'],
     methodSignatures: {
       generate: {
         params: ['prompt', 'context'],
         paramTypes: ['string', 'string[]'],
         returnType: 'Promise<string>',
         description: 'Generate response based on prompt and retrieved context'
+      },
+      generateStream: {
+        params: ['prompt', 'context'],
+        paramTypes: ['string', 'string[]'],
+        returnType: 'AsyncIterable<string>',
+        description: 'Generate streaming response token-by-token based on prompt and retrieved context'
       }
     }
   },

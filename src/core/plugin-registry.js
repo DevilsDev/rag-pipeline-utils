@@ -43,6 +43,7 @@ export class PluginRegistry {
 
     const missingMethods = [];
     
+    // Validate required methods
     for (const methodName of contract.requiredMethods) {
       if (typeof plugin[methodName] !== 'function') {
         missingMethods.push(methodName);
@@ -54,6 +55,16 @@ export class PluginRegistry {
         `Plugin [${type}:${name}] missing required methods: ${missingMethods.join(', ')}. ` +
         `Expected methods: ${contract.requiredMethods.join(', ')}`
       );
+    }
+
+    // Log info about optional methods for debugging
+    if (contract.optionalMethods) {
+      const implementedOptional = contract.optionalMethods.filter(
+        methodName => typeof plugin[methodName] === 'function'
+      );
+      if (implementedOptional.length > 0) {
+        console.debug(`Plugin [${type}:${name}] implements optional methods: ${implementedOptional.join(', ')}`);
+      }
     }
   }
 

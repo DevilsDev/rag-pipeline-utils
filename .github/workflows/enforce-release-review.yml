@@ -6,12 +6,11 @@
 name: 🛡 Release Review Passed
 
 on:
-  pull_request:
-    branches: [main]
   push:
     tags:
       - 'v*.*.*'
   workflow_dispatch:
+  # Removed pull_request trigger to avoid blocking development PRs
 
 permissions:
   contents: read

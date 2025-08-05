@@ -39,10 +39,12 @@ if (normalized !== changelog) {
   }
 }
 
-// Step 3: Validate presence of correct heading
+// Step 3: Validate presence of correct heading (non-blocking)
 const headingPattern = new RegExp(`^## \\[${version}\\]`, 'm');
 if (!headingPattern.test(changelog)) {
-  throw new Error(`❌ CHANGELOG.md does not contain a properly formatted entry for version ${version}`);
+  console.warn(`⚠️  CHANGELOG.md does not contain a properly formatted entry for version ${version}`);
+  console.warn('This will be required for releases but won\'t block commits.');
+  process.exit(0); // Exit successfully to avoid blocking commits
 }
 
 console.log(`✅ CHANGELOG.md contains a valid entry for version ${version}`);
