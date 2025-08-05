@@ -2,17 +2,29 @@
 
 /**
  * Git Hook Restoration Script
- * Restores normal Git hooks after emergency recovery mode
+ * Version: 2.0.0
+ * Description: Restores normal Git hooks after emergency recovery mode
+ * Author: Ali Kahwaji
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { setupCLI, dryRunWrapper } from './utils/cli.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('🔄 Restoring Normal Git Hooks');
+// Load configuration
+const configPath = path.resolve(__dirname, 'scripts.config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Setup CLI
+const { args, logger } = setupCLI('restore-git-hooks.js', 'Restore normal Git hooks after emergency mode', {
+  '--force': 'Force restoration even if backup doesn\'t exist'
+});
+
+logger.info('🔄 Restoring Normal Git Hooks');
 
 // 1. Restore pre-commit hook from backup
 const preCommitPath = path.resolve(__dirname, '../.husky/pre-commit');

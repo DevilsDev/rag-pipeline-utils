@@ -1,0 +1,52 @@
+{
+  "github": {
+    "owner": "DevilsDev",
+    "repo": "rag-pipeline-utils",
+    "apiRetries": 3,
+    "retryDelayMs": 1000,
+    "rateLimitBuffer": 100
+  },
+  "roadmap": {
+    "filePath": "PROJECT_ROADMAP.md",
+    "issueLabels": {
+      "roadmap": {
+        "name": "roadmap",
+        "color": "0052cc",
+        "description": "Items from the project roadmap"
+      },
+      "enhancement": {
+        "name": "enhancement",
+        "color": "a2eeef",
+        "description": "New feature or request"
+      },
+      "documentation": {
+        "name": "documentation",
+        "color": "0075ca",
+        "description": "Improvements or additions to documentation"
+      },
+      "bug": {
+        "name": "bug",
+        "color": "d73a49",
+        "description": "Something isn't working"
+      }
+    }
+  },
+  "release": {
+    "tagFormat": "v{version}",
+    "changelogPath": "CHANGELOG.md",
+    "blogPath": "docs-site/blog",
+    "dateFormat": "YYYY-MM-DD"
+  },
+  "paths": {
+    "root": ".",
+    "scripts": "scripts",
+    "fixtures": "__tests__/fixtures",
+    "mocks": "__tests__/fixtures/src/mocks",
+    "husky": ".husky"
+  },
+  "logging": {
+    "level": "info",
+    "timestamp": true,
+    "colors": true
+  }
+}

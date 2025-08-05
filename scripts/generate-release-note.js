@@ -1,5 +1,8 @@
+#!/usr/bin/env node
+
 /**
- * Version: 2.7.0
+ * Release Note Generator
+ * Version: 3.0.0
  * Description: Generates changelog section and blog markdown from a GitHub tag
  * Author: Ali Kahwaji
  */
@@ -8,33 +11,63 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { setupCLI, dryRunWrapper, validateArgs } from './utils/cli.js';
+import { withRetry } from './utils/retry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const [, , versionArg] = process.argv;
+// Load configuration
+const configPath = path.resolve(__dirname, 'scripts.config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
-if (!versionArg) {
-  console.error('❌ Usage: node scripts/generate-release-note.js <new-tag>');
+// Setup CLI
+const { args, logger } = setupCLI('generate-release-note.js', 'Generate release notes and blog posts from Git tags', {
+  '--version': 'Version tag to generate notes for (required)',
+  '--skip-git': 'Skip git operations (commit and push)',
+  '--blog-only': 'Only generate blog post, skip changelog',
+  '--changelog-only': 'Only generate changelog, skip blog post'
+});
+
+// Validate required arguments
+const version = args.version || args._[0];
+if (!version) {
+  logger.error('Version argument is required');
+  logger.info('Usage: node generate-release-note.js --version v1.2.3');
   process.exit(1);
 }
 
-const newVersion = versionArg.startsWith('v') ? versionArg : `v${versionArg}`;
+const newVersion = version.startsWith('v') ? version : `v${version}`;
 
 /**
  * Resolves previous Git tag for comparison.
  * @returns {string|null}
  */
 function resolvePreviousTag() {
-  try {
-    const tags = execSync('git tag --sort=-creatordate', { encoding: 'utf-8' })
-      .split('\n')
-      .filter(Boolean);
-    const idx = tags.indexOf(newVersion);
-    return tags[idx + 1] || tags[1] || null;
-  } catch {
-    return null;
-  }
+  return withRetry(
+    () => {
+      logger.debug('Fetching Git tags...');
+      const tags = execSync('git tag --sort=-creatordate', { encoding: 'utf-8' })
+        .split('\n')
+        .filter(Boolean);
+      
+      logger.debug(`Found ${tags.length} tags: ${tags.slice(0, 5).join(', ')}...`);
+      
+      const idx = tags.indexOf(newVersion);
+      const prevTag = tags[idx + 1] || tags[1] || null;
+      
+      if (!prevTag) {
+        throw new Error('No previous tag found for comparison');
+      }
+      
+      logger.info(`Comparing ${prevTag} → ${newVersion}`);
+      return prevTag;
+    },
+    {
+      maxAttempts: 2,
+      operation: 'resolve previous Git tag'
+    }
+  );
 }
 
 const prevVersion = resolvePreviousTag();
@@ -50,28 +83,41 @@ if (!prevVersion) {
  * @returns {string}
  */
 function getCommits(from, to) {
-  try {
-    return execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
-  } catch (err) {
-    console.error('❌ Failed to get commits:', err.message);
-    process.exit(1);
-  }
+  return withRetry(
+    () => {
+      logger.debug(`Fetching commits between ${from}..${to}`);
+      const commits = execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
+      
+      const commitCount = commits.split('\n').filter(Boolean).length;
+      logger.info(`Found ${commitCount} commits since ${from}`);
+      
+      return commits;
+    },
+    {
+      maxAttempts: 2,
+      operation: 'fetch Git commits'
+    }
+  );
 }
 
 /**
  * Generate blog post markdown.
  * @param {string} version 
  * @param {string} commits 
+ * @param {string} prevVersion
  * @returns {string}
  */
-function generateBlogMarkdown(version, commits) {
+function generateBlogMarkdown(version, commits, prevVersion) {
   const date = new Date().toISOString().slice(0, 10);
   const slug = `release-${version}`;
+  const repoUrl = `https://github.com/${config.github.owner}/${config.github.repo}`;
+  
   return `---
 slug: ${slug}
 title: "🚀 Version ${version} Released"
 authors: [ali]
 tags: [release, changelog]
+date: ${date}
 ---
 
 RAG Pipeline Utils **${version}** is now available on NPM!
@@ -82,8 +128,14 @@ ${commits}
 
 ## 🔗 Resources
 
-- GitHub Compare: [${prevVersion}...${version}](https://github.com/DevilsDev/rag-pipeline-utils/compare/${prevVersion}...${version})
-- View full [CHANGELOG.md](../../CHANGELOG.md)
+- 📦 [NPM Package](https://www.npmjs.com/package/@DevilsDev/rag-pipeline-utils)
+- 🔍 [GitHub Compare](${repoUrl}/compare/${prevVersion}...${version})
+- 📋 [Full Changelog](${repoUrl}/blob/main/CHANGELOG.md)
+- 🐛 [Report Issues](${repoUrl}/issues)
+
+---
+
+*Happy coding! 🎉*
 `;
 }
 
@@ -96,40 +148,96 @@ function generateChangelogSection(commits) {
   return `## ${newVersion}\n\n${commits}\n\n---\n`;
 }
 
-// ---------------------------
-// MAIN EXECUTION
-// ---------------------------
-const commits = getCommits(prevVersion, newVersion);
-const blogContent = generateBlogMarkdown(newVersion, commits);
-const changelogSection = generateChangelogSection(commits);
-
-const blogPath = path.join(__dirname, `../docs-site/blog/${new Date().toISOString().slice(0, 10)}-${newVersion}.md`);
-fs.writeFileSync(blogPath, blogContent, 'utf-8');
-
-const changelogPath = path.join(__dirname, '../CHANGELOG.md');
-fs.appendFileSync(changelogPath, `\n${changelogSection}`, 'utf-8');
-
-// Auto Git commit unless dry-run
-const dryRun = process.env.DRY_RUN === 'true';
-
-if (!dryRun) {
+/**
+ * Main execution function
+ */
+async function main() {
   try {
-    execSync('git config user.name "github-actions[bot]"');
-    execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
-    execSync('git add CHANGELOG.md docs-site/blog/*.md');
-    execSync(`git commit -m "docs(release): blog + changelog for ${newVersion}"`);
-    execSync('git push origin main');
-    console.log(`✅ Blog and changelog committed for ${newVersion}`);
-  } catch (err) {
-    console.warn('⚠️ Git push skipped:', err.message);
+    logger.info(`Generating release notes for ${newVersion}`);
+    
+    // Resolve previous version
+    const prevVersion = await resolvePreviousTag();
+    
+    // Get commits
+    const commits = await getCommits(prevVersion, newVersion);
+    
+    if (!commits.trim()) {
+      logger.warn('No commits found between versions');
+      return;
+    }
+    
+    // Generate content
+    const blogContent = generateBlogMarkdown(newVersion, commits, prevVersion);
+    const changelogSection = generateChangelogSection(commits);
+    
+    // Write files
+    const date = new Date().toISOString().slice(0, 10);
+    const blogPath = path.resolve(__dirname, `../${config.release.blogPath}/${date}-${newVersion}.md`);
+    const changelogPath = path.resolve(__dirname, `../${config.release.changelogPath}`);
+    
+    if (!args.changelogOnly) {
+      await dryRunWrapper(
+        args.dryRun,
+        `Write blog post: ${path.basename(blogPath)}`,
+        async () => {
+          fs.mkdirSync(path.dirname(blogPath), { recursive: true });
+          fs.writeFileSync(blogPath, blogContent, 'utf-8');
+        }
+      );
+    }
+    
+    if (!args.blogOnly) {
+      await dryRunWrapper(
+        args.dryRun,
+        `Append to changelog: ${path.basename(changelogPath)}`,
+        async () => {
+          fs.appendFileSync(changelogPath, `\n${changelogSection}`, 'utf-8');
+        }
+      );
+    }
+    
+    // Git operations
+    if (!args.skipGit && !args.dryRun) {
+      await withRetry(
+        async () => {
+          logger.progress('Committing changes to Git...');
+          execSync('git config user.name "github-actions[bot]"');
+          execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
+          execSync('git add CHANGELOG.md docs-site/blog/*.md');
+          execSync(`git commit -m "docs(release): blog + changelog for ${newVersion}"`);
+          execSync('git push origin main');
+        },
+        {
+          maxAttempts: 2,
+          operation: 'Git commit and push'
+        }
+      );
+      logger.success('Changes committed and pushed to Git');
+    } else if (args.skipGit) {
+      logger.info('Git operations skipped (--skip-git flag)');
+    }
+    
+    // Show previews
+    if (args.verbose || args.dryRun) {
+      logger.info('\n📓 Blog Content Preview:');
+      console.log('\n' + blogContent);
+      
+      logger.info('\n📘 Changelog Section Preview:');
+      console.log('\n' + changelogSection);
+    }
+    
+    logger.success(`🚀 Release notes generated for ${newVersion}!`);
+    
+  } catch (error) {
+    logger.error(`Release note generation failed: ${error.message}`);
+    if (args.verbose) {
+      logger.error(error.stack);
+    }
+    process.exit(1);
   }
-} else {
-  console.log('🚀 Dry-run mode active. No git push performed.');
 }
 
-// Print previews
-console.log('\n📓 Blog Content Preview:\n');
-console.log(blogContent);
-
-console.log('\n📘 Changelog Section Preview:\n');
-console.log(changelogSection);
+// Execute if run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
