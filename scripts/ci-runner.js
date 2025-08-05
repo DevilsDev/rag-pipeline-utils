@@ -8,7 +8,7 @@
 import { execSync } from 'child_process';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import fs from 'fs';
+// import fs from 'fs'; // Reserved for future file operations
 
 // Entry helpers
 const ROOT = path.resolve();

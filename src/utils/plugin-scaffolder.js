@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { pluginContracts } from '../core/plugin-contracts.js';
 
 const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
 const __dirname = path.dirname(__filename);
 
 export class PluginScaffolder {

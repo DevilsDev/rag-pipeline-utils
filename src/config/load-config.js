@@ -11,6 +11,7 @@ import { validateRagrcSchema } from './validate-schema.js';
 import { logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
 const __dirname = path.dirname(__filename);
 
 const CONFIG_FILENAME = '.ragrc.json';
