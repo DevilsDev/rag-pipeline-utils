@@ -48,47 +48,109 @@ export function createRagPipeline(
 
   return {
     async ingest(docPath) {
-      log('info', 'Pipeline ingest start', { loader, embedder, retriever });
+      try {
+        log('info', 'Pipeline ingest start', { loader, embedder, retriever, docPath });
 
-      const documents = await loaderInstance.load(docPath);
-      const chunks = documents.flatMap(doc => doc.chunk());
-      const vectors = await embedderInstance.embed(chunks);
+        if (!docPath || typeof docPath !== 'string') {
+          throw new Error('Invalid document path provided. Expected non-empty string.');
+        }
 
-      await wrap(() => retrieverInstance.store(vectors), {
-        label: 'vector-store',
-        retries: 3,
-        initialDelay: 500
-      });
+        const documents = await loaderInstance.load(docPath);
+        if (!Array.isArray(documents) || documents.length === 0) {
+          throw new Error(`Loader returned no documents from: ${docPath}`);
+        }
 
-      log('info', 'Ingestion pipeline completed');
+        const chunks = documents.flatMap(doc => {
+          if (!doc || typeof doc.chunk !== 'function') {
+            throw new Error('Document object missing required chunk() method');
+          }
+          return doc.chunk();
+        });
+        
+        if (chunks.length === 0) {
+          throw new Error('No text chunks extracted from documents');
+        }
+
+        log('info', `Extracted ${chunks.length} chunks from ${documents.length} documents`);
+
+        const vectors = await embedderInstance.embed(chunks);
+        if (!Array.isArray(vectors) || vectors.length !== chunks.length) {
+          throw new Error(`Embedder returned invalid vectors. Expected ${chunks.length} vectors, got ${vectors?.length || 0}`);
+        }
+
+        await wrap(() => retrieverInstance.store(vectors), {
+          label: 'vector-store',
+          retries: 3,
+          initialDelay: 500
+        });
+
+        log('info', 'Ingestion pipeline completed successfully');
+      } catch (error) {
+        log('error', 'Pipeline ingest failed', { error: error.message, docPath });
+        throw new Error(`Ingestion failed: ${error.message}`);
+      }
     },
 
     async query(prompt) {
-      log('info', 'Pipeline query start', { prompt, embedder, retriever, llm, useReranker });
+      try {
+        log('info', 'Pipeline query start', { prompt, embedder, retriever, llm, useReranker });
 
-      const queryVector = await embedderInstance.embedQuery(prompt);
-      let retrieved = await wrap(() => retrieverInstance.retrieve(queryVector), {
-        label: 'vector-retrieve',
-        retries: 3,
-        initialDelay: 500
-      });
+        if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+          throw new Error('Invalid query prompt. Expected non-empty string.');
+        }
 
-      if (rerankerInstance) {
-        log('info', 'Applying LLM reranker to retrieved chunks');
-        retrieved = await wrap(() => rerankerInstance.rerank(prompt, retrieved), {
-          label: 'rerank',
-          retries: 2,
-          initialDelay: 400
+        const queryVector = await embedderInstance.embedQuery(prompt);
+        if (!Array.isArray(queryVector) || queryVector.length === 0) {
+          throw new Error('Embedder failed to generate query vector');
+        }
+
+        let retrieved = await wrap(() => retrieverInstance.retrieve(queryVector), {
+          label: 'vector-retrieve',
+          retries: 3,
+          initialDelay: 500
         });
+
+        if (!Array.isArray(retrieved)) {
+          throw new Error('Retriever returned invalid results. Expected array.');
+        }
+
+        if (retrieved.length === 0) {
+          log('warn', 'No documents retrieved for query', { prompt });
+        } else {
+          log('info', `Retrieved ${retrieved.length} documents for query`);
+        }
+
+        if (rerankerInstance) {
+          log('info', 'Applying LLM reranker to retrieved chunks');
+          retrieved = await wrap(() => rerankerInstance.rerank(prompt, retrieved), {
+            label: 'rerank',
+            retries: 2,
+            initialDelay: 400
+          });
+          
+          if (!Array.isArray(retrieved)) {
+            throw new Error('Reranker returned invalid results. Expected array.');
+          }
+          
+          log('info', `Reranker returned ${retrieved.length} documents`);
+        }
+
+        const result = await wrap(() => llmInstance.generate(prompt, retrieved), {
+          label: 'llm-generate',
+          retries: 3,
+          initialDelay: 500
+        });
+
+        if (!result || typeof result !== 'string') {
+          throw new Error('LLM failed to generate a valid response');
+        }
+
+        log('info', 'Pipeline query completed successfully');
+        return result;
+      } catch (error) {
+        log('error', 'Pipeline query failed', { error: error.message, prompt });
+        throw new Error(`Query failed: ${error.message}`);
       }
-
-      const result = await wrap(() => llmInstance.generate(prompt, retrieved), {
-        label: 'llm-generate',
-        retries: 3,
-        initialDelay: 500
-      });
-
-      return result;
     }
   };
 }

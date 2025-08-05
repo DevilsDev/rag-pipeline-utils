@@ -96,3 +96,5 @@ describe('CLI integration with .ragrc.json config fallback', () => {
     expect(result).toMatch(/Answer:/);
   });
 });
+
+

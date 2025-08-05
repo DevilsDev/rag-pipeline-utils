@@ -1,48 +1,79 @@
-// /scripts/create-roadmap-issues.js
 /**
- * Version: 1.2.0
- * Description: Creates or updates GitHub Issues based on PROJECT_ROADMAP.md
+ * Version: 2.0.0
+ * Description: Mock implementation of OpenAI embedder for testing and development
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs';
-import { Octokit } from 'octokit';
-import yaml from 'js-yaml';
+export class OpenAIEmbedder {
+  constructor(options = {}) {
+    this.apiKey = options.apiKey || 'mock-api-key';
+    this.model = options.model || 'text-embedding-ada-002';
+    this.dimensions = options.dimensions || 1536;
+  }
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const OWNER = 'DevilsDev';
-const REPO = 'rag-pipeline-utils';
-const ROADMAP_PATH = '.github/PROJECT_ROADMAP.md';
-
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
-
-async function createRoadmapIssues() {
-  const content = fs.readFileSync(ROADMAP_PATH, 'utf-8');
-  const lines = content.split('\n').filter(line => line.startsWith('|'));
-  const rows = lines.slice(2);
-
-  for (const row of rows) {
-    const [phase, priority, group, title, description, status] = row.split('|').map(col => col.trim());
-
-    if (!title || title === '-') continue;
-
-    const { data: issues } = await octokit.rest.issues.listForRepo({ owner: OWNER, repo: REPO, state: 'open' });
-    const existing = issues.find((issue) => issue.title === title);
-
-    if (!existing) {
-      await octokit.rest.issues.create({
-        owner: OWNER,
-        repo: REPO,
-        title,
-        body: `**Phase**: ${phase}\n**Priority**: ${priority}\n**Group**: ${group}\n\n${description}`,
-        labels: [`phase:${phase}`, `priority:${priority}`, `group:${group}`]
-      });
-      console.log(`✅ Created issue: ${title}`);
+  /**
+   * Generate embeddings for an array of text chunks
+   * @param {string[]} chunks - Array of text chunks to embed
+   * @returns {Promise<number[][]>} Array of embedding vectors
+   */
+  async embed(chunks) {
+    if (!Array.isArray(chunks)) {
+      throw new Error('embed() expects an array of strings');
     }
+
+    // Return mock embeddings - deterministic based on content for testing
+    return chunks.map(chunk => this.#generateMockEmbedding(chunk));
+  }
+
+  /**
+   * Generate embedding for a single query string
+   * @param {string} query - Query string to embed
+   * @returns {Promise<number[]>} Embedding vector
+   */
+  async embedQuery(query) {
+    if (typeof query !== 'string') {
+      throw new Error('embedQuery() expects a string');
+    }
+
+    return this.#generateMockEmbedding(query);
+  }
+
+  /**
+   * Generate a deterministic mock embedding based on input text
+   * @private
+   * @param {string} text - Input text
+   * @returns {number[]} Mock embedding vector
+   */
+  #generateMockEmbedding(text) {
+    // Create deterministic "embedding" based on text content
+    const hash = this.#simpleHash(text);
+    const embedding = [];
+    
+    for (let i = 0; i < this.dimensions; i++) {
+      // Generate pseudo-random values based on hash and index
+      const value = Math.sin(hash + i) * 0.5;
+      embedding.push(value);
+    }
+    
+    return embedding;
+  }
+
+  /**
+   * Simple hash function for deterministic mock data
+   * @private
+   * @param {string} str - Input string
+   * @returns {number} Hash value
+   */
+  #simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash;
   }
 }
 
-createRoadmapIssues().catch(err => {
-  console.error('❌ Roadmap issue sync failed:', err.message);
-  process.exit(1);
-});
+// Export default instance for easy use
+export default new OpenAIEmbedder();
