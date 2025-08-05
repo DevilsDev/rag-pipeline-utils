@@ -1,0 +1,43 @@
+{
+  "ref": "refs/heads/main",
+  "before": "0000000000000000000000000000000000000000",
+  "after": "1234567890abcdef1234567890abcdef12345678",
+  "repository": {
+    "id": 123456789,
+    "name": "rag-pipeline-utils",
+    "full_name": "DevilsDev/rag-pipeline-utils",
+    "owner": {
+      "name": "DevilsDev",
+      "login": "DevilsDev"
+    },
+    "html_url": "https://github.com/DevilsDev/rag-pipeline-utils",
+    "clone_url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "default_branch": "main"
+  },
+  "pusher": {
+    "name": "alikahwaji",
+    "email": "ali@devilsdev.com"
+  },
+  "sender": {
+    "login": "alikahwaji",
+    "id": 12345678,
+    "type": "User"
+  },
+  "commits": [
+    {
+      "id": "1234567890abcdef1234567890abcdef12345678",
+      "message": "feat: consolidate GitHub Actions workflows for better maintainability",
+      "author": {
+        "name": "Ali Kahwaji",
+        "email": "ali@devilsdev.com"
+      },
+      "added": [
+        ".github/workflows/roadmap-maintenance.yml",
+        ".github/workflows/blog-release.yml"
+      ],
+      "modified": [
+        "README.md"
+      ]
+    }
+  ]
+}

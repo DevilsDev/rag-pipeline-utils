@@ -1,0 +1,275 @@
+# .github/workflows/blog-release.yml
+# Version: 3.0.0
+# Description: Consolidated blog and release automation - generates blogs, changelogs, and validates badges
+# Author: Ali Kahwaji
+# Replaces: auto-release-note.yml, publish-release-blog.yml, post-release-generate-blog.yml, verify-blog-badge.yml
+
+name: 📝 Blog & Release Automation
+
+on:
+  release:
+    types: [published]
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'generate'
+        type: choice
+        options:
+          - 'generate'
+          - 'verify'
+          - 'both'
+      dry_run:
+        description: 'Simulate without pushing changes'
+        required: false
+        default: false
+        type: boolean
+      force_regenerate:
+        description: 'Force regenerate existing blog posts'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: blog-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-content:
+    name: 📓 Generate Blog & Changelog
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action != 'verify' }}
+    outputs:
+      blog_generated: ${{ steps.generate.outputs.blog_generated }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🛠 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔖 Detect version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          
+          # Clean version (remove 'v' prefix if present)
+          CLEAN_VERSION=${VERSION#v}
+          
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "clean_version=$CLEAN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Detected version: $VERSION"
+
+      - name: 📝 Generate blog post and changelog
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          CLEAN_VERSION="${{ steps.version.outputs.clean_version }}"
+          DATE=$(date +'%Y-%m-%d')
+          BLOG_FILE="docs-site/blog/${DATE}-release-${CLEAN_VERSION}.md"
+          
+          echo "📝 Generating content for version $VERSION..."
+          
+          # Check if blog post already exists
+          if [[ -f "$BLOG_FILE" && "$FORCE_REGENERATE" != "true" ]]; then
+            echo "⚠️ Blog post already exists: $BLOG_FILE"
+            echo "💡 Use force_regenerate=true to overwrite"
+            echo "blog_generated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
+          # Create blog directory if it doesn't exist
+          mkdir -p docs-site/blog
+          
+          # Generate blog post
+          cat > "$BLOG_FILE" << EOF
+          ---
+          slug: release-${CLEAN_VERSION}
+          title: ✨ RAG Pipeline Utils v${CLEAN_VERSION} Released
+          authors: [ali]
+          tags: [release, changelog, rag, pipeline]
+          ---
+          
+          🎉 **RAG Pipeline Utils v${CLEAN_VERSION} is now available!**
+          
+          This release brings exciting improvements to our modular RAG toolkit, enhancing developer experience, performance, and reliability.
+          
+          ## 🚀 Highlights
+          
+          - 📦 **Version**: ${VERSION}
+          - 🔄 **Auto-generated**: Blog post created from GitHub Release
+          - 📘 **Full Details**: See [CHANGELOG.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md) for complete changes
+          - 📥 **Installation**: \`npm install @devilsdev/rag-pipeline-utils@${CLEAN_VERSION}\`
+          
+          ## 🛠 Key Features
+          
+          - **Plugin Architecture**: Modular, extensible design for loaders, embedders, retrievers, and LLMs
+          - **Streaming Support**: Real-time processing with backpressure handling
+          - **Observability**: Built-in logging, tracing, and metrics collection
+          - **CLI Tools**: Interactive wizards and diagnostic commands
+          - **Performance**: Parallel processing and memory optimization
+          
+          ## 📖 Getting Started
+          
+          \`\`\`bash
+          # Install the latest version
+          npm install @devilsdev/rag-pipeline-utils
+          
+          # Quick start with CLI
+          rag-pipeline ingest ./docs --loader pdf --embedder openai
+          rag-pipeline query "What is vector search?" --llm openai
+          \`\`\`
+          
+          ## 🤝 Community
+          
+          - 💬 [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
+          - 🐛 [Report Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues)
+          - 📖 [Documentation](https://devilsdev.github.io/rag-pipeline-utils/)
+          - 🔌 [Plugin Marketplace](https://registry.rag-pipeline.dev)
+          
+          Thank you to all contributors and the community for making this release possible! 🙏
+          EOF
+          
+          echo "✅ Generated blog post: $BLOG_FILE"
+          
+          # Use existing script if available, otherwise skip changelog generation
+          if [[ -f "scripts/generate-release-note.js" ]]; then
+            echo "📋 Generating changelog using existing script..."
+            node scripts/generate-release-note.js "$VERSION"
+          else
+            echo "⚠️ scripts/generate-release-note.js not found, skipping changelog generation"
+            echo "💡 Consider creating this script for automated changelog generation"
+          fi
+          
+          echo "blog_generated=true" >> "$GITHUB_OUTPUT"
+
+      - name: 📄 Commit generated content
+        if: ${{ steps.generate.outputs.blog_generated == 'true' && github.event.inputs.dry_run != 'true' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(release): auto-generate blog and changelog for ${{ steps.version.outputs.version }}"
+          file_pattern: "CHANGELOG.md docs-site/blog/*.md"
+          push_options: '--follow-tags'
+
+      - name: 📊 Upload blog artifact
+        if: ${{ steps.generate.outputs.blog_generated == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-blog-${{ steps.version.outputs.clean_version }}
+          path: docs-site/blog/
+          retention-days: 30
+
+  verify-badges:
+    name: 🔍 Verify Blog Badges
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.action != 'generate' }}
+    needs: [generate-content]
+    continue-on-error: true
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 Validate README badge references
+        run: |
+          echo "🔍 Checking for blog workflow badge references in README.md..."
+          
+          # Check for this workflow's badge
+          if grep -q "blog-release.yml" README.md; then
+            echo "✅ Found blog-release.yml badge reference in README.md"
+          else
+            echo "⚠️ No blog-release.yml badge reference found in README.md"
+            echo "💡 Consider adding: ![Blog Release](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/blog-release.yml/badge.svg)"
+          fi
+          
+          # Check for legacy badge references
+          if grep -q "post-release-generate-blog.yml" README.md; then
+            echo "⚠️ Found legacy post-release-generate-blog.yml badge reference"
+            echo "💡 Consider updating to: blog-release.yml"
+          fi
+
+      - name: 🌐 Validate badge URL accessibility
+        run: |
+          BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/blog-release.yml/badge.svg?branch=main"
+          echo "🌐 Testing badge URL: $BADGE_URL"
+          
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
+          echo "📊 Badge response: HTTP $STATUS"
+          
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Blog workflow badge is accessible"
+          else
+            echo "❌ Blog workflow badge not accessible (HTTP $STATUS)"
+            echo "💡 Badge may not be available until workflow runs successfully"
+          fi
+
+      - name: 📋 Verification summary
+        run: |
+          echo "📋 Badge verification completed"
+          echo "🔗 Workflow: blog-release.yml"
+          echo "📊 Status: ${{ job.status }}"
+          if [[ "${{ needs.generate-content.outputs.blog_generated }}" == "true" ]]; then
+            echo "📝 Blog generated: Yes (v${{ needs.generate-content.outputs.version }})"
+          else
+            echo "📝 Blog generated: No"
+          fi
+
+  summary:
+    name: 📋 Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [generate-content, verify-badges]
+    if: always()
+
+    steps:
+      - name: 📋 Generate workflow summary
+        run: |
+          echo "# 📝 Blog & Release Automation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔄 Workflow Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Generate Content | ${{ needs.generate-content.result }} | Blog: ${{ needs.generate-content.outputs.blog_generated || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Verify Badges | ${{ needs.verify-badges.result }} | Badge validation completed |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.generate-content.outputs.version }}" != "" ]]; then
+            echo "## 📦 Version Information" >> $GITHUB_STEP_SUMMARY
+            echo "- **Version**: ${{ needs.generate-content.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Dry Run**: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [📖 Documentation](https://devilsdev.github.io/rag-pipeline-utils/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [📝 Blog Posts](https://devilsdev.github.io/rag-pipeline-utils/blog)" >> $GITHUB_STEP_SUMMARY
+          echo "- [📋 Changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)" >> $GITHUB_STEP_SUMMARY

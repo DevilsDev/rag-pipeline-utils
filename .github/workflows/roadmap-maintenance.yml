@@ -1,0 +1,158 @@
+# .github/workflows/roadmap-maintenance.yml
+# Version: 2.0.0
+# Description: Consolidated roadmap management - labels, issues, and synchronization
+# Author: Ali Kahwaji
+# Replaces: roadmap-sync.yml, sync-roadmap.yml, roadmap-label-sync.yml, roadmap-labels.yml
+
+name: 🗺️ Roadmap Maintenance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/PROJECT_ROADMAP.md'
+      - '.github/roadmap-labels.yml'
+      - '.github/workflows/roadmap-maintenance.yml'
+      - 'scripts/**roadmap**.js'
+      - 'scripts/ensure-roadmap-labels.js'
+      - 'scripts/create-roadmap-issues.js'
+  workflow_dispatch:
+    inputs:
+      sync_labels:
+        description: 'Sync roadmap labels'
+        required: false
+        default: true
+        type: boolean
+      sync_issues:
+        description: 'Sync roadmap issues'
+        required: false
+        default: true
+        type: boolean
+      force_update:
+        description: 'Force update existing issues'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: roadmap-maintenance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  roadmap-maintenance:
+    name: 🔄 Sync Labels & Issues
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔖 Sync roadmap labels
+        if: ${{ github.event.inputs.sync_labels != 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          echo "🔖 Syncing roadmap labels..."
+          
+          # Check if script exists, fallback to inline implementation
+          if [ -f "scripts/ensure-roadmap-labels.js" ]; then
+            node scripts/ensure-roadmap-labels.js
+          else
+            echo "📦 Installing octokit for inline label sync..."
+            npm install octokit
+            
+            node <<EOF
+            const { Octokit } = require("octokit");
+            
+            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+            const [owner, repo] = process.env.GITHUB_REPO.split("/");
+            
+            const labels = [
+              { name: "priority: high", color: "e11d48", description: "High priority roadmap item" },
+              { name: "priority: medium", color: "f59e0b", description: "Medium priority roadmap item" },
+              { name: "priority: low", color: "10b981", description: "Low priority roadmap item" },
+              { name: "group: docs", color: "6366f1", description: "Documentation features" },
+              { name: "group: devx", color: "06b6d4", description: "Developer experience improvements" },
+              { name: "group: community", color: "ec4899", description: "Community tools & engagement" },
+              { name: "group: blog", color: "f97316", description: "Blog & SEO enhancements" },
+              { name: "group: infra", color: "64748b", description: "Infrastructure & deployment features" }
+            ];
+            
+            async function syncLabels() {
+              console.log("🔖 Syncing", labels.length, "roadmap labels...");
+              
+              for (const label of labels) {
+                try {
+                  await octokit.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  console.log("✅ Created label:", label.name);
+                } catch (error) {
+                  if (error.status === 422) {
+                    // Label exists, update it
+                    try {
+                      await octokit.rest.issues.updateLabel({
+                        owner,
+                        repo,
+                        name: label.name,
+                        color: label.color,
+                        description: label.description
+                      });
+                      console.log("🔄 Updated label:", label.name);
+                    } catch (updateError) {
+                      console.log("⚠️ Failed to update label:", label.name, updateError.message);
+                    }
+                  } else {
+                    console.log("❌ Failed to create label:", label.name, error.message);
+                  }
+                }
+              }
+              console.log("✅ Label sync completed");
+            }
+            
+            syncLabels().catch(console.error);
+          EOF
+          fi
+
+      - name: 🗂️ Sync roadmap issues
+        if: ${{ github.event.inputs.sync_issues != 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          FORCE_UPDATE: ${{ github.event.inputs.force_update }}
+        run: |
+          echo "🗂️ Syncing roadmap issues..."
+          
+          if [ -f "scripts/create-roadmap-issues.js" ]; then
+            node scripts/create-roadmap-issues.js
+          else
+            echo "⚠️ scripts/create-roadmap-issues.js not found, skipping issue sync"
+            echo "💡 Consider creating this script for automated issue management"
+          fi
+
+      - name: ✅ Roadmap maintenance completed
+        run: |
+          echo "✅ Roadmap maintenance workflow completed successfully"
+          echo "🔖 Labels synced: ${{ github.event.inputs.sync_labels != 'false' }}"
+          echo "🗂️ Issues synced: ${{ github.event.inputs.sync_issues != 'false' }}"
+          echo "🔄 Force update: ${{ github.event.inputs.force_update }}"

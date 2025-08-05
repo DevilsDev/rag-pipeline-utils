@@ -1,0 +1,29 @@
+# .actrc - Configuration for act (local GitHub Actions testing)
+# Version: 1.0.0
+# Description: Local workflow testing configuration for @devilsdev/rag-pipeline-utils
+
+# Use medium-sized runner for better compatibility
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Default event file for testing
+--eventpath .github/act-events/push.json
+
+# Bind workspace directory
+--bind
+
+# Use container architecture
+--container-architecture linux/amd64
+
+# Verbose output for debugging
+--verbose
+
+# Reuse containers for faster subsequent runs
+--reuse
+
+# Default secrets file
+--secret-file .secrets
+
+# Environment variables
+--env NODE_ENV=test
+--env CI=true
+--env GITHUB_ACTIONS=true

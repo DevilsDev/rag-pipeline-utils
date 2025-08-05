@@ -1,0 +1,28 @@
+{
+  "inputs": {
+    "action": "both",
+    "dry_run": true,
+    "force_regenerate": false,
+    "sync_labels": true,
+    "sync_issues": true,
+    "force_update": false
+  },
+  "ref": "refs/heads/main",
+  "repository": {
+    "id": 123456789,
+    "name": "rag-pipeline-utils",
+    "full_name": "DevilsDev/rag-pipeline-utils",
+    "owner": {
+      "name": "DevilsDev",
+      "login": "DevilsDev"
+    },
+    "html_url": "https://github.com/DevilsDev/rag-pipeline-utils",
+    "clone_url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "default_branch": "main"
+  },
+  "sender": {
+    "login": "alikahwaji",
+    "id": 12345678,
+    "type": "User"
+  }
+}
