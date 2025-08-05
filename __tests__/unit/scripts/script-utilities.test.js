@@ -246,7 +246,7 @@ Options:
 
     it('should validate GitHub repository format', () => {
       const validateRepo = (repo) => {
-        const repoPattern = /^[\w\-\.]+\/[\w\-\.]+$/;
+        const repoPattern = /^[\w\-.]+\/[\w\-.]+$/;
         if (!repoPattern.test(repo)) {
           throw new Error('Invalid repository format. Expected: owner/repo');
         }

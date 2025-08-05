@@ -454,7 +454,7 @@ describe('Plugin Security and Isolation', () => {
       const injectionTester = {
         testSQLInjection(input) {
           const sqlPatterns = [
-            /('|(\\')|(;|\\;)|(--|--)|(\/\*|\*\/))/i,
+            /('|(\\')|(;|\\;)|(--|--)|(\/*|\*\/))/i,
             /(union|select|insert|update|delete|drop|create|alter|exec|execute)/i
           ];
           

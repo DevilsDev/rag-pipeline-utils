@@ -86,13 +86,11 @@ describe('DAG Error Handling and Cycle Detection', () => {
       nodeB.addOutput(nodeC);
       nodeC.addOutput(nodeA); // Creates cycle
 
-      try {
-        dag.validateTopology();
-        fail('Expected cycle detection to throw');
-      } catch (error) {
+      expect(() => dag.validateTopology()).toThrow('Cycle detected in DAG');
+      expect(() => dag.validateTopology()).toThrowError((error) => {
         expect(error.message).toContain('Cycle detected');
         expect(error.cycle).toEqual(['A', 'B', 'C', 'A']);
-      }
+      });
     });
   });
 

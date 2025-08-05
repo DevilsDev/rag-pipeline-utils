@@ -451,21 +451,25 @@ export class ErrorSimulator {
       }
       
       switch (errorType) {
-        case 'timeout':
+        case 'timeout': {
           await new Promise(() => {}); // Never resolves
           break;
-        case 'network':
-          const networkError = new Error(message);
-          networkError.code = 'ECONNRESET';
-          throw networkError;
-        case 'rate-limit':
+        }
+        case 'network': {
+          const networkError = new Error(message || 'Network connection failed');
+          networkError.code = 'ECONNREFUSED';
+          return networkError;
+        }
+        case 'rate-limit': {
           const rateLimitError = new Error('Rate limit exceeded');
           rateLimitError.status = 429;
           throw rateLimitError;
-        case 'auth':
-          const authError = new Error('Authentication failed');
+        }
+        case 'auth': {
+          const authError = new Error(message || 'Authentication failed');
           authError.status = 401;
-          throw authError;
+          return authError;
+        }
         default:
           throw new Error(message);
       }
