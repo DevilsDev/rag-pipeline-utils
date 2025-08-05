@@ -1,19 +1,17 @@
 # @DevilsDev/rag-pipeline-utils
 
-
-
-# RAG Pipeline Utils
-
-> Modular utilities for building Retrieval-Augmented Generation (RAG) pipelines, with CI-verified plugin contracts and mockable interfaces.
-
 [![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions)
+[![npm version](https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+[![Node.js Version](https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg)](https://nodejs.org/)
+[![License](https://img.shields.io/npm/l/@devilsdev/rag-pipeline-utils.svg)](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE)
 [![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
-![Release](https://img.shields.io/github/v/release/DevilsDev/rag-pipeline-utils?label=release)
-![License](https://img.shields.io/github/license/devilsdev/rag-pipeline-utils)
-![Release Review Passed](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/enforce-release-review.yml/badge.svg?branch=main)
-[![Docs Deploy](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/docs-deploy.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/docs-deploy.yml)
-[![Docs CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/docs-ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/docs-ci.yml)
-[![Blog Generated](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml/badge.svg?branch=main)](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml)
+[![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+
+> **Enterprise-grade RAG pipeline toolkit for Node.js** — Build production-ready Retrieval-Augmented Generation systems with modular plugins, streaming support, and comprehensive observability.
+
+## Overview
+
+`@devilsdev/rag-pipeline-utils` is a modular toolkit for building scalable RAG (Retrieval-Augmented Generation) pipelines in Node.js. Designed for enterprise applications, it provides a plugin-based architecture with built-in streaming, performance optimization, observability, and comprehensive testing utilities.
 
 
 
@@ -21,165 +19,368 @@
 
 
 
-## Description
+## ✨ Key Features
 
-`@devilsdev/rag-pipeline-utils` provides a clean, extensible, and test-friendly foundation for constructing robust RAG pipelines using a plugin-based architecture. It enables developers to plug in their own document loaders, embedders, retrievers, and LLMs via configuration, and includes a CLI, mock contract verification, schema validation, and test harnesses to ensure production-readiness.
+### 🔌 **Plugin Architecture**
+- **Modular Components**: Swap loaders, embedders, retrievers, LLMs, and rerankers without code changes
+- **Contract Validation**: Runtime and CI verification of plugin interfaces
+- **Plugin Marketplace**: Discover and publish community plugins
+- **Hot-swappable**: Change components via configuration without restarts
 
-## Key Features
+### 🚀 **Performance & Scalability**
+- **Streaming Support**: Real-time token streaming for LLM responses
+- **Parallel Processing**: Concurrent embedding and retrieval operations
+- **Memory Safeguards**: Automatic backpressure and memory management
+- **Benchmarking Tools**: Built-in performance measurement and optimization
 
-- **Plugin Contracts**: Runtime and CI verification of plugin interfaces (loader, embedder, retriever, llm).
-- **CLI Support**: Easily run `ingest` and `query` commands using `.ragrc.json` configuration.
-- **Test Fixtures**: Snapshot, fallback, and structured reranker validation.
-- **Schema Enforcement**: `.ragrc.json` schema validation to catch config issues early.
-- **Mock Repair Utilities**: Auto-fix for missing or broken mock implementations.
-- **Modular Design**: Drop-in plugin support using custom class-based implementations.
+### 📊 **Enterprise Observability**
+- **Structured Logging**: Comprehensive event tracking and debugging
+- **Metrics Collection**: Performance counters, histograms, and gauges
+- **Distributed Tracing**: OpenTelemetry-compatible request tracing
+- **Health Monitoring**: Built-in diagnostics and system health checks
 
-## Benefits of This Modular Design
+### 🛠️ **Developer Experience**
+- **CLI Tools**: Full-featured command-line interface
+- **Interactive Wizard**: Guided pipeline setup and configuration
+- **Plugin Scaffolding**: Generate new plugins with best practices
+- **Comprehensive Testing**: Unit, integration, and contract testing utilities
 
-- **Extensibility**: Developers can inject their own loader, retriever, or LLM logic without modifying the core.
-- **Testability**: Mocks and CI tools validate contract adherence for reliable test coverage.
-- **Decoupling**: Each plugin can be independently implemented and swapped in via `.ragrc.json`.
-- **CI Resilience**: The CI pipeline includes linting, contract verification, and test coverage enforcement.
+### 🔒 **Production Ready**
+- **Schema Validation**: Strict configuration validation with JSON Schema
+- **Error Handling**: Robust error recovery and reporting
+- **Type Safety**: Full TypeScript support and JSDoc annotations
+- **CI/CD Integration**: GitHub Actions workflows and automated testing
 
-## Installation
+## 📦 Installation
 
+### Prerequisites
+- **Node.js** 18.0.0 or higher
+- **npm** or **yarn** package manager
+
+### Install via npm
+```bash
+npm install -g @devilsdev/rag-pipeline-utils
+```
+
+### Install as project dependency
 ```bash
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-## Basic Usage
+## 🚀 Quick Start
 
-1. Create a `.ragrc.json` config:
+### 1. Initialize a new RAG pipeline
+```bash
+rag-pipeline init
+```
+This launches an interactive wizard to configure your pipeline with preferred plugins.
+
+### 2. Configure your pipeline
+Create a `.ragrc.json` configuration file:
 
 ```json
 {
   "loader": {
-    "pdf": "./src/mocks/pdf-loader.js"
+    "pdf": "@devilsdev/pdf-loader",
+    "markdown": "@devilsdev/markdown-loader"
   },
   "embedder": {
-    "openai": "./src/mocks/openai-embedder.js"
+    "openai": "@devilsdev/openai-embedder"
   },
   "retriever": {
-    "pinecone": "./src/mocks/pinecone-retriever.js"
+    "chroma": "@devilsdev/chroma-retriever"
   },
   "llm": {
-    "openai": "./src/mocks/openai-llm.js"
+    "openai": "@devilsdev/openai-llm"
   },
-  "namespace": "demo-namespace",
-  "pipeline": ["loader", "embedder", "retriever"]
+  "pipeline": {
+    "loader": "pdf",
+    "embedder": "openai",
+    "retriever": "chroma",
+    "llm": "openai"
+  },
+  "performance": {
+    "maxConcurrency": 5,
+    "enableStreaming": true,
+    "enableObservability": true
+  }
 }
 ```
 
-2. Run an ingestion:
+## 🖥️ CLI Usage
 
+### Document Ingestion
 ```bash
-node bin/cli.js ingest ./docs/sample.pdf
+# Ingest documents with automatic plugin detection
+rag-pipeline ingest ./docs --loader pdf --embedder openai --retriever chroma
+
+# Ingest with streaming and performance monitoring
+rag-pipeline ingest ./docs --stream --benchmark --trace
+
+# Batch ingest multiple document types
+rag-pipeline ingest ./docs/**/*.{pdf,md,txt} --parallel --batch-size 10
 ```
 
-3. Run a query:
-
+### Querying
 ```bash
-node bin/cli.js query "What is in the document?"
+# Basic query
+rag-pipeline query "What is vector search?" --llm openai
+
+# Streaming query with real-time responses
+rag-pipeline query "Explain RAG architecture" --llm openai --stream
+
+# Query with custom retrieval parameters
+rag-pipeline query "How does embedding work?" --top-k 5 --similarity-threshold 0.8
 ```
 
-## Plugin Contracts
+### Advanced Workflows
+```bash
+# Run complex DAG pipelines
+rag-pipeline dag run ./examples/academic-rag.yaml
 
-Each plugin must implement the following interface:
+# Interactive pipeline builder
+rag-pipeline wizard
 
-| Type      | Required Methods                            |
-| --------- | ------------------------------------------- |
-| loader    | `load(filePath)`                          |
-| embedder  | `embed(documents)`, `embedQuery(query)` |
-| retriever | `store(vectors)`, `search(queryVector)` |
-| llm       | `ask(prompt)`                             |
+# System diagnostics and health check
+rag-pipeline doctor
 
-## Folder Structure
+# Plugin management
+rag-pipeline plugin list
+rag-pipeline plugin install @community/custom-embedder
+rag-pipeline plugin scaffold my-custom-loader
+```
 
-```text
-/project-root
-├── /src
-│   ├── /routes
-│   ├── /services
-│   ├── /utils
-│   └── app.js
-├── /scripts
-│   ├── setup.js
-│   ├── ci-runner.js
-│   └── repair-fixtures.js
-├── /__tests__
-│   ├── /fixtures
-│   ├── /unit
-│   ├── /integration
-├── /public
-├── README.md
-├── USE_CASES.md
-├── CHANGELOG.md
-└── .env.example
+## 🔌 Plugin Architecture
+
+### Plugin Contracts
+Each plugin type implements a standardized interface with runtime validation:
+
+| Plugin Type | Required Methods | Optional Methods | Description |
+|-------------|------------------|------------------|-------------|
+| **Loader** | `load(filePath)` | `validate()`, `getMetadata()` | Document ingestion and parsing |
+| **Embedder** | `embed(texts)`, `embedQuery(query)` | `getDimensions()`, `getBatchSize()` | Text vectorization |
+| **Retriever** | `store(vectors)`, `retrieve(queryVector)` | `delete()`, `update()` | Vector storage and similarity search |
+| **LLM** | `generate(prompt)`, `stream(prompt)` | `getTokenCount()`, `getModels()` | Language model inference |
+| **Reranker** | `rerank(query, documents)` | `getScore()` | Result relevance optimization |
+
+### Plugin Development
+```javascript
+// Example: Custom embedder plugin
+export class MyCustomEmbedder {
+  constructor(options = {}) {
+    this.apiKey = options.apiKey;
+    this.model = options.model || 'text-embedding-ada-002';
+  }
+
+  async embed(texts) {
+    // Implementation for batch embedding
+    return vectors;
+  }
+
+  async embedQuery(query) {
+    // Implementation for single query embedding
+    return vector;
+  }
+
+  // Plugin metadata (required)
+  static metadata = {
+    name: 'my-custom-embedder',
+    version: '1.0.0',
+    type: 'embedder',
+    description: 'Custom embedding implementation'
+  };
+}
+```
+
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   CLI Interface │────│  Pipeline Engine │────│ Plugin Registry │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                │
+                ┌───────────────┼───────────────┐
+                │               │               │
+        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼─────┐
+        │ Observability│ │Performance  │ │   DAG     │
+        │   System     │ │ Optimizer   │ │  Engine   │
+        └──────────────┘ └─────────────┘ └───────────┘
+                │               │               │
+        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼─────┐
+        │   Logging    │ │  Streaming  │ │Workflow   │
+        │   Tracing    │ │  Parallel   │ │Execution  │
+        │   Metrics    │ │  Memory     │ │Validation │
+        └──────────────┘ └─────────────┘ └───────────┘
+```
+
+## 📁 Project Structure
+
+```
+@devilsdev/rag-pipeline-utils/
+├── bin/
+│   └── cli.js                 # CLI entry point
+├── src/
+│   ├── cli/                   # Command-line interface
+│   │   ├── enhanced-cli-commands.js
+│   │   ├── interactive-wizard.js
+│   │   ├── doctor-command.js
+│   │   └── plugin-marketplace-commands.js
+│   ├── core/                  # Core pipeline engine
+│   │   ├── create-pipeline.js
+│   │   ├── plugin-registry.js
+│   │   ├── plugin-contracts.js
+│   │   ├── observability/     # Monitoring & logging
+│   │   ├── performance/       # Optimization tools
+│   │   └── plugin-marketplace/
+│   ├── config/                # Configuration management
+│   │   ├── load-config.js
+│   │   └── enhanced-ragrc-schema.js
+│   ├── dag/                   # DAG workflow engine
+│   │   └── dag-engine.js
+│   ├── utils/                 # Utility functions
+│   │   ├── logger.js
+│   │   ├── retry.js
+│   │   └── plugin-scaffolder.js
+│   └── mocks/                 # Development mocks
+├── __tests__/                 # Test suites
+│   ├── unit/
+│   ├── integration/
+│   └── fixtures/
+├── docs/                      # Documentation
+├── examples/                  # Usage examples
+├── scripts/                   # Build & maintenance
+├── .ragrc.schema.json        # Configuration schema
+├── package.json
+└── README.md
 ```
 
 
 
-## Why Use This?
+## 📚 Configuration
 
-- **Developer Experience**: Fast iteration, full contract CI
-- **Pluggable Design**: Swap in your stack (OpenAI, Pinecone, Langchain, etc.)
-- **Minimal & Modular**: Clean separation of concerns
-- **Prod-ready**: 100% test coverage, schema validation, CLI control
+### Environment Variables
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4
 
+# Vector Database Configuration
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_ENVIRONMENT=us-west1-gcp
 
+# Performance Settings
+RAG_MAX_CONCURRENCY=5
+RAG_BATCH_SIZE=10
+RAG_ENABLE_STREAMING=true
+```
 
-## Use Cases
+### Advanced Configuration
+```json
+{
+  "pipeline": {
+    "loader": "pdf",
+    "embedder": "openai",
+    "retriever": "chroma",
+    "llm": "openai",
+    "reranker": "cross-encoder"
+  },
+  "performance": {
+    "maxConcurrency": 5,
+    "batchSize": 10,
+    "enableStreaming": true,
+    "enableObservability": true,
+    "maxMemoryMB": 512,
+    "tokenLimit": 100000
+  },
+  "observability": {
+    "enableLogging": true,
+    "enableTracing": true,
+    "enableMetrics": true,
+    "logLevel": "info",
+    "exportFormat": "json"
+  },
+  "plugins": {
+    "marketplace": {
+      "registryUrl": "https://registry.rag-pipeline.dev",
+      "autoUpdate": false,
+      "allowPrerelease": false
+    }
+  }
+}
+```
 
-Explore real-world DevX-focused examples in [USE_CASES.md](./Use-Cases.md), including:
+## 🚀 Use Cases
 
-- Mock-driven plugin TDD
-- CI-based interface validation
-- Multivendor ingestion and search
-- Runtime swap of LLM, retrievers, or embedders
-- Bootstrap pipelines with auto-repairable defaults
+### Enterprise Document Processing
+- **Legal Document Analysis**: Process contracts, agreements, and legal documents
+- **Technical Documentation**: Index API docs, manuals, and knowledge bases
+- **Research Papers**: Academic literature search and analysis
+- **Customer Support**: FAQ automation and ticket resolution
 
+### Development Workflows
+- **Code Documentation**: Generate and maintain code documentation
+- **API Integration**: Semantic search across API documentation
+- **Knowledge Management**: Team knowledge base and onboarding
+- **Content Generation**: Automated content creation and editing
 
+### Industry Applications
+- **Healthcare**: Medical literature search and clinical decision support
+- **Finance**: Financial document analysis and compliance
+- **Education**: Personalized learning and content recommendation
+- **E-commerce**: Product search and recommendation systems
 
-## Contributing
+## 🤝 Contributing
 
-We welcome contributions via PRs, especially new mock providers, validation helpers, and runtime extensions. Please follow the test + CI conventions before submitting.
+We welcome contributions from the community! Here's how you can help:
 
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/DevilsDev/rag-pipeline-utils.git
+cd rag-pipeline-utils
 
+# Install dependencies
+npm install
 
-## Contributors Guide
+# Run tests
+npm test
 
-For active maintainers and collaborators:
+# Run linting
+npm run lint
 
+# Start development server
+npm run dev
+```
 
+### Contribution Guidelines
+- **Plugin Development**: Create new plugins following our [Plugin Developer Guide](./docs/PLUGIN_DEVELOPER_GUIDE.md)
+- **Bug Reports**: Use GitHub Issues with detailed reproduction steps
+- **Feature Requests**: Discuss new features in GitHub Discussions
+- **Documentation**: Help improve docs and examples
+- **Testing**: Add tests for new features and bug fixes
 
-- **Milestone Tags**
-  | Tag         | Description                        |
-  |-------------|------------------------------------|
-  | `phase-1`   | Foundation – testing, CI, tutorials |
-  | `phase-2`   | Community, blog, discussions       |
-  | `phase-3`   | CLI, VS Code tools, theming        |
-  | `phase-4`   | i18n, integrations, case studies   |
+### Community
+- 💬 [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) - Questions and community chat
+- 🐛 [GitHub Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues) - Bug reports and feature requests
+- 📖 [Documentation](https://devilsdev.github.io/rag-pipeline-utils/) - Comprehensive guides and API docs
+- 🔌 [Plugin Marketplace](https://registry.rag-pipeline.dev) - Community plugins and extensions
 
-_Note: This file is not included in public documentation builds._
+## 📄 License
 
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
 
-## Manual Test Checklist
+## 🙏 Acknowledgments
 
-For full validation of roadmap sync, changelog automation, CI/CD, and blog generation:
-
-➡️ [View Manual Test Checklist](scripts/manual-test-checklist.md)
-
-## Manual CI Rollout
-
-git commit --allow-empty -m "ci(test): trigger all CI workflows"
-git push origin main
-
-
-## License
-
-This project is licensed under the **GNU GPL v3.0** License - see the [LICENSE](./LICENSE) file for details.
+- Built with ❤️ by [Ali Kahwaji](https://github.com/alikahwaji) and the DevilsDev team
+- Inspired by the open-source AI/ML community
+- Special thanks to all [contributors](https://github.com/DevilsDev/rag-pipeline-utils/graphs/contributors)
 
 ---
 
-Built with ❤️ by [Ali Kahwaji].
+<div align="center">
+  <strong>Ready to build your next RAG application?</strong><br>
+  <a href="#-installation">Get Started</a> • 
+  <a href="https://devilsdev.github.io/rag-pipeline-utils/">Documentation</a> • 
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/discussions">Community</a>
+</div>
 
