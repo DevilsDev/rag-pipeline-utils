@@ -30,7 +30,14 @@
     "docs:deploy": "docusaurus deploy docs-site",
     "roadmap:close": "node scripts/close-done-roadmap-issues.js",
     "labels:sync": "node scripts/ensure-roadmap-labels.js",
-    "release:tag": "node scripts/generate-release-note.js v$(node -p \"require('./package.json').version\")"
+    "release:tag": "node scripts/generate-release-note.js v$(node -p \"require('./package.json').version\")",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:audit:critical": "npm audit --audit-level=critical",
+    "security:audit:json": "npm audit --json > security-audit-report.json",
+    "security:fix": "npm audit fix",
+    "security:fix:force": "npm audit fix --force",
+    "security:check": "npm audit && echo 'Security check passed'",
+    "security:report": "npm run security:audit:json && echo 'Security report generated: security-audit-report.json'"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
@@ -74,7 +81,6 @@
     "babel-jest": "^29.7.0",
     "codecov": "^3.8.2",
     "cross-env": "^7.0.3",
-    "docusaurus": "^1.14.7",
     "esbuild": "^0.25.2",
     "eslint": "^8.57.1",
     "eslint-plugin-storybook": "^0.12.0",

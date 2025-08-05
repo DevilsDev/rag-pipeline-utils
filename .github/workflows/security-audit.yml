@@ -1,0 +1,194 @@
+# Security Audit Workflow
+# Automated security scanning and vulnerability detection
+name: Security Audit
+
+on:
+  # Run on every push to main and pull requests
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  # Run weekly security scans
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      audit_level:
+        description: 'Audit level (info, low, moderate, high, critical)'
+        required: false
+        default: 'moderate'
+        type: choice
+        options:
+          - info
+          - low
+          - moderate
+          - high
+          - critical
+
+jobs:
+  security-audit:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run npm audit (JSON output)
+        id: npm-audit-json
+        run: |
+          npm audit --json > npm-audit-report.json || true
+          echo "audit_exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+        
+      - name: Run npm audit (human readable)
+        id: npm-audit
+        run: |
+          AUDIT_LEVEL="${{ github.event.inputs.audit_level || 'moderate' }}"
+          echo "Running npm audit with level: $AUDIT_LEVEL"
+          npm audit --audit-level=$AUDIT_LEVEL > npm-audit-output.txt 2>&1 || true
+          echo "audit_exit_code=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+        
+      - name: Parse audit results
+        id: parse-audit
+        run: |
+          if [ -f npm-audit-report.json ]; then
+            TOTAL_VULNS=$(jq -r '.metadata.vulnerabilities.total // 0' npm-audit-report.json)
+            CRITICAL_VULNS=$(jq -r '.metadata.vulnerabilities.critical // 0' npm-audit-report.json)
+            HIGH_VULNS=$(jq -r '.metadata.vulnerabilities.high // 0' npm-audit-report.json)
+            MODERATE_VULNS=$(jq -r '.metadata.vulnerabilities.moderate // 0' npm-audit-report.json)
+            LOW_VULNS=$(jq -r '.metadata.vulnerabilities.low // 0' npm-audit-report.json)
+            
+            echo "total_vulnerabilities=$TOTAL_VULNS" >> $GITHUB_OUTPUT
+            echo "critical_vulnerabilities=$CRITICAL_VULNS" >> $GITHUB_OUTPUT
+            echo "high_vulnerabilities=$HIGH_VULNS" >> $GITHUB_OUTPUT
+            echo "moderate_vulnerabilities=$MODERATE_VULNS" >> $GITHUB_OUTPUT
+            echo "low_vulnerabilities=$LOW_VULNS" >> $GITHUB_OUTPUT
+            
+            # Determine if we should fail the build
+            if [ "$CRITICAL_VULNS" -gt 0 ]; then
+              echo "should_fail=true" >> $GITHUB_OUTPUT
+              echo "fail_reason=Critical vulnerabilities found" >> $GITHUB_OUTPUT
+            elif [ "$HIGH_VULNS" -gt 5 ]; then
+              echo "should_fail=true" >> $GITHUB_OUTPUT
+              echo "fail_reason=Too many high-severity vulnerabilities" >> $GITHUB_OUTPUT
+            else
+              echo "should_fail=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "total_vulnerabilities=0" >> $GITHUB_OUTPUT
+            echo "should_fail=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-reports-${{ github.run_number }}
+          path: |
+            npm-audit-report.json
+            npm-audit-output.txt
+          retention-days: 30
+          
+      - name: Comment on PR with audit results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const totalVulns = '${{ steps.parse-audit.outputs.total_vulnerabilities }}';
+            const criticalVulns = '${{ steps.parse-audit.outputs.critical_vulnerabilities }}';
+            const highVulns = '${{ steps.parse-audit.outputs.high_vulnerabilities }}';
+            const moderateVulns = '${{ steps.parse-audit.outputs.moderate_vulnerabilities }}';
+            const lowVulns = '${{ steps.parse-audit.outputs.low_vulnerabilities }}';
+            
+            let auditOutput = '';
+            try {
+              auditOutput = fs.readFileSync('npm-audit-output.txt', 'utf8');
+            } catch (error) {
+              auditOutput = 'No audit output available';
+            }
+            
+            const body = `## 🔒 Security Audit Results
+            
+            **Total Vulnerabilities:** ${totalVulns}
+            - 🔴 Critical: ${criticalVulns}
+            - 🟠 High: ${highVulns}
+            - 🟡 Moderate: ${moderateVulns}
+            - 🟢 Low: ${lowVulns}
+            
+            <details>
+            <summary>📋 Detailed Audit Output</summary>
+            
+            \`\`\`
+            ${auditOutput.slice(0, 4000)}${auditOutput.length > 4000 ? '\n... (truncated)' : ''}
+            \`\`\`
+            
+            </details>
+            
+            ${criticalVulns > 0 ? '⚠️ **Action Required:** Critical vulnerabilities detected. Please address before merging.' : ''}
+            ${highVulns > 5 ? '⚠️ **Warning:** High number of high-severity vulnerabilities detected.' : ''}
+            ${totalVulns == 0 ? '✅ **All Clear:** No vulnerabilities detected!' : ''}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+            
+      - name: Create security summary
+        run: |
+          echo "## Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Vulnerabilities:** ${{ steps.parse-audit.outputs.total_vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Critical:** ${{ steps.parse-audit.outputs.critical_vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **High:** ${{ steps.parse-audit.outputs.high_vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Moderate:** ${{ steps.parse-audit.outputs.moderate_vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Low:** ${{ steps.parse-audit.outputs.low_vulnerabilities }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 [View detailed audit reports in artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Fail on critical vulnerabilities
+        if: steps.parse-audit.outputs.should_fail == 'true'
+        run: |
+          echo "❌ Build failed due to: ${{ steps.parse-audit.outputs.fail_reason }}"
+          echo "Please run 'npm audit fix' or manually address the vulnerabilities"
+          exit 1
+          
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+          deny-licenses: GPL-2.0, GPL-3.0
+          comment-summary-in-pr: true

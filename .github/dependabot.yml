@@ -1,0 +1,81 @@
+# GitHub Dependabot Configuration
+# Automated dependency updates and security vulnerability monitoring
+version: 2
+updates:
+  # Enable security updates for npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    # Limit the number of open pull requests for npm updates
+    open-pull-requests-limit: 10
+    # Automatically merge minor and patch updates for dev dependencies
+    auto-merge:
+      dependency-type: "development"
+      update-type: "security"
+    # Reviewers for security-critical updates
+    reviewers:
+      - "DevilsDev"
+    # Labels for easy identification
+    labels:
+      - "dependencies"
+      - "security"
+      - "automated"
+    # Commit message prefix
+    commit-message:
+      prefix: "security"
+      prefix-development: "dev-deps"
+      include: "scope"
+    # Ignore specific packages if needed
+    ignore:
+      # Ignore webpack-dev-server until upstream fix is available
+      - dependency-name: "webpack-dev-server"
+        versions: ["<= 5.2.0"]
+    # Allow version updates for security fixes
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+    # Group related dependencies together
+    groups:
+      docusaurus:
+        patterns:
+          - "@docusaurus/*"
+      semantic-release:
+        patterns:
+          - "@semantic-release/*"
+          - "semantic-release"
+      testing:
+        patterns:
+          - "jest*"
+          - "@types/jest"
+          - "babel-jest"
+      linting:
+        patterns:
+          - "eslint*"
+          - "prettier"
+          - "husky"
+          - "lint-staged"
+
+  # Enable security updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "DevilsDev"
+    labels:
+      - "github-actions"
+      - "security"
+      - "automated"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
