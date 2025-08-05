@@ -133,7 +133,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
 
       try {
         await dag.execute();
-        fail('Expected execution to throw');
+        expect.fail('Expected execution to throw');
       } catch (error) {
         expect(error.message).toContain('Multiple execution errors');
         expect(error.errors).toHaveLength(2);
@@ -165,7 +165,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
 
       try {
         await dag.execute();
-        fail('Expected execution to throw');
+        expect.fail('Expected execution to throw');
       } catch (error) {
         expect(error.nodeId).toBe('context');
         expect(error.timestamp).toBeDefined();
@@ -249,7 +249,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
 
       try {
         await dag.execute();
-        fail('Expected execution to throw');
+        expect.fail('Expected execution to throw');
       } catch (error) {
         // Verify cleanup occurred (in real implementation)
         expect(error.message).toBe('Memory leak error');
@@ -342,7 +342,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
       // First execution fails at B
       try {
         await dag.execute({ enableCheckpoints: true });
-        fail('Expected execution to fail');
+        expect.fail('Expected execution to fail');
       } catch (error) {
         expect(checkpointData.get('A')).toBe('A-completed');
       }
