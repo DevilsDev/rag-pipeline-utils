@@ -1,0 +1,282 @@
+[
+  {
+    "id": "eval_001",
+    "timestamp": "2024-08-05T06:30:00Z",
+    "prompt": "What is vector search and how does it work in RAG systems?",
+    "expected": "Vector search is a technique used in information retrieval that represents documents and queries as high-dimensional vectors. In RAG systems, it enables semantic similarity matching by converting text into embeddings and finding the most relevant documents using cosine similarity or other distance metrics.",
+    "actual": "Vector search is a method for finding similar items by representing them as vectors in high-dimensional space. In RAG (Retrieval-Augmented Generation) systems, documents are converted to embeddings using models like OpenAI's text-embedding-ada-002, then stored in vector databases like Pinecone or Chroma. When a query comes in, it's also embedded and compared using cosine similarity to retrieve the most relevant documents.",
+    "scores": {
+      "bleu": 0.847,
+      "rouge": 0.823,
+      "bertscore": 0.891,
+      "semantic_similarity": 0.934
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "max_tokens": 150,
+      "tokens_used": 127,
+      "response_time_ms": 1240,
+      "retrieval_time_ms": 89,
+      "embedding_time_ms": 45,
+      "total_time_ms": 1374
+    },
+    "success": true,
+    "category": "technical_explanation",
+    "difficulty": "medium",
+    "retrieved_docs": 5,
+    "context_length": 2048
+  },
+  {
+    "id": "eval_002",
+    "timestamp": "2024-08-05T06:30:15Z",
+    "prompt": "How do I install and configure the RAG pipeline for my project?",
+    "expected": "To install the RAG pipeline, run 'npm install @devilsdev/rag-pipeline-utils'. Configure it by creating a .ragrc.json file with your preferred plugins for loader, embedder, retriever, and LLM. Then use the CLI commands like 'rag-pipeline ingest' and 'rag-pipeline query' to process documents and ask questions.",
+    "actual": "You can install the RAG pipeline using npm: 'npm install @devilsdev/rag-pipeline-utils'. After installation, create a configuration file .ragrc.json to specify your plugins. Use CLI commands such as 'rag-pipeline ingest ./docs --loader pdf --embedder openai' to process documents and 'rag-pipeline query \"your question\" --llm openai' to query the system.",
+    "scores": {
+      "bleu": 0.756,
+      "rouge": 0.789,
+      "bertscore": 0.834,
+      "semantic_similarity": 0.887
+    },
+    "metadata": {
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.3,
+      "max_tokens": 200,
+      "tokens_used": 156,
+      "response_time_ms": 890,
+      "retrieval_time_ms": 67,
+      "embedding_time_ms": 32,
+      "total_time_ms": 989
+    },
+    "success": true,
+    "category": "installation_guide",
+    "difficulty": "easy",
+    "retrieved_docs": 3,
+    "context_length": 1024
+  },
+  {
+    "id": "eval_003",
+    "timestamp": "2024-08-05T06:30:30Z",
+    "prompt": "What are the key differences between BLEU and ROUGE metrics?",
+    "expected": "BLEU (Bilingual Evaluation Understudy) measures precision by comparing n-grams between generated and reference text, commonly used for machine translation. ROUGE (Recall-Oriented Understudy for Gisting Evaluation) focuses on recall and is better for summarization tasks. BLEU penalizes brevity while ROUGE rewards coverage of reference content.",
+    "actual": "BLEU and ROUGE are both evaluation metrics but serve different purposes. BLEU focuses on precision and n-gram overlap, making it suitable for translation tasks. ROUGE emphasizes recall and is designed for summarization evaluation. The key difference is that BLEU measures how much of the generated text appears in the reference, while ROUGE measures how much of the reference appears in the generated text.",
+    "scores": {
+      "bleu": 0.692,
+      "rouge": 0.734,
+      "bertscore": 0.798,
+      "semantic_similarity": 0.856
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.5,
+      "max_tokens": 180,
+      "tokens_used": 143,
+      "response_time_ms": 1156,
+      "retrieval_time_ms": 78,
+      "embedding_time_ms": 41,
+      "total_time_ms": 1275
+    },
+    "success": true,
+    "category": "evaluation_metrics",
+    "difficulty": "hard",
+    "retrieved_docs": 4,
+    "context_length": 1536
+  },
+  {
+    "id": "eval_004",
+    "timestamp": "2024-08-05T06:30:45Z",
+    "prompt": "Can you explain the plugin architecture of this RAG system?",
+    "expected": "The RAG system uses a modular plugin architecture with five main types: loaders (PDF, text, web), embedders (OpenAI, Cohere), retrievers (Chroma, Pinecone), LLMs (OpenAI, Anthropic), and rerankers (cross-encoder). Each plugin implements a standard contract with required methods, enabling easy swapping and extension of components.",
+    "actual": "This RAG system features a plugin-based architecture that supports multiple component types. There are loader plugins for different file formats, embedder plugins for various embedding models, retriever plugins for vector databases, LLM plugins for different language models, and reranker plugins for improving result relevance. The system uses a registry pattern to manage plugins dynamically.",
+    "scores": {
+      "bleu": 0.634,
+      "rouge": 0.678,
+      "bertscore": 0.745,
+      "semantic_similarity": 0.812
+    },
+    "metadata": {
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.4,
+      "max_tokens": 160,
+      "tokens_used": 134,
+      "response_time_ms": 823,
+      "retrieval_time_ms": 92,
+      "embedding_time_ms": 38,
+      "total_time_ms": 953
+    },
+    "success": false,
+    "category": "architecture",
+    "difficulty": "hard",
+    "retrieved_docs": 6,
+    "context_length": 2560
+  },
+  {
+    "id": "eval_005",
+    "timestamp": "2024-08-05T06:31:00Z",
+    "prompt": "How do I optimize performance for large document collections?",
+    "expected": "For large document collections, enable parallel processing with maxConcurrency settings, use streaming for memory efficiency, implement proper caching strategies, consider document chunking with overlap, and use efficient vector databases with proper indexing. Monitor memory usage and implement backpressure handling.",
+    "actual": "To optimize performance with large document collections, you should configure parallel processing using the maxConcurrency option in your .ragrc.json file. Enable streaming to handle large files without memory issues, implement caching for embeddings, and choose appropriate chunk sizes. Use vector databases like Pinecone or Chroma with proper indexing for fast retrieval.",
+    "scores": {
+      "bleu": 0.789,
+      "rouge": 0.812,
+      "bertscore": 0.867,
+      "semantic_similarity": 0.903
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.2,
+      "max_tokens": 200,
+      "tokens_used": 167,
+      "response_time_ms": 1345,
+      "retrieval_time_ms": 134,
+      "embedding_time_ms": 67,
+      "total_time_ms": 1546
+    },
+    "success": true,
+    "category": "performance_optimization",
+    "difficulty": "medium",
+    "retrieved_docs": 8,
+    "context_length": 3072
+  },
+  {
+    "id": "eval_006",
+    "timestamp": "2024-08-05T06:31:15Z",
+    "prompt": "What is the difference between synchronous and asynchronous processing?",
+    "expected": "Synchronous processing executes operations sequentially, blocking until each completes. Asynchronous processing allows operations to run concurrently without blocking, using callbacks, promises, or async/await. Async is better for I/O operations and user interfaces but requires careful error handling and state management.",
+    "actual": "Synchronous processing means operations happen one after another, with each step waiting for the previous to finish. Asynchronous processing allows multiple operations to run at the same time without waiting. This is especially useful for network requests and file operations where you don't want to freeze the application while waiting for responses.",
+    "scores": {
+      "bleu": 0.567,
+      "rouge": 0.623,
+      "bertscore": 0.712,
+      "semantic_similarity": 0.789
+    },
+    "metadata": {
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.6,
+      "max_tokens": 140,
+      "tokens_used": 118,
+      "response_time_ms": 756,
+      "retrieval_time_ms": 45,
+      "embedding_time_ms": 28,
+      "total_time_ms": 829
+    },
+    "success": false,
+    "category": "programming_concepts",
+    "difficulty": "medium",
+    "retrieved_docs": 2,
+    "context_length": 512
+  },
+  {
+    "id": "eval_007",
+    "timestamp": "2024-08-05T06:31:30Z",
+    "prompt": "How do I troubleshoot common RAG pipeline errors?",
+    "expected": "Common RAG pipeline errors include API key issues (check environment variables), embedding failures (verify model compatibility), retrieval problems (check vector database connection), and generation errors (validate LLM configuration). Use the --trace flag for detailed logging and the doctor command for system diagnostics.",
+    "actual": "To troubleshoot RAG pipeline errors, start by checking your API keys and environment variables. Verify that your vector database is properly connected and indexed. Use the built-in diagnostic tools like 'rag-pipeline doctor' to identify configuration issues. Enable verbose logging with --trace to see detailed execution steps and error messages.",
+    "scores": {
+      "bleu": 0.723,
+      "rouge": 0.756,
+      "bertscore": 0.821,
+      "semantic_similarity": 0.878
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.3,
+      "max_tokens": 170,
+      "tokens_used": 142,
+      "response_time_ms": 1089,
+      "retrieval_time_ms": 56,
+      "embedding_time_ms": 34,
+      "total_time_ms": 1179
+    },
+    "success": true,
+    "category": "troubleshooting",
+    "difficulty": "easy",
+    "retrieved_docs": 4,
+    "context_length": 1280
+  },
+  {
+    "id": "eval_008",
+    "timestamp": "2024-08-05T06:31:45Z",
+    "prompt": "What are the security considerations for RAG systems?",
+    "expected": "RAG security considerations include API key management (use environment variables, rotate regularly), input sanitization to prevent injection attacks, access control for sensitive documents, secure vector database connections, audit logging for compliance, and data privacy measures for document processing and storage.",
+    "actual": "Security in RAG systems involves several key areas: protecting API keys and credentials, sanitizing user inputs to prevent attacks, controlling access to sensitive documents, securing connections to vector databases, and ensuring compliance with data privacy regulations. Regular security audits and monitoring are also important.",
+    "scores": {
+      "bleu": 0.678,
+      "rouge": 0.712,
+      "bertscore": 0.789,
+      "semantic_similarity": 0.845
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.1,
+      "max_tokens": 180,
+      "tokens_used": 151,
+      "response_time_ms": 1234,
+      "retrieval_time_ms": 67,
+      "embedding_time_ms": 43,
+      "total_time_ms": 1344
+    },
+    "success": true,
+    "category": "security",
+    "difficulty": "hard",
+    "retrieved_docs": 5,
+    "context_length": 2048
+  },
+  {
+    "id": "eval_009",
+    "timestamp": "2024-08-05T06:32:00Z",
+    "prompt": "How can I integrate custom embeddings models?",
+    "expected": "To integrate custom embedding models, create a new embedder plugin that implements the required contract with embed() and metadata methods. Register it in the plugin registry, update your .ragrc.json configuration, and ensure the model outputs compatible vector dimensions for your retriever.",
+    "actual": "You can add custom embedding models by creating a plugin that follows the embedder interface. Implement the required methods like embed() and ensure your model returns vectors in the correct format. Add the plugin to your configuration file and register it with the plugin system.",
+    "scores": {
+      "bleu": 0.612,
+      "rouge": 0.645,
+      "bertscore": 0.734,
+      "semantic_similarity": 0.798
+    },
+    "metadata": {
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.4,
+      "max_tokens": 150,
+      "tokens_used": 128,
+      "response_time_ms": 867,
+      "retrieval_time_ms": 73,
+      "embedding_time_ms": 39,
+      "total_time_ms": 979
+    },
+    "success": false,
+    "category": "customization",
+    "difficulty": "hard",
+    "retrieved_docs": 3,
+    "context_length": 1024
+  },
+  {
+    "id": "eval_010",
+    "timestamp": "2024-08-05T06:32:15Z",
+    "prompt": "What monitoring and observability features are available?",
+    "expected": "The RAG pipeline includes comprehensive observability with structured logging, distributed tracing, performance metrics collection, CLI flags for debugging (--trace, --stats), event hooks for custom monitoring, and integration capabilities with external systems like OpenTelemetry, Sentry, and custom HTTP endpoints.",
+    "actual": "The system provides extensive monitoring capabilities including detailed logging, performance tracking, and debugging tools. You can use CLI flags like --trace for verbose output and --stats for performance metrics. The system also supports integration with monitoring services and provides structured event logging for analysis.",
+    "scores": {
+      "bleu": 0.745,
+      "rouge": 0.778,
+      "bertscore": 0.834,
+      "semantic_similarity": 0.889
+    },
+    "metadata": {
+      "model": "gpt-4",
+      "temperature": 0.2,
+      "max_tokens": 160,
+      "tokens_used": 138,
+      "response_time_ms": 1167,
+      "retrieval_time_ms": 89,
+      "embedding_time_ms": 47,
+      "total_time_ms": 1303
+    },
+    "success": true,
+    "category": "observability",
+    "difficulty": "medium",
+    "retrieved_docs": 6,
+    "context_length": 2304
+  }
+]

@@ -1,57 +1,514 @@
 /**
- * Version: 0.1.0
+ * Version: 2.0.0
  * Path: /public/src/App.jsx
- * Description: Evaluation results dashboard UI
+ * Description: Enhanced RAG evaluation dashboard with filtering, charts, and advanced features
  * Author: Ali Kahwaji
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Search, Filter, Download, Upload, BarChart3, TrendingUp, Clock, Zap, List, Grid3X3 } from 'lucide-react';
+import ScoreTable from './components/ScoreTable.jsx';
+import ScoreChart from './components/ScoreChart.jsx';
+import Filters from './components/Filters.jsx';
+import { formatDuration, exportToCSV, calculateStats } from './utils/helpers.js';
 
 export default function App() {
+  // State management
   const [results, setResults] = useState([]);
-  const [summary, setSummary] = useState({ passRate: 0, avgBLEU: 0, avgROUGE: 0 });
+  const [filteredResults, setFilteredResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedModels, setSelectedModels] = useState([]);
+  const [scoreRange, setScoreRange] = useState({ min: 0, max: 1 });
+  const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
+  const [viewMode, setViewMode] = useState('table'); // 'table', 'cards', 'charts'
+  const [selectedResults, setSelectedResults] = useState([]);
 
+  // Load evaluation results
   useEffect(() => {
-    fetch('/results/sample-eval.json')
-      .then(res => res.json())
-      .then(data => {
-        setResults(data);
-
-        const total = data.length;
-        const passCount = data.filter(r => r.success).length;
-        const avgBLEU = data.reduce((s, r) => s + r.scores.bleu, 0) / total;
-        const avgROUGE = data.reduce((s, r) => s + r.scores.rouge, 0) / total;
-
-        setSummary({
-          passRate: (passCount / total * 100).toFixed(1),
-          avgBLEU: avgBLEU.toFixed(2),
-          avgROUGE: avgROUGE.toFixed(2)
-        });
-      });
+    loadResults();
   }, []);
 
-  return (
-    <main className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">RAG Evaluation Dashboard</h1>
+  const loadResults = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/results/sample-eval.json');
+      if (!response.ok) {
+        throw new Error(`Failed to load results: ${response.status}`);
+      }
+      const data = await response.json();
+      setResults(data);
+      setFilteredResults(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error loading results:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      <div className="mb-6 p-4 border rounded shadow bg-white">
-        <h2 className="text-xl font-semibold mb-2">Summary</h2>
-        <p> Pass Rate: <strong>{summary.passRate}%</strong></p>
-        <p> Avg BLEU: <strong>{summary.avgBLEU}</strong></p>
-        <p> Avg ROUGE: <strong>{summary.avgROUGE}</strong></p>
-      </div>
+  // File upload handler
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-      {results.map((res, i) => (
-        <div key={i} className="mb-4 p-4 border-l-4 rounded bg-white shadow border-l-gray-300">
-          <h3 className="font-bold text-lg">Prompt {i + 1}</h3>
-          <p className="mt-2"><strong>Prompt:</strong> {res.prompt}</p>
-          <p><strong>Expected:</strong> {res.expected}</p>
-          <p><strong>Actual:</strong> {res.actual}</p>
-          <p> BLEU: <strong>{res.scores.bleu.toFixed(2)}</strong></p>
-          <p> ROUGE: <strong>{res.scores.rouge.toFixed(2)}</strong></p>
-          <p>Pass: <strong className={res.success ? 'text-green-600' : 'text-red-600'}>{res.success ? 'Yes' : 'No'}</strong></p>
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const uploadedData = JSON.parse(e.target.result);
+        setResults(uploadedData);
+        setFilteredResults(uploadedData);
+        setError(null);
+      } catch (err) {
+        setError('Invalid JSON file format');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Calculate summary statistics
+  const summary = useMemo(() => {
+    if (filteredResults.length === 0) {
+      return {
+        totalResults: 0,
+        passRate: 0,
+        avgBLEU: 0,
+        avgROUGE: 0,
+        avgBertScore: 0,
+        avgSemanticSimilarity: 0,
+        avgResponseTime: 0,
+        totalTokens: 0
+      };
+    }
+
+    const stats = calculateStats(filteredResults);
+    return stats;
+  }, [filteredResults]);
+
+  // Filter and search results
+  useEffect(() => {
+    let filtered = results;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(result => 
+        result.prompt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.actual.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.expected.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(result => 
+        selectedCategories.includes(result.category)
+      );
+    }
+
+    // Model filter
+    if (selectedModels.length > 0) {
+      filtered = filtered.filter(result => 
+        selectedModels.includes(result.metadata.model)
+      );
+    }
+
+    // Score range filter
+    filtered = filtered.filter(result => {
+      const avgScore = (result.scores.bleu + result.scores.rouge) / 2;
+      return avgScore >= scoreRange.min && avgScore <= scoreRange.max;
+    });
+
+    // Sort results
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+        
+        // Handle nested properties
+        if (sortConfig.key.includes('.')) {
+          const keys = sortConfig.key.split('.');
+          aVal = keys.reduce((obj, key) => obj?.[key], a);
+          bVal = keys.reduce((obj, key) => obj?.[key], b);
+        }
+        
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    setFilteredResults(filtered);
+  }, [results, searchTerm, selectedCategories, selectedModels, scoreRange, sortConfig]);
+
+  // Export functionality
+  const handleExport = () => {
+    exportToCSV(filteredResults, 'rag-evaluation-results.csv');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700">Loading evaluation results...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we prepare your dashboard</p>
         </div>
-      ))}
-    </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-red-800 mb-2">Error Loading Data</h2>
+          <p className="text-red-600 mb-4">{error}</p>
+          <div className="space-x-2">
+            <button
+              onClick={loadResults}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+            <label className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer">
+              Upload File
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Enhanced Header with Professional Styling */}
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/60 sticky top-0 z-50">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                    RAG Evaluation Dashboard
+                  </h1>
+                  <p className="text-sm text-gray-500 font-medium">Pipeline Performance Analytics</p>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
+                  v1.0.0
+                </span>
+                <span className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 text-xs font-semibold rounded-full border border-green-200">
+                  {filteredResults.length} Results
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {/* Enhanced File Upload */}
+              <label className="cursor-pointer group">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  aria-label="Upload evaluation results JSON file"
+                />
+                <div className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl group-hover:scale-105 transform">
+                  <Upload size={16} className="group-hover:rotate-12 transition-transform" />
+                  <span className="font-medium hidden sm:inline">Upload</span>
+                </div>
+              </label>
+              
+              {/* Enhanced Export Button */}
+              <button
+                onClick={() => exportToCSV(filteredResults)}
+                className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-700 text-white rounded-xl hover:from-emerald-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={filteredResults.length === 0}
+                aria-label="Export results to CSV"
+              >
+                <Download size={16} className="hover:translate-y-0.5 transition-transform" />
+                <span className="font-medium hidden sm:inline">Export</span>
+              </button>
+              
+              {/* View Mode Toggle */}
+              <div className="hidden md:flex items-center bg-gray-100 rounded-xl p-1">
+                {[{ mode: 'table', icon: List, label: 'Table' }, { mode: 'cards', icon: Grid3X3, label: 'Cards' }, { mode: 'charts', icon: BarChart3, label: 'Charts' }].map(({ mode, icon: Icon, label }) => (
+                  <button
+                    key={mode}
+                    onClick={() => setViewMode(mode)}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      viewMode === mode
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    aria-label={`Switch to ${label} view`}
+                  >
+                    <Icon size={16} />
+                    <span className="hidden lg:inline">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Enhanced Professional Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          {/* Total Results Card */}
+          <div className="group relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-lg border border-gray-200/50 hover:border-blue-200 p-6 transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Results</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{summary.totalResults.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 font-medium">Evaluation entries</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+          
+          {/* Pass Rate Card */}
+          <div className="group relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-lg border border-gray-200/50 hover:border-emerald-200 p-6 transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Success Rate</p>
+                </div>
+                <p className="text-3xl font-bold text-emerald-600 mb-1">{summary.passRate.toFixed(1)}%</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  {Math.round((summary.passRate / 100) * summary.totalResults)} / {summary.totalResults} passed
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+          
+          {/* BLEU Score Card with Proper Formatting */}
+          <div className="group relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-lg border border-gray-200/50 hover:border-purple-200 p-6 transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg BLEU Score</p>
+                </div>
+                <p className="text-3xl font-bold text-purple-600 mb-1">{summary.avgBLEU.toFixed(3)}</p>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    summary.avgBLEU >= 0.8 ? 'bg-green-500' :
+                    summary.avgBLEU >= 0.6 ? 'bg-yellow-500' :
+                    summary.avgBLEU >= 0.4 ? 'bg-orange-500' : 'bg-red-500'
+                  }`}></div>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {summary.avgBLEU >= 0.8 ? 'Excellent' :
+                     summary.avgBLEU >= 0.6 ? 'Good' :
+                     summary.avgBLEU >= 0.4 ? 'Fair' : 'Needs Improvement'}
+                  </p>
+                </div>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="text-white text-lg font-bold">🎯</div>
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+          
+          {/* Response Time Card */}
+          <div className="group relative bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-lg border border-gray-200/50 hover:border-amber-200 p-6 transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Response Time</p>
+                </div>
+                <p className="text-3xl font-bold text-amber-600 mb-1">{formatDuration(summary.avgResponseTime)}</p>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    summary.avgResponseTime <= 500 ? 'bg-green-500' :
+                    summary.avgResponseTime <= 1000 ? 'bg-yellow-500' :
+                    summary.avgResponseTime <= 2000 ? 'bg-orange-500' : 'bg-red-500'
+                  }`}></div>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {summary.avgResponseTime <= 500 ? 'Fast' :
+                     summary.avgResponseTime <= 1000 ? 'Good' :
+                     summary.avgResponseTime <= 2000 ? 'Slow' : 'Very Slow'}
+                  </p>
+                </div>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+        </div>
+
+        {/* Enhanced Search and Filters Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/50 mb-8 overflow-hidden">
+          <div className="p-6 lg:p-8">
+            {/* Search Bar with Enhanced Styling */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0 lg:space-x-6 mb-6">
+              <div className="flex-1 max-w-2xl">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search prompts, responses, categories, or models..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 text-sm font-medium"
+                    aria-label="Search evaluation results"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                {searchTerm && (
+                  <div className="mt-2 text-sm text-gray-500">
+                    Found {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''} for "{searchTerm}"
+                  </div>
+                )}
+              </div>
+              
+              {/* Enhanced View Mode Selector - Mobile Responsive */}
+              <div className="flex items-center space-x-4">
+                <div className="hidden sm:flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-600">View Mode:</span>
+                  <div className="flex items-center bg-gray-100 rounded-xl p-1">
+                    {[{ mode: 'table', icon: List, label: 'Table' }, { mode: 'cards', icon: Grid3X3, label: 'Cards' }, { mode: 'charts', icon: BarChart3, label: 'Charts' }].map(({ mode, icon: Icon, label }) => (
+                      <button
+                        key={mode}
+                        onClick={() => setViewMode(mode)}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          viewMode === mode
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                        aria-label={`Switch to ${label} view`}
+                      >
+                        <Icon size={16} />
+                        <span className="hidden lg:inline">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Mobile View Selector */}
+                <div className="sm:hidden">
+                  <select
+                    value={viewMode}
+                    onChange={(e) => setViewMode(e.target.value)}
+                    className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Select view mode"
+                  >
+                    <option value="table">📊 Table View</option>
+                    <option value="cards">🃏 Card View</option>
+                    <option value="charts">📈 Chart View</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            {/* Results Summary Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 px-6 bg-gradient-to-r from-gray-50/50 to-blue-50/30 rounded-xl border border-gray-100 mb-6">
+              <div className="flex items-center space-x-4 mb-2 sm:mb-0">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-700">
+                    Showing {filteredResults.length} of {results.length} results
+                  </span>
+                </div>
+                {selectedResults.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-purple-700">
+                      {selectedResults.length} selected
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                {filteredResults.length !== results.length && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategories([]);
+                      setSelectedModels([]);
+                      setScoreRange({ min: 0, max: 1 });
+                    }}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+                <div className="text-xs text-gray-500 font-medium">
+                  Last updated: {new Date().toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+            
+            {/* Enhanced Filters Component */}
+            <Filters
+              results={results}
+              selectedCategories={selectedCategories}
+              setSelectedCategories={setSelectedCategories}
+              selectedModels={selectedModels}
+              setSelectedModels={setSelectedModels}
+              scoreRange={scoreRange}
+              setScoreRange={setScoreRange}
+            />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        {viewMode === 'charts' ? (
+          <ScoreChart results={filteredResults} />
+        ) : (
+          <ScoreTable
+            results={filteredResults}
+            viewMode={viewMode}
+            sortConfig={sortConfig}
+            setSortConfig={setSortConfig}
+            selectedResults={selectedResults}
+            setSelectedResults={setSelectedResults}
+          />
+        )}
+      </div>
+    </div>
   );
 }
