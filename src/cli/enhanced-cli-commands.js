@@ -9,6 +9,7 @@ import path from 'path';
 import { runInteractiveWizard } from './interactive-wizard.js';
 import { runPipelineDoctor } from './doctor-command.js';
 import { createPluginMarketplaceCommands } from './plugin-marketplace-commands.js';
+import { PluginHubCLI } from './commands/plugin-hub.js';
 import { createRagPipeline } from '../core/create-pipeline.js';
 import { createInstrumentedPipeline } from '../core/observability/instrumented-pipeline.js';
 import { loadRagConfig } from '../config/load-config.js';
@@ -123,6 +124,10 @@ export class EnhancedCLI {
 
     // Plugin marketplace commands
     this.program.addCommand(createPluginMarketplaceCommands());
+    
+    // Plugin hub commands (community ecosystem)
+    const pluginHubCLI = new PluginHubCLI();
+    this.program.addCommand(pluginHubCLI.createCommands());
 
     // Configuration management commands
     const configCmd = new Command('config');
@@ -483,7 +488,7 @@ export class EnhancedCLI {
    * @param {string} value - Configuration value
    * @param {object} options - Command options
    */
-  async handleConfigSet(key, value, options) {
+  async handleConfigSet(key, value) {
     try {
       const globalOptions = this.program.opts();
       const config = JSON.parse(await fs.readFile(globalOptions.config, 'utf-8'));
@@ -524,7 +529,7 @@ export class EnhancedCLI {
    * @param {string} key - Configuration key
    * @param {object} options - Command options
    */
-  async handleConfigGet(key, options) {
+  async handleConfigGet(key) {
     try {
       const globalOptions = this.program.opts();
       const config = JSON.parse(await fs.readFile(globalOptions.config, 'utf-8'));
@@ -632,7 +637,7 @@ export class EnhancedCLI {
    * @param {string} shell - Shell type
    * @param {object} options - Command options
    */
-  async handleCompletion(shell, options) {
+  async handleCompletion(shell) {
     const completionScript = this.generateCompletionScript(shell);
     console.log(completionScript);
   }
@@ -642,7 +647,7 @@ export class EnhancedCLI {
    * @param {string} outputPath - Output file path
    * @param {string} template - Template name
    */
-  async createBasicConfig(outputPath, template) {
+  async createBasicConfig(outputPath) {
     const basicConfig = {
       plugins: {
         loader: {
@@ -699,7 +704,7 @@ export class EnhancedCLI {
    * @param {string} prompt - Query prompt
    * @param {object} options - Command options
    */
-  async showQueryExplanation(prompt, options) {
+  async showQueryExplanation(prompt) {
     console.log('\n🔍 Query Explanation:');
     console.log(`Input: ${prompt}`);
     console.log('Processing steps:');
