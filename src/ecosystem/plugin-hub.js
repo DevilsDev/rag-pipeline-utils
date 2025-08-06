@@ -644,10 +644,10 @@ class PluginSandbox {
 
   async installPlugin(pluginData, options) {
     // Sandbox installation simulation
+    // Create isolated environment
+    const sandboxId = crypto.randomUUID();
+    
     try {
-      // Create isolated environment
-      const sandboxId = crypto.randomUUID();
-      
       // Install with resource limits
       const result = await this._runInSandbox(sandboxId, async () => {
         // Simulate plugin installation and basic functionality test
@@ -657,6 +657,7 @@ class PluginSandbox {
       
       return result;
     } catch (error) {
+      // Transform error into expected format
       return {
         success: false,
         error: error.message

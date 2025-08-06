@@ -41,7 +41,7 @@
   },
   "lint-staged": {
     "**/*.{js,ts}": [
-      "eslint --fix"
+      "eslint --fix --max-warnings 50"
     ]
   },
   "repository": {
