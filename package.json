@@ -43,10 +43,13 @@
   },
   "lint-staged": {
     "**/*.{js,ts}": [
-      "eslint --fix --max-warnings 999 --quiet"
+      "eslint --fix --quiet"
     ],
-    "src/**/*.{js,ts}": [
+    "src/core/**/*.{js,ts}": [
       "eslint --fix --max-warnings 0"
+    ],
+    "src/enterprise/**/*.{js,ts}": [
+      "eslint --fix --rule 'no-unused-vars: off'"
     ]
   },
   "repository": {

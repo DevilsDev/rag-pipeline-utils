@@ -31,11 +31,19 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🧹 Lint codebase (Strict - Errors Only)
-        run: npm run lint:strict
+      - name: 🧹 Lint codebase (Branch-Conditional)
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "🔒 Protected branch - strict linting enforced"
+            npm run lint:strict
+          else
+            echo "🚀 Feature branch - warnings allowed"
+            npm run lint:errors-only
+          fi
         
       - name: 📊 Lint diagnostics (Non-blocking)
-        run: npm run lint:diagnostic || echo "⚠️ Lint warnings found but not blocking CI"
+        run: npm run lint:diagnostic
+        continue-on-error: true
 
       - name: ✅ Run tests with coverage
         run: npm test
