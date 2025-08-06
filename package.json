@@ -13,6 +13,9 @@
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:strict": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
+    "lint:diagnostic": "eslint . --ext .js,.jsx,.ts,.tsx --format=stylish",
+    "lint:errors-only": "eslint . --ext .js,.jsx,.ts,.tsx --quiet",
     "prepare": "husky install",
     "lint-staged": "lint-staged",
     "postinstall": "husky install",
@@ -40,7 +43,10 @@
   },
   "lint-staged": {
     "**/*.{js,ts}": [
-      "eslint --fix --max-warnings 70"
+      "eslint --fix --max-warnings 999 --quiet"
+    ],
+    "src/**/*.{js,ts}": [
+      "eslint --fix --max-warnings 0"
     ]
   },
   "repository": {

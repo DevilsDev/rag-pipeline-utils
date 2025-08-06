@@ -31,8 +31,11 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🧹 Lint codebase
-        run: npm run lint
+      - name: 🧹 Lint codebase (Strict - Errors Only)
+        run: npm run lint:strict
+        
+      - name: 📊 Lint diagnostics (Non-blocking)
+        run: npm run lint:diagnostic || echo "⚠️ Lint warnings found but not blocking CI"
 
       - name: ✅ Run tests with coverage
         run: npm test
