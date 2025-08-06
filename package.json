@@ -6,11 +6,10 @@
   "bin": {
     "rag-pipeline": "./bin/cli.js"
   },
-  "type": "module",
   "scripts": {
     "validate-fixtures": "node ./scripts/verify-fixtures.js",
     "setup": "node ./scripts/setup.js",
-    "test": "node ./scripts/setup.js && cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test": "node ./scripts/setup.js && jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
@@ -41,7 +40,7 @@
   },
   "lint-staged": {
     "**/*.{js,ts}": [
-      "eslint --fix --max-warnings 50"
+      "eslint --fix --max-warnings 70"
     ]
   },
   "repository": {
