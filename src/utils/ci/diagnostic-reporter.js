@@ -4,14 +4,14 @@
  * Author: Ali Kahwaji
  */
 
-import path from 'path';
-import chalk from 'chalk';
+const path = require('path');
+const chalk = require('chalk');
 
 /**
  * Pretty prints CI validation errors and guidance
  * @param {Array<{ file: string, missing: string[] }>} failures
  */
-export function reportPluginValidationFailures(failures) {
+function reportPluginValidationFailures(failures) {
   if (!failures.length) return;
 
   console.log(`\n${chalk.redBright.bold('❌ Plugin Mock Validation Failed')}`);
@@ -34,3 +34,12 @@ export function reportPluginValidationFailures(failures) {
   console.log(`  • Re-run: ${chalk.cyan('npm run ci')} to confirm validation`);
   console.log(`  • Optionally use: ${chalk.cyan('scripts/repair-fixtures.js')} to auto-repair mocks\n`);
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  reportPluginValidationFailures
+};

@@ -293,3 +293,6 @@ module.exports = {
   EmbeddingTrainer,
   LLMTrainer
 };
+
+
+// Ensure module.exports is properly defined

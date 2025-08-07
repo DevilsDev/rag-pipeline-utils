@@ -15,3 +15,6 @@ export async function ingestDocument(filepath) {
     return true;
   }
   
+
+// Default export
+module.exports = {};

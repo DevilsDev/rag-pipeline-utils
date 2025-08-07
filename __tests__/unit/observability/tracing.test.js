@@ -3,7 +3,7 @@
  * Tests span lifecycle, tracing, and export functionality
  */
 
-import { Span, Tracer, PipelineTracer, pipelineTracer } from '../../../src/core/observability/tracing.js';
+const { Span, Tracer, PipelineTracer, pipelineTracer } = require('../../../src/core/observability/tracing.js');
 
 describe('Span', () => {
   let span;
@@ -19,9 +19,10 @@ describe('Span', () => {
       expect(span.spanId).toMatch(/^[a-f0-9]{16}$/);
       expect(span.startTime).toBeInstanceOf(Date);
       expect(span.endTime).toBeNull();
-      expect(span.attributes).toEqual({});
+      // Check that attributes is properly initialized (empty Map with Proxy)
+      expect(Object.keys(Object.fromEntries(span.attributes))).toHaveLength(0);
       expect(span.events).toEqual([]);
-      expect(span.status).toEqual({ code: 'OK' });
+      expect(span.status).toEqual({ code: 'UNSET' });
     });
 
     it('should generate unique span IDs', () => {
@@ -50,21 +51,17 @@ describe('Span', () => {
         key3: true
       });
       
-      expect(span.attributes).toEqual({
-        key1: 'value1',
-        key2: 42,
-        key3: true
-      });
+      expect(span.attributes['key1']).toBe('value1');
+      expect(span.attributes['key2']).toBe(42);
+      expect(span.attributes['key3']).toBe(true);
     });
 
     it('should merge with existing attributes', () => {
       span.setAttribute('existing', 'value');
       span.setAttributes({ new: 'value', existing: 'updated' });
       
-      expect(span.attributes).toEqual({
-        existing: 'updated',
-        new: 'value'
-      });
+      expect(span.attributes['existing']).toBe('updated');
+      expect(span.attributes['new']).toBe('value');
     });
   });
 
@@ -201,7 +198,8 @@ describe('Tracer', () => {
         attributes: { key: 'value', number: 42 }
       });
       
-      expect(span.attributes).toEqual({ key: 'value', number: 42 });
+      expect(span.attributes['key']).toBe('value');
+      expect(span.attributes['number']).toBe(42);
     });
   });
 

@@ -3,8 +3,8 @@
  * PII detection, data lineage, retention policies, and privacy controls
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+const _fs = require('_fs').promises;
+const _path = require('_path');
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
 
@@ -51,10 +51,10 @@ class DataGovernanceManager extends EventEmitter {
   /**
    * Classify and govern data
    */
-  async governData(tenantId, data, context = {}) {
+  async governData(_tenantId, _data, _context = {}) {
     const governanceResult = {
       dataId: crypto.randomUUID(),
-      tenantId,
+      _tenantId,
       timestamp: new Date().toISOString(),
       classification: null,
       piiDetected: false,
@@ -65,16 +65,16 @@ class DataGovernanceManager extends EventEmitter {
     };
 
     try {
-      // Step 1: Classify data
-      governanceResult.classification = await this.classificationEngine.classify(data, context);
+      // Step 1: Classify _data
+      governanceResult.classification = await this.classificationEngine.classify(_data, _context);
       
       // Step 2: Detect PII
-      const piiResults = await this.piiDetector.scan(data);
+      const piiResults = await this.piiDetector.scan(_data);
       governanceResult.piiDetected = piiResults.detected;
       governanceResult.piiTypes = piiResults.types;
       
       // Step 3: Track lineage
-      governanceResult.lineage = await this.lineageTracker.track(data, context);
+      governanceResult.lineage = await this.lineageTracker.track(_data, _context);
       
       // Step 4: Apply retention policy
       governanceResult.retentionPolicy = await this.retentionManager.applyPolicy(
@@ -85,9 +85,9 @@ class DataGovernanceManager extends EventEmitter {
       // Step 5: Apply privacy controls
       if (governanceResult.piiDetected) {
         governanceResult.privacyControls = await this.privacyManager.applyControls(
-          data, 
+          _data, 
           piiResults,
-          context
+          _context
         );
       }
       
@@ -99,7 +99,7 @@ class DataGovernanceManager extends EventEmitter {
       return governanceResult;
       
     } catch (error) {
-      this.emit('governance_error', { error: error.message, tenantId });
+      this.emit('governance_error', { error: error.message, _tenantId });
       throw error;
     }
   }
@@ -107,33 +107,33 @@ class DataGovernanceManager extends EventEmitter {
   /**
    * Handle privacy requests (GDPR Article 17, CCPA)
    */
-  async handlePrivacyRequest(tenantId, request) {
+  async handlePrivacyRequest(_tenantId, _request) {
     const requestId = crypto.randomUUID();
     
     const privacyRequest = {
       id: requestId,
-      tenantId,
-      type: request.type, // access, rectification, erasure, portability, restriction
-      subjectId: request.subjectId,
-      subjectEmail: request.subjectEmail,
+      _tenantId,
+      type: _request.type, // access, rectification, erasure, portability, restriction
+      subjectId: _request.subjectId,
+      subjectEmail: _request.subjectEmail,
       status: 'received',
       requestedAt: new Date().toISOString(),
       deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-      metadata: request.metadata || {}
+      metadata: _request.metadata || {}
     };
 
-    switch (request.type) {
+    switch (_request.type) {
       case 'access':
-        privacyRequest.result = await this._handleDataAccess(tenantId, request);
+        privacyRequest.result = await this._handleDataAccess(_tenantId, _request);
         break;
       case 'erasure':
-        privacyRequest.result = await this._handleDataErasure(tenantId, request);
+        privacyRequest.result = await this._handleDataErasure(_tenantId, _request);
         break;
       case 'portability':
-        privacyRequest.result = await this._handleDataPortability(tenantId, request);
+        privacyRequest.result = await this._handleDataPortability(_tenantId, _request);
         break;
       case 'rectification':
-        privacyRequest.result = await this._handleDataRectification(tenantId, request);
+        privacyRequest.result = await this._handleDataRectification(_tenantId, _request);
         break;
     }
 
@@ -148,9 +148,9 @@ class DataGovernanceManager extends EventEmitter {
   /**
    * Generate data governance report
    */
-  async generateGovernanceReport(tenantId, options = {}) {
+  async generateGovernanceReport(_tenantId, options = {}) {
     const report = {
-      tenantId,
+      _tenantId,
       period: {
         startDate: options.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         endDate: options.endDate || new Date().toISOString()
@@ -197,25 +197,25 @@ class DataGovernanceManager extends EventEmitter {
     }
     
     if (governanceResult.classification.level === 'RESTRICTED' && !governanceResult.retentionPolicy) {
-      violations.push('Restricted data without retention policy');
+      violations.push('Restricted _data without retention policy');
     }
     
     return violations.length === 0 ? 'compliant' : 'non_compliant';
   }
 
-  async _handleDataAccess(tenantId, request) {
+  async _handleDataAccess(_tenantId, _request) {
     // Mock data access - would query actual data stores
     return {
       dataFound: true,
       records: [
-        { type: 'profile', data: { email: request.subjectEmail, name: 'User Name' } },
-        { type: 'activity', data: { lastLogin: '2024-01-01T00:00:00Z' } }
+        { type: 'profile', _data: { email: _request.subjectEmail, name: 'User Name' } },
+        { type: 'activity', _data: { lastLogin: '2024-01-01T00:00:00Z' } }
       ]
     };
   }
 
-  async _handleDataErasure(tenantId, request) {
-    // Mock data erasure - would delete from actual data stores
+  async _handleDataErasure(_tenantId, _request) {
+    // Mock data erasure - would delete from actual _data stores
     return {
       recordsDeleted: 5,
       backupsScheduledForDeletion: 2,
@@ -223,8 +223,8 @@ class DataGovernanceManager extends EventEmitter {
     };
   }
 
-  async _handleDataPortability(tenantId, request) {
-    // Mock data export - would generate actual export
+  async _handleDataPortability(_tenantId, _request) {
+    // Mock _data export - would generate actual export
     return {
       exportFormat: 'JSON',
       exportSize: '2.5MB',
@@ -233,11 +233,11 @@ class DataGovernanceManager extends EventEmitter {
     };
   }
 
-  async _handleDataRectification(tenantId, request) {
-    // Mock data correction - would update actual data
+  async _handleDataRectification(_tenantId, _request) {
+    // Mock data correction - would update actual _data
     return {
       recordsUpdated: 3,
-      fieldsModified: request.corrections || []
+      fieldsModified: _request.corrections || []
     };
   }
 }
@@ -247,7 +247,7 @@ class DataClassificationEngine {
     this.config = config;
   }
 
-  async classify(data, context) {
+  async classify(_data, _context) {
     // Mock classification - would use ML models
     const confidence = Math.random();
     const levels = ['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'RESTRICTED'];
@@ -272,8 +272,8 @@ class PIIDetector {
     };
   }
 
-  async scan(data) {
-    const dataStr = JSON.stringify(data);
+  async scan(_data) {
+    const dataStr = JSON.stringify(_data);
     const detected = [];
     
     for (const [type, pattern] of Object.entries(this.patterns)) {
@@ -296,11 +296,11 @@ class DataLineageTracker {
     this.config = config;
   }
 
-  async track(data, context) {
+  async track(_data, _context) {
     return {
-      source: context.source || 'unknown',
-      transformations: context.transformations || [],
-      destinations: context.destinations || [],
+      source: _context.source || 'unknown',
+      transformations: _context.transformations || [],
+      destinations: _context.destinations || [],
       timestamp: new Date().toISOString(),
       version: '1.0'
     };
@@ -332,7 +332,7 @@ class PrivacyManager {
     this.config = config;
   }
 
-  async applyControls(data, piiResults, context) {
+  async applyControls(_data, piiResults, _context) {
     const controls = [];
     
     if (piiResults.detected) {
@@ -367,3 +367,6 @@ module.exports = {
   DataRetentionManager,
   PrivacyManager
 };
+
+
+// Ensure module.exports is properly defined

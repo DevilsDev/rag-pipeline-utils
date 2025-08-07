@@ -3,14 +3,13 @@
  * Tests counters, histograms, gauges, and pipeline metrics
  */
 
-import { 
-  Counter, 
+const { Counter, 
   Histogram, 
   Gauge, 
   MetricsRegistry, 
   PipelineMetrics, 
   pipelineMetrics 
-} from '../../../src/core/observability/metrics.js';
+ } = require('../../../src/core/observability/metrics.js');
 
 describe('Counter', () => {
   let counter;

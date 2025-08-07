@@ -3,13 +3,13 @@
  * Requires all plugins to export standardized metadata for marketplace compatibility
  */
 
-import { validatePluginMetadata, PLUGIN_NAMING } from './plugin-registry-format.js';
-import { VersionUtils } from './version-resolver.js';
+const { validatePluginMetadata, PLUGIN_NAMING  } = require('./plugin-registry-format.js');
+const { VersionUtils  } = require('./version-resolver.js');
 
 /**
  * Plugin metadata extractor and validator
  */
-export class PluginMetadataExtractor {
+class PluginMetadataExtractor {
   constructor() {
     this.requiredFields = ['name', 'version', 'type', 'description', 'author'];
     this.optionalFields = ['homepage', 'repository', 'keywords', 'license', 'engines', 'dependencies', 'peerDependencies', 'config', 'examples', 'tags'];
@@ -209,7 +209,7 @@ export class PluginMetadataExtractor {
  * @param {object} metadata - Plugin metadata
  * @returns {Function} Class decorator
  */
-export function pluginMetadata(metadata) {
+function pluginMetadata(metadata) {
   return function(target) {
     target.metadata = metadata;
     return target;
@@ -220,7 +220,7 @@ export function pluginMetadata(metadata) {
  * Plugin metadata validation middleware
  * Validates plugin metadata during registration
  */
-export class PluginMetadataValidator {
+class PluginMetadataValidator {
   constructor() {
     this.extractor = new PluginMetadataExtractor();
   }
@@ -303,7 +303,7 @@ export class PluginMetadataValidator {
 /**
  * Plugin metadata utilities
  */
-export const MetadataUtils = {
+const MetadataUtils = {
   /**
    * Create metadata template for new plugins
    * @param {string} type - Plugin type
@@ -413,7 +413,21 @@ export const MetadataUtils = {
 };
 
 // Global metadata extractor instance
-export const metadataExtractor = new PluginMetadataExtractor();
+const metadataExtractor = new PluginMetadataExtractor();
 
 // Global metadata validator instance
-export const metadataValidator = new PluginMetadataValidator();
+const metadataValidator = new PluginMetadataValidator();
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  PluginMetadataExtractor,
+  PluginMetadataValidator,
+  pluginMetadata,
+  MetadataUtils,
+  metadataExtractor,
+  metadataValidator
+};

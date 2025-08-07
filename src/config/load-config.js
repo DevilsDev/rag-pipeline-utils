@@ -4,11 +4,11 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { validateRagrcSchema } from './validate-schema.js';
-import { logger } from '../utils/logger.js';
+const fs = require('fs');
+const path = require('path');
+const { fileURLToPath  } = require('url');
+const { validateRagrcSchema  } = require('./validate-schema.js');
+const { logger  } = require('../utils/logger.js');
 
 const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
@@ -21,7 +21,7 @@ const CONFIG_FILENAME = '.ragrc.json';
  * @param {string} [cwd=process.cwd()] - Directory to resolve the config from
  * @returns {object} Validated configuration object
  */
-export function loadRagConfig(cwd = process.cwd()) {
+function loadRagConfig(cwd = process.cwd()) {
   const configPath = path.resolve(cwd, CONFIG_FILENAME);
 
   if (!fs.existsSync(configPath)) {
@@ -48,3 +48,8 @@ export function loadRagConfig(cwd = process.cwd()) {
 
   return config;
 }
+
+
+module.exports = {
+  loadRagConfig
+};

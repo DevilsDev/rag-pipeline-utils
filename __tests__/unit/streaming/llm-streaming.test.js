@@ -3,7 +3,7 @@
  * Tests async generator output, token-level streaming, and error handling
  */
 
-import OpenAILLM from '../../fixtures/src/mocks/openai-llm.js';
+const OpenAILLM = require('../../fixtures/src/mocks/openai-llm.js');
 
 describe('LLM Streaming', () => {
   let llm;

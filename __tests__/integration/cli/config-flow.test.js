@@ -4,18 +4,17 @@
  * Author: Ali Kahwaji
  */
 
-import { execSync } from 'child_process';
-import {
-  mkdirSync,
+const { execSync  } = require('child_process');
+const { mkdirSync,
   rmSync,
   writeFileSync,
   copyFileSync,
   existsSync,
   readdirSync,
   readFileSync
-} from 'fs';
-import { join, resolve } from 'path';
-import { fileURLToPath } from 'url';
+ } = require('fs');
+const { join, resolve  } = require('path');
+const { fileURLToPath  } = require('url');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = resolve(__filename, '..');

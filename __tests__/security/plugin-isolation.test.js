@@ -3,9 +3,9 @@
  * Tests plugin security, data sanitization, and access controls
  */
 
-import { jest } from '@jest/globals';
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import { ErrorSimulator, ValidationHelper } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const { ErrorSimulator, ValidationHelper  } = require('../utils/test-helpers.js');
 
 describe('Plugin Security and Isolation', () => {
   describe('plugin sandboxing', () => {

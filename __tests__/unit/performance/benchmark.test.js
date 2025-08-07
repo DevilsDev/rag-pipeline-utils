@@ -3,7 +3,7 @@
  * Tests performance measurement and timing utilities
  */
 
-import { PipelineBenchmark, PerformanceTimer } from '../../../src/core/performance/benchmark.js';
+const { PipelineBenchmark, PerformanceTimer  } = require('../../../src/core/performance/benchmark.js');
 
 describe('PerformanceTimer', () => {
   let timer;

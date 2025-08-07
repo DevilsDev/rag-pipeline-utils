@@ -3,7 +3,7 @@
  * Tests the enhanced DAG functionality including cycle safety and robust error propagation
  */
 
-import { DAG, DAGNode } from '../../../src/dag/dag-engine.js';
+const { DAG, DAGNode  } = require('../../../src/dag/dag-engine.js');
 
 describe('DAGNode', () => {
   describe('constructor', () => {

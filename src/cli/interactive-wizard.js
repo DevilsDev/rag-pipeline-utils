@@ -3,19 +3,19 @@
  * Provides guided setup for plugin selection, DAG building, and configuration
  */
 
-import inquirer from 'inquirer';
-import fs from 'fs/promises';
-import path from 'path';
-import { validateEnhancedRagrcSchema, extractPluginDependencies } from '../config/enhanced-ragrc-schema.js';
-import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
+const inquirer = require('inquirer');
+const fs = require('fs/promises');
+const path = require('path');
+const { validateEnhancedRagrcSchema, extractPluginDependencies  } = require('../config/enhanced-ragrc-schema.js');
+const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js');
 // Version resolver and logger imports - reserved for future use
-// import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
-// import { logger } from '../utils/logger.js';
+// const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js');
+// const { logger  } = require('../utils/logger.js');
 
 /**
  * Interactive wizard for RAG pipeline setup
  */
-export class InteractiveWizard {
+class InteractiveWizard {
   constructor(options = {}) {
     this.options = {
       registryUrl: options.registryUrl || DEFAULT_REGISTRY_URLS[0],
@@ -819,3 +819,12 @@ export async function runInteractiveWizard(options = {}) {
   const wizard = new InteractiveWizard(options);
   return await wizard.run();
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  InteractiveWizard
+};

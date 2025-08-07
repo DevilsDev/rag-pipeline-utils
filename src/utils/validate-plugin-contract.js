@@ -5,7 +5,7 @@
  * File: /src/utils/validate-plugin-contract.js
  */
 
-import { pluginContracts } from '../core/plugin-contracts.js';
+const { pluginContracts  } = require('../core/plugin-contracts.js');
 
 /**
  * Validates that a plugin instance implements all required methods.
@@ -14,7 +14,7 @@ import { pluginContracts } from '../core/plugin-contracts.js';
  * @param {string} filePath - Path to plugin (used in error reporting)
  * @throws {Error} if any required method is missing or not a function
  */
-export function validatePluginContract(type, instance, filePath) {
+function validatePluginContract(type, instance, filePath) {
   const expectedMethods = pluginContracts[type];
   if (!expectedMethods) {
     throw new Error(`[validatePluginContract] Unknown plugin type: ${type}`);
@@ -34,3 +34,12 @@ export function validatePluginContract(type, instance, filePath) {
 /**
  * Optionally wraps plugin instance with a Proxy for method usage auditing (see enforcePluginProxy)
  */
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  validatePluginContract
+};

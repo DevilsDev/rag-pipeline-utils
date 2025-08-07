@@ -381,3 +381,6 @@ module.exports = {
     PRIVACY_EPSILON_DEFAULT: 1.0
   }
 };
+
+
+// Ensure module.exports is properly defined

@@ -5,9 +5,9 @@
  * File: __tests__/unit/config/validate-schema.test.js
  */
 
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
-import { validateRagrcSchema, validatePluginSchema } from '../../../src/config/validate-schema.js';
+const { readFileSync } = require('fs');
+const { resolve } = require('path');
+const { validateRagrcSchema, validatePluginSchema } = require('../../../src/config/validate-schema.js');
 
 const readFixture = (name) => {
   const filePath = resolve('__tests__/fixtures',name.replace('.ragrc', '-ragrc'));

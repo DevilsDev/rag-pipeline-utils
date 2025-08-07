@@ -3,20 +3,20 @@
  * Provides commands for plugin discovery, installation, publishing, and management
  */
 
-import { Command } from 'commander';
-import fs from 'fs/promises';
-import path from 'path';
-import { PluginPublisher, PublishingUtils } from '../core/plugin-marketplace/plugin-publisher.js';
-import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
-import { MetadataUtils } from '../core/plugin-marketplace/plugin-metadata.js';
-import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
+const { Command  } = require('commander');
+const fs = require('fs/promises');
+const path = require('path');
+const { PluginPublisher, PublishingUtils  } = require('../core/plugin-marketplace/plugin-publisher.js');
+const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js');
+const { MetadataUtils  } = require('../core/plugin-marketplace/plugin-metadata.js');
+const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js');
 // REGISTRY_SCHEMA and LOCAL_REGISTRY_FILE unused - reserved for future use
-import { logger } from '../utils/logger.js';
+const { logger  } = require('../utils/logger.js');
 
 /**
  * Plugin marketplace CLI commands
  */
-export function createPluginMarketplaceCommands() {
+function createPluginMarketplaceCommands() {
   const pluginCmd = new Command('plugin');
   pluginCmd.description('Plugin marketplace commands');
 
@@ -34,8 +34,8 @@ export function createPluginMarketplaceCommands() {
       try {
         console.log('🔍 Searching plugins...');
         
-        const registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
-        const registry = await fetchRegistry(registryUrl);
+        const _registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
+        const registry = await fetchRegistry(_registryUrl);
         
         const results = searchPlugins(registry, query, options);
         
@@ -75,8 +75,8 @@ export function createPluginMarketplaceCommands() {
     .option('--registry <url>', 'Custom registry URL')
     .action(async (name, options) => {
       try {
-        const registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
-        const registry = await fetchRegistry(registryUrl);
+        const _registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
+        const registry = await fetchRegistry(_registryUrl);
         
         const plugin = registry.plugins[name];
         if (!plugin) {
@@ -159,8 +159,8 @@ export function createPluginMarketplaceCommands() {
       try {
         console.log(`📦 Installing plugin '${name}'...`);
         
-        const registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
-        const registry = await fetchRegistry(registryUrl);
+        const _registryUrl = options.registry || DEFAULT_REGISTRY_URLS[0];
+        const registry = await fetchRegistry(_registryUrl);
         
         const resolver = createVersionResolver(registry);
         const resolution = await resolver.resolveVersion(name, options.version);
@@ -399,7 +399,7 @@ export function createPluginMarketplaceCommands() {
  * @param {string} registryUrl - Registry URL
  * @returns {Promise<object>} Registry data
  */
-async function fetchRegistry(registryUrl) {
+async function fetchRegistry(_registryUrl) {
   // In a real implementation, this would make an HTTP request
   // For now, return a mock registry
   return {
@@ -470,7 +470,7 @@ function searchPlugins(registry, query, options) {
  * @param {boolean} dev - Development dependency
  * @returns {Promise<void>}
  */
-async function addToRagrcConfig(name, version, dev = false) {
+async function addToRagrcConfig(name, version, _dev = false) {
   const configPath = path.join(process.cwd(), '.ragrc.json');
   
   let config = {};
@@ -522,7 +522,7 @@ function generatePluginTemplate(type, name, metadata) {
 /**
  * Plugin metadata - required for marketplace
  */
-export const metadata = ${JSON.stringify(metadata, null, 2)};
+const metadata = ${JSON.stringify(metadata, null, 2)};
 
 /**
  * ${className} plugin implementation
@@ -704,3 +704,13 @@ describe('${className}', () => {
 });
 `;
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  createPluginMarketplaceCommands,
+  metadata
+};

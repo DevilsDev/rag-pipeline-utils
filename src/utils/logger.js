@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-import pino from 'pino';
+const pino = require('pino');
 
 /**
  * Create a structured JSON logger instance with sensible defaults.
@@ -24,6 +24,11 @@ const logger = pino({
   } : undefined
 });
 
-export { logger };
+;
 
 
+
+
+module.exports = {
+  logger
+};

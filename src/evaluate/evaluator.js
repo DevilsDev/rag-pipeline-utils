@@ -5,11 +5,11 @@
  * Author: Ali Kahwaji
  */
 
-import { createRagPipeline } from '../core/create-pipeline.js';
-import { logger } from '../utils/logger.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { scoreAnswer } from './scoring.js';
+const { createRagPipeline  } = require('../core/create-pipeline.js');
+const { logger  } = require('../utils/logger.js');
+const fs = require('fs/promises');
+const path = require('path');
+const { scoreAnswer  } = require('./scoring.js');
 
 /**
  * Evaluate a list of prompt/answer pairs using the RAG pipeline and compute scores
@@ -42,3 +42,7 @@ function normalizeText(txt) {
   return txt.trim().toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ');
 }
 
+
+
+// Default export
+module.exports = {};

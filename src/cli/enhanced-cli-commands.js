@@ -3,23 +3,23 @@
  * Provides improved developer experience with dry-run, version display, and enhanced help
  */
 
-import { Command } from 'commander';
-import fs from 'fs/promises';
-import path from 'path';
-import { runInteractiveWizard } from './interactive-wizard.js';
-import { runPipelineDoctor } from './doctor-command.js';
-import { createPluginMarketplaceCommands } from './plugin-marketplace-commands.js';
-import { PluginHubCLI } from './commands/plugin-hub.js';
-import { createRagPipeline } from '../core/create-pipeline.js';
-import { createInstrumentedPipeline } from '../core/observability/instrumented-pipeline.js';
-import { loadRagConfig } from '../config/load-config.js';
-import { validateEnhancedRagrcSchema } from '../config/enhanced-ragrc-schema.js';
-import { logger } from '../utils/logger.js';
+const { Command  } = require('commander');
+const fs = require('fs/promises');
+const path = require('path');
+const { runInteractiveWizard  } = require('./interactive-wizard.js');
+const { runPipelineDoctor  } = require('./doctor-command.js');
+const { createPluginMarketplaceCommands  } = require('./plugin-marketplace-commands.js');
+const { PluginHubCLI  } = require('./commands/plugin-hub.js');
+const { createRagPipeline  } = require('../core/create-pipeline.js');
+const { createInstrumentedPipeline  } = require('../core/observability/instrumented-pipeline.js');
+const { loadRagConfig  } = require('../config/load-config.js');
+const { validateEnhancedRagrcSchema  } = require('../config/enhanced-ragrc-schema.js');
+const { logger  } = require('../utils/logger.js');
 
 /**
  * Enhanced CLI with improved UX and additional features
  */
-export class EnhancedCLI {
+class EnhancedCLI {
   constructor() {
     this.program = new Command();
     this.setupGlobalOptions();
@@ -815,7 +815,7 @@ complete -c rag-pipeline -n '__fish_use_subcommand' -a 'init doctor ingest query
 /**
  * Create and export enhanced CLI instance
  */
-export const enhancedCLI = new EnhancedCLI();
+const enhancedCLI = new EnhancedCLI();
 
 /**
  * Run enhanced CLI
@@ -824,3 +824,13 @@ export const enhancedCLI = new EnhancedCLI();
 export async function runEnhancedCLI(argv = process.argv) {
   await enhancedCLI.run(argv);
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  EnhancedCLI,
+  enhancedCLI
+};

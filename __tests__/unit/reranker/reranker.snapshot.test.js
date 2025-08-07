@@ -4,7 +4,7 @@
  * Description: Captures a snapshot baseline of reranked results
  * Author: @devilsdev
  */
-import { LLMReranker } from '../../../src/reranker/llm-reranker.js';
+const { LLMReranker  } = require('../../../src/reranker/llm-reranker.js');
 
 test('LLMReranker output snapshot', async () => {
   const mockLLM = { async generate() { return '[1, 0, 2]'; } };

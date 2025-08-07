@@ -3,12 +3,12 @@
  * Tests complete observability pipeline with instrumented pipeline
  */
 
-import { createRagPipeline } from '../../src/core/create-pipeline.js';
-import { createInstrumentedPipeline } from '../../src/core/observability/instrumented-pipeline.js';
-import { eventLogger } from '../../src/core/observability/event-logger.js';
-import { pipelineTracer } from '../../src/core/observability/tracing.js';
-import { pipelineMetrics } from '../../src/core/observability/metrics.js';
-import { PluginRegistry } from '../../src/core/plugin-registry.js';
+const { createRagPipeline  } = require('../../src/core/create-pipeline.js');
+const { createInstrumentedPipeline  } = require('../../src/core/observability/instrumented-pipeline.js');
+const { eventLogger  } = require('../../src/core/observability/event-logger.js');
+const { pipelineTracer  } = require('../../src/core/observability/tracing.js');
+const { pipelineMetrics  } = require('../../src/core/observability/metrics.js');
+const { PluginRegistry  } = require('../../src/core/plugin-registry.js');
 
 // Mock plugins for testing
 const mockLoader = {

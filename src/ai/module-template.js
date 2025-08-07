@@ -28,6 +28,12 @@ module.exports = ExampleAIModule;
 //   utilityFunction
 // };
 
-// DO NOT USE: export default or any ESM syntax in CommonJS files
+// DO NOT USE:  any ESM syntax in CommonJS files
 // DO NOT USE: exports.default = 
 // DO NOT MIX: CommonJS and ESM syntax in the same file
+
+
+// Ensure module.exports is properly defined
+
+
+module.exports = or;

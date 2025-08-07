@@ -3,7 +3,7 @@
  * Tests event logging, filtering, and export functionality
  */
 
-import { PipelineEventLogger, EventTypes, EventSeverity, eventLogger } from '../../../src/core/observability/event-logger.js';
+const { PipelineEventLogger, EventTypes, EventSeverity, eventLogger  } = require('../../../src/core/observability/event-logger.js');
 
 describe('PipelineEventLogger', () => {
   let logger;

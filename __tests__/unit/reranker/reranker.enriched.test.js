@@ -4,7 +4,7 @@
  * Description: Tests support for extended document structures
  * Author: @devilsdev
  */
-import { LLMReranker } from '../../../src/reranker/llm-reranker.js';
+const { LLMReranker  } = require('../../../src/reranker/llm-reranker.js');
 
 test('supports documents with metadata', async () => {
     const mockLLM = { async generate() { return '[2, 0, 1]'; } };

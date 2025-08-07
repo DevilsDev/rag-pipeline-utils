@@ -3,10 +3,10 @@
  * Tests end-to-end streaming with retry middleware and error recovery
  */
 
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import OpenAILLM from '../fixtures/src/mocks/openai-llm.js';
-import PineconeRetriever from '../fixtures/src/mocks/pinecone-retriever.js';
-import MockReranker from '../fixtures/src/mocks/reranker.js';
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const OpenAILLM = require('../fixtures/src/mocks/openai-llm.js');
+const PineconeRetriever = require('../fixtures/src/mocks/pinecone-retriever.js');
+const MockReranker = require('../fixtures/src/mocks/reranker.js');
 
 describe('Streaming Pipeline Integration', () => {
   let pipeline;

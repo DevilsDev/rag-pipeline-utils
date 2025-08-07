@@ -3,11 +3,11 @@
  * Tests complete pipeline with sandbox environments and real data scenarios
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import { TestDataGenerator, ValidationHelper } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const { TestDataGenerator, ValidationHelper  } = require('../utils/test-helpers.js');
 
 // Extended timeout for E2E tests
 jest.setTimeout(120000);

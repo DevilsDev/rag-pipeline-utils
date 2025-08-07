@@ -32,3 +32,6 @@ module.exports = {
     status: 'active'
   })
 };
+
+
+// Ensure module.exports is properly defined

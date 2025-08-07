@@ -3,11 +3,11 @@
  * Tests complete Loader → Embedder → Retriever → LLM → Evaluation flow with real data
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
-import { TestDataGenerator, ValidationHelper } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
+const { performance  } = require('perf_hooks');
+const { TestDataGenerator, ValidationHelper  } = require('../utils/test-helpers.js');
 
 describe('Full Pipeline End-to-End Integration Tests', () => {
   let e2eResults = [];

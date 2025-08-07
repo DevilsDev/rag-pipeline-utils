@@ -3,12 +3,12 @@
  * Tests system behavior under high load, concurrent users, and stress conditions
  */
 
-import { jest } from '@jest/globals';
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import { PerformanceHelper, TestDataGenerator, ErrorSimulator } from '../utils/test-helpers.js';
-import OpenAILLM from '../fixtures/src/mocks/openai-llm.js';
-import PineconeRetriever from '../fixtures/src/mocks/pinecone-retriever.js';
-import MockReranker from '../fixtures/src/mocks/reranker.js';
+// Jest is available globally in CommonJS mode;
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const { PerformanceHelper, TestDataGenerator, ErrorSimulator  } = require('../utils/test-helpers.js');
+const OpenAILLM = require('../fixtures/src/mocks/openai-llm.js');
+const PineconeRetriever = require('../fixtures/src/mocks/pinecone-retriever.js');
+const MockReranker = require('../fixtures/src/mocks/reranker.js');
 
 // Extended timeout for load tests
 jest.setTimeout(60000);

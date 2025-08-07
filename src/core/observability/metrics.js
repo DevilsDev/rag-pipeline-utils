@@ -3,12 +3,12 @@
  * Tracks performance metrics, resource usage, and operational statistics
  */
 
-import { eventLogger } from './event-logger.js';
+const { eventLogger  } = require('./event-logger.js');
 
 /**
  * Metric types
  */
-export const MetricType = {
+const MetricType = {
   COUNTER: 'counter',
   HISTOGRAM: 'histogram',
   GAUGE: 'gauge',
@@ -84,7 +84,7 @@ class BaseMetric {
 /**
  * Counter metric - monotonically increasing value
  */
-export class Counter extends BaseMetric {
+class Counter extends BaseMetric {
   constructor(name, description, labels = []) {
     super(name, description, labels, MetricType.COUNTER);
   }
@@ -116,7 +116,7 @@ export class Counter extends BaseMetric {
 /**
  * Histogram metric - tracks distribution of values
  */
-export class Histogram extends BaseMetric {
+class Histogram extends BaseMetric {
   constructor(name, description, labels = [], buckets = [0.1, 0.5, 1, 2.5, 5, 10]) {
     super(name, description, labels, MetricType.HISTOGRAM);
     this.buckets = buckets.sort((a, b) => a - b);
@@ -191,7 +191,7 @@ export class Histogram extends BaseMetric {
 /**
  * Gauge metric - current value that can go up or down
  */
-export class Gauge extends BaseMetric {
+class Gauge extends BaseMetric {
   constructor(name, description, labels = []) {
     super(name, description, labels, MetricType.GAUGE);
   }
@@ -242,7 +242,7 @@ export class Gauge extends BaseMetric {
 /**
  * Metrics registry
  */
-export class MetricsRegistry {
+class MetricsRegistry {
   constructor() {
     this.metrics = new Map();
     this.defaultLabels = new Map();
@@ -353,7 +353,7 @@ export class MetricsRegistry {
 /**
  * Pipeline metrics collector
  */
-export class PipelineMetrics {
+class PipelineMetrics {
   constructor() {
     this.registry = new MetricsRegistry();
     this.initializeMetrics();
@@ -606,4 +606,15 @@ export class PipelineMetrics {
 }
 
 // Global metrics instance
-export const pipelineMetrics = new PipelineMetrics();
+const pipelineMetrics = new PipelineMetrics();
+
+
+module.exports = {
+  Counter,
+  Histogram,
+  Gauge,
+  MetricsRegistry,
+  PipelineMetrics,
+  MetricType,
+  pipelineMetrics
+};

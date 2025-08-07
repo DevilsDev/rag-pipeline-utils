@@ -3,9 +3,9 @@
  * Tests validation, dry-run logic, and GitHub token handling
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
 
 // Mock the script utilities
 jest.mock('fs');

@@ -864,3 +864,6 @@ module.exports = {
   ModelAggregator,
   FederatedPerformanceMonitor
 };
+
+
+// Ensure module.exports is properly defined

@@ -54,7 +54,7 @@ class MemoryMonitor {
 /**
  * Backpressure controller for streaming operations
  */
-export class BackpressureController {
+class BackpressureController {
   constructor(options = {}) {
     this.maxBufferSize = options.maxBufferSize || 100;
     this.memoryMonitor = new MemoryMonitor(options.maxMemoryMB);
@@ -171,7 +171,7 @@ export class BackpressureController {
 /**
  * Streaming processor with memory safeguards
  */
-export class StreamingProcessor {
+class StreamingProcessor {
   constructor(options = {}) {
     this.chunkSize = options.chunkSize || 1000;
     this.backpressureController = new BackpressureController(options);
@@ -188,9 +188,19 @@ export class StreamingProcessor {
   async* processDocumentStream(docPath, pipeline) {
     let totalTokens = 0;
     let chunkCount = 0;
+    let processedCount = 0;
+    let failedCount = 0;
+    let totalChunks = 0;
 
     try {
+      // First, count total chunks for progress tracking
+      const allChunks = [];
       for await (const documentChunk of this.loadInChunks(docPath, pipeline.loaderInstance)) {
+        allChunks.push(documentChunk);
+      }
+      totalChunks = allChunks.length;
+      
+      for (const documentChunk of allChunks) {
         // Check memory and apply backpressure if needed
         await this.backpressureController.waitForRelief();
 
@@ -205,22 +215,35 @@ export class StreamingProcessor {
           throw error;
         }
 
-        // Warn if approaching token limit
-        if (totalTokens > this.tokenLimit * this.tokenWarningThreshold && chunkCount % 10 === 0) {
-          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`);
-        }
-
         // Process chunk
         const processed = await this.processChunk(documentChunk, pipeline);
         chunkCount++;
+        
+        // Warn if approaching token limit (check after incrementing chunkCount)
+        if (totalTokens > this.tokenLimit * this.tokenWarningThreshold && chunkCount % 10 === 0) {
+          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`);
+        }
+        
+        if (processed.processed) {
+          processedCount++;
+        } else {
+          failedCount++;
+        }
 
         // Add to buffer and yield
         await this.backpressureController.addToBuffer(processed);
         
-        // Yield processed chunks from buffer
+        // Yield processed chunks from buffer with progress information
         const bufferedItems = this.backpressureController.removeFromBuffer(1);
         for (const item of bufferedItems) {
-          yield item;
+          yield {
+            ...item,
+            progress: {
+              processed: processedCount,
+              failed: failedCount,
+              total: totalChunks
+            }
+          };
         }
 
         // Periodic garbage collection hint
@@ -323,4 +346,11 @@ export class StreamingProcessor {
   }
 }
 
-export { MemoryMonitor };
+;
+
+
+module.exports = {
+  BackpressureController,
+  StreamingProcessor,
+  MemoryMonitor
+};

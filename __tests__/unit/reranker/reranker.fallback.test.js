@@ -4,7 +4,7 @@
  * Description: Validates fallback handling for invalid LLM output
  * Author: @devilsdev
  */
-import { LLMReranker } from '../../../src/reranker/llm-reranker.js';
+const { LLMReranker  } = require('../../../src/reranker/llm-reranker.js');
 
 test('gracefully handles invalid LLM output', async () => {
     const mockLLM = { async generate() { return 'INVALID_JSON'; } };

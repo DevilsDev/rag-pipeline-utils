@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-import { PluginRegistry } from '../../../src/core/plugin-registry.js';
+const { PluginRegistry  } = require('../../../src/core/plugin-registry.js');
 
 describe('PluginRegistry', () => {
   let registry;

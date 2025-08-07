@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-import { jest } from '@jest/globals';
+// Jest is available globally in CommonJS mode;
 
 jest.unstable_mockModule('octokit', () => ({
   Octokit: jest.fn().mockImplementation(() => ({

@@ -39,10 +39,10 @@ class TenantManager extends EventEmitter {
    * Create a new tenant with isolated resources
    */
   async createTenant(tenantData) {
-    const tenantId = crypto.randomUUID();
+    const _tenantId = crypto.randomUUID();
     
     const tenant = {
-      id: tenantId,
+      id: _tenantId,
       name: tenantData.name,
       domain: tenantData.domain,
       plan: tenantData.plan || 'enterprise',
@@ -61,8 +61,8 @@ class TenantManager extends EventEmitter {
         lastActivity: new Date().toISOString()
       },
       isolation: {
-        dataPath: path.join(this.config.dataDir, 'tenants', tenantId),
-        networkNamespace: `tenant-${tenantId}`,
+        dataPath: path.join(this.config.dataDir, 'tenants', _tenantId),
+        networkNamespace: `tenant-${_tenantId}`,
         resourceLimits: this._calculateResourceLimits(tenantData.plan)
       }
     };
@@ -73,9 +73,9 @@ class TenantManager extends EventEmitter {
     // Initialize tenant-specific services
     await this._initializeTenantServices(tenant);
     
-    this.tenants.set(tenantId, tenant);
+    this.tenants.set(_tenantId, tenant);
     
-    this.emit('tenant_created', { tenantId, tenant });
+    this.emit('tenant_created', { _tenantId, tenant });
     
     return tenant;
   }
@@ -83,25 +83,25 @@ class TenantManager extends EventEmitter {
   /**
    * Create isolated workspace within a tenant
    */
-  async createWorkspace(tenantId, workspaceData) {
-    const tenant = this.tenants.get(tenantId);
+  async createWorkspace(_tenantId, workspaceData) {
+    const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
-      throw new Error(`Tenant ${tenantId} not found`);
+      throw new Error(`Tenant ${_tenantId} not found`);
     }
 
     // Check workspace quota
     const existingWorkspaces = Array.from(this.workspaces.values())
-      .filter(w => w.tenantId === tenantId);
+      .filter(w => w.tenantId === _tenantId);
     
     if (existingWorkspaces.length >= tenant.quotas.maxWorkspaces) {
-      throw new Error(`Workspace quota exceeded for tenant ${tenantId}`);
+      throw new Error(`Workspace quota exceeded for tenant ${_tenantId}`);
     }
 
-    const workspaceId = crypto.randomUUID();
+    const _workspaceId = crypto.randomUUID();
     
     const workspace = {
-      id: workspaceId,
-      tenantId,
+      id: _workspaceId,
+      _tenantId,
       name: workspaceData.name,
       description: workspaceData.description,
       settings: {
@@ -117,9 +117,9 @@ class TenantManager extends EventEmitter {
         installedPlugins: 0
       },
       isolation: {
-        dataPath: path.join(tenant.isolation.dataPath, 'workspaces', workspaceId),
-        configPath: path.join(tenant.isolation.dataPath, 'workspaces', workspaceId, '.ragrc.json'),
-        pluginsPath: path.join(tenant.isolation.dataPath, 'workspaces', workspaceId, 'plugins')
+        dataPath: path.join(tenant.isolation.dataPath, 'workspaces', _workspaceId),
+        configPath: path.join(tenant.isolation.dataPath, 'workspaces', _workspaceId, '.ragrc.json'),
+        pluginsPath: path.join(tenant.isolation.dataPath, 'workspaces', _workspaceId, 'plugins')
       },
       metadata: {
         createdAt: new Date().toISOString(),
@@ -132,9 +132,9 @@ class TenantManager extends EventEmitter {
     // Create isolated workspace infrastructure
     await this._createWorkspaceInfrastructure(workspace);
     
-    this.workspaces.set(workspaceId, workspace);
+    this.workspaces.set(_workspaceId, workspace);
     
-    this.emit('workspace_created', { tenantId, workspaceId, workspace });
+    this.emit('workspace_created', { _tenantId, _workspaceId, workspace });
     
     return workspace;
   }
@@ -142,14 +142,14 @@ class TenantManager extends EventEmitter {
   /**
    * Get tenant with resource usage
    */
-  async getTenant(tenantId) {
-    const tenant = this.tenants.get(tenantId);
+  async getTenant(_tenantId) {
+    const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
       return null;
     }
 
     // Get current resource usage
-    const usage = await this.resourceMonitor.getTenantUsage(tenantId);
+    const usage = await this.resourceMonitor.getTenantUsage(_tenantId);
     
     return {
       ...tenant,
@@ -161,9 +161,9 @@ class TenantManager extends EventEmitter {
   /**
    * List workspaces for a tenant
    */
-  async getWorkspaces(tenantId, options = {}) {
+  async getWorkspaces(_tenantId, options = {}) {
     const workspaces = Array.from(this.workspaces.values())
-      .filter(w => w.tenantId === tenantId);
+      .filter(w => w._tenantId === _tenantId);
 
     if (options.includeUsage) {
       for (const workspace of workspaces) {
@@ -177,10 +177,10 @@ class TenantManager extends EventEmitter {
   /**
    * Update tenant quotas
    */
-  async updateTenantQuotas(tenantId, newQuotas) {
-    const tenant = this.tenants.get(tenantId);
+  async updateTenantQuotas(_tenantId, newQuotas) {
+    const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
-      throw new Error(`Tenant ${tenantId} not found`);
+      throw new Error(`Tenant ${_tenantId} not found`);
     }
 
     const oldQuotas = { ...tenant.quotas };
@@ -191,7 +191,7 @@ class TenantManager extends EventEmitter {
     await this._persistTenant(tenant);
 
     this.emit('tenant_quotas_updated', { 
-      tenantId, 
+      _tenantId, 
       oldQuotas, 
       newQuotas: tenant.quotas 
     });
@@ -202,36 +202,36 @@ class TenantManager extends EventEmitter {
   /**
    * Enforce resource quotas
    */
-  async enforceQuotas(tenantId, operation, resourceType, amount) {
-    const tenant = this.tenants.get(tenantId);
+  async enforceQuotas(_tenantId, operation, resourceType, amount) {
+    const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
-      throw new Error(`Tenant ${tenantId} not found`);
+      throw new Error(`Tenant ${_tenantId} not found`);
     }
 
-    const usage = await this.resourceMonitor.getTenantUsage(tenantId);
+    const usage = await this.resourceMonitor.getTenantUsage(_tenantId);
     
     switch (resourceType) {
       case 'storage':
         if (usage.storageUsedGB + (amount / 1024) > tenant.quotas.maxStorageGB) {
-          throw new Error(`Storage quota exceeded for tenant ${tenantId}`);
+          throw new Error(`Storage quota exceeded for tenant ${_tenantId}`);
         }
         break;
         
       case 'apiCalls':
         if (usage.apiCallsThisMonth + amount > tenant.quotas.maxAPICallsPerMonth) {
-          throw new Error(`API calls quota exceeded for tenant ${tenantId}`);
+          throw new Error(`API calls quota exceeded for tenant ${_tenantId}`);
         }
         break;
         
       case 'concurrentPipelines':
         if (usage.activePipelines >= tenant.quotas.maxConcurrentPipelines) {
-          throw new Error(`Concurrent pipelines quota exceeded for tenant ${tenantId}`);
+          throw new Error(`Concurrent pipelines quota exceeded for tenant ${_tenantId}`);
         }
         break;
         
       case 'plugins':
         if (usage.installedPlugins >= tenant.quotas.maxPlugins) {
-          throw new Error(`Plugins quota exceeded for tenant ${tenantId}`);
+          throw new Error(`Plugins quota exceeded for tenant ${_tenantId}`);
         }
         break;
     }
@@ -242,10 +242,10 @@ class TenantManager extends EventEmitter {
   /**
    * Delete tenant and all associated data
    */
-  async deleteTenant(tenantId, options = {}) {
-    const tenant = this.tenants.get(tenantId);
+  async deleteTenant(_tenantId, options = {}) {
+    const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
-      throw new Error(`Tenant ${tenantId} not found`);
+      throw new Error(`Tenant ${_tenantId} not found`);
     }
 
     // Soft delete by default for compliance
@@ -256,13 +256,13 @@ class TenantManager extends EventEmitter {
       
       await this._persistTenant(tenant);
       
-      this.emit('tenant_soft_deleted', { tenantId, tenant });
+      this.emit('tenant_soft_deleted', { _tenantId, tenant });
       return { deleted: true, hardDelete: false };
     }
 
     // Hard delete - remove all data
     const workspaces = Array.from(this.workspaces.values())
-      .filter(w => w.tenantId === tenantId);
+      .filter(w => w.tenantId === _tenantId);
     
     for (const workspace of workspaces) {
       await this.deleteWorkspace(workspace.id, { hardDelete: true });
@@ -271,19 +271,19 @@ class TenantManager extends EventEmitter {
     // Remove tenant data directory
     await fs.rmdir(tenant.isolation.dataPath, { recursive: true });
     
-    this.tenants.delete(tenantId);
+    this.tenants.delete(_tenantId);
     
-    this.emit('tenant_hard_deleted', { tenantId });
+    this.emit('tenant_hard_deleted', { _tenantId });
     return { deleted: true, hardDelete: true };
   }
 
   /**
    * Delete workspace
    */
-  async deleteWorkspace(workspaceId, options = {}) {
-    const workspace = this.workspaces.get(workspaceId);
+  async deleteWorkspace(_workspaceId, options = {}) {
+    const workspace = this.workspaces.get(_workspaceId);
     if (!workspace) {
-      throw new Error(`Workspace ${workspaceId} not found`);
+      throw new Error(`Workspace ${_workspaceId} not found`);
     }
 
     if (!options.hardDelete) {
@@ -293,15 +293,15 @@ class TenantManager extends EventEmitter {
       
       await this._persistWorkspace(workspace);
       
-      this.emit('workspace_soft_deleted', { workspaceId, workspace });
+      this.emit('workspace_soft_deleted', { _workspaceId, workspace });
       return { deleted: true, hardDelete: false };
     }
 
     // Hard delete
     await fs.rmdir(workspace.isolation.dataPath, { recursive: true });
-    this.workspaces.delete(workspaceId);
+    this.workspaces.delete(_workspaceId);
     
-    this.emit('workspace_hard_deleted', { workspaceId });
+    this.emit('workspace_hard_deleted', { _workspaceId });
     return { deleted: true, hardDelete: true };
   }
 
@@ -344,7 +344,7 @@ class TenantManager extends EventEmitter {
       workspace: {
         id: workspace.id,
         name: workspace.name,
-        tenantId: workspace.tenantId
+        tenantId: workspace._tenantId
       },
       plugins: {},
       settings: workspace.settings
@@ -432,7 +432,7 @@ class ResourceMonitor {
     this.metrics = new Map();
   }
 
-  async getTenantUsage(tenantId) {
+  async getTenantUsage(_tenantId) {
     // Mock implementation - would integrate with actual monitoring systems
     return {
       activeUsers: Math.floor(Math.random() * 50),
@@ -445,7 +445,7 @@ class ResourceMonitor {
     };
   }
 
-  async getWorkspaceUsage(workspaceId) {
+  async getWorkspaceUsage(_workspaceId) {
     // Mock implementation
     return {
       storageUsedMB: Math.floor(Math.random() * 1000),
@@ -461,3 +461,6 @@ module.exports = {
   TenantManager,
   ResourceMonitor
 };
+
+
+// Ensure module.exports is properly defined

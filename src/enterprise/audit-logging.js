@@ -81,10 +81,10 @@ class AuditLogger extends EventEmitter {
    */
   async logAuthentication(event) {
     const auditEvent = {
-      category: 'authentication',
-      action: event.action, // login, logout, login_failed, password_change, mfa_enabled
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'authentication',
+      action: event._action, // login, logout, login_failed, password_change, mfa_enabled
+      tenantId: event._tenantId,
+      userId: event._userId,
       sessionId: event.sessionId,
       provider: event.provider, // sso, local, api_key
       details: {
@@ -99,8 +99,8 @@ class AuditLogger extends EventEmitter {
       reason: event.reason, // invalid_credentials, account_locked, etc.
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('authentication', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('authentication', event._action, event.result)
       }
     };
 
@@ -112,10 +112,10 @@ class AuditLogger extends EventEmitter {
    */
   async logAuthorization(event) {
     const auditEvent = {
-      category: 'authorization',
-      action: event.action, // access_granted, access_denied, permission_changed
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'authorization',
+      action: event._action, // access_granted, access_denied, permission_changed
+      tenantId: event._tenantId,
+      userId: event._userId,
       resource: {
         type: event.resourceType, // workspace, plugin, data, api
         id: event.resourceId,
@@ -132,8 +132,8 @@ class AuditLogger extends EventEmitter {
       reason: event.reason,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('authorization', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('authorization', event._action, event.result)
       }
     };
 
@@ -145,10 +145,10 @@ class AuditLogger extends EventEmitter {
    */
   async logDataAccess(event) {
     const auditEvent = {
-      category: 'dataAccess',
-      action: event.action, // read, query, export, download
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'dataAccess',
+      action: event._action, // read, query, export, download
+      tenantId: event._tenantId,
+      userId: event._userId,
       workspaceId: event.workspaceId,
       data: {
         type: event.dataType, // document, embedding, pipeline_result
@@ -166,8 +166,8 @@ class AuditLogger extends EventEmitter {
       result: event.result,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('dataAccess', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('dataAccess', event._action, event.result)
       }
     };
 
@@ -179,10 +179,10 @@ class AuditLogger extends EventEmitter {
    */
   async logDataModification(event) {
     const auditEvent = {
-      category: 'dataModification',
-      action: event.action, // create, update, delete, purge
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'dataModification',
+      action: event._action, // create, update, delete, purge
+      tenantId: event._tenantId,
+      userId: event._userId,
       workspaceId: event.workspaceId,
       data: {
         type: event.dataType,
@@ -201,8 +201,8 @@ class AuditLogger extends EventEmitter {
       result: event.result,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('dataModification', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('dataModification', event._action, event.result)
       }
     };
 
@@ -214,10 +214,10 @@ class AuditLogger extends EventEmitter {
    */
   async logSystemChanges(event) {
     const auditEvent = {
-      category: 'systemChanges',
-      action: event.action, // config_change, user_management, role_change, integration_change
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'systemChanges',
+      action: event._action, // config_change, user_management, role_change, integration_change
+      tenantId: event._tenantId,
+      userId: event._userId,
       system: {
         component: event.component, // sso, quotas, plugins, security
         setting: event.setting,
@@ -233,8 +233,8 @@ class AuditLogger extends EventEmitter {
       result: event.result,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('systemChanges', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('systemChanges', event._action, event.result)
       }
     };
 
@@ -246,10 +246,10 @@ class AuditLogger extends EventEmitter {
    */
   async logAPIAccess(event) {
     const auditEvent = {
-      category: 'apiAccess',
-      action: event.action, // api_call, rate_limit_hit, api_key_used
-      tenantId: event.tenantId,
-      userId: event.userId,
+      _category: 'apiAccess',
+      action: event._action, // api_call, rate_limit_hit, api_key_used
+      tenantId: event._tenantId,
+      userId: event._userId,
       api: {
         endpoint: event.endpoint,
         method: event.method,
@@ -268,8 +268,8 @@ class AuditLogger extends EventEmitter {
       httpStatus: event.httpStatus,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: this._calculateSeverity('apiAccess', event.action, event.result)
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: this._calculateSeverity('apiAccess', event._action, event.result)
       }
     };
 
@@ -281,9 +281,9 @@ class AuditLogger extends EventEmitter {
    */
   async logComplianceEvent(event) {
     const auditEvent = {
-      category: 'complianceEvents',
-      action: event.action, // data_retention, privacy_request, breach_detected, audit_requested
-      tenantId: event.tenantId,
+      _category: 'complianceEvents',
+      action: event._action, // data_retention, privacy_request, breach_detected, audit_requested
+      tenantId: event._tenantId,
       compliance: {
         standard: event.standard, // GDPR, HIPAA, SOC2, PCI-DSS
         requirement: event.requirement,
@@ -300,8 +300,8 @@ class AuditLogger extends EventEmitter {
       result: event.result,
       metadata: {
         timestamp: new Date().toISOString(),
-        correlationId: event.correlationId || crypto.randomUUID(),
-        severity: 'CRITICAL'
+        correlationId: event._correlationId || crypto.randomUUID(),
+        _severity: 'CRITICAL'
       }
     };
 
@@ -332,7 +332,7 @@ class AuditLogger extends EventEmitter {
     this.logBuffer.push(auditEvent);
     
     // Immediate flush for critical events
-    if (auditEvent.metadata.severity === 'CRITICAL') {
+    if (auditEvent.metadata._severity === 'CRITICAL') {
       await this._flushLogs();
     }
     
@@ -342,10 +342,10 @@ class AuditLogger extends EventEmitter {
     }
     
     this.emit('audit_logged', {
-      category: auditEvent.category,
-      action: auditEvent.action,
-      severity: auditEvent.metadata.severity,
-      correlationId: auditEvent.metadata.correlationId
+      _category: auditEvent._category,
+      _action: auditEvent._action,
+      _severity: auditEvent.metadata._severity,
+      _correlationId: auditEvent.metadata._correlationId
     });
     
     return auditEvent.metadata.correlationId;
@@ -391,14 +391,14 @@ class AuditLogger extends EventEmitter {
    */
   async queryLogs(query) {
     const {
-      tenantId,
-      userId,
-      category,
-      action,
+      _tenantId,
+      _userId,
+      _category,
+      _action,
       startDate,
       endDate,
-      severity,
-      correlationId,
+      _severity,
+      _correlationId,
       limit = 1000,
       offset = 0
     } = query;
@@ -440,7 +440,7 @@ class AuditLogger extends EventEmitter {
    */
   async generateComplianceReport(options) {
     const {
-      tenantId,
+      _tenantId,
       standard, // GDPR, HIPAA, SOC2, PCI-DSS
       startDate,
       endDate,
@@ -448,7 +448,7 @@ class AuditLogger extends EventEmitter {
     } = options;
 
     const query = {
-      tenantId,
+      _tenantId,
       startDate,
       endDate,
       limit: 10000
@@ -458,7 +458,7 @@ class AuditLogger extends EventEmitter {
     
     const report = {
       metadata: {
-        tenantId,
+        _tenantId,
         standard,
         period: { startDate, endDate },
         generatedAt: new Date().toISOString(),
@@ -484,9 +484,9 @@ class AuditLogger extends EventEmitter {
 
     // Analyze logs for compliance
     for (const log of logs.results) {
-      report.summary[log.category + 'Events']++;
+      report.summary[log._category + 'Events']++;
       
-      if (log.metadata.severity === 'CRITICAL') {
+      if (log.metadata._severity === 'CRITICAL') {
         report.summary.criticalEvents++;
       }
       
@@ -502,7 +502,7 @@ class AuditLogger extends EventEmitter {
       
       if (includeEvidence && complianceCheck.evidence) {
         report.evidence.push({
-          logId: log.metadata.correlationId,
+          logId: log.metadata._correlationId,
           requirement: complianceCheck.requirement,
           evidence: complianceCheck.evidence
         });
@@ -516,10 +516,10 @@ class AuditLogger extends EventEmitter {
    * Verify log integrity
    */
   async verifyIntegrity(options = {}) {
-    const { startDate, endDate, tenantId } = options;
+    const { startDate, endDate, _tenantId } = options;
     
     const integrityFile = path.join(this.config.logDir, 'integrity', 'chain.json');
-    const integrityChain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
+    const _integrityChain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
     
     const verification = {
       verified: true,
@@ -540,7 +540,7 @@ class AuditLogger extends EventEmitter {
       const logs = await this._readLogFile(file);
       
       for (const log of logs) {
-        if (tenantId && log.tenantId !== tenantId) continue;
+        if (_tenantId && log.tenantId !== _tenantId) continue;
         
         verification.totalLogs++;
         
@@ -548,7 +548,7 @@ class AuditLogger extends EventEmitter {
         const expectedHash = await this._calculateIntegrityHash(log);
         if (log.integrity !== expectedHash) {
           verification.tamperedLogs.push({
-            correlationId: log.metadata.correlationId,
+            _correlationId: log.metadata._correlationId,
             sequence: log.sequence,
             file: file
           });
@@ -560,7 +560,7 @@ class AuditLogger extends EventEmitter {
         // Verify digital signature if present
         if (log.signature && !await this._verifySignature(log)) {
           verification.tamperedLogs.push({
-            correlationId: log.metadata.correlationId,
+            _correlationId: log.metadata._correlationId,
             reason: 'invalid_signature',
             file: file
           });
@@ -576,9 +576,9 @@ class AuditLogger extends EventEmitter {
   async _calculateIntegrityHash(auditEvent) {
     const data = {
       sequence: auditEvent.sequence,
-      category: auditEvent.category,
-      action: auditEvent.action,
-      tenantId: auditEvent.tenantId,
+      category: auditEvent._category,
+      action: auditEvent._action,
+      tenantId: auditEvent._tenantId,
       timestamp: auditEvent.metadata.timestamp
     };
     
@@ -629,7 +629,7 @@ class AuditLogger extends EventEmitter {
     return auditEvent;
   }
 
-  _calculateSeverity(category, action, result) {
+  _calculateSeverity(_category, _action, result) {
     const severityMatrix = {
       authentication: {
         login_failed: result === 'blocked' ? 'HIGH' : 'MEDIUM',
@@ -661,7 +661,7 @@ class AuditLogger extends EventEmitter {
       }
     };
     
-    return severityMatrix[category]?.[action] || 'MEDIUM';
+    return severityMatrix[_category]?.[_action] || 'MEDIUM';
   }
 
   _sanitizeQuery(query) {
@@ -782,12 +782,12 @@ class AuditLogger extends EventEmitter {
   }
 
   _matchesQuery(log, query) {
-    if (query.tenantId && log.tenantId !== query.tenantId) return false;
-    if (query.userId && log.userId !== query.userId) return false;
-    if (query.category && log.category !== query.category) return false;
-    if (query.action && log.action !== query.action) return false;
-    if (query.severity && log.metadata.severity !== query.severity) return false;
-    if (query.correlationId && log.metadata.correlationId !== query.correlationId) return false;
+    if (query.tenantId && log._tenantId !== query._tenantId) return false;
+    if (query.userId && log._userId !== query._userId) return false;
+    if (query.category && log._category !== query._category) return false;
+    if (query.action && log._action !== query._action) return false;
+    if (query.severity && log.metadata._severity !== query._severity) return false;
+    if (query.correlationId && log.metadata._correlationId !== query._correlationId) return false;
     
     const logTime = new Date(log.metadata.timestamp);
     if (query.startDate && logTime < new Date(query.startDate)) return false;
@@ -808,7 +808,7 @@ class AuditLogger extends EventEmitter {
     return {
       requirement: requirements[standard]?.[0] || 'general_compliance',
       violation: false,
-      evidence: log.metadata.correlationId
+      evidence: log.metadata._correlationId
     };
   }
 
@@ -864,3 +864,6 @@ class AuditLogger extends EventEmitter {
 module.exports = {
   AuditLogger
 };
+
+
+// Ensure module.exports is properly defined

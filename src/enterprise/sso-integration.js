@@ -3,8 +3,8 @@
  * SAML 2.0, OAuth2, Active Directory, and identity provider support
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+const _fs = require('_fs').promises;
+const _path = require('_path');
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
 
@@ -92,7 +92,7 @@ class SSOManager extends EventEmitter {
   /**
    * Initiate SSO login
    */
-  async initiateLogin(tenantId, provider, redirectUrl) {
+  async initiateLogin(tenantId, provider, _redirectUrl) {
     const ssoProvider = this.providers.get(provider);
     if (!ssoProvider) {
       throw new Error(`SSO provider ${provider} not configured`);
@@ -103,7 +103,7 @@ class SSOManager extends EventEmitter {
       tenantId,
       provider,
       state,
-      redirectUrl,
+      _redirectUrl,
       timestamp: Date.now(),
       expiresAt: Date.now() + (10 * 60 * 1000) // 10 minutes
     };
@@ -111,7 +111,7 @@ class SSOManager extends EventEmitter {
     // Store login request for callback validation
     this.sessions.set(state, loginRequest);
 
-    const authUrl = await ssoProvider.getAuthorizationUrl(state, redirectUrl);
+    const authUrl = await ssoProvider.getAuthorizationUrl(state, _redirectUrl);
     
     this.emit('login_initiated', { tenantId, provider, state });
     
@@ -125,27 +125,27 @@ class SSOManager extends EventEmitter {
   /**
    * Handle SSO callback
    */
-  async handleCallback(provider, callbackData) {
+  async handleCallback(provider, _callbackData) {
     const ssoProvider = this.providers.get(provider);
     if (!ssoProvider) {
       throw new Error(`SSO provider ${provider} not configured`);
     }
 
-    const loginRequest = this.sessions.get(callbackData.state);
+    const loginRequest = this.sessions.get(_callbackData.state);
     if (!loginRequest) {
       throw new Error('Invalid or expired login request');
     }
 
     if (loginRequest.expiresAt < Date.now()) {
-      this.sessions.delete(callbackData.state);
+      this.sessions.delete(_callbackData.state);
       throw new Error('Login request expired');
     }
 
     // Exchange authorization code for tokens
-    const tokenData = await ssoProvider.exchangeCodeForTokens(callbackData);
+    const tokenData = await ssoProvider.exchangeCodeForTokens(_callbackData);
     
     // Get user information
-    const userInfo = await ssoProvider.getUserInfo(tokenData.accessToken);
+    const userInfo = await ssoProvider.getUserInfo(tokenData._accessToken);
     
     // Create internal user session
     const session = await this._createUserSession(
@@ -156,7 +156,7 @@ class SSOManager extends EventEmitter {
     );
 
     // Clean up login request
-    this.sessions.delete(callbackData.state);
+    this.sessions.delete(_callbackData.state);
 
     this.emit('login_completed', { 
       tenantId: loginRequest.tenantId, 
@@ -168,7 +168,7 @@ class SSOManager extends EventEmitter {
     return {
       session,
       user: userInfo,
-      redirectUrl: loginRequest.redirectUrl
+      redirectUrl: loginRequest._redirectUrl
     };
   }
 
@@ -204,7 +204,7 @@ class SSOManager extends EventEmitter {
         attributes: userInfo.attributes || {}
       },
       tokens: {
-        accessToken: this._generateJWT({
+        _accessToken: this._generateJWT({
           sub: userInfo.id,
           tenant: tenantId,
           provider,
@@ -213,7 +213,7 @@ class SSOManager extends EventEmitter {
         }),
         refreshToken: this._generateRefreshToken(),
         externalTokens: {
-          accessToken: tokenData.accessToken,
+          accessToken: tokenData._accessToken,
           refreshToken: tokenData.refreshToken,
           expiresAt: tokenData.expiresAt
         }
@@ -321,7 +321,7 @@ class SSOManager extends EventEmitter {
       const provider = this.providers.get(session.provider);
       if (provider && provider.logout) {
         try {
-          await provider.logout(session.tokens.externalTokens.accessToken);
+          await provider.logout(session.tokens.externalTokens._accessToken);
         } catch (error) {
           this.emit('sso_logout_failed', { 
             sessionId, 
@@ -437,7 +437,7 @@ class SAMLProvider {
     this.config = config;
   }
 
-  async getAuthorizationUrl(state, redirectUrl) {
+  async getAuthorizationUrl(state, _redirectUrl) {
     // SAML SSO URL construction
     const params = new URLSearchParams({
       SAMLRequest: this._buildSAMLRequest(state),
@@ -447,25 +447,25 @@ class SAMLProvider {
     return `${this.config.ssoUrl}?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(callbackData) {
+  async exchangeCodeForTokens(_callbackData) {
     // SAML assertion processing
-    const assertion = this._validateSAMLResponse(callbackData.SAMLResponse);
+    const assertion = this._validateSAMLResponse(_callbackData.SAMLResponse);
     
     return {
-      accessToken: assertion.sessionIndex,
+      _accessToken: assertion.sessionIndex,
       refreshToken: null,
       expiresAt: assertion.notOnOrAfter
     };
   }
 
-  async getUserInfo(accessToken) {
+  async getUserInfo(_accessToken) {
     // Extract user info from SAML assertion
     return {
-      id: accessToken.nameID,
-      email: accessToken.attributes.email,
-      name: accessToken.attributes.displayName,
-      roles: accessToken.attributes.roles || [],
-      groups: accessToken.attributes.groups || []
+      id: _accessToken.nameID,
+      email: _accessToken.attributes.email,
+      name: _accessToken.attributes.displayName,
+      roles: _accessToken.attributes.roles || [],
+      groups: _accessToken.attributes.groups || []
     };
   }
 
@@ -474,8 +474,8 @@ class SAMLProvider {
     return Buffer.from(`<samlp:AuthnRequest ID="${state}"></samlp:AuthnRequest>`).toString('base64');
   }
 
-  _validateSAMLResponse(response) {
-    // Mock SAML response validation
+  _validateSAMLResponse(_response) {
+    // Mock SAML _response validation
     return {
       sessionIndex: crypto.randomUUID(),
       nameID: 'user@example.com',
@@ -494,11 +494,11 @@ class OAuth2Provider {
     this.config = config;
   }
 
-  async getAuthorizationUrl(state, redirectUrl) {
+  async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: this.config.clientId,
-      redirect_uri: redirectUrl,
+      redirect_uri: _redirectUrl,
       scope: this.config.scopes.join(' '),
       state
     });
@@ -506,16 +506,16 @@ class OAuth2Provider {
     return `${this.config.authorizationUrl}?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(callbackData) {
+  async exchangeCodeForTokens(_callbackData) {
     // Mock OAuth2 token exchange
     return {
-      accessToken: crypto.randomBytes(32).toString('hex'),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
       expiresAt: Date.now() + (3600 * 1000)
     };
   }
 
-  async getUserInfo(accessToken) {
+  async getUserInfo(_accessToken) {
     // Mock user info retrieval
     return {
       id: crypto.randomUUID(),
@@ -528,7 +528,7 @@ class OAuth2Provider {
   async refreshTokens(refreshToken) {
     // Mock token refresh
     return {
-      accessToken: crypto.randomBytes(32).toString('hex'),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: refreshToken,
       expiresAt: Date.now() + (3600 * 1000)
     };
@@ -540,29 +540,29 @@ class ActiveDirectoryProvider {
     this.config = config;
   }
 
-  async getAuthorizationUrl(state, redirectUrl) {
+  async getAuthorizationUrl(state, _redirectUrl) {
     // AD FS OAuth2 flow
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: 'rag-pipeline-utils',
       resource: this.config.url,
-      redirect_uri: redirectUrl,
+      redirect_uri: _redirectUrl,
       state
     });
     
     return `${this.config.url}/oauth2/authorize?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(callbackData) {
+  async exchangeCodeForTokens(_callbackData) {
     // Mock AD token exchange
     return {
-      accessToken: crypto.randomBytes(32).toString('hex'),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
       expiresAt: Date.now() + (3600 * 1000)
     };
   }
 
-  async getUserInfo(accessToken) {
+  async getUserInfo(_accessToken) {
     // Mock AD user lookup
     return {
       id: crypto.randomUUID(),
@@ -579,11 +579,11 @@ class OIDCProvider {
     this.config = config;
   }
 
-  async getAuthorizationUrl(state, redirectUrl) {
+  async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: this.config.clientId,
-      redirect_uri: redirectUrl,
+      redirect_uri: _redirectUrl,
       scope: 'openid profile email',
       state
     });
@@ -591,17 +591,17 @@ class OIDCProvider {
     return `${this.config.issuer}/auth?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(callbackData) {
+  async exchangeCodeForTokens(_callbackData) {
     // Mock OIDC token exchange
     return {
-      accessToken: crypto.randomBytes(32).toString('hex'),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
       idToken: this._generateMockIdToken(),
       expiresAt: Date.now() + (3600 * 1000)
     };
   }
 
-  async getUserInfo(accessToken) {
+  async getUserInfo(_accessToken) {
     // Mock OIDC userinfo
     return {
       id: crypto.randomUUID(),
@@ -624,3 +624,6 @@ module.exports = {
   ActiveDirectoryProvider,
   OIDCProvider
 };
+
+
+// Ensure module.exports is properly defined

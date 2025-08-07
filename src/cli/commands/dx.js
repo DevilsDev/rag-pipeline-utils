@@ -39,13 +39,13 @@ function createVisualBuilderCommand() {
     .option('-p, --port <port>', 'Server port', '3001')
     .option('--host <host>', 'Server host', 'localhost')
     .option('--theme <theme>', 'UI theme (light|dark)', 'light')
-    .action(async (options) => {
+    .action(async (__options) => {
       console.log(chalk.blue('🎨 Starting Visual Pipeline Builder...'));
       
       const builder = new VisualPipelineBuilder({
-        port: parseInt(options.port),
-        host: options.host,
-        theme: options.theme
+        port: parseInt(_options.port),
+        host: _options.host,
+        theme: _options.theme
       });
       
       try {
@@ -83,9 +83,9 @@ function createVisualBuilderCommand() {
     .command('create <name>')
     .description('Create a new pipeline')
     .option('-d, --description <desc>', 'Pipeline description')
-    .action(async (name, options) => {
+    .action(async (name, __options) => {
       const builder = new VisualPipelineBuilder();
-      const pipelineId = builder.createPipeline(name, options.description);
+      const pipelineId = builder.createPipeline(name, _options.description);
       
       console.log(chalk.green(`✅ Created pipeline: ${name}`));
       console.log(chalk.cyan(`📋 Pipeline ID: ${pipelineId}`));
@@ -124,18 +124,18 @@ function createDebuggerCommand() {
   debugCmd
     .description('Real-time debugging and inspection')
     .option('-p, --port <port>', 'WebSocket port', '3002')
-    .action(async (options) => {
+    .action(async (__options) => {
       console.log(chalk.blue('🐛 Starting Real-time Debugger...'));
       
-      const debugger = new RealtimeDebugger({
-        port: parseInt(options.port)
+      const realtimeDebugger = new RealtimeDebugger({
+        port: parseInt(_options.port)
       });
       
       try {
-        debugger.startWebSocketServer();
+        realtimeDebugger.startWebSocketServer();
         
         console.log(chalk.green('✅ Real-time Debugger started!'));
-        console.log(chalk.cyan(`🔗 WebSocket server running on port ${options.port}`));
+        console.log(chalk.cyan(`🔗 WebSocket server running on port ${_options.port}`));
         console.log(chalk.yellow('🔧 Available features:'));
         console.log('   • Breakpoints and step-through debugging');
         console.log('   • Variable inspection');
@@ -145,8 +145,8 @@ function createDebuggerCommand() {
         console.log(chalk.gray('\nPress Ctrl+C to stop the debugger'));
         
         process.on('SIGINT', () => {
-          console.log(chalk.yellow('\n🛑 Stopping debugger...'));
-          debugger.stopWebSocketServer();
+          console.log(chalk.yellow('\n🛑 Stopping realtimeDebugger...'));
+          realtimeDebugger.stopWebSocketServer();
           console.log(chalk.green('✅ Debugger stopped'));
           process.exit(0);
         });
@@ -163,16 +163,16 @@ function createDebuggerCommand() {
     .command('session <sessionId>')
     .description('Start a debug session')
     .option('-c, --config <config>', 'Pipeline config file')
-    .action(async (sessionId, options) => {
-      const debugger = new RealtimeDebugger();
+    .action(async (sessionId, __options) => {
+      const realtimeDebugger = new RealtimeDebugger();
       
       let pipelineConfig = {};
-      if (options.config) {
+      if (_options.config) {
         const fs = require('fs');
-        pipelineConfig = JSON.parse(fs.readFileSync(options.config, 'utf8'));
+        pipelineConfig = JSON.parse(fs.readFileSync(_options.config, 'utf8'));
       }
       
-      const session = debugger.startSession(sessionId, pipelineConfig);
+      const session = realtimeDebugger.startSession(sessionId, pipelineConfig);
       
       console.log(chalk.green(`✅ Debug session started: ${sessionId}`));
       console.log(chalk.cyan('🔍 Session details:'));
@@ -195,7 +195,7 @@ function createProfilerCommand() {
     .option('--memory', 'Enable memory profiling', true)
     .option('--network', 'Enable network profiling', true)
     .option('-o, --output <dir>', 'Output directory', './profiling-reports')
-    .action(async (options) => {
+    .action(async (__options) => {
       console.log(chalk.blue('📊 Performance Profiler'));
       console.log(chalk.yellow('Available commands:'));
       console.log('   • profile start <sessionId> - Start profiling');
@@ -218,7 +218,7 @@ function createProfilerCommand() {
       
       console.log(chalk.green(`✅ Profiling started: ${sessionId}`));
       console.log(chalk.cyan('📈 Collecting performance metrics...'));
-      console.log(chalk.gray('Use "profile stop" to end profiling'));
+      console.log(chalk.gray('Use \'profile stop\' to end profiling'));
     });
   
   profilerCmd
@@ -234,11 +234,11 @@ function createProfilerCommand() {
     .command('report <sessionId>')
     .description('Generate performance report')
     .option('-f, --format <format>', 'Report format (json|html)', 'html')
-    .action(async (sessionId, options) => {
+    .action(async (sessionId, __options) => {
       const profiler = new PerformanceProfiler();
       
       try {
-        const reportPath = await profiler.exportReport(sessionId, options.format);
+        const reportPath = await profiler.exportReport(sessionId, _options.format);
         
         console.log(chalk.green(`✅ Report generated: ${reportPath}`));
         console.log(chalk.cyan('📊 Report includes:'));
@@ -319,7 +319,7 @@ function createTemplatesCommand() {
     .description('Generate integration code from template')
     .option('-c, --config <config>', 'Configuration JSON file')
     .option('-i, --interactive', 'Interactive configuration')
-    .action(async (templateId, options) => {
+    .action(async (templateId, __options) => {
       const templates = new IntegrationTemplates();
       const template = templates.getTemplate(templateId);
       
@@ -330,7 +330,7 @@ function createTemplatesCommand() {
       
       let config = {};
       
-      if (options.interactive) {
+      if (_options.interactive) {
         // Interactive configuration
         const questions = Object.entries(template.config).map(([key, configDef]) => ({
           type: configDef.type === 'boolean' ? 'confirm' : 'input',
@@ -341,9 +341,9 @@ function createTemplatesCommand() {
         }));
         
         config = await inquirer.prompt(questions);
-      } else if (options.config) {
+      } else if (_options.config) {
         const fs = require('fs');
-        config = JSON.parse(fs.readFileSync(options.config, 'utf8'));
+        config = JSON.parse(fs.readFileSync(_options.config, 'utf8'));
       }
       
       try {
@@ -370,24 +370,24 @@ function createDashboardCommand() {
   dashboardCmd
     .description('Launch DX dashboard with all tools')
     .option('-p, --port <port>', 'Dashboard port', '3000')
-    .action(async (options) => {
+    .action(async (__options) => {
       console.log(chalk.blue('🚀 Starting DX Dashboard...'));
       
       // Start all DX services
       const builder = new VisualPipelineBuilder({ port: 3001 });
-      const debugger = new RealtimeDebugger({ port: 3002 });
+      const realtimeDebugger = new RealtimeDebugger({ port: 3002 });
       const profiler = new PerformanceProfiler();
       
       try {
         await builder.startServer();
-        debugger.startWebSocketServer();
+        realtimeDebugger.startWebSocketServer();
         
         console.log(chalk.green('✅ DX Dashboard started successfully!'));
         console.log(chalk.cyan('🌐 Available services:'));
-        console.log(`   • Visual Builder: http://localhost:3001`);
-        console.log(`   • Real-time Debugger: ws://localhost:3002`);
-        console.log(`   • Performance Profiler: Active`);
-        console.log(`   • Integration Templates: Available`);
+        console.log('   • Visual Builder: http://localhost:3001');
+        console.log('   • Real-time Debugger: ws://localhost:3002');
+        console.log('   • Performance Profiler: Active');
+        console.log('   • Integration Templates: Available');
         
         console.log(chalk.yellow('\n🎯 Quick Start:'));
         console.log('   1. Open Visual Builder to create pipelines');
@@ -400,7 +400,7 @@ function createDashboardCommand() {
         process.on('SIGINT', async () => {
           console.log(chalk.yellow('\n🛑 Stopping DX Dashboard...'));
           await builder.stopServer();
-          debugger.stopWebSocketServer();
+          realtimeDebugger.stopWebSocketServer();
           console.log(chalk.green('✅ All services stopped'));
           process.exit(0);
         });

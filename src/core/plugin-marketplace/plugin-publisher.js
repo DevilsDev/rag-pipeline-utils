@@ -3,31 +3,31 @@
  * Handles plugin packaging, validation, and publishing to registries
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
-import { metadataExtractor, metadataValidator } from './plugin-metadata.js';
-import { validatePluginRegistry, createEmptyRegistry } from './plugin-registry-format.js';
-import { VersionUtils } from './version-resolver.js';
+const fs = require('fs/promises');
+const path = require('path');
+const crypto = require('crypto');
+const { metadataExtractor, metadataValidator  } = require('./plugin-metadata.js');
+const { validatePluginRegistry, createEmptyRegistry  } = require('./plugin-registry-format.js');
+const { VersionUtils  } = require('./version-resolver.js');
 
 /**
  * Plugin publisher for marketplace publishing
  */
-export class PluginPublisher {
+class PluginPublisher {
   constructor(options = {}) {
     this.options = {
-      registryUrl: options.registryUrl || 'https://registry.rag-pipeline.dev',
-      authToken: options.authToken,
-      timeout: options.timeout || 30000,
-      dryRun: options.dryRun || false,
-      ...options
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      authToken: _options.authToken,
+      timeout: _options.timeout || 30000,
+      dryRun: _options.dryRun || false,
+      ..._options
     };
   }
 
   /**
    * Publish plugin to registry
    * @param {string} pluginPath - Path to plugin directory
-   * @param {object} publishOptions - Publishing options
+   * @param {object} publishOptions - Publishing _options
    * @returns {Promise<object>} Publishing result
    */
   async publishPlugin(pluginPath, publishOptions = {}) {
@@ -43,14 +43,14 @@ export class PluginPublisher {
 
       // Step 2: Extract and validate metadata
       console.log('🔍 Extracting plugin metadata...');
-      const metadata = await this.extractPluginMetadata(pluginPath);
+      const _metadata = await this.extractPluginMetadata(pluginPath);
       
       // Step 3: Package plugin
       console.log('📦 Packaging plugin...');
-      const packageInfo = await this.packagePlugin(pluginPath, metadata, publishOptions);
+      const packageInfo = await this.packagePlugin(pluginPath, _metadata, publishOptions);
       
       // Step 4: Upload to registry (unless dry run)
-      if (this.options.dryRun) {
+      if (this._options.dryRun) {
         console.log('🧪 Dry run - skipping actual upload');
         return {
           success: true,
@@ -62,7 +62,7 @@ export class PluginPublisher {
       }
 
       console.log('🚀 Publishing to registry...');
-      const publishResult = await this.uploadToRegistry(packageInfo, metadata, publishOptions);
+      const publishResult = await this.uploadToRegistry(packageInfo, _metadata, publishOptions);
       
       console.log(`✅ Plugin '${metadata.name}@${metadata.version}' published successfully!`);
       
@@ -175,7 +175,7 @@ export class PluginPublisher {
     }
 
     // Extract metadata using the extractor
-    const metadata = metadataExtractor.extractMetadata(pluginModule, pluginType);
+    const _metadata = metadataExtractor.extractMetadata(pluginModule, pluginType);
     
     // Merge with package.json data
     const mergedMetadata = {
@@ -211,15 +211,15 @@ export class PluginPublisher {
    * Package plugin for distribution
    * @param {string} pluginPath - Plugin directory path
    * @param {object} metadata - Plugin metadata
-   * @param {object} options - Packaging options
+   * @param {object} _options - Packaging _options
    * @returns {Promise<object>} Package information
    */
-  async packagePlugin(pluginPath, metadata, options = {}) {
+  async packagePlugin(pluginPath, _metadata, options = {}) {
     const packageName = `${metadata.name}-${metadata.version}.tgz`;
-    const packagePath = path.join(options.outputDir || pluginPath, packageName);
+    const packagePath = path.join(_options.outputDir || pluginPath, packageName);
     
     // Create package archive (simplified - in real implementation would use tar)
-    const packageFiles = await this.collectPackageFiles(pluginPath, options);
+    const packageFiles = await this.collectPackageFiles(pluginPath, _options);
     
     // Calculate package size and integrity hash
     const packageSize = await this.calculatePackageSize(packageFiles);
@@ -237,12 +237,12 @@ export class PluginPublisher {
   /**
    * Collect files to include in package
    * @param {string} pluginPath - Plugin directory path
-   * @param {object} options - Collection options
+   * @param {object} _options - Collection _options
    * @returns {Promise<Array<object>>} Package files
    */
   async collectPackageFiles(pluginPath, options = {}) {
     const files = [];
-    const excludePatterns = options.exclude || [
+    const excludePatterns = _options.exclude || [
       'node_modules',
       '.git',
       '.DS_Store',
@@ -323,21 +323,21 @@ export class PluginPublisher {
    * Upload package to registry
    * @param {object} packageInfo - Package information
    * @param {object} metadata - Plugin metadata
-   * @param {object} options - Upload options
+   * @param {object} _options - Upload _options
    * @returns {Promise<object>} Upload result
    */
-  async uploadToRegistry(packageInfo, metadata, options = {}) {
+  async uploadToRegistry(packageInfo, _metadata, options = {}) {
     // In a real implementation, this would make HTTP requests to the registry API
     // For now, we'll simulate the upload process
     
-    const uploadUrl = `${this.options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
+    const uploadUrl = `${this._options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
     
     // Simulate upload delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
       uploadUrl,
-      downloadUrl: `${this.options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
+      downloadUrl: `${this._options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
       publishedAt: new Date().toISOString(),
       integrity: packageInfo.integrity,
       size: packageInfo.size
@@ -351,7 +351,7 @@ export class PluginPublisher {
    * @param {object} publishResult - Publishing result
    * @returns {Promise<void>}
    */
-  async updateLocalRegistry(registryPath, metadata, publishResult) {
+  async updateLocalRegistry(registryPath, _metadata, publishResult) {
     let registry;
     
     try {
@@ -407,10 +407,10 @@ export class PluginPublisher {
 /**
  * Plugin publishing utilities
  */
-export const PublishingUtils = {
+const PublishingUtils = {
   /**
    * Generate GitHub Action workflow for automated publishing
-   * @param {object} options - Workflow options
+   * @param {object} _options - Workflow _options
    * @returns {string} GitHub Action YAML
    */
   generateGitHubAction(options = {}) {
@@ -461,7 +461,7 @@ jobs:
    * @param {object} metadata - Plugin metadata
    * @returns {Array<string>} Checklist items
    */
-  generatePublishingChecklist(metadata) {
+  generatePublishingChecklist(_metadata) {
     return [
       '📋 Plugin metadata is complete and valid',
       '🧪 All tests are passing',
@@ -496,4 +496,15 @@ jobs:
 };
 
 // Export default publisher instance
-export const pluginPublisher = new PluginPublisher();
+const pluginPublisher = new PluginPublisher();
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  PluginPublisher,
+  PublishingUtils,
+  pluginPublisher
+};

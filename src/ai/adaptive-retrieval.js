@@ -792,3 +792,6 @@ module.exports = {
   RankingOptimizer,
   QueryProcessor
 };
+
+
+// Ensure module.exports is properly defined

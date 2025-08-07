@@ -1,0 +1,38 @@
+{
+  "id": "pipeline_1754512012083",
+  "name": "Test Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "loader_1754512012083",
+      "type": "loader",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "config": {
+        "source": {
+          "type": "string",
+          "required": true
+        },
+        "format": {
+          "type": "select",
+          "options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "documents"
+      ]
+    }
+  ],
+  "connections": [],
+  "config": {},
+  "created": "2025-08-06T20:26:52.083Z",
+  "modified": "2025-08-06T20:26:52.083Z"
+}

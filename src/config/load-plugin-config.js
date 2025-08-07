@@ -4,12 +4,12 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
-import registry from '../core/plugin-registry.js';
-import { validatePluginSchema } from './validate-schema.js';
-import { logger } from '../utils/logger.js';
+const fs = require('fs');
+const path = require('path');
+const { pathToFileURL  } = require('url');
+const registry = require('../core/plugin-registry.js');
+const { validatePluginSchema  } = require('./validate-schema.js');
+const { logger  } = require('../utils/logger.js');
 
 /**
  * Loads plugins from validated config path and registers them.
@@ -54,3 +54,7 @@ export async function loadPluginsFromJson(configPath) {
     }
   }
 }
+
+
+// Default export
+module.exports = {};

@@ -3,11 +3,11 @@
  * Tests embedding and processing of large document batches with detailed metrics
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
-import { TestDataGenerator, PerformanceBenchmark } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
+const { performance  } = require('perf_hooks');
+const { TestDataGenerator, PerformanceBenchmark  } = require('../utils/test-helpers.js');
 
 describe('Large Document Batch Performance Tests', () => {
   let performanceMetrics = [];

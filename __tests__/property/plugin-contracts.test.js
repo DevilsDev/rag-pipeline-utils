@@ -3,8 +3,8 @@
  * Automated fuzz testing and contract validation using property-based testing principles
  */
 
-import { jest } from '@jest/globals';
-import { ValidationHelper, TestDataGenerator, ErrorSimulator } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const { ValidationHelper, TestDataGenerator, ErrorSimulator  } = require('../utils/test-helpers.js');
 
 describe('Property-Based Plugin Contract Testing', () => {
   

@@ -745,3 +745,6 @@ module.exports = {
   MultiModalContentAnalyzer,
   MultiModalSearchEngine
 };
+
+
+// Ensure module.exports is properly defined

@@ -3,11 +3,11 @@
  * Tests comprehensive CLI functionality, flags, and command integration
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs/promises';
-import { EnhancedCLI, runEnhancedCLI } from '../../../src/cli/enhanced-cli-commands.js';
-import { runInteractiveWizard } from '../../../src/cli/interactive-wizard.js';
-import { runPipelineDoctor } from '../../../src/cli/doctor-command.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs/promises');
+const { EnhancedCLI, runEnhancedCLI  } = require('../../../src/cli/enhanced-cli-commands.js');
+const { runInteractiveWizard  } = require('../../../src/cli/interactive-wizard.js');
+const { runPipelineDoctor  } = require('../../../src/cli/doctor-command.js');
 
 // Mock dependencies
 jest.mock('fs/promises');

@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-import { logger } from './logger.js';
+const { logger  } = require('./logger.js');
 
 /**
  * Retry wrapper for async functions with exponential backoff
@@ -18,7 +18,7 @@ import { logger } from './logger.js';
  * @returns {Promise<*>} - The resolved result of the function
  * @throws {Error} - The final error if all retries fail
  */
-export async function withRetry(fn, { retries = 3, initialDelay = 300, label = 'operation' } = {}) {
+async function withRetry(fn, { retries = 3, initialDelay = 300, label = 'operation' } = {}) {
   let attempt = 0;
   let delay = initialDelay;
 
@@ -40,3 +40,8 @@ export async function withRetry(fn, { retries = 3, initialDelay = 300, label = '
   }
 }
 
+
+
+module.exports = {
+  withRetry
+};

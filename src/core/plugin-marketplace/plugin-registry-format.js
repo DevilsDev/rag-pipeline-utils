@@ -6,7 +6,7 @@
 /**
  * Plugin metadata schema - required for all plugins
  */
-export const PLUGIN_METADATA_SCHEMA = {
+const PLUGIN_METADATA_SCHEMA = {
   type: 'object',
   required: ['name', 'version', 'type', 'description', 'author'],
   properties: {
@@ -118,7 +118,7 @@ export const PLUGIN_METADATA_SCHEMA = {
 /**
  * Plugin registry entry schema
  */
-export const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
+const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
   type: 'object',
   required: ['metadata', 'versions', 'latest'],
   properties: {
@@ -188,7 +188,7 @@ export const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
 /**
  * Complete plugin registry schema (plugins.json)
  */
-export const PLUGIN_REGISTRY_SCHEMA = {
+const PLUGIN_REGISTRY_SCHEMA = {
   type: 'object',
   required: ['version', 'plugins', 'updatedAt'],
   properties: {
@@ -232,7 +232,7 @@ export const PLUGIN_REGISTRY_SCHEMA = {
 /**
  * Default plugin registry URLs
  */
-export const DEFAULT_REGISTRY_URLS = [
+const DEFAULT_REGISTRY_URLS = [
   'https://registry.rag-pipeline.dev/plugins.json',
   'https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-registry@main/plugins.json'
 ];
@@ -240,19 +240,19 @@ export const DEFAULT_REGISTRY_URLS = [
 /**
  * Local plugin registry file name
  */
-export const LOCAL_REGISTRY_FILE = '.rag-plugins-registry.json';
+const LOCAL_REGISTRY_FILE = '.rag-plugins-registry.json';
 
 /**
  * Plugin cache directory name
  */
-export const PLUGIN_CACHE_DIR = '.rag-plugins-cache';
+const PLUGIN_CACHE_DIR = '.rag-plugins-cache';
 
 /**
  * Validate plugin metadata
  * @param {object} metadata - Plugin metadata to validate
  * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validatePluginMetadata(metadata) {
+function validatePluginMetadata(metadata) {
   const Ajv = require('ajv');
   const addFormats = require('ajv-formats');
   
@@ -270,7 +270,7 @@ export function validatePluginMetadata(metadata) {
  * @param {object} entry - Registry entry to validate
  * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validateRegistryEntry(entry) {
+function validateRegistryEntry(entry) {
   const Ajv = require('ajv');
   const addFormats = require('ajv-formats');
   
@@ -288,7 +288,7 @@ export function validateRegistryEntry(entry) {
  * @param {object} registry - Registry to validate
  * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validatePluginRegistry(registry) {
+function validatePluginRegistry(registry) {
   const Ajv = require('ajv');
   const addFormats = require('ajv-formats');
   
@@ -305,7 +305,7 @@ export function validatePluginRegistry(registry) {
  * Create empty plugin registry structure
  * @returns {object} Empty registry
  */
-export function createEmptyRegistry() {
+function createEmptyRegistry() {
   return {
     version: '1.0.0',
     plugins: {},
@@ -323,7 +323,7 @@ export function createEmptyRegistry() {
 /**
  * Plugin naming conventions and validation
  */
-export const PLUGIN_NAMING = {
+const PLUGIN_NAMING = {
   // Official plugins use @rag-pipeline scope
   OFFICIAL_SCOPE: '@rag-pipeline',
   
@@ -369,4 +369,23 @@ export const PLUGIN_NAMING = {
     
     return { valid: true };
   }
+};
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  validatePluginMetadata,
+  validateRegistryEntry,
+  validatePluginRegistry,
+  createEmptyRegistry,
+  PLUGIN_METADATA_SCHEMA,
+  PLUGIN_REGISTRY_ENTRY_SCHEMA,
+  PLUGIN_REGISTRY_SCHEMA,
+  DEFAULT_REGISTRY_URLS,
+  LOCAL_REGISTRY_FILE,
+  PLUGIN_CACHE_DIR,
+  PLUGIN_NAMING
 };

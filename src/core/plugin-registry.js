@@ -5,9 +5,9 @@
  * Author: Ali Kahwaji
  */
 
-import { pluginContracts } from './plugin-contracts.js';
+const { pluginContracts  } = require('./plugin-contracts.js');
 
-export class PluginRegistry {
+class PluginRegistry {
   #registry = {
     loader: new Map(),
     embedder: new Map(),
@@ -91,4 +91,9 @@ export class PluginRegistry {
 
 const registry = new PluginRegistry();
 
-export default registry;
+;
+
+
+module.exports = {
+  PluginRegistry
+};

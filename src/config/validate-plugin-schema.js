@@ -4,7 +4,7 @@
  * Author: Ali Kahwaji
  */
 
-export function validatePluginSchema(config) {
+function validatePluginSchema(config) {
     const validTypes = ['loader', 'embedder', 'retriever', 'llm'];
     const errors = [];
   
@@ -26,3 +26,11 @@ export function validatePluginSchema(config) {
     };
   }
   
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  validatePluginSchema
+};

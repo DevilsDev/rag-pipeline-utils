@@ -3,10 +3,10 @@
  * Tests for GitHub Actions security, immutable releases, and contract validation
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
 
 describe('CI/CD Pipeline Hardening Tests', () => {
   let ciResults = [];

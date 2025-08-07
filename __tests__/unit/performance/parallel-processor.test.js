@@ -3,7 +3,7 @@
  * Tests parallel embedding and retrieval with concurrency control
  */
 
-import { ParallelEmbedder, ParallelRetriever, Semaphore } from '../../../src/core/performance/parallel-processor.js';
+const { ParallelEmbedder, ParallelRetriever, Semaphore  } = require('../../../src/core/performance/parallel-processor.js');
 
 describe('Semaphore', () => {
   it('should allow concurrent operations up to limit', async () => {

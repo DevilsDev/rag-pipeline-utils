@@ -5,15 +5,15 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { JSDOM } from 'jsdom';
+const fs = require('fs/promises');
+const path = require('path');
+const { JSDOM  } = require('jsdom');
 
 /**
  * HTMLLoader reads HTML files and extracts visible text.
  * Implements the Loader interface.
  */
-export class HTMLLoader {
+class HTMLLoader {
   /**
    * Load and extract text from an HTML file
    * @param {string} filePath - Path to .html file
@@ -55,3 +55,12 @@ export class HTMLLoader {
     return chunks;
   }
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  HTMLLoader
+};

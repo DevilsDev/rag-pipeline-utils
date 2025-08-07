@@ -3,8 +3,8 @@
  * Extends the original schema to support plugin versions and marketplace features
  */
 
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+const Ajv = require('ajv');
+const addFormats = require('ajv-formats');
 
 /**
  * Plugin specification schema - supports both simple and versioned formats
@@ -117,7 +117,7 @@ const registryConfigSchema = {
 /**
  * Enhanced .ragrc.json schema with versioning support
  */
-export const enhancedRagrcSchema = {
+const enhancedRagrcSchema = {
   type: 'object',
   required: ['plugins'],
   properties: {
@@ -282,7 +282,7 @@ export const enhancedRagrcSchema = {
 /**
  * Backward compatibility schema (original format)
  */
-export const legacyRagrcSchema = {
+const legacyRagrcSchema = {
   type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
   properties: {
@@ -329,7 +329,7 @@ export const legacyRagrcSchema = {
  * @param {object} config - Configuration to validate
  * @returns {{ valid: boolean, errors?: any[], legacy?: boolean }}
  */
-export function validateEnhancedRagrcSchema(config) {
+function validateEnhancedRagrcSchema(config) {
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
 
@@ -362,7 +362,7 @@ export function validateEnhancedRagrcSchema(config) {
  * @param {object} legacyConfig - Legacy configuration
  * @returns {object} Enhanced configuration
  */
-export function convertLegacyConfig(legacyConfig) {
+function convertLegacyConfig(legacyConfig) {
   const enhanced = {
     plugins: {
       loader: {},
@@ -404,7 +404,7 @@ export function convertLegacyConfig(legacyConfig) {
  * @param {string|object} spec - Plugin specification
  * @returns {object} Normalized specification
  */
-export function normalizePluginSpec(spec) {
+function normalizePluginSpec(spec) {
   if (typeof spec === 'string') {
     return {
       name: spec,
@@ -431,7 +431,7 @@ export function normalizePluginSpec(spec) {
  * @param {object} config - Enhanced configuration
  * @returns {Array<{type: string, name: string, spec: object}>}
  */
-export function extractPluginDependencies(config) {
+function extractPluginDependencies(config) {
   const dependencies = [];
 
   if (!config.plugins) {
@@ -457,7 +457,7 @@ export function extractPluginDependencies(config) {
  * @param {object} config - Configuration to validate
  * @returns {{ valid: boolean, issues: Array<string> }}
  */
-export function validateConfigConsistency(config) {
+function validateConfigConsistency(config) {
   const issues = [];
 
   // Check for required plugin types
@@ -495,3 +495,18 @@ export function validateConfigConsistency(config) {
     issues
   };
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  validateEnhancedRagrcSchema,
+  convertLegacyConfig,
+  normalizePluginSpec,
+  extractPluginDependencies,
+  validateConfigConsistency,
+  enhancedRagrcSchema,
+  legacyRagrcSchema
+};

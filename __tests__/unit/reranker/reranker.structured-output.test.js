@@ -4,7 +4,7 @@
  * Description: Validates structured LLM output parsing
  * Author: @devilsdev
  */
-import { LLMReranker } from '../../../src/reranker/llm-reranker.js';
+const { LLMReranker  } = require('../../../src/reranker/llm-reranker.js');
 
 test('parses structured LLM JSON result', async () => {
     const mockLLM = { async generate() {

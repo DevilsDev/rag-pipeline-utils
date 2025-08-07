@@ -4,10 +4,10 @@
  * Author: Ali Kahwaji
  */
 
-import { loadRagConfig } from '../../../src/config/load-config.js';
-import { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync } from 'fs';
-import { join, resolve } from 'path';
-import { fileURLToPath } from 'url';
+const { loadRagConfig  } = require('../../../src/config/load-config.js');
+const { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync  } = require('fs');
+const { join, resolve  } = require('path');
+const { fileURLToPath  } = require('url');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = resolve(__filename, '..');

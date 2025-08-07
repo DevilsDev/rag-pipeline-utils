@@ -5,15 +5,15 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { marked } from 'marked';
+const fs = require('fs/promises');
+const path = require('path');
+const { marked  } = require('marked');
 
 /**
  * MarkdownLoader reads and parses .md files into plain text chunks.
  * Implements the Loader interface.
  */
-export class MarkdownLoader {
+class MarkdownLoader {
   /**
    * Load and parse Markdown file
    * @param {string} filePath - Path to .md file
@@ -56,3 +56,12 @@ export class MarkdownLoader {
   }
 }
 
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  MarkdownLoader
+};

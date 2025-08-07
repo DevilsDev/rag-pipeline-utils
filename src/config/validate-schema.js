@@ -5,7 +5,7 @@
  * File: /src/config/validate-schema.js
  */
 
-import Ajv from 'ajv';
+const Ajv = require('ajv');
 
 /**
  * Full .ragrc.json schema (used in load-config.js)
@@ -87,7 +87,7 @@ const pluginSchema = {
  * @param {object} config
  * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validateRagrcSchema(config) {
+function validateRagrcSchema(config) {
   const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(ragrcSchema);
   const valid = validate(config);
@@ -99,9 +99,15 @@ export function validateRagrcSchema(config) {
  * @param {object} config
  * @returns {{ valid: boolean, errors?: any[] }}
  */
-export function validatePluginSchema(config) {
+function validatePluginSchema(config) {
   const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(pluginSchema);
   const valid = validate(config);
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
+
+
+module.exports = {
+  validateRagrcSchema,
+  validatePluginSchema
+};

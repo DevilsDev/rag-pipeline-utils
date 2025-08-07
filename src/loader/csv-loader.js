@@ -5,11 +5,11 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { parse } from 'csv-parse/sync';
+const fs = require('fs/promises');
+const path = require('path');
+const { parse  } = require('csv-parse/sync');
 
-export class CSVLoader {
+class CSVLoader {
   /**
    * Load and parse a CSV file into chunks
    * @param {string} filePath
@@ -28,3 +28,12 @@ export class CSVLoader {
   }
 }
 
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  CSVLoader
+};

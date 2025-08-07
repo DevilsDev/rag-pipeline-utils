@@ -5,9 +5,9 @@
  * Author: Ali Kahwaji
  */
 
-import { createRagPipeline } from './core/create-pipeline.js';
-import { loadPluginsFromJson } from './config/load-plugin-config.js';
-import { logger } from './utils/logger.js';
+const { createRagPipeline  } = require('./core/create-pipeline.js');
+const { loadPluginsFromJson  } = require('./config/load-plugin-config.js');
+const { logger  } = require('./utils/logger.js');
 
 /**
  * Query the RAG pipeline with a standard response
@@ -98,3 +98,6 @@ export async function* queryPipelineStream(prompt, config) {
     throw error;
   }
 }
+
+// Default export
+module.exports = {};

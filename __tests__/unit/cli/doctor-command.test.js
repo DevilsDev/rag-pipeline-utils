@@ -3,10 +3,10 @@
  * Tests pipeline diagnostics, issue detection, and automatic fixes
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs/promises';
-import path from 'path';
-import { runPipelineDoctor, PipelineDoctor } from '../../../src/cli/doctor-command.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs/promises');
+const path = require('path');
+const { runPipelineDoctor, PipelineDoctor  } = require('../../../src/cli/doctor-command.js');
 
 // Mock dependencies
 jest.mock('fs/promises');

@@ -5,7 +5,7 @@
  * Author: @devilsdev
  */
 
-import { LLMReranker } from '../../../src/reranker/llm-reranker.js';
+const { LLMReranker  } = require('../../../src/reranker/llm-reranker.js');
 
 describe('LLMReranker', () => {
   test('returns reranked documents based on mock LLM JSON output', async () => {

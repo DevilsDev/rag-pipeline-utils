@@ -3,9 +3,9 @@
  * Tests for secrets scanning, plugin path validation, and security compliance
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
 
 describe('Security Scanning and Validation Tests', () => {
   let securityResults = [];

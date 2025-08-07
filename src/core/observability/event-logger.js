@@ -3,12 +3,12 @@
  * Provides consistent metadata tracking across all plugin execution stages
  */
 
-import { logger } from '../../utils/logger.js';
+const { logger  } = require('../../utils/logger.js');
 
 /**
  * Event types for pipeline operations
  */
-export const EventTypes = {
+const EventTypes = {
   PLUGIN_START: 'plugin.start',
   PLUGIN_END: 'plugin.end',
   PLUGIN_ERROR: 'plugin.error',
@@ -27,7 +27,7 @@ export const EventTypes = {
 /**
  * Event severity levels
  */
-export const EventSeverity = {
+const EventSeverity = {
   DEBUG: 'debug',
   INFO: 'info',
   WARN: 'warn',
@@ -38,7 +38,7 @@ export const EventSeverity = {
 /**
  * Structured event logger for pipeline operations
  */
-export class PipelineEventLogger {
+class PipelineEventLogger {
   constructor(options = {}) {
     this.enabled = options.enabled !== false;
     this.includeStackTrace = options.includeStackTrace || false;
@@ -429,4 +429,12 @@ export class PipelineEventLogger {
 }
 
 // Global event logger instance
-export const eventLogger = new PipelineEventLogger();
+const eventLogger = new PipelineEventLogger();
+
+
+module.exports = {
+  PipelineEventLogger,
+  EventTypes,
+  EventSeverity,
+  eventLogger
+};

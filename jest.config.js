@@ -8,6 +8,10 @@
 // jest.config.js - CommonJS format for compatibility
 
 module.exports = {
+  fakeTimers: {
+    enableGlobally: true,
+    advanceTimers: true
+  },
   // Disable transforms that break CommonJS module.exports
   transform: {
     // Only transform static assets, not JS files

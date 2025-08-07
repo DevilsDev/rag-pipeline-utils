@@ -4,7 +4,7 @@
  * Author: Ali Kahwaji
  */
 
-export class OpenAIEmbedder {
+class OpenAIEmbedder {
   constructor(options = {}) {
     this.apiKey = options.apiKey || 'mock-api-key';
     this.model = options.model || 'text-embedding-ada-002';
@@ -76,4 +76,13 @@ export class OpenAIEmbedder {
 }
 
 // Export default instance for easy use
-export default new OpenAIEmbedder();
+ OpenAIEmbedder();
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  OpenAIEmbedder
+};

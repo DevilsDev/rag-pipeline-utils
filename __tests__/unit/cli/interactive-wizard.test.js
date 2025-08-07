@@ -3,10 +3,10 @@
  * Tests project setup, plugin selection, configuration, and validation
  */
 
-import { jest } from '@jest/globals';
-import inquirer from 'inquirer';
-import fs from 'fs/promises';
-import { runInteractiveWizard, InteractiveWizard } from '../../../src/cli/interactive-wizard.js';
+// Jest is available globally in CommonJS mode;
+const inquirer = require('inquirer');
+const fs = require('fs/promises');
+const { runInteractiveWizard, InteractiveWizard  } = require('../../../src/cli/interactive-wizard.js');
 
 // Mock dependencies
 jest.mock('inquirer');

@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-export default class PDFLoader {
+ PDFLoader {
   /**
    * Loads a mock PDF file and returns an array of chunked content.
    * @param {string} filePath - Path to the PDF file
@@ -15,3 +15,10 @@ export default class PDFLoader {
     return [{ chunk: () => [`Test loaded: ${filePath}`] }];
   }
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = class;

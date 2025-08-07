@@ -21,7 +21,7 @@ const testProcess = spawn('npm', [
 });
 
 let output = '';
-let errorOutput = '';
+let _errorOutput = '';
 
 testProcess.stdout.on('data', (data) => {
   const chunk = data.toString();
@@ -31,7 +31,7 @@ testProcess.stdout.on('data', (data) => {
 
 testProcess.stderr.on('data', (data) => {
   const chunk = data.toString();
-  errorOutput += chunk;
+  _errorOutput += chunk;
   process.stderr.write(chunk);
 });
 

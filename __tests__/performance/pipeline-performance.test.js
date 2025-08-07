@@ -3,12 +3,12 @@
  * Tests performance with large datasets, concurrent execution, and stress scenarios
  */
 
-import { jest } from '@jest/globals';
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import { PerformanceHelper, TestDataGenerator } from '../utils/test-helpers.js';
-import OpenAILLM from '../fixtures/src/mocks/openai-llm.js';
-import PineconeRetriever from '../fixtures/src/mocks/pinecone-retriever.js';
-import MockReranker from '../fixtures/src/mocks/reranker.js';
+// Jest is available globally in CommonJS mode;
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const { PerformanceHelper, TestDataGenerator  } = require('../utils/test-helpers.js');
+const OpenAILLM = require('../fixtures/src/mocks/openai-llm.js');
+const PineconeRetriever = require('../fixtures/src/mocks/pinecone-retriever.js');
+const MockReranker = require('../fixtures/src/mocks/reranker.js');
 
 // Increase timeout for performance tests
 jest.setTimeout(30000);

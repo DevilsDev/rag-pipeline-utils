@@ -5,7 +5,7 @@
  * File: src/reranker/llm-reranker.js
  */
 
-export class LLMReranker {
+class LLMReranker {
   /**
    * @param {Object} options
    * @param {{ generate(prompt: string): Promise<string> }} options.llm - An LLM client with a `generate` method
@@ -32,3 +32,8 @@ export class LLMReranker {
     }
   }
 }
+
+
+module.exports = {
+  LLMReranker
+};

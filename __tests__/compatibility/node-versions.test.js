@@ -3,9 +3,9 @@
  * Tests compatibility across different Node.js versions and environments
  */
 
-import { jest } from '@jest/globals';
-import { createRagPipeline } from '../../src/core/pipeline-factory.js';
-import { TestDataGenerator } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
+const { TestDataGenerator  } = require('../utils/test-helpers.js');
 
 describe('Node.js Version Compatibility', () => {
   const nodeVersion = process.version;

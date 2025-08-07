@@ -5,10 +5,10 @@
  * Author: Ali Kahwaji
  */
 
-import fg from 'fast-glob';
-import { MarkdownLoader } from './markdown-loader.js';
-import { HTMLLoader } from './html-loader.js';
-import { CSVLoader } from './csv-loader.js';
+const fg = require('fast-glob');
+const { MarkdownLoader  } = require('./markdown-loader.js');
+const { HTMLLoader  } = require('./html-loader.js');
+const { CSVLoader  } = require('./csv-loader.js');
 
 const loaders = {
   '.md': new MarkdownLoader(),
@@ -16,7 +16,7 @@ const loaders = {
   '.csv': new CSVLoader()
 };
 
-export class DirectoryLoader {
+class DirectoryLoader {
   /**
    * Load and route supported files from a directory
    * @param {string} dirPath
@@ -36,3 +36,11 @@ export class DirectoryLoader {
     return all;
   }
 }
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  DirectoryLoader
+};

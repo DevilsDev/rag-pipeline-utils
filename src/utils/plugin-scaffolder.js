@@ -5,20 +5,20 @@
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { pluginContracts } from '../core/plugin-contracts.js';
+const fs = require('fs');
+const path = require('path');
+const { fileURLToPath  } = require('url');
+const { pluginContracts  } = require('../core/plugin-contracts.js');
 
 const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
 const __dirname = path.dirname(__filename);
 
-export class PluginScaffolder {
-  constructor(options = {}) {
-    this.outputDir = options.outputDir || process.cwd();
-    this.author = options.author || 'Your Name';
-    this.namespace = options.namespace || 'your-namespace';
+class PluginScaffolder {
+  constructor(_options = {}) {
+    this.outputDir = _options.outputDir || process.cwd();
+    this.author = _options.author || 'Your Name';
+    this.namespace = _options.namespace || 'your-namespace';
   }
 
   /**
@@ -27,7 +27,7 @@ export class PluginScaffolder {
    * @param {string} pluginName - Name of the plugin
    * @param {object} options - Additional options
    */
-  async scaffoldPlugin(pluginType, pluginName, options = {}) {
+  async scaffoldPlugin(pluginType, pluginName, _options = {}) {
     if (!pluginContracts[pluginType]) {
       throw new Error(`Unknown plugin type: ${pluginType}. Available types: ${Object.keys(pluginContracts).join(', ')}`);
     }
@@ -40,12 +40,12 @@ export class PluginScaffolder {
     }
 
     // Generate all plugin files
-    await this.generatePluginFile(pluginDir, pluginType, pluginName, options);
+    await this.generatePluginFile(pluginDir, pluginType, pluginName, _options);
     await this.generateTestFile(pluginDir, pluginType, pluginName);
     await this.generateMockFile(pluginDir, pluginType, pluginName);
     await this.generateConfigExample(pluginDir, pluginType, pluginName);
-    await this.generateReadme(pluginDir, pluginType, pluginName, options);
-    await this.generatePackageJson(pluginDir, pluginType, pluginName, options);
+    await this.generateReadme(pluginDir, pluginType, pluginName, _options);
+    await this.generatePackageJson(pluginDir, pluginType, pluginName, _options);
 
     console.log(`✅ Plugin scaffolded successfully at: ${pluginDir}`);
     console.log('📁 Generated files:');
@@ -60,7 +60,7 @@ export class PluginScaffolder {
   /**
    * Generate the main plugin implementation file
    */
-  async generatePluginFile(pluginDir, pluginType, pluginName, options) {
+  async generatePluginFile(pluginDir, pluginType, pluginName, _options) {
     const contract = pluginContracts[pluginType];
     const className = this.toPascalCase(`${pluginName}_${pluginType}`);
     const srcDir = path.join(pluginDir, 'src');
@@ -86,13 +86,13 @@ export class PluginScaffolder {
  */
 
 export class ${className} {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     // Initialize your plugin with configuration options
     this.options = options;
     
     // Add your initialization logic here
     // Example: this.apiKey = options.apiKey;
-    // Example: this.endpoint = options.endpoint || 'https://api.example.com';
+    // Example: this.endpoint = _options.endpoint || 'https://api.example.com';
   }
 
 ${methods}${optionalMethods ? '\n\n  // Optional methods\n' + optionalMethods : ''}
@@ -115,8 +115,8 @@ export default ${className};
     const returnType = signature?.returnType || 'Promise<any>';
     const description = signature?.description || `${isOptional ? 'Optional: ' : ''}Implement ${methodName} functionality`;
 
-    const paramList = params.map((param, i) => `${param}`).join(', ');
-    const paramDocs = params.map((param, i) => `   * @param {${paramTypes[i]}} ${param}`).join('\n');
+    const paramList = params.map((param, _i) => `${param}`).join(', ');
+    const paramDocs = params.map((param, _i) => `   * @param {${paramTypes[_i]}} ${param}`).join('\n');
 
     return `  /**
    * ${description}
@@ -167,20 +167,20 @@ describe('${className}', () => {
 
   beforeEach(() => {
     plugin = new ${className}({
-      // Add test configuration options here
+      // Add test configuration _options here
     });
   });
 
   describe('constructor', () => {
-    it('should create instance with default options', () => {
+    it('should create instance with default _options', () => {
       const instance = new ${className}();
       expect(instance).toBeInstanceOf(${className});
     });
 
-    it('should accept configuration options', () => {
-      const options = { testOption: 'value' };
-      const instance = new ${className}(options);
-      expect(instance.options).toEqual(options);
+    it('should accept configuration _options', () => {
+      const _options = { testOption: 'value' };
+      const instance = new ${className}(_options);
+      expect(instance._options).toEqual(_options);
     });
   });
 
@@ -225,9 +225,9 @@ ${testCases}
  * Use this for testing and development
  */
 
-export class Mock${className} {
-  constructor(options = {}) {
-    this.options = options;
+class Mock${className} {
+  constructor(_options = {}) {
+    this.options = _options;
     this.mockMode = true;
   }
 
@@ -235,7 +235,7 @@ ${mockMethods}
 }
 
 // Export default instance for easy use
-export default new Mock${className}();
+ Mock${className}();
 `;
 
     const filePath = path.join(mockDir, `${pluginName}-${pluginType}-mock.js`);
@@ -262,7 +262,7 @@ export default new Mock${className}();
   /**
    * Generate README documentation
    */
-  async generateReadme(pluginDir, pluginType, pluginName, options) {
+  async generateReadme(pluginDir, pluginType, pluginName, _options) {
     const className = this.toPascalCase(`${pluginName}_${pluginType}`);
     const contract = pluginContracts[pluginType];
 
@@ -273,7 +273,7 @@ export default new Mock${className}();
 ${signature?.description || `Implements ${method} functionality`}
 
 **Parameters:**
-${signature?.params?.map((param, i) => `- \`${param}\` (${signature.paramTypes?.[i] || 'any'})`).join('\n') || '- TBD'}
+${signature?.params?.map((param, _i) => `- \`${param}\` (${signature.paramTypes?.[_i] || 'any'})`).join('\n') || '- TBD'}
 
 **Returns:** \`${signature?.returnType || 'Promise<any>'}\``;
     }).join('\n\n');
@@ -284,7 +284,7 @@ A ${pluginType} plugin for RAG Pipeline Utils.
 
 ## Description
 
-${options.description || `This plugin provides ${pluginType} functionality for RAG (Retrieval-Augmented Generation) pipelines.`}
+${_options.description || `This plugin provides ${pluginType} functionality for RAG (Retrieval-Augmented Generation) pipelines.`}
 
 ## Installation
 
@@ -300,7 +300,7 @@ npm install ${this.namespace}/${pluginName}-${pluginType}
 import { ${className} } from '${this.namespace}/${pluginName}-${pluginType}';
 
 const plugin = new ${className}({
-  // Configuration options
+  // Configuration _options
 });
 
 // Use the plugin methods
@@ -365,13 +365,13 @@ ${this.author}
   /**
    * Generate package.json
    */
-  async generatePackageJson(pluginDir, pluginType, pluginName, options) {
+  async generatePackageJson(pluginDir, pluginType, pluginName, _options) {
     const packageName = `${this.namespace}/${pluginName}-${pluginType}`;
     
     const packageJson = {
       name: packageName,
       version: '1.0.0',
-      description: options.description || `A ${pluginType} plugin for RAG Pipeline Utils`,
+      description: _options.description || `A ${pluginType} plugin for RAG Pipeline Utils`,
       main: `src/${pluginName}-${pluginType}.js`,
       type: 'module',
       scripts: {
@@ -421,4 +421,14 @@ ${this.author}
   }
 }
 
-export default PluginScaffolder;
+;
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  PluginScaffolder,
+  Mock
+};

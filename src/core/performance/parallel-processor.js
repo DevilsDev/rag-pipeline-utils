@@ -37,7 +37,7 @@ class Semaphore {
 /**
  * Parallel processor for embedding operations with configurable concurrency
  */
-export class ParallelEmbedder {
+class ParallelEmbedder {
   constructor(embedder, options = {}) {
     this.embedder = embedder;
     this.batchSize = options.batchSize || 10;
@@ -170,7 +170,7 @@ export class ParallelEmbedder {
 /**
  * Parallel processor for retrieval operations
  */
-export class ParallelRetriever {
+class ParallelRetriever {
   constructor(retriever, options = {}) {
     this.retriever = retriever;
     this.maxConcurrency = options.maxConcurrency || 2;
@@ -213,4 +213,8 @@ export class ParallelRetriever {
   }
 }
 
-export { Semaphore };
+module.exports = {
+  ParallelEmbedder,
+  ParallelRetriever,
+  Semaphore
+};

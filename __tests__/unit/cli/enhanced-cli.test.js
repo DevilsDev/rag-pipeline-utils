@@ -3,10 +3,10 @@
  * Tests streaming, observability, error handling, and validation
  */
 
-import { jest } from '@jest/globals';
-import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
+// Jest is available globally in CommonJS mode;
+const { execSync  } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 // Mock child_process for CLI testing
 jest.mock('child_process');

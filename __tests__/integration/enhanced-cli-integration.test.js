@@ -3,11 +3,11 @@
  * Tests end-to-end functionality of interactive wizard, doctor command, and enhanced CLI
  */
 
-import { jest } from '@jest/globals';
-import { spawn } from 'child_process';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const { jest } = require('@jest/globals');
+const { spawn } = require('child_process');
+const fs = require('fs/promises');
+const path = require('path');
+const { fileURLToPath } = require('url');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -455,3 +455,6 @@ module.exports = {
   MultiModalProcessor,
   FederatedLearningCoordinator
 };
+
+
+// Ensure module.exports is properly defined

@@ -3,9 +3,9 @@
  * Orchestrates all Phase 3 security and CI hardening tests
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
 
 describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
   let suiteResults = {

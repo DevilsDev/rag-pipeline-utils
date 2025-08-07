@@ -3,14 +3,14 @@
  * Integrates event logging, tracing, and metrics collection
  */
 
-import { eventLogger, EventTypes, EventSeverity } from './event-logger.js';
-import { pipelineTracer } from './tracing.js';
-import { pipelineMetrics } from './metrics.js';
+const { eventLogger, EventTypes, EventSeverity  } = require('./event-logger.js');
+const { pipelineTracer  } = require('./tracing.js');
+const { pipelineMetrics  } = require('./metrics.js');
 
 /**
  * Instrumented pipeline wrapper that adds observability to any pipeline
  */
-export class InstrumentedPipeline {
+class InstrumentedPipeline {
   constructor(pipeline, options = {}) {
     this.pipeline = pipeline;
     this.options = {
@@ -488,6 +488,16 @@ export class InstrumentedPipeline {
  * @param {object} options - Observability options
  * @returns {InstrumentedPipeline} Instrumented pipeline
  */
-export function createInstrumentedPipeline(pipeline, options = {}) {
+function createInstrumentedPipeline(pipeline, options = {}) {
   return new InstrumentedPipeline(pipeline, options);
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  InstrumentedPipeline,
+  createInstrumentedPipeline
+};

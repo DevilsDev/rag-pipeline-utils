@@ -4,7 +4,7 @@
  * Author: Ali Kahwaji
  */
 
-export const pluginContracts = {
+const pluginContracts = {
   loader: {
     requiredMethods: ['load'],
     methodSignatures: {
@@ -79,4 +79,12 @@ export const pluginContracts = {
       }
     }
   }
+};
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  pluginContracts
 };

@@ -87,7 +87,7 @@ class PerformanceTimer {
 /**
  * Pipeline benchmark runner
  */
-export class PipelineBenchmark {
+class PipelineBenchmark {
   constructor(pipeline, options = {}) {
     this.pipeline = pipeline;
     this.timer = new PerformanceTimer();
@@ -461,4 +461,7 @@ export class PipelineBenchmark {
   }
 }
 
-export { PerformanceTimer };
+module.exports = {
+  PipelineBenchmark,
+  PerformanceTimer
+};

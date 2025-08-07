@@ -3,17 +3,17 @@
  * Scans for common issues and provides actionable solutions
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency } from '../config/enhanced-ragrc-schema.js';
-import { createVersionResolver } from '../core/plugin-marketplace/version-resolver.js';
-import { DEFAULT_REGISTRY_URLS } from '../core/plugin-marketplace/plugin-registry-format.js';
-// import { logger } from '../utils/logger.js'; // Reserved for future logging
+const fs = require('fs/promises');
+const path = require('path');
+const { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency  } = require('../config/enhanced-ragrc-schema.js');
+const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js');
+const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js');
+// const { logger  } = require('../utils/logger.js'); // Reserved for future logging
 
 /**
  * Diagnostic categories
  */
-export const DIAGNOSTIC_CATEGORIES = {
+const DIAGNOSTIC_CATEGORIES = {
   CONFIGURATION: 'configuration',
   PLUGINS: 'plugins',
   DEPENDENCIES: 'dependencies',
@@ -25,7 +25,7 @@ export const DIAGNOSTIC_CATEGORIES = {
 /**
  * Issue severity levels
  */
-export const SEVERITY_LEVELS = {
+const SEVERITY_LEVELS = {
   ERROR: 'error',
   WARNING: 'warning',
   INFO: 'info',
@@ -35,7 +35,7 @@ export const SEVERITY_LEVELS = {
 /**
  * Doctor command for pipeline diagnostics
  */
-export class PipelineDoctor {
+class PipelineDoctor {
   constructor(options = {}) {
     this.options = {
       configPath: options.configPath || '.ragrc.json',
@@ -284,7 +284,7 @@ export class PipelineDoctor {
    * @param {object} dependency - Plugin dependency
    */
   async checkPlugin(dependency) {
-    const { type, name, spec } = dependency;
+    const { type: _type, name, spec } = dependency;
 
     // Check plugin source
     if (spec.source === 'local') {
@@ -604,7 +604,7 @@ export class PipelineDoctor {
 
     // Check disk space
     try {
-      const stats = await fs.stat('.');
+      const _stats = await fs.stat('.');
       // In a real implementation, would check available disk space
       this.addIssue(DIAGNOSTIC_CATEGORIES.ENVIRONMENT, SEVERITY_LEVELS.SUCCESS,
         'Disk space check passed');
@@ -696,7 +696,7 @@ export class PipelineDoctor {
    * Fix schema errors
    * @param {Array} errors - Schema errors
    */
-  async fixSchemaErrors(errors) {
+  async fixSchemaErrors(_errors) {
     // Implementation would fix common schema errors
     console.log('Fixing schema errors...');
   }
@@ -802,3 +802,14 @@ export async function runPipelineDoctor(options = {}) {
   const doctor = new PipelineDoctor(options);
   return await doctor.diagnose();
 }
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  PipelineDoctor,
+  DIAGNOSTIC_CATEGORIES,
+  SEVERITY_LEVELS
+};

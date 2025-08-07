@@ -3,7 +3,7 @@
  * Tests reranking logic, scoring, filtering, and integration scenarios
  */
 
-import MockReranker from '../../fixtures/src/mocks/reranker.js';
+const MockReranker = require('../../fixtures/src/mocks/reranker.js');
 
 describe('Reranker Plugin', () => {
   let reranker;

@@ -3,11 +3,11 @@
  * Tests streaming performance under various load conditions with detailed latency metrics
  */
 
-import { jest } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
-import { TestDataGenerator, PerformanceBenchmark } from '../utils/test-helpers.js';
+// Jest is available globally in CommonJS mode;
+const fs = require('fs');
+const path = require('path');
+const { performance  } = require('perf_hooks');
+const { TestDataGenerator, PerformanceBenchmark  } = require('../utils/test-helpers.js');
 
 describe('Streaming Token Output Load Tests', () => {
   let streamingMetrics = [];

@@ -3,12 +3,12 @@
  * Handles semantic versioning, version ranges, and fallback logic
  */
 
-import semver from 'semver';
+const semver = require('semver');
 
 /**
  * Version resolution strategies
  */
-export const VERSION_STRATEGIES = {
+const VERSION_STRATEGIES = {
   EXACT: 'exact',           // Exact version match (1.0.0)
   RANGE: 'range',           // Version range (^1.0.0, ~1.0.0, >=1.0.0)
   LATEST: 'latest',         // Latest stable version
@@ -20,7 +20,7 @@ export const VERSION_STRATEGIES = {
 /**
  * Plugin version resolver
  */
-export class PluginVersionResolver {
+class PluginVersionResolver {
   constructor(registry = null) {
     this.registry = registry;
   }
@@ -374,14 +374,14 @@ export class PluginVersionResolver {
  * @param {object} registry - Plugin registry
  * @returns {PluginVersionResolver} Version resolver instance
  */
-export function createVersionResolver(registry = null) {
+function createVersionResolver(registry = null) {
   return new PluginVersionResolver(registry);
 }
 
 /**
  * Utility functions for version handling
  */
-export const VersionUtils = {
+const VersionUtils = {
   /**
    * Parse version string into components
    * @param {string} version - Version string
@@ -433,4 +433,16 @@ export const VersionUtils = {
     const parsed = semver.parse(version);
     return parsed && parsed.prerelease.length === 0;
   }
+};
+
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  PluginVersionResolver,
+  createVersionResolver,
+  VERSION_STRATEGIES,
+  VersionUtils
 };

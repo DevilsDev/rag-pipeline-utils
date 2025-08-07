@@ -3,8 +3,8 @@
  * Generates HTML reports, coverage metrics, and streaming performance visualizations
  */
 
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
 export class TestReporter {
   constructor(options = {}) {

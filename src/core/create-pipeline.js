@@ -5,12 +5,12 @@
  * Author: Ali Kahwaji
  */
 
-import registry from './plugin-registry.js'; 
-import { logger } from '../utils/logger.js';
-import { withRetry } from '../utils/retry.js';
-import { LLMReranker } from '../reranker/llm-reranker.js';
-import { ParallelEmbedder, ParallelRetriever } from './performance/parallel-processor.js';
-import { StreamingProcessor } from './performance/streaming-safeguards.js';
+const registry = require('./plugin-registry.js'); 
+const { logger  } = require('../utils/logger.js');
+const { withRetry  } = require('../utils/retry.js');
+const { LLMReranker  } = require('../reranker/llm-reranker.js');
+const { ParallelEmbedder, ParallelRetriever  } = require('./performance/parallel-processor.js');
+const { StreamingProcessor  } = require('./performance/streaming-safeguards.js');
 
 /**
  * Pipeline options to toggle middleware.
@@ -37,7 +37,7 @@ import { StreamingProcessor } from './performance/streaming-safeguards.js';
  * @param {PipelineOptions} [options]
  * @returns {object} RAG pipeline instance
  */
-export function createRagPipeline(
+function createRagPipeline(
   { loader, embedder, retriever, llm },
   { 
     useRetry = true, 
@@ -402,4 +402,14 @@ export function createRagPipeline(
   };
 }
 
-export { registry };
+;
+
+
+// Default export
+module.exports = module.exports || {};
+
+
+module.exports = {
+  createRagPipeline,
+  registry
+};

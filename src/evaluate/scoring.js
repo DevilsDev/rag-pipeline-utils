@@ -20,7 +20,7 @@ function tokenize(text) {
    * @param {string[]} reference - Reference tokens
    * @returns {number}
    */
-  export function computeBLEU(candidate, reference) {
+  function computeBLEU(candidate, reference) {
     const candCounts = candidate.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
     const refCounts = reference.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
   
@@ -37,7 +37,7 @@ function tokenize(text) {
    * @param {string[]} reference
    * @returns {number}
    */
-  export function computeROUGE(candidate, reference) {
+  function computeROUGE(candidate, reference) {
     const m = candidate.length;
     const n = reference.length;
     const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
@@ -62,7 +62,7 @@ function tokenize(text) {
    * @param {string} expected - Reference answer
    * @returns {{ bleu: number, rouge: number }}
    */
-  export function scoreAnswer(actual, expected) {
+  function scoreAnswer(actual, expected) {
     const candTokens = tokenize(actual);
     const refTokens = tokenize(expected);
     return {
@@ -72,3 +72,13 @@ function tokenize(text) {
   }
   
   
+
+// Default export
+module.exports = {};
+
+
+module.exports = {
+  computeBLEU,
+  computeROUGE,
+  scoreAnswer
+};
