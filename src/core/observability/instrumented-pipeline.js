@@ -494,7 +494,7 @@ function createInstrumentedPipeline(pipeline, options = {}) {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

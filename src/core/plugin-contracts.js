@@ -82,7 +82,7 @@ const pluginContracts = {
 };
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

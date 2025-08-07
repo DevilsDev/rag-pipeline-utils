@@ -346,7 +346,7 @@ class StreamingProcessor {
   }
 }
 
-;
+
 
 
 module.exports = {

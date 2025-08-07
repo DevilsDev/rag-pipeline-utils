@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
- PineconeRetriever {
+class PineconeRetriever {
     /**
      * Mocks vector storage (no-op).
      */
@@ -25,7 +25,7 @@
   }
 
 // Default export
-module.exports = {};
 
 
-module.exports = class;
+
+module.exports = PineconeRetriever;

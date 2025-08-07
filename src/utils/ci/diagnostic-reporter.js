@@ -37,7 +37,7 @@ function reportPluginValidationFailures(failures) {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

@@ -28,7 +28,7 @@ function validatePluginSchema(config) {
   
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

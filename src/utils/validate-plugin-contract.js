@@ -37,7 +37,7 @@ function validatePluginContract(type, instance, filePath) {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

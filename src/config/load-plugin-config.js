@@ -57,4 +57,4 @@ export async function loadPluginsFromJson(configPath) {
 
 
 // Default export
-module.exports = {};
+

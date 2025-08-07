@@ -373,7 +373,7 @@ const PLUGIN_NAMING = {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

@@ -91,7 +91,7 @@ class PluginRegistry {
 
 const registry = new PluginRegistry();
 
-;
+
 
 
 module.exports = {

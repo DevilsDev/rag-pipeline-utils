@@ -421,11 +421,11 @@ ${this.author}
   }
 }
 
-;
+
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

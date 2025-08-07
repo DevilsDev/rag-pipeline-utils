@@ -498,7 +498,7 @@ function validateConfigConsistency(config) {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

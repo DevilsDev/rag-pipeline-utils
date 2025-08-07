@@ -80,7 +80,7 @@ class OpenAIEmbedder {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

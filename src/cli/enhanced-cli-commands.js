@@ -827,7 +827,7 @@ export async function runEnhancedCLI(argv = process.argv) {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

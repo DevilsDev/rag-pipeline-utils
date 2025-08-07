@@ -500,7 +500,7 @@ const pluginPublisher = new PluginPublisher();
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

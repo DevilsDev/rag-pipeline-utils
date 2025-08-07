@@ -420,7 +420,7 @@ const metadataValidator = new PluginMetadataValidator();
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

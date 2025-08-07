@@ -17,4 +17,4 @@ export async function ingestDocument(filepath) {
   
 
 // Default export
-module.exports = {};
+

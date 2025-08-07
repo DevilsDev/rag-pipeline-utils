@@ -59,7 +59,7 @@ class MarkdownLoader {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

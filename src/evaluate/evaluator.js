@@ -45,4 +45,4 @@ function normalizeText(txt) {
 
 
 // Default export
-module.exports = {};
+

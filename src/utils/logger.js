@@ -24,7 +24,7 @@ const logger = pino({
   } : undefined
 });
 
-;
+
 
 
 

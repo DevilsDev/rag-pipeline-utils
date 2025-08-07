@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
- OpenAILLM {
+class OpenAILLM {
   constructor(options = {}) {
     this.streamDelay = options.streamDelay || 50; // ms between tokens
     this.model = options.model || 'gpt-3.5-turbo';
@@ -71,7 +71,7 @@
 }
 
 // Default export
-module.exports = {};
 
 
-module.exports = class;
+
+module.exports = OpenAILLM;

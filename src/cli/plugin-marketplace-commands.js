@@ -707,7 +707,7 @@ describe('${className}', () => {
 
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {

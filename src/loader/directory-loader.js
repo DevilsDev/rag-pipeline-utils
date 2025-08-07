@@ -38,7 +38,7 @@ class DirectoryLoader {
 }
 
 // Default export
-module.exports = {};
+
 
 
 module.exports = {
