@@ -1,15 +1,25 @@
-name: 🧪 Comprehensive Test Suite
+name: Comprehensive Testing
 
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/ISSUE_TEMPLATE/**'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/ISSUE_TEMPLATE/**'
+  schedule:
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
-      test_type:
-        description: 'Type of tests to run'
-        required: true
+      test_suite:
+        description: 'Test suite to run'
+        required: false
         default: 'all'
         type: choice
         options:
@@ -18,39 +28,40 @@ on:
           - integration
           - performance
           - security
-          - property-based
-      generate_reports:
-        description: 'Generate visual reports'
-        required: false
-        default: true
-        type: boolean
-      parallel_jobs:
-        description: 'Number of parallel test jobs'
-        required: false
-        default: '4'
-        type: string
+          - compatibility
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
   FORCE_COLOR: 1
   CI: true
 
 jobs:
   setup:
-    name: 🔧 Setup and Validation
+    name: Setup and Validation
     runs-on: ubuntu-latest
     outputs:
       test-matrix: ${{ steps.test-matrix.outputs.matrix }}
       cache-key: ${{ steps.cache-key.outputs.key }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Generate cache key
         id: cache-key
@@ -70,158 +81,205 @@ jobs:
 
       - name: Validate project structure
         run: |
-          echo "🔍 Validating project structure..."
+          echo "Validating project structure..."
           test -f package.json || exit 1
           test -d __tests__ || exit 1
           test -f __tests__/utils/test-helpers.js || exit 1
           test -f __tests__/utils/test-reporter.js || exit 1
-          echo "✅ Project structure validated"
+          echo "Project structure validated"
 
       - name: Generate test matrix
         id: test-matrix
         run: |
-          if [ "${{ github.event.inputs.test_type }}" = "all" ] || [ -z "${{ github.event.inputs.test_type }}" ]; then
-            matrix='["unit", "integration", "performance", "security", "property-based", "load", "e2e", "compatibility"]'
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ -z "${{ github.event.inputs.test_suite }}" ]; then
+            matrix='["unit", "integration", "performance", "security", "compatibility"]'
           else
-            matrix='["${{ github.event.inputs.test_type }}"]'
+            matrix='["${{ github.event.inputs.test_suite }}"]'
           fi
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   unit-tests:
-    name: 🧪 Unit Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: setup
     if: contains(fromJson(needs.setup.outputs.test-matrix), 'unit')
     strategy:
       matrix:
-        node-version: ['16', '18', '20']
-        test-group: ['plugins', 'streaming', 'cli', 'dag', 'scripts']
+        node-version: [18, 20, 22]
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests - ${{ matrix.test-group }}
+      - name: Run unit tests
         run: |
-          echo "🧪 Running unit tests for ${{ matrix.test-group }}..."
-          npm test -- --testPathPattern="__tests__/unit/${{ matrix.test-group }}" --coverage --coverageDirectory=coverage/${{ matrix.test-group }} --json --outputFile=test-results-${{ matrix.test-group }}-${{ matrix.node-version }}.json
-        env:
-          NODE_ENV: test
+          echo "Running unit tests..."
+          npm run test:unit
+          npm run test:unit:coverage
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        if: always()
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+        if: matrix.node-version == 20
         with:
-          name: unit-test-results-${{ matrix.test-group }}-${{ matrix.node-version }}
+          file: ./coverage/lcov.info
+          flags: unit-tests
+          name: unit-tests-coverage
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        with:
+          name: unit-test-failure-logs-${{ matrix.node-version }}-${{ github.run_number }}
           path: |
-            test-results-*.json
+            npm-debug.log*
+            .npm/_logs/*
+            test-results.xml
             coverage/
           retention-days: 7
 
   integration-tests:
-    name: 🔗 Integration Tests
+    name: Integration Tests
     runs-on: ubuntu-latest
-    needs: setup
-    if: contains(fromJson(needs.setup.outputs.test-matrix), 'integration')
-    strategy:
-      matrix:
-        test-scenario: ['streaming-pipeline', 'plugin-integration', 'dag-workflows']
+    timeout-minutes: 30
+    needs: unit-tests
+    permissions:
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rag_pipeline_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run integration tests - ${{ matrix.test-scenario }}
+      - name: Setup test database
         run: |
-          echo "🔗 Running integration tests for ${{ matrix.test-scenario }}..."
-          npm test -- --testPathPattern="__tests__/integration/${{ matrix.test-scenario }}" --coverage --json --outputFile=integration-results-${{ matrix.test-scenario }}.json
-        env:
-          NODE_ENV: test
+          npm run db:migrate:test
+          npm run db:seed:test
 
-      - name: Upload integration results
-        uses: actions/upload-artifact@v3
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rag_pipeline_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          npm run test:integration
+          npm run test:integration:coverage
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
-          name: integration-test-results-${{ matrix.test-scenario }}
-          path: integration-results-*.json
-          retention-days: 7
-
-  performance-tests:
-    name: ⚡ Performance Tests
-    runs-on: ubuntu-latest
-    needs: setup
-    if: contains(fromJson(needs.setup.outputs.test-matrix), 'performance')
-    strategy:
-      matrix:
-        test-type: ['pipeline-performance', 'concurrent-load']
-        dataset-size: ['small', 'medium', 'large']
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run performance tests
-        run: |
-          echo "⚡ Running performance tests: ${{ matrix.test-type }} with ${{ matrix.dataset-size }} dataset..."
-          export DATASET_SIZE=${{ matrix.dataset-size }}
-          npm test -- --testPathPattern="__tests__/${{ matrix.test-type }}" --json --outputFile=performance-results-${{ matrix.test-type }}-${{ matrix.dataset-size }}.json --testTimeout=300000
-        env:
-          NODE_ENV: test
-          PERFORMANCE_TESTING: true
-
-      - name: Upload performance results
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: performance-test-results-${{ matrix.test-type }}-${{ matrix.dataset-size }}
-          path: performance-results-*.json
+          name: integration-test-results
+          path: |
+            test-results/
+            coverage/integration/
           retention-days: 30
 
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: integration-tests
+    if: |
+      (github.event_name == 'schedule' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'performance') &&
+      github.actor != 'github-actions[bot]'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance benchmarks
+        run: |
+          npm run test:performance
+          npm run benchmark:memory
+          npm run benchmark:cpu
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        if: always()
+        with:
+          name: performance-results
+          path: |
+            benchmark-results/
+            performance-reports/
+          retention-days: 90
+
   security-tests:
-    name: 🔒 Security Tests
+    name: Security Tests
     runs-on: ubuntu-latest
     needs: setup
     if: contains(fromJson(needs.setup.outputs.test-matrix), 'security')
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run security tests
         run: |
-          echo "🔒 Running security and isolation tests..."
           npm test -- --testPathPattern="__tests__/security" --json --outputFile=security-results.json
         env:
           NODE_ENV: test
@@ -229,7 +287,6 @@ jobs:
 
       - name: Run dependency audit
         run: |
-          echo "🔍 Running npm audit..."
           npm audit --audit-level=moderate --json > audit-results.json || true
 
       - name: Upload security results
@@ -243,31 +300,28 @@ jobs:
           retention-days: 30
 
   property-based-tests:
-    name: 🎲 Property-Based Tests
+    name: Property-Based Tests
     runs-on: ubuntu-latest
     needs: setup
     if: contains(fromJson(needs.setup.outputs.test-matrix), 'property-based')
-    strategy:
-      matrix:
-        iterations: [100, 500, 1000]
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run property-based tests
         run: |
-          echo "🎲 Running property-based tests with ${{ matrix.iterations }} iterations..."
-          export PROPERTY_TEST_ITERATIONS=${{ matrix.iterations }}
-          npm test -- --testPathPattern="__tests__/property" --json --outputFile=property-results-${{ matrix.iterations }}.json --testTimeout=600000
+          npm test -- --testPathPattern="__tests__/property" --json --outputFile=property-results.json --testTimeout=600000
         env:
           NODE_ENV: test
           PROPERTY_TESTING: true
@@ -276,35 +330,37 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: property-test-results-${{ matrix.iterations }}
-          path: property-results-*.json
+          name: property-test-results
+          path: property-results.json
           retention-days: 7
 
   compatibility-tests:
-    name: 🔄 Compatibility Tests
+    name: Compatibility Tests
     runs-on: ${{ matrix.os }}
     needs: setup
     if: contains(fromJson(needs.setup.outputs.test-matrix), 'compatibility')
+
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: ['16', '18', '20']
+        node-version: [18, 20, 22]
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run compatibility tests
         run: |
-          echo "🔄 Running compatibility tests on ${{ matrix.os }} with Node.js ${{ matrix.node-version }}..."
           npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-${{ matrix.os }}-${{ matrix.node-version }}.json
         env:
           NODE_ENV: test
@@ -318,19 +374,21 @@ jobs:
           retention-days: 7
 
   generate-reports:
-    name: 📊 Generate Test Reports
+    name: Generate Test Reports
     runs-on: ubuntu-latest
     needs: [setup, unit-tests, integration-tests, performance-tests, security-tests, property-based-tests, compatibility-tests]
     if: always() && (github.event.inputs.generate_reports == 'true' || github.event.inputs.generate_reports == '')
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: npm ci
@@ -342,7 +400,7 @@ jobs:
 
       - name: Generate comprehensive test report
         run: |
-          echo "📊 Generating comprehensive test reports..."
+          echo "Generating comprehensive test reports..."
           node scripts/generate-test-reports.js
         env:
           ARTIFACTS_PATH: test-artifacts

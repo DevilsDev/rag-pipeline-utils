@@ -1,4 +1,6 @@
 # Contract Schema Validation Workflow
+# Version: 2.0.0 - Security Hardened
+# Security Review: 2025-08-08 - All actions SHA pinned, permissions minimized
 # Validates plugin contracts and prevents breaking changes before publishing
 name: Contract Schema Validation
 
@@ -9,12 +11,20 @@ on:
       - 'src/contracts/**'
       - 'src/plugins/**'
       - 'package.json'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/ISSUE_TEMPLATE/**'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'src/contracts/**'
       - 'src/plugins/**'
       - 'package.json'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/ISSUE_TEMPLATE/**'
   workflow_dispatch:
     inputs:
       validation_type:
@@ -27,28 +37,46 @@ on:
           - contract-documentation
           - typescript-generation
 
+# Concurrency controls to prevent resource conflicts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Minimal permissions (security-first)
 permissions:
   contents: read
   pull-requests: write
   issues: write
+
+env:
+  NODE_VERSION: '20'
+  FORCE_COLOR: 1
+  CI: true
 
 jobs:
   # Validate contract schemas and plugin implementations
   validate-contracts:
     name: Validate Plugin Contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      pull-requests: write
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        # actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
           
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        # actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
           
       - name: Install dependencies
         run: npm ci

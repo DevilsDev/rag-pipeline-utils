@@ -1,0 +1,1252 @@
+{
+  "summary": {
+    "totalWorkflows": 20,
+    "passedWorkflows": 0,
+    "failedWorkflows": 14,
+    "warningWorkflows": 6,
+    "criticalIssues": 0,
+    "securityIssues": 25
+  },
+  "workflows": {
+    "auto-release-note.yml": {
+      "file": "auto-release-note.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\auto-release-note.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        },
+        {
+          "type": "no_caching",
+          "severity": "low",
+          "message": "Node.js dependencies installed without caching"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "✫ Auto Release Note",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "generate-note": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "stefanzweifel/git-auto-commit-action@v5",
+          "peter-evans/create-or-update-comment@v4"
+        ],
+        "scriptCount": 4,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "blog-release.yml": {
+      "file": "blog-release.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\blog-release.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'generate-content'",
+          "step": "🔖 Detect version"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'generate-content'",
+          "step": "📝 Generate blog post and changelog"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'verify-badges'",
+          "step": "🌐 Validate badge URL accessibility"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "📝 Blog & Release Automation",
+        "jobCount": 3,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "generate-content": [],
+          "verify-badges": [
+            "generate-content"
+          ],
+          "summary": [
+            "generate-content",
+            "verify-badges"
+          ]
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "stefanzweifel/git-auto-commit-action@v5",
+          "actions/upload-artifact@v4"
+        ],
+        "scriptCount": 7,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "ci.yml": {
+      "file": "ci.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\ci.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        }
+      ],
+      "security": [
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'critical-checks'",
+          "step": "🔧 Fix Node.js module exports"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "CI & Release",
+        "jobCount": 4,
+        "hasPermissions": false,
+        "hasEnv": true,
+        "secretsUsed": [
+          "${{ secrets.CODECOV_TOKEN }}",
+          "${{ secrets.GH_TOKEN }}",
+          "${{ secrets.NPM_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "critical-checks": [],
+          "diagnostics": [
+            "critical-checks"
+          ],
+          "extended-tests": [
+            "critical-checks"
+          ],
+          "deploy": [
+            "critical-checks"
+          ]
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "codecov/codecov-action@v5"
+        ],
+        "scriptCount": 13,
+        "hasMatrix": true,
+        "hasParallelJobs": true
+      }
+    },
+    "comprehensive-testing.yml": {
+      "file": "comprehensive-testing.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\comprehensive-testing.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🧪 Comprehensive Test Suite",
+        "jobCount": 9,
+        "hasPermissions": false,
+        "hasEnv": true,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}",
+          "${{ secrets.SLACK_WEBHOOK_URL }}"
+        ],
+        "jobDependencies": {
+          "setup": [],
+          "unit-tests": [
+            "setup"
+          ],
+          "integration-tests": [
+            "setup"
+          ],
+          "performance-tests": [
+            "setup"
+          ],
+          "security-tests": [
+            "setup"
+          ],
+          "property-based-tests": [
+            "setup"
+          ],
+          "compatibility-tests": [
+            "setup"
+          ],
+          "generate-reports": [
+            "setup",
+            "unit-tests",
+            "integration-tests",
+            "performance-tests",
+            "security-tests",
+            "property-based-tests",
+            "compatibility-tests"
+          ],
+          "notify-results": [
+            "generate-reports"
+          ]
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/cache@v3",
+          "actions/upload-artifact@v3",
+          "actions/download-artifact@v3",
+          "peaceiris/actions-gh-pages@v3",
+          "actions/github-script@v6",
+          "8398a7/action-slack@v3"
+        ],
+        "scriptCount": 20,
+        "hasMatrix": true,
+        "hasParallelJobs": true
+      }
+    },
+    "contract-validation.yml": {
+      "file": "contract-validation.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\contract-validation.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.base_ref"
+          ]
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'validate-contracts'",
+          "step": "Generate contract validation report"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'breaking-change-detection'",
+          "step": "Compare contract versions"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'generate-documentation'",
+          "step": "Commit generated documentation"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Contract Schema Validation",
+        "jobCount": 4,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "jobDependencies": {
+          "validate-contracts": [],
+          "breaking-change-detection": [],
+          "generate-documentation": [],
+          "pre-publish-validation": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/upload-artifact@v4",
+          "actions/github-script@v7"
+        ],
+        "scriptCount": 12,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "deploy-production.yml": {
+      "file": "deploy-production.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\deploy-production.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "unpinned_action",
+          "severity": "medium",
+          "message": "Unpinned action version: aquasecurity/trivy-action@master",
+          "job": "container-security"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "hardcoded_secrets",
+          "severity": "critical",
+          "message": "Potential hardcoded secrets found: 4 instances",
+          "details": [
+            "Key=\"${{ secrets.OPENAI_API_KEY }}\"",
+            "Key=\"${{ secrets.PINECONE_API_KEY }}\"",
+            "Key=\"${{ secrets.OPENAI_API_KEY }}\""
+          ]
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Deploy to Production",
+        "jobCount": 6,
+        "hasPermissions": false,
+        "hasEnv": true,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}",
+          "${{ secrets.KUBE_CONFIG_STAGING }}",
+          "${{ secrets.OPENAI_API_KEY }}",
+          "${{ secrets.PINECONE_API_KEY }}",
+          "${{ secrets.KUBE_CONFIG_PRODUCTION }}",
+          "${{ secrets.SLACK_WEBHOOK_URL }}"
+        ],
+        "jobDependencies": {
+          "security-checks": [],
+          "build-and-push": [
+            "security-checks"
+          ],
+          "container-security": [
+            "build-and-push"
+          ],
+          "deploy-staging": [
+            "build-and-push",
+            "container-security"
+          ],
+          "deploy-production": [
+            "deploy-staging"
+          ],
+          "post-deployment": [
+            "deploy-production"
+          ]
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/upload-artifact@v4",
+          "docker/setup-buildx-action@v3",
+          "docker/login-action@v3",
+          "docker/metadata-action@v5",
+          "docker/build-push-action@v5",
+          "anchore/sbom-action@v0",
+          "aquasecurity/trivy-action@master",
+          "github/codeql-action/upload-sarif@v3",
+          "azure/setup-helm@v3",
+          "azure/setup-kubectl@v3",
+          "8398a7/action-slack@v3"
+        ],
+        "scriptCount": 13,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "docs-ci.yml": {
+      "file": "docs-ci.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\docs-ci.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "📘 Docs CI",
+        "jobCount": 1,
+        "hasPermissions": false,
+        "hasEnv": false,
+        "jobDependencies": {
+          "docs-ci": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/upload-artifact@v4"
+        ],
+        "scriptCount": 4,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "docs-deploy.yml": {
+      "file": "docs-deploy.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\docs-deploy.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "📚 Deploy Docs to GitHub Pages",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "deploy": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "peaceiris/actions-gh-pages@v4"
+        ],
+        "scriptCount": 3,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "enforce-release-review.yml": {
+      "file": "enforce-release-review.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\enforce-release-review.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'review'",
+          "step": "🔍 Scan for changelog or blog edits"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🛡 Release Review Passed",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "jobDependencies": {
+          "review": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4"
+        ],
+        "scriptCount": 2,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "post-release-generate-blog.yml": {
+      "file": "post-release-generate-blog.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\post-release-generate-blog.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_caching",
+          "severity": "low",
+          "message": "Node.js dependencies installed without caching"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Auto Generate Blog + Changelog",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "jobDependencies": {
+          "generate-blog": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "stefanzweifel/git-auto-commit-action@v5",
+          "peter-evans/create-or-update-comment@v4"
+        ],
+        "scriptCount": 4,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "publish-release-blog.yml": {
+      "file": "publish-release-blog.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\publish-release-blog.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'publish-blog-post'",
+          "step": "✏️ Generate blog post"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Publish Release Blog Post",
+        "jobCount": 1,
+        "hasPermissions": false,
+        "hasEnv": false,
+        "jobDependencies": {
+          "publish-blog-post": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "stefanzweifel/git-auto-commit-action@v5"
+        ],
+        "scriptCount": 1,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "release-protection.yml": {
+      "file": "release-protection.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\release-protection.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'validate-release-tags'",
+          "step": "Validate version progression"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'enforce-immutability'",
+          "step": "Check release modification"
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'audit-releases'",
+          "step": "Generate compliance report"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Release Protection",
+        "jobCount": 4,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}",
+          "${{ secrets.GPG_PRIVATE_KEY }}"
+        ],
+        "jobDependencies": {
+          "validate-release-tags": [],
+          "enforce-immutability": [],
+          "audit-releases": [],
+          "create-immutable-release": [
+            "validate-release-tags"
+          ]
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/upload-artifact@v4",
+          "softprops/action-gh-release@v1"
+        ],
+        "scriptCount": 10,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "release-sync.yml": {
+      "file": "release-sync.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\release-sync.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        },
+        {
+          "type": "no_caching",
+          "severity": "low",
+          "message": "Node.js dependencies installed without caching"
+        }
+      ],
+      "security": [
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'publish-release-blog'",
+          "step": "🔁 Generate blog post"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🔄 Release Sync",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "jobDependencies": {
+          "publish-release-blog": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "stefanzweifel/git-auto-commit-action@v5"
+        ],
+        "scriptCount": 2,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "roadmap-label-sync.yml": {
+      "file": "roadmap-label-sync.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\roadmap-label-sync.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🔖 Sync Roadmap Labels",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "sync-labels": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4"
+        ],
+        "scriptCount": 2,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "roadmap-labels.yml": {
+      "file": "roadmap-labels.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\roadmap-labels.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "unrestricted_push",
+          "severity": "medium",
+          "message": "Push trigger without branch restrictions"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🔖 Sync Roadmap Labels",
+        "jobCount": 1,
+        "hasPermissions": false,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "sync-labels": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4"
+        ],
+        "scriptCount": 2,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "roadmap-maintenance.yml": {
+      "file": "roadmap-maintenance.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\roadmap-maintenance.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🗺️ Roadmap Maintenance",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "roadmap-maintenance": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4"
+        ],
+        "scriptCount": 4,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "roadmap-sync.yml": {
+      "file": "roadmap-sync.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\roadmap-sync.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🚀 Roadmap Sync (Labels + Issues)",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "roadmap-sync": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4"
+        ],
+        "scriptCount": 3,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "security-audit.yml": {
+      "file": "security-audit.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\security-audit.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'security-audit'",
+          "step": "Parse audit results"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "Security Audit",
+        "jobCount": 2,
+        "hasPermissions": false,
+        "hasEnv": false,
+        "hasSchedule": true,
+        "jobDependencies": {
+          "security-audit": [],
+          "dependency-review": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4",
+          "actions/upload-artifact@v4",
+          "actions/github-script@v7",
+          "actions/dependency-review-action@v4"
+        ],
+        "scriptCount": 6,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "sync-roadmap.yml": {
+      "file": "sync-roadmap.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\sync-roadmap.yml",
+      "status": "warning",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🚀 Sync Roadmap to GitHub Issues",
+        "jobCount": 1,
+        "hasPermissions": true,
+        "hasEnv": false,
+        "secretsUsed": [
+          "${{ secrets.GITHUB_TOKEN }}"
+        ],
+        "jobDependencies": {
+          "sync": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4",
+          "actions/setup-node@v4"
+        ],
+        "scriptCount": 5,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    },
+    "verify-blog-badge.yml": {
+      "file": "verify-blog-badge.yml",
+      "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\.github\\workflows\\verify-blog-badge.yml",
+      "status": "failed",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "permissions",
+          "severity": "medium",
+          "message": "No explicit permissions defined (using default)"
+        },
+        {
+          "type": "no_timeout",
+          "severity": "low",
+          "message": "No timeout specified for jobs (could run indefinitely)"
+        },
+        {
+          "type": "no_concurrency",
+          "severity": "low",
+          "message": "No concurrency controls defined"
+        },
+        {
+          "type": "no_error_handling",
+          "severity": "low",
+          "message": "Limited error handling patterns detected"
+        }
+      ],
+      "security": [
+        {
+          "type": "shell_injection",
+          "severity": "critical",
+          "message": "Potential shell injection vulnerabilities",
+          "details": [
+            "${{ github.event."
+          ]
+        },
+        {
+          "type": "dangerous_script",
+          "severity": "high",
+          "message": "Potentially dangerous script commands in job 'verify'",
+          "step": "🌐 Validate badge URL status"
+        }
+      ],
+      "bestPractices": [],
+      "metadata": {
+        "name": "🖍 Blog Badge Verification",
+        "jobCount": 1,
+        "hasPermissions": false,
+        "hasEnv": false,
+        "jobDependencies": {
+          "verify": []
+        },
+        "actionsUsed": [
+          "actions/checkout@v4"
+        ],
+        "scriptCount": 4,
+        "hasMatrix": false,
+        "hasParallelJobs": true
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "category": "Security",
+      "priority": "High",
+      "title": "Address Security Vulnerabilities",
+      "description": "Review and fix all security issues found in workflows",
+      "action": "Update action versions, fix shell injection risks, review permissions"
+    },
+    {
+      "category": "Performance",
+      "priority": "Medium",
+      "title": "Implement Dependency Caching",
+      "description": "3 workflows could benefit from dependency caching",
+      "action": "Add cache configuration to Node.js setup steps"
+    },
+    {
+      "category": "Reliability",
+      "priority": "Medium",
+      "title": "Add Job Timeouts",
+      "description": "20 workflows lack timeout configurations",
+      "action": "Add timeout-minutes to prevent runaway jobs"
+    }
+  ]
+}
