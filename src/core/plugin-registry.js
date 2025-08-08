@@ -63,7 +63,7 @@ class PluginRegistry {
         methodName => typeof plugin[methodName] === 'function'
       );
       if (implementedOptional.length > 0) {
-        console.debug(`Plugin [${type}:${name}] implements optional methods: ${implementedOptional.join(', ')}`);
+        console.debug(`Plugin [${type}:${name}] implements optional methods: ${implementedOptional.join(', ')}`); // eslint-disable-line no-console
       }
     }
   }
@@ -89,7 +89,7 @@ class PluginRegistry {
   }
 }
 
-const registry = new PluginRegistry();
+const _registry = new PluginRegistry();
 
 
 

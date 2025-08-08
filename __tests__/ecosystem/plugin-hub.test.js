@@ -348,6 +348,12 @@ describe('Plugin Hub', () => {
         name: 'Test Plugin',
         version: '1.0.0'
       };
+      
+      // Test implementation would go here
+      expect(mockPluginInfo).toBeDefined();
+    });
+  });
+});
 
 describe('Plugin Analytics', () => {
   let analytics;

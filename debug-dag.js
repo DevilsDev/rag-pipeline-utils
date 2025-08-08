@@ -1,4 +1,4 @@
-const { DAG, DAGNode } = require('./src/dag/dag-engine.js');
+const { DAG, _DAGNode } = require('./src/dag/dag-engine.js');
 
 async function testDAGFeatures() {
   console.log('🔍 Testing DAG Engine Features...\n');
@@ -7,7 +7,7 @@ async function testDAGFeatures() {
     // Test 1: Basic execution
     console.log('1. Testing basic execution...');
     const dag1 = new DAG();
-    const node1 = dag1.addNode('test', () => 'success');
+    const _node1 = dag1.addNode('test', () => 'success');
     const result1 = await dag1.execute();
     console.log('✅ Basic execution:', result1);
     

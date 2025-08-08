@@ -17,6 +17,7 @@ const { logger  } = require('../utils/logger.js');
  * Plugin marketplace CLI commands
  */
 function createPluginMarketplaceCommands() {
+    const _metadata = {};
   const pluginCmd = new Command('plugin');
   pluginCmd.description('Plugin marketplace commands');
 
@@ -709,6 +710,8 @@ describe('${className}', () => {
 // Default export
 
 
+
+const metadata = {}; // Initialize metadata object
 
 module.exports = {
   createPluginMarketplaceCommands,

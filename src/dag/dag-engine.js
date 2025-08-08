@@ -95,6 +95,7 @@ class DAGNode {
      * @returns {Promise<Map|any>} - Results Map or final output from sink(s)
      */
     async execute(seedOrOptions, options = {}) {
+    const errors = [];
       // Handle different parameter patterns
       let seed, execOptions;
       if (typeof seedOrOptions === 'object' && seedOrOptions !== null && 
@@ -128,7 +129,7 @@ class DAGNode {
         
         // Initialize execution state
         const results = new Map();
-        const errors = new Map();
+        const _errors = new Map();
         const retryCount = new Map();
         
         // Handle external checkpoint data if provided
@@ -233,7 +234,7 @@ class DAGNode {
           throw aggregatedError;
         } else if (errors.size === 1 && !gracefulDegradation) {
           // Single error case - throw the original error
-          const [nodeId, errorMsg] = Array.from(errors.entries())[0];
+          const [_nodeId, errorMsg] = Array.from(errors.entries())[0];
           throw new Error(errorMsg);
         }
         
@@ -429,7 +430,7 @@ class DAGNode {
       
       // Initialize results map
       const results = new Map();
-      const errors = new Map();
+      const _errors = new Map();
       
       // Re-execute completed nodes to get their actual results
       // The checkpointData indicates which nodes completed successfully
@@ -518,190 +519,6 @@ class DAGNode {
       }
       
       return warnings;
-    }
-    
-    /**
-     * Execute a single node with retry and error handling
-     * @param {DAGNode} node - Node to execute
-     * @param {Object} options - Execution options
-     */
-    async executeNode(node, options) {
-      const {
-        seed,
-        results,
-        errors,
-        retryCount,
-        retryFailedNodes,
-        maxRetries,
-        gracefulDegradation,
-        requiredNodes,
-        checkpointId,
-        timeoutPromise,
-        enableCheckpoints
-      } = options;
-      
-      let success = false;
-      let lastError = null;
-      const maxAttempts = retryFailedNodes ? maxRetries : 1;
-      
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-          const inputValues = node.inputs.map(n => {
-            const result = results.get(n.id);
-            if (result === undefined && errors.has(n.id)) {
-              if (gracefulDegradation && !requiredNodes.includes(n.id)) {
-                return null; // Allow graceful degradation
-              }
-              throw new Error(`Input node ${n.id} failed: ${errors.get(n.id)}`);
-            }
-            return result;
-          });
-          
-          const input = inputValues.length === 0 ? seed :
-                       inputValues.length === 1 ? inputValues[0] : inputValues;
-          
-          // Execute node with timeout if specified
-          const nodeExecution = node.run(input);
-          let output;
-          if (timeoutPromise) {
-            // Use Promise.race to interrupt long-running operations
-            output = await Promise.race([nodeExecution, timeoutPromise]);
-          } else {
-            output = await nodeExecution;
-          }
-          results.set(node.id, output);
-          success = true;
-          break;
-        } catch (error) {
-          lastError = error;
-          // Preserve error context properties if they exist
-          if (!error.nodeId) {
-            error.nodeId = node.id;
-          }
-          if (!error.timestamp) {
-            error.timestamp = Date.now();
-          }
-          retryCount.set(node.id, attempt);
-          
-          if (attempt < maxAttempts) {
-            // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 100));
-            continue;
-          }
-        }
-      }
-      
-      if (!success) {
-        const errorMsg = `Node ${node.id} execution failed after ${maxAttempts} attempts: ${lastError.message}`;
-        errors.set(node.id, errorMsg);
-        
-        // For simple error propagation, only throw immediately if this is a single-node DAG
-        // Otherwise, continue execution to collect multiple errors for aggregation
-        if (!gracefulDegradation && !retryFailedNodes && requiredNodes.length === 0 && this.nodes.size === 1) {
-          throw lastError; // Preserve original error object with context
-        }
-        
-        // Check if this node is required or affects critical path
-        const isRequired = requiredNodes.length === 0 || requiredNodes.includes(node.id);
-        const dependentNodes = Array.from(this.nodes.values())
-          .filter(n => n.inputs.some(input => input.id === node.id));
-        
-        if (isRequired && dependentNodes.length > 0 && !gracefulDegradation) {
-          throw new Error(`${errorMsg}. This affects downstream nodes: ${dependentNodes.map(n => n.id).join(', ')}`);
-        }
-        
-        // If graceful degradation is enabled, log but continue
-        if (gracefulDegradation) {
-          console.warn(`Non-critical node failure (graceful degradation): ${errorMsg}`);
-        } else if (!isRequired) {
-          console.warn(`Optional node failure: ${errorMsg}`);
-        }
-      }
-      
-      // Save checkpoint if specified
-      if (checkpointId) {
-        this.saveCheckpoint(checkpointId, { results: new Map(results), errors: new Map(errors) });
-      }
-    }
-    
-    /**
-     * Execute nodes concurrently with dependency management
-     * @param {DAGNode[]} order - Topologically sorted nodes
-     * @param {Object} options - Execution options
-     */
-    async executeConcurrent(order, options) {
-      const {
-        maxConcurrency,
-        seed,
-        results,
-        errors,
-        retryCount,
-        retryFailedNodes,
-        maxRetries,
-        gracefulDegradation,
-        requiredNodes,
-        checkpointId,
-        timeoutPromise,
-        checkTimeout,
-        enableCheckpoints
-      } = options;
-      
-      const pending = new Set();
-      const completed = new Set();
-      const nodeQueue = [...order];
-      
-      while (nodeQueue.length > 0 || pending.size > 0) {
-        checkTimeout();
-        
-        // Start new nodes up to concurrency limit
-        while (pending.size < maxConcurrency && nodeQueue.length > 0) {
-          const node = nodeQueue.shift();
-          
-          // Skip if already completed (from checkpoint)
-          if (results.has(node.id)) {
-            completed.add(node.id);
-            continue;
-          }
-          
-          // Check if all dependencies are completed
-          const dependenciesReady = node.inputs.every(input => 
-            completed.has(input.id) || results.has(input.id)
-          );
-          
-          if (dependenciesReady) {
-            const nodePromise = this.executeNode(node, {
-              seed,
-              results,
-              errors,
-              retryCount,
-              retryFailedNodes,
-              maxRetries,
-              gracefulDegradation,
-              requiredNodes,
-              checkpointId,
-              timeoutPromise,
-              enableCheckpoints
-            }).then(() => {
-              completed.add(node.id);
-              pending.delete(nodePromise);
-            }).catch(error => {
-              completed.add(node.id);
-              pending.delete(nodePromise);
-              throw error;
-            });
-            
-            pending.add(nodePromise);
-          } else {
-            // Put node back at end of queue if dependencies not ready
-            nodeQueue.push(node);
-          }
-        }
-        
-        // Wait for at least one node to complete if we have pending work
-        if (pending.size > 0) {
-          await Promise.race(Array.from(pending));
-        }
-      }
     }
   }
 

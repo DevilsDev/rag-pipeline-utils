@@ -1,0 +1,74 @@
+{
+  "id": "pipeline_1754597363488",
+  "name": "Integration Test Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "loader_1754597363488",
+      "type": "loader",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "config": {
+        "source": {
+          "type": "string",
+          "required": true
+        },
+        "format": {
+          "type": "select",
+          "options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "documents"
+      ]
+    },
+    {
+      "id": "embedder_1754597363488",
+      "type": "embedder",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "config": {
+        "model": {
+          "type": "string",
+          "default": "openai"
+        },
+        "dimensions": {
+          "type": "number",
+          "default": 1536
+        }
+      },
+      "inputs": [
+        "documents"
+      ],
+      "outputs": [
+        "embeddings"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1754597363488",
+      "source": {
+        "componentId": "loader_1754597363488",
+        "output": "documents"
+      },
+      "target": {
+        "componentId": "embedder_1754597363488",
+        "input": "documents"
+      }
+    }
+  ],
+  "config": {},
+  "created": "2025-08-07T20:09:23.488Z",
+  "modified": "2025-08-07T20:09:23.488Z"
+}

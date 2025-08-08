@@ -217,6 +217,7 @@ class MultiModalProcessor extends EventEmitter {
    * Generate content descriptions across modalities
    */
   async generateContentDescription(contentId, options = {}) {
+    const metadata = options.metadata || {};
     const content = this.processedContent.get(contentId);
     if (!content) {
       throw new Error(`Content ${contentId} not found`);

@@ -108,7 +108,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
       // Test error properties separately to avoid Jest instanceof issues
       try {
         dag.validateTopology();
-        fail('Expected validateTopology to throw');
+        expect(() => {}).toThrow();
       } catch (error) {
         expect(error.message).toContain('Cycle detected');
         expect(error.cycle).toEqual(['A', 'B', 'C', 'A']);
@@ -303,6 +303,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
         return 'completed';
       });
 
+    // TODO: Fix timeout parameter passing in DAG execution
       await expect(dag.execute(null, { timeout: 100 })).rejects.toThrow('Execution timeout');
     }, 10000);
   });
@@ -363,6 +364,7 @@ describe('DAG Error Handling and Cycle Detection', () => {
       try {
         await dag.execute({ enableCheckpoints: true });
         expect.fail('Expected execution to fail');
+    // TODO: Implement proper checkpoint data persistence
       } catch (error) {
         expect(checkpointData.get('A')).toBe('A-completed');
       }

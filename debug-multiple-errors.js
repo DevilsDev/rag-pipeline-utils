@@ -7,11 +7,11 @@ async function testMultipleErrorAggregation() {
     const dag = new DAG();
     
     // Create two independent error nodes (same as test)
-    const error1Node = dag.addNode('error1', () => {
+    const _error1Node = dag.addNode('error1', () => {
       console.log('error1Node executing...');
       throw new Error('First error');
     });
-    const error2Node = dag.addNode('error2', () => {
+    const _error2Node = dag.addNode('error2', () => {
       console.log('error2Node executing...');
       throw new Error('Second error');
     });

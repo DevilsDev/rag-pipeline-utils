@@ -429,6 +429,5 @@ ${this.author}
 
 
 module.exports = {
-  PluginScaffolder,
-  Mock
+  PluginScaffolder
 };

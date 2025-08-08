@@ -7,7 +7,7 @@ async function testTimeoutDetailed() {
     const dag = new DAG();
     
     // Add a node that takes 200ms
-    const timeoutNode = dag.addNode('timeout', async () => {
+    const _timeoutNode = dag.addNode('timeout', async () => {
       console.log('Node execution started...');
       await new Promise(resolve => setTimeout(resolve, 200));
       console.log('Node execution completed!');

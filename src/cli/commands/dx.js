@@ -39,13 +39,17 @@ function createVisualBuilderCommand() {
     .option('-p, --port <port>', 'Server port', '3001')
     .option('--host <host>', 'Server host', 'localhost')
     .option('--theme <theme>', 'UI theme (light|dark)', 'light')
-    .action(async (__options) => {
+    .action(async (options) => {
       console.log(chalk.blue('🎨 Starting Visual Pipeline Builder...'));
       
+      const port = options.port || 3000;
+      const host = options.host || 'localhost';
+      const theme = options.theme || 'light';
+      
       const builder = new VisualPipelineBuilder({
-        port: parseInt(_options.port),
-        host: _options.host,
-        theme: _options.theme
+        port: parseInt(port),
+        host: host,
+        theme: theme
       });
       
       try {
@@ -83,9 +87,9 @@ function createVisualBuilderCommand() {
     .command('create <name>')
     .description('Create a new pipeline')
     .option('-d, --description <desc>', 'Pipeline description')
-    .action(async (name, __options) => {
+    .action(async (name, options) => {
       const builder = new VisualPipelineBuilder();
-      const pipelineId = builder.createPipeline(name, _options.description);
+      const pipelineId = builder.createPipeline(name, options.description);
       
       console.log(chalk.green(`✅ Created pipeline: ${name}`));
       console.log(chalk.cyan(`📋 Pipeline ID: ${pipelineId}`));
@@ -124,18 +128,20 @@ function createDebuggerCommand() {
   debugCmd
     .description('Real-time debugging and inspection')
     .option('-p, --port <port>', 'WebSocket port', '3002')
-    .action(async (__options) => {
+    .action(async (options) => {
       console.log(chalk.blue('🐛 Starting Real-time Debugger...'));
       
+      const port = options.port || 8080;
+      
       const realtimeDebugger = new RealtimeDebugger({
-        port: parseInt(_options.port)
+        port: parseInt(port)
       });
       
       try {
         realtimeDebugger.startWebSocketServer();
         
         console.log(chalk.green('✅ Real-time Debugger started!'));
-        console.log(chalk.cyan(`🔗 WebSocket server running on port ${_options.port}`));
+        console.log(chalk.cyan(`🔗 WebSocket server running on port ${port}`));
         console.log(chalk.yellow('🔧 Available features:'));
         console.log('   • Breakpoints and step-through debugging');
         console.log('   • Variable inspection');
@@ -163,16 +169,16 @@ function createDebuggerCommand() {
     .command('session <sessionId>')
     .description('Start a debug session')
     .option('-c, --config <config>', 'Pipeline config file')
-    .action(async (sessionId, __options) => {
+    .action(async (sessionId, options) => {
       const realtimeDebugger = new RealtimeDebugger();
       
       let pipelineConfig = {};
-      if (_options.config) {
+      if (options.config) {
         const fs = require('fs');
-        pipelineConfig = JSON.parse(fs.readFileSync(_options.config, 'utf8'));
+        pipelineConfig = JSON.parse(fs.readFileSync(options.config, 'utf8'));
       }
       
-      const session = realtimeDebugger.startSession(sessionId, pipelineConfig);
+      const session = await realtimeDebugger.startSession(sessionId, pipelineConfig);
       
       console.log(chalk.green(`✅ Debug session started: ${sessionId}`));
       console.log(chalk.cyan('🔍 Session details:'));
@@ -195,7 +201,7 @@ function createProfilerCommand() {
     .option('--memory', 'Enable memory profiling', true)
     .option('--network', 'Enable network profiling', true)
     .option('-o, --output <dir>', 'Output directory', './profiling-reports')
-    .action(async (__options) => {
+    .action(async (_options) => {
       console.log(chalk.blue('📊 Performance Profiler'));
       console.log(chalk.yellow('Available commands:'));
       console.log('   • profile start <sessionId> - Start profiling');
@@ -207,11 +213,11 @@ function createProfilerCommand() {
   profilerCmd
     .command('start <sessionId>')
     .description('Start performance profiling')
-    .action(async (sessionId) => {
+    .action(async (sessionId, options) => {
       const profiler = new PerformanceProfiler({
-        enableCPUProfiling: true,
-        enableMemoryProfiling: true,
-        enableNetworkProfiling: true
+        enableCPUProfiling: options.cpu,
+        enableMemoryProfiling: options.memory,
+        enableNetworkProfiling: options.network
       });
       
       profiler.startProfiling(sessionId);
@@ -234,11 +240,11 @@ function createProfilerCommand() {
     .command('report <sessionId>')
     .description('Generate performance report')
     .option('-f, --format <format>', 'Report format (json|html)', 'html')
-    .action(async (sessionId, __options) => {
+    .action(async (sessionId, options) => {
       const profiler = new PerformanceProfiler();
       
       try {
-        const reportPath = await profiler.exportReport(sessionId, _options.format);
+        const reportPath = await profiler.generateReport(sessionId, options.format);
         
         console.log(chalk.green(`✅ Report generated: ${reportPath}`));
         console.log(chalk.cyan('📊 Report includes:'));
@@ -287,7 +293,7 @@ function createTemplatesCommand() {
   templatesCmd
     .command('list [category]')
     .description('List available templates')
-    .action(async (category) => {
+    .action(async (category, _options) => {
       const templates = new IntegrationTemplates();
       
       let templateList;
@@ -319,7 +325,7 @@ function createTemplatesCommand() {
     .description('Generate integration code from template')
     .option('-c, --config <config>', 'Configuration JSON file')
     .option('-i, --interactive', 'Interactive configuration')
-    .action(async (templateId, __options) => {
+    .action(async (templateId, options) => {
       const templates = new IntegrationTemplates();
       const template = templates.getTemplate(templateId);
       
@@ -330,7 +336,7 @@ function createTemplatesCommand() {
       
       let config = {};
       
-      if (_options.interactive) {
+      if (options.interactive) {
         // Interactive configuration
         const questions = Object.entries(template.config).map(([key, configDef]) => ({
           type: configDef.type === 'boolean' ? 'confirm' : 'input',
@@ -341,9 +347,9 @@ function createTemplatesCommand() {
         }));
         
         config = await inquirer.prompt(questions);
-      } else if (_options.config) {
+      } else if (options.config) {
         const fs = require('fs');
-        config = JSON.parse(fs.readFileSync(_options.config, 'utf8'));
+        config = JSON.parse(fs.readFileSync(options.config, 'utf8'));
       }
       
       try {
@@ -376,7 +382,7 @@ function createDashboardCommand() {
       // Start all DX services
       const builder = new VisualPipelineBuilder({ port: 3001 });
       const realtimeDebugger = new RealtimeDebugger({ port: 3002 });
-      const profiler = new PerformanceProfiler();
+      const _profiler = new PerformanceProfiler();
       
       try {
         await builder.startServer();

@@ -16,18 +16,18 @@ const { VersionUtils  } = require('./version-resolver.js');
 class PluginPublisher {
   constructor(options = {}) {
     this.options = {
-      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
-      authToken: _options.authToken,
-      timeout: _options.timeout || 30000,
-      dryRun: _options.dryRun || false,
-      ..._options
+      registryUrl: options.registryUrl || 'https://registry.rag-pipeline.dev',
+      authToken: options.authToken,
+      timeout: options.timeout || 30000,
+      dryRun: options.dryRun || false,
+      ...options
     };
   }
 
   /**
    * Publish plugin to registry
    * @param {string} pluginPath - Path to plugin directory
-   * @param {object} publishOptions - Publishing _options
+   * @param {object} publishOptions - Publishing options
    * @returns {Promise<object>} Publishing result
    */
   async publishPlugin(pluginPath, publishOptions = {}) {
@@ -35,23 +35,23 @@ class PluginPublisher {
     
     try {
       // Step 1: Validate plugin structure
-      console.log('📋 Validating plugin structure...');
+      console.log('📋 Validating plugin structure...'); // eslint-disable-line no-console
       const validation = await this.validatePluginStructure(pluginPath);
       if (!validation.valid) {
         throw new Error(`Plugin validation failed: ${validation.errors.join(', ')}`);
       }
 
       // Step 2: Extract and validate metadata
-      console.log('🔍 Extracting plugin metadata...');
-      const _metadata = await this.extractPluginMetadata(pluginPath);
+      console.log('🔍 Extracting plugin metadata...'); // eslint-disable-line no-console
+      const metadata = await this.extractPluginMetadata(pluginPath);
       
       // Step 3: Package plugin
-      console.log('📦 Packaging plugin...');
-      const packageInfo = await this.packagePlugin(pluginPath, _metadata, publishOptions);
+      console.log('📦 Packaging plugin...'); // eslint-disable-line no-console
+      const packageInfo = await this.packagePlugin(pluginPath, metadata, publishOptions);
       
       // Step 4: Upload to registry (unless dry run)
-      if (this._options.dryRun) {
-        console.log('🧪 Dry run - skipping actual upload');
+      if (this.options.dryRun) {
+        console.log('🧪 Dry run - skipping actual upload'); // eslint-disable-line no-console
         return {
           success: true,
           dryRun: true,
@@ -61,10 +61,10 @@ class PluginPublisher {
         };
       }
 
-      console.log('🚀 Publishing to registry...');
-      const publishResult = await this.uploadToRegistry(packageInfo, _metadata, publishOptions);
+      console.log('🚀 Publishing to registry...'); // eslint-disable-line no-console
+      const publishResult = await this.uploadToRegistry(packageInfo, metadata, publishOptions);
       
-      console.log(`✅ Plugin '${metadata.name}@${metadata.version}' published successfully!`);
+      console.log(`✅ Plugin '${metadata.name}@${metadata.version}' published successfully!`); // eslint-disable-line no-console
       
       return {
         success: true,
@@ -75,7 +75,7 @@ class PluginPublisher {
       };
       
     } catch (error) {
-      console.error(`❌ Publishing failed: ${error.message}`);
+      console.error(`❌ Publishing failed: ${error.message}`); // eslint-disable-line no-console
       return {
         success: false,
         error: error.message,
@@ -121,7 +121,7 @@ class PluginPublisher {
       try {
         await fs.access(filePath);
       } catch (error) {
-        console.warn(`⚠️  Recommended file missing: ${file}`);
+        console.warn(`⚠️  Recommended file missing: ${file}`); // eslint-disable-line no-console
       }
     }
 
@@ -175,21 +175,21 @@ class PluginPublisher {
     }
 
     // Extract metadata using the extractor
-    const _metadata = metadataExtractor.extractMetadata(pluginModule, pluginType);
+    const extractedMetadata = metadataExtractor.extractMetadata(pluginModule, pluginType);
     
     // Merge with package.json data
     const mergedMetadata = {
-      ...metadata,
-      name: packageJson.name || metadata.name,
-      version: packageJson.version || metadata.version,
-      description: packageJson.description || metadata.description,
-      author: packageJson.author || metadata.author,
-      homepage: packageJson.homepage || metadata.homepage,
-      repository: packageJson.repository || metadata.repository,
-      license: packageJson.license || metadata.license,
-      keywords: [...(packageJson.keywords || []), ...(metadata.keywords || [])],
-      dependencies: packageJson.dependencies || metadata.dependencies || {},
-      peerDependencies: packageJson.peerDependencies || metadata.peerDependencies || {}
+      ...extractedMetadata,
+      name: packageJson.name || extractedMetadata.name,
+      version: packageJson.version || extractedMetadata.version,
+      description: packageJson.description || extractedMetadata.description,
+      author: packageJson.author || extractedMetadata.author,
+      homepage: packageJson.homepage || extractedMetadata.homepage,
+      repository: packageJson.repository || extractedMetadata.repository,
+      license: packageJson.license || extractedMetadata.license,
+      keywords: [...(packageJson.keywords || []), ...(extractedMetadata.keywords || [])],
+      dependencies: packageJson.dependencies || extractedMetadata.dependencies || {},
+      peerDependencies: packageJson.peerDependencies || extractedMetadata.peerDependencies || {}
     };
 
     // Validate merged metadata
@@ -200,8 +200,8 @@ class PluginPublisher {
 
     // Show warnings
     if (validation.warnings.length > 0) {
-      console.warn('⚠️  Metadata warnings:');
-      validation.warnings.forEach(warning => console.warn(`   ${warning}`));
+      console.warn('⚠️  Metadata warnings:'); // eslint-disable-line no-console
+      validation.warnings.forEach(warning => console.warn(`   ${warning}`)); // eslint-disable-line no-console
     }
 
     return mergedMetadata;
@@ -214,7 +214,7 @@ class PluginPublisher {
    * @param {object} _options - Packaging _options
    * @returns {Promise<object>} Package information
    */
-  async packagePlugin(pluginPath, _metadata, options = {}) {
+  async packagePlugin(pluginPath, metadata, _options) {
     const packageName = `${metadata.name}-${metadata.version}.tgz`;
     const packagePath = path.join(_options.outputDir || pluginPath, packageName);
     
@@ -240,7 +240,7 @@ class PluginPublisher {
    * @param {object} _options - Collection _options
    * @returns {Promise<Array<object>>} Package files
    */
-  async collectPackageFiles(pluginPath, options = {}) {
+  async collectPackageFiles(pluginPath, _options) {
     const files = [];
     const excludePatterns = _options.exclude || [
       'node_modules',
@@ -326,18 +326,18 @@ class PluginPublisher {
    * @param {object} _options - Upload _options
    * @returns {Promise<object>} Upload result
    */
-  async uploadToRegistry(packageInfo, _metadata, options = {}) {
+  async uploadToRegistry(packageInfo, metadata, _options) {
     // In a real implementation, this would make HTTP requests to the registry API
     // For now, we'll simulate the upload process
     
-    const uploadUrl = `${this._options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
+    const uploadUrl = `${this.options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
     
     // Simulate upload delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
       uploadUrl,
-      downloadUrl: `${this._options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
+      downloadUrl: `${this.options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
       publishedAt: new Date().toISOString(),
       integrity: packageInfo.integrity,
       size: packageInfo.size
@@ -351,7 +351,7 @@ class PluginPublisher {
    * @param {object} publishResult - Publishing result
    * @returns {Promise<void>}
    */
-  async updateLocalRegistry(registryPath, _metadata, publishResult) {
+  async updateLocalRegistry(registryPath, metadata, publishResult) {
     let registry;
     
     try {
@@ -413,7 +413,7 @@ const PublishingUtils = {
    * @param {object} _options - Workflow _options
    * @returns {string} GitHub Action YAML
    */
-  generateGitHubAction(options = {}) {
+  generateGitHubAction(_options = {}) {
     return `name: Publish Plugin
 
 on:
