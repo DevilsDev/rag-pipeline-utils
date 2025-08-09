@@ -2,7 +2,7 @@
  * Mock Reranker Plugin
  * Implements: reranker.rerank(query, documents, options)
  */
-export default class MockReranker {
+class MockReranker {
   constructor() {
     this.name = 'mock-reranker';
     this.version = '1.0.0';
@@ -94,3 +94,6 @@ export default class MockReranker {
     };
   }
 }
+
+
+module.exports = MockReranker;

@@ -822,7 +822,7 @@ const enhancedCLI = new EnhancedCLI();
  * Run enhanced CLI
  * @param {Array<string>} argv - Command line arguments
  */
-export async function runEnhancedCLI(argv = process.argv) {
+async function runEnhancedCLI(argv = process.argv) {
   await enhancedCLI.run(argv);
 }
 
@@ -830,8 +830,8 @@ export async function runEnhancedCLI(argv = process.argv) {
 // Default export
 
 
-
 module.exports = {
   EnhancedCLI,
-  enhancedCLI
+  enhancedCLI,
+  runEnhancedCLI
 };
