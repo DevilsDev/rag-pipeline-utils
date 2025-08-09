@@ -1,30 +1,19 @@
-# .github/workflows/enforce-release-review.yml
-# Version: 1.1.0
-# Description: Validates CHANGELOG.md and blog edits on PRs and tag pushes. Emits status badge.
-# Author: Ali Kahwaji
-
 name: 🛡 Release Review Passed
-
-on:
+'on':
   push:
     tags:
-      - 'v*.*.*'
-  workflow_dispatch:
-  # Removed pull_request trigger to avoid blocking development PRs
-
+      - v*.*.*
+  workflow_dispatch: null
 permissions:
   contents: read
   pull-requests: write
-
 jobs:
   review:
     name: 📝 Release Review Check
     runs-on: ubuntu-latest
-
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
-
       - name: 🔍 Scan for changelog or blog edits
         id: check
         run: |
@@ -41,9 +30,12 @@ jobs:
             echo "❌ No changelog or blog edits found."
             echo "result=fail" >> "$GITHUB_OUTPUT"
           fi
-
       - name: 🚫 Fail if missing changelog or blog
         if: steps.check.outputs.result == 'fail'
         run: |
           echo "Missing required changelog or blog post for release."
           exit 1
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
