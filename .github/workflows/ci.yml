@@ -1,44 +1,31 @@
-# .github/workflows/ci.yml
-# Version: 2.0.0 - Security Hardened
-# Description: Secure CI pipeline with lint, test, fixtures, coverage, and release
-# Author: Ali Kahwaji
-# Security Review: 2025-08-08 - All actions SHA pinned, permissions minimized
-
-name: CI & Release
-
-# Trigger controls with loop guards
-on:
+name: CI & Release (Security Hardened)
+"on":
   push:
-    branches: [main]
-    tags: ['v*']
+    branches:
+      - main
+    tags:
+      - v*
     paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
+      - docs/**
+      - "*.md"
+      - .github/ISSUE_TEMPLATE/**
   pull_request:
-    branches: [main]
+    branches:
+      - main
     paths-ignore:
-      - 'docs/**'
-      - '*.md'
-
-# Concurrency controls to prevent resource conflicts
+      - docs/**
+      - "*.md"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
-# Minimal permissions (security-first)
 permissions:
   contents: read
-  packages: read
   actions: read
-
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
   FORCE_COLOR: 1
   CI: true
-
 jobs:
-  # === CRITICAL PATH - Must pass for deployment ===
   critical-checks:
     name: 🔥 Critical Quality Gates
     runs-on: ubuntu-latest
@@ -48,29 +35,25 @@ jobs:
       test-status: ${{ steps.test.outcome }}
     steps:
       - name: ⬇️ Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          # Minimal checkout for security
           persist-credentials: false
           fetch-depth: 1
-
       - name: 🟢 Setup Node.js
-        # actions/setup-node@v4.1.0
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org/'
-          # Security: Cache with lockfile hash
-          cache-dependency-path: 'package-lock.json'
-
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+          cache-dependency-path: package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
-
+        shell: bash
       - name: 🔧 Fix Node.js module exports
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           echo "Fixing Node.js module export issues..."
           # Safe file processing without shell injection risks
@@ -80,15 +63,16 @@ jobs:
               echo "Fixed exports in: $file"
             fi
           done
-
       - name: 🧹 Lint (Resilient)
         id: lint
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
+          EVENT_NAME: "\"${{ github.event_name }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+          if [[ ""$EVENT_NAME"" == "pull_request" ]]; then
             echo "📝 PR Mode: Warnings allowed, errors reported"
             npm run lint:errors-only || echo "::warning::Lint errors found but not blocking PR"
           else
@@ -96,123 +80,123 @@ jobs:
             npm run lint:strict
           fi
         continue-on-error: ${{ github.event_name == 'pull_request' }}
-
       - name: ✅ Core Tests
         id: test
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           echo "Running critical test suite..."
           npm test -- --testPathPattern="(core|pipeline|cli)" --maxWorkers=2
         continue-on-error: false
         timeout-minutes: 15
-
-  # === NON-BLOCKING DIAGNOSTICS ===
   diagnostics:
     name: 📊 Quality Diagnostics
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [critical-checks]
+    needs:
+      - critical-checks
     if: always()
     steps:
       - name: ⬇️ Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
           fetch-depth: 1
-
       - name: 🟢 Setup Node.js
-        # actions/setup-node@v4.1.0
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
-
+        shell: bash
       - name: 📊 Full Lint Report
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm run lint:diagnostic
         continue-on-error: true
-
       - name: 📈 Coverage Report
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm test -- --coverage --testPathPattern="(core|pipeline)" || echo "Partial coverage generated"
         continue-on-error: true
-
       - name: 📊 Upload Partial Coverage
-        # codecov/codecov-action@v5.0.7
         uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
         if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: DevilsDev/rag-pipeline-utils
           fail_ci_if_error: false
-
-  # === EXTENDED TEST MATRIX ===
   extended-tests:
     name: 🧪 Extended Test Suite
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    needs: [critical-checks]
+    needs:
+      - critical-checks
     if: needs.critical-checks.outputs.test-status == 'success'
     strategy:
       fail-fast: false
       matrix:
         test-suite:
-          - { name: "AI/ML", pattern: "ai", timeout: 10 }
-          - { name: "DX Tools", pattern: "dx", timeout: 5 }
-          - { name: "Enterprise", pattern: "enterprise", timeout: 8 }
-          - { name: "Integration", pattern: "integration", timeout: 15 }
+          - name: AI/ML
+            pattern: ai
+            timeout: 10
+          - name: DX Tools
+            pattern: dx
+            timeout: 5
+          - name: Enterprise
+            pattern: enterprise
+            timeout: 8
+          - name: Integration
+            pattern: integration
+            timeout: 15
     steps:
       - name: ⬇️ Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
           fetch-depth: 1
-
       - name: 🟢 Setup Node.js
-        # actions/setup-node@v4.1.0
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
-
+        shell: bash
       - name: 🧪 Run ${{ matrix.test-suite.name }} Tests
         shell: bash
         env:
-          TEST_PATTERN: ${{ matrix.test-suite.pattern }}
-          TEST_NAME: ${{ matrix.test-suite.name }}
-          TEST_TIMEOUT: ${{ matrix.test-suite.timeout }}
+          TEST_PATTERN: "\"${{ matrix.test-suite.pattern }}\""
+          TEST_NAME: "\"${{ matrix.test-suite.name }}\""
+          TEST_TIMEOUT: "\"${{ matrix.test-suite.timeout }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
-          timeout "${TEST_TIMEOUT}m" npm test -- --testPathPattern="$TEST_PATTERN" --maxWorkers=1 || echo "$TEST_NAME tests completed with issues"
+          timeout ""${TEST_TIMEOUT}"m" npm test -- --testPathPattern=""$TEST_PATTERN"" --maxWorkers=1 || echo "${${TEST_NAME}}"" tests completed with issues"
         continue-on-error: true
         timeout-minutes: ${{ matrix.test-suite.timeout }}
-
-  # === DEPLOYMENT PIPELINE ===
   deploy:
     name: 🚀 Deploy & Release
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # Elevated permissions for release
     permissions:
       contents: write
       packages: write
       id-token: write
-    needs: [critical-checks]
+    needs:
+      - critical-checks
     if: |
       github.ref == 'refs/heads/main' && 
       needs.critical-checks.outputs.lint-status == 'success' && 
@@ -220,63 +204,57 @@ jobs:
       github.actor != 'github-actions[bot]'
     steps:
       - name: ⬇️ Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          # Need full history for semantic release
           fetch-depth: 0
           persist-credentials: false
-
       - name: 🟢 Setup Node.js
-        # actions/setup-node@v4.1.0
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org/'
-          cache-dependency-path: 'package-lock.json'
-
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+          cache-dependency-path: package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
-
+        shell: bash
       - name: ✅ Run tests with coverage
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm test
         timeout-minutes: 20
-
       - name: 🧪 Validate Fixtures (Non-blocking)
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm run validate-fixtures || echo "Fixtures validation failed but continuing..."
         continue-on-error: true
-
       - name: 📊 Upload coverage to Codecov
-        # codecov/codecov-action@v5.0.7
         uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: DevilsDev/rag-pipeline-utils
           fail_ci_if_error: false
-
       - name: 🚀 Semantic Release
         shell: bash
         env:
-          # Use GitHub's OIDC token instead of long-lived secrets where possible
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GH_TOKEN: "\"${{ secrets.GH_TOKEN }}\""
+          NPM_TOKEN: "\"${{ secrets.NPM_TOKEN }}\""
+          NODE_AUTH_TOKEN: "\"${{ secrets.NPM_TOKEN }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npx semantic-release
         timeout-minutes: 15
-
       - name: 📋 Upload Release Artifacts
         if: failure()
-        # actions/upload-artifact@v4.4.3
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         with:
           name: release-failure-logs

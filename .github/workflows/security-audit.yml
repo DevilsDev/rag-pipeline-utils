@@ -1,12 +1,12 @@
-name: Security Audit
-'on':
+name: Security Audit (Security Hardened)
+"on":
   push:
     branches:
       - main
       - develop
     paths-ignore:
       - docs/**
-      - '*.md'
+      - "*.md"
       - .github/ISSUE_TEMPLATE/**
   pull_request:
     branches:
@@ -14,7 +14,7 @@ name: Security Audit
       - develop
     paths-ignore:
       - docs/**
-      - '*.md'
+      - "*.md"
   schedule:
     - cron: 0 2 * * 1
   workflow_dispatch:
@@ -51,12 +51,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
-          node-version: '20'
+          node-version: "20"
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm ci
         timeout-minutes: 10
@@ -64,34 +66,40 @@ jobs:
         id: npm-audit-json
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           npm audit --json > npm-audit-report.json || true
-          echo "audit_exit_code=$?" >> "$GITHUB_OUTPUT"
+          echo "audit_exit_code=$?" >> ""$GITHUB_OUTPUT""
         continue-on-error: true
         timeout-minutes: 5
       - name: Run npm audit (human readable)
         id: npm-audit
         shell: bash
         env:
-          AUDIT_LEVEL: ${{ github.event.inputs.audit_level || 'moderate' }}
+          AUDIT_LEVEL: "\"${{ github.event.inputs.audit_level || 'moderate' }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           echo "Running npm audit with level: $AUDIT_LEVEL"
-          npm audit --audit-level="$AUDIT_LEVEL" > npm-audit-output.txt 2>&1 || true
-          echo "audit_exit_code=$?" >> "$GITHUB_OUTPUT"
+          npm audit --audit-level=""$AUDIT_LEVEL"" > npm-audit-output.txt 2>&1 || true
+          echo "audit_exit_code=$?" >> ""$GITHUB_OUTPUT""
         continue-on-error: true
         timeout-minutes: 5
       - name: Parse audit results
         id: parse-audit
         shell: bash
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           if [[ -f npm-audit-report.json ]]; then
             # Safe JSON parsing with validation
             if ! jq empty npm-audit-report.json 2>/dev/null; then
               echo "Invalid JSON in audit report" >&2
-              echo "total_vulnerabilities=0" >> "$GITHUB_OUTPUT"
-              echo "should_fail=false" >> "$GITHUB_OUTPUT"
+              echo "total_vulnerabilities=0" >> ""$GITHUB_OUTPUT""
+              echo "should_fail=false" >> ""$GITHUB_OUTPUT""
               exit 0
             fi
             
@@ -101,25 +109,25 @@ jobs:
             MODERATE_VULNS=$(jq -r '.metadata.vulnerabilities.moderate // 0' npm-audit-report.json)
             LOW_VULNS=$(jq -r '.metadata.vulnerabilities.low // 0' npm-audit-report.json)
             
-            echo "total_vulnerabilities=$TOTAL_VULNS" >> "$GITHUB_OUTPUT"
-            echo "critical_vulnerabilities=$CRITICAL_VULNS" >> "$GITHUB_OUTPUT"
-            echo "high_vulnerabilities=$HIGH_VULNS" >> "$GITHUB_OUTPUT"
-            echo "moderate_vulnerabilities=$MODERATE_VULNS" >> "$GITHUB_OUTPUT"
-            echo "low_vulnerabilities=$LOW_VULNS" >> "$GITHUB_OUTPUT"
+            echo "total_vulnerabilities=${TOTAL_VULNS}" >> ""$GITHUB_OUTPUT""
+            echo "critical_vulnerabilities=$CRITICAL_VULNS" >> ""$GITHUB_OUTPUT""
+            echo "high_vulnerabilities=$HIGH_VULNS" >> ""$GITHUB_OUTPUT""
+            echo "moderate_vulnerabilities=${MODERATE_VULNS}" >> ""$GITHUB_OUTPUT""
+            echo "low_vulnerabilities=${LOW_VULNS}" >> ""$GITHUB_OUTPUT""
             
             # Determine if we should fail the build
-            if [[ "$CRITICAL_VULNS" -gt 0 ]]; then
-              echo "should_fail=true" >> "$GITHUB_OUTPUT"
-              echo "fail_reason=Critical vulnerabilities found" >> "$GITHUB_OUTPUT"
-            elif [[ "$HIGH_VULNS" -gt 5 ]]; then
-              echo "should_fail=true" >> "$GITHUB_OUTPUT"
-              echo "fail_reason=Too many high-severity vulnerabilities" >> "$GITHUB_OUTPUT"
+            if [[ ""$CRITICAL_VULNS"" -gt 0 ]]; then
+              echo "should_fail=true" >> ""$GITHUB_OUTPUT""
+              echo "fail_reason=Critical vulnerabilities found" >> ""$GITHUB_OUTPUT""
+            elif [[ ""$HIGH_VULNS"" -gt 5 ]]; then
+              echo "should_fail=true" >> ""$GITHUB_OUTPUT""
+              echo "fail_reason=Too many high-severity vulnerabilities" >> ""$GITHUB_OUTPUT""
             else
-              echo "should_fail=false" >> "$GITHUB_OUTPUT"
+              echo "should_fail=false" >> ""$GITHUB_OUTPUT""
             fi
           else
-            echo "total_vulnerabilities=0" >> "$GITHUB_OUTPUT"
-            echo "should_fail=false" >> "$GITHUB_OUTPUT"
+            echo "total_vulnerabilities=0" >> ""$GITHUB_OUTPUT""
+            echo "should_fail=false" >> ""$GITHUB_OUTPUT""
           fi
       - name: Upload audit artifacts
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
@@ -134,30 +142,22 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         env:
-          TOTAL_VULNS: ${{ steps.parse-audit.outputs.total_vulnerabilities }}
-          CRITICAL_VULNS: ${{ steps.parse-audit.outputs.critical_vulnerabilities }}
-          HIGH_VULNS: ${{ steps.parse-audit.outputs.high_vulnerabilities }}
-          MODERATE_VULNS: ${{ steps.parse-audit.outputs.moderate_vulnerabilities }}
-          LOW_VULNS: ${{ steps.parse-audit.outputs.low_vulnerabilities }}
+          TOTAL_VULNS: "\"${{ steps.parse-audit.outputs.total_vulnerabilities }}\""
+          CRITICAL_VULNS: "\"${{ steps.parse-audit.outputs.critical_vulnerabilities }}\""
+          HIGH_VULNS: "\"${{ steps.parse-audit.outputs.high_vulnerabilities }}\""
+          MODERATE_VULNS: "\"${{ steps.parse-audit.outputs.moderate_vulnerabilities }}\""
+          LOW_VULNS: "\"${{ steps.parse-audit.outputs.low_vulnerabilities }}\""
         with:
-          script: >
+          script: |
             const fs = require('fs');
-
             // Use environment variables instead of direct interpolation
-
             const totalVulns = process.env.TOTAL_VULNS || '0';
-
             const criticalVulns = process.env.CRITICAL_VULNS || '0';
-
             const highVulns = process.env.HIGH_VULNS || '0';
-
             const moderateVulns = process.env.MODERATE_VULNS || '0';
-
             const lowVulns = process.env.LOW_VULNS || '0';
 
-
             let auditOutput = '';
-
             try {
               auditOutput = fs.readFileSync('npm-audit-output.txt', 'utf8');
               // Sanitize output to prevent injection
@@ -169,45 +169,27 @@ jobs:
               auditOutput = 'No audit output available';
             }
 
-
             const body = `## 🔒 Security Audit Results
 
-
             **Total Vulnerabilities:** ${totalVulns}
-
             - 🔴 Critical: ${criticalVulns}
-
             - 🟠 High: ${highVulns}
-
             - 🟡 Moderate: ${moderateVulns}
-
             - 🟢 Low: ${lowVulns}
 
-
             <details>
-
             <summary>📋 Detailed Audit Output</summary>
 
-
             \`\`\`
-
             ${auditOutput.slice(0, 4000)}${auditOutput.length > 4000 ? '\n... (truncated)' : ''}
-
             \`\`\`
-
 
             </details>
 
-
-            ${parseInt(criticalVulns) > 0 ? '⚠️ **Action Required:** Critical vulnerabilities detected. Please address
-            before merging.' : ''}
-
+            ${parseInt(criticalVulns) > 0 ? '⚠️ **Action Required:** Critical vulnerabilities detected. Please address before merging.' : ''}
             ${parseInt(highVulns) > 5 ? '⚠️ **Warning:** High number of high-severity vulnerabilities detected.' : ''}
-
             ${parseInt(totalVulns) === 0 ? '✅ **All Clear:** No vulnerabilities detected!' : ''}
-
             `;
-
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -218,33 +200,37 @@ jobs:
       - name: Create security summary
         shell: bash
         env:
-          TOTAL_VULNS: ${{ steps.parse-audit.outputs.total_vulnerabilities }}
-          CRITICAL_VULNS: ${{ steps.parse-audit.outputs.critical_vulnerabilities }}
-          HIGH_VULNS: ${{ steps.parse-audit.outputs.high_vulnerabilities }}
-          MODERATE_VULNS: ${{ steps.parse-audit.outputs.moderate_vulnerabilities }}
-          LOW_VULNS: ${{ steps.parse-audit.outputs.low_vulnerabilities }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
+          TOTAL_VULNS: "\"${{ steps.parse-audit.outputs.total_vulnerabilities }}\""
+          CRITICAL_VULNS: "\"${{ steps.parse-audit.outputs.critical_vulnerabilities }}\""
+          HIGH_VULNS: "\"${{ steps.parse-audit.outputs.high_vulnerabilities }}\""
+          MODERATE_VULNS: "\"${{ steps.parse-audit.outputs.moderate_vulnerabilities }}\""
+          LOW_VULNS: "\"${{ steps.parse-audit.outputs.low_vulnerabilities }}\""
+          REPO: "\"${{ github.repository }}\""
+          RUN_ID: "\"${{ github.run_id }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
           {
             echo "## Security Audit Summary"
-            echo "- **Total Vulnerabilities:** $TOTAL_VULNS"
-            echo "- **Critical:** $CRITICAL_VULNS"
-            echo "- **High:** $HIGH_VULNS"
-            echo "- **Moderate:** $MODERATE_VULNS"
-            echo "- **Low:** $LOW_VULNS"
+            echo "- **Total Vulnerabilities:** ${TOTAL_VULNS}"
+            echo "- **Critical:** ${CRITICAL_VULNS}"
+            echo "- **High:** ${HIGH_VULNS}"
+            echo "- **Moderate:** ${MODERATE_VULNS}"
+            echo "- **Low:** ${LOW_VULNS}"
             echo ""
-            echo "📊 [View detailed audit reports in artifacts](https://github.com/$REPO/actions/runs/$RUN_ID)"
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo "📊 [View detailed audit reports in artifacts](https://github.com/${${REPO}}""/actions/runs/"$RUN_ID")"
+          } >> ""$GITHUB_STEP_SUMMARY""
       - name: Fail on critical vulnerabilities
         if: steps.parse-audit.outputs.should_fail == 'true'
         shell: bash
         env:
-          FAIL_REASON: ${{ steps.parse-audit.outputs.fail_reason }}
+          FAIL_REASON: "\"${{ steps.parse-audit.outputs.fail_reason }}\""
         run: |
+          set -e
+          set -o pipefail
           set -Eeuo pipefail
-          echo "❌ Build failed due to: $FAIL_REASON"
+          echo "❌ Build failed due to: ${FAIL_REASON}"
           echo "Please run 'npm audit fix' or manually address the vulnerabilities"
           exit 1
   dependency-review:
@@ -272,5 +258,5 @@ jobs:
           vulnerability-check: true
           license-check: true
 permissions:
-  permissions:
-    contents: read
+  contents: read
+  actions: read

@@ -1,5 +1,5 @@
-name: 🔖 Sync Roadmap Labels
-'on':
+name: 🔖 Sync Roadmap Labels (Security Hardened)
+"on":
   workflow_dispatch: null
   push:
     paths:
@@ -9,18 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: 20
       - name: 📦 Install octokit
         run: npm install octokit
+        shell: bash
       - name: 🔖 Run label sync
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_REPO: "\"${{ github.repository }}\""
         run: |
+          set -e
+          set -o pipefail
           node <<EOF
           const { Octokit } = require("octokit");
 
@@ -44,10 +47,10 @@ jobs:
 
             for (const label of labels) {
               if (!existingNames.has(label.name)) {
-                console.log(`➕ Creating label: ${label.name}`);
+                console.log("$($1)");
                 await octokit.rest.issues.createLabel({ owner, repo, ...label });
               } else {
-                console.log(`✅ Label already exists: ${label.name}`);
+                console.log("$($1)");
               }
             }
           })().catch(err => {
@@ -55,10 +58,12 @@ jobs:
             process.exit(1);
           });
           EOF
+        shell: bash
+    timeout-minutes: 30
 concurrency:
   concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 permissions:
-  permissions:
-    contents: read
+  contents: read
+  actions: read

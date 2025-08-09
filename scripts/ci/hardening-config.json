@@ -1,0 +1,24 @@
+{
+  "maxPatchesPerRun": 50,
+  "auditJson": "ci-reports/gha-audit.json",
+  "auditMd": "docs/GHA_AUDIT.md",
+  "patchDir": "ci-reports/gha-patches",
+  "workflowsDir": ".github/workflows",
+  "artifactsDir": "ci-reports/gha-hardening",
+  "auditScript": "scripts/audit/gha-audit.js",
+  "safetySettings": {
+    "createWorkingBranch": true,
+    "atomicCommits": true,
+    "rollbackOnFailure": true,
+    "validateYamlAfterPatch": true,
+    "maxRetries": 0
+  },
+  "securityRequirements": {
+    "actionPinning": true,
+    "minimalPermissions": true,
+    "jobTimeouts": true,
+    "concurrencyControl": true,
+    "shellHardening": true,
+    "secretsManagement": true
+  }
+}

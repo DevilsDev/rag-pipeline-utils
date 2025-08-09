@@ -1,12 +1,12 @@
-name: Comprehensive Testing
-'on':
+name: Comprehensive Testing (Security Hardened)
+"on":
   push:
     branches:
       - main
       - develop
     paths-ignore:
       - docs/**
-      - '*.md'
+      - "*.md"
       - .github/ISSUE_TEMPLATE/**
   pull_request:
     branches:
@@ -14,7 +14,7 @@ name: Comprehensive Testing
       - develop
     paths-ignore:
       - docs/**
-      - '*.md'
+      - "*.md"
       - .github/ISSUE_TEMPLATE/**
   schedule:
     - cron: 0 2 * * *
@@ -38,10 +38,9 @@ concurrency:
 permissions:
   contents: read
   actions: read
-  security-events: write
 env:
-  NODE_VERSION: '20'
-  PYTHON_VERSION: '3.11'
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.11"
   FORCE_COLOR: 1
   CI: true
 jobs:
@@ -63,9 +62,12 @@ jobs:
       - name: Generate cache key
         id: cache-key
         run: |
-          echo "key=node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
+          set -e
+          set -o pipefail
+          echo "key=node-modules-"${{ runner.os }"}-"${{ hashFiles('**/package-lock.json') }"}" >> "$GITHUB_OUTPUT"
+        shell: bash
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: ~/.npm
           key: ${{ steps.cache-key.outputs.key }}
@@ -73,23 +75,31 @@ jobs:
             node-modules-${{ runner.os }}-
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Validate project structure
         run: |
+          set -e
+          set -o pipefail
           echo "Validating project structure..."
           test -f package.json || exit 1
           test -d __tests__ || exit 1
           test -f __tests__/utils/test-helpers.js || exit 1
           test -f __tests__/utils/test-reporter.js || exit 1
           echo "Project structure validated"
+        shell: bash
       - name: Generate test matrix
         id: test-matrix
         run: |
-          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ -z "${{ github.event.inputs.test_suite }}" ]; then
+          set -e
+          set -o pipefail
+          if [ ""${{ github.event.inputs.test_suite }"}" = "all" ] || [ -z ""${{ github.event.inputs.test_suite }"}" ]; then
             matrix='["unit", "integration", "performance", "security", "compatibility"]'
           else
-            matrix='["${{ github.event.inputs.test_suite }}"]'
+            matrix='[""${{ github.event.inputs.test_suite }"}"]'
           fi
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+        shell: bash
+    timeout-minutes: 30
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -113,11 +123,15 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Run unit tests
         run: |
+          set -e
+          set -o pipefail
           echo "Running unit tests..."
           npm run test:unit
           npm run test:unit:coverage
+        shell: bash
       - name: Upload coverage reports
         uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
         if: matrix.node-version == 20
@@ -149,14 +163,14 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: rag_pipeline_test
-        options: '--health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5'
+        options: "--health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5"
         ports:
-          - '5432:5432'
+          - "5432:5432"
       redis:
         image: redis:7-alpine
-        options: '--health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5'
+        options: "--health-cmd \"redis-cli ping\" --health-interval 10s --health-timeout 5s --health-retries 5"
         ports:
-          - '6379:6379'
+          - "6379:6379"
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -168,17 +182,24 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Setup test database
         run: |
+          set -e
+          set -o pipefail
           npm run db:migrate:test
           npm run db:seed:test
+        shell: bash
       - name: Run integration tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rag_pipeline_test
           REDIS_URL: redis://localhost:6379
         run: |
+          set -e
+          set -o pipefail
           npm run test:integration
           npm run test:integration:coverage
+        shell: bash
       - name: Upload integration test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
@@ -193,10 +214,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: integration-tests
-    if: >
-      (github.event_name == 'schedule' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite ==
-      'performance') &&
-
+    if: |
+      (github.event_name == 'schedule' || github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'performance') &&
       github.actor != 'github-actions[bot]'
     permissions:
       contents: read
@@ -211,11 +230,15 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Run performance benchmarks
         run: |
+          set -e
+          set -o pipefail
           npm run test:performance
           npm run benchmark:memory
           npm run benchmark:cpu
+        shell: bash
       - name: Upload performance results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
@@ -241,17 +264,24 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Run security tests
         run: |
+          set -e
+          set -o pipefail
           npm test -- --testPathPattern="__tests__/security" --json --outputFile=security-results.json
         env:
           NODE_ENV: test
           SECURITY_TESTING: true
+        shell: bash
       - name: Run dependency audit
         run: |
+          set -e
+          set -o pipefail
           npm audit --audit-level=moderate --json > audit-results.json || true
+        shell: bash
       - name: Upload security results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         if: always()
         with:
           name: security-test-results
@@ -259,6 +289,7 @@ jobs:
             security-results.json
             audit-results.json
           retention-days: 30
+    timeout-minutes: 30
   property-based-tests:
     name: Property-Based Tests
     runs-on: ubuntu-latest
@@ -275,20 +306,24 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Run property-based tests
-        run: >
-          npm test -- --testPathPattern="__tests__/property" --json --outputFile=property-results.json
-          --testTimeout=600000
+        run: |
+          set -e
+          set -o pipefail
+          npm test -- --testPathPattern="__tests__/property" --json --outputFile=property-results.json --testTimeout=600000
         env:
           NODE_ENV: test
           PROPERTY_TESTING: true
+        shell: bash
       - name: Upload property test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         if: always()
         with:
           name: property-test-results
           path: property-results.json
           retention-days: 7
+    timeout-minutes: 30
   compatibility-tests:
     name: Compatibility Tests
     runs-on: ${{ matrix.os }}
@@ -315,19 +350,23 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Run compatibility tests
-        run: >
-          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-${{
-          matrix.os }}-${{ matrix.node-version }}.json
+        run: |
+          set -e
+          set -o pipefail
+          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-"${{ matrix.os }"}-"${{ matrix.node-version }"}.json
         env:
           NODE_ENV: test
+        shell: bash
       - name: Upload compatibility results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         if: always()
         with:
           name: compatibility-test-results-${{ matrix.os }}-${{ matrix.node-version }}
           path: compatibility-results-*.json
           retention-days: 7
+    timeout-minutes: 30
   generate-reports:
     name: Generate Test Reports
     runs-on: ubuntu-latest
@@ -351,28 +390,32 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
+        shell: bash
       - name: Download all test artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           path: test-artifacts
       - name: Generate comprehensive test report
         run: |
+          set -e
+          set -o pipefail
           echo "Generating comprehensive test reports..."
           node scripts/generate-test-reports.js
         env:
           ARTIFACTS_PATH: test-artifacts
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_REF: ${{ github.ref }}
+          GITHUB_RUN_ID: "\"${{ github.run_id }}\""
+          GITHUB_SHA: "\"${{ github.sha }}\""
+          GITHUB_REF: "\"${{ github.ref }}\""
+        shell: bash
       - name: Upload HTML reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
         with:
           name: test-reports-html
           path: test-reports/
           retention-days: 30
       - name: Deploy reports to GitHub Pages
         if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./test-reports
@@ -412,6 +455,7 @@ jobs:
             } catch (error) {
               console.log('Could not post test summary comment:', error.message);
             }
+    timeout-minutes: 30
   notify-results:
     name: 📢 Notify Results
     runs-on: ubuntu-latest
@@ -422,13 +466,16 @@ jobs:
       - name: Determine overall status
         id: status
         run: |
-          if [ "${{ needs.generate-reports.result }}" = "success" ]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-            echo "message=All tests passed successfully! ✅" >> $GITHUB_OUTPUT
+          set -e
+          set -o pipefail
+          if [ ""${{ needs.generate-reports.result }"}" = "success" ]; then
+            echo "status=success" >> "$GITHUB_OUTPUT"
+            echo "message=All tests passed successfully! ✅" >> "$GITHUB_OUTPUT"
           else
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "message=Some tests failed. Please check the reports. ❌" >> $GITHUB_OUTPUT
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+            echo "message=Some tests failed. Please check the reports. ❌" >> "$GITHUB_OUTPUT"
           fi
+        shell: bash
       - name: Create status check
         uses: actions/github-script@v6
         with:
@@ -447,7 +494,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: failure
-          channel: '#dev-alerts'
+          channel: "#dev-alerts"
           text: |
             🚨 Test suite failed on main branch!
 
@@ -457,4 +504,5 @@ jobs:
 
             View details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: "\"${{ secrets.SLACK_WEBHOOK_URL }}\""
+    timeout-minutes: 30

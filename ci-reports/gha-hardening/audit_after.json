@@ -1,0 +1,2446 @@
+{
+  "metadata": {
+    "timestamp": "2025-08-09T22:06:19.564Z",
+    "totalWorkflows": 20,
+    "auditedWorkflows": 20
+  },
+  "summary": {
+    "passed": 0,
+    "failed": 20,
+    "warnings": 0,
+    "securityIssues": 118
+  },
+  "workflows": [
+    {
+      "name": "auto-release-note.yml",
+      "displayName": "✫ Auto Release Note",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "generate-note",
+          "message": "Job 'generate-note' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-note",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-note",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-note",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-note",
+          "step": 4,
+          "message": "Action 'stefanzweifel/git-auto-commit-action@v5' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-note",
+          "step": 7,
+          "message": "Action 'peter-evans/create-or-update-comment@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-note",
+          "step": 8,
+          "message": "Action 'peter-evans/create-or-update-comment@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "blog-release.yml",
+      "displayName": "📝 Blog & Release Automation",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "generate-content",
+          "message": "Job 'generate-content' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "verify-badges",
+          "message": "Job 'verify-badges' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "summary",
+          "message": "Job 'summary' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-content",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-content",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-content",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify-badges",
+          "step": 1,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify-badges",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify-badges",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "summary",
+          "step": 0,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-content",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-content",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-content",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-content",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-content",
+          "step": 5,
+          "message": "Action 'stefanzweifel/git-auto-commit-action@v5' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-content",
+          "step": 6,
+          "message": "Action 'actions/upload-artifact@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "verify-badges",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify-badges",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify-badges",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "summary",
+          "step": 0,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "ci.yml",
+      "displayName": "CI & Release",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "critical-checks",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "critical-checks",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "critical-checks",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "critical-checks",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "diagnostics",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "diagnostics",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "diagnostics",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "extended-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "extended-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "critical-checks",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "extended-tests",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "comprehensive-testing.yml",
+      "displayName": "Comprehensive Testing",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "setup",
+          "message": "Job 'setup' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "security-tests",
+          "message": "Job 'security-tests' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "property-based-tests",
+          "message": "Job 'property-based-tests' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "compatibility-tests",
+          "message": "Job 'compatibility-tests' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "generate-reports",
+          "message": "Job 'generate-reports' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "notify-results",
+          "message": "Job 'notify-results' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "setup",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "setup",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "setup",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "setup",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "unit-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "unit-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "integration-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "integration-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "integration-tests",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "performance-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "performance-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-tests",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "property-based-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "property-based-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "compatibility-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "compatibility-tests",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-reports",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-reports",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "notify-results",
+          "step": 0,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "setup",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "setup",
+          "step": 3,
+          "message": "Action 'actions/cache@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "setup",
+          "step": 6,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "security-tests",
+          "step": 5,
+          "message": "Action 'actions/upload-artifact@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "property-based-tests",
+          "step": 4,
+          "message": "Action 'actions/upload-artifact@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "compatibility-tests",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "compatibility-tests",
+          "step": 4,
+          "message": "Action 'actions/upload-artifact@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-reports",
+          "step": 3,
+          "message": "Action 'actions/download-artifact@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-reports",
+          "step": 5,
+          "message": "Action 'actions/upload-artifact@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-reports",
+          "step": 6,
+          "message": "Action 'peaceiris/actions-gh-pages@v3' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-reports",
+          "step": 7,
+          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "notify-results",
+          "step": 0,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "notify-results",
+          "step": 1,
+          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "notify-results",
+          "step": 2,
+          "message": "Action '8398a7/action-slack@v3' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "contract-validation.yml",
+      "displayName": "Contract Schema Validation",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "breaking-change-detection",
+          "message": "Job 'breaking-change-detection' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "generate-documentation",
+          "message": "Job 'generate-documentation' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "pre-publish-validation",
+          "message": "Job 'pre-publish-validation' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "validate-contracts",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "validate-contracts",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "validate-contracts",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "breaking-change-detection",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "breaking-change-detection",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-documentation",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-documentation",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-documentation",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-documentation",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "pre-publish-validation",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "pre-publish-validation",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "pre-publish-validation",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-contracts",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "validate-contracts",
+          "step": 5,
+          "message": "Action 'actions/upload-artifact@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "breaking-change-detection",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "breaking-change-detection",
+          "step": 1,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "breaking-change-detection",
+          "step": 2,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "breaking-change-detection",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "breaking-change-detection",
+          "step": 5,
+          "message": "Action 'actions/github-script@v7' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-documentation",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-documentation",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "pre-publish-validation",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "pre-publish-validation",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "deploy-production.yml",
+      "displayName": "Deploy to Production",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "security-checks",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-checks",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-checks",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-checks",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-staging",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-staging",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-staging",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-production",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-production",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-production",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy-production",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "post-deployment",
+          "step": 0,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "post-deployment",
+          "step": 1,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "container-security",
+          "step": 1,
+          "message": "Action 'github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-staging",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-staging",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-production",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-production",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "docs-ci.yml",
+      "displayName": "📘 Docs CI",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "docs-ci",
+          "message": "Job 'docs-ci' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "docs-ci",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "docs-ci",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "docs-ci",
+          "step": 6,
+          "message": "Action 'actions/upload-artifact@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "docs-deploy.yml",
+      "displayName": "📚 Deploy Docs to GitHub Pages",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "deploy",
+          "message": "Job 'deploy' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "deploy",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "deploy",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "deploy",
+          "step": 5,
+          "message": "Action 'peaceiris/actions-gh-pages@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "enforce-release-review.yml",
+      "displayName": "🛡 Release Review Passed",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "review",
+          "message": "Job 'review' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "review",
+          "step": 1,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "review",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "review",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "review",
+          "step": 1,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": false,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "post-release-generate-blog.yml",
+      "displayName": "Auto Generate Blog + Changelog",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "generate-blog",
+          "message": "Job 'generate-blog' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 7,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-blog",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-blog",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-blog",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-blog",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-blog",
+          "step": 5,
+          "message": "Action 'stefanzweifel/git-auto-commit-action@v5' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-blog",
+          "step": 6,
+          "message": "Action 'peter-evans/create-or-update-comment@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "publish-release-blog.yml",
+      "displayName": "Publish Release Blog Post",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "publish-blog-post",
+          "message": "Job 'publish-blog-post' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "publish-blog-post",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-blog-post",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-blog-post",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "publish-blog-post",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-blog-post",
+          "step": 3,
+          "message": "Action 'stefanzweifel/git-auto-commit-action@v5' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "release-protection.yml",
+      "displayName": "Release Protection",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "validate-release-tags",
+          "message": "Job 'validate-release-tags' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "enforce-immutability",
+          "message": "Job 'enforce-immutability' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "audit-releases",
+          "message": "Job 'audit-releases' lacks timeout-minutes - may run indefinitely"
+        },
+        {
+          "type": "timeout",
+          "job": "create-immutable-release",
+          "message": "Job 'create-immutable-release' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "validate-release-tags",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "validate-release-tags",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "validate-release-tags",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "enforce-immutability",
+          "step": 1,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "enforce-immutability",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "audit-releases",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "audit-releases",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "create-immutable-release",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "create-immutable-release",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "create-immutable-release",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "validate-release-tags",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "validate-release-tags",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "enforce-immutability",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "enforce-immutability",
+          "step": 1,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "enforce-immutability",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "audit-releases",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "audit-releases",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "audit-releases",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "audit-releases",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "audit-releases",
+          "step": 4,
+          "message": "Action 'actions/upload-artifact@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "create-immutable-release",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "create-immutable-release",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "create-immutable-release",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "create-immutable-release",
+          "step": 5,
+          "message": "Action 'softprops/action-gh-release@v1' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "release-sync.yml",
+      "displayName": "🔄 Release Sync",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "publish-release-blog",
+          "message": "Job 'publish-release-blog' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "publish-release-blog",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "publish-release-blog",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-release-blog",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-release-blog",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "publish-release-blog",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "publish-release-blog",
+          "step": 4,
+          "message": "Action 'stefanzweifel/git-auto-commit-action@v5' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-label-sync.yml",
+      "displayName": "🔖 Sync Roadmap Labels",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "sync-labels",
+          "message": "Job 'sync-labels' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync-labels",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync-labels",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-labels.yml",
+      "displayName": "🔖 Sync Roadmap Labels",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "sync-labels",
+          "message": "Job 'sync-labels' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync-labels",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync-labels",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "sync-labels",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-maintenance.yml",
+      "displayName": "🗺️ Roadmap Maintenance",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "roadmap-maintenance",
+          "message": "Job 'roadmap-maintenance' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-maintenance",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-maintenance",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-maintenance",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-maintenance",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "roadmap-maintenance",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "roadmap-maintenance",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "roadmap-maintenance",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-sync.yml",
+      "displayName": "🚀 Roadmap Sync (Labels + Issues)",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "roadmap-sync",
+          "message": "Job 'roadmap-sync' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "roadmap-sync",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "roadmap-sync",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "security-audit.yml",
+      "displayName": "Security Audit",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 8,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-audit",
+          "step": 9,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "security-audit",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "sync-roadmap.yml",
+      "displayName": "🚀 Sync Roadmap to GitHub Issues",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "sync",
+          "message": "Job 'sync' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "permissions",
+          "severity": "high",
+          "message": "Overly broad permissions detected - use minimal required permissions"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "sync",
+          "step": 1,
+          "message": "Action 'actions/setup-node@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "verify-blog-badge.yml",
+      "displayName": "🖍 Blog Badge Verification",
+      "issues": [
+        {
+          "type": "timeout",
+          "job": "verify",
+          "message": "Job 'verify' lacks timeout-minutes - may run indefinitely"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "verify",
+          "step": 1,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "verify",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "verify",
+          "step": 0,
+          "message": "Action 'actions/checkout@v4' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": false,
+        "timeouts": false,
+        "permissions": true,
+        "caching": false,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    }
+  ],
+  "patches": [
+    {
+      "workflow": "auto-release-note.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'generate-note'",
+          "job": "generate-note",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "blog-release.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'generate-content'",
+          "job": "generate-content",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'verify-badges'",
+          "job": "verify-badges",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'summary'",
+          "job": "summary",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "comprehensive-testing.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'setup'",
+          "job": "setup",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'security-tests'",
+          "job": "security-tests",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'property-based-tests'",
+          "job": "property-based-tests",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'compatibility-tests'",
+          "job": "compatibility-tests",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'generate-reports'",
+          "job": "generate-reports",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'notify-results'",
+          "job": "notify-results",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "contract-validation.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'breaking-change-detection'",
+          "job": "breaking-change-detection",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'generate-documentation'",
+          "job": "generate-documentation",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'pre-publish-validation'",
+          "job": "pre-publish-validation",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "docs-ci.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'docs-ci'",
+          "job": "docs-ci",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "docs-deploy.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'deploy'",
+          "job": "deploy",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "enforce-release-review.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'review'",
+          "job": "review",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "post-release-generate-blog.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'generate-blog'",
+          "job": "generate-blog",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "publish-release-blog.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'publish-blog-post'",
+          "job": "publish-blog-post",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "release-protection.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'validate-release-tags'",
+          "job": "validate-release-tags",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'enforce-immutability'",
+          "job": "enforce-immutability",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'audit-releases'",
+          "job": "audit-releases",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        },
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'create-immutable-release'",
+          "job": "create-immutable-release",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "release-sync.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'publish-release-blog'",
+          "job": "publish-release-blog",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "roadmap-label-sync.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'sync-labels'",
+          "job": "sync-labels",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "roadmap-labels.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'sync-labels'",
+          "job": "sync-labels",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "roadmap-maintenance.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'roadmap-maintenance'",
+          "job": "roadmap-maintenance",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "roadmap-sync.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'roadmap-sync'",
+          "job": "roadmap-sync",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "sync-roadmap.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'sync'",
+          "job": "sync",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    },
+    {
+      "workflow": "verify-blog-badge.yml",
+      "patches": [
+        {
+          "type": "add_timeout",
+          "description": "Add timeout to job 'verify'",
+          "job": "verify",
+          "before": null,
+          "after": {
+            "timeout-minutes": 30
+          }
+        }
+      ]
+    }
+  ],
+  "bestPractices": {
+    "actionPinning": 5,
+    "timeouts": 5,
+    "permissions": 20,
+    "caching": 18,
+    "concurrency": 20,
+    "shellHardening": 0,
+    "secretsManagement": 11
+  }
+}

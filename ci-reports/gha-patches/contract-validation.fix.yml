@@ -1,0 +1,14 @@
+workflow: contract-validation.yml
+patches:
+  - type: add_timeout
+    description: Add timeout to job 'breaking-change-detection'
+    changes:
+      timeout-minutes: 30
+  - type: add_timeout
+    description: Add timeout to job 'generate-documentation'
+    changes:
+      timeout-minutes: 30
+  - type: add_timeout
+    description: Add timeout to job 'pre-publish-validation'
+    changes:
+      timeout-minutes: 30

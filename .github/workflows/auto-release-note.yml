@@ -1,58 +1,66 @@
-name: ✫ Auto Release Note
-'on':
+name: ✫ Auto Release Note (Security Hardened)
+"on":
   push:
     tags:
       - v*
   workflow_dispatch: null
 permissions:
-  contents: write
+  contents: read
+  actions: read
 jobs:
   generate-note:
     name: 🖍 Generate Blog + Changelog
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: 20
       - name: 📦 Install dependencies
         run: npm ci
+        shell: bash
       - name: 📑 Generate release note from tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Generating blog + changelog for v$VERSION"
+          set -e
+          set -o pipefail
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Generating blog + changelog for v${VERSION}"
 
           git fetch --tags --force
 
-          node scripts/generate-release-note.js v$VERSION
+          node scripts/generate-release-note.js "v${VERSION}"
+        shell: bash
       - name: 📄 Auto-commit blog + changelog
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
         with:
-          commit_message: 'docs(release): auto-publish blog and changelog'
+          commit_message: "docs(release): auto-publish blog and changelog"
           file_pattern: CHANGELOG.md docs-site/blog/*.md
-          push_options: '--follow-tags'
+          push_options: "--follow-tags"
       - name: 🚀 Confirm complete
         run: echo "Release blog + changelog committed and pushed."
+        shell: bash
       - name: 📈 Emit Blog Badge Trigger
         run: echo "::set-output name=blog::generated"
+        shell: bash
       - name: 🌟 Trigger Badge (Optional)
         if: always()
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         with:
           issue-number: 1
-          body: 'Blog Post + Changelog updated for ${{ github.ref_name }} :rocket:'
+          body: "Blog Post + Changelog updated for ${{ github.ref_name }} :rocket:"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
       - name: 💬 Comment on PR (optional)
         if: github.event.pull_request.number != ''
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: 📢 Blog + Changelog updated for ${{ github.ref_name }} 🎉
+    timeout-minutes: 30
 concurrency:
   concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

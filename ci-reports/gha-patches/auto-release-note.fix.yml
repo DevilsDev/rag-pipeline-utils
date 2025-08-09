@@ -1,0 +1,6 @@
+workflow: auto-release-note.yml
+patches:
+  - type: add_timeout
+    description: Add timeout to job 'generate-note'
+    changes:
+      timeout-minutes: 30

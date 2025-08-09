@@ -1,0 +1,116 @@
+{
+  "executed": true,
+  "exitCode": 1,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 1,
+    "moderate": 16,
+    "high": 0,
+    "critical": 0
+  },
+  "totalVulnerabilities": 17,
+  "advisories": [
+    {
+      "package": "@docusaurus/core",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-content-blog",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-content-docs",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-content-pages",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-css-cascade-layers",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-debug",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-google-analytics",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-google-gtag",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-google-tag-manager",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-sitemap",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/plugin-svgr",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/preset-classic",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/theme-classic",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/theme-common",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "@docusaurus/theme-search-algolia",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "*"
+    },
+    {
+      "package": "brace-expansion",
+      "severity": "low",
+      "title": "Unknown vulnerability",
+      "range": "1.0.0 - 1.1.11 || 2.0.0 - 2.0.1"
+    },
+    {
+      "package": "webpack-dev-server",
+      "severity": "moderate",
+      "title": "Unknown vulnerability",
+      "range": "<=5.2.0"
+    }
+  ]
+}

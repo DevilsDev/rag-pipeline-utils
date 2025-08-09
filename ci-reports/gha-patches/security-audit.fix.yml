@@ -1,0 +1,7 @@
+workflow: security-audit.yml
+patches:
+  - type: add_permissions
+    description: Add minimal permissions
+    changes:
+      permissions:
+        contents: read

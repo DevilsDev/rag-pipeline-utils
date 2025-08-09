@@ -1,0 +1,978 @@
+{
+  "metadata": {
+    "timestamp": "2025-08-09T22:19:42.551Z",
+    "totalWorkflows": 20,
+    "auditedWorkflows": 20
+  },
+  "summary": {
+    "passed": 0,
+    "failed": 16,
+    "warnings": 4,
+    "securityIssues": 47
+  },
+  "workflows": [
+    {
+      "name": "auto-release-note.yml",
+      "displayName": "✫ Auto Release Note (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-note",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-note",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "blog-release.yml",
+      "displayName": "📝 Blog & Release Automation (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-content",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-content",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-content",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify-badges",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify-badges",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "summary",
+          "step": 0,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "ci.yml",
+      "displayName": "CI & Release (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "critical-checks",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "diagnostics",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "extended-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "critical-checks",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "extended-tests",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "comprehensive-testing.yml",
+      "displayName": "Comprehensive Testing (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "setup",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "unit-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "integration-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "performance-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "security-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "property-based-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "compatibility-tests",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-reports",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "setup",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "setup",
+          "step": 6,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "compatibility-tests",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "generate-reports",
+          "step": 7,
+          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "notify-results",
+          "step": 0,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "notify-results",
+          "step": 1,
+          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "notify-results",
+          "step": 2,
+          "message": "Action '8398a7/action-slack@v3' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "contract-validation.yml",
+      "displayName": "Contract Schema Validation (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "validate-contracts",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-documentation",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "pre-publish-validation",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-contracts",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "breaking-change-detection",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "breaking-change-detection",
+          "step": 5,
+          "message": "Action 'actions/github-script@v7' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-documentation",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "deploy-production.yml",
+      "displayName": "Deploy to Production (Security Hardened)",
+      "issues": [],
+      "warnings": [],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "container-security",
+          "step": 1,
+          "message": "Action 'github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f' not pinned to SHA - supply chain risk"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-staging",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-staging",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-production",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "deploy-production",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "docs-ci.yml",
+      "displayName": "📘 Docs CI (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "docs-ci",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": false
+      },
+      "status": "warning"
+    },
+    {
+      "name": "docs-deploy.yml",
+      "displayName": "📚 Deploy Docs to GitHub Pages (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "deploy",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "deploy",
+          "step": 5,
+          "message": "Action 'peaceiris/actions-gh-pages@v4' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "enforce-release-review.yml",
+      "displayName": "🛡 Release Review Passed (Security Hardened)",
+      "issues": [],
+      "warnings": [],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "review",
+          "step": 1,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": false,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "post-release-generate-blog.yml",
+      "displayName": "Auto Generate Blog + Changelog (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "generate-blog",
+          "step": 7,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-blog",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "generate-blog",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "publish-release-blog.yml",
+      "displayName": "Publish Release Blog Post (Security Hardened)",
+      "issues": [],
+      "warnings": [],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "publish-blog-post",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "release-protection.yml",
+      "displayName": "Release Protection (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "create-immutable-release",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "validate-release-tags",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "enforce-immutability",
+          "step": 1,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "enforce-immutability",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "audit-releases",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "audit-releases",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "create-immutable-release",
+          "step": 4,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "action_pinning",
+          "severity": "critical",
+          "job": "create-immutable-release",
+          "step": 5,
+          "message": "Action 'softprops/action-gh-release@v1' not pinned to SHA - supply chain risk"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "release-sync.yml",
+      "displayName": "🔄 Release Sync (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "publish-release-blog",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "publish-release-blog",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-label-sync.yml",
+      "displayName": "🔖 Sync Roadmap Labels (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "warning"
+    },
+    {
+      "name": "roadmap-labels.yml",
+      "displayName": "🔖 Sync Roadmap Labels (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync-labels",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "sync-labels",
+          "step": 3,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-maintenance.yml",
+      "displayName": "🗺️ Roadmap Maintenance (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-maintenance",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "roadmap-maintenance",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": true
+      },
+      "status": "failed"
+    },
+    {
+      "name": "roadmap-sync.yml",
+      "displayName": "🚀 Roadmap Sync (Labels + Issues) (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "roadmap-sync",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "warning"
+    },
+    {
+      "name": "security-audit.yml",
+      "displayName": "Security Audit (Security Hardened)",
+      "issues": [],
+      "warnings": [],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "security-audit",
+          "step": 5,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "security-audit",
+          "step": 8,
+          "message": "Potential shell injection vulnerability detected"
+        },
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "security-audit",
+          "step": 9,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    },
+    {
+      "name": "sync-roadmap.yml",
+      "displayName": "🚀 Sync Roadmap to GitHub Issues (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 2,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 3,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 5,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        },
+        {
+          "type": "shell_hardening",
+          "job": "sync",
+          "step": 6,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": true,
+        "concurrency": true,
+        "shellHardening": false,
+        "secretsManagement": true
+      },
+      "status": "warning"
+    },
+    {
+      "name": "verify-blog-badge.yml",
+      "displayName": "🖍 Blog Badge Verification (Security Hardened)",
+      "issues": [],
+      "warnings": [
+        {
+          "type": "shell_hardening",
+          "job": "verify",
+          "step": 4,
+          "message": "Consider using shell hardening (set -e, set -o pipefail)"
+        }
+      ],
+      "securityIssues": [
+        {
+          "type": "shell_injection",
+          "severity": "high",
+          "job": "verify",
+          "step": 2,
+          "message": "Potential shell injection vulnerability detected"
+        }
+      ],
+      "bestPractices": {
+        "actionPinning": true,
+        "timeouts": true,
+        "permissions": true,
+        "caching": false,
+        "concurrency": true,
+        "shellHardening": true,
+        "secretsManagement": false
+      },
+      "status": "failed"
+    }
+  ],
+  "patches": [],
+  "bestPractices": {
+    "actionPinning": 20,
+    "timeouts": 20,
+    "permissions": 20,
+    "caching": 18,
+    "concurrency": 20,
+    "shellHardening": 16,
+    "secretsManagement": 11
+  }
+}

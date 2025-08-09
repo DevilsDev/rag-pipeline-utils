@@ -1,5 +1,5 @@
-name: Auto Generate Blog + Changelog
-'on':
+name: Auto Generate Blog + Changelog (Security Hardened)
+"on":
   release:
     types:
       - published
@@ -11,11 +11,10 @@ name: Auto Generate Blog + Changelog
       dry_run:
         description: Simulate without pushing
         required: false
-        default: 'false'
+        default: "false"
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
+  actions: read
 jobs:
   generate-blog:
     name: 📓 Generate Blog Post + Changelog
@@ -24,43 +23,52 @@ jobs:
       blog_generated: ${{ steps.output_blog.outputs.blog_generated }}
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           fetch-depth: 0
       - name: 🛠 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
-          node-version: '20'
+          node-version: "20"
       - name: 📦 Install dependencies
         run: npm ci
+        shell: bash
       - name: 🔖 Detect version
         id: version
         run: |
-          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          echo "dry_run=${{ github.event.inputs.dry_run || 'false' }}" >> "$GITHUB_OUTPUT"
+          set -e
+          set -o pipefail
+          echo "tag="${GITHUB_REF#refs/tags/}"" >> ""$GITHUB_OUTPUT""
+          echo "dry_run="${{ github.event.inputs.dry_run || 'false' }"}" >> ""$GITHUB_OUTPUT""
+        shell: bash
       - name: 📝 Generate release notes
         id: generate_notes
         run: |
-          echo "Generating release notes for ${{ steps.version.outputs.tag }}"
-          node scripts/generate-release-note.js "${{ steps.version.outputs.tag }}"
+          set -e
+          set -o pipefail
+          echo "Generating release notes for "${{ steps.version.outputs.tag }"}"
+          node scripts/generate-release-note.js ""${{ steps.version.outputs.tag }"}"
         env:
-          DRY_RUN: ${{ steps.version.outputs.dry_run }}
+          DRY_RUN: "\"${{ steps.version.outputs.dry_run }}\""
+        shell: bash
       - name: 🔒 Commit generated blog and changelog
         if: steps.version.outputs.dry_run != 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
         with:
-          commit_message: 'docs(release): publish blog and changelog for ${{ steps.version.outputs.tag }}'
+          commit_message: "docs(release): publish blog and changelog for ${{ steps.version.outputs.tag }}"
           file_pattern: CHANGELOG.md docs-site/blog/*.md
       - name: 💬 Optionally comment on release
         if: steps.version.outputs.dry_run != 'true'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         with:
           issue-number: 1
           body: 📝 Blog Post + Changelog auto-updated for ${{ steps.version.outputs.tag }} 🚀
         continue-on-error: true
       - name: ✅ Output success for badge
         id: output_blog
-        run: echo "blog_generated=true" >> "$GITHUB_OUTPUT"
+        run: echo "blog_generated=true" >> ""$GITHUB_OUTPUT""
+        shell: bash
+    timeout-minutes: 30
 concurrency:
   concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
