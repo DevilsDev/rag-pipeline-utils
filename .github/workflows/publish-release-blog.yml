@@ -1,25 +1,21 @@
 name: Publish Release Blog Post
-
-on:
+'on':
   release:
-    types: [published]
-
+    types:
+      - published
 jobs:
   publish-blog-post:
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-
       - name: 🔧 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
       - name: ✏️ Generate blog post
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
@@ -39,9 +35,15 @@ jobs:
           echo "- 🚀 Auto-published blog from GitHub Release" >> $FILE
           echo "- 📦 Version bump: ${VERSION}" >> $FILE
           echo "- 📘 See CHANGELOG.md for full details" >> $FILE
-
       - name: 📋 Commit blog post
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs(blog): add release post for ${{ github.ref_name }}"
-          file_pattern: "docs-site/blog/*.md"
+          commit_message: 'docs(blog): add release post for ${{ github.ref_name }}'
+          file_pattern: docs-site/blog/*.md
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+permissions:
+  permissions:
+    contents: read
