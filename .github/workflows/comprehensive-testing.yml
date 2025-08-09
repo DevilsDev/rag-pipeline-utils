@@ -422,7 +422,7 @@ jobs:
           destination_dir: test-reports/${{ github.run_id }}
       - name: Comment PR with test results
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             const fs = require('fs');
@@ -477,7 +477,7 @@ jobs:
           fi
         shell: bash
       - name: Create status check
-        uses: actions/github-script@v6
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             github.rest.repos.createCommitStatus({
@@ -491,7 +491,7 @@ jobs:
             });
       - name: Slack notification
         if: failure() && github.ref == 'refs/heads/main'
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@28ba43ae48961b90ced0e7aac97fc847a4ab1666
         with:
           status: failure
           channel: "#dev-alerts"

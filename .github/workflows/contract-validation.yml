@@ -240,7 +240,7 @@ jobs:
         shell: bash
       - name: Comment on PR with breaking change analysis
         if: github.event_name == 'pull_request' && failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@35b1cdd1b2c1fc704b1cd442536d6e4b28b2ba4e
         with:
           script: |
             const comment = `## 🚨 Breaking Changes Detected

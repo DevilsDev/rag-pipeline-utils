@@ -48,7 +48,9 @@
     "ci:targeted-fixes": "node scripts/ci/targeted-security-fixes.js",
     "ci:comprehensive-hardening": "node scripts/ci/comprehensive-hardening.js",
     "ci:shell-security": "node scripts/ci/shell-security-hardening.js",
-    "ci:final-fixes": "node scripts/ci/final-shell-injection-fixes.js"
+    "ci:final-fixes": "node scripts/ci/final-shell-injection-fixes.js",
+    "ci:test-workflows": "node scripts/ci/test-workflows.js",
+    "ci:fix-remaining": "node scripts/ci/fix-remaining-actions.js"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
