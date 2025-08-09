@@ -1,53 +1,40 @@
-# .github/workflows/docs-deploy.yml
-# Version: 2.0.0
-# Description: Auto-build Docusaurus site and deploy to GitHub Pages
-# Author: Ali Kahwaji
-
 name: 📚 Deploy Docs to GitHub Pages
-
-on:
+'on':
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - 'docs-site/**'
-      - 'docs/**'
-      - 'blog/**'
-      - 'sidebars.js'
-      - 'docusaurus.config.js'
-      - 'package.json'
-  workflow_dispatch:
-
+      - docs-site/**
+      - docs/**
+      - blog/**
+      - sidebars.js
+      - docusaurus.config.js
+      - package.json
+  workflow_dispatch: null
 permissions:
   contents: write
-
 jobs:
   deploy:
     name: Deploy Website
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: 🛠 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-
+          cache: npm
       - name: 📦 Install dependencies
         run: npm ci
-
       - name: 🛠 Build documentation
         run: npm run docs:build
-
       - name: 🔐 Configure Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -57,3 +44,7 @@ jobs:
           keep_files: true
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
