@@ -1,34 +1,33 @@
-# Contract Schema Validation Workflow
-# Version: 2.0.0 - Security Hardened
-# Security Review: 2025-08-08 - All actions SHA pinned, permissions minimized
-# Validates plugin contracts and prevents breaking changes before publishing
 name: Contract Schema Validation
-
-on:
+'on':
   push:
-    branches: [ main, develop ]
-    paths: 
-      - 'src/contracts/**'
-      - 'src/plugins/**'
-      - 'package.json'
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
-  pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
     paths:
-      - 'src/contracts/**'
-      - 'src/plugins/**'
-      - 'package.json'
+      - src/contracts/**
+      - src/plugins/**
+      - package.json
     paths-ignore:
-      - 'docs/**'
+      - docs/**
       - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
+      - .github/ISSUE_TEMPLATE/**
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - src/contracts/**
+      - src/plugins/**
+      - package.json
+    paths-ignore:
+      - docs/**
+      - '*.md'
+      - .github/ISSUE_TEMPLATE/**
   workflow_dispatch:
     inputs:
       validation_type:
-        description: 'Type of validation to run'
+        description: Type of validation to run
         required: true
         type: choice
         options:
@@ -36,25 +35,18 @@ on:
           - breaking-change-check
           - contract-documentation
           - typescript-generation
-
-# Concurrency controls to prevent resource conflicts
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
-# Minimal permissions (security-first)
 permissions:
   contents: read
   pull-requests: write
   issues: write
-
 env:
   NODE_VERSION: '20'
   FORCE_COLOR: 1
   CI: true
-
 jobs:
-  # Validate contract schemas and plugin implementations
   validate-contracts:
     name: Validate Plugin Contracts
     runs-on: ubuntu-latest
@@ -62,29 +54,22 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    
     steps:
       - name: Checkout code
-        # actions/checkout@v4
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          
       - name: Setup Node.js
-        # actions/setup-node@v4
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-          
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
-        
       - name: Run contract schema validation tests
         run: |
           npm test -- __tests__/ci/contract-schema-validation.test.js --verbose
-          
       - name: Generate contract validation report
         run: |
           echo "# Contract Validation Report" > contract-validation-report.md
@@ -92,10 +77,10 @@ jobs:
           echo "**Generated:** $(date -u)" >> contract-validation-report.md
           echo "**Commit:** ${{ github.sha }}" >> contract-validation-report.md
           echo "" >> contract-validation-report.md
-          
+
           # Run validation and capture output
           npm test -- __tests__/ci/contract-schema-validation.test.js --reporter=json > test-results.json || true
-          
+
           # Parse results and add to report
           if [ -f test-results.json ]; then
             node -e "
@@ -134,51 +119,43 @@ jobs:
               }
             " >> contract-validation-report.md
           fi
-          
       - name: Upload validation report
         uses: actions/upload-artifact@v4
         with:
           name: contract-validation-report
           path: contract-validation-report.md
           retention-days: 30
-
-  # Check for breaking changes in contracts
   breaking-change-detection:
     name: Breaking Change Detection
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.event.inputs.validation_type == 'breaking-change-check'
-    
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v4
         with:
           path: current
-          
       - name: Checkout base branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref || 'main' }}
           path: base
-          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
       - name: Install dependencies
         run: |
           cd current && npm ci
           cd ../base && npm ci
-          
       - name: Compare contract versions
         run: |
           echo "🔍 Checking for breaking changes in plugin contracts..."
-          
+
           # Compare contract files
           cd current
-          
+
           breaking_changes=0
-          
+
           for contract_file in src/contracts/*.json; do
             if [ -f "$contract_file" ]; then
               filename=$(basename "$contract_file")
@@ -244,69 +221,62 @@ jobs:
               echo "---"
             fi
           done
-          
+
           if [ $breaking_changes -gt 0 ]; then
             echo "❌ $breaking_changes breaking changes detected!"
             exit 1
           else
             echo "✅ No breaking changes detected"
           fi
-          
       - name: Comment on PR with breaking change analysis
         if: github.event_name == 'pull_request' && failure()
         uses: actions/github-script@v7
         with:
           script: |
             const comment = `## 🚨 Breaking Changes Detected
-            
+
             This PR contains breaking changes to plugin contracts that could affect existing implementations.
-            
+
             ### What are breaking changes?
             - Removing existing methods from contracts
             - Removing required parameters from existing methods
             - Changing return types of existing methods
             - Changing parameter types of existing methods
-            
+
             ### Next Steps
             1. **If intentional:** Bump the major version in the contract
             2. **If unintentional:** Revert the breaking changes
             3. **Migration needed:** Provide migration guide for plugin developers
-            
+
             ### Contract Validation
             All contract changes are automatically validated to ensure backward compatibility.
-            
+
             Please review the changes and update accordingly.`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: comment
             });
-
-  # Generate contract documentation
   generate-documentation:
     name: Generate Contract Documentation
     runs-on: ubuntu-latest
     if: github.event.inputs.validation_type == 'contract-documentation' || github.ref == 'refs/heads/main'
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          
+          cache: npm
       - name: Install dependencies
         run: npm ci
-        
       - name: Generate contract documentation
         run: |
           mkdir -p docs/contracts
-          
+
           # Generate markdown documentation from contracts
           node -e "
             const fs = require('fs');
@@ -378,11 +348,10 @@ jobs:
             fs.writeFileSync(outputFile, doc);
             console.log('Contract documentation generated: ' + outputFile);
           "
-          
       - name: Generate TypeScript definitions
         run: |
           mkdir -p types
-          
+
           # Generate TypeScript definitions from contracts
           node -e "
             const fs = require('fs');
@@ -441,13 +410,12 @@ jobs:
             fs.writeFileSync(outputFile, typedef);
             console.log('TypeScript definitions generated: ' + outputFile);
           "
-          
       - name: Commit generated documentation
         if: github.ref == 'refs/heads/main'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if [ -n "$(git status --porcelain)" ]; then
             git add docs/contracts/ types/
             git commit -m "docs: auto-generate contract documentation and TypeScript definitions"
@@ -455,49 +423,50 @@ jobs:
           else
             echo "No changes to commit"
           fi
-
-  # Pre-publish validation
   pre-publish-validation:
     name: Pre-Publish Contract Validation
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          
+          cache: npm
       - name: Install dependencies
         run: npm ci
-        
       - name: Validate all contracts before publish
-        run: |
+        run: >
           echo "🔍 Running comprehensive contract validation before publish..."
-          
+
+
           # Run all contract validation tests
+
           npm test -- __tests__/ci/contract-schema-validation.test.js
-          
+
+
           # Validate package.json includes contract files
-          if ! jq -e '.files[] | select(contains("contracts") or contains("src/contracts"))' package.json > /dev/null; then
+
+          if ! jq -e '.files[] | select(contains("contracts") or contains("src/contracts"))' package.json > /dev/null;
+          then
             echo "❌ Contract files not included in package.json files array"
             exit 1
           fi
-          
+
+
           # Validate all plugins have proper metadata
+
           find src/plugins -name "*.js" -not -path "*/mocks/*" | while read -r plugin_file; do
             if ! grep -q "metadata.*:" "$plugin_file"; then
               echo "❌ Plugin missing metadata: $plugin_file"
               exit 1
             fi
           done
-          
+
+
           echo "✅ All contract validations passed - ready for publish"
-          
       - name: Block publish on validation failure
         if: failure()
         run: |
