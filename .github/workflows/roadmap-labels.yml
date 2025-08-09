@@ -1,31 +1,21 @@
-# Version: 1.0.0
-# Description: Ensures roadmap labels (priority, group) exist in the repo
-# Author: Ali Kahwaji
-
 name: 🔖 Sync Roadmap Labels
-
-on:
-  workflow_dispatch:
+'on':
+  workflow_dispatch: null
   push:
     paths:
-      - '.github/workflows/roadmap-labels.yml'
-
+      - .github/workflows/roadmap-labels.yml
 jobs:
   sync-labels:
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
-
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: 📦 Install octokit
         run: npm install octokit
-
       - name: 🔖 Run label sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,3 +55,10 @@ jobs:
             process.exit(1);
           });
           EOF
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+permissions:
+  permissions:
+    contents: read
