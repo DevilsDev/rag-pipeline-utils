@@ -184,7 +184,7 @@ jobs:
           set -e
           set -o pipefail
           set -Eeuo pipefail
-          timeout ""${TEST_TIMEOUT}"m" npm test -- --testPathPattern=""$TEST_PATTERN"" --maxWorkers=1 || echo "${${TEST_NAME}}"" tests completed with issues"
+          timeout "${TEST_TIMEOUT}m" npm test -- --testPathPattern="$TEST_PATTERN" --maxWorkers=1 || echo "${TEST_NAME} tests completed with issues"
         continue-on-error: true
         timeout-minutes: ${{ matrix.test-suite.timeout }}
   deploy:

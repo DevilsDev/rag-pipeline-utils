@@ -219,7 +219,7 @@ jobs:
             echo "- **Moderate:** ${MODERATE_VULNS}"
             echo "- **Low:** ${LOW_VULNS}"
             echo ""
-            echo "📊 [View detailed audit reports in artifacts](https://github.com/${${REPO}}""/actions/runs/"$RUN_ID")"
+            echo "📊 [View detailed audit reports in artifacts](https://github.com/${REPO}/actions/runs/${RUN_ID})"
           } >> ""$GITHUB_STEP_SUMMARY""
       - name: Fail on critical vulnerabilities
         if: steps.parse-audit.outputs.should_fail == 'true'
@@ -253,7 +253,6 @@ jobs:
         with:
           fail-on-severity: high
           allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
-          deny-licenses: GPL-2.0, GPL-3.0
           comment-summary-in-pr: true
           vulnerability-check: true
           license-check: true
