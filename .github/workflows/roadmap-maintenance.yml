@@ -1,67 +1,54 @@
-# .github/workflows/roadmap-maintenance.yml
-# Version: 2.0.0
-# Description: Consolidated roadmap management - labels, issues, and synchronization
-# Author: Ali Kahwaji
-# Replaces: roadmap-sync.yml, sync-roadmap.yml, roadmap-label-sync.yml, roadmap-labels.yml
-
 name: 🗺️ Roadmap Maintenance
-
-on:
+'on':
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - '.github/PROJECT_ROADMAP.md'
-      - '.github/roadmap-labels.yml'
-      - '.github/workflows/roadmap-maintenance.yml'
-      - 'scripts/**roadmap**.js'
-      - 'scripts/ensure-roadmap-labels.js'
-      - 'scripts/create-roadmap-issues.js'
+      - .github/PROJECT_ROADMAP.md
+      - .github/roadmap-labels.yml
+      - .github/workflows/roadmap-maintenance.yml
+      - scripts/**roadmap**.js
+      - scripts/ensure-roadmap-labels.js
+      - scripts/create-roadmap-issues.js
   workflow_dispatch:
     inputs:
       sync_labels:
-        description: 'Sync roadmap labels'
+        description: Sync roadmap labels
         required: false
         default: true
         type: boolean
       sync_issues:
-        description: 'Sync roadmap issues'
+        description: Sync roadmap issues
         required: false
         default: true
         type: boolean
       force_update:
-        description: 'Force update existing issues'
+        description: Force update existing issues
         required: false
         default: false
         type: boolean
-
 permissions:
   contents: read
   issues: write
-
 concurrency:
   group: roadmap-maintenance-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   roadmap-maintenance:
     name: 🔄 Sync Labels & Issues
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-
+          cache: npm
       - name: 📦 Install dependencies
         run: npm ci
-
       - name: 🔖 Sync roadmap labels
         if: ${{ github.event.inputs.sync_labels != 'false' }}
         env:
@@ -69,7 +56,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
         run: |
           echo "🔖 Syncing roadmap labels..."
-          
+
           # Check if script exists, fallback to inline implementation
           if [ -f "scripts/ensure-roadmap-labels.js" ]; then
             node scripts/ensure-roadmap-labels.js
@@ -133,7 +120,6 @@ jobs:
             syncLabels().catch(console.error);
           EOF
           fi
-
       - name: 🗂️ Sync roadmap issues
         if: ${{ github.event.inputs.sync_issues != 'false' }}
         env:
@@ -142,14 +128,13 @@ jobs:
           FORCE_UPDATE: ${{ github.event.inputs.force_update }}
         run: |
           echo "🗂️ Syncing roadmap issues..."
-          
+
           if [ -f "scripts/create-roadmap-issues.js" ]; then
             node scripts/create-roadmap-issues.js
           else
             echo "⚠️ scripts/create-roadmap-issues.js not found, skipping issue sync"
             echo "💡 Consider creating this script for automated issue management"
           fi
-
       - name: ✅ Roadmap maintenance completed
         run: |
           echo "✅ Roadmap maintenance workflow completed successfully"
