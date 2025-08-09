@@ -1,32 +1,28 @@
-# Security Audit Workflow - Security Hardened
-# Automated security scanning and vulnerability detection
-# Version: 2.0.0 - SHA pinned, permissions minimized, shell hardened
 name: Security Audit
-
-# Trigger controls with loop guards
-on:
-  # Run on every push to main and pull requests
+'on':
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
     paths-ignore:
-      - 'docs/**'
+      - docs/**
       - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
+      - .github/ISSUE_TEMPLATE/**
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
     paths-ignore:
-      - 'docs/**'
+      - docs/**
       - '*.md'
-  # Run weekly security scans
   schedule:
-    - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
-  # Allow manual triggering
+    - cron: 0 2 * * 1
   workflow_dispatch:
     inputs:
       audit_level:
-        description: 'Audit level (info, low, moderate, high, critical)'
+        description: Audit level (info, low, moderate, high, critical)
         required: false
-        default: 'moderate'
+        default: moderate
         type: choice
         options:
           - info
@@ -34,46 +30,36 @@ on:
           - moderate
           - high
           - critical
-
-# Concurrency controls
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   security-audit:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    
     permissions:
       contents: read
       security-events: write
       pull-requests: write
-      
     steps:
       - name: Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
           fetch-depth: 1
-        
       - name: Setup Node.js
-        # actions/setup-node@v4.1.0
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-          
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
         shell: bash
         run: |
           set -Eeuo pipefail
           npm ci
         timeout-minutes: 10
-        
       - name: Run npm audit (JSON output)
         id: npm-audit-json
         shell: bash
@@ -83,7 +69,6 @@ jobs:
           echo "audit_exit_code=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
         timeout-minutes: 5
-        
       - name: Run npm audit (human readable)
         id: npm-audit
         shell: bash
@@ -96,7 +81,6 @@ jobs:
           echo "audit_exit_code=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
         timeout-minutes: 5
-        
       - name: Parse audit results
         id: parse-audit
         shell: bash
@@ -137,9 +121,7 @@ jobs:
             echo "total_vulnerabilities=0" >> "$GITHUB_OUTPUT"
             echo "should_fail=false" >> "$GITHUB_OUTPUT"
           fi
-          
       - name: Upload audit artifacts
-        # actions/upload-artifact@v4.4.3
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
         if: always()
         with:
@@ -148,10 +130,8 @@ jobs:
             npm-audit-report.json
             npm-audit-output.txt
           retention-days: 30
-          
       - name: Comment on PR with audit results
         if: github.event_name == 'pull_request'
-        # actions/github-script@v7.0.1
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         env:
           TOTAL_VULNS: ${{ steps.parse-audit.outputs.total_vulnerabilities }}
@@ -160,16 +140,24 @@ jobs:
           MODERATE_VULNS: ${{ steps.parse-audit.outputs.moderate_vulnerabilities }}
           LOW_VULNS: ${{ steps.parse-audit.outputs.low_vulnerabilities }}
         with:
-          script: |
+          script: >
             const fs = require('fs');
+
             // Use environment variables instead of direct interpolation
+
             const totalVulns = process.env.TOTAL_VULNS || '0';
+
             const criticalVulns = process.env.CRITICAL_VULNS || '0';
+
             const highVulns = process.env.HIGH_VULNS || '0';
+
             const moderateVulns = process.env.MODERATE_VULNS || '0';
+
             const lowVulns = process.env.LOW_VULNS || '0';
-            
+
+
             let auditOutput = '';
+
             try {
               auditOutput = fs.readFileSync('npm-audit-output.txt', 'utf8');
               // Sanitize output to prevent injection
@@ -180,36 +168,53 @@ jobs:
             } catch (error) {
               auditOutput = 'No audit output available';
             }
-            
+
+
             const body = `## 🔒 Security Audit Results
-            
+
+
             **Total Vulnerabilities:** ${totalVulns}
+
             - 🔴 Critical: ${criticalVulns}
+
             - 🟠 High: ${highVulns}
+
             - 🟡 Moderate: ${moderateVulns}
+
             - 🟢 Low: ${lowVulns}
-            
+
+
             <details>
+
             <summary>📋 Detailed Audit Output</summary>
-            
+
+
             \`\`\`
+
             ${auditOutput.slice(0, 4000)}${auditOutput.length > 4000 ? '\n... (truncated)' : ''}
+
             \`\`\`
-            
+
+
             </details>
-            
-            ${parseInt(criticalVulns) > 0 ? '⚠️ **Action Required:** Critical vulnerabilities detected. Please address before merging.' : ''}
+
+
+            ${parseInt(criticalVulns) > 0 ? '⚠️ **Action Required:** Critical vulnerabilities detected. Please address
+            before merging.' : ''}
+
             ${parseInt(highVulns) > 5 ? '⚠️ **Warning:** High number of high-severity vulnerabilities detected.' : ''}
+
             ${parseInt(totalVulns) === 0 ? '✅ **All Clear:** No vulnerabilities detected!' : ''}
+
             `;
-            
+
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body
             });
-            
       - name: Create security summary
         shell: bash
         env:
@@ -232,7 +237,6 @@ jobs:
             echo ""
             echo "📊 [View detailed audit reports in artifacts](https://github.com/$REPO/actions/runs/$RUN_ID)"
           } >> "$GITHUB_STEP_SUMMARY"
-          
       - name: Fail on critical vulnerabilities
         if: steps.parse-audit.outputs.should_fail == 'true'
         shell: bash
@@ -243,28 +247,22 @@ jobs:
           echo "❌ Build failed due to: $FAIL_REASON"
           echo "Please run 'npm audit fix' or manually address the vulnerabilities"
           exit 1
-          
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: github.event_name == 'pull_request'
-    
     permissions:
       contents: read
       pull-requests: write
       security-events: write
-      
     steps:
       - name: Checkout code
-        # actions/checkout@v4.2.2
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-          fetch-depth: 0  # Need full history for dependency review
-        
+          fetch-depth: 0
       - name: Dependency Review
-        # actions/dependency-review-action@v4.4.0
         uses: actions/dependency-review-action@4081bf99e2866ebe428fc0477b69eb4fcda7220a
         with:
           fail-on-severity: high
@@ -273,3 +271,6 @@ jobs:
           comment-summary-in-pr: true
           vulnerability-check: true
           license-check: true
+permissions:
+  permissions:
+    contents: read
