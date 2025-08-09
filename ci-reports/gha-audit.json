@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2025-08-09T22:19:42.551Z",
+    "timestamp": "2025-08-09T22:35:46.433Z",
     "totalWorkflows": 20,
     "auditedWorkflows": 20
   },
@@ -8,7 +8,7 @@
     "passed": 0,
     "failed": 16,
     "warnings": 4,
-    "securityIssues": 47
+    "securityIssues": 43
   },
   "workflows": [
     {
@@ -249,32 +249,11 @@
           "message": "Potential shell injection vulnerability detected"
         },
         {
-          "type": "action_pinning",
-          "severity": "critical",
-          "job": "generate-reports",
-          "step": 7,
-          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
-        },
-        {
           "type": "shell_injection",
           "severity": "high",
           "job": "notify-results",
           "step": 0,
           "message": "Potential shell injection vulnerability detected"
-        },
-        {
-          "type": "action_pinning",
-          "severity": "critical",
-          "job": "notify-results",
-          "step": 1,
-          "message": "Action 'actions/github-script@v6' not pinned to SHA - supply chain risk"
-        },
-        {
-          "type": "action_pinning",
-          "severity": "critical",
-          "job": "notify-results",
-          "step": 2,
-          "message": "Action '8398a7/action-slack@v3' not pinned to SHA - supply chain risk"
         }
       ],
       "bestPractices": {
@@ -326,13 +305,6 @@
           "job": "breaking-change-detection",
           "step": 4,
           "message": "Potential shell injection vulnerability detected"
-        },
-        {
-          "type": "action_pinning",
-          "severity": "critical",
-          "job": "breaking-change-detection",
-          "step": 5,
-          "message": "Action 'actions/github-script@v7' not pinned to SHA - supply chain risk"
         },
         {
           "type": "shell_injection",

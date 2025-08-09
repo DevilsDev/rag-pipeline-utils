@@ -7,7 +7,7 @@
 - **Passed:** 0 ✅
 - **Failed:** 16 ❌
 - **Warnings:** 4 ⚠️
-- **Security Issues:** 47 🔒
+- **Security Issues:** 43 🔒
 
 ## Best Practices Compliance
 
@@ -106,14 +106,11 @@
 
 **Status:** ❌ FAILED
 
-**Security Issues (7):**
+**Security Issues (4):**
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
-- **CRITICAL:** Action 'actions/github-script@v6' not pinned to SHA - supply chain risk
 - **HIGH:** Potential shell injection vulnerability detected
-- **CRITICAL:** Action 'actions/github-script@v6' not pinned to SHA - supply chain risk
-- **CRITICAL:** Action '8398a7/action-slack@v3' not pinned to SHA - supply chain risk
 
 
 
@@ -142,10 +139,9 @@
 
 **Status:** ❌ FAILED
 
-**Security Issues (6):**
+**Security Issues (5):**
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
-- **CRITICAL:** Action 'actions/github-script@v7' not pinned to SHA - supply chain risk
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
@@ -531,7 +527,7 @@ No patches required - all workflows are compliant!
 
 ## Security Assessment
 
-- **Critical Issues:** 7 ❌
+- **Critical Issues:** 3 ❌
 - **High Issues:** 40 ⚠️
 - **Medium Issues:** 0
 
