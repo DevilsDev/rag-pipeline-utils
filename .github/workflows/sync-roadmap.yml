@@ -1,62 +1,52 @@
-# .github/workflows/sync-roadmap.yml
-# Version: 2.1.0
-# Description: Unified workflow to sync roadmap issues, labels, and states
-# Author: Ali Kahwaji
-
 name: 🚀 Sync Roadmap to GitHub Issues
-
-on:
-  workflow_dispatch:
+'on':
+  workflow_dispatch: null
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - '.github/PROJECT_ROADMAP.md'
-      - '.github/workflows/sync-roadmap.yml'
-      - 'scripts/**.js'
-
+      - .github/PROJECT_ROADMAP.md
+      - .github/workflows/sync-roadmap.yml
+      - scripts/**.js
 permissions:
   contents: write
   issues: write
-
 jobs:
   sync:
     name: 📌 Roadmap Sync
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout
         uses: actions/checkout@v4
-
       - name: 🛠 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: 📦 Install roadmap dependencies
         run: npm install
         env:
           NODE_ENV: development
-
       - name: 🔖 Ensure roadmap labels exist
         run: node scripts/ensure-roadmap-labels.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
-
       - name: 🗂 Sync roadmap issues
         run: node scripts/create-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
-
       - name: 🏷 Apply labels to roadmap issues
         run: node scripts/label-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
-
       - name: ✅ Close completed issues
         run: node scripts/close-done-roadmap-issues.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
