@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Unit tests for Enhanced CLI Commands
  * Tests comprehensive CLI functionality, flags, and command integration
  */

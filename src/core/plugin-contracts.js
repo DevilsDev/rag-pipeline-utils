@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Version: 2.0.0
  * Description: Shared plugin interface contracts for runtime + CI mock validation
  * Author: Ali Kahwaji
@@ -9,7 +10,7 @@ const pluginContracts = {
     requiredMethods: ['load'],
     methodSignatures: {
       load: {
-        params: ['filePath'],
+        params: ['_filePath'],
         paramTypes: ['string'],
         returnType: 'Promise<Array<{chunk: () => string[]}>>',
         description: 'Load and parse a document from the given file path'

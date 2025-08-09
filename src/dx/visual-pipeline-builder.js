@@ -5,20 +5,20 @@
  * Provides visual representation of pipeline components and their connections.
  */
 
-const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
+const EventEmitter = require('events'); // eslint-disable-line global-require
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
 class VisualPipelineBuilder extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.options = {
-      port: options.port || 3001,
-      host: options.host || 'localhost',
-      autoSave: options.autoSave !== false,
-      theme: options.theme || 'light',
-      ...options
+    this._options = {
+      port: _options.port || 3001,
+      host: _options.host || 'localhost',
+      autoSave: _options.autoSave !== false,
+      theme: _options.theme || 'light',
+      ..._options
     };
     
     this.pipelines = new Map();
@@ -36,74 +36,74 @@ class VisualPipelineBuilder extends EventEmitter {
     const defaultComponents = [
       {
         id: 'loader',
-        type: 'input',
+        _type: 'input',
         name: 'Document Loader',
         description: 'Load documents from various sources',
         inputs: [],
         outputs: ['documents'],
-        config: {
-          source: { type: 'string', required: true },
-          format: { type: 'select', options: ['json', 'txt', 'pdf', 'docx'] }
+        _config: {
+          source: { _type: 'string', required: true },
+          format: { _type: 'select', _options: ['json', 'txt', 'pdf', 'docx'] }
         }
       },
       {
         id: 'embedder',
-        type: 'processor',
+        _type: 'processor',
         name: 'Text Embedder',
         description: 'Generate embeddings for text content',
         inputs: ['documents'],
         outputs: ['embeddings'],
-        config: {
-          model: { type: 'string', default: 'openai' },
-          dimensions: { type: 'number', default: 1536 }
+        _config: {
+          model: { _type: 'string', default: 'openai' },
+          dimensions: { _type: 'number', default: 1536 }
         }
       },
       {
         id: 'retriever',
-        type: 'processor',
+        _type: 'processor',
         name: 'Document Retriever',
         description: 'Retrieve relevant documents based on query',
         inputs: ['embeddings', 'query'],
         outputs: ['results'],
-        config: {
-          topK: { type: 'number', default: 5 },
-          threshold: { type: 'number', default: 0.7 }
+        _config: {
+          topK: { _type: 'number', default: 5 },
+          threshold: { _type: 'number', default: 0.7 }
         }
       },
       {
         id: 'llm',
-        type: 'processor',
+        _type: 'processor',
         name: 'Language Model',
         description: 'Generate responses using LLM',
         inputs: ['results', 'query'],
         outputs: ['response'],
-        config: {
-          model: { type: 'string', default: 'gpt-3.5-turbo' },
-          temperature: { type: 'number', default: 0.7 },
-          maxTokens: { type: 'number', default: 1000 }
+        _config: {
+          model: { _type: 'string', default: 'gpt-3.5-turbo' },
+          temperature: { _type: 'number', default: 0.7 },
+          maxTokens: { _type: 'number', default: 1000 }
         }
       },
       {
         id: 'reranker',
-        type: 'processor',
+        _type: 'processor',
         name: 'Result Reranker',
         description: 'Rerank search results for better relevance',
         inputs: ['results'],
         outputs: ['rankedResults'],
-        config: {
-          model: { type: 'string', default: 'cross-encoder' },
-          topK: { type: 'number', default: 3 }
+        _config: {
+          model: { _type: 'string', default: 'cross-encoder' },
+          topK: { _type: 'number', default: 3 }
         }
       },
       {
         id: 'evaluator',
-        type: 'output',
+        _type: 'output',
         name: 'Response Evaluator',
         description: 'Evaluate response quality and metrics',
         inputs: ['response', 'query'],
         outputs: ['metrics'],
-        config: {
-          metrics: { type: 'array', default: ['bleu', 'rouge', 'relevance'] }
+        _config: {
+          metrics: { _type: 'array', default: ['bleu', 'rouge', 'relevance'] }
         }
       }
     ];
@@ -124,7 +124,7 @@ class VisualPipelineBuilder extends EventEmitter {
       description,
       components: [],
       connections: [],
-      config: {},
+      _config: {},
       created: new Date().toISOString(),
       modified: new Date().toISOString()
     };
@@ -138,7 +138,7 @@ class VisualPipelineBuilder extends EventEmitter {
   /**
    * Add component to pipeline
    */
-  addComponent(pipelineId, componentType, position = { x: 0, y: 0 }, config = {}) {
+  addComponent(pipelineId, componentType, position = { x: 0, y: 0 }, _config = {}) {
     const pipeline = this.pipelines.get(pipelineId);
     if (!pipeline) {
       throw new Error(`Pipeline ${pipelineId} not found`);
@@ -146,15 +146,15 @@ class VisualPipelineBuilder extends EventEmitter {
     
     const componentTemplate = this.components.get(componentType);
     if (!componentTemplate) {
-      throw new Error(`Component type ${componentType} not found`);
+      throw new Error(`Component _type ${componentType} not found`);
     }
     
     const componentId = `${componentType}_${Date.now()}`;
     const component = {
       id: componentId,
-      type: componentType,
+      _type: componentType,
       position,
-      config: { ...componentTemplate.config, ...config },
+      _config: { ...componentTemplate._config, ..._config },
       inputs: [...componentTemplate.inputs],
       outputs: [...componentTemplate.outputs]
     };
@@ -164,7 +164,7 @@ class VisualPipelineBuilder extends EventEmitter {
     
     this.emit('componentAdded', { pipelineId, componentId, component });
     
-    if (this.options.autoSave) {
+    if (this._options.autoSave) {
       this.savePipeline(pipelineId);
     }
     
@@ -207,7 +207,7 @@ class VisualPipelineBuilder extends EventEmitter {
     
     this.emit('connectionCreated', { pipelineId, connectionId, connection });
     
-    if (this.options.autoSave) {
+    if (this._options.autoSave) {
       this.savePipeline(pipelineId);
     }
     
@@ -239,11 +239,11 @@ class VisualPipelineBuilder extends EventEmitter {
       }
       
       // Check required configuration
-      const template = this.components.get(component.type);
+      const template = this.components.get(component._type);
       if (template) {
-        Object.entries(template.config).forEach(([key, configDef]) => {
-          if (configDef.required && !component.config[key]) {
-            errors.push(`Component ${component.id} missing required config: ${key}`);
+        Object.entries(template._config).forEach(([key, configDef]) => {
+          if (configDef.required && !component._config[key]) {
+            errors.push(`Component ${component.id} missing required _config: ${key}`);
           }
         });
       }
@@ -348,11 +348,11 @@ class VisualPipelineBuilder extends EventEmitter {
     const sortedComponents = this.topologicalSort(pipeline);
     
     sortedComponents.forEach(component => {
-      const template = this.components.get(component.type);
+      const template = this.components.get(component._type);
       if (template) {
-        imports.add(`const ${template.name.replace(/\s+/g, '')} = require('@devilsdev/rag-pipeline-utils/src/plugins/${component.type}');`);
+        imports.add(`const ${template.name.replace(/\s+/g, '')} = require('@devilsdev/rag-pipeline-utils/src/plugins/${component._type}');`); // eslint-disable-line global-require
         
-        const configStr = JSON.stringify(component.config, null, 2);
+        const configStr = JSON.stringify(component._config, null, 2);
         componentInits.push(`const ${component.id} = new ${template.name.replace(/\s+/g, '')}(${configStr});`);
         
         pipelineSteps.push(`  await ${component.id}.process(context);`);
@@ -390,8 +390,8 @@ module.exports = { ${pipeline.name.replace(/\s+/g, '')}Pipeline };`;
       version: '1.0.0',
       components: pipeline.components.map(component => ({
         id: component.id,
-        type: component.type,
-        config: component.config
+        _type: component._type,
+        _config: component._config
       })),
       connections: pipeline.connections,
       metadata: {
@@ -460,10 +460,10 @@ module.exports = { ${pipeline.name.replace(/\s+/g, '')}Pipeline };`;
     const pipelinesDir = path.join(process.cwd(), 'pipelines');
     await fs.mkdir(pipelinesDir, { recursive: true });
     
-    const filePath = path.join(pipelinesDir, `${pipelineId}.json`);
-    await fs.writeFile(filePath, JSON.stringify(pipeline, null, 2));
+    const _filePath = path.join(pipelinesDir, `${pipelineId}.json`);
+    await fs.writeFile(_filePath, JSON.stringify(pipeline, null, 2));
     
-    this.emit('pipelineSaved', { pipelineId, filePath });
+    this.emit('pipelineSaved', { pipelineId, _filePath });
   }
   
   /**
@@ -471,10 +471,10 @@ module.exports = { ${pipeline.name.replace(/\s+/g, '')}Pipeline };`;
    */
   async loadPipeline(pipelineId) {
     const pipelinesDir = path.join(process.cwd(), 'pipelines');
-    const filePath = path.join(pipelinesDir, `${pipelineId}.json`);
+    const _filePath = path.join(pipelinesDir, `${pipelineId}.json`);
     
     try {
-      const data = await fs.readFile(filePath, 'utf8');
+      const data = await fs.readFile(_filePath, 'utf8');
       const pipeline = JSON.parse(data);
       this.pipelines.set(pipelineId, pipeline);
       
@@ -511,14 +511,14 @@ module.exports = { ${pipeline.name.replace(/\s+/g, '')}Pipeline };`;
     // For now, we'll simulate the server startup
     this.isRunning = true;
     this.emit('serverStarted', { 
-      host: this.options.host, 
-      port: this.options.port,
+      host: this._options.host, 
+      port: this._options.port,
       url: `http://${this.options.host}:${this.options.port}`
     });
     
     return {
-      host: this.options.host,
-      port: this.options.port,
+      host: this._options.host,
+      port: this._options.port,
       url: `http://${this.options.host}:${this.options.port}`
     };
   }
@@ -541,8 +541,8 @@ module.exports = { ${pipeline.name.replace(/\s+/g, '')}Pipeline };`;
   getServerStatus() {
     return {
       running: this.isRunning,
-      host: this.options.host,
-      port: this.options.port,
+      host: this._options.host,
+      port: this._options.port,
       pipelines: this.pipelines.size,
       components: this.components.size
     };

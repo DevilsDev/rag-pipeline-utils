@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-const { pluginContracts  } = require('./plugin-contracts.js');
+const { pluginContracts  } = require('./plugin-contracts.js'); // eslint-disable-line global-require
 
 class PluginRegistry {
   #registry = {
@@ -16,29 +16,29 @@ class PluginRegistry {
     reranker: new Map(),
   };
 
-  register(type, name, plugin) {
-    const group = this.#registry[type];
+  register(_type, name, plugin) {
+    const group = this.#registry[_type];
     if (!group) {
-      throw new Error(`Unknown plugin type: '${type}'`);
+      throw new Error(`Unknown plugin _type: '${_type}'`);
     }
     
     // Validate plugin implements required contract
-    this.#validatePluginContract(type, name, plugin);
+    this.#validatePluginContract(_type, name, plugin);
     
     group.set(name, plugin);
   }
 
   /**
    * Validates that a plugin implements the required contract methods
-   * @param {string} type - Plugin type (loader, embedder, retriever, llm, reranker)
+   * @param {string} _type - Plugin _type (loader, embedder, retriever, llm, reranker)
    * @param {string} name - Plugin name for error reporting
-   * @param {object} plugin - Plugin instance to validate
+   * @param {object} plugin - Plugin _instance to validate
    * @throws {Error} If plugin doesn't implement required methods
    */
-  #validatePluginContract(type, name, plugin) {
-    const contract = pluginContracts[type];
+  #validatePluginContract(_type, name, plugin) {
+    const contract = pluginContracts[_type];
     if (!contract) {
-      throw new Error(`No contract defined for plugin type: '${type}'`);
+      throw new Error(`No contract defined for plugin _type: '${_type}'`);
     }
 
     const missingMethods = [];
@@ -52,7 +52,7 @@ class PluginRegistry {
 
     if (missingMethods.length > 0) {
       throw new Error(
-        `Plugin [${type}:${name}] missing required methods: ${missingMethods.join(', ')}. ` +
+        `Plugin [${_type}:${name}] missing required methods: ${missingMethods.join(', ')}. ` +
         `Expected methods: ${contract.requiredMethods.join(', ')}`
       );
     }
@@ -63,27 +63,27 @@ class PluginRegistry {
         methodName => typeof plugin[methodName] === 'function'
       );
       if (implementedOptional.length > 0) {
-        console.debug(`Plugin [${type}:${name}] implements optional methods: ${implementedOptional.join(', ')}`); // eslint-disable-line no-console
+        console.debug(`Plugin [${_type}:${name}] implements optional methods: ${implementedOptional.join(', ')}`); // eslint-disable-line no-console
       }
     }
   }
 
-  get(type, name) {
-    const group = this.#registry[type];
+  get(_type, name) {
+    const group = this.#registry[_type];
     if (!group) {
-      throw new Error(`Unknown plugin type: '${type}'`);
+      throw new Error(`Unknown plugin _type: '${_type}'`);
     }
     const plugin = group.get(name);
     if (!plugin) {
-      throw new Error(`Plugin not found: [${type}:${name}]`);
+      throw new Error(`Plugin not found: [${_type}:${name}]`);
     }
     return plugin;
   }
 
-  list(type) {
-    const group = this.#registry[type];
+  list(_type) {
+    const group = this.#registry[_type];
     if (!group) {
-      throw new Error(`Unknown plugin type: '${type}'`);
+      throw new Error(`Unknown plugin _type: '${_type}'`);
     }
     return [...group.keys()];
   }

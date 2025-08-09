@@ -19,7 +19,7 @@ const mockEmbedder = {
   embed: jest.fn().mockImplementation(async (chunks) => {
     // Simulate embedding delay
     await new Promise(resolve => setTimeout(resolve, 50));
-    return chunks.map((chunk, i) => ({
+    return chunks.map((chunk, ___i) => ({
       chunk,
       vector: new Array(768).fill(0).map(() => Math.random())
     }));
@@ -28,7 +28,7 @@ const mockEmbedder = {
 
 const mockRetriever = {
   store: jest.fn().mockResolvedValue(undefined),
-  retrieve: jest.fn().mockImplementation(async (query) => {
+  retrieve: jest.fn().mockImplementation(async (___query) => {
     // Simulate retrieval delay
     await new Promise(resolve => setTimeout(resolve, 30));
     return [

@@ -5,10 +5,10 @@
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs');
-const path = require('path');
-const { fileURLToPath  } = require('url');
-const { pluginContracts  } = require('../core/plugin-contracts.js');
+const fs = require('fs'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { fileURLToPath  } = require('url'); // eslint-disable-line global-require
+const { pluginContracts  } = require('../core/plugin-contracts.js'); // eslint-disable-line global-require
 
 const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
@@ -25,11 +25,11 @@ class PluginScaffolder {
    * Scaffold a new plugin with all necessary files
    * @param {string} pluginType - Type of plugin (loader, embedder, retriever, llm, reranker)
    * @param {string} pluginName - Name of the plugin
-   * @param {object} options - Additional options
+   * @param {object} _options - Additional _options
    */
   async scaffoldPlugin(pluginType, pluginName, _options = {}) {
     if (!pluginContracts[pluginType]) {
-      throw new Error(`Unknown plugin type: ${pluginType}. Available types: ${Object.keys(pluginContracts).join(', ')}`);
+      throw new Error(`Unknown plugin _type: ${pluginType}. Available types: ${Object.keys(pluginContracts).join(', ')}`);
     }
 
     const pluginDir = path.join(this.outputDir, `${pluginName}-${pluginType}`);
@@ -47,14 +47,14 @@ class PluginScaffolder {
     await this.generateReadme(pluginDir, pluginType, pluginName, _options);
     await this.generatePackageJson(pluginDir, pluginType, pluginName, _options);
 
-    console.log(`✅ Plugin scaffolded successfully at: ${pluginDir}`);
-    console.log('📁 Generated files:');
-    console.log(`   - src/${pluginName}-${pluginType}.js (main plugin)`);
-    console.log(`   - __tests__/${pluginName}-${pluginType}.test.js (tests)`);
-    console.log(`   - mocks/${pluginName}-${pluginType}-mock.js (mock implementation)`);
-    console.log('   - .ragrc.example.json (configuration example)');
-    console.log('   - README.md (documentation)');
-    console.log('   - package.json (npm package)');
+    console.log(`✅ Plugin scaffolded successfully at: ${pluginDir}`); // eslint-disable-line no-console
+    console.log('📁 Generated files:'); // eslint-disable-line no-console
+    console.log(`   - src/${pluginName}-${pluginType}.js (main plugin)`); // eslint-disable-line no-console
+    console.log(`   - __tests__/${pluginName}-${pluginType}.test.js (tests)`); // eslint-disable-line no-console
+    console.log(`   - mocks/${pluginName}-${pluginType}-mock.js (mock implementation)`); // eslint-disable-line no-console
+    console.log('   - .ragrc.example.json (configuration example)'); // eslint-disable-line no-console
+    console.log('   - README.md (documentation)'); // eslint-disable-line no-console
+    console.log('   - package.json (npm package)'); // eslint-disable-line no-console
   }
 
   /**
@@ -88,7 +88,7 @@ class PluginScaffolder {
 export class ${className} {
   constructor(_options = {}) {
     // Initialize your plugin with configuration options
-    this.options = options;
+    this._options = _options;
     
     // Add your initialization logic here
     // Example: this.apiKey = options.apiKey;
@@ -102,8 +102,8 @@ ${methods}${optionalMethods ? '\n\n  // Optional methods\n' + optionalMethods : 
 export default ${className};
 `;
 
-    const filePath = path.join(srcDir, `${pluginName}-${pluginType}.js`);
-    fs.writeFileSync(filePath, content);
+    const _filePath = path.join(srcDir, `${pluginName}-${pluginType}.js`);
+    fs.writeFileSync(_filePath, content);
   }
 
   /**
@@ -172,15 +172,15 @@ describe('${className}', () => {
   });
 
   describe('constructor', () => {
-    it('should create instance with default _options', () => {
-      const instance = new ${className}();
-      expect(instance).toBeInstanceOf(${className});
+    it('should create _instance with default _options', () => {
+      const _instance = new ${className}();
+      expect(_instance).toBeInstanceOf(${className});
     });
 
     it('should accept configuration _options', () => {
       const _options = { testOption: 'value' };
-      const instance = new ${className}(_options);
-      expect(instance._options).toEqual(_options);
+      const _instance = new ${className}(_options);
+      expect(_instance._options).toEqual(_options);
     });
   });
 
@@ -195,8 +195,8 @@ ${testCases}
 });
 `;
 
-    const filePath = path.join(testDir, `${pluginName}-${pluginType}.test.js`);
-    fs.writeFileSync(filePath, content);
+    const _filePath = path.join(testDir, `${pluginName}-${pluginType}.test.js`);
+    fs.writeFileSync(_filePath, content);
   }
 
   /**
@@ -214,7 +214,7 @@ ${testCases}
     const mockMethods = contract.requiredMethods.map(methodName => {
       return `  async ${methodName}(...args) {
     // Mock implementation for ${methodName}
-    console.log(\`Mock ${className}.${methodName} called with:\`, args);
+    console.log(\`Mock ${className}.${methodName} called with:\`, args); // eslint-disable-line no-console
     return \`Mock result from ${methodName}\`;
   }`;
     }).join('\n\n');
@@ -227,7 +227,7 @@ ${testCases}
 
 class Mock${className} {
   constructor(_options = {}) {
-    this.options = _options;
+    this._options = _options;
     this.mockMode = true;
   }
 
@@ -238,15 +238,15 @@ ${mockMethods}
  Mock${className}();
 `;
 
-    const filePath = path.join(mockDir, `${pluginName}-${pluginType}-mock.js`);
-    fs.writeFileSync(filePath, content);
+    const _filePath = path.join(mockDir, `${pluginName}-${pluginType}-mock.js`);
+    fs.writeFileSync(_filePath, content);
   }
 
   /**
    * Generate configuration example
    */
   async generateConfigExample(pluginDir, pluginType, pluginName) {
-    const config = {
+    const _config = {
       [pluginType]: {
         [pluginName]: `./src/${pluginName}-${pluginType}.js`
       },
@@ -254,9 +254,9 @@ ${mockMethods}
       pipeline: ['loader', 'embedder', 'retriever']
     };
 
-    const content = JSON.stringify(config, null, 2);
-    const filePath = path.join(pluginDir, '.ragrc.example.json');
-    fs.writeFileSync(filePath, content);
+    const content = JSON.stringify(_config, null, 2);
+    const _filePath = path.join(pluginDir, '.ragrc.example.json');
+    fs.writeFileSync(_filePath, content);
   }
 
   /**
@@ -358,8 +358,8 @@ MIT
 ${this.author}
 `;
 
-    const filePath = path.join(pluginDir, 'README.md');
-    fs.writeFileSync(filePath, content);
+    const _filePath = path.join(pluginDir, 'README.md');
+    fs.writeFileSync(_filePath, content);
   }
 
   /**
@@ -373,7 +373,7 @@ ${this.author}
       version: '1.0.0',
       description: _options.description || `A ${pluginType} plugin for RAG Pipeline Utils`,
       main: `src/${pluginName}-${pluginType}.js`,
-      type: 'module',
+      _type: 'module',
       scripts: {
         test: 'jest',
         'test:watch': 'jest --watch',
@@ -406,8 +406,8 @@ ${this.author}
     };
 
     const content = JSON.stringify(packageJson, null, 2);
-    const filePath = path.join(pluginDir, 'package.json');
-    fs.writeFileSync(filePath, content);
+    const _filePath = path.join(pluginDir, 'package.json');
+    fs.writeFileSync(_filePath, content);
   }
 
   /**

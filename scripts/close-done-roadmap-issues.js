@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Version: 1.1.0
  * Description: Closes GitHub issues marked as ✅ Done in the PROJECT_ROADMAP.md
  * Author: Ali Kahwaji
@@ -18,7 +19,7 @@ async function closeDoneIssues() {
   const content = fs.readFileSync(ROADMAP_PATH, 'utf-8');
   const lines = content.split('\n').filter(line => line.startsWith('|'));
   if (lines.length < 3) {
-    console.log('⚠️ No roadmap rows found to evaluate.');
+    console.log('⚠️ No roadmap rows found to evaluate.'); // eslint-disable-line no-console
     return;
   }
 
@@ -55,11 +56,11 @@ async function closeDoneIssues() {
       state: 'closed'
     });
 
-    console.log(`🔒 Closed: #${match.number} "${title}"`);
+    console.log(`🔒 Closed: #${match.number} "${title}"`); // eslint-disable-line no-console
   }
 }
 
 closeDoneIssues().catch(error => {
-  console.error('❌ Error closing roadmap issues:', error);
+  console.error('❌ Error closing roadmap issues:', error); // eslint-disable-line no-console
   process.exit(1);
 });

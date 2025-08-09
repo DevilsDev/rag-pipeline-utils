@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * Roadmap Sync Script
  * Version: 2.0.0
  * Description: Syncs roadmap items from PROJECT_ROADMAP.md to GitHub Issues with labels and assignees
@@ -12,29 +14,29 @@ import path from 'path';
 import { Octokit } from 'octokit';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { setupCLI, dryRunWrapper, validateArgs } from './utils/cli.js';
+import { setupCLI, dryRunWrapper, _validateArgs } from './utils/cli.js';
 import { withRateLimit } from './utils/retry.js';
 
-dotenv.config();
+dotenv._config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, 'scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, 'scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 // Setup CLI
 const { args, logger } = setupCLI('roadmap-sync.js', 'Sync roadmap items to GitHub Issues', {
   '--roadmap-file': 'Path to roadmap markdown file (default: PROJECT_ROADMAP.md)',
-  '--owner': 'GitHub repository owner (default: from config)',
-  '--repo': 'GitHub repository name (default: from config)',
+  '--owner': 'GitHub repository owner (default: from _config)',
+  '--repo': 'GitHub repository name (default: from _config)',
   '--create-labels': 'Create missing labels automatically'
 });
 
 // Environment validation
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO || `${config.github.owner}/${config.github.repo}`;
+const GITHUB_REPO = process.env.GITHUB_REPO || `${_config.github.owner}/${_config.github.repo}`;
 
 if (!GITHUB_TOKEN) {
   logger.error('GITHUB_TOKEN environment variable is required');
@@ -51,7 +53,7 @@ if (!owner || !repo) {
 }
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
-const roadmapPath = args.roadmapFile || path.resolve(config.roadmap.filePath);
+const roadmapPath = args.roadmapFile || path.resolve(_config.roadmap._filePath);
 
 /**
  * Parse roadmap Markdown file into structured issue definitions
@@ -117,7 +119,7 @@ function parseRoadmapMarkdown(markdown) {
  * @param {Array} requiredLabels - Labels that need to exist
  */
 async function ensureLabels(requiredLabels) {
-  if (!args.createLabels && !config.roadmap.createLabels) {
+  if (!args.createLabels && !_config.roadmap.createLabels) {
     logger.debug('Label creation disabled, skipping label check');
     return;
   }
@@ -135,7 +137,7 @@ async function ensureLabels(requiredLabels) {
     );
 
     for (const labelName of labelsToCreate) {
-      const labelConfig = config.roadmap.issueLabels[labelName] || {
+      const labelConfig = _config.roadmap.issueLabels[labelName] || {
         name: labelName,
         color: '0052cc',
         description: `Auto-created label: ${labelName}`

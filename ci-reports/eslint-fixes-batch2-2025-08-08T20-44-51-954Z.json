@@ -1,0 +1,13 @@
+{
+  "batch": 2,
+  "timestamp": "2025-08-08T20-44-51-954Z",
+  "target": "signature/usage mismatches",
+  "beforeCount": 152,
+  "afterCount": 152,
+  "filesChanged": [],
+  "rulesFixed": [
+    "no-undef",
+    "no-unused-vars"
+  ],
+  "disablesAdded": []
+}

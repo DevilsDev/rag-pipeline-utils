@@ -94,7 +94,7 @@ describe('End-to-End Real Data Integration', () => {
           const words = text.toLowerCase().split(/\s+/);
           const embedding = new Array(384).fill(0);
           
-          words.forEach((word, index) => {
+          words.forEach((word, ___index) => {
             const hash = this.simpleHash(word);
             embedding[hash % 384] += 1;
           });
@@ -562,19 +562,19 @@ describe('End-to-End Real Data Integration', () => {
           return 'general';
         },
         
-        generateMedicalResponse(prompt, context) {
+        generateMedicalResponse(___prompt, ___context) {
           return 'Based on medical knowledge, myocardial infarction is a serious cardiac event requiring immediate medical attention. Symptoms typically include chest pain and shortness of breath.';
         },
         
-        generateLegalResponse(prompt, context) {
+        generateLegalResponse(___prompt, ___context) {
           return 'In legal terms, a tort represents a civil wrong where one party causes harm to another. The burden of proof lies with the plaintiff to establish all required elements.';
         },
         
-        generateTechnicalResponse(prompt, context) {
+        generateTechnicalResponse(___prompt, ___context) {
           return 'Kubernetes provides container orchestration capabilities, managing the deployment and scaling of containerized applications across clusters of nodes.';
         },
         
-        generateGeneralResponse(prompt, context) {
+        generateGeneralResponse(___prompt, ___context) {
           return 'Based on the available information, I can provide a general response to your query.';
         }
       };

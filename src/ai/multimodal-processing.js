@@ -3,14 +3,14 @@
  * Image, audio, video processing with unified embedding spaces
  */
 
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class MultiModalProcessor extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       modalities: {
         image: {
           enabled: true,
@@ -67,19 +67,19 @@ class MultiModalProcessor extends EventEmitter {
         cacheEnabled: true,
         cacheDir: './multimodal-cache'
       },
-      ...options
+      ..._options
     };
     
     this.processors = {
-      image: new ImageProcessor(this.config.modalities.image),
-      audio: new AudioProcessor(this.config.modalities.audio),
-      video: new VideoProcessor(this.config.modalities.video),
-      text: new TextProcessor(this.config.modalities.text)
+      image: new ImageProcessor(this._config.modalities.image),
+      audio: new AudioProcessor(this._config.modalities.audio),
+      video: new VideoProcessor(this._config.modalities.video),
+      text: new TextProcessor(this._config.modalities.text)
     };
     
-    this.embeddingAligner = new CrossModalEmbeddingAligner(this.config.embedding);
-    this.contentAnalyzer = new MultiModalContentAnalyzer(this.config);
-    this.searchEngine = new MultiModalSearchEngine(this.config);
+    this.embeddingAligner = new CrossModalEmbeddingAligner(this._config.embedding);
+    this.contentAnalyzer = new MultiModalContentAnalyzer(this._config);
+    this.searchEngine = new MultiModalSearchEngine(this._config);
     
     this.processedContent = new Map();
     this.embeddingCache = new Map();
@@ -88,7 +88,7 @@ class MultiModalProcessor extends EventEmitter {
   /**
    * Process multi-modal content and generate unified embeddings
    */
-  async processContent(tenantId, content, options = {}) {
+  async processContent(tenantId, content, _options = {}) {
     const contentId = crypto.randomUUID();
     
     try {
@@ -99,7 +99,7 @@ class MultiModalProcessor extends EventEmitter {
         unifiedEmbedding: null,
         metadata: {
           processedAt: new Date().toISOString(),
-          contentType: content.type,
+          contentType: content._type,
           size: content.size || 0,
           processingTime: 0
         }
@@ -112,10 +112,10 @@ class MultiModalProcessor extends EventEmitter {
       
       // Step 2: Process each modality
       for (const modality of detectedModalities) {
-        if (this.processors[modality] && this.config.modalities[modality].enabled) {
+        if (this.processors[modality] && this._config.modalities[modality].enabled) {
           this.emit('modality_processing_started', { contentId, modality });
           
-          const modalityResult = await this.processors[modality].process(content, options);
+          const modalityResult = await this.processors[modality].process(content, _options);
           processingResult.modalities[modality] = modalityResult;
           
           this.emit('modality_processing_completed', { 
@@ -164,32 +164,32 @@ class MultiModalProcessor extends EventEmitter {
   /**
    * Perform multi-modal search across different content types
    */
-  async multiModalSearch(tenantId, query, options = {}) {
+  async multiModalSearch(tenantId, query, _options = {}) {
     const searchId = crypto.randomUUID();
     
     try {
       // Step 1: Process query (can be text, image, audio, or combination)
-      const queryEmbedding = await this._processQuery(query, options);
+      const queryEmbedding = await this._processQuery(query, _options);
       
       // Step 2: Perform cross-modal search
       const searchResults = await this.searchEngine.search(
         tenantId,
         queryEmbedding,
         this.processedContent,
-        options
+        _options
       );
       
       // Step 3: Apply multi-modal ranking
       const rankedResults = await this._rankMultiModalResults(
         searchResults,
         queryEmbedding,
-        options
+        _options
       );
       
       this.emit('multimodal_search_completed', {
         searchId,
         tenantId,
-        queryType: query.type,
+        queryType: query._type,
         resultCount: rankedResults.length
       });
       
@@ -216,8 +216,8 @@ class MultiModalProcessor extends EventEmitter {
   /**
    * Generate content descriptions across modalities
    */
-  async generateContentDescription(contentId, options = {}) {
-    const metadata = options.metadata || {};
+  async generateContentDescription(contentId, _options = {}) {
+    const metadata = _options.metadata || {};
     const content = this.processedContent.get(contentId);
     if (!content) {
       throw new Error(`Content ${contentId} not found`);
@@ -230,7 +230,7 @@ class MultiModalProcessor extends EventEmitter {
       descriptions[modality] = await this._generateModalityDescription(
         modality,
         data,
-        options
+        _options
       );
     }
     
@@ -238,7 +238,7 @@ class MultiModalProcessor extends EventEmitter {
     descriptions.unified = await this._generateUnifiedDescription(
       content.modalities,
       content.analysis,
-      options
+      _options
     );
     
     return descriptions;
@@ -247,7 +247,7 @@ class MultiModalProcessor extends EventEmitter {
   /**
    * Perform cross-modal content similarity analysis
    */
-  async findSimilarContent(contentId, options = {}) {
+  async findSimilarContent(contentId, _options = {}) {
     const content = this.processedContent.get(contentId);
     if (!content) {
       throw new Error(`Content ${contentId} not found`);
@@ -266,7 +266,7 @@ class MultiModalProcessor extends EventEmitter {
         otherContent
       );
       
-      if (similarity.score > (options.threshold || 0.7)) {
+      if (similarity.score > (_options.threshold || 0.7)) {
         similarities.push({
           contentId: otherId,
           similarity,
@@ -282,15 +282,15 @@ class MultiModalProcessor extends EventEmitter {
   async _detectModalities(content) {
     const modalities = [];
     
-    if (content.type) {
-      if (content.type.startsWith('image/')) {
+    if (content._type) {
+      if (content._type.startsWith('image/')) {
         modalities.push('image');
-      } else if (content.type.startsWith('audio/')) {
+      } else if (content._type.startsWith('audio/')) {
         modalities.push('audio');
-      } else if (content.type.startsWith('video/')) {
+      } else if (content._type.startsWith('video/')) {
         modalities.push('video');
         modalities.push('audio'); // Video contains audio
-      } else if (content.type.startsWith('text/')) {
+      } else if (content._type.startsWith('text/')) {
         modalities.push('text');
       }
     }
@@ -305,11 +305,11 @@ class MultiModalProcessor extends EventEmitter {
     return modalities;
   }
 
-  async _processQuery(query, options) {
+  async _processQuery(query, ___options) {
     const queryEmbedding = {
       modalities: {},
       unified: null,
-      dimension: this.config.embedding.unifiedDimension
+      dimension: this._config.embedding.unifiedDimension
     };
     
     // Process query based on its type
@@ -331,7 +331,7 @@ class MultiModalProcessor extends EventEmitter {
     return queryEmbedding;
   }
 
-  async _rankMultiModalResults(results, queryEmbedding, options) {
+  async _rankMultiModalResults(results, queryEmbedding, ___options) {
     return results.map(result => {
       // Calculate multi-modal similarity score
       const modalityScores = {};
@@ -345,7 +345,7 @@ class MultiModalProcessor extends EventEmitter {
             result.content.modalities[modality].embedding
           );
           
-          const weight = this.config.embedding.modalityWeights[modality] || 0.1;
+          const weight = this._config.embedding.modalityWeights[modality] || 0.1;
           modalityScores[modality] = similarity;
           weightedScore += similarity * weight;
           totalWeight += weight;
@@ -365,7 +365,7 @@ class MultiModalProcessor extends EventEmitter {
     .map((result, index) => ({ ...result, rank: index + 1 }));
   }
 
-  async _generateModalityDescription(modality, data, options) {
+  async _generateModalityDescription(modality, data, ___options) {
     switch (modality) {
       case 'image':
         return `Image containing: ${data.objects?.join(', ') || 'visual content'}. ${data.text ? `Text: "${data.text}"` : ''}`;
@@ -380,7 +380,7 @@ class MultiModalProcessor extends EventEmitter {
     }
   }
 
-  async _generateUnifiedDescription(modalities, analysis, options) {
+  async _generateUnifiedDescription(modalities, ___analysis, ___options) {
     const descriptions = [];
     
     if (modalities.image) {
@@ -434,7 +434,7 @@ class MultiModalProcessor extends EventEmitter {
     };
   }
 
-  _calculateCosineSimilarity(embedding1, embedding2) {
+  _calculateCosineSimilarity(___embedding1, ___embedding2) {
     // Mock cosine similarity calculation
     return 0.5 + Math.random() * 0.5; // 0.5 to 1.0
   }
@@ -442,11 +442,11 @@ class MultiModalProcessor extends EventEmitter {
 
 // Modality-specific processors
 class ImageProcessor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async process(content, options) {
+  async process(content, ___options) {
     // Mock image processing
     return {
       embedding: this._generateMockEmbedding(512),
@@ -466,7 +466,7 @@ class ImageProcessor {
     };
   }
 
-  async generateEmbedding(imageData) {
+  async generateEmbedding(___imageData) {
     return this._generateMockEmbedding(512);
   }
 
@@ -476,11 +476,11 @@ class ImageProcessor {
 }
 
 class AudioProcessor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async process(content, options) {
+  async process(content, ___options) {
     // Mock audio processing
     return {
       embedding: this._generateMockEmbedding(512),
@@ -501,7 +501,7 @@ class AudioProcessor {
     };
   }
 
-  async generateEmbedding(audioData) {
+  async generateEmbedding(___audioData) {
     return this._generateMockEmbedding(512);
   }
 
@@ -511,11 +511,11 @@ class AudioProcessor {
 }
 
 class VideoProcessor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async process(content, options) {
+  async process(content, ___options) {
     // Mock video processing
     return {
       embedding: this._generateMockEmbedding(512),
@@ -542,7 +542,7 @@ class VideoProcessor {
     };
   }
 
-  async generateEmbedding(videoData) {
+  async generateEmbedding(___videoData) {
     return this._generateMockEmbedding(512);
   }
 
@@ -552,11 +552,11 @@ class VideoProcessor {
 }
 
 class TextProcessor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async process(content, options) {
+  async process(content, ___options) {
     // Mock text processing
     return {
       embedding: this._generateMockEmbedding(512),
@@ -575,7 +575,7 @@ class TextProcessor {
     };
   }
 
-  async generateEmbedding(textData) {
+  async generateEmbedding(___textData) {
     return this._generateMockEmbedding(512);
   }
 
@@ -585,17 +585,17 @@ class TextProcessor {
 }
 
 class CrossModalEmbeddingAligner {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async alignEmbeddings(modalityEmbeddings) {
     // Mock cross-modal alignment
-    const alignedEmbedding = new Array(this.config.unifiedDimension).fill(0);
+    const alignedEmbedding = new Array(this._config.unifiedDimension).fill(0);
     let totalWeight = 0;
     
     for (const [modality, data] of Object.entries(modalityEmbeddings)) {
-      const weight = this.config.modalityWeights[modality] || 0.1;
+      const weight = this._config.modalityWeights[modality] || 0.1;
       const embedding = data.embedding || data;
       
       for (let i = 0; i < Math.min(alignedEmbedding.length, embedding.length); i++) {
@@ -616,11 +616,11 @@ class CrossModalEmbeddingAligner {
 }
 
 class MultiModalContentAnalyzer {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async analyze(modalities, unifiedEmbedding) {
+  async analyze(modalities, ___unifiedEmbedding) {
     // Mock multi-modal content analysis
     return {
       contentType: this._determineContentType(modalities),
@@ -701,11 +701,11 @@ class MultiModalContentAnalyzer {
 }
 
 class MultiModalSearchEngine {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async search(tenantId, queryEmbedding, contentDatabase, options) {
+  async search(tenantId, queryEmbedding, contentDatabase, _options) {
     const results = [];
     
     // Search through processed content
@@ -717,7 +717,7 @@ class MultiModalSearchEngine {
         content.unifiedEmbedding
       );
       
-      if (similarity > (options.threshold || 0.3)) {
+      if (similarity > (_options.threshold || 0.3)) {
         results.push({
           contentId,
           content,
@@ -730,7 +730,7 @@ class MultiModalSearchEngine {
     return results.sort((a, b) => b.similarity - a.similarity);
   }
 
-  _calculateSimilarity(embedding1, embedding2) {
+  _calculateSimilarity(___embedding1, ___embedding2) {
     // Mock similarity calculation
     return Math.random() * 0.7 + 0.3; // 0.3 to 1.0
   }

@@ -3,20 +3,20 @@
  * Real-time analytics and metrics visualization for plugin ecosystem
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class PluginAnalyticsDashboard extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
-      port: options.port || 3333,
-      dataDir: options.dataDir || path.join(process.cwd(), '.rag-analytics'),
-      refreshInterval: options.refreshInterval || 30000, // 30 seconds
-      retentionDays: options.retentionDays || 90,
-      ...options
+    this._config = {
+      port: _options.port || 3333,
+      dataDir: _options.dataDir || path.join(process.cwd(), '.rag-analytics'),
+      refreshInterval: _options.refreshInterval || 30000, // 30 seconds
+      retentionDays: _options.retentionDays || 90,
+      ..._options
     };
     
     this.metrics = new Map();
@@ -33,28 +33,28 @@ class PluginAnalyticsDashboard extends EventEmitter {
   initializeMetrics() {
     // Plugin usage metrics
     this.metrics.set('plugin_installs', {
-      type: 'counter',
+      _type: 'counter',
       description: 'Total plugin installations',
       value: 0,
       history: []
     });
     
     this.metrics.set('plugin_searches', {
-      type: 'counter',
+      _type: 'counter',
       description: 'Total plugin searches',
       value: 0,
       history: []
     });
     
     this.metrics.set('plugin_ratings', {
-      type: 'histogram',
+      _type: 'histogram',
       description: 'Plugin rating distribution',
       buckets: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       history: []
     });
     
     this.metrics.set('active_plugins', {
-      type: 'gauge',
+      _type: 'gauge',
       description: 'Currently active plugins',
       value: 0,
       history: []
@@ -62,14 +62,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Performance metrics
     this.metrics.set('installation_time', {
-      type: 'histogram',
+      _type: 'histogram',
       description: 'Plugin installation time (ms)',
       buckets: {},
       history: []
     });
     
     this.metrics.set('search_latency', {
-      type: 'histogram',
+      _type: 'histogram',
       description: 'Search response time (ms)',
       buckets: {},
       history: []
@@ -77,14 +77,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Security metrics
     this.metrics.set('security_scans', {
-      type: 'counter',
+      _type: 'counter',
       description: 'Security scans performed',
       value: 0,
       history: []
     });
     
     this.metrics.set('security_issues', {
-      type: 'counter',
+      _type: 'counter',
       description: 'Security issues detected',
       value: 0,
       history: []
@@ -92,14 +92,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Certification metrics
     this.metrics.set('certification_requests', {
-      type: 'counter',
+      _type: 'counter',
       description: 'Certification requests submitted',
       value: 0,
       history: []
     });
     
     this.metrics.set('certified_plugins', {
-      type: 'gauge',
+      _type: 'gauge',
       description: 'Total certified plugins',
       value: 0,
       history: []
@@ -115,7 +115,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
       this.collectMetrics();
       this.updateRealTimeData();
       this.notifySubscribers();
-    }, this.config.refreshInterval);
+    }, this._config.refreshInterval);
     
     // Daily cleanup
     setInterval(() => {
@@ -133,7 +133,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     this.recordHistogram('installation_time', metadata.installTime || 0);
     
     this.realTimeData.set(`install_${timestamp}`, {
-      type: 'installation',
+      _type: 'installation',
       pluginId,
       version,
       timestamp,
@@ -153,7 +153,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     this.recordHistogram('search_latency', latency);
     
     this.realTimeData.set(`search_${timestamp}`, {
-      type: 'search',
+      _type: 'search',
       query,
       resultCount: results.length,
       latency,
@@ -175,7 +175,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`rating_${timestamp}`, {
-      type: 'rating',
+      _type: 'rating',
       pluginId,
       rating,
       review,
@@ -198,7 +198,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`security_${timestamp}`, {
-      type: 'security_scan',
+      _type: 'security_scan',
       pluginId,
       risk: result.risk,
       issueCount: result.issues?.length || 0,
@@ -221,7 +221,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`cert_${timestamp}`, {
-      type: 'certification',
+      _type: 'certification',
       pluginId,
       level,
       approved: result.approved,
@@ -297,22 +297,22 @@ class PluginAnalyticsDashboard extends EventEmitter {
       
       series.installs.push({
         timestamp: time,
-        value: hourData.filter(item => item.type === 'installation').length
+        value: hourData.filter(item => item._type === 'installation').length
       });
       
       series.searches.push({
         timestamp: time,
-        value: hourData.filter(item => item.type === 'search').length
+        value: hourData.filter(item => item._type === 'search').length
       });
       
       series.ratings.push({
         timestamp: time,
-        value: hourData.filter(item => item.type === 'rating').length
+        value: hourData.filter(item => item._type === 'rating').length
       });
       
       series.securityScans.push({
         timestamp: time,
-        value: hourData.filter(item => item.type === 'security_scan').length
+        value: hourData.filter(item => item._type === 'security_scan').length
       });
     }
     
@@ -339,7 +339,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
         
         const stats = pluginStats.get(item.pluginId);
         
-        switch (item.type) {
+        switch (item._type) {
           case 'installation':
             stats.installs++;
             break;
@@ -371,11 +371,11 @@ class PluginAnalyticsDashboard extends EventEmitter {
    */
   getPerformanceSummary() {
     const installTimes = Array.from(this.realTimeData.values())
-      .filter(item => item.type === 'installation' && item.metadata?.installTime)
+      .filter(item => item._type === 'installation' && item.metadata?.installTime)
       .map(item => item.metadata.installTime);
     
     const searchLatencies = Array.from(this.realTimeData.values())
-      .filter(item => item.type === 'search' && item.latency)
+      .filter(item => item._type === 'search' && item.latency)
       .map(item => item.latency);
     
     return {
@@ -393,7 +393,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
    */
   getSecurityOverview() {
     const securityScans = Array.from(this.realTimeData.values())
-      .filter(item => item.type === 'security_scan');
+      .filter(item => item._type === 'security_scan');
     
     const riskDistribution = { low: 0, medium: 0, high: 0 };
     let totalIssues = 0;
@@ -495,7 +495,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
             ${data.recentActivity.map(activity => `
                 <div class="activity-item">
                     <span class="status-indicator status-${this.getActivityStatus(activity)}"></span>
-                    <strong>${activity.type.replace('_', ' ').toUpperCase()}</strong>
+                    <strong>${activity._type.replace('_', ' ').toUpperCase()}</strong>
                     ${this.formatActivityDescription(activity)}
                     <div class="activity-time">${new Date(activity.timestamp).toLocaleString()}</div>
                 </div>
@@ -507,7 +507,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
         // Activity Chart
         const activityCtx = document.getElementById('activityChart').getContext('2d');
         new Chart(activityCtx, {
-            type: 'line',
+            _type: 'line',
             data: {
                 labels: ${JSON.stringify(data.timeSeriesData.installs.map(d => new Date(d.timestamp).toLocaleDateString()))},
                 datasets: [
@@ -525,7 +525,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
                     }
                 ]
             },
-            options: {
+            _options: {
                 responsive: true,
                 scales: {
                     y: { beginAtZero: true }
@@ -536,7 +536,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
         // Top Plugins Chart
         const topPluginsCtx = document.getElementById('topPluginsChart').getContext('2d');
         new Chart(topPluginsCtx, {
-            type: 'bar',
+            _type: 'bar',
             data: {
                 labels: ${JSON.stringify(data.topPlugins.map(p => p.pluginId))},
                 datasets: [{
@@ -545,7 +545,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
                     backgroundColor: 'rgba(37, 99, 235, 0.8)'
                 }]
             },
-            options: {
+            _options: {
                 responsive: true,
                 scales: {
                     y: { beginAtZero: true }
@@ -565,7 +565,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   // Helper methods
   incrementMetric(name, amount = 1) {
     const metric = this.metrics.get(name);
-    if (metric && metric.type === 'counter') {
+    if (metric && metric._type === 'counter') {
       metric.value += amount;
       metric.history.push({ timestamp: Date.now(), value: metric.value });
     }
@@ -573,7 +573,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
 
   recordHistogram(name, value) {
     const metric = this.metrics.get(name);
-    if (metric && metric.type === 'histogram') {
+    if (metric && metric._type === 'histogram') {
       const bucket = Math.floor(value / 100) * 100; // 100ms buckets
       metric.buckets[bucket] = (metric.buckets[bucket] || 0) + 1;
       metric.history.push({ timestamp: Date.now(), value });
@@ -614,7 +614,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   }
 
   getActivityStatus(activity) {
-    switch (activity.type) {
+    switch (activity._type) {
       case 'installation':
         return 'success';
       case 'security_scan':
@@ -627,7 +627,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   }
 
   formatActivityDescription(activity) {
-    switch (activity.type) {
+    switch (activity._type) {
       case 'installation':
         return `Plugin ${activity.pluginId}@${activity.version} installed`;
       case 'search':
@@ -646,7 +646,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   async collectMetrics() {
     // Update active plugins count
     try {
-      const pluginsDir = path.join(this.config.dataDir, 'plugins');
+      const pluginsDir = path.join(this._config.dataDir, 'plugins');
       const entries = await fs.readdir(pluginsDir).catch(() => []);
       
       const activeMetric = this.metrics.get('active_plugins');
@@ -676,13 +676,13 @@ class PluginAnalyticsDashboard extends EventEmitter {
       try {
         callback(data);
       } catch (error) {
-        console.error('Error notifying subscriber:', error);
+        console.error('Error notifying subscriber:', error); // eslint-disable-line no-console
       }
     });
   }
 
   async cleanupOldData() {
-    const cutoff = Date.now() - (this.config.retentionDays * 24 * 60 * 60 * 1000);
+    const cutoff = Date.now() - (this._config.retentionDays * 24 * 60 * 60 * 1000);
     
     // Clean up metric history
     for (const metric of this.metrics.values()) {

@@ -3,62 +3,62 @@
  * SAML 2.0, OAuth2, Active Directory, and identity provider support
  */
 
-const _fs = require('_fs').promises;
-const _path = require('_path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const _fs = require('_fs').promises; // eslint-disable-line global-require
+const _path = require('_path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class SSOManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       providers: {
         saml: {
           enabled: false,
-          entityId: options.entityId || 'rag-pipeline-utils',
-          ssoUrl: options.ssoUrl,
-          sloUrl: options.sloUrl,
-          certificate: options.certificate,
-          privateKey: options.privateKey
+          entityId: _options.entityId || 'rag-pipeline-utils',
+          ssoUrl: _options.ssoUrl,
+          sloUrl: _options.sloUrl,
+          certificate: _options.certificate,
+          privateKey: _options.privateKey
         },
         oauth2: {
           enabled: false,
-          clientId: options.clientId,
-          clientSecret: options.clientSecret,
-          authorizationUrl: options.authorizationUrl,
-          tokenUrl: options.tokenUrl,
-          userInfoUrl: options.userInfoUrl,
+          clientId: _options.clientId,
+          clientSecret: _options.clientSecret,
+          authorizationUrl: _options.authorizationUrl,
+          tokenUrl: _options.tokenUrl,
+          userInfoUrl: _options.userInfoUrl,
           scopes: ['openid', 'profile', 'email']
         },
         activeDirectory: {
           enabled: false,
-          domain: options.adDomain,
-          url: options.adUrl,
-          baseDN: options.baseDN,
-          bindDN: options.bindDN,
-          bindCredentials: options.bindCredentials
+          domain: _options.adDomain,
+          url: _options.adUrl,
+          baseDN: _options.baseDN,
+          bindDN: _options.bindDN,
+          bindCredentials: _options.bindCredentials
         },
         oidc: {
           enabled: false,
-          issuer: options.oidcIssuer,
-          clientId: options.oidcClientId,
-          clientSecret: options.oidcClientSecret,
-          redirectUri: options.redirectUri
+          issuer: _options.oidcIssuer,
+          clientId: _options.oidcClientId,
+          clientSecret: _options.oidcClientSecret,
+          redirectUri: _options.redirectUri
         }
       },
       session: {
-        timeout: options.sessionTimeout || 8 * 60 * 60 * 1000, // 8 hours
-        renewalThreshold: options.renewalThreshold || 30 * 60 * 1000, // 30 minutes
-        maxConcurrentSessions: options.maxConcurrentSessions || 5
+        timeout: _options.sessionTimeout || 8 * 60 * 60 * 1000, // 8 hours
+        renewalThreshold: _options.renewalThreshold || 30 * 60 * 1000, // 30 minutes
+        maxConcurrentSessions: _options.maxConcurrentSessions || 5
       },
       security: {
-        jwtSecret: options.jwtSecret || crypto.randomBytes(64).toString('hex'),
-        encryptionKey: options.encryptionKey || crypto.randomBytes(32),
-        tokenExpiry: options.tokenExpiry || 3600, // 1 hour
-        refreshTokenExpiry: options.refreshTokenExpiry || 7 * 24 * 3600 // 7 days
+        jwtSecret: _options.jwtSecret || crypto.randomBytes(64).toString('hex'),
+        encryptionKey: _options.encryptionKey || crypto.randomBytes(32),
+        tokenExpiry: _options.tokenExpiry || 3600, // 1 hour
+        refreshTokenExpiry: _options.refreshTokenExpiry || 7 * 24 * 3600 // 7 days
       },
-      ...options
+      ..._options
     };
     
     this.sessions = new Map();
@@ -72,20 +72,20 @@ class SSOManager extends EventEmitter {
    * Initialize SSO providers
    */
   async _initializeProviders() {
-    if (this.config.providers.saml.enabled) {
-      this.providers.set('saml', new SAMLProvider(this.config.providers.saml));
+    if (this._config.providers.saml.enabled) {
+      this.providers.set('saml', new SAMLProvider(this._config.providers.saml));
     }
     
-    if (this.config.providers.oauth2.enabled) {
-      this.providers.set('oauth2', new OAuth2Provider(this.config.providers.oauth2));
+    if (this._config.providers.oauth2.enabled) {
+      this.providers.set('oauth2', new OAuth2Provider(this._config.providers.oauth2));
     }
     
-    if (this.config.providers.activeDirectory.enabled) {
-      this.providers.set('ad', new ActiveDirectoryProvider(this.config.providers.activeDirectory));
+    if (this._config.providers.activeDirectory.enabled) {
+      this.providers.set('ad', new ActiveDirectoryProvider(this._config.providers.activeDirectory));
     }
     
-    if (this.config.providers.oidc.enabled) {
-      this.providers.set('oidc', new OIDCProvider(this.config.providers.oidc));
+    if (this._config.providers.oidc.enabled) {
+      this.providers.set('oidc', new OIDCProvider(this._config.providers.oidc));
     }
   }
 
@@ -183,7 +183,7 @@ class SSOManager extends EventEmitter {
     const userSessions = Array.from(this.sessions.values())
       .filter(s => s.userId === userInfo.id && s.tenantId === tenantId);
     
-    if (userSessions.length >= this.config.session.maxConcurrentSessions) {
+    if (userSessions.length >= this._config.session.maxConcurrentSessions) {
       // Remove oldest session
       const oldestSession = userSessions.sort((a, b) => a.createdAt - b.createdAt)[0];
       this.sessions.delete(oldestSession.id);
@@ -209,7 +209,7 @@ class SSOManager extends EventEmitter {
           tenant: tenantId,
           provider,
           roles: userInfo.roles || [],
-          exp: Math.floor(now / 1000) + this.config.security.tokenExpiry
+          exp: Math.floor(now / 1000) + this._config.security.tokenExpiry
         }),
         refreshToken: this._generateRefreshToken(),
         externalTokens: {
@@ -221,7 +221,7 @@ class SSOManager extends EventEmitter {
       metadata: {
         createdAt: now,
         lastActivity: now,
-        expiresAt: now + this.config.session.timeout,
+        expiresAt: now + this._config.session.timeout,
         ipAddress: tokenData.ipAddress,
         userAgent: tokenData.userAgent
       }
@@ -256,7 +256,7 @@ class SSOManager extends EventEmitter {
     }
 
     // Check if session needs renewal
-    const renewalTime = session.metadata.expiresAt - this.config.session.renewalThreshold;
+    const renewalTime = session.metadata.expiresAt - this._config.session.renewalThreshold;
     if (now > renewalTime) {
       await this._renewSession(session);
     }
@@ -290,10 +290,10 @@ class SSOManager extends EventEmitter {
         tenant: session.tenantId,
         provider: session.provider,
         roles: session.user.roles,
-        exp: Math.floor(now / 1000) + this.config.security.tokenExpiry
+        exp: Math.floor(now / 1000) + this._config.security.tokenExpiry
       });
 
-      session.metadata.expiresAt = now + this.config.session.timeout;
+      session.metadata.expiresAt = now + this._config.session.timeout;
       
       this.emit('session_renewed', { sessionId: session.id, tenantId: session.tenantId });
       
@@ -310,14 +310,14 @@ class SSOManager extends EventEmitter {
   /**
    * Logout user and invalidate session
    */
-  async logout(sessionId, tenantId, options = {}) {
+  async logout(sessionId, tenantId, _options = {}) {
     const session = this.sessions.get(sessionId);
     if (!session || session.tenantId !== tenantId) {
       return { success: false, reason: 'session_not_found' };
     }
 
     // Perform SSO logout if supported
-    if (options.ssoLogout) {
+    if (_options.ssoLogout) {
       const provider = this.providers.get(session.provider);
       if (provider && provider.logout) {
         try {
@@ -357,14 +357,14 @@ class SSOManager extends EventEmitter {
   /**
    * List active sessions for a tenant
    */
-  async getActiveSessions(tenantId, options = {}) {
+  async getActiveSessions(tenantId, _options = {}) {
     const sessions = Array.from(this.sessions.values())
       .filter(s => s.tenantId === tenantId)
       .map(s => ({
         id: s.id,
         userId: s.userId,
         provider: s.provider,
-        user: options.includeUserInfo ? s.user : { id: s.user.id, email: s.user.email },
+        user: _options.includeUserInfo ? s.user : { id: s.user.id, email: s.user.email },
         metadata: s.metadata
       }));
 
@@ -398,7 +398,7 @@ class SSOManager extends EventEmitter {
     const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
     const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const signature = crypto
-      .createHmac('sha256', this.config.security.jwtSecret)
+      .createHmac('sha256', this._config.security.jwtSecret)
       .update(`${header}.${payloadStr}`)
       .digest('base64url');
     
@@ -433,8 +433,8 @@ class SSOManager extends EventEmitter {
 
 // SSO Provider implementations
 class SAMLProvider {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async getAuthorizationUrl(state, _redirectUrl) {
@@ -444,7 +444,7 @@ class SAMLProvider {
       RelayState: state
     });
     
-    return `${this.config.ssoUrl}?${params.toString()}`;
+    return `${this._config.ssoUrl}?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(_callbackData) {
@@ -490,20 +490,20 @@ class SAMLProvider {
 }
 
 class OAuth2Provider {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
       response_type: 'code',
-      client_id: this.config.clientId,
+      client_id: this._config.clientId,
       redirect_uri: _redirectUrl,
-      scope: this.config.scopes.join(' '),
+      scope: this._config.scopes.join(' '),
       state
     });
     
-    return `${this.config.authorizationUrl}?${params.toString()}`;
+    return `${this._config.authorizationUrl}?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(_callbackData) {
@@ -536,8 +536,8 @@ class OAuth2Provider {
 }
 
 class ActiveDirectoryProvider {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async getAuthorizationUrl(state, _redirectUrl) {
@@ -545,12 +545,12 @@ class ActiveDirectoryProvider {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: 'rag-pipeline-utils',
-      resource: this.config.url,
+      resource: this._config.url,
       redirect_uri: _redirectUrl,
       state
     });
     
-    return `${this.config.url}/oauth2/authorize?${params.toString()}`;
+    return `${this._config.url}/oauth2/authorize?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(_callbackData) {
@@ -575,20 +575,20 @@ class ActiveDirectoryProvider {
 }
 
 class OIDCProvider {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
       response_type: 'code',
-      client_id: this.config.clientId,
+      client_id: this._config.clientId,
       redirect_uri: _redirectUrl,
       scope: 'openid profile email',
       state
     });
     
-    return `${this.config.issuer}/auth?${params.toString()}`;
+    return `${this._config.issuer}/auth?${params.toString()}`;
   }
 
   async exchangeCodeForTokens(_callbackData) {

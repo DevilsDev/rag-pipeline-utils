@@ -11,7 +11,7 @@ import { execSync } from 'child_process';
 const currentTag = process.argv[2];
 
 if (!currentTag) {
-  console.error('❌ Usage: node get-previous-tag.js <current-tag>');
+  console.error('❌ Usage: node get-previous-tag.js <current-tag>'); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -28,13 +28,13 @@ try {
   const idx = tags.indexOf(currentTag);
 
   if (idx <= 0) {
-    console.error('⚠️ Could not find previous tag before', currentTag);
+    console.error('⚠️ Could not find previous tag before', currentTag); // eslint-disable-line no-console
     process.exit(1);
   }
 
   const previousTag = tags[idx - 1];
-  console.log(previousTag);
+  console.log(previousTag); // eslint-disable-line no-console
 } catch (err) {
-  console.error('❌ Failed to resolve previous tag:', err.message);
+  console.error('❌ Failed to resolve previous tag:', err.message); // eslint-disable-line no-console
   process.exit(1);
 }

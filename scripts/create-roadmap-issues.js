@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Version: 2.2.0
  * Description: Create GitHub issues from roadmap file
  * Author: Ali Kahwaji
@@ -38,12 +39,12 @@ async function createRoadmapIssues() {
         body: description,
         labels: ['roadmap']
       });
-      console.log(`✅ Created issue: ${title}`);
+      console.log(`✅ Created issue: ${title}`); // eslint-disable-line no-console
     }
   }
 }
 
 createRoadmapIssues().catch(err => {
-  console.error('❌ Error creating roadmap issues:', err);
+  console.error('❌ Error creating roadmap issues:', err); // eslint-disable-line no-console
   process.exit(1);
 });

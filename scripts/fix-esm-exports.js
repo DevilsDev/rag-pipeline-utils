@@ -7,8 +7,8 @@
  * to complete the Jest test suite loading fixes.
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
 class ESMExportToCommonJSConverter {
   constructor() {
@@ -111,9 +111,9 @@ class ESMExportToCommonJSConverter {
   /**
    * Process a single file
    */
-  async processFile(filePath) {
+  async processFile(_filePath) {
     try {
-      const content = await fs.readFile(filePath, 'utf8');
+      const content = await fs.readFile(_filePath, 'utf8');
       const originalContent = content;
       
       // Skip if no exports found
@@ -125,12 +125,12 @@ class ESMExportToCommonJSConverter {
       
       // Only write if content changed
       if (convertedContent !== originalContent) {
-        await fs.writeFile(filePath, convertedContent, 'utf8');
-        console.log(`✅ Converted exports in: ${path.relative(process.cwd(), filePath)}`);
+        await fs.writeFile(_filePath, convertedContent, 'utf8');
+        console.log(`✅ Converted exports in: ${path.relative(process.cwd(), _filePath)}`); // eslint-disable-line no-console
         this.filesProcessed++;
       }
     } catch (error) {
-      console.error(`❌ Error processing ${filePath}:`, error.message);
+      console.error(`❌ Error processing ${_filePath}:`, error.message); // eslint-disable-line no-console
     }
   }
 
@@ -157,21 +157,21 @@ class ESMExportToCommonJSConverter {
    * Convert all files in src directory
    */
   async convertAllFiles() {
-    console.log('🔄 Starting ESM export to CommonJS conversion...\n');
+    console.log('🔄 Starting ESM export to CommonJS conversion...\n'); // eslint-disable-line no-console
     
     const srcDir = path.join(process.cwd(), 'src');
     const files = await this.findJavaScriptFiles(srcDir);
     
-    console.log(`📁 Found ${files.length} JavaScript files to process\n`);
+    console.log(`📁 Found ${files.length} JavaScript files to process\n`); // eslint-disable-line no-console
     
     for (const file of files) {
       await this.processFile(file);
     }
     
-    console.log('\n📊 Export Conversion Summary:');
-    console.log(`   Files processed: ${this.filesProcessed}`);
-    console.log(`   Export statements converted: ${this.conversions}`);
-    console.log('✅ ESM export to CommonJS conversion complete!\n');
+    console.log('\n📊 Export Conversion Summary:'); // eslint-disable-line no-console
+    console.log(`   Files processed: ${this.filesProcessed}`); // eslint-disable-line no-console
+    console.log(`   Export statements converted: ${this.conversions}`); // eslint-disable-line no-console
+    console.log('✅ ESM export to CommonJS conversion complete!\n'); // eslint-disable-line no-console
   }
 }
 

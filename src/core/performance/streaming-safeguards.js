@@ -3,6 +3,8 @@
  * Prevents memory overload during large document processing
  */
 
+const { logger } = require('../../utils/logger.js');
+
 /**
  * Memory monitor for tracking heap usage
  */
@@ -55,12 +57,12 @@ class MemoryMonitor {
  * Backpressure controller for streaming operations
  */
 class BackpressureController {
-  constructor(options = {}) {
-    this.maxBufferSize = options.maxBufferSize || 100;
-    this.memoryMonitor = new MemoryMonitor(options.maxMemoryMB);
-    this.pauseThreshold = options.pauseThreshold || 0.85;
-    this.resumeThreshold = options.resumeThreshold || 0.7;
-    this.checkInterval = options.checkInterval || 1000; // ms
+  constructor(_options = {}) {
+    this.maxBufferSize = _options.maxBufferSize || 100;
+    this.memoryMonitor = new MemoryMonitor(_options.maxMemoryMB);
+    this.pauseThreshold = _options.pauseThreshold || 0.85;
+    this.resumeThreshold = _options.resumeThreshold || 0.7;
+    this.checkInterval = _options.checkInterval || 1000; // ms
     
     this.isPaused = false;
     this.buffer = [];
@@ -89,7 +91,7 @@ class BackpressureController {
 
     this.isPaused = true;
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    console.warn(`⚠️  Applying backpressure - Memory: ${memoryReport.usagePercentage}%, Buffer: ${this.buffer.length}/${this.maxBufferSize}`);
+    console.warn(`⚠️  Applying backpressure - Memory: ${memoryReport.usagePercentage}%, Buffer: ${this.buffer.length}/${this.maxBufferSize}`); // eslint-disable-line no-console
 
     return new Promise((resolve) => {
       this.waitingResolvers.push(resolve);
@@ -120,7 +122,7 @@ class BackpressureController {
     if (!this.isPaused) return;
 
     this.isPaused = false;
-    console.log('✅ Backpressure relieved - resuming processing');
+    console.log('✅ Backpressure relieved - resuming processing'); // eslint-disable-line no-console
     
     // Clear interval
     if (this.reliefCheckInterval) {
@@ -172,17 +174,17 @@ class BackpressureController {
  * Streaming processor with memory safeguards
  */
 class StreamingProcessor {
-  constructor(options = {}) {
-    this.chunkSize = options.chunkSize || 1000;
-    this.backpressureController = new BackpressureController(options);
-    this.tokenLimit = options.tokenLimit || 100000; // Token limit per stream
-    this.tokenWarningThreshold = options.tokenWarningThreshold || 0.8;
+  constructor(_options = {}) {
+    this.chunkSize = _options.chunkSize || 1000;
+    this.backpressureController = new BackpressureController(_options);
+    this.tokenLimit = _options.tokenLimit || 100000; // Token limit per stream
+    this.tokenWarningThreshold = _options.tokenWarningThreshold || 0.8;
   }
 
   /**
    * Process document stream with memory safeguards
    * @param {string} docPath - Path to document
-   * @param {object} pipeline - Pipeline instance
+   * @param {object} pipeline - Pipeline _instance
    * @returns {AsyncGenerator} Stream of processed chunks
    */
   async* processDocumentStream(docPath, pipeline) {
@@ -221,7 +223,7 @@ class StreamingProcessor {
         
         // Warn if approaching token limit (check after incrementing chunkCount)
         if (totalTokens > this.tokenLimit * this.tokenWarningThreshold && chunkCount % 10 === 0) {
-          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`);
+          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`); // eslint-disable-line no-console
         }
         
         if (processed.processed) {
@@ -258,11 +260,11 @@ class StreamingProcessor {
         yield item;
       }
 
-      console.log(`✅ Streaming processing complete: ${chunkCount} chunks, ${Math.round(totalTokens)} tokens`);
+      console.log(`✅ Streaming processing complete: ${chunkCount} chunks, ${Math.round(totalTokens)} tokens`); // eslint-disable-line no-console
       
     } catch (error) {
       const status = this.backpressureController.getStatus();
-      console.error('❌ Streaming processing failed:', {
+      logger.error('❌ Streaming processing failed:', {
         error: error.message,
         totalTokens: Math.round(totalTokens),
         chunkCount,
@@ -276,7 +278,7 @@ class StreamingProcessor {
   /**
    * Load document in chunks
    * @param {string} docPath - Document path
-   * @param {object} loader - Loader instance
+   * @param {object} loader - Loader _instance
    * @returns {AsyncGenerator} Stream of document chunks
    */
   async* loadInChunks(docPath, loader) {
@@ -298,7 +300,7 @@ class StreamingProcessor {
   /**
    * Process a single chunk
    * @param {string} chunk - Text chunk
-   * @param {object} pipeline - Pipeline instance
+   * @param {object} pipeline - Pipeline _instance
    * @returns {Promise<object>} Processed chunk
    */
   async processChunk(chunk, pipeline) {

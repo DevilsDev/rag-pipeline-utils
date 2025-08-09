@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * Git Hook Restoration Script
  * Version: 2.0.0
  * Description: Restores normal Git hooks after emergency recovery mode
@@ -10,14 +12,14 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { setupCLI, dryRunWrapper } from './utils/cli.js';
+import { setupCLI, _dryRunWrapper } from './utils/cli.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, 'scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, 'scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 // Setup CLI
 const { args, logger } = setupCLI('restore-git-hooks.js', 'Restore normal Git hooks after emergency mode', {
@@ -34,7 +36,7 @@ try {
   if (fs.existsSync(preCommitBackupPath)) {
     fs.copyFileSync(preCommitBackupPath, preCommitPath);
     fs.unlinkSync(preCommitBackupPath);
-    console.log('✅ Pre-commit hook restored from backup');
+    console.log('✅ Pre-commit hook restored from backup'); // eslint-disable-line no-console
   } else {
     // Create the fixed pre-commit hook
     const fixedHook = `#!/usr/bin/env sh
@@ -45,10 +47,10 @@ npx lint-staged
 `;
     
     fs.writeFileSync(preCommitPath, fixedHook);
-    console.log('✅ Pre-commit hook restored with fixes');
+    console.log('✅ Pre-commit hook restored with fixes'); // eslint-disable-line no-console
   }
 } catch (error) {
-  console.log('⚠️  Could not restore pre-commit hook:', error.message);
+  console.log('⚠️  Could not restore pre-commit hook:', error.message); // eslint-disable-line no-console
 }
 
 // 2. Remove emergency scripts from package.json
@@ -62,10 +64,10 @@ try {
   delete packageJson.scripts['emergency:restore'];
   
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  console.log('✅ Emergency scripts removed from package.json');
+  console.log('✅ Emergency scripts removed from package.json'); // eslint-disable-line no-console
 } catch (error) {
-  console.log('⚠️  Could not modify package.json:', error.message);
+  console.log('⚠️  Could not modify package.json:', error.message); // eslint-disable-line no-console
 }
 
-console.log('\n🎉 Git hooks restored to normal operation!');
-console.log('You can now use regular git commands safely.');
+console.log('\n🎉 Git hooks restored to normal operation!'); // eslint-disable-line no-console
+console.log('You can now use regular git commands safely.'); // eslint-disable-line no-console

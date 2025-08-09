@@ -5,8 +5,8 @@
  * Provides ready-to-use configurations for common RAG pipeline integrations.
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
 class IntegrationTemplates {
   constructor() {
@@ -25,13 +25,13 @@ class IntegrationTemplates {
       name: 'Atlassian Confluence',
       category: 'data-sources',
       description: 'Connect to Confluence spaces and pages',
-      type: 'loader',
-      config: {
-        baseUrl: { type: 'string', required: true, description: 'Confluence base URL' },
-        username: { type: 'string', required: true, description: 'Username or email' },
-        apiToken: { type: 'string', required: true, secret: true, description: 'API token' },
-        spaceKey: { type: 'string', required: false, description: 'Specific space key (optional)' },
-        pageLimit: { type: 'number', default: 100, description: 'Maximum pages to fetch' }
+      _type: 'loader',
+      _config: {
+        baseUrl: { _type: 'string', required: true, description: 'Confluence base URL' },
+        username: { _type: 'string', required: true, description: 'Username or email' },
+        apiToken: { _type: 'string', required: true, secret: true, description: 'API token' },
+        spaceKey: { _type: 'string', required: false, description: 'Specific space key (optional)' },
+        pageLimit: { _type: 'number', default: 100, description: 'Maximum pages to fetch' }
       },
       dependencies: ['axios'],
       usage: 'Load documents from Confluence spaces and pages'
@@ -41,12 +41,12 @@ class IntegrationTemplates {
       name: 'Notion Database',
       category: 'data-sources',
       description: 'Connect to Notion databases and pages',
-      type: 'loader',
-      config: {
-        apiToken: { type: 'string', required: true, secret: true, description: 'Notion API token' },
-        databaseId: { type: 'string', required: true, description: 'Database ID to query' },
-        filter: { type: 'object', required: false, description: 'Query filter (optional)' },
-        pageSize: { type: 'number', default: 100, description: 'Results per page' }
+      _type: 'loader',
+      _config: {
+        apiToken: { _type: 'string', required: true, secret: true, description: 'Notion API token' },
+        databaseId: { _type: 'string', required: true, description: 'Database ID to query' },
+        filter: { _type: 'object', required: false, description: 'Query filter (optional)' },
+        pageSize: { _type: 'number', default: 100, description: 'Results per page' }
       },
       dependencies: ['@notionhq/client'],
       usage: 'Load documents from Notion databases'
@@ -56,13 +56,13 @@ class IntegrationTemplates {
       name: 'Microsoft SharePoint',
       category: 'data-sources',
       description: 'Connect to SharePoint document libraries',
-      type: 'loader',
-      config: {
-        siteUrl: { type: 'string', required: true, description: 'SharePoint site URL' },
-        clientId: { type: 'string', required: true, description: 'Azure app client ID' },
-        clientSecret: { type: 'string', required: true, secret: true, description: 'Azure app client secret' },
-        tenantId: { type: 'string', required: true, description: 'Azure tenant ID' },
-        libraryName: { type: 'string', default: 'Documents', description: 'Document library name' }
+      _type: 'loader',
+      _config: {
+        siteUrl: { _type: 'string', required: true, description: 'SharePoint site URL' },
+        clientId: { _type: 'string', required: true, description: 'Azure app client ID' },
+        clientSecret: { _type: 'string', required: true, secret: true, description: 'Azure app client secret' },
+        tenantId: { _type: 'string', required: true, description: 'Azure tenant ID' },
+        libraryName: { _type: 'string', default: 'Documents', description: 'Document library name' }
       },
       dependencies: ['@microsoft/microsoft-graph-client', '@azure/identity'],
       usage: 'Load documents from SharePoint libraries'
@@ -73,13 +73,13 @@ class IntegrationTemplates {
       name: 'Pinecone Vector Database',
       category: 'vector-stores',
       description: 'Connect to Pinecone for vector storage and retrieval',
-      type: 'retriever',
-      config: {
-        apiKey: { type: 'string', required: true, secret: true, description: 'Pinecone API key' },
-        environment: { type: 'string', required: true, description: 'Pinecone environment' },
-        indexName: { type: 'string', required: true, description: 'Index name' },
-        topK: { type: 'number', default: 5, description: 'Number of results to return' },
-        includeMetadata: { type: 'boolean', default: true, description: 'Include metadata in results' }
+      _type: 'retriever',
+      _config: {
+        apiKey: { _type: 'string', required: true, secret: true, description: 'Pinecone API key' },
+        environment: { _type: 'string', required: true, description: 'Pinecone environment' },
+        indexName: { _type: 'string', required: true, description: 'Index name' },
+        topK: { _type: 'number', default: 5, description: 'Number of results to return' },
+        includeMetadata: { _type: 'boolean', default: true, description: 'Include metadata in results' }
       },
       dependencies: ['@pinecone-database/pinecone'],
       usage: 'Store and retrieve vectors from Pinecone'
@@ -89,12 +89,12 @@ class IntegrationTemplates {
       name: 'Weaviate Vector Database',
       category: 'vector-stores',
       description: 'Connect to Weaviate for semantic search',
-      type: 'retriever',
-      config: {
-        host: { type: 'string', required: true, description: 'Weaviate host URL' },
-        apiKey: { type: 'string', required: false, secret: true, description: 'API key (if required)' },
-        className: { type: 'string', required: true, description: 'Weaviate class name' },
-        limit: { type: 'number', default: 5, description: 'Number of results to return' }
+      _type: 'retriever',
+      _config: {
+        host: { _type: 'string', required: true, description: 'Weaviate host URL' },
+        apiKey: { _type: 'string', required: false, secret: true, description: 'API key (if required)' },
+        className: { _type: 'string', required: true, description: 'Weaviate class name' },
+        limit: { _type: 'number', default: 5, description: 'Number of results to return' }
       },
       dependencies: ['weaviate-ts-client'],
       usage: 'Semantic search with Weaviate'
@@ -105,13 +105,13 @@ class IntegrationTemplates {
       name: 'OpenAI GPT-4',
       category: 'llm-providers',
       description: 'OpenAI GPT-4 language model integration',
-      type: 'llm',
-      config: {
-        apiKey: { type: 'string', required: true, secret: true, description: 'OpenAI API key' },
-        model: { type: 'string', default: 'gpt-4', description: 'Model name' },
-        temperature: { type: 'number', default: 0.7, description: 'Sampling temperature' },
-        maxTokens: { type: 'number', default: 1000, description: 'Maximum tokens to generate' },
-        systemPrompt: { type: 'string', required: false, description: 'System prompt' }
+      _type: 'llm',
+      _config: {
+        apiKey: { _type: 'string', required: true, secret: true, description: 'OpenAI API key' },
+        model: { _type: 'string', default: 'gpt-4', description: 'Model name' },
+        temperature: { _type: 'number', default: 0.7, description: 'Sampling temperature' },
+        maxTokens: { _type: 'number', default: 1000, description: 'Maximum tokens to generate' },
+        systemPrompt: { _type: 'string', required: false, description: 'System prompt' }
       },
       dependencies: ['openai'],
       usage: 'Generate responses using OpenAI GPT-4'
@@ -121,12 +121,12 @@ class IntegrationTemplates {
       name: 'Anthropic Claude',
       category: 'llm-providers',
       description: 'Anthropic Claude language model integration',
-      type: 'llm',
-      config: {
-        apiKey: { type: 'string', required: true, secret: true, description: 'Anthropic API key' },
-        model: { type: 'string', default: 'claude-3-sonnet-20240229', description: 'Model name' },
-        maxTokens: { type: 'number', default: 1000, description: 'Maximum tokens to generate' },
-        systemPrompt: { type: 'string', required: false, description: 'System prompt' }
+      _type: 'llm',
+      _config: {
+        apiKey: { _type: 'string', required: true, secret: true, description: 'Anthropic API key' },
+        model: { _type: 'string', default: 'claude-3-sonnet-20240229', description: 'Model name' },
+        maxTokens: { _type: 'number', default: 1000, description: 'Maximum tokens to generate' },
+        systemPrompt: { _type: 'string', required: false, description: 'System prompt' }
       },
       dependencies: ['@anthropic-ai/sdk'],
       usage: 'Generate responses using Anthropic Claude'
@@ -137,11 +137,11 @@ class IntegrationTemplates {
       name: 'OpenAI Embeddings',
       category: 'embedding-providers',
       description: 'OpenAI text embedding models',
-      type: 'embedder',
-      config: {
-        apiKey: { type: 'string', required: true, secret: true, description: 'OpenAI API key' },
-        model: { type: 'string', default: 'text-embedding-3-small', description: 'Embedding model' },
-        batchSize: { type: 'number', default: 100, description: 'Batch size for processing' }
+      _type: 'embedder',
+      _config: {
+        apiKey: { _type: 'string', required: true, secret: true, description: 'OpenAI API key' },
+        model: { _type: 'string', default: 'text-embedding-3-small', description: 'Embedding model' },
+        batchSize: { _type: 'number', default: 100, description: 'Batch size for processing' }
       },
       dependencies: ['openai'],
       usage: 'Generate text embeddings using OpenAI'
@@ -152,12 +152,12 @@ class IntegrationTemplates {
       name: 'Datadog Monitoring',
       category: 'monitoring',
       description: 'Send metrics and logs to Datadog',
-      type: 'monitor',
-      config: {
-        apiKey: { type: 'string', required: true, secret: true, description: 'Datadog API key' },
-        site: { type: 'string', default: 'datadoghq.com', description: 'Datadog site' },
-        service: { type: 'string', default: 'rag-pipeline', description: 'Service name' },
-        environment: { type: 'string', default: 'production', description: 'Environment' }
+      _type: 'monitor',
+      _config: {
+        apiKey: { _type: 'string', required: true, secret: true, description: 'Datadog API key' },
+        site: { _type: 'string', default: 'datadoghq.com', description: 'Datadog site' },
+        service: { _type: 'string', default: 'rag-pipeline', description: 'Service name' },
+        environment: { _type: 'string', default: 'production', description: 'Environment' }
       },
       dependencies: ['node-statsd', 'axios'],
       usage: 'Monitor pipeline performance with Datadog'
@@ -225,11 +225,11 @@ class IntegrationTemplates {
   }
   
   /**
-   * Get templates by type
+   * Get templates by _type
    */
-  getTemplatesByType(type) {
+  getTemplatesByType(_type) {
     return Array.from(this.templates.values()).filter(template => 
-      template.type === type
+      template._type === _type
     );
   }
   
@@ -248,7 +248,7 @@ class IntegrationTemplates {
   /**
    * Generate integration code from template
    */
-  generateIntegration(templateId, config = {}) {
+  generateIntegration(templateId, _config = {}) {
     const template = this.templates.get(templateId);
     if (!template) {
       throw new Error(`Template ${templateId} not found`);
@@ -256,8 +256,8 @@ class IntegrationTemplates {
     
     // Validate required config
     const missingRequired = [];
-    Object.entries(template.config).forEach(([key, configDef]) => {
-      if (configDef.required && !config[key]) {
+    Object.entries(template._config).forEach(([key, configDef]) => {
+      if (configDef.required && !_config[key]) {
         missingRequired.push(key);
       }
     });
@@ -268,14 +268,14 @@ class IntegrationTemplates {
     
     // Merge with defaults
     const finalConfig = {};
-    Object.entries(template.config).forEach(([key, configDef]) => {
-      finalConfig[key] = config[key] !== undefined ? config[key] : configDef.default;
+    Object.entries(template._config).forEach(([key, configDef]) => {
+      finalConfig[key] = _config[key] !== undefined ? _config[key] : configDef.default;
     });
     
     return {
       name: template.name,
-      type: template.type,
-      config: finalConfig,
+      _type: template._type,
+      _config: finalConfig,
       dependencies: template.dependencies || [],
       usage: template.usage,
       setupInstructions: this.generateSetupInstructions(template, finalConfig)
@@ -285,7 +285,7 @@ class IntegrationTemplates {
   /**
    * Generate setup instructions
    */
-  generateSetupInstructions(template, config) {
+  generateSetupInstructions(template, _config) {
     const instructions = [];
     
     instructions.push(`# ${template.name} Integration Setup`);
@@ -297,7 +297,7 @@ class IntegrationTemplates {
     instructions.push('');
     instructions.push('## 2. Configuration');
     instructions.push('```javascript');
-    instructions.push(`const config = ${JSON.stringify(config, null, 2)};`);
+    instructions.push(`const _config = ${JSON.stringify(_config, null, 2)};`);
     instructions.push('```');
     instructions.push('');
     instructions.push('## 3. Usage');
@@ -324,17 +324,17 @@ class IntegrationTemplates {
     
     await fs.mkdir(outputDir, { recursive: true });
     
-    const filePath = path.join(outputDir, `${templateId}.json`);
-    await fs.writeFile(filePath, JSON.stringify(template, null, 2));
+    const _filePath = path.join(outputDir, `${templateId}.json`);
+    await fs.writeFile(_filePath, JSON.stringify(template, null, 2));
     
-    return filePath;
+    return _filePath;
   }
   
   /**
    * Import template from file
    */
-  async importTemplate(filePath) {
-    const data = await fs.readFile(filePath, 'utf8');
+  async importTemplate(_filePath) {
+    const data = await fs.readFile(_filePath, 'utf8');
     const template = JSON.parse(data);
     
     if (!template.id) {
@@ -355,7 +355,7 @@ class IntegrationTemplates {
     
     templates.forEach(template => {
       categories[template.category] = (categories[template.category] || 0) + 1;
-      types[template.type] = (types[template.type] || 0) + 1;
+      types[template._type] = (types[template._type] || 0) + 1;
     });
     
     return {

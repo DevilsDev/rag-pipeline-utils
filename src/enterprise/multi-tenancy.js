@@ -3,17 +3,17 @@
  * Isolated workspaces, resource quotas, and tenant management
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class TenantManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
-      dataDir: options.dataDir || path.join(process.cwd(), '.rag-enterprise'),
+    this._config = {
+      dataDir: _options.dataDir || path.join(process.cwd(), '.rag-enterprise'),
       defaultQuotas: {
         maxUsers: 100,
         maxWorkspaces: 10,
@@ -27,12 +27,12 @@ class TenantManager extends EventEmitter {
         storageIsolation: true,
         resourceIsolation: true
       },
-      ...options
+      ..._options
     };
     
     this.tenants = new Map();
     this.workspaces = new Map();
-    this.resourceMonitor = new ResourceMonitor(this.config);
+    this.resourceMonitor = new ResourceMonitor(this._config);
   }
 
   /**
@@ -46,7 +46,7 @@ class TenantManager extends EventEmitter {
       name: tenantData.name,
       domain: tenantData.domain,
       plan: tenantData.plan || 'enterprise',
-      quotas: { ...this.config.defaultQuotas, ...tenantData.quotas },
+      quotas: { ...this._config.defaultQuotas, ...tenantData.quotas },
       settings: {
         ssoEnabled: tenantData.ssoEnabled || false,
         auditLoggingEnabled: true,
@@ -61,7 +61,7 @@ class TenantManager extends EventEmitter {
         lastActivity: new Date().toISOString()
       },
       isolation: {
-        dataPath: path.join(this.config.dataDir, 'tenants', _tenantId),
+        dataPath: path.join(this._config.dataDir, 'tenants', _tenantId),
         networkNamespace: `tenant-${_tenantId}`,
         resourceLimits: this._calculateResourceLimits(tenantData.plan)
       }
@@ -161,11 +161,11 @@ class TenantManager extends EventEmitter {
   /**
    * List workspaces for a tenant
    */
-  async getWorkspaces(_tenantId, options = {}) {
+  async getWorkspaces(_tenantId, _options = {}) {
     const workspaces = Array.from(this.workspaces.values())
       .filter(w => w._tenantId === _tenantId);
 
-    if (options.includeUsage) {
+    if (_options.includeUsage) {
       for (const workspace of workspaces) {
         workspace.usage = await this.resourceMonitor.getWorkspaceUsage(workspace.id);
       }
@@ -242,17 +242,17 @@ class TenantManager extends EventEmitter {
   /**
    * Delete tenant and all associated data
    */
-  async deleteTenant(_tenantId, options = {}) {
+  async deleteTenant(_tenantId, _options = {}) {
     const tenant = this.tenants.get(_tenantId);
     if (!tenant) {
       throw new Error(`Tenant ${_tenantId} not found`);
     }
 
     // Soft delete by default for compliance
-    if (!options.hardDelete) {
+    if (!_options.hardDelete) {
       tenant.metadata.status = 'deleted';
       tenant.metadata.deletedAt = new Date().toISOString();
-      tenant.metadata.deletedBy = options.deletedBy;
+      tenant.metadata.deletedBy = _options.deletedBy;
       
       await this._persistTenant(tenant);
       
@@ -280,16 +280,16 @@ class TenantManager extends EventEmitter {
   /**
    * Delete workspace
    */
-  async deleteWorkspace(_workspaceId, options = {}) {
+  async deleteWorkspace(_workspaceId, _options = {}) {
     const workspace = this.workspaces.get(_workspaceId);
     if (!workspace) {
       throw new Error(`Workspace ${_workspaceId} not found`);
     }
 
-    if (!options.hardDelete) {
+    if (!_options.hardDelete) {
       workspace.metadata.status = 'deleted';
       workspace.metadata.deletedAt = new Date().toISOString();
-      workspace.metadata.deletedBy = options.deletedBy;
+      workspace.metadata.deletedBy = _options.deletedBy;
       
       await this._persistWorkspace(workspace);
       
@@ -427,8 +427,8 @@ class TenantManager extends EventEmitter {
 }
 
 class ResourceMonitor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
     this.metrics = new Map();
   }
 

@@ -6,9 +6,9 @@
  */
 
 class OpenAILLM {
-  constructor(options = {}) {
-    this.streamDelay = options.streamDelay || 50; // ms between tokens
-    this.model = options.model || 'gpt-3.5-turbo';
+  constructor(_options = {}) {
+    this.streamDelay = _options.streamDelay || 50; // ms between tokens
+    this.model = _options.model || 'gpt-3.5-turbo';
   }
 
   /**
@@ -62,7 +62,7 @@ class OpenAILLM {
   }
 
   /**
-   * Check if this LLM instance supports streaming
+   * Check if this LLM _instance supports streaming
    * @returns {boolean}
    */
   supportsStreaming() {

@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.0.0
  * Description: Rewrites blog .mdx files to use SSR-safe BlogImage.jsx import
  * Author: Ali Kahwaji
@@ -16,7 +18,7 @@ function fixImportInFile(filePath) {
 
   // If already correct, skip
   if (content.includes(TARGET_IMPORT)) {
-    console.log(`✔️  ${path.basename(filePath)} already uses safe import.`);
+    console.log(`✔️  ${path.basename(filePath)} already uses safe import.`); // eslint-disable-line no-console
     return;
   }
 
@@ -24,11 +26,11 @@ function fixImportInFile(filePath) {
 
   if (replaced !== content) {
     fs.writeFileSync(filePath, replaced);
-    console.log(`✅ Updated: ${path.basename(filePath)}`);
+    console.log(`✅ Updated: ${path.basename(filePath)}`); // eslint-disable-line no-console
   } else {
     // No previous import, insert at top
     fs.writeFileSync(filePath, `${TARGET_IMPORT}\n\n${content}`);
-    console.log(`➕ Injected import: ${path.basename(filePath)}`);
+    console.log(`➕ Injected import: ${path.basename(filePath)}`); // eslint-disable-line no-console
   }
 }
 
@@ -45,6 +47,6 @@ function walkDir(dir) {
   }
 }
 
-console.log('🔍 Scanning MDX blog files...');
+console.log('🔍 Scanning MDX blog files...'); // eslint-disable-line no-console
 walkDir(BLOG_DIR);
-console.log('🎉 Import rewrite complete.');
+console.log('🎉 Import rewrite complete.'); // eslint-disable-line no-console

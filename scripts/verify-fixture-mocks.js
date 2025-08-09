@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.0.0
  * Description: Verifies that plugin mock implementations expose required methods
  * Author: Ali Kahwaji
@@ -38,8 +40,8 @@ for (const file of readdirSync(MOCKS_DIR)) {
 }
 
 if (failures.length > 0) {
-  failures.forEach(msg => console.error(msg));
+  failures.forEach(msg => console.error(msg)); // eslint-disable-line no-console
   process.exit(1);
 } else {
-  console.log('✅ All plugin mocks verified.');
+  console.log('✅ All plugin mocks verified.'); // eslint-disable-line no-console
 }

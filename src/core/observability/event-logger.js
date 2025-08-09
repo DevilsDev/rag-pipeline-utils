@@ -3,7 +3,7 @@
  * Provides consistent metadata tracking across all plugin execution stages
  */
 
-const { logger  } = require('../../utils/logger.js');
+const { logger  } = require('../../utils/logger.js'); // eslint-disable-line global-require
 
 /**
  * Event types for pipeline operations
@@ -39,10 +39,10 @@ const EventSeverity = {
  * Structured event logger for pipeline operations
  */
 class PipelineEventLogger {
-  constructor(options = {}) {
-    this.enabled = options.enabled !== false;
-    this.includeStackTrace = options.includeStackTrace || false;
-    this.maxEventHistory = options.maxEventHistory || 1000;
+  constructor(_options = {}) {
+    this.enabled = _options.enabled !== false;
+    this.includeStackTrace = _options.includeStackTrace || false;
+    this.maxEventHistory = _options.maxEventHistory || 1000;
     this.eventHistory = [];
     this.eventListeners = new Map();
     this.sessionId = this.generateSessionId();
@@ -274,7 +274,7 @@ class PipelineEventLogger {
 
   /**
    * Add event listener
-   * @param {string} eventType - Event type to listen for
+   * @param {string} eventType - Event _type to listen for
    * @param {Function} callback - Callback function
    */
   addEventListener(eventType, callback) {
@@ -286,7 +286,7 @@ class PipelineEventLogger {
 
   /**
    * Remove event listener
-   * @param {string} eventType - Event type
+   * @param {string} eventType - Event _type
    * @param {Function} callback - Callback function to remove
    */
   removeEventListener(eventType, callback) {
@@ -309,7 +309,7 @@ class PipelineEventLogger {
       try {
         callback(event);
       } catch (error) {
-        console.error('Event listener error:', error);
+        console.error('Event listener error:', error); // eslint-disable-line no-console
       }
     });
   }
@@ -375,13 +375,13 @@ class PipelineEventLogger {
    */
   getInputSize(input) {
     if (Array.isArray(input)) {
-      return { type: 'array', length: input.length };
+      return { _type: 'array', length: input.length };
     } else if (typeof input === 'string') {
-      return { type: 'string', length: input.length };
+      return { _type: 'string', length: input.length };
     } else if (typeof input === 'object' && input !== null) {
-      return { type: 'object', keys: Object.keys(input).length };
+      return { _type: 'object', keys: Object.keys(input).length };
     }
-    return { type: typeof input };
+    return { _type: typeof input };
   }
 
   /**

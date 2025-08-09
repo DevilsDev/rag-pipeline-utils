@@ -82,7 +82,7 @@ for (const errorFile of errorFiles) {
       else if (ruleId === 'no-undef') {
         const lines = content.split('\n');
         
-        if (errorMsg.includes("'fail' is not defined")) {
+        if (errorMsg.includes('\'fail\' is not defined')) {
           // Replace fail() with expect().toThrow() or add proper import
           const errorLine = lines[line - 1];
           if (errorLine.includes('fail(')) {
@@ -93,7 +93,7 @@ for (const errorFile of errorFiles) {
           }
         }
         
-        if (errorMsg.includes("'options' is not defined")) {
+        if (errorMsg.includes('\'options\' is not defined')) {
           // Add options parameter or default
           const lines = content.split('\n');
           const errorLine = lines[line - 1];

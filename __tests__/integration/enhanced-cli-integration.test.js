@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Integration tests for Enhanced CLI UX Features
  * Tests end-to-end functionality of interactive wizard, doctor command, and enhanced CLI
  */
@@ -15,9 +16,9 @@ const CLI_PATH = path.resolve(__dirname, '../../bin/cli.js');
 const TEST_CONFIG_DIR = path.resolve(__dirname, '../fixtures/cli');
 
 // Helper function to run CLI commands
-function runCLI(args, options = {}) {
+function runCLI(_args, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn('node', [CLI_PATH, ...args], {
+    const child = spawn('node', [CLI_PATH, ..._args], {
       cwd: options.cwd || TEST_CONFIG_DIR,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, ...options.env }

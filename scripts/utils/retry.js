@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Retry utility with exponential backoff for API calls
  * Version: 1.0.0
  * Author: Ali Kahwaji
@@ -13,8 +15,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, '../scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, '../scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 const logger = createLogger('retry');
 
@@ -56,25 +58,25 @@ function isRetryableError(error) {
  * @param {number} baseDelay - Base delay in milliseconds
  * @returns {number} - Delay in milliseconds
  */
-function calculateDelay(attempt, baseDelay = 1000) {
+function calculateDelay(_attempt, baseDelay = 1000) {
   const jitter = Math.random() * 0.1 * baseDelay; // Add 10% jitter
-  return Math.min(baseDelay * Math.pow(2, attempt) + jitter, 30000); // Max 30 seconds
+  return Math.min(baseDelay * Math.pow(2, _attempt) + jitter, 30000); // Max 30 seconds
 }
 
 /**
  * Retry function with exponential backoff
- * @param {Function} fn - Function to retry
- * @param {Object} options - Retry options
- * @param {number} options.maxAttempts - Maximum number of attempts
- * @param {number} options.baseDelay - Base delay in milliseconds
+ * @param {Function} _fn - Function to retry
+ * @param {Object} _options - Retry _options
+ * @param {number} _options.maxAttempts - Maximum number of attempts
+ * @param {number} _options.baseDelay - Base delay in milliseconds
  * @param {Function} options.shouldRetry - Custom retry condition function
- * @param {string} options.operation - Operation name for logging
+ * @param {string} _options.operation - Operation name for logging
  * @returns {Promise} - Result of the function
  */
-export async function withRetry(fn, options = {}) {
+export async function withRetry(_fn, options = {}) {
   const {
-    maxAttempts = config.github.apiRetries || 3,
-    baseDelay = config.github.retryDelayMs || 1000,
+    maxAttempts = _config.github.apiRetries || 3,
+    baseDelay = _config.github.retryDelayMs || 1000,
     shouldRetry = isRetryableError,
     operation = 'operation'
   } = options;
@@ -83,7 +85,7 @@ export async function withRetry(fn, options = {}) {
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const result = await fn();
+      const result = await _fn();
       
       if (attempt > 0) {
         logger.success(`${operation} succeeded after ${attempt + 1} attempts`);
@@ -119,10 +121,10 @@ export async function withRetry(fn, options = {}) {
  * @param {string} operation - Operation name
  * @returns {Promise} - Result of the API call
  */
-export async function withGitHubRetry(fn, operation = 'GitHub API call') {
-  return withRetry(fn, {
-    maxAttempts: config.github.apiRetries,
-    baseDelay: config.github.retryDelayMs,
+export async function withGitHubRetry(_fn, operation = 'GitHub API call') {
+  return withRetry(_fn, {
+    maxAttempts: _config.github.apiRetries,
+    baseDelay: _config.github.retryDelayMs,
     shouldRetry: (error) => {
       // GitHub-specific retry logic
       if (error.status === 403) {
@@ -147,17 +149,17 @@ export async function withGitHubRetry(fn, operation = 'GitHub API call') {
 
 /**
  * Rate limit aware wrapper for GitHub API
- * @param {Object} octokit - Octokit instance
- * @param {Function} fn - Function that uses octokit
+ * @param {Object} octokit - Octokit _instance
+ * @param {Function} _fn - Function that uses octokit
  * @param {string} operation - Operation name
  * @returns {Promise} - Result of the operation
  */
-export async function withRateLimit(octokit, fn, operation = 'GitHub operation') {
+export async function withRateLimit(_octokit, _fn, operation = 'GitHub operation') {
   try {
     // Check rate limit before making request
-    const { data: rateLimit } = await octokit.rest.rateLimit.get();
+    const { data: rateLimit } = await _octokit.rest.rateLimit.get();
     const remaining = rateLimit.rate.remaining;
-    const buffer = config.github.rateLimitBuffer || 100;
+    const buffer = _config.github.rateLimitBuffer || 100;
     
     if (remaining < buffer) {
       const resetTime = new Date(rateLimit.rate.reset * 1000);
@@ -169,12 +171,12 @@ export async function withRateLimit(octokit, fn, operation = 'GitHub operation')
       }
     }
     
-    return await withGitHubRetry(fn, operation);
+    return await withGitHubRetry(_fn, operation);
   } catch (error) {
     if (error.status === 404 && error.message.includes('rate_limit')) {
       // Fallback if rate limit endpoint is not accessible
       logger.debug('Rate limit check failed, proceeding with request');
-      return await withGitHubRetry(fn, operation);
+      return await withGitHubRetry(_fn, operation);
     }
     throw error;
   }

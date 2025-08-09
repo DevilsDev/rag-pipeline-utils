@@ -3,44 +3,44 @@
  * Public registry with ratings, reviews, downloads, and discovery
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class PluginHub extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
-      registryUrl: options.registryUrl || 'https://registry.rag-pipeline.dev',
-      localCacheDir: options.localCacheDir || path.join(process.cwd(), '.rag-cache'),
-      apiKey: options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
-      userAgent: options.userAgent || 'rag-pipeline-utils/2.1.7',
-      timeout: options.timeout || 30000,
-      maxRetries: options.maxRetries || 3,
-      ...options
+    this._config = {
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      localCacheDir: _options.localCacheDir || path.join(process.cwd(), '.rag-cache'),
+      apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
+      userAgent: _options.userAgent || 'rag-pipeline-utils/2.1.7',
+      timeout: _options.timeout || 30000,
+      maxRetries: _options.maxRetries || 3,
+      ..._options
     };
     
     this.cache = new Map();
-    this.analytics = new PluginAnalytics(this.config);
-    this.sandbox = new PluginSandbox(this.config);
+    this.analytics = new PluginAnalytics(this._config);
+    this.sandbox = new PluginSandbox(this._config);
   }
 
   /**
    * Search plugins in the community hub
    */
-  async searchPlugins(query, options = {}) {
+  async searchPlugins(query, _options = {}) {
     const searchParams = {
       q: query,
-      category: options.category,
-      tags: options.tags,
-      author: options.author,
-      minRating: options.minRating || 0,
-      verified: options.verified,
-      limit: options.limit || 20,
-      offset: options.offset || 0,
-      sortBy: options.sortBy || 'relevance' // relevance, downloads, rating, updated
+      category: _options.category,
+      tags: _options.tags,
+      author: _options.author,
+      minRating: _options.minRating || 0,
+      verified: _options.verified,
+      limit: _options.limit || 20,
+      offset: _options.offset || 0,
+      sortBy: _options.sortBy || 'relevance' // relevance, downloads, rating, updated
     };
 
     try {
@@ -56,7 +56,7 @@ class PluginHub extends EventEmitter {
         facets: response.facets
       };
     } catch (error) {
-      this.emit('error', { type: 'search_failed', query, error });
+      this.emit('error', { _type: 'search_failed', query, error });
       throw new Error(`Plugin search failed: ${error.message}`);
     }
   }
@@ -90,7 +90,7 @@ class PluginHub extends EventEmitter {
       
       return pluginInfo;
     } catch (error) {
-      this.emit('error', { type: 'plugin_info_failed', pluginId, error });
+      this.emit('error', { _type: 'plugin_info_failed', pluginId, error });
       throw new Error(`Failed to get plugin info: ${error.message}`);
     }
   }
@@ -98,7 +98,7 @@ class PluginHub extends EventEmitter {
   /**
    * Install plugin from the hub
    */
-  async installPlugin(pluginId, version = 'latest', options = {}) {
+  async installPlugin(pluginId, version = 'latest', _options = {}) {
     const installId = crypto.randomUUID();
     
     try {
@@ -112,12 +112,12 @@ class PluginHub extends EventEmitter {
       }
       
       // Check certification if required
-      if (options.requireCertified && !pluginInfo.certified) {
+      if (_options.requireCertified && !pluginInfo.certified) {
         throw new Error(`Plugin ${pluginId} is not certified`);
       }
       
       // Security scan in sandbox
-      if (options.securityScan !== false) {
+      if (_options.securityScan !== false) {
         this.emit('install_progress', { installId, stage: 'security_scan' });
         await this.sandbox.scanPlugin(pluginInfo);
       }
@@ -134,9 +134,9 @@ class PluginHub extends EventEmitter {
       // Install in sandbox first
       this.emit('install_progress', { installId, stage: 'sandbox_install' });
       const sandboxResult = await this.sandbox.installPlugin(pluginData, {
-        timeout: options.sandboxTimeout || 30000,
-        memoryLimit: options.memoryLimit || '512MB',
-        networkAccess: options.networkAccess || false
+        timeout: _options.sandboxTimeout || 30000,
+        memoryLimit: _options.memoryLimit || '512MB',
+        networkAccess: _options.networkAccess || false
       });
       
       if (!sandboxResult.success) {
@@ -183,7 +183,7 @@ class PluginHub extends EventEmitter {
   /**
    * Publish plugin to the hub
    */
-  async publishPlugin(pluginPath, options = {}) {
+  async publishPlugin(pluginPath, _options = {}) {
     const publishId = crypto.randomUUID();
     
     try {
@@ -208,7 +208,7 @@ class PluginHub extends EventEmitter {
       // Upload to registry
       this.emit('publish_progress', { publishId, stage: 'uploading' });
       const response = await this._uploadPlugin(packageData, {
-        ...options,
+        ..._options,
         securityReport
       });
       
@@ -246,7 +246,7 @@ class PluginHub extends EventEmitter {
       
       return response;
     } catch (error) {
-      this.emit('error', { type: 'review_failed', pluginId, error });
+      this.emit('error', { _type: 'review_failed', pluginId, error });
       throw new Error(`Failed to submit review: ${error.message}`);
     }
   }
@@ -254,12 +254,12 @@ class PluginHub extends EventEmitter {
   /**
    * Get plugin reviews and ratings
    */
-  async getPluginReviews(pluginId, options = {}) {
+  async getPluginReviews(pluginId, _options = {}) {
     try {
       const response = await this._makeRequest('GET', `/plugins/${pluginId}/reviews`, {
-        limit: options.limit || 10,
-        offset: options.offset || 0,
-        sortBy: options.sortBy || 'helpful'
+        limit: _options.limit || 10,
+        offset: _options.offset || 0,
+        sortBy: _options.sortBy || 'helpful'
       });
       
       return response;
@@ -271,12 +271,12 @@ class PluginHub extends EventEmitter {
   /**
    * Get trending plugins
    */
-  async getTrendingPlugins(options = {}) {
+  async getTrendingPlugins(_options = {}) {
     try {
       const response = await this._makeRequest('GET', '/plugins/trending', {
-        period: options.period || 'week', // day, week, month
-        category: options.category,
-        limit: options.limit || 20
+        period: _options.period || 'week', // day, week, month
+        category: _options.category,
+        limit: _options.limit || 20
       });
       
       return response.results.map(plugin => this._normalizePluginInfo(plugin));
@@ -290,7 +290,7 @@ class PluginHub extends EventEmitter {
    */
   async getInstalledPlugins() {
     try {
-      const pluginsDir = path.join(this.config.localCacheDir, 'plugins');
+      const pluginsDir = path.join(this._config.localCacheDir, 'plugins');
       const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
       
       const installed = [];
@@ -321,7 +321,7 @@ class PluginHub extends EventEmitter {
 
   // Private methods
   async _makeRequest(method, endpoint, params = {}) {
-    const url = new URL(endpoint, this.config.registryUrl);
+    const url = new URL(endpoint, this._config.registryUrl);
     
     if (method === 'GET' && Object.keys(params).length > 0) {
       Object.entries(params).forEach(([key, value]) => {
@@ -331,29 +331,29 @@ class PluginHub extends EventEmitter {
       });
     }
     
-    const options = {
+    const _options = {
       method,
       headers: {
-        'User-Agent': this.config.userAgent,
+        'User-Agent': this._config.userAgent,
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      timeout: this.config.timeout
+      timeout: this._config.timeout
     };
     
-    if (this.config.apiKey) {
-      options.headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+    if (this._config.apiKey) {
+      _options.headers['Authorization'] = `Bearer ${this._config.apiKey}`;
     }
     
     if (method !== 'GET' && Object.keys(params).length > 0) {
-      options.body = JSON.stringify(params);
+      _options.body = JSON.stringify(params);
     }
     
     let lastError;
     
-    for (let attempt = 0; attempt < this.config.maxRetries; attempt++) {
+    for (let attempt = 0; attempt < this._config.maxRetries; attempt++) {
       try {
-        const response = await fetch(url.toString(), options);
+        const response = await fetch(url.toString(), _options);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -364,7 +364,7 @@ class PluginHub extends EventEmitter {
       } catch (error) {
         lastError = error;
         
-        if (attempt < this.config.maxRetries - 1) {
+        if (attempt < this._config.maxRetries - 1) {
           await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
       }
@@ -433,7 +433,7 @@ class PluginHub extends EventEmitter {
   }
 
   async _installPluginToSystem(pluginData, pluginInfo) {
-    const installDir = path.join(this.config.localCacheDir, 'plugins', pluginInfo.id);
+    const installDir = path.join(this._config.localCacheDir, 'plugins', pluginInfo.id);
     
     // Create installation directory
     await fs.mkdir(installDir, { recursive: true });
@@ -486,16 +486,16 @@ class PluginHub extends EventEmitter {
     };
   }
 
-  async _uploadPlugin(packageData, options) {
+  async _uploadPlugin(packageData, _options) {
     return await this._makeRequest('POST', '/plugins/publish', {
       ...packageData,
-      ...options
+      ..._options
     });
   }
 
   async _getInstalledVersion(pluginId) {
     try {
-      const metadataPath = path.join(this.config.localCacheDir, 'plugins', pluginId, 'metadata.json');
+      const metadataPath = path.join(this._config.localCacheDir, 'plugins', pluginId, 'metadata.json');
       const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf8'));
       return metadata.version;
     } catch (error) {
@@ -506,8 +506,8 @@ class PluginHub extends EventEmitter {
 
 // Plugin Analytics class for usage tracking
 class PluginAnalytics {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
     this.events = [];
     this.flushInterval = setInterval(() => this._flush(), 60000); // Flush every minute
   }
@@ -549,7 +549,7 @@ class PluginAnalytics {
   async getLastUsed(pluginId) {
     // Get last usage timestamp for a plugin
     const usageEvents = this.events.filter(e => 
-      e.type === 'plugin_usage' && e.data.pluginId === pluginId
+      e._type === 'plugin_usage' && e.data.pluginId === pluginId
     );
     
     if (usageEvents.length === 0) {
@@ -559,9 +559,9 @@ class PluginAnalytics {
     return Math.max(...usageEvents.map(e => e.data.timestamp));
   }
 
-  _track(type, data) {
+  _track(_type, data) {
     this.events.push({
-      type,
+      _type,
       data,
       sessionId: this._getSessionId()
     });
@@ -582,11 +582,11 @@ class PluginAnalytics {
       const eventsToFlush = [...this.events];
       this.events = [];
       
-      await fetch(`${this.config.registryUrl}/analytics`, {
+      await fetch(`${this._config.registryUrl}/analytics`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': this.config.userAgent
+          'User-Agent': this._config.userAgent
         },
         body: JSON.stringify({
           events: eventsToFlush
@@ -594,7 +594,7 @@ class PluginAnalytics {
       });
     } catch (error) {
       // Silently fail analytics
-      console.warn('Analytics flush failed:', error.message);
+      console.warn('Analytics flush failed:', error.message); // eslint-disable-line no-console
     }
   }
 
@@ -608,8 +608,8 @@ class PluginAnalytics {
 
 // Plugin Sandbox class for isolated execution
 class PluginSandbox {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async scanPlugin(pluginInfo) {
@@ -642,7 +642,7 @@ class PluginSandbox {
     };
   }
 
-  async installPlugin(pluginData, options) {
+  async installPlugin(pluginData, _options) {
     // Sandbox installation simulation
     // Create isolated environment
     const sandboxId = crypto.randomUUID();
@@ -653,7 +653,7 @@ class PluginSandbox {
         // Simulate plugin installation and basic functionality test
         await new Promise(resolve => setTimeout(resolve, 1000));
         return { success: true };
-      }, options);
+      }, _options);
       
       return result;
     } catch (error) {
@@ -703,12 +703,12 @@ class PluginSandbox {
     return recommendations;
   }
 
-  async _runInSandbox(sandboxId, fn, options) {
+  async _runInSandbox(sandboxId, _fn, _options) {
     // Simulate sandbox execution with resource limits
     const result = await Promise.race([
-      fn(),
+      _fn(),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sandbox timeout')), options.timeout)
+        setTimeout(() => reject(new Error('Sandbox timeout')), _options.timeout)
       )
     ]);
     

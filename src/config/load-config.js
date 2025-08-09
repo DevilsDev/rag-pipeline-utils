@@ -4,11 +4,11 @@
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs');
-const path = require('path');
-const { fileURLToPath  } = require('url');
-const { validateRagrcSchema  } = require('./validate-schema.js');
-const { logger  } = require('../utils/logger.js');
+const fs = require('fs'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { fileURLToPath  } = require('url'); // eslint-disable-line global-require
+const { validateRagrcSchema  } = require('./validate-schema.js'); // eslint-disable-line global-require
+const { logger  } = require('../utils/logger.js'); // eslint-disable-line global-require
 
 const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
@@ -18,7 +18,7 @@ const CONFIG_FILENAME = '.ragrc.json';
 
 /**
  * Load and validate a RAG configuration file.
- * @param {string} [cwd=process.cwd()] - Directory to resolve the config from
+ * @param {string} [cwd=process.cwd()] - Directory to resolve the _config from
  * @returns {object} Validated configuration object
  */
 function loadRagConfig(cwd = process.cwd()) {
@@ -30,23 +30,23 @@ function loadRagConfig(cwd = process.cwd()) {
   }
 
   const raw = fs.readFileSync(configPath, 'utf-8');
-  let config;
+  let _config;
 
   try {
-    config = JSON.parse(raw);
+    _config = JSON.parse(raw);
   } catch (err) {
     logger.error('❌ Failed to parse JSON configuration.');
-    throw new Error('Invalid JSON in config file.');
+    throw new Error('Invalid JSON in _config file.');
   }
 
-  const { valid, errors } = validateRagrcSchema(config);
+  const { valid, errors } = validateRagrcSchema(_config);
 
   if (!valid) {
     logger.error(`❌ Config validation failed:\n${JSON.stringify(errors, null, 2)}`);
     throw new Error('Config validation failed');
   }
 
-  return config;
+  return _config;
 }
 
 

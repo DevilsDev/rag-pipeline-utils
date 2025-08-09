@@ -66,7 +66,7 @@ function fixFile(filePath) {
 
   // Fix 3: Add Mock import for plugin-scaffolder
   if (filePath.includes('plugin-scaffolder.js')) {
-    if (content.includes("'Mock'") && !content.includes('const Mock')) {
+    if (content.includes('\'Mock\'') && !content.includes('const Mock')) {
       content = content.replace(
         /^(.*require.*)/m,
         `$1

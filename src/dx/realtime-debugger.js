@@ -5,20 +5,20 @@
  * Provides real-time monitoring, breakpoints, and step-through debugging.
  */
 
-const EventEmitter = require('events');
-const WebSocket = require('ws');
+const EventEmitter = require('events'); // eslint-disable-line global-require
+const WebSocket = require('ws'); // eslint-disable-line global-require
 
 class RealtimeDebugger extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.options = {
-      port: options.port || 3002,
-      enableBreakpoints: options.enableBreakpoints !== false,
-      enableStepThrough: options.enableStepThrough !== false,
-      enableVariableInspection: options.enableVariableInspection !== false,
-      maxHistorySize: options.maxHistorySize || 1000,
-      ...options
+    this._options = {
+      port: _options.port || 3002,
+      enableBreakpoints: _options.enableBreakpoints !== false,
+      enableStepThrough: _options.enableStepThrough !== false,
+      enableVariableInspection: _options.enableVariableInspection !== false,
+      maxHistorySize: _options.maxHistorySize || 1000,
+      ..._options
     };
     
     this.sessions = new Map();
@@ -252,7 +252,7 @@ class RealtimeDebugger extends EventEmitter {
    */
   async checkBreakpoints(sessionId, componentId, input, context) {
     const session = this.sessions.get(sessionId);
-    if (!session || !this.options.enableBreakpoints) {
+    if (!session || !this._options.enableBreakpoints) {
       return false;
     }
     
@@ -416,7 +416,7 @@ class RealtimeDebugger extends EventEmitter {
       throw new Error('WebSocket server is already running');
     }
     
-    this.wsServer = new WebSocket.Server({ port: this.options.port });
+    this.wsServer = new WebSocket.Server({ port: this._options.port });
     
     this.wsServer.on('connection', (ws) => {
       const clientId = `client_${Date.now()}`;
@@ -435,76 +435,76 @@ class RealtimeDebugger extends EventEmitter {
       });
       
       this.emit('clientConnected', { clientId });
-      ws.send(JSON.stringify({ type: 'connected', clientId }));
+      ws.send(JSON.stringify({ _type: 'connected', clientId }));
     });
     
-    this.emit('webSocketServerStarted', { port: this.options.port });
+    this.emit('webSocketServerStarted', { port: this._options.port });
   }
   
   /**
    * Handle client messages
    */
   handleClientMessage(clientId, data, ws) {
-    switch (data.type) {
+    switch (data._type) {
       case 'addBreakpoint':
         try {
           const breakpointId = this.addBreakpoint(data.sessionId, data.componentId, data.condition);
-          ws.send(JSON.stringify({ type: 'breakpointAdded', breakpointId }));
+          ws.send(JSON.stringify({ _type: 'breakpointAdded', breakpointId }));
         } catch (error) {
-          ws.send(JSON.stringify({ type: 'error', message: error.message }));
+          ws.send(JSON.stringify({ _type: 'error', message: error.message }));
         }
         break;
         
       case 'removeBreakpoint':
         try {
           this.removeBreakpoint(data.breakpointId);
-          ws.send(JSON.stringify({ type: 'breakpointRemoved', breakpointId: data.breakpointId }));
+          ws.send(JSON.stringify({ _type: 'breakpointRemoved', breakpointId: data.breakpointId }));
         } catch (error) {
-          ws.send(JSON.stringify({ type: 'error', message: error.message }));
+          ws.send(JSON.stringify({ _type: 'error', message: error.message }));
         }
         break;
         
       case 'continue':
         try {
           this.continueExecution(data.sessionId);
-          ws.send(JSON.stringify({ type: 'continued', sessionId: data.sessionId }));
+          ws.send(JSON.stringify({ _type: 'continued', sessionId: data.sessionId }));
         } catch (error) {
-          ws.send(JSON.stringify({ type: 'error', message: error.message }));
+          ws.send(JSON.stringify({ _type: 'error', message: error.message }));
         }
         break;
         
       case 'step':
         try {
           this.stepThrough(data.sessionId);
-          ws.send(JSON.stringify({ type: 'stepped', sessionId: data.sessionId }));
+          ws.send(JSON.stringify({ _type: 'stepped', sessionId: data.sessionId }));
         } catch (error) {
-          ws.send(JSON.stringify({ type: 'error', message: error.message }));
+          ws.send(JSON.stringify({ _type: 'error', message: error.message }));
         }
         break;
         
       case 'getVariables':
         try {
           const variables = this.getVariables(data.sessionId, data.stepId);
-          ws.send(JSON.stringify({ type: 'variables', sessionId: data.sessionId, variables }));
+          ws.send(JSON.stringify({ _type: 'variables', sessionId: data.sessionId, variables }));
         } catch (error) {
-          ws.send(JSON.stringify({ type: 'error', message: error.message }));
+          ws.send(JSON.stringify({ _type: 'error', message: error.message }));
         }
         break;
         
       default:
-        ws.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
+        ws.send(JSON.stringify({ _type: 'error', message: 'Unknown message _type' }));
     }
   }
   
   /**
    * Broadcast message to all connected clients
    */
-  broadcastToClients(type, data) {
+  broadcastToClients(_type, data) {
     if (!this.wsServer) {
       return;
     }
     
-    const message = JSON.stringify({ type, ...data });
+    const message = JSON.stringify({ _type, ...data });
     this.wsServer.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
@@ -574,7 +574,7 @@ class RealtimeDebugger extends EventEmitter {
       activeSessions: this.sessions.size,
       totalBreakpoints: this.breakpoints.size,
       isWebSocketServerRunning: !!this.wsServer,
-      options: this.options
+      _options: this._options
     };
   }
   

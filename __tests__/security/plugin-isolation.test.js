@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Security Testing Suite for Plugin Isolation
  * Tests plugin security, data sanitization, and access controls
  */

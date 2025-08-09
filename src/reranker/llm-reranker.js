@@ -7,8 +7,8 @@
 
 class LLMReranker {
   /**
-   * @param {Object} options
-   * @param {{ generate(prompt: string): Promise<string> }} options.llm - An LLM client with a `generate` method
+   * @param {Object} _options
+   * @param {{ generate(prompt: string): Promise<string> }} _options.llm - An LLM client with a `generate` method
    */
   constructor({ llm }) {
     this.llm = llm;

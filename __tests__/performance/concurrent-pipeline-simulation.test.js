@@ -193,7 +193,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
         };
       },
       
-      async simulateRetriever(embeddings, query) {
+      async simulateRetriever(embeddings, ___query) {
         const searchTime = Math.log(embeddings.length) * 10 + Math.random() * 50;
         await new Promise(resolve => setTimeout(resolve, searchTime));
         
@@ -250,15 +250,15 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     };
   }
 
-  function generateMixedWorkload(queryCount, patterns) {
+  function generateMixedWorkload(_queryCount, _patterns) {
     const workload = [];
     
-    for (let i = 0; i < queryCount; i++) {
+    for (let i = 0; i < _queryCount; i++) {
       const rand = Math.random();
       let cumulativeWeight = 0;
-      let selectedPattern = patterns[0];
+      let selectedPattern = _patterns[0];
       
-      for (const pattern of patterns) {
+      for (const pattern of _patterns) {
         cumulativeWeight += pattern.weight;
         if (rand <= cumulativeWeight) {
           selectedPattern = pattern;
@@ -280,7 +280,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     return workload;
   }
 
-  async function simulateConcurrentUsers(simulator, userWorkloads) {
+  async function simulateConcurrentUsers(_simulator, _userWorkloads) {
     const startTime = performance.now();
     const startMemory = process.memoryUsage();
     let peakMemory = startMemory.heapUsed;
@@ -289,12 +289,12 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     let errors = 0;
     
     // Execute all user workloads concurrently
-    const userPromises = userWorkloads.map(async (userWorkload) => {
+    const userPromises = _userWorkloads.map(async (userWorkload) => {
       const userResults = [];
       
       for (const query of userWorkload.queries) {
         totalQueries++;
-        const result = await simulator.executeQuery(query);
+        const result = await _simulator.executeQuery(query);
         userResults.push(result);
         
         if (result.success) {
@@ -317,7 +317,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     const cpuUtilization = Math.random() * 0.3 + 0.4; // Simulated CPU usage
     
     return {
-      completedUsers: userWorkloads.length,
+      completedUsers: _userWorkloads.length,
       totalQueries,
       totalResponseTime,
       errorRate: errors / totalQueries,
@@ -327,12 +327,12 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     };
   }
 
-  async function executeMixedWorkload(simulator, workload) {
+  async function executeMixedWorkload(_simulator, _workload) {
     const patternCounts = {};
     const patternResponseTimes = {};
     
-    const promises = workload.map(async (query) => {
-      const result = await simulator.executeQuery(query);
+    const promises = _workload.map(async (query) => {
+      const result = await _simulator.executeQuery(query);
       
       // Track by pattern
       if (!patternCounts[query.type]) {
@@ -351,7 +351,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     await Promise.all(promises);
     
     // Calculate pattern distribution and averages
-    const total = workload.length;
+    const total = _workload.length;
     const patternDistribution = {};
     const avgResponseByPattern = {};
     

@@ -2,9 +2,9 @@
 // Version: 1.0.0
 // Description: Auto-wrap all BlogImage imports with SafeImageWrapper to avoid SSR issues.
 
-import fs from 'fs';
-import path from 'path';
-import glob from 'glob';
+const fs = require('fs');
+const path = require('path');
+const glob = require('glob');
 
 const blogDir = path.resolve('docs-site', 'blog');
 
@@ -21,7 +21,7 @@ glob(`${blogDir}/**/*.mdx`, (err, files) => {
         .replace(/<\/BlogImage>/g, '</SafeImageWrapper>');
 
       fs.writeFileSync(file, content, 'utf8');
-      console.log(`✔️ Updated: ${file}`);
+      console.log(`✔️ Updated: ${file}`); // eslint-disable-line no-console
     }
   });
 });

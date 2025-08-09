@@ -4,15 +4,15 @@
  * Fixes all instances of reserved keyword 'debugger' in test files
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
-console.log('🔧 Comprehensive Test File Fix - Reserved Keyword Cleanup...');
+console.log('🔧 Comprehensive Test File Fix - Reserved Keyword Cleanup...'); // eslint-disable-line no-console
 
 const testFile = '__tests__/dx/dx-enhancements.test.js';
 
 if (!fs.existsSync(testFile)) {
-  console.log(`⚠️ Test file not found: ${testFile}`);
+  console.log(`⚠️ Test file not found: ${testFile}`); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -50,7 +50,7 @@ patterns.forEach(({ from, to }) => {
   content = content.replace(from, to);
   if (content !== originalContent) {
     modified = true;
-    console.log(`  ✅ Applied pattern: ${from} → ${to}`);
+    console.log(`  ✅ Applied pattern: ${from} → ${to}`); // eslint-disable-line no-console
   }
 });
 
@@ -71,7 +71,7 @@ for (let i = 0; i < lines.length; i++) {
     lines[i] = line.replace(/\bdebugger\b/g, 'realtimeDebugger');
     if (lines[i] !== originalLine) {
       modified = true;
-      console.log(`  ✅ Fixed line ${i + 1}: ${originalLine.trim()} → ${lines[i].trim()}`);
+      console.log(`  ✅ Fixed line ${i + 1}: ${originalLine.trim()} → ${lines[i].trim()}`); // eslint-disable-line no-console
     }
   }
 }
@@ -79,21 +79,21 @@ for (let i = 0; i < lines.length; i++) {
 if (modified) {
   content = lines.join('\n');
   fs.writeFileSync(testFile, content);
-  console.log(`📝 Updated: ${testFile}`);
-  console.log('🎉 Comprehensive test file fix completed!');
+  console.log(`📝 Updated: ${testFile}`); // eslint-disable-line no-console
+  console.log('🎉 Comprehensive test file fix completed!'); // eslint-disable-line no-console
 } else {
-  console.log('ℹ️ No changes needed - file already clean');
+  console.log('ℹ️ No changes needed - file already clean'); // eslint-disable-line no-console
 }
 
-console.log('\n🔍 Verifying fix by checking for remaining issues...');
+console.log('\n🔍 Verifying fix by checking for remaining issues...'); // eslint-disable-line no-console
 
 // Quick verification
 const remainingIssues = content.match(/\bdebugger\s*[^;]/g);
 if (remainingIssues && remainingIssues.length > 0) {
-  console.log(`⚠️ Found ${remainingIssues.length} potential remaining issues:`);
+  console.log(`⚠️ Found ${remainingIssues.length} potential remaining issues:`); // eslint-disable-line no-console
   remainingIssues.forEach((issue, index) => {
-    console.log(`  ${index + 1}. ${issue}`);
+    console.log(`  ${index + 1}. ${issue}`); // eslint-disable-line no-console
   });
 } else {
-  console.log('✅ No remaining debugger keyword issues found!');
+  console.log('✅ No remaining debugger keyword issues found!'); // eslint-disable-line no-console
 }

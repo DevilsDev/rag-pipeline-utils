@@ -1,14 +1,14 @@
 /**
  * Version: 0.1.0
  * Path: /src/loader/directory-loader.js
- * Description: Recursive directory loader with file type routing
+ * Description: Recursive directory loader with file _type routing
  * Author: Ali Kahwaji
  */
 
-const fg = require('fast-glob');
-const { MarkdownLoader  } = require('./markdown-loader.js');
-const { HTMLLoader  } = require('./html-loader.js');
-const { CSVLoader  } = require('./csv-loader.js');
+const fg = require('fast-glob'); // eslint-disable-line global-require
+const { MarkdownLoader  } = require('./markdown-loader.js'); // eslint-disable-line global-require
+const { HTMLLoader  } = require('./html-loader.js'); // eslint-disable-line global-require
+const { CSVLoader  } = require('./csv-loader.js'); // eslint-disable-line global-require
 
 const loaders = {
   '.md': new MarkdownLoader(),

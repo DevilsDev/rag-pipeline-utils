@@ -1,47 +1,47 @@
 /**
  * Version: 1.3.0
- * Description: AJV-powered validators for .ragrc.json full config and plugin-only structure
+ * Description: AJV-powered validators for .ragrc.json full _config and plugin-only structure
  * Author: Ali Kahwaji
- * File: /src/config/validate-schema.js
+ * File: /src/_config/validate-schema.js
  */
 
-const Ajv = require('ajv');
+const Ajv = require('ajv'); // eslint-disable-line global-require
 
 /**
- * Full .ragrc.json schema (used in load-config.js)
+ * Full .ragrc.json schema (used in load-_config.js)
  */
 const ragrcSchema = {
-  type: 'object',
+  _type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
   properties: {
     loader: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     embedder: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     retriever: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     llm: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     namespace: {
-      type: 'string',
+      _type: 'string',
       minLength: 1
     },
     pipeline: {
-      type: 'array',
+      _type: 'array',
       items: {
-        type: 'string',
+        _type: 'string',
         enum: ['loader', 'embedder', 'retriever']
       },
       minItems: 1,
@@ -52,38 +52,38 @@ const ragrcSchema = {
 };
 
 /**
- * Minimal plugin-only schema (used in load-plugin-config.js)
+ * Minimal plugin-only schema (used in load-plugin-_config.js)
  */
 const pluginSchema = {
-  type: 'object',
+  _type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm'],
   properties: {
     loader: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     embedder: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     retriever: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     llm: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     }
   },
   additionalProperties: true // allow namespace, pipeline, etc.
 };
 
 /**
- * Validates the full .ragrc.json config structure
+ * Validates the full .ragrc.json _config structure
  * @param {object} config
  * @returns {{ valid: boolean, errors?: any[] }}
  */

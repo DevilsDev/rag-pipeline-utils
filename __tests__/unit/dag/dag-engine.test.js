@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Unit tests for DAG engine with cycle detection and error handling
  * Tests the enhanced DAG functionality including cycle safety and robust error propagation
  */

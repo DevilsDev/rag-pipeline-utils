@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.1.0
  * Description: Test setup script to ensure fixtures exist and validate mocks before running tests.
  * Author: Ali Kahwaji
@@ -19,13 +21,13 @@ const fixturePath = path.resolve(__dirname, '../__tests__/fixtures/sample.pdf');
 if (!fs.existsSync(fixturePath)) {
   fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
   fs.writeFileSync(fixturePath, 'Dummy PDF content for test');
-  console.log('[setup] Created sample.pdf fixture');
+  console.log('[setup] Created sample.pdf fixture'); // eslint-disable-line no-console
 }
 
 // Validate plugin fixture presence
 try {
   execSync('node ./scripts/verify-fixtures.js', { stdio: 'inherit' });
 } catch (err) {
-  console.error('[setup] Fixture verification failed. Please check missing mocks.');
+  console.error('[setup] Fixture verification failed. Please check missing mocks.'); // eslint-disable-line no-console
   process.exit(1);
 }

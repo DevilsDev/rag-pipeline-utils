@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * GitHub Label Management Script
  * Version: 2.0.0
  * Description: Consolidated script for creating, updating, and syncing GitHub repository labels
@@ -20,27 +22,27 @@ import { fileURLToPath } from 'url';
 import { setupCLI, dryRunWrapper } from './utils/cli.js';
 import { withRateLimit } from './utils/retry.js';
 
-dotenv.config();
+dotenv._config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, 'scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, 'scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 // Setup CLI
 const { args, logger } = setupCLI('manage-labels.js', 'Manage GitHub repository labels', {
   '--action': 'Action to perform: create, update, sync, or ensure (default: ensure)',
-  '--owner': 'GitHub repository owner (default: from config)',
-  '--repo': 'GitHub repository name (default: from config)',
-  '--labels-file': 'Path to labels JSON file (default: use config)',
+  '--owner': 'GitHub repository owner (default: from _config)',
+  '--repo': 'GitHub repository name (default: from _config)',
+  '--labels-file': 'Path to labels JSON file (default: use _config)',
   '--roadmap-only': 'Only manage roadmap-related labels'
 });
 
 // Environment validation
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO || `${config.github.owner}/${config.github.repo}`;
+const GITHUB_REPO = process.env.GITHUB_REPO || `${_config.github.owner}/${_config.github.repo}`;
 
 if (!GITHUB_TOKEN) {
   logger.error('GITHUB_TOKEN environment variable is required');
@@ -75,12 +77,12 @@ function getLabelDefinitions() {
 
   // Use roadmap labels from config
   if (args.roadmapOnly) {
-    return config.roadmap.issueLabels;
+    return _config.roadmap.issueLabels;
   }
 
   // Extended label set for full repository
   return {
-    ...config.roadmap.issueLabels,
+    ..._config.roadmap.issueLabels,
     // Additional standard labels
     'good first issue': {
       name: 'good first issue',
@@ -107,18 +109,18 @@ function getLabelDefinitions() {
       color: '0e8a16',
       description: 'Low priority issue'
     },
-    'type: feature': {
-      name: 'type: feature',
+    '_type: feature': {
+      name: '_type: feature',
       color: 'a2eeef',
       description: 'New feature or request'
     },
-    'type: bug': {
-      name: 'type: bug',
+    '_type: bug': {
+      name: '_type: bug',
       color: 'd73a49',
       description: 'Something isn\'t working'
     },
-    'type: maintenance': {
-      name: 'type: maintenance',
+    '_type: maintenance': {
+      name: '_type: maintenance',
       color: 'fef2c0',
       description: 'Maintenance and housekeeping'
     }
@@ -171,30 +173,30 @@ async function createLabel(labelDef) {
  * @param {string} currentName - Current label name
  * @param {Object} labelDef - New label definition
  */
-async function updateLabel(currentName, labelDef) {
+async function updateLabel(_currentName, _labelDef) {
   return await withRateLimit(octokit, async () => {
     await dryRunWrapper(
       args.dryRun,
-      `Update label: ${currentName} → ${labelDef.name} (${labelDef.color})`,
+      `Update label: ${_currentName} → ${_labelDef.name} (${_labelDef.color})`,
       async () => {
         await octokit.rest.issues.updateLabel({
           owner,
           repo,
-          name: currentName,
-          new_name: labelDef.name,
-          color: labelDef.color.replace('#', ''),
-          description: labelDef.description || ''
+          name: _currentName,
+          new_name: _labelDef.name,
+          color: _labelDef.color.replace('#', ''),
+          description: _labelDef.description || ''
         });
       }
     );
-  }, `update label: ${currentName}`);
+  }, `update label: ${_currentName}`);
 }
 
 /**
  * Delete a label
  * @param {string} labelName - Label name to delete
  */
-async function deleteLabel(labelName) {
+async function _deleteLabel(labelName) {
   return await withRateLimit(octokit, async () => {
     await dryRunWrapper(
       args.dryRun,
@@ -215,11 +217,11 @@ async function deleteLabel(labelName) {
  * @param {Object} labelDefinitions - Label definitions
  * @param {Array} existingLabels - Existing labels
  */
-async function ensureLabels(labelDefinitions, existingLabels) {
-  const existingNames = new Set(existingLabels.map(l => l.name.toLowerCase()));
+async function ensureLabels(_labelDefinitions, _existingLabels) {
+  const existingNames = new Set(_existingLabels.map(l => l.name.toLowerCase()));
   const toCreate = [];
 
-  for (const [key, labelDef] of Object.entries(labelDefinitions)) {
+  for (const [key, labelDef] of Object.entries(_labelDefinitions)) {
     if (!existingNames.has(labelDef.name.toLowerCase())) {
       toCreate.push(labelDef);
     }
@@ -239,12 +241,12 @@ async function ensureLabels(labelDefinitions, existingLabels) {
  * @param {Object} labelDefinitions - Label definitions
  * @param {Array} existingLabels - Existing labels
  */
-async function syncLabels(labelDefinitions, existingLabels) {
-  const existingMap = new Map(existingLabels.map(l => [l.name.toLowerCase(), l]));
+async function syncLabels(_labelDefinitions, _existingLabels) {
+  const existingMap = new Map(_existingLabels.map(l => [l.name.toLowerCase(), l]));
   let created = 0;
   let updated = 0;
 
-  for (const [key, labelDef] of Object.entries(labelDefinitions)) {
+  for (const [key, labelDef] of Object.entries(_labelDefinitions)) {
     const existing = existingMap.get(labelDef.name.toLowerCase());
 
     if (!existing) {

@@ -3,22 +3,22 @@
  * Verified publisher program with automated and manual review processes
  */
 
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class PluginCertification extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
-      registryUrl: options.registryUrl || 'https://registry.rag-pipeline.dev',
-      apiKey: options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
+    this._config = {
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
       certificationLevels: {
         BASIC: { score: 60, automated: true },
         VERIFIED: { score: 80, manual: true },
         ENTERPRISE: { score: 95, manual: true, audit: true }
       },
-      ...options
+      ..._options
     };
     
     this.validators = new Map();
@@ -35,11 +35,11 @@ class PluginCertification extends EventEmitter {
       this.emit('certification_start', { pluginId, level, submissionId });
       
       // Validate certification level
-      if (!this.config.certificationLevels[level]) {
+      if (!this._config.certificationLevels[level]) {
         throw new Error(`Invalid certification level: ${level}`);
       }
       
-      const certLevel = this.config.certificationLevels[level];
+      const certLevel = this._config.certificationLevels[level];
       
       // Run automated checks
       this.emit('certification_progress', { submissionId, stage: 'automated_checks' });
@@ -497,21 +497,21 @@ class PluginCertification extends EventEmitter {
   }
 
   async _makeRequest(method, endpoint, data = {}) {
-    const url = `${this.config.registryUrl}${endpoint}`;
+    const url = `${this._config.registryUrl}${endpoint}`;
     
-    const options = {
+    const _options = {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`
+        'Authorization': `Bearer ${this._config.apiKey}`
       }
     };
     
     if (method !== 'GET') {
-      options.body = JSON.stringify(data);
+      _options.body = JSON.stringify(data);
     }
     
-    const response = await fetch(url, options);
+    const response = await fetch(url, _options);
     
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));

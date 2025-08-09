@@ -1,13 +1,14 @@
 /**
+const fs = require('fs');
  * Version: 0.1.0
  * Path: /src/loader/markdown-loader.js
  * Description: Loader for Markdown (.md) documents
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const { marked  } = require('marked');
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { marked  } = require('marked'); // eslint-disable-line global-require
 
 /**
  * MarkdownLoader reads and parses .md files into plain text chunks.
@@ -16,11 +17,11 @@ const { marked  } = require('marked');
 class MarkdownLoader {
   /**
    * Load and parse Markdown file
-   * @param {string} filePath - Path to .md file
+   * @param {string} _filePath - Path to .md file
    * @returns {Promise<Array<{ chunk(): string[] }>>}
    */
-  async load(filePath) {
-    const absPath = path.resolve(filePath);
+  async load(_filePath) {
+    const absPath = path.resolve(_filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
     const html = marked(raw);
     const text = html.replace(/<[^>]+>/g, ''); // strip tags

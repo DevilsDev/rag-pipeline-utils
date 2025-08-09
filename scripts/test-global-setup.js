@@ -1,11 +1,11 @@
 // __tests__/setup/global.js
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+const fs = require('fs');
+const path = require('path');
+const { fileURLToPath } = require('url');
 
-// __dirname polyfill for ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname is already available in CommonJS
+// const __filename = __filename;
+// const __dirname = __dirname;
 
 const pdfPath = path.resolve(__dirname, '../fixtures/sample.pdf');
 

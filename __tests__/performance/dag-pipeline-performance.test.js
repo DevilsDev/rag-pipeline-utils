@@ -352,7 +352,7 @@ describe('DAG Pipeline Performance Tests', () => {
         };
       },
       
-      calculateExecutionLayers(nodes, edges) {
+      calculateExecutionLayers(nodes, ___edges) {
         // Simple layer calculation - nodes with no dependencies first
         const layers = [];
         const processed = new Set();
@@ -392,14 +392,14 @@ describe('DAG Pipeline Performance Tests', () => {
     };
   }
 
-  function generateComplexDAG(nodeCount, prefix = 'node') {
+  function generateComplexDAG(_nodeCount, prefix = 'node') {
     const dag = {
       nodes: new Map(),
       edges: new Map()
     };
     
     // Add nodes
-    for (let i = 0; i < nodeCount; i++) {
+    for (let i = 0; i < _nodeCount; i++) {
       const nodeId = `${prefix}-${i}`;
       dag.nodes.set(nodeId, {
         id: nodeId,
@@ -411,7 +411,7 @@ describe('DAG Pipeline Performance Tests', () => {
     
     // Add edges to create realistic dependency structure
     const nodeIds = Array.from(dag.nodes.keys());
-    for (let i = 0; i < nodeCount; i++) {
+    for (let i = 0; i < _nodeCount; i++) {
       const nodeId = nodeIds[i];
       const dependencyCount = Math.min(Math.floor(Math.random() * 3), i); // 0-2 dependencies
       
@@ -442,23 +442,23 @@ describe('DAG Pipeline Performance Tests', () => {
     return dag;
   }
 
-  function generateFlakyDAG(nodeCount, failureRate) {
-    const dag = generateComplexDAG(nodeCount, 'flaky-node');
+  function generateFlakyDAG(_nodeCount, _failureRate) {
+    const dag = generateComplexDAG(_nodeCount, 'flaky-node');
     
     // Make processors flaky
     for (const node of dag.nodes.values()) {
-      node.processor = createMockProcessor(50, { failureRate });
+      node.processor = createMockProcessor(50, { failureRate: _failureRate });
     }
     
     return dag;
   }
 
-  function createMockProcessor(estimatedTime, options = {}) {
+  function createMockProcessor(_estimatedTime, options = {}) {
     const { dataIntensive = false, failureRate = 0 } = options;
     
     const processor = async () => {
       // Simulate processing time
-      const actualTime = estimatedTime + (Math.random() - 0.5) * estimatedTime * 0.2;
+      const actualTime = _estimatedTime + (Math.random() - 0.5) * _estimatedTime * 0.2;
       await new Promise(resolve => setTimeout(resolve, actualTime));
       
       // Simulate failures
@@ -472,7 +472,7 @@ describe('DAG Pipeline Performance Tests', () => {
       };
     };
     
-    processor.estimatedTime = estimatedTime;
+    processor.estimatedTime = _estimatedTime;
     return processor;
   }
 

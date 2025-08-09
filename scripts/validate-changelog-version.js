@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.1.0
  * Description: Ensures CHANGELOG.md contains the current version and auto-corrects format if needed.
  * Author: Ali Kahwaji
@@ -27,13 +29,13 @@ const normalized = changelog.replace(/^# \[([0-9]+\.[0-9]+\.[0-9]+)\]\([^)]+\)/g
 // Step 2: Update file if normalization occurred
 if (normalized !== changelog) {
   fs.writeFileSync(changelogPath, normalized);
-  console.log(`🛠️  CHANGELOG.md heading normalized for version ${version}`);
+  console.log(`🛠️  CHANGELOG.md heading normalized for version ${version}`); // eslint-disable-line no-console
   changelog = normalized;
 
   // Auto-stage if in git project (Husky compatibility)
   try {
     execSync(`git add ${changelogPath}`);
-    console.log('CHANGELOG.md staged after correction');
+    console.log('CHANGELOG.md staged after correction'); // eslint-disable-line no-console
   } catch {
     // Non-fatal
   }
@@ -42,9 +44,9 @@ if (normalized !== changelog) {
 // Step 3: Validate presence of correct heading (non-blocking)
 const headingPattern = new RegExp(`^## \\[${version}\\]`, 'm');
 if (!headingPattern.test(changelog)) {
-  console.warn(`⚠️  CHANGELOG.md does not contain a properly formatted entry for version ${version}`);
-  console.warn('This will be required for releases but won\'t block commits.');
+  console.warn(`⚠️  CHANGELOG.md does not contain a properly formatted entry for version ${version}`); // eslint-disable-line no-console
+  console.warn('This will be required for releases but won\'t block commits.'); // eslint-disable-line no-console
   process.exit(0); // Exit successfully to avoid blocking commits
 }
 
-console.log(`✅ CHANGELOG.md contains a valid entry for version ${version}`);
+console.log(`✅ CHANGELOG.md contains a valid entry for version ${version}`); // eslint-disable-line no-console

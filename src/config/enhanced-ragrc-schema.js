@@ -1,10 +1,11 @@
 /**
+const path = require('path');
  * Enhanced .ragrc.json Schema with Plugin Versioning Support
  * Extends the original schema to support plugin versions and marketplace features
  */
 
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
+const Ajv = require('ajv'); // eslint-disable-line global-require
+const addFormats = require('ajv-formats'); // eslint-disable-line global-require
 
 /**
  * Plugin specification schema - supports both simple and versioned formats
@@ -12,47 +13,47 @@ const addFormats = require('ajv-formats');
 const pluginSpecSchema = {
   oneOf: [
     // Simple format: "plugin-name" (resolves to latest)
-    { type: 'string' },
+    { _type: 'string' },
     // Versioned format: { "name": "plugin-name", "version": "1.0.0" }
     {
-      type: 'object',
+      _type: 'object',
       required: ['name'],
       properties: {
         name: {
-          type: 'string',
+          _type: 'string',
           pattern: '^[a-z0-9-]+$',
           description: 'Plugin name'
         },
         version: {
-          type: 'string',
+          _type: 'string',
           description: 'Version specification (exact, range, or tag)'
         },
         source: {
-          type: 'string',
+          _type: 'string',
           enum: ['registry', 'local', 'git', 'npm'],
           default: 'registry',
-          description: 'Plugin source type'
+          description: 'Plugin source _type'
         },
         url: {
-          type: 'string',
+          _type: 'string',
           format: 'uri',
           description: 'Custom plugin URL (for git/npm sources)'
         },
         path: {
-          type: 'string',
+          _type: 'string',
           description: 'Local plugin path (for local source)'
         },
-        config: {
-          type: 'object',
+        _config: {
+          _type: 'object',
           description: 'Plugin-specific configuration'
         },
         enabled: {
-          type: 'boolean',
+          _type: 'boolean',
           default: true,
           description: 'Whether plugin is enabled'
         },
         fallback: {
-          type: 'string',
+          _type: 'string',
           description: 'Fallback plugin if this one fails to load'
         }
       },
@@ -62,10 +63,10 @@ const pluginSpecSchema = {
 };
 
 /**
- * Plugin group schema - collection of plugins for a specific type
+ * Plugin group schema - collection of plugins for a specific _type
  */
 const pluginGroupSchema = {
-  type: 'object',
+  _type: 'object',
   minProperties: 1,
   additionalProperties: pluginSpecSchema,
   description: 'Plugin group with name-to-spec mappings'
@@ -75,38 +76,38 @@ const pluginGroupSchema = {
  * Registry configuration schema
  */
 const registryConfigSchema = {
-  type: 'object',
+  _type: 'object',
   properties: {
     urls: {
-      type: 'array',
-      items: { type: 'string', format: 'uri' },
+      _type: 'array',
+      items: { _type: 'string', format: 'uri' },
       description: 'Plugin registry URLs'
     },
     cache: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        enabled: { type: 'boolean', default: true },
-        ttl: { type: 'number', default: 3600, description: 'Cache TTL in seconds' },
-        directory: { type: 'string', description: 'Custom cache directory' }
+        enabled: { _type: 'boolean', default: true },
+        ttl: { _type: 'number', default: 3600, description: 'Cache TTL in seconds' },
+        directory: { _type: 'string', description: 'Custom cache directory' }
       },
       additionalProperties: false
     },
     auth: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        token: { type: 'string', description: 'Authentication token' },
-        username: { type: 'string', description: 'Username for basic auth' },
-        password: { type: 'string', description: 'Password for basic auth' }
+        token: { _type: 'string', description: 'Authentication token' },
+        username: { _type: 'string', description: 'Username for basic auth' },
+        password: { _type: 'string', description: 'Password for basic auth' }
       },
       additionalProperties: false
     },
     timeout: {
-      type: 'number',
+      _type: 'number',
       default: 30000,
       description: 'Request timeout in milliseconds'
     },
     retries: {
-      type: 'number',
+      _type: 'number',
       default: 3,
       description: 'Number of retry attempts'
     }
@@ -118,12 +119,12 @@ const registryConfigSchema = {
  * Enhanced .ragrc.json schema with versioning support
  */
 const enhancedRagrcSchema = {
-  type: 'object',
+  _type: 'object',
   required: ['plugins'],
   properties: {
     // Plugin specifications
     plugins: {
-      type: 'object',
+      _type: 'object',
       required: ['loader', 'embedder', 'retriever', 'llm'],
       properties: {
         loader: pluginGroupSchema,
@@ -140,40 +141,40 @@ const enhancedRagrcSchema = {
 
     // Pipeline configuration
     pipeline: {
-      type: 'object',
+      _type: 'object',
       properties: {
         stages: {
-          type: 'array',
+          _type: 'array',
           items: {
-            type: 'string',
+            _type: 'string',
             enum: ['loader', 'embedder', 'retriever', 'llm', 'reranker']
           },
           default: ['loader', 'embedder', 'retriever', 'llm'],
           description: 'Pipeline execution stages'
         },
         middleware: {
-          type: 'array',
+          _type: 'array',
           items: {
-            type: 'object',
+            _type: 'object',
             required: ['name'],
             properties: {
-              name: { type: 'string' },
-              config: { type: 'object' },
-              enabled: { type: 'boolean', default: true }
+              name: { _type: 'string' },
+              _config: { _type: 'object' },
+              enabled: { _type: 'boolean', default: true }
             }
           },
           description: 'Pipeline middleware configuration'
         },
         retries: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: true },
-            maxAttempts: { type: 'number', default: 3 },
-            backoff: { type: 'string', enum: ['linear', 'exponential'], default: 'exponential' }
+            enabled: { _type: 'boolean', default: true },
+            maxAttempts: { _type: 'number', default: 3 },
+            backoff: { _type: 'string', enum: ['linear', 'exponential'], default: 'exponential' }
           }
         },
         timeout: {
-          type: 'number',
+          _type: 'number',
           description: 'Pipeline timeout in milliseconds'
         }
       },
@@ -182,30 +183,30 @@ const enhancedRagrcSchema = {
 
     // Performance configuration
     performance: {
-      type: 'object',
+      _type: 'object',
       properties: {
         parallel: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: false },
-            maxConcurrency: { type: 'number', default: 3 },
-            batchSize: { type: 'number', default: 10 }
+            enabled: { _type: 'boolean', default: false },
+            maxConcurrency: { _type: 'number', default: 3 },
+            batchSize: { _type: 'number', default: 10 }
           }
         },
         streaming: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: false },
-            maxMemoryMB: { type: 'number', default: 512 },
-            bufferSize: { type: 'number', default: 100 }
+            enabled: { _type: 'boolean', default: false },
+            maxMemoryMB: { _type: 'number', default: 512 },
+            bufferSize: { _type: 'number', default: 100 }
           }
         },
         caching: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: false },
-            ttl: { type: 'number', default: 3600 },
-            maxSize: { type: 'number', default: 1000 }
+            enabled: { _type: 'boolean', default: false },
+            ttl: { _type: 'number', default: 3600 },
+            maxSize: { _type: 'number', default: 1000 }
           }
         }
       },
@@ -214,30 +215,30 @@ const enhancedRagrcSchema = {
 
     // Observability configuration
     observability: {
-      type: 'object',
+      _type: 'object',
       properties: {
         logging: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            level: { type: 'string', enum: ['debug', 'info', 'warn', 'error'], default: 'info' },
-            structured: { type: 'boolean', default: true },
-            events: { type: 'boolean', default: false }
+            level: { _type: 'string', enum: ['debug', 'info', 'warn', 'error'], default: 'info' },
+            structured: { _type: 'boolean', default: true },
+            events: { _type: 'boolean', default: false }
           }
         },
         tracing: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: false },
-            exportUrl: { type: 'string', format: 'uri' },
-            sampleRate: { type: 'number', minimum: 0, maximum: 1, default: 1 }
+            enabled: { _type: 'boolean', default: false },
+            exportUrl: { _type: 'string', format: 'uri' },
+            sampleRate: { _type: 'number', minimum: 0, maximum: 1, default: 1 }
           }
         },
         metrics: {
-          type: 'object',
+          _type: 'object',
           properties: {
-            enabled: { type: 'boolean', default: false },
-            exportUrl: { type: 'string', format: 'uri' },
-            interval: { type: 'number', default: 60000 }
+            enabled: { _type: 'boolean', default: false },
+            exportUrl: { _type: 'string', format: 'uri' },
+            interval: { _type: 'number', default: 60000 }
           }
         }
       },
@@ -246,24 +247,24 @@ const enhancedRagrcSchema = {
 
     // Environment-specific overrides
     environments: {
-      type: 'object',
+      _type: 'object',
       additionalProperties: {
-        type: 'object',
+        _type: 'object',
         description: 'Environment-specific configuration overrides'
       }
     },
 
     // Metadata
     metadata: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        name: { type: 'string', description: 'Project name' },
-        version: { type: 'string', description: 'Project version' },
-        description: { type: 'string', description: 'Project description' },
-        author: { type: 'string', description: 'Project author' },
+        name: { _type: 'string', description: 'Project name' },
+        version: { _type: 'string', description: 'Project version' },
+        description: { _type: 'string', description: 'Project description' },
+        author: { _type: 'string', description: 'Project author' },
         tags: {
-          type: 'array',
-          items: { type: 'string' },
+          _type: 'array',
+          items: { _type: 'string' },
           description: 'Project tags'
         }
       },
@@ -272,7 +273,7 @@ const enhancedRagrcSchema = {
 
     // Legacy support
     namespace: {
-      type: 'string',
+      _type: 'string',
       description: 'Legacy namespace field (deprecated)'
     }
   },
@@ -283,38 +284,38 @@ const enhancedRagrcSchema = {
  * Backward compatibility schema (original format)
  */
 const legacyRagrcSchema = {
-  type: 'object',
+  _type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
   properties: {
     loader: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     embedder: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     retriever: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     llm: {
-      type: 'object',
+      _type: 'object',
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { _type: 'string' }
     },
     reranker: {
-      type: 'object',
-      additionalProperties: { type: 'string' }
+      _type: 'object',
+      additionalProperties: { _type: 'string' }
     },
-    namespace: { type: 'string', minLength: 1 },
+    namespace: { _type: 'string', minLength: 1 },
     pipeline: {
-      type: 'array',
+      _type: 'array',
       items: {
-        type: 'string',
+        _type: 'string',
         enum: ['loader', 'embedder', 'retriever']
       },
       minItems: 1,
@@ -326,7 +327,7 @@ const legacyRagrcSchema = {
 
 /**
  * Validate enhanced .ragrc.json configuration
- * @param {object} config - Configuration to validate
+ * @param {object} _config - Configuration to validate
  * @returns {{ valid: boolean, errors?: any[], legacy?: boolean }}
  */
 function validateEnhancedRagrcSchema(config) {
@@ -358,7 +359,7 @@ function validateEnhancedRagrcSchema(config) {
 }
 
 /**
- * Convert legacy config to enhanced format
+ * Convert legacy _config to enhanced format
  * @param {object} legacyConfig - Legacy configuration
  * @returns {object} Enhanced configuration
  */
@@ -373,11 +374,11 @@ function convertLegacyConfig(legacyConfig) {
   };
 
   // Convert plugin specifications
-  for (const [type, plugins] of Object.entries(legacyConfig)) {
-    if (['loader', 'embedder', 'retriever', 'llm', 'reranker'].includes(type)) {
-      enhanced.plugins[type] = {};
+  for (const [_type, plugins] of Object.entries(legacyConfig)) {
+    if (['loader', 'embedder', 'retriever', 'llm', 'reranker'].includes(_type)) {
+      enhanced.plugins[_type] = {};
       for (const [name, spec] of Object.entries(plugins)) {
-        enhanced.plugins[type][name] = typeof spec === 'string' ? spec : spec;
+        enhanced.plugins[_type][name] = typeof spec === 'string' ? spec : spec;
       }
     }
   }
@@ -420,7 +421,7 @@ function normalizePluginSpec(spec) {
     source: spec.source || 'registry',
     url: spec.url,
     path: spec.path,
-    config: spec.config || {},
+    _config: spec._config || {},
     enabled: spec.enabled !== false,
     fallback: spec.fallback
   };
@@ -428,8 +429,8 @@ function normalizePluginSpec(spec) {
 
 /**
  * Extract plugin dependencies from configuration
- * @param {object} config - Enhanced configuration
- * @returns {Array<{type: string, name: string, spec: object}>}
+ * @param {object} _config - Enhanced configuration
+ * @returns {Array<{_type: string, name: string, spec: object}>}
  */
 function extractPluginDependencies(config) {
   const dependencies = [];
@@ -438,11 +439,11 @@ function extractPluginDependencies(config) {
     return dependencies;
   }
 
-  for (const [type, plugins] of Object.entries(config.plugins)) {
+  for (const [_type, plugins] of Object.entries(config.plugins)) {
     for (const [name, spec] of Object.entries(plugins)) {
       const normalizedSpec = normalizePluginSpec(spec);
       dependencies.push({
-        type,
+        _type,
         name,
         spec: normalizedSpec
       });
@@ -459,16 +460,15 @@ function extractPluginDependencies(config) {
  */
 function validateConfigConsistency(config) {
   const issues = [];
-
-  // Check for required plugin types
+// Check for required plugin types
   const requiredTypes = ['loader', 'embedder', 'retriever', 'llm'];
-  for (const type of requiredTypes) {
-    if (!config.plugins?.[type] || Object.keys(config.plugins[type]).length === 0) {
-      issues.push(`Missing required plugin type: ${type}`);
+  for (const _type of requiredTypes) {
+    if (!config.plugins?.[_type] || Object.keys(config.plugins[_type]).length === 0) {
+      issues.push(`Missing required plugin _type: ${_type}`);
     }
   }
 
-  // Check pipeline stages reference valid plugin types
+// Check pipeline stages reference valid plugin types
   if (config.pipeline?.stages) {
     for (const stage of config.pipeline.stages) {
       if (!config.plugins?.[stage]) {
@@ -482,10 +482,10 @@ function validateConfigConsistency(config) {
   for (const dep of dependencies) {
     if (dep.spec.fallback) {
       const fallbackExists = dependencies.some(d => 
-        d.type === dep.type && d.name === dep.spec.fallback
+        d._type === dep._type && d.name === dep.spec.fallback
       );
       if (!fallbackExists) {
-        issues.push(`Fallback plugin '${dep.spec.fallback}' not found for ${dep.type}:${dep.name}`);
+        issues.push(`Fallback plugin '${dep.spec.fallback}' not found for ${dep._type}:${dep.name}`);
       }
     }
   }

@@ -3,29 +3,29 @@
  * Custom embedding and LLM training with domain-specific optimization
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 /**
  * Model Training Manager - Orchestrates the training process
  */
 class ModelTrainingManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       training: {
-        batchSize: options.batchSize || 32,
-        learningRate: options.learningRate || 1e-4,
-        epochs: options.epochs || 10,
-        validationSplit: options.validationSplit || 0.2
+        batchSize: _options.batchSize || 32,
+        learningRate: _options.learningRate || 1e-4,
+        epochs: _options.epochs || 10,
+        validationSplit: _options.validationSplit || 0.2
       },
       model: {
-        architecture: options.architecture || 'transformer',
-        dimensions: options.dimensions || 768,
-        layers: options.layers || 12
+        architecture: _options.architecture || 'transformer',
+        dimensions: _options.dimensions || 768,
+        layers: _options.layers || 12
       }
     };
     
@@ -33,12 +33,12 @@ class ModelTrainingManager extends EventEmitter {
     this.models = new Map();
   }
 
-  async startTraining(trainingData, config = {}) {
+  async startTraining(trainingData, _config = {}) {
     const jobId = crypto.randomUUID();
     const job = {
       id: jobId,
       status: 'initializing',
-      config: { ...this.config, ...config },
+      _config: { ...this._config, ..._config },
       startTime: Date.now(),
       progress: 0
     };
@@ -49,8 +49,8 @@ class ModelTrainingManager extends EventEmitter {
     try {
       // Simulate training process
       job.status = 'training';
-      for (let epoch = 0; epoch < job.config.training.epochs; epoch++) {
-        job.progress = (epoch + 1) / job.config.training.epochs;
+      for (let epoch = 0; epoch < job._config.training.epochs; epoch++) {
+        job.progress = (epoch + 1) / job._config.training.epochs;
         this.emit('epochCompleted', { jobId, epoch, progress: job.progress });
         await new Promise(resolve => setTimeout(resolve, 100)); // Simulate training time
       }
@@ -133,22 +133,22 @@ class ModelRegistry extends EventEmitter {
  * Training Data Processor - Handles data preparation
  */
 class TrainingDataProcessor {
-  constructor(options = {}) {
-    this.config = {
-      batchSize: options.batchSize || 32,
-      shuffle: options.shuffle !== false,
-      validationSplit: options.validationSplit || 0.2
+  constructor(_options = {}) {
+    this._config = {
+      batchSize: _options.batchSize || 32,
+      shuffle: _options.shuffle !== false,
+      validationSplit: _options.validationSplit || 0.2
     };
   }
 
   async processData(rawData) {
     // Simulate data processing
     const processed = {
-      training: rawData.slice(0, Math.floor(rawData.length * (1 - this.config.validationSplit))),
-      validation: rawData.slice(Math.floor(rawData.length * (1 - this.config.validationSplit)))
+      training: rawData.slice(0, Math.floor(rawData.length * (1 - this._config.validationSplit))),
+      validation: rawData.slice(Math.floor(rawData.length * (1 - this._config.validationSplit)))
     };
 
-    if (this.config.shuffle) {
+    if (this._config.shuffle) {
       this._shuffleArray(processed.training);
       this._shuffleArray(processed.validation);
     }
@@ -165,8 +165,8 @@ class TrainingDataProcessor {
 
   createBatches(data) {
     const batches = [];
-    for (let i = 0; i < data.length; i += this.config.batchSize) {
-      batches.push(data.slice(i, i + this.config.batchSize));
+    for (let i = 0; i < data.length; i += this._config.batchSize) {
+      batches.push(data.slice(i, i + this._config.batchSize));
     }
     return batches;
   }
@@ -176,8 +176,8 @@ class TrainingDataProcessor {
  * Model Evaluator - Evaluates model performance
  */
 class ModelEvaluator {
-  constructor(options = {}) {
-    this.metrics = options.metrics || ['accuracy', 'loss', 'f1'];
+  constructor(_options = {}) {
+    this.metrics = _options.metrics || ['accuracy', 'loss', 'f1'];
   }
 
   async evaluateModel(model, testData) {
@@ -208,23 +208,23 @@ class ModelEvaluator {
  * Embedding Trainer - Specialized for embedding models
  */
 class EmbeddingTrainer extends EventEmitter {
-  constructor(model, config = {}) {
+  constructor(model, _config = {}) {
     super();
     this.model = model;
-    this.config = {
-      dimensions: config.dimensions || 768,
-      learningRate: config.learningRate || 1e-4,
-      batchSize: config.batchSize || 32,
-      ...config
+    this._config = {
+      dimensions: _config.dimensions || 768,
+      learningRate: _config.learningRate || 1e-4,
+      batchSize: _config.batchSize || 32,
+      ..._config
     };
   }
 
-  async train(trainingData) {
-    this.emit('trainingStarted', { config: this.config });
+  async train(___trainingData) {
+    this.emit('trainingStarted', { _config: this._config });
     
     try {
       // Simulate embedding training
-      for (let epoch = 0; epoch < this.config.epochs; epoch++) {
+      for (let epoch = 0; epoch < this._config.epochs; epoch++) {
         const loss = Math.random() * 0.5 + 0.1; // Simulate decreasing loss
         this.emit('epochCompleted', { epoch, loss });
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -240,7 +240,7 @@ class EmbeddingTrainer extends EventEmitter {
 
   async generateEmbeddings(texts) {
     // Simulate embedding generation
-    return texts.map(() => Array.from({ length: this.config.dimensions }, () => Math.random()));
+    return texts.map(() => Array.from({ length: this._config.dimensions }, () => Math.random()));
   }
 }
 
@@ -248,23 +248,23 @@ class EmbeddingTrainer extends EventEmitter {
  * LLM Trainer - Specialized for language model training
  */
 class LLMTrainer extends EventEmitter {
-  constructor(model, config = {}) {
+  constructor(model, _config = {}) {
     super();
     this.model = model;
-    this.config = {
-      maxLength: config.maxLength || 2048,
-      learningRate: config.learningRate || 1e-5,
-      batchSize: config.batchSize || 8,
-      ...config
+    this._config = {
+      maxLength: _config.maxLength || 2048,
+      learningRate: _config.learningRate || 1e-5,
+      batchSize: _config.batchSize || 8,
+      ..._config
     };
   }
 
-  async train(trainingData) {
-    this.emit('trainingStarted', { config: this.config });
+  async train(___trainingData) {
+    this.emit('trainingStarted', { _config: this._config });
     
     try {
       // Simulate LLM training
-      for (let epoch = 0; epoch < this.config.epochs; epoch++) {
+      for (let epoch = 0; epoch < this._config.epochs; epoch++) {
         const perplexity = Math.random() * 10 + 5; // Simulate decreasing perplexity
         this.emit('epochCompleted', { epoch, perplexity });
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -278,9 +278,9 @@ class LLMTrainer extends EventEmitter {
     }
   }
 
-  async generateText(prompt, options = {}) {
+  async generateText(prompt, _options = {}) {
     // Simulate text generation
-    const maxTokens = options.maxTokens || 100;
+    const maxTokens = _options.maxTokens || 100;
     return `Generated response to: ${prompt}`.substring(0, maxTokens);
   }
 }

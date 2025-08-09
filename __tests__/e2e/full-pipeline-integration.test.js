@@ -310,9 +310,9 @@ describe('Full Pipeline End-to-End Integration Tests', () => {
     console.log('📁 Realistic test data generated');
   }
 
-  async function generateLargeTestDataset(outputPath, documentCount) {
+  async function generateLargeTestDataset(_outputPath, _documentCount) {
     const largeDataset = {
-      documents: Array.from({ length: documentCount }, (_, i) => ({
+      documents: Array.from({ length: _documentCount }, (_, i) => ({
         id: `large-doc-${i}`,
         title: `Document ${i}: ${getRandomTopic()}`,
         content: generateVariableLengthContent(),
@@ -326,8 +326,8 @@ describe('Full Pipeline End-to-End Integration Tests', () => {
       }))
     };
     
-    fs.writeFileSync(outputPath, JSON.stringify(largeDataset, null, 2));
-    console.log(`📚 Generated large dataset with ${documentCount} documents`);
+    fs.writeFileSync(_outputPath, JSON.stringify(largeDataset, null, 2));
+    console.log(`📚 Generated large dataset with ${_documentCount} documents`);
   }
 
   function createFullPipeline(config) {

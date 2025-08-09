@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Version: 2.0.0
  * Path: /src/dag/dag-engine.js
  * Description: DAG executor for chained RAG pipelines with cycle detection and error handling
@@ -71,11 +72,11 @@ class DAGNode {
       this.nodes = new Map();
     }
   
-    addNode(id, fn) {
+    addNode(id, _fn) {
       if (this.nodes.has(id)) {
         throw new Error(`Node with ID "${id}" already exists`);
       }
-      const node = new DAGNode(id, fn);
+      const node = new DAGNode(id, _fn);
       this.nodes.set(id, node);
       return node;
     }
@@ -90,11 +91,11 @@ class DAGNode {
   
     /**
      * Executes DAG from source nodes to sinks using topological order
-     * @param {any} seedOrOptions - Initial input to the graph or execution options
-     * @param {Object} options - Execution options (when seed is separate)
+     * @param {any} seedOrOptions - Initial input to the graph or execution _options
+     * @param {Object} _options - Execution _options (when seed is separate)
      * @returns {Promise<Map|any>} - Results Map or final output from sink(s)
      */
-    async execute(seedOrOptions, options = {}) {
+    async execute(seedOrOptions, _options = {}) {
     const errors = [];
       // Handle different parameter patterns
       let seed, execOptions;
@@ -107,7 +108,7 @@ class DAGNode {
       } else {
         // First parameter is seed
         seed = seedOrOptions;
-        execOptions = options;
+        execOptions = _options;
       }
       
       const {
@@ -462,7 +463,7 @@ class DAGNode {
         } catch (error) {
           // Skip failed nodes if they weren't in the checkpoint
           if (!completedNodeIds.includes(node.id)) {
-            console.warn(`Node ${node.id} failed during resume: ${error.message}`);
+            console.warn(`Node ${node.id} failed during resume: ${error.message}`); // eslint-disable-line no-console
             continue;
           } else {
             // If a previously successful node now fails, that's an error
@@ -475,12 +476,12 @@ class DAGNode {
     }
     
     /**
-     * Validate topology with advanced options
-     * @param {Object} options - Validation options
+     * Validate topology with advanced _options
+     * @param {Object} _options - Validation _options
      * @returns {Array} - Array of warnings (empty if no issues)
      */
-    validateTopology(options = {}) {
-      const { strict = true } = options;
+    validateTopology(_options = {}) {
+      const { strict = true } = _options;
       const warnings = [];
       
       // Check for empty DAG

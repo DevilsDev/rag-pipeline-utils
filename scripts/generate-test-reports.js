@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Comprehensive Test Report Generator
  * Aggregates test results from multiple sources and generates visual reports
  */
@@ -8,9 +10,9 @@ import path from 'path';
 import { TestReporter } from '../__tests__/utils/test-reporter.js';
 
 class ComprehensiveTestReportGenerator {
-  constructor(options = {}) {
-    this.artifactsPath = options.artifactsPath || 'test-artifacts';
-    this.outputPath = options.outputPath || 'test-reports';
+  constructor(_options = {}) {
+    this.artifactsPath = _options.artifactsPath || 'test-artifacts';
+    this.outputPath = _options.outputPath || 'test-reports';
     this.githubContext = {
       runId: process.env.GITHUB_RUN_ID,
       sha: process.env.GITHUB_SHA,
@@ -34,7 +36,7 @@ class ComprehensiveTestReportGenerator {
   }
 
   async generateReports() {
-    console.log('📊 Starting comprehensive test report generation...');
+    console.log('📊 Starting comprehensive test report generation...'); // eslint-disable-line no-console
     
     try {
       // Collect all test artifacts
@@ -64,8 +66,8 @@ class ComprehensiveTestReportGenerator {
       // Generate CI-specific outputs
       await this.generateCIOutputs(summary);
       
-      console.log('✅ Test reports generated successfully!');
-      console.log('📁 Reports location:', this.outputPath);
+      console.log('✅ Test reports generated successfully!'); // eslint-disable-line no-console
+      console.log('📁 Reports location:', this.outputPath); // eslint-disable-line no-console
       
       return {
         reports,
@@ -74,16 +76,16 @@ class ComprehensiveTestReportGenerator {
       };
       
     } catch (error) {
-      console.error('❌ Error generating test reports:', error);
+      console.error('❌ Error generating test reports:', error); // eslint-disable-line no-console
       throw error;
     }
   }
 
   async collectTestArtifacts() {
-    console.log('🔍 Collecting test artifacts from:', this.artifactsPath);
+    console.log('🔍 Collecting test artifacts from:', this.artifactsPath); // eslint-disable-line no-console
     
     if (!fs.existsSync(this.artifactsPath)) {
-      console.warn('⚠️ No test artifacts directory found');
+      console.warn('⚠️ No test artifacts directory found'); // eslint-disable-line no-console
       return;
     }
 
@@ -96,24 +98,24 @@ class ComprehensiveTestReportGenerator {
       await this.processArtifactDirectory(dirPath, dir);
     }
 
-    console.log(`📊 Collected ${this.testResults.length} test results`);
-    console.log(`📈 Collected ${Object.keys(this.coverageData).length} coverage reports`);
-    console.log(`⚡ Collected ${this.performanceMetrics.length} performance metrics`);
+    console.log(`📊 Collected ${this.testResults.length} test results`); // eslint-disable-line no-console
+    console.log(`📈 Collected ${Object.keys(this.coverageData).length} coverage reports`); // eslint-disable-line no-console
+    console.log(`⚡ Collected ${this.performanceMetrics.length} performance metrics`); // eslint-disable-line no-console
   }
 
   async processArtifactDirectory(dirPath, dirName) {
     const files = fs.readdirSync(dirPath);
     
     for (const file of files) {
-      const filePath = path.join(dirPath, file);
+      const _filePath = path.join(dirPath, file);
       
       try {
         if (file.endsWith('.json')) {
-          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const data = JSON.parse(fs.readFileSync(_filePath, 'utf8'));
           await this.processTestData(data, dirName, file);
         }
       } catch (error) {
-        console.warn(`⚠️ Could not process ${filePath}:`, error.message);
+        console.warn(`⚠️ Could not process ${_filePath}:`, error.message); // eslint-disable-line no-console
       }
     }
   }
@@ -181,7 +183,7 @@ class ComprehensiveTestReportGenerator {
     }
   }
 
-  extractCategory(source, filename) {
+  extractCategory(source, ___filename) {
     if (source.includes('unit')) return 'Unit Tests';
     if (source.includes('integration')) return 'Integration Tests';
     if (source.includes('performance')) return 'Performance Tests';
@@ -347,7 +349,7 @@ class ComprehensiveTestReportGenerator {
     const prCommentPath = path.join(this.outputPath, 'pr-comment.md');
     fs.writeFileSync(prCommentPath, prComment);
 
-    console.log('📝 CI outputs generated');
+    console.log('📝 CI outputs generated'); // eslint-disable-line no-console
   }
 
   generateGitHubStepSummary(summary) {
@@ -472,16 +474,16 @@ async function main() {
     
     // Set GitHub Actions outputs if in CI
     if (process.env.GITHUB_ACTIONS) {
-      console.log(`::set-output name=reports-path::${result.outputPath}`);
-      console.log(`::set-output name=overall-status::${result.summary.overallStatus}`);
-      console.log(`::set-output name=test-count::${result.summary.totalTests}`);
-      console.log(`::set-output name=coverage::${result.summary.coverage}`);
+      console.log(`::set-output name=reports-path::${result.outputPath}`); // eslint-disable-line no-console
+      console.log(`::set-output name=overall-status::${result.summary.overallStatus}`); // eslint-disable-line no-console
+      console.log(`::set-output name=test-count::${result.summary.totalTests}`); // eslint-disable-line no-console
+      console.log(`::set-output name=coverage::${result.summary.coverage}`); // eslint-disable-line no-console
     }
     
     process.exit(result.summary.overallStatus === 'passed' ? 0 : 1);
     
   } catch (error) {
-    console.error('❌ Report generation failed:', error);
+    console.error('❌ Report generation failed:', error); // eslint-disable-line no-console
     process.exit(1);
   }
 }

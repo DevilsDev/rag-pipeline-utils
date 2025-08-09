@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.0.0
  * Description: Script to verify presence of all expected fixture plugins before running integration tests.
  * Author: Ali Kahwaji
@@ -26,12 +28,12 @@ for (const file of REQUIRED_FIXTURES) {
 }
 
 if (missing.length) {
-  console.warn('[WARNING] Missing test fixture files:');
+  console.warn('[WARNING] Missing test fixture files:'); // eslint-disable-line no-console
   for (const f of missing) {
-    console.warn(' -', f);
+    console.warn(' -', f); // eslint-disable-line no-console
   }
-  console.warn('Fixtures will be created automatically during test setup.');
+  console.warn('Fixtures will be created automatically during test setup.'); // eslint-disable-line no-console
   process.exit(0); // Exit successfully to avoid blocking commits
 } else {
-  console.log('[OK] All fixture files are present.');
+  console.log('[OK] All fixture files are present.'); // eslint-disable-line no-console
 }

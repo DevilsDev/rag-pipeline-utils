@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 2.0.0
  * Description: Tags release, updates changelog, optionally opens blog preview
  * Author: Ali Kahwaji
@@ -13,7 +15,7 @@ const VERSION = process.argv[2];
 const PREVIEW = process.argv.includes('--preview');
 
 if (!VERSION) {
-  console.error('❌ Usage: node release-tag.js <version> [--preview]');
+  console.error('❌ Usage: node release-tag.js <version> [--preview]'); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -28,7 +30,7 @@ const date = new Date().toISOString().split('T')[0];
 const file = path.join(blogPath, `${date}-release-${tag}.md`);
 
 if (!fs.existsSync(file)) {
-  console.error(`❌ Blog post not generated: ${file}`);
+  console.error(`❌ Blog post not generated: ${file}`); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -38,14 +40,14 @@ if (PREVIEW) {
   try {
     execSync(`${editor} ${file}`, { stdio: 'inherit' });
   } catch (err) {
-    console.warn('⚠️ Failed to open in editor. Please review manually:', file);
+    console.warn('⚠️ Failed to open in editor. Please review manually:', file); // eslint-disable-line no-console
   }
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   rl.question(`✅ Ready to commit and push ${tag}? (y/n): `, (answer) => {
     rl.close();
     if (answer.toLowerCase() !== 'y') {
-      console.log('❌ Aborted. No tag pushed.');
+      console.log('❌ Aborted. No tag pushed.'); // eslint-disable-line no-console
       process.exit(0);
     }
     finalizeRelease();
@@ -60,5 +62,5 @@ function finalizeRelease() {
   execSync(`git commit -m "release: v${VERSION}"`);
   execSync(`git tag ${tag}`);
   execSync('git push && git push --tags');
-  console.log(`🎉 Release ${tag} published and blog post staged!`);
+  console.log(`🎉 Release ${tag} published and blog post staged!`); // eslint-disable-line no-console
 }

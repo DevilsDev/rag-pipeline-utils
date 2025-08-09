@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Unit tests for Interactive CLI Wizard
  * Tests project setup, plugin selection, configuration, and validation
  */

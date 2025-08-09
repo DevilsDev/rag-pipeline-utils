@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Version: 1.1.0
  * Description: Syncs GitHub labels based on roadmap-labels.yml; updates existing, creates missing.
  * Author: Ali Kahwaji
@@ -13,7 +15,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY;
 
 if (!GITHUB_TOKEN || !REPO) {
-  console.error('❌ GITHUB_TOKEN or GITHUB_REPOSITORY not defined in environment.');
+  console.error('❌ GITHUB_TOKEN or GITHUB_REPOSITORY not defined in environment.'); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -27,7 +29,7 @@ function loadLabelsFromYAML(filePath) {
     const file = fs.readFileSync(filePath, 'utf8');
     return yaml.load(file);
   } catch (err) {
-    console.error('❌ Failed to load roadmap-labels.yml:', err);
+    console.error('❌ Failed to load roadmap-labels.yml:', err); // eslint-disable-line no-console
     process.exit(1);
   }
 }
@@ -44,7 +46,7 @@ async function syncLabels() {
 
     try {
       if (existing) {
-        console.log(`🔁 Updating label: ${label.name}`);
+        console.log(`🔁 Updating label: ${label.name}`); // eslint-disable-line no-console
         await octokit.rest.issues.updateLabel({
           owner,
           repo,
@@ -53,7 +55,7 @@ async function syncLabels() {
           description: label.description,
         });
       } else {
-        console.log(`➕ Creating label: ${label.name}`);
+        console.log(`➕ Creating label: ${label.name}`); // eslint-disable-line no-console
         await octokit.rest.issues.createLabel({
           owner,
           repo,
@@ -63,7 +65,7 @@ async function syncLabels() {
         });
       }
     } catch (err) {
-      console.error(`❌ Failed to process label: ${label.name}`, err.message);
+      console.error(`❌ Failed to process label: ${label.name}`, err.message); // eslint-disable-line no-console
     }
   }
 }

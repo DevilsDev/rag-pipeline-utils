@@ -1,26 +1,27 @@
 /**
+const fs = require('fs');
  * Version: 0.1.1
  * Path: /src/evaluate/evaluator.js
  * Description: Evaluation runner with scoring metrics for batch RAG QA
  * Author: Ali Kahwaji
  */
 
-const { createRagPipeline  } = require('../core/create-pipeline.js');
-const { logger  } = require('../utils/logger.js');
-const fs = require('fs/promises');
-const path = require('path');
-const { scoreAnswer  } = require('./scoring.js');
+const { createRagPipeline  } = require('../core/create-pipeline.js'); // eslint-disable-line global-require
+const { logger  } = require('../utils/logger.js'); // eslint-disable-line global-require
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { scoreAnswer  } = require('./scoring.js'); // eslint-disable-line global-require
 
 /**
  * Evaluate a list of prompt/answer pairs using the RAG pipeline and compute scores
  * @param {string} datasetPath - Path to JSON file with { prompt, expected }[]
- * @param {object} config - RAG plugin config (loader optional)
+ * @param {object} _config - RAG plugin _config (loader optional)
  * @returns {Promise<Array<{ prompt: string, expected: string, actual: string, success: boolean, scores: object }>>}
  */
-export async function evaluateRagDataset(datasetPath, config) {
-  const file = await fs.readFile(path.resolve(datasetPath), 'utf-8');
+export async function evaluateRagDataset(_datasetPath, _config) {
+  const file = await fs.readFile(path.resolve(_datasetPath), 'utf-8');
   const cases = JSON.parse(file);
-  const pipeline = createRagPipeline(config);
+  const pipeline = createRagPipeline(_config);
 
   const results = [];
   for (const { prompt, expected } of cases) {

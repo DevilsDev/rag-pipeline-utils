@@ -3,28 +3,28 @@
  * Consolidated exports for all AI/ML capabilities
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
 
 // Model Training Orchestrator (alias for ModelTrainingManager)
 class ModelTrainingOrchestrator extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
-    this.config = {
-      batchSize: options.batchSize || 32,
-      learningRate: options.learningRate || 1e-4,
-      epochs: options.epochs || 10
+    this._config = {
+      batchSize: _options.batchSize || 32,
+      learningRate: _options.learningRate || 1e-4,
+      epochs: _options.epochs || 10
     };
     this.trainingJobs = new Map();
   }
 
-  async createTrainingJob(tenantId, config = {}) {
+  async createTrainingJob(tenantId, _config = {}) {
     const jobId = crypto.randomUUID();
     const job = {
       id: jobId,
       tenantId,
       status: 'created',
-      config,
+      _config,
       createdAt: Date.now(),
       progress: 0
     };
@@ -33,7 +33,7 @@ class ModelTrainingOrchestrator extends EventEmitter {
     return jobId;
   }
 
-  async startTraining(jobId, data = null, config = {}) {
+  async startTraining(jobId, data = null, _config = {}) {
     const job = this.trainingJobs.get(jobId);
     if (!job) {
       throw new Error(`Training job ${jobId} not found`);
@@ -90,7 +90,7 @@ class ModelTrainingOrchestrator extends EventEmitter {
       environment: deploymentConfig.environment || 'production',
       status: 'deploying',
       deployedAt: Date.now(),
-      config: deploymentConfig
+      _config: deploymentConfig
     };
 
     // Simulate deployment process
@@ -106,15 +106,15 @@ class ModelTrainingOrchestrator extends EventEmitter {
 
 // Adaptive Retrieval Engine
 class AdaptiveRetrievalEngine extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
-    this.config = {
+    this._config = {
       learning: {
-        algorithm: options.algorithm || 'contextual_bandit',
-        explorationRate: options.explorationRate || 0.1,
-        learningRate: options.learningRate || 0.01
+        algorithm: _options.algorithm || 'contextual_bandit',
+        explorationRate: _options.explorationRate || 0.1,
+        learningRate: _options.learningRate || 0.01
       },
-      ...options
+      ..._options
     };
     this.userProfiles = new Map();
     this.queryHistory = new Map();
@@ -143,7 +143,7 @@ class AdaptiveRetrievalEngine extends EventEmitter {
     }
     
     // Simulate personalized ranking based on user interests
-    const rankedResults = results.map((result, index) => ({
+    const rankedResults = results.map((result, ___index) => ({
       ...result,
       personalizedScore: Math.random() * 0.5 + 0.5,
       relevanceFactors: profile.interests.slice(0, 2)
@@ -174,23 +174,23 @@ class AdaptiveRetrievalEngine extends EventEmitter {
 
 // Multi-Modal Processor
 class MultiModalProcessor extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
-    this.config = {
+    this._config = {
       supportedModalities: ['text', 'image', 'audio', 'video'],
-      embeddingDimension: options.embeddingDimension || 768,
-      ...options
+      embeddingDimension: _options.embeddingDimension || 768,
+      ..._options
     };
     this.processors = new Map();
   }
 
-  async processContent(content, modality, options = {}) {
+  async processContent(content, modality, _options = {}) {
     const processingId = crypto.randomUUID();
     
     // Handle case where modality might be passed as an object
     let modalityType = modality;
-    if (typeof modality === 'object' && modality.type) {
-      modalityType = modality.type;
+    if (typeof modality === 'object' && modality._type) {
+      modalityType = modality._type;
     } else if (typeof modality === 'object') {
       // If it's an object without a type property, try to infer from content
       modalityType = 'text'; // Default fallback
@@ -202,16 +202,16 @@ class MultiModalProcessor extends EventEmitter {
     let result;
     switch (modalityType) {
       case 'text':
-        result = await this._processText(content, options);
+        result = await this._processText(content, _options);
         break;
       case 'image':
-        result = await this._processImage(content, options);
+        result = await this._processImage(content, _options);
         break;
       case 'audio':
-        result = await this._processAudio(content, options);
+        result = await this._processAudio(content, _options);
         break;
       case 'video':
-        result = await this._processVideo(content, options);
+        result = await this._processVideo(content, _options);
         break;
       default:
         throw new Error(`Unsupported modality: ${modalityType} (original: ${JSON.stringify(modality)})`);
@@ -221,45 +221,45 @@ class MultiModalProcessor extends EventEmitter {
     return result;
   }
 
-  async _processText(content, options) {
+  async _processText(content, ___options) {
     // Simulate text processing
     await new Promise(resolve => setTimeout(resolve, 50));
     return {
       modality: 'text',
-      embedding: Array.from({ length: this.config.embeddingDimension }, () => Math.random()),
+      embedding: Array.from({ length: this._config.embeddingDimension }, () => Math.random()),
       features: { length: content.length, wordCount: content.split(' ').length },
       processed: true
     };
   }
 
-  async _processImage(content, options) {
+  async _processImage(___content, ___options) {
     // Simulate image processing
     await new Promise(resolve => setTimeout(resolve, 100));
     return {
       modality: 'image',
-      embedding: Array.from({ length: this.config.embeddingDimension }, () => Math.random()),
+      embedding: Array.from({ length: this._config.embeddingDimension }, () => Math.random()),
       features: { width: 1024, height: 768, channels: 3 },
       processed: true
     };
   }
 
-  async _processAudio(content, options) {
+  async _processAudio(___content, ___options) {
     // Simulate audio processing
     await new Promise(resolve => setTimeout(resolve, 75));
     return {
       modality: 'audio',
-      embedding: Array.from({ length: this.config.embeddingDimension }, () => Math.random()),
+      embedding: Array.from({ length: this._config.embeddingDimension }, () => Math.random()),
       features: { duration: 30, sampleRate: 44100, channels: 2 },
       processed: true
     };
   }
 
-  async _processVideo(content, options) {
+  async _processVideo(___content, ___options) {
     // Simulate video processing
     await new Promise(resolve => setTimeout(resolve, 150));
     return {
       modality: 'video',
-      embedding: Array.from({ length: this.config.embeddingDimension }, () => Math.random()),
+      embedding: Array.from({ length: this._config.embeddingDimension }, () => Math.random()),
       features: { duration: 60, fps: 30, resolution: '1920x1080' },
       processed: true
     };
@@ -268,15 +268,15 @@ class MultiModalProcessor extends EventEmitter {
 
 // Federated Learning Coordinator
 class FederatedLearningCoordinator extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
-    this.config = {
-      minParticipants: options.minParticipants || 2,
-      maxParticipants: options.maxParticipants || 100,
-      roundDuration: options.roundDuration || 300000, // 5 minutes
-      convergenceThreshold: options.convergenceThreshold || 0.001,
-      maxRounds: options.maxRounds || 100,
-      ...options
+    this._config = {
+      minParticipants: _options.minParticipants || 2,
+      maxParticipants: _options.maxParticipants || 100,
+      roundDuration: _options.roundDuration || 300000, // 5 minutes
+      convergenceThreshold: _options.convergenceThreshold || 0.001,
+      maxRounds: _options.maxRounds || 100,
+      ..._options
     };
     this.federations = new Map();
     this.participants = new Map();
@@ -291,10 +291,10 @@ class FederatedLearningCoordinator extends EventEmitter {
       modelConfig,
       status: 'created',
       currentRound: 0,
-      minParticipants: federationConfig.minParticipants || this.config.minParticipants,
-      maxParticipants: federationConfig.maxParticipants || this.config.maxParticipants,
-      convergenceThreshold: federationConfig.convergenceThreshold || this.config.convergenceThreshold,
-      maxRounds: federationConfig.maxRounds || this.config.maxRounds,
+      minParticipants: federationConfig.minParticipants || this._config.minParticipants,
+      maxParticipants: federationConfig.maxParticipants || this._config.maxParticipants,
+      convergenceThreshold: federationConfig.convergenceThreshold || this._config.convergenceThreshold,
+      maxRounds: federationConfig.maxRounds || this._config.maxRounds,
       createdAt: Date.now(),
       participants: [],
       convergenceHistory: []

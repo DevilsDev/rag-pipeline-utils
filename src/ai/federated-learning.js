@@ -3,14 +3,14 @@
  * Distributed model training across tenant boundaries with privacy preservation
  */
 
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class FederatedLearningCoordinator extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       federation: {
         minParticipants: 3,
         maxParticipants: 100,
@@ -61,21 +61,21 @@ class FederatedLearningCoordinator extends EventEmitter {
         robustnessCheck: true,
         byzantineDetection: true
       },
-      ...options
+      ..._options
     };
     
     this.federations = new Map(); // federationId -> FederationSession
     this.participants = new Map(); // participantId -> ParticipantInfo
     this.globalModels = new Map(); // modelId -> GlobalModel
-    this.privacyEngine = new PrivacyPreservationEngine(this.config.privacy);
-    this.aggregator = new ModelAggregator(this.config.aggregation);
+    this.privacyEngine = new PrivacyPreservationEngine(this._config.privacy);
+    this.aggregator = new ModelAggregator(this._config.aggregation);
     this.performanceMonitor = new FederatedPerformanceMonitor();
   }
 
   /**
    * Create a new federated learning session
    */
-  async createFederation(tenantId, modelConfig, options = {}) {
+  async createFederation(tenantId, modelConfig, _options = {}) {
     const federationId = crypto.randomUUID();
     
     const federation = new FederationSession({
@@ -83,8 +83,8 @@ class FederatedLearningCoordinator extends EventEmitter {
       tenantId,
       modelConfig,
       coordinator: this,
-      ...this.config.federation,
-      ...options
+      ...this._config.federation,
+      ..._options
     });
     
     this.federations.set(federationId, federation);
@@ -92,7 +92,7 @@ class FederatedLearningCoordinator extends EventEmitter {
     this.emit('federation_created', {
       federationId,
       tenantId,
-      modelType: modelConfig.type,
+      modelType: modelConfig._type,
       maxParticipants: federation.maxParticipants
     });
     
@@ -315,7 +315,7 @@ class FederatedLearningCoordinator extends EventEmitter {
         currentRound: federation.currentRound,
         totalParticipants: participants.length,
         activeParticipants: participants.filter(p => p.status === 'active').length,
-        modelType: federation.modelConfig.type,
+        modelType: federation.modelConfig._type,
         createdAt: federation.createdAt,
         lastRoundAt: federation.lastRoundAt
       },
@@ -326,8 +326,8 @@ class FederatedLearningCoordinator extends EventEmitter {
         averageTrainingTime: this._calculateAverageTrainingTime(participants)
       },
       privacy: {
-        differentialPrivacyEnabled: this.config.privacy.differentialPrivacy.enabled,
-        secureAggregationEnabled: this.config.privacy.securAggregation.enabled,
+        differentialPrivacyEnabled: this._config.privacy.differentialPrivacy.enabled,
+        secureAggregationEnabled: this._config.privacy.securAggregation.enabled,
         privacyBudgetUsed: federation.privacyBudgetUsed || 0
       },
       participants: participants.map(p => ({
@@ -430,7 +430,7 @@ class FederatedLearningCoordinator extends EventEmitter {
   }
 
   async _getGlobalModel(modelConfig) {
-    const modelId = `${modelConfig.type}_${modelConfig.version || 'latest'}`;
+    const modelId = `${modelConfig._type}_${modelConfig.version || 'latest'}`;
     
     if (!this.globalModels.has(modelId)) {
       // Initialize new global model
@@ -445,7 +445,7 @@ class FederatedLearningCoordinator extends EventEmitter {
     // Mock global model initialization
     return {
       id: crypto.randomUUID(),
-      type: modelConfig.type,
+      _type: modelConfig._type,
       version: '1.0.0',
       parameters: this._generateMockParameters(modelConfig),
       accuracy: 0.5,
@@ -458,7 +458,7 @@ class FederatedLearningCoordinator extends EventEmitter {
     };
   }
 
-  async _performLocalTraining(participant, globalModel, modelConfig) {
+  async _performLocalTraining(participant, globalModel, ___modelConfig) {
     // Mock local training simulation
     const trainingTime = 30000 + Math.random() * 60000; // 30-90 seconds
     
@@ -479,7 +479,7 @@ class FederatedLearningCoordinator extends EventEmitter {
   }
 
   async _updateGlobalModel(modelConfig, aggregatedModel) {
-    const modelId = `${modelConfig.type}_${modelConfig.version || 'latest'}`;
+    const modelId = `${modelConfig._type}_${modelConfig.version || 'latest'}`;
     this.globalModels.set(modelId, aggregatedModel);
   }
 
@@ -545,7 +545,7 @@ class FederatedLearningCoordinator extends EventEmitter {
   }
 
   _calculateParameterCount(modelConfig) {
-    switch (modelConfig.type) {
+    switch (modelConfig._type) {
       case 'embedding':
         return modelConfig.dimension * modelConfig.layers * 1000;
       case 'retrieval':
@@ -558,23 +558,23 @@ class FederatedLearningCoordinator extends EventEmitter {
   }
 
   _generateMockModelDelta(parameters) {
-    return parameters.map(param => (Math.random() - 0.5) * 0.01); // Small updates
+    return parameters.map(___param => (Math.random() - 0.5) * 0.01); // Small updates
   }
 }
 
 class FederationSession {
-  constructor(options) {
-    this.id = options.id;
-    this.tenantId = options.tenantId;
-    this.modelConfig = options.modelConfig;
-    this.coordinator = options.coordinator;
+  constructor(_options) {
+    this.id = _options.id;
+    this.tenantId = _options.tenantId;
+    this.modelConfig = _options.modelConfig;
+    this.coordinator = _options.coordinator;
     
-    this.minParticipants = options.minParticipants;
-    this.maxParticipants = options.maxParticipants;
-    this.roundDuration = options.roundDuration;
-    this.convergenceThreshold = options.convergenceThreshold;
-    this.maxRounds = options.maxRounds;
-    this.participantSelection = options.participantSelection;
+    this.minParticipants = _options.minParticipants;
+    this.maxParticipants = _options.maxParticipants;
+    this.roundDuration = _options.roundDuration;
+    this.convergenceThreshold = _options.convergenceThreshold;
+    this.maxRounds = _options.maxRounds;
+    this.participantSelection = _options.participantSelection;
     
     this.status = 'created';
     this.currentRound = 0;
@@ -602,20 +602,20 @@ class FederationSession {
 }
 
 class PrivacyPreservationEngine {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async applyPrivacy(modelUpdate, privacyLevel) {
     let privateUpdate = { ...modelUpdate };
     
     // Apply differential privacy
-    if (this.config.differentialPrivacy.enabled) {
+    if (this._config.differentialPrivacy.enabled) {
       privateUpdate = await this._applyDifferentialPrivacy(privateUpdate, privacyLevel);
     }
     
     // Apply secure aggregation preparation
-    if (this.config.securAggregation.enabled) {
+    if (this._config.securAggregation.enabled) {
       privateUpdate = await this._prepareSecureAggregation(privateUpdate);
     }
     
@@ -687,13 +687,13 @@ class PrivacyPreservationEngine {
 }
 
 class ModelAggregator {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async aggregate(updates, globalModel, modelConfig) {
+  async aggregate(updates, globalModel, ___modelConfig) {
     // Filter out Byzantine participants
-    const validUpdates = this.config.byzantineDetection ? 
+    const validUpdates = this._config.byzantineDetection ? 
       await this._detectByzantine(updates) : updates;
     
     // Calculate weights
@@ -720,8 +720,8 @@ class ModelAggregator {
       updatedAt: new Date().toISOString(),
       aggregationMetadata: {
         participantCount: validUpdates.length,
-        aggregationStrategy: this.config.strategy,
-        weightingScheme: this.config.weightingScheme,
+        aggregationStrategy: this._config.strategy,
+        weightingScheme: this._config.weightingScheme,
         byzantineFiltered: updates.length - validUpdates.length
       }
     };
@@ -743,7 +743,7 @@ class ModelAggregator {
   }
 
   _calculateWeights(updates) {
-    switch (this.config.weightingScheme) {
+    switch (this._config.weightingScheme) {
       case 'uniform':
         return updates.map(() => 1 / updates.length);
       

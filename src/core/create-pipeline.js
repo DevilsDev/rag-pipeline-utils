@@ -1,26 +1,27 @@
 /**
+const path = require('path');
  * Version: 0.2.0
  * Path: /src/core/create-pipeline.js
  * Description: RAG pipeline factory with modular retry, logging, and reranker middleware
  * Author: Ali Kahwaji
  */
 
-const registry = require('./plugin-registry.js'); 
-const { logger  } = require('../utils/logger.js');
-const { withRetry  } = require('../utils/retry.js');
-const { LLMReranker  } = require('../reranker/llm-reranker.js');
-const { ParallelEmbedder, ParallelRetriever  } = require('./performance/parallel-processor.js');
-const { StreamingProcessor  } = require('./performance/streaming-safeguards.js');
+const registry = require('./plugin-registry.js');  // eslint-disable-line global-require
+const { logger  } = require('../utils/logger.js'); // eslint-disable-line global-require
+const { withRetry  } = require('../utils/retry.js'); // eslint-disable-line global-require
+const { LLMReranker  } = require('../reranker/llm-reranker.js'); // eslint-disable-line global-require
+const { ParallelEmbedder, ParallelRetriever  } = require('./performance/parallel-processor.js'); // eslint-disable-line global-require
+const { StreamingProcessor  } = require('./performance/streaming-safeguards.js'); // eslint-disable-line global-require
 
 /**
- * Pipeline options to toggle middleware.
+ * Pipeline _options to toggle middleware.
  * @typedef {Object} PipelineOptions
  * @property {boolean} [useRetry=true] - Enable retry logic on network/storage.
  * @property {boolean} [useLogging=true] - Enable structured logging.
  * @property {boolean} [useReranker=false] - Use reranker for query refinement.
  * @property {boolean} [useParallelProcessing=false] - Enable parallel embedding processing.
  * @property {boolean} [useStreamingSafeguards=false] - Enable streaming memory safeguards.
- * @property {Object} [performance] - Performance configuration options.
+ * @property {Object} [performance] - Performance configuration _options.
  * @property {number} [performance.maxConcurrency=3] - Maximum concurrent operations.
  * @property {number} [performance.batchSize=10] - Batch size for parallel processing.
  * @property {number} [performance.maxMemoryMB=512] - Maximum memory usage in MB.
@@ -28,26 +29,18 @@ const { StreamingProcessor  } = require('./performance/streaming-safeguards.js')
  */
 
 /**
- * Creates a RAG pipeline instance.
- * @param {object} config - Pipeline configuration.
- * @param {string} config.loader
- * @param {string} config.embedder
- * @param {string} config.retriever
- * @param {string} config.llm
- * @param {PipelineOptions} [options]
- * @returns {object} RAG pipeline instance
+ * Creates a RAG pipeline _instance.
+ * @param {object} _config - Pipeline configuration.
+ * @param {string} _config.loader
+ * @param {string} _config.embedder
+ * @param {string} _config.retriever
+ * @param {string} _config.llm
+ * @param {PipelineOptions} [_options]
+ * @returns {object} RAG pipeline _instance
  */
-function createRagPipeline(
-  { loader, embedder, retriever, llm },
-  { 
-    useRetry = true, 
-    useLogging = true, 
-    useReranker = false,
-    useParallelProcessing = false,
-    useStreamingSafeguards = false,
-    performance = {}
-  } = {}
-) {
+function createRagPipeline({ loader, embedder, retriever, llm }, { 
+    useRetry = true, useLogging = true, useReranker = false, useParallelProcessing = false, useStreamingSafeguards = false, performance = {}
+  } = {}) {
   const loaderInstance = registry.get('loader', loader);
   const baseEmbedderInstance = registry.get('embedder', embedder);
   const baseRetrieverInstance = registry.get('retriever', retriever);
@@ -80,8 +73,8 @@ function createRagPipeline(
     if (useLogging) logger[level](data, msg);
   };
 
-  const wrap = async (fn, context) => {
-    return useRetry ? withRetry(fn, context) : fn();
+  const wrap = async (_fn, context) => {
+    return useRetry ? withRetry(_fn, context) : _fn();
   };
 
   return {
@@ -138,7 +131,7 @@ function createRagPipeline(
      */
     async* ingestStream(docPath) {
       if (!streamingProcessor) {
-        throw new Error('Streaming safeguards not enabled. Set useStreamingSafeguards: true in pipeline options.');
+        throw new Error('Streaming safeguards not enabled. Set useStreamingSafeguards: true in pipeline _options.');
       }
 
       try {
@@ -162,7 +155,7 @@ function createRagPipeline(
           if (result.processed) {
             processedChunks++;
             yield {
-              type: 'chunk_processed',
+              _type: 'chunk_processed',
               chunk: result.chunk.substring(0, 100) + '...',
               duration: result.duration,
               progress: {
@@ -175,7 +168,7 @@ function createRagPipeline(
           } else {
             failedChunks++;
             yield {
-              type: 'chunk_failed',
+              _type: 'chunk_failed',
               error: result.error,
               chunk: result.chunk.substring(0, 100) + '...',
               progress: {
@@ -188,7 +181,7 @@ function createRagPipeline(
         }
 
         yield {
-          type: 'ingest_complete',
+          _type: 'ingest_complete',
           summary: {
             totalChunks,
             processedChunks,
@@ -207,7 +200,7 @@ function createRagPipeline(
       } catch (error) {
         log('error', 'Pipeline streaming ingest failed', { error: error.message, docPath });
         yield {
-          type: 'ingest_error',
+          _type: 'ingest_error',
           error: error.message,
           code: error.code
         };
@@ -366,7 +359,7 @@ function createRagPipeline(
           retriever,
           llm
         },
-        options: {
+        _options: {
           useRetry,
           useLogging,
           useReranker,

@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Unit tests for Doctor Command
  * Tests pipeline diagnostics, issue detection, and automatic fixes
  */

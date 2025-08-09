@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * Release Note Generator
  * Version: 3.0.0
  * Description: Generates changelog section and blog markdown from a GitHub tag
@@ -11,15 +13,15 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-import { setupCLI, dryRunWrapper, validateArgs } from './utils/cli.js';
+import { setupCLI, dryRunWrapper, _validateArgs } from './utils/cli.js';
 import { withRetry } from './utils/retry.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, 'scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, 'scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 // Setup CLI
 const { args, logger } = setupCLI('generate-release-note.js', 'Generate release notes and blog posts from Git tags', {
@@ -72,7 +74,7 @@ function resolvePreviousTag() {
 
 const prevVersion = resolvePreviousTag();
 if (!prevVersion) {
-  console.error('❌ Could not resolve previous tag.');
+  console.error('❌ Could not resolve previous tag.'); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -82,14 +84,14 @@ if (!prevVersion) {
  * @param {string} to 
  * @returns {string}
  */
-function getCommits(from, to) {
+function getCommits(_from, _to) {
   return withRetry(
     () => {
-      logger.debug(`Fetching commits between ${from}..${to}`);
-      const commits = execSync(`git log ${from}..${to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
+      logger.debug(`Fetching commits between ${_from}..${_to}`);
+      const commits = execSync(`git log ${_from}..${_to} --pretty=format:"- %s"`, { encoding: 'utf-8' });
       
       const commitCount = commits.split('\n').filter(Boolean).length;
-      logger.info(`Found ${commitCount} commits since ${from}`);
+      logger.info(`Found ${commitCount} commits since ${_from}`);
       
       return commits;
     },
@@ -107,29 +109,29 @@ function getCommits(from, to) {
  * @param {string} prevVersion
  * @returns {string}
  */
-function generateBlogMarkdown(version, commits, prevVersion) {
+function generateBlogMarkdown(_version, _commits, _prevVersion) {
   const date = new Date().toISOString().slice(0, 10);
-  const slug = `release-${version}`;
-  const repoUrl = `https://github.com/${config.github.owner}/${config.github.repo}`;
+  const slug = `release-${_version}`;
+  const repoUrl = `https://github.com/${_config.github.owner}/${_config.github.repo}`;
   
   return `---
 slug: ${slug}
-title: "🚀 Version ${version} Released"
+title: "🚀 Version ${_version} Released"
 authors: [ali]
 tags: [release, changelog]
 date: ${date}
 ---
 
-RAG Pipeline Utils **${version}** is now available on NPM!
+RAG Pipeline Utils **${_version}** is now available on NPM!
 
 ## 🔧 Changes
 
-${commits}
+${_commits}
 
 ## 🔗 Resources
 
 - 📦 [NPM Package](https://www.npmjs.com/package/@DevilsDev/rag-pipeline-utils)
-- 🔍 [GitHub Compare](${repoUrl}/compare/${prevVersion}...${version})
+- 🔍 [GitHub Compare](${repoUrl}/compare/${_prevVersion}...${_version})
 - 📋 [Full Changelog](${repoUrl}/blob/main/CHANGELOG.md)
 - 🐛 [Report Issues](${repoUrl}/issues)
 
@@ -172,8 +174,8 @@ async function main() {
     
     // Write files
     const date = new Date().toISOString().slice(0, 10);
-    const blogPath = path.resolve(__dirname, `../${config.release.blogPath}/${date}-${newVersion}.md`);
-    const changelogPath = path.resolve(__dirname, `../${config.release.changelogPath}`);
+    const blogPath = path.resolve(__dirname, `../${_config.release.blogPath}/${date}-${newVersion}.md`);
+    const changelogPath = path.resolve(__dirname, `../${_config.release.changelogPath}`);
     
     if (!args.changelogOnly) {
       await dryRunWrapper(
@@ -201,8 +203,8 @@ async function main() {
       await withRetry(
         async () => {
           logger.progress('Committing changes to Git...');
-          execSync('git config user.name "github-actions[bot]"');
-          execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
+          execSync('git _config user.name "github-actions[bot]"');
+          execSync('git _config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
           execSync('git add CHANGELOG.md docs-site/blog/*.md');
           execSync(`git commit -m "docs(release): blog + changelog for ${newVersion}"`);
           execSync('git push origin main');
@@ -220,10 +222,10 @@ async function main() {
     // Show previews
     if (args.verbose || args.dryRun) {
       logger.info('\n📓 Blog Content Preview:');
-      console.log('\n' + blogContent);
+      console.log('\n' + blogContent); // eslint-disable-line no-console
       
       logger.info('\n📘 Changelog Section Preview:');
-      console.log('\n' + changelogSection);
+      console.log('\n' + changelogSection); // eslint-disable-line no-console
     }
     
     logger.success(`🚀 Release notes generated for ${newVersion}!`);

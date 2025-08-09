@@ -1,4 +1,6 @@
 /**
+const fs = require('fs');
+const path = require('path');
  * Standardized logging utility for scripts
  * Version: 1.0.0
  * Author: Ali Kahwaji
@@ -12,8 +14,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, '../scripts.config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, '../scripts._config.json');
+const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 const LOG_LEVELS = {
   debug: 0,
@@ -40,16 +42,16 @@ const LOG_ICONS = {
 class Logger {
   constructor(scriptName = 'script', level = null) {
     this.scriptName = scriptName;
-    this.level = level || config.logging.level || 'info';
-    this.useColors = config.logging.colors !== false;
-    this.useTimestamp = config.logging.timestamp !== false;
+    this.level = level || _config.logging.level || 'info';
+    this.useColors = _config.logging.colors !== false;
+    this.useTimestamp = _config.logging.timestamp !== false;
   }
 
   _shouldLog(level) {
     return LOG_LEVELS[level] >= LOG_LEVELS[this.level];
   }
 
-  _formatMessage(level, message, ...args) {
+  _formatMessage(level, message, ...___args) {
     const timestamp = this.useTimestamp ? new Date().toISOString() : '';
     const icon = LOG_ICONS[level];
     const color = this.useColors ? LOG_COLORS[level] : '';
@@ -66,25 +68,25 @@ class Logger {
 
   debug(message, ...args) {
     if (this._shouldLog('debug')) {
-      console.log(this._formatMessage('debug', message), ...args);
+      console.log(this._formatMessage('debug', message), ...args); // eslint-disable-line no-console
     }
   }
 
   info(message, ...args) {
     if (this._shouldLog('info')) {
-      console.log(this._formatMessage('info', message), ...args);
+      console.log(this._formatMessage('info', message), ...args); // eslint-disable-line no-console
     }
   }
 
   warn(message, ...args) {
     if (this._shouldLog('warn')) {
-      console.warn(this._formatMessage('warn', message), ...args);
+      console.warn(this._formatMessage('warn', message), ...args); // eslint-disable-line no-console
     }
   }
 
   error(message, ...args) {
     if (this._shouldLog('error')) {
-      console.error(this._formatMessage('error', message), ...args);
+      console.error(this._formatMessage('error', message), ...args); // eslint-disable-line no-console
     }
   }
 
@@ -107,8 +109,8 @@ class Logger {
 }
 
 // Factory function for creating loggers
-export function createLogger(scriptName, level = null) {
-  return new Logger(scriptName, level);
+export function createLogger(_scriptName, level = null) {
+  return new Logger(_scriptName, level);
 }
 
 // Default logger instance

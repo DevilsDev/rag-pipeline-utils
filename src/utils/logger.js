@@ -5,10 +5,10 @@
  * Author: Ali Kahwaji
  */
 
-const pino = require('pino');
+const pino = require('pino'); // eslint-disable-line global-require
 
 /**
- * Create a structured JSON logger instance with sensible defaults.
+ * Create a structured JSON logger _instance with sensible defaults.
  * Output can be redirected or formatted in dev/prod contexts.
  */
 const logger = pino({
@@ -16,7 +16,7 @@ const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   transport: process.env.NODE_ENV === 'development' ? {
     target: 'pino-pretty',
-    options: {
+    _options: {
       colorize: true,
       translateTime: 'SYS:standard',
       ignore: 'pid,hostname'

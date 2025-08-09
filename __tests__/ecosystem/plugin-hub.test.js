@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Plugin Hub Tests
  * Comprehensive tests for community plugin hub functionality
  */

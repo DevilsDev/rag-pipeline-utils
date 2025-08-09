@@ -31,7 +31,7 @@ describe('Streaming Token Output Load Tests', () => {
       const benchmark = new PerformanceBenchmark(`streaming-${tokenCount}-tokens`);
       
       const streamingLLM = {
-        async *generateStream(prompt) {
+        async *generateStream(___prompt) {
           const tokens = TestDataGenerator.generateTokens(tokenCount);
           const startTime = performance.now();
           let tokenIndex = 0;
@@ -220,7 +220,7 @@ describe('Streaming Token Output Load Tests', () => {
     it('should maintain performance with limited memory', async () => {
       const largeTokenCount = 5000;
       const memoryConstrainedLLM = {
-        async *generateStream(prompt) {
+        async *generateStream(___prompt) {
           const startMemory = process.memoryUsage();
           let tokenBuffer = [];
           const bufferLimit = 100; // Keep only 100 tokens in memory
@@ -287,7 +287,7 @@ describe('Streaming Token Output Load Tests', () => {
     it('should handle slow consumers gracefully', async () => {
       const tokenCount = 1000;
       const backpressureLLM = {
-        async *generateStream(prompt) {
+        async *generateStream(___prompt) {
           const tokens = TestDataGenerator.generateTokens(tokenCount);
           let backpressureEvents = 0;
           

@@ -5,10 +5,10 @@
  */
 
 class OpenAIEmbedder {
-  constructor(options = {}) {
-    this.apiKey = options.apiKey || 'mock-api-key';
-    this.model = options.model || 'text-embedding-ada-002';
-    this.dimensions = options.dimensions || 1536;
+  constructor(_options = {}) {
+    this.apiKey = _options.apiKey || 'mock-api-key';
+    this.model = _options.model || 'text-embedding-ada-002';
+    this.dimensions = _options.dimensions || 1536;
   }
 
   /**

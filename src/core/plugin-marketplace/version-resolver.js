@@ -3,7 +3,7 @@
  * Handles semantic versioning, version ranges, and fallback logic
  */
 
-const semver = require('semver');
+const semver = require('semver'); // eslint-disable-line global-require
 
 /**
  * Version resolution strategies
@@ -138,7 +138,7 @@ class PluginVersionResolver {
     }
 
     if (versionData.deprecated) {
-      console.warn(`Warning: Version '${version}' is deprecated. ${versionData.deprecationMessage || ''}`);
+      console.warn(`Warning: Version '${version}' is deprecated. ${versionData.deprecationMessage || ''}`); // eslint-disable-line no-console
     }
 
     return {
@@ -172,7 +172,7 @@ class PluginVersionResolver {
     const versionData = pluginEntry.versions[matchingVersion];
     
     if (versionData.deprecated) {
-      console.warn(`Warning: Resolved version '${matchingVersion}' is deprecated. ${versionData.deprecationMessage || ''}`);
+      console.warn(`Warning: Resolved version '${matchingVersion}' is deprecated. ${versionData.deprecationMessage || ''}`); // eslint-disable-line no-console
     }
 
     return {
@@ -210,7 +210,7 @@ class PluginVersionResolver {
     const betaVersion = pluginEntry.beta;
     if (!betaVersion) {
       // Fallback to latest stable
-      console.warn('No beta version available, falling back to latest stable');
+      console.warn('No beta version available, falling back to latest stable'); // eslint-disable-line no-console
       return this.resolveLatestVersion(pluginEntry);
     }
 
@@ -227,10 +227,10 @@ class PluginVersionResolver {
     if (!alphaVersion) {
       // Fallback to beta, then latest
       if (pluginEntry.beta) {
-        console.warn('No alpha version available, falling back to beta');
+        console.warn('No alpha version available, falling back to beta'); // eslint-disable-line no-console
         return this.resolveBetaVersion(pluginEntry);
       } else {
-        console.warn('No alpha version available, falling back to latest stable');
+        console.warn('No alpha version available, falling back to latest stable'); // eslint-disable-line no-console
         return this.resolveLatestVersion(pluginEntry);
       }
     }
@@ -372,7 +372,7 @@ class PluginVersionResolver {
 /**
  * Create default version resolver
  * @param {object} registry - Plugin registry
- * @returns {PluginVersionResolver} Version resolver instance
+ * @returns {PluginVersionResolver} Version resolver _instance
  */
 function createVersionResolver(registry = null) {
   return new PluginVersionResolver(registry);
@@ -417,7 +417,7 @@ const VersionUtils = {
   /**
    * Get next version for different release types
    * @param {string} currentVersion - Current version
-   * @param {string} releaseType - Release type (major, minor, patch, prerelease)
+   * @param {string} releaseType - Release _type (major, minor, patch, prerelease)
    * @returns {string} Next version
    */
   getNextVersion(currentVersion, releaseType) {

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * Project Health Check Script
  * Version: 1.0.0
  * Description: Comprehensive health check for the RAG Pipeline Utils project
@@ -21,7 +23,7 @@ const logger = createLogger('health-check');
 
 /**
  * Check if a file or directory exists
- * @param {string} filePath - Path to check
+ * @param {string} _filePath - Path to check
  * @returns {boolean} - Whether the path exists
  */
 function exists(filePath) {
@@ -55,7 +57,7 @@ function checkProjectStructure() {
     'src/',
     'scripts/',
     'scripts/utils/',
-    'scripts/scripts.config.json',
+    'scripts/scripts._config.json',
     '__tests__/',
     'docs-site/',
     'public/',
@@ -176,8 +178,8 @@ function checkDashboard() {
     'public/src/components/ScoreTable.jsx',
     'public/src/components/ScoreChart.jsx',
     'public/src/components/Filters.jsx',
-    'public/vite.config.js',
-    'public/tailwind.config.js'
+    'public/vite._config.js',
+    'public/tailwind._config.js'
   ];
   
   let passed = 0;

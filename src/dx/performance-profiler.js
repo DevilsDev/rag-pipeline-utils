@@ -5,22 +5,22 @@
  * Provides comprehensive metrics, flame graphs, and optimization recommendations.
  */
 
-const EventEmitter = require('events');
-const fs = require('fs').promises;
-const path = require('path');
+const EventEmitter = require('events'); // eslint-disable-line global-require
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
 class PerformanceProfiler extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.options = {
-      enableCPUProfiling: options.enableCPUProfiling !== false,
-      enableMemoryProfiling: options.enableMemoryProfiling !== false,
-      enableNetworkProfiling: options.enableNetworkProfiling !== false,
-      sampleInterval: options.sampleInterval || 100, // ms
-      maxSamples: options.maxSamples || 10000,
-      outputDir: options.outputDir || './profiling-reports',
-      ...options
+    this._options = {
+      enableCPUProfiling: _options.enableCPUProfiling !== false,
+      enableMemoryProfiling: _options.enableMemoryProfiling !== false,
+      enableNetworkProfiling: _options.enableNetworkProfiling !== false,
+      sampleInterval: _options.sampleInterval || 100, // ms
+      maxSamples: _options.maxSamples || 10000,
+      outputDir: _options.outputDir || './profiling-reports',
+      ..._options
     };
     
     this.profiles = new Map();
@@ -56,14 +56,14 @@ class PerformanceProfiler extends EventEmitter {
   /**
    * Start profiling session
    */
-  startProfiling(sessionId, config = {}) {
+  startProfiling(sessionId, _config = {}) {
     if (this.isProfileing) {
       throw new Error('Profiling session already active');
     }
     
     const profile = {
       id: sessionId,
-      config,
+      _config,
       startTime: Date.now(),
       endTime: null,
       samples: [],
@@ -80,7 +80,7 @@ class PerformanceProfiler extends EventEmitter {
     this.samples = [];
     
     // Start sampling if enabled
-    if (this.options.enableCPUProfiling || this.options.enableMemoryProfiling) {
+    if (this._options.enableCPUProfiling || this._options.enableMemoryProfiling) {
       this.startSampling();
     }
     
@@ -94,7 +94,7 @@ class PerformanceProfiler extends EventEmitter {
    */
   startSampling() {
     this.samplingInterval = setInterval(() => {
-      if (!this.isProfileing || this.samples.length >= this.options.maxSamples) {
+      if (!this.isProfileing || this.samples.length >= this._options.maxSamples) {
         return;
       }
       
@@ -102,7 +102,7 @@ class PerformanceProfiler extends EventEmitter {
       this.samples.push(sample);
       this.currentProfile.samples.push(sample);
       
-    }, this.options.sampleInterval);
+    }, this._options.sampleInterval);
   }
   
   /**
@@ -116,7 +116,7 @@ class PerformanceProfiler extends EventEmitter {
     };
     
     // CPU metrics
-    if (this.options.enableCPUProfiling) {
+    if (this._options.enableCPUProfiling) {
       const cpuUsage = process.cpuUsage();
       sample.cpu = {
         user: cpuUsage.user,
@@ -127,7 +127,7 @@ class PerformanceProfiler extends EventEmitter {
     }
     
     // Memory metrics
-    if (this.options.enableMemoryProfiling) {
+    if (this._options.enableMemoryProfiling) {
       const memoryUsage = process.memoryUsage();
       sample.memory = {
         rss: memoryUsage.rss,
@@ -160,7 +160,7 @@ class PerformanceProfiler extends EventEmitter {
     
     const componentProfile = {
       id: componentId,
-      type: componentType,
+      _type: componentType,
       executions: [],
       totalDuration: 0,
       averageDuration: 0,
@@ -283,7 +283,7 @@ class PerformanceProfiler extends EventEmitter {
    * Profile network call
    */
   profileNetworkCall(url, method, duration, statusCode, requestSize = 0, responseSize = 0) {
-    if (!this.isProfileing || !this.options.enableNetworkProfiling) {
+    if (!this.isProfileing || !this._options.enableNetworkProfiling) {
       return;
     }
     
@@ -394,7 +394,7 @@ class PerformanceProfiler extends EventEmitter {
     
     slowComponents.forEach(comp => {
       bottlenecks.push({
-        type: 'slow_component',
+        _type: 'slow_component',
         severity: 'high',
         component: comp.id,
         description: `Component ${comp.id} is ${(comp.averageDuration / avgDuration).toFixed(1)}x slower than average`,
@@ -409,7 +409,7 @@ class PerformanceProfiler extends EventEmitter {
       const memoryTrend = this.calculateTrend(profile.samples.map(s => s.memory?.heapUsed || 0));
       if (memoryTrend > 0.1) { // Growing trend
         bottlenecks.push({
-          type: 'memory_leak',
+          _type: 'memory_leak',
           severity: 'medium',
           description: 'Potential memory leak detected - heap usage is consistently growing',
           metric: 'memory_growth_rate',
@@ -428,7 +428,7 @@ class PerformanceProfiler extends EventEmitter {
     highErrorComponents.forEach(comp => {
       const errorRate = (comp.errorCount / (comp.successCount + comp.errorCount)) * 100;
       bottlenecks.push({
-        type: 'high_error_rate',
+        _type: 'high_error_rate',
         severity: 'high',
         component: comp.id,
         description: `Component ${comp.id} has high error rate: ${errorRate.toFixed(1)}%`,
@@ -445,7 +445,7 @@ class PerformanceProfiler extends EventEmitter {
     
     if (avgEventLoopLag > 10) { // More than 10ms average lag
       bottlenecks.push({
-        type: 'event_loop_lag',
+        _type: 'event_loop_lag',
         severity: 'medium',
         description: `High event loop lag detected: ${avgEventLoopLag.toFixed(1)}ms average`,
         metric: 'event_loop_lag',
@@ -468,7 +468,7 @@ class PerformanceProfiler extends EventEmitter {
     const bottlenecks = this.identifyBottlenecks(profile);
     
     bottlenecks.forEach(bottleneck => {
-      switch (bottleneck.type) {
+      switch (bottleneck._type) {
         case 'slow_component':
           recommendations.push({
             priority: 'high',
@@ -682,20 +682,20 @@ class PerformanceProfiler extends EventEmitter {
       throw new Error(`Profile ${sessionId} not found`);
     }
     
-    await fs.mkdir(this.options.outputDir, { recursive: true });
+    await fs.mkdir(this._options.outputDir, { recursive: true });
     
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `profile-${sessionId}-${timestamp}`;
     
     if (format === 'json') {
-      const filePath = path.join(this.options.outputDir, `${filename}.json`);
-      await fs.writeFile(filePath, JSON.stringify(profile, null, 2));
-      return filePath;
+      const _filePath = path.join(this._options.outputDir, `${filename}.json`);
+      await fs.writeFile(_filePath, JSON.stringify(profile, null, 2));
+      return _filePath;
     } else if (format === 'html') {
       const htmlReport = this.generateHTMLReport(profile);
-      const filePath = path.join(this.options.outputDir, `${filename}.html`);
-      await fs.writeFile(filePath, htmlReport);
-      return filePath;
+      const _filePath = path.join(this._options.outputDir, `${filename}.html`);
+      await fs.writeFile(_filePath, htmlReport);
+      return _filePath;
     } else {
       throw new Error(`Unsupported format: ${format}`);
     }
@@ -745,7 +745,7 @@ class PerformanceProfiler extends EventEmitter {
         <h2>Bottlenecks</h2>
         ${bottlenecks.map(b => `
             <div class="bottleneck ${b.severity}">
-                <strong>${b.type.replace(/_/g, ' ').toUpperCase()}</strong>: ${b.description}
+                <strong>${b._type.replace(/_/g, ' ').toUpperCase()}</strong>: ${b.description}
             </div>
         `).join('')}
     </div>
@@ -821,7 +821,7 @@ class PerformanceProfiler extends EventEmitter {
       currentProfile: this.currentProfile?.id || null,
       totalProfiles: this.profiles.size,
       samplesCollected: this.samples.length,
-      options: this.options
+      _options: this._options
     };
   }
 }

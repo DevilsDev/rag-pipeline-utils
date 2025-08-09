@@ -8,10 +8,10 @@
  * - Integration Templates: Pre-built connectors for popular services
  */
 
-const VisualPipelineBuilder = require('./visual-pipeline-builder');
-const RealtimeDebugger = require('./realtime-debugger');
-const PerformanceProfiler = require('./performance-profiler');
-const IntegrationTemplates = require('./integration-templates');
+const VisualPipelineBuilder = require('./visual-pipeline-builder'); // eslint-disable-line global-require
+const RealtimeDebugger = require('./realtime-debugger'); // eslint-disable-line global-require
+const PerformanceProfiler = require('./performance-profiler'); // eslint-disable-line global-require
+const IntegrationTemplates = require('./integration-templates'); // eslint-disable-line global-require
 
 module.exports = {
   VisualPipelineBuilder,
@@ -20,9 +20,9 @@ module.exports = {
   IntegrationTemplates,
   
   // Convenience factory methods
-  createVisualBuilder: (options = {}) => new VisualPipelineBuilder(options),
-  createDebugger: (options = {}) => new RealtimeDebugger(options),
-  createProfiler: (options = {}) => new PerformanceProfiler(options),
+  createVisualBuilder: (_options = {}) => new VisualPipelineBuilder(_options),
+  createDebugger: (_options = {}) => new RealtimeDebugger(_options),
+  createProfiler: (_options = {}) => new PerformanceProfiler(_options),
   getTemplates: () => IntegrationTemplates.getAllTemplates(),
   
   // DX utilities

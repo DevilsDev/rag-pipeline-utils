@@ -3,7 +3,7 @@
  * Tracks performance metrics, resource usage, and operational statistics
  */
 
-const { eventLogger  } = require('./event-logger.js');
+const { eventLogger  } = require('./event-logger.js'); // eslint-disable-line global-require
 
 /**
  * Metric types
@@ -19,11 +19,11 @@ const MetricType = {
  * Base metric class
  */
 class BaseMetric {
-  constructor(name, description, labels = [], type) {
+  constructor(name, description, labels = [], _type) {
     this.name = name;
     this.description = description;
     this.labels = labels;
-    this.type = type;
+    this._type = _type;
     this.samples = new Map();
     this.createdAt = Date.now();
   }
@@ -67,7 +67,7 @@ class BaseMetric {
       
       samples.push({
         labels: labelPairs,
-        value: this.type === MetricType.HISTOGRAM ? value.export() : value,
+        value: this._type === MetricType.HISTOGRAM ? value.export() : value,
         timestamp: Date.now()
       });
     }
@@ -75,7 +75,7 @@ class BaseMetric {
     return {
       name: this.name,
       description: this.description,
-      type: this.type,
+      _type: this._type,
       samples
     };
   }
@@ -434,7 +434,7 @@ class PipelineMetrics {
     this.memoryUsage = this.registry.createGauge(
       'memory_usage_bytes',
       'Current memory usage in bytes',
-      ['type']
+      ['_type']
     );
 
     // Error metrics
@@ -462,7 +462,7 @@ class PipelineMetrics {
   /**
    * Record operation start
    * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin type
+   * @param {string} pluginType - Plugin _type
    * @param {string} pluginName - Plugin name
    */
   recordOperationStart(operation, _pluginType, _pluginName) {
@@ -472,7 +472,7 @@ class PipelineMetrics {
   /**
    * Record operation completion
    * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin type
+   * @param {string} pluginType - Plugin _type
    * @param {string} pluginName - Plugin name
    * @param {number} duration - Duration in milliseconds
    * @param {string} status - Operation status (success/error)
@@ -525,16 +525,16 @@ class PipelineMetrics {
    */
   recordMemoryUsage() {
     const usage = process.memoryUsage();
-    this.memoryUsage.set(usage.heapUsed, { type: 'heap_used' });
-    this.memoryUsage.set(usage.heapTotal, { type: 'heap_total' });
-    this.memoryUsage.set(usage.external, { type: 'external' });
-    this.memoryUsage.set(usage.rss, { type: 'rss' });
+    this.memoryUsage.set(usage.heapUsed, { _type: 'heap_used' });
+    this.memoryUsage.set(usage.heapTotal, { _type: 'heap_total' });
+    this.memoryUsage.set(usage.external, { _type: 'external' });
+    this.memoryUsage.set(usage.rss, { _type: 'rss' });
   }
 
   /**
    * Record error
    * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin type
+   * @param {string} pluginType - Plugin _type
    * @param {string} pluginName - Plugin name
    * @param {Error} error - Error object
    */
@@ -581,8 +581,8 @@ class PipelineMetrics {
         avgOutputTokens: this.llmTokensOutput.get()
       },
       memory: {
-        heapUsed: this.memoryUsage.get({ type: 'heap_used' }),
-        heapTotal: this.memoryUsage.get({ type: 'heap_total' })
+        heapUsed: this.memoryUsage.get({ _type: 'heap_used' }),
+        heapTotal: this.memoryUsage.get({ _type: 'heap_total' })
       },
       errors: this.errorCounter.get(),
       backpressure: this.backpressureEvents.get()

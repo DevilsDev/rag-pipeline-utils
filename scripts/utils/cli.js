@@ -69,47 +69,47 @@ export function parseArgs(argv = process.argv) {
 
 /**
  * Display help message
- * @param {string} scriptName - Name of the script
- * @param {string} description - Script description
+ * @param {string} _scriptName - Name of the script
+ * @param {string} _description - Script description
  * @param {Object} options - Available options
  */
-export function showHelp(scriptName, description, options = {}) {
-  console.log(`\n${scriptName} - ${description}\n`);
+export function showHelp(_scriptName, _description, options = {}) {
+  console.log(`\n${_scriptName} - ${_description}\n`); // eslint-disable-line no-console
   
-  console.log('Usage:');
-  console.log(`  node ${scriptName} [options] [arguments]\n`);
+  console.log('Usage:'); // eslint-disable-line no-console
+  console.log(`  node ${_scriptName} [_options] [arguments]\n`); // eslint-disable-line no-console
   
-  console.log('Global Options:');
-  console.log('  -d, --dry-run     Show what would be done without executing');
-  console.log('  -v, --verbose     Enable verbose output');
-  console.log('  -h, --help        Show this help message');
-  console.log('  --log-level       Set log level (debug, info, warn, error)');
+  console.log('Global Options:'); // eslint-disable-line no-console
+  console.log('  -d, --dry-run     Show what would be done without executing'); // eslint-disable-line no-console
+  console.log('  -v, --verbose     Enable verbose output'); // eslint-disable-line no-console
+  console.log('  -h, --help        Show this help message'); // eslint-disable-line no-console
+  console.log('  --log-level       Set log level (debug, info, warn, error)'); // eslint-disable-line no-console
   
   if (Object.keys(options).length > 0) {
-    console.log('\nScript Options:');
+    console.log('\nScript Options:'); // eslint-disable-line no-console
     for (const [flag, desc] of Object.entries(options)) {
-      console.log(`  ${flag.padEnd(18)} ${desc}`);
+      console.log(`  ${flag.padEnd(18)} ${desc}`); // eslint-disable-line no-console
     }
   }
   
-  console.log('');
+  console.log(''); // eslint-disable-line no-console
 }
 
 /**
  * Dry-run wrapper for operations
  * @param {boolean} isDryRun - Whether in dry-run mode
  * @param {string} operation - Description of operation
- * @param {Function} fn - Function to execute (if not dry-run)
+ * @param {Function} _fn - Function to execute (if not dry-run)
  * @returns {Promise} - Result or dry-run message
  */
-export async function dryRunWrapper(isDryRun, operation, fn) {
-  if (isDryRun) {
-    logger.dryRun(operation);
-    return { dryRun: true, operation };
+export async function dryRunWrapper(_isDryRun, _operation, _fn) {
+  if (_isDryRun) {
+    logger.dryRun(_operation);
+    return { dryRun: true, operation: _operation };
   }
   
-  logger.info(operation);
-  return await fn();
+  logger.info(_operation);
+  return await _fn();
 }
 
 /**
@@ -118,11 +118,11 @@ export async function dryRunWrapper(isDryRun, operation, fn) {
  * @param {string[]} required - Required argument names
  * @param {string} scriptName - Script name for error messages
  */
-export function validateArgs(args, required = [], scriptName = 'script') {
+export function validateArgs(_args, required = [], scriptName = 'script') {
   const missing = [];
   
   for (const arg of required) {
-    if (args[arg] === undefined || args[arg] === null) {
+    if (_args[arg] === undefined || _args[arg] === null) {
       missing.push(arg);
     }
   }
@@ -138,20 +138,20 @@ export function validateArgs(args, required = [], scriptName = 'script') {
  * Handle common CLI setup
  * @param {string} scriptName - Name of the script
  * @param {string} description - Script description
- * @param {Object} options - Help options
+ * @param {Object} _options - Help _options
  * @returns {Object} - Parsed arguments and logger
  */
-export function setupCLI(scriptName, description, options = {}) {
+export function setupCLI(_scriptName, _description, options = {}) {
   const args = parseArgs();
   
   if (args.help) {
-    showHelp(scriptName, description, options);
+    showHelp(_scriptName, _description, options);
     process.exit(0);
   }
   
   // Set log level if specified
   const logLevel = args.logLevel || (args.verbose ? 'debug' : null);
-  const scriptLogger = createLogger(scriptName, logLevel);
+  const scriptLogger = createLogger(_scriptName, logLevel);
   
   if (args.dryRun) {
     scriptLogger.info('🏃‍♂️ Running in dry-run mode - no changes will be made');

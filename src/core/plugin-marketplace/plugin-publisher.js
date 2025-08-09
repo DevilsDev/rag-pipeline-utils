@@ -1,33 +1,34 @@
 /**
+const fs = require('fs');
  * Plugin Publishing System
  * Handles plugin packaging, validation, and publishing to registries
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const crypto = require('crypto');
-const { metadataExtractor, metadataValidator  } = require('./plugin-metadata.js');
-const { validatePluginRegistry, createEmptyRegistry  } = require('./plugin-registry-format.js');
-const { VersionUtils  } = require('./version-resolver.js');
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { metadataExtractor, metadataValidator  } = require('./plugin-metadata.js'); // eslint-disable-line global-require
+const { validatePluginRegistry, createEmptyRegistry  } = require('./plugin-registry-format.js'); // eslint-disable-line global-require
+const { VersionUtils  } = require('./version-resolver.js'); // eslint-disable-line global-require
 
 /**
  * Plugin publisher for marketplace publishing
  */
 class PluginPublisher {
-  constructor(options = {}) {
-    this.options = {
-      registryUrl: options.registryUrl || 'https://registry.rag-pipeline.dev',
-      authToken: options.authToken,
-      timeout: options.timeout || 30000,
-      dryRun: options.dryRun || false,
-      ...options
+  constructor(_options = {}) {
+    this._options = {
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      authToken: _options.authToken,
+      timeout: _options.timeout || 30000,
+      dryRun: _options.dryRun || false,
+      ..._options
     };
   }
 
   /**
    * Publish plugin to registry
    * @param {string} pluginPath - Path to plugin directory
-   * @param {object} publishOptions - Publishing options
+   * @param {object} publishOptions - Publishing _options
    * @returns {Promise<object>} Publishing result
    */
   async publishPlugin(pluginPath, publishOptions = {}) {
@@ -50,7 +51,7 @@ class PluginPublisher {
       const packageInfo = await this.packagePlugin(pluginPath, metadata, publishOptions);
       
       // Step 4: Upload to registry (unless dry run)
-      if (this.options.dryRun) {
+      if (this._options.dryRun) {
         console.log('🧪 Dry run - skipping actual upload'); // eslint-disable-line no-console
         return {
           success: true,
@@ -106,9 +107,9 @@ class PluginPublisher {
     // Check for required files
     const requiredFiles = ['index.js', 'package.json'];
     for (const file of requiredFiles) {
-      const filePath = path.join(pluginPath, file);
+      const _filePath = path.join(pluginPath, file);
       try {
-        await fs.access(filePath);
+        await fs.access(_filePath);
       } catch (error) {
         errors.push(`Required file missing: ${file}`);
       }
@@ -117,9 +118,9 @@ class PluginPublisher {
     // Check for recommended files
     const recommendedFiles = ['README.md', 'LICENSE'];
     for (const file of recommendedFiles) {
-      const filePath = path.join(pluginPath, file);
+      const _filePath = path.join(pluginPath, file);
       try {
-        await fs.access(filePath);
+        await fs.access(_filePath);
       } catch (error) {
         console.warn(`⚠️  Recommended file missing: ${file}`); // eslint-disable-line no-console
       }
@@ -171,7 +172,7 @@ class PluginPublisher {
     }
     
     if (!pluginType) {
-      throw new Error('Cannot determine plugin type. Add plugin type to package.json keywords or metadata.');
+      throw new Error('Cannot determine plugin _type. Add plugin _type to package.json keywords or metadata.');
     }
 
     // Extract metadata using the extractor
@@ -330,14 +331,14 @@ class PluginPublisher {
     // In a real implementation, this would make HTTP requests to the registry API
     // For now, we'll simulate the upload process
     
-    const uploadUrl = `${this.options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
+    const uploadUrl = `${this._options.registryUrl}/api/plugins/${metadata.name}/versions/${metadata.version}`;
     
     // Simulate upload delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
       uploadUrl,
-      downloadUrl: `${this.options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
+      downloadUrl: `${this._options.registryUrl}/packages/${metadata.name}/${packageInfo.name}`,
       publishedAt: new Date().toISOString(),
       integrity: packageInfo.integrity,
       size: packageInfo.size

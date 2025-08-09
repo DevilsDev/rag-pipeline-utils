@@ -499,17 +499,17 @@ function generateRandomVector(dimensions = 384) {
   return Array.from({ length: dimensions }, () => Math.random() - 0.5);
 }
 
-function generateRandomVectors(count, dimensions = 384) {
-  return Array.from({ length: count }, (_, i) => ({
+function generateRandomVectors(_count, dimensions = 384) {
+  return Array.from({ length: _count }, (_, i) => ({
     id: `vector-${i}`,
     values: generateRandomVector(dimensions),
     metadata: { index: i, type: 'test' }
   }));
 }
 
-function calculateCosineSimilarity(a, b) {
-  const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
-  const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
-  const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+function calculateCosineSimilarity(_a, _b) {
+  const dotProduct = _a.reduce((sum, val, i) => sum + val * _b[i], 0);
+  const magnitudeA = Math.sqrt(_a.reduce((sum, val) => sum + val * val, 0));
+  const magnitudeB = Math.sqrt(_b.reduce((sum, val) => sum + val * val, 0));
   return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
 }

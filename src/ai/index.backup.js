@@ -11,7 +11,7 @@ const {
   ModelEvaluator,
   EmbeddingTrainer,
   LLMTrainer
-} = require('./model-training');
+} = require('./model-training'); // eslint-disable-line global-require
 
 // Create aliases for the expected class names
 const ModelTrainingOrchestrator = ModelTrainingManager;
@@ -28,7 +28,7 @@ const {
   FeedbackProcessor,
   RankingOptimizer,
   QueryProcessor
-} = require('./adaptive-retrieval');
+} = require('./adaptive-retrieval'); // eslint-disable-line global-require
 
 // Create aliases for the expected class names
 const AdaptiveRetrievalEngine = AdaptiveRetrievalManager;
@@ -46,7 +46,7 @@ const {
   CrossModalEmbeddingAligner,
   MultiModalContentAnalyzer,
   MultiModalSearchEngine
-} = require('./multimodal-processing');
+} = require('./multimodal-processing'); // eslint-disable-line global-require
 
 // Federated Learning
 const {
@@ -55,15 +55,15 @@ const {
   PrivacyPreservationEngine,
   ModelAggregator,
   FederatedPerformanceMonitor
-} = require('./federated-learning');
+} = require('./federated-learning'); // eslint-disable-line global-require
 
 /**
  * AI/ML Capabilities Factory
  * Creates and configures AI/ML components
  */
 class AIMLFactory {
-  constructor(config = {}) {
-    this.config = {
+  constructor(_config = {}) {
+    this._config = {
       // Model Training Configuration
       training: {
         defaultBatchSize: 32,
@@ -71,7 +71,7 @@ class AIMLFactory {
         maxEpochs: 100,
         earlyStoppingPatience: 10,
         checkpointInterval: 1000,
-        ...config.training
+        ..._config.training
       },
       
       // Adaptive Retrieval Configuration
@@ -80,7 +80,7 @@ class AIMLFactory {
         learningRate: 0.01,
         memorySize: 10000,
         updateFrequency: 100,
-        ...config.adaptive
+        ..._config.adaptive
       },
       
       // Multi-modal Configuration
@@ -93,7 +93,7 @@ class AIMLFactory {
           video: 0.1
         },
         processingBatchSize: 16,
-        ...config.multimodal
+        ..._config.multimodal
       },
       
       // Federated Learning Configuration
@@ -103,7 +103,7 @@ class AIMLFactory {
         convergenceThreshold: 0.001,
         maxRounds: 50,
         privacyBudget: 10.0,
-        ...config.federated
+        ..._config.federated
       }
     };
   }
@@ -111,53 +111,53 @@ class AIMLFactory {
   /**
    * Create model training orchestrator
    */
-  createModelTrainer(options = {}) {
+  createModelTrainer(_options = {}) {
     return new ModelTrainingOrchestrator({
-      ...this.config.training,
-      ...options
+      ...this._config.training,
+      ..._options
     });
   }
 
   /**
    * Create adaptive retrieval engine
    */
-  createAdaptiveRetrieval(options = {}) {
+  createAdaptiveRetrieval(_options = {}) {
     return new AdaptiveRetrievalEngine({
-      ...this.config.adaptive,
-      ...options
+      ...this._config.adaptive,
+      ..._options
     });
   }
 
   /**
    * Create multi-modal processor
    */
-  createMultiModalProcessor(options = {}) {
+  createMultiModalProcessor(_options = {}) {
     return new MultiModalProcessor({
-      ...this.config.multimodal,
-      ...options
+      ...this._config.multimodal,
+      ..._options
     });
   }
 
   /**
    * Create federated learning coordinator
    */
-  createFederatedLearning(options = {}) {
+  createFederatedLearning(_options = {}) {
     return new FederatedLearningCoordinator({
-      ...this.config.federated,
-      ...options
+      ...this._config.federated,
+      ..._options
     });
   }
 
   /**
    * Create complete AI/ML suite
    */
-  createAISuite(tenantId, options = {}) {
+  createAISuite(tenantId, _options = {}) {
     const suite = {
       tenantId,
-      modelTrainer: this.createModelTrainer(options.training),
-      adaptiveRetrieval: this.createAdaptiveRetrieval(options.adaptive),
-      multiModalProcessor: this.createMultiModalProcessor(options.multimodal),
-      federatedLearning: this.createFederatedLearning(options.federated)
+      modelTrainer: this.createModelTrainer(_options.training),
+      adaptiveRetrieval: this.createAdaptiveRetrieval(_options.adaptive),
+      multiModalProcessor: this.createMultiModalProcessor(_options.multimodal),
+      federatedLearning: this.createFederatedLearning(_options.federated)
     };
 
     // Cross-component integration
@@ -212,7 +212,7 @@ class AIMLFactory {
 
   _calculateModalityWeights(preferences) {
     // Calculate modality weights based on user preferences
-    const weights = { ...this.config.multimodal.modalityWeights };
+    const weights = { ...this._config.multimodal.modalityWeights };
     
     if (preferences.interests?.includes('visual')) {
       weights.image += 0.1;
@@ -240,18 +240,18 @@ class AIMLUtils {
   /**
    * Validate AI/ML configuration
    */
-  static validateConfig(config) {
+  static validateConfig(_config) {
     const errors = [];
     
-    if (config.training?.learningRate && (config.training.learningRate <= 0 || config.training.learningRate > 1)) {
+    if (_config.training?.learningRate && (_config.training.learningRate <= 0 || _config.training.learningRate > 1)) {
       errors.push('Learning rate must be between 0 and 1');
     }
     
-    if (config.federated?.minParticipants && config.federated.minParticipants < 2) {
+    if (_config.federated?.minParticipants && _config.federated.minParticipants < 2) {
       errors.push('Minimum participants must be at least 2');
     }
     
-    if (config.multimodal?.unifiedDimension && config.multimodal.unifiedDimension < 64) {
+    if (_config.multimodal?.unifiedDimension && _config.multimodal.unifiedDimension < 64) {
       errors.push('Unified dimension must be at least 64');
     }
     
@@ -261,7 +261,7 @@ class AIMLUtils {
   /**
    * Calculate AI/ML resource requirements
    */
-  static calculateResourceRequirements(config, workload) {
+  static calculateResourceRequirements(_config, workload) {
     const requirements = {
       cpu: 0,
       memory: 0,

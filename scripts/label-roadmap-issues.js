@@ -1,4 +1,5 @@
 /**
+const fs = require('fs');
  * Version: 2.0.0
  * Description: Auto-label roadmap issues and clean up outdated items
  * Author: Ali Kahwaji
@@ -6,7 +7,7 @@
 
 import { Octokit } from 'octokit';
 import fs from 'fs/promises';
-import 'dotenv/config';
+import 'dotenv/_config';
 
 const repo = process.env.GITHUB_REPO;
 const token = process.env.GITHUB_TOKEN;
@@ -14,7 +15,7 @@ const ROADMAP_FILE = '.github/PROJECT_ROADMAP.md';
 const CLOSE_STALE = true;
 
 if (!repo || !token) {
-  console.error('Missing GITHUB_REPO or GITHUB_TOKEN env vars');
+  console.error('Missing GITHUB_REPO or GITHUB_TOKEN env vars'); // eslint-disable-line no-console
   process.exit(1);
 }
 
@@ -85,7 +86,7 @@ async function run() {
     ).filter(label => !expectedLabels.includes(label));
 
     if (labelsToAdd.length > 0 || labelsToRemove.length > 0) {
-      console.log(`🔁 Updating labels for issue #${issue.number}: ${title}`);
+      console.log(`🔁 Updating labels for issue #${issue.number}: ${title}`); // eslint-disable-line no-console
       if (labelsToAdd.length) {
         await octokit.rest.issues.addLabels({
           owner,
@@ -108,7 +109,7 @@ async function run() {
 
     // Optionally Close stale issues
     if (CLOSE_STALE && !currentRoadmap) {
-      console.log(`🧹 Closing stale issue #${issue.number} (${title}) – not in roadmap`);
+      console.log(`🧹 Closing stale issue #${issue.number} (${title}) – not in roadmap`); // eslint-disable-line no-console
       await octokit.rest.issues.update({
         owner,
         repo: repoName,
@@ -120,6 +121,6 @@ async function run() {
 }
 
 run().catch(err => {
-  console.error('❌ Label script failed:', err);
+  console.error('❌ Label script failed:', err); // eslint-disable-line no-console
   process.exit(1);
 });

@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Compatibility Testing Suite for Node.js Versions
  * Tests compatibility across different Node.js versions and environments
  */

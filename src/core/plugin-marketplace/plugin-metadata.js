@@ -3,22 +3,22 @@
  * Requires all plugins to export standardized metadata for marketplace compatibility
  */
 
-const { validatePluginMetadata, PLUGIN_NAMING  } = require('./plugin-registry-format.js');
-const { VersionUtils  } = require('./version-resolver.js');
+const { validatePluginMetadata, PLUGIN_NAMING  } = require('./plugin-registry-format.js'); // eslint-disable-line global-require
+const { VersionUtils  } = require('./version-resolver.js'); // eslint-disable-line global-require
 
 /**
  * Plugin metadata extractor and validator
  */
 class PluginMetadataExtractor {
   constructor() {
-    this.requiredFields = ['name', 'version', 'type', 'description', 'author'];
-    this.optionalFields = ['homepage', 'repository', 'keywords', 'license', 'engines', 'dependencies', 'peerDependencies', 'config', 'examples', 'tags'];
+    this.requiredFields = ['name', 'version', '_type', 'description', 'author'];
+    this.optionalFields = ['homepage', 'repository', 'keywords', 'license', 'engines', 'dependencies', 'peerDependencies', '_config', 'examples', 'tags'];
   }
 
   /**
    * Extract metadata from plugin module
    * @param {object} pluginModule - Plugin module or class
-   * @param {string} pluginType - Plugin type (loader, embedder, etc.)
+   * @param {string} pluginType - Plugin _type (loader, embedder, etc.)
    * @returns {object} Extracted metadata
    */
   extractMetadata(pluginModule, pluginType) {
@@ -51,10 +51,10 @@ class PluginMetadataExtractor {
     }
 
     // Ensure type is set correctly
-    if (!metadata.type) {
-      metadata.type = pluginType;
-    } else if (metadata.type !== pluginType) {
-      throw new Error(`Plugin metadata type '${metadata.type}' does not match expected type '${pluginType}'`);
+    if (!metadata._type) {
+      metadata._type = pluginType;
+    } else if (metadata._type !== pluginType) {
+      throw new Error(`Plugin metadata _type '${metadata._type}' does not match expected _type '${pluginType}'`);
     }
 
     return this.validateAndNormalizeMetadata(metadata);
@@ -63,14 +63,14 @@ class PluginMetadataExtractor {
   /**
    * Convert package.json style metadata to plugin metadata format
    * @param {object} packageData - Package.json data
-   * @param {string} pluginType - Plugin type
+   * @param {string} pluginType - Plugin _type
    * @returns {object} Plugin metadata
    */
   convertPackageJsonMetadata(packageData, pluginType) {
     return {
       name: packageData.name,
       version: packageData.version,
-      type: pluginType,
+      _type: pluginType,
       description: packageData.description,
       author: typeof packageData.author === 'string' ? packageData.author : packageData.author?.name,
       homepage: packageData.homepage,
@@ -122,7 +122,7 @@ class PluginMetadataExtractor {
       engines: metadata.engines || {},
       dependencies: metadata.dependencies || {},
       peerDependencies: metadata.peerDependencies || {},
-      config: metadata.config || {},
+      _config: metadata._config || {},
       examples: metadata.examples || []
     };
 
@@ -141,7 +141,7 @@ class PluginMetadataExtractor {
     const tags = new Set(metadata.tags || []);
 
     // Add type-based tag
-    tags.add(metadata.type);
+    tags.add(metadata._type);
 
     // Add version stability tags
     const version = VersionUtils.parseVersion(metadata.version);
@@ -163,7 +163,7 @@ class PluginMetadataExtractor {
     }
 
     // Add feature tags based on config schema
-    if (metadata.config && Object.keys(metadata.config).length > 0) {
+    if (metadata._config && Object.keys(metadata._config).length > 0) {
       tags.add('configurable');
     }
 
@@ -178,25 +178,25 @@ class PluginMetadataExtractor {
   /**
    * Generate plugin manifest for publishing
    * @param {object} metadata - Plugin metadata
-   * @param {object} options - Generation options
+   * @param {object} _options - Generation _options
    * @returns {object} Plugin manifest
    */
-  generateManifest(metadata, options = {}) {
+  generateManifest(metadata, _options = {}) {
     const manifest = {
       ...metadata,
       publishedAt: new Date().toISOString(),
-      integrity: options.integrity,
-      size: options.size,
-      downloadUrl: options.downloadUrl
+      integrity: _options.integrity,
+      size: _options.size,
+      downloadUrl: _options.downloadUrl
     };
 
     // Add build information if available
-    if (options.buildInfo) {
+    if (_options.buildInfo) {
       manifest.build = {
-        timestamp: options.buildInfo.timestamp,
-        commit: options.buildInfo.commit,
-        branch: options.buildInfo.branch,
-        environment: options.buildInfo.environment
+        timestamp: _options.buildInfo.timestamp,
+        commit: _options.buildInfo.commit,
+        branch: _options.buildInfo.branch,
+        environment: _options.buildInfo.environment
       };
     }
 
@@ -227,14 +227,14 @@ class PluginMetadataValidator {
 
   /**
    * Validate plugin during registration
-   * @param {string} type - Plugin type
+   * @param {string} _type - Plugin _type
    * @param {string} name - Plugin name
-   * @param {object} plugin - Plugin instance
+   * @param {object} plugin - Plugin _instance
    * @returns {object} Validation result with metadata
    */
-  validatePlugin(type, name, plugin) {
+  validatePlugin(_type, name, plugin) {
     try {
-      const metadata = this.extractor.extractMetadata(plugin, type);
+      const metadata = this.extractor.extractMetadata(plugin, _type);
       
       // Verify name matches registration name
       if (metadata.name !== name) {
@@ -306,41 +306,41 @@ class PluginMetadataValidator {
 const MetadataUtils = {
   /**
    * Create metadata template for new plugins
-   * @param {string} type - Plugin type
+   * @param {string} _type - Plugin _type
    * @param {string} name - Plugin name
-   * @param {object} options - Template options
+   * @param {object} _options - Template _options
    * @returns {object} Metadata template
    */
-  createTemplate(type, name, options = {}) {
+  createTemplate(_type, name, _options = {}) {
     return {
       name,
       version: '1.0.0',
-      type,
-      description: `A ${type} plugin for RAG pipeline`,
-      author: options.author || 'Unknown',
-      homepage: options.homepage || '',
-      repository: options.repository || {
-        type: 'git',
+      _type,
+      description: `A ${_type} plugin for RAG pipeline`,
+      author: _options.author || 'Unknown',
+      homepage: _options.homepage || '',
+      repository: _options.repository || {
+        _type: 'git',
         url: ''
       },
-      keywords: [type, 'rag', 'plugin'],
-      license: options.license || 'MIT',
+      keywords: [_type, 'rag', 'plugin'],
+      license: _options.license || 'MIT',
       engines: {
         node: '>=18.0.0',
         'rag-pipeline-utils': '>=2.0.0'
       },
       dependencies: {},
       peerDependencies: {},
-      config: {
-        type: 'object',
+      _config: {
+        _type: 'object',
         properties: {},
         additionalProperties: false
       },
       examples: [
         {
           title: 'Basic Usage',
-          description: `Basic ${type} plugin usage`,
-          config: {}
+          description: `Basic ${_type} plugin usage`,
+          _config: {}
         }
       ],
       tags: []

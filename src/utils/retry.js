@@ -5,20 +5,20 @@
  * Author: Ali Kahwaji
  */
 
-const { logger  } = require('./logger.js');
+const { logger  } = require('./logger.js'); // eslint-disable-line global-require
 
 /**
  * Retry wrapper for async functions with exponential backoff
  *
  * @param {Function} fn - The async function to retry
- * @param {Object} options
- * @param {number} [options.retries=3] - Number of retry attempts
- * @param {number} [options.initialDelay=300] - Initial delay in ms
- * @param {string} [options.label] - Optional label for logging context
+ * @param {Object} _options
+ * @param {number} [_options.retries=3] - Number of retry attempts
+ * @param {number} [_options.initialDelay=300] - Initial delay in ms
+ * @param {string} [_options.label] - Optional label for logging context
  * @returns {Promise<*>} - The resolved result of the function
  * @throws {Error} - The final error if all retries fail
  */
-async function withRetry(fn, { retries = 3, initialDelay = 300, label = 'operation' } = {}) {
+async function withRetry(_fn, { retries = 3, initialDelay = 300, label = 'operation' } = {}) {
   let attempt = 0;
   let delay = initialDelay;
 
@@ -27,7 +27,7 @@ async function withRetry(fn, { retries = 3, initialDelay = 300, label = 'operati
       if (attempt > 0) {
         logger.warn({ attempt, label }, `Retrying ${label} (attempt ${attempt})`);
       }
-      return await fn();
+      return await _fn();
     } catch (err) {
       attempt++;
       if (attempt > retries) {

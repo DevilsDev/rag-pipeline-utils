@@ -38,12 +38,12 @@ class Semaphore {
  * Parallel processor for embedding operations with configurable concurrency
  */
 class ParallelEmbedder {
-  constructor(embedder, options = {}) {
+  constructor(embedder, _options = {}) {
     this.embedder = embedder;
-    this.batchSize = options.batchSize || 10;
-    this.maxConcurrency = options.maxConcurrency || 3;
-    this.retryAttempts = options.retryAttempts || 2;
-    this.retryDelay = options.retryDelay || 1000;
+    this.batchSize = _options.batchSize || 10;
+    this.maxConcurrency = _options.maxConcurrency || 3;
+    this.retryAttempts = _options.retryAttempts || 2;
+    this.retryDelay = _options.retryDelay || 1000;
   }
 
   /**
@@ -99,7 +99,7 @@ class ParallelEmbedder {
       const totalChunks = chunks.length;
       const failedChunkCount = failedBatches.reduce((sum, batch) => sum + batch.chunks.length, 0);
       
-      console.warn(`Warning: ${failedBatches.length} batches failed (${failedChunkCount}/${totalChunks} chunks)`);
+      console.warn(`Warning: ${failedBatches.length} batches failed (${failedChunkCount}/${totalChunks} chunks)`); // eslint-disable-line no-console
       
       // If too many batches failed, throw error
       if (failedChunkCount > totalChunks * 0.5) {
@@ -134,7 +134,7 @@ class ParallelEmbedder {
         lastError = error;
         
         if (attempt < this.retryAttempts) {
-          console.warn(`Batch ${batchIndex} attempt ${attempt + 1} failed, retrying in ${this.retryDelay}ms: ${error.message}`);
+          console.warn(`Batch ${batchIndex} attempt ${attempt + 1} failed, retrying in ${this.retryDelay}ms: ${error.message}`); // eslint-disable-line no-console
           await this.delay(this.retryDelay * (attempt + 1)); // Exponential backoff
         }
       }
@@ -171,10 +171,10 @@ class ParallelEmbedder {
  * Parallel processor for retrieval operations
  */
 class ParallelRetriever {
-  constructor(retriever, options = {}) {
+  constructor(retriever, _options = {}) {
     this.retriever = retriever;
-    this.maxConcurrency = options.maxConcurrency || 2;
-    this.chunkQueries = options.chunkQueries || false; // Split complex queries
+    this.maxConcurrency = _options.maxConcurrency || 2;
+    this.chunkQueries = _options.chunkQueries || false; // Split complex queries
   }
 
   /**

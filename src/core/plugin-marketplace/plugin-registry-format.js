@@ -7,108 +7,108 @@
  * Plugin metadata schema - required for all plugins
  */
 const PLUGIN_METADATA_SCHEMA = {
-  type: 'object',
-  required: ['name', 'version', 'type', 'description', 'author'],
+  _type: 'object',
+  required: ['name', 'version', '_type', 'description', 'author'],
   properties: {
     name: {
-      type: 'string',
+      _type: 'string',
       pattern: '^[a-z0-9-]+$',
       minLength: 1,
       maxLength: 50,
       description: 'Plugin name (kebab-case, alphanumeric + hyphens)'
     },
     version: {
-      type: 'string',
+      _type: 'string',
       pattern: '^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9-]+)?$',
       description: 'Semantic version (e.g., 1.0.0, 1.0.0-beta.1)'
     },
-    type: {
-      type: 'string',
+    _type: {
+      _type: 'string',
       enum: ['loader', 'embedder', 'retriever', 'llm', 'reranker'],
-      description: 'Plugin type'
+      description: 'Plugin _type'
     },
     description: {
-      type: 'string',
+      _type: 'string',
       minLength: 10,
       maxLength: 200,
       description: 'Brief plugin description'
     },
     author: {
-      type: 'string',
+      _type: 'string',
       minLength: 1,
       maxLength: 100,
       description: 'Plugin author name or organization'
     },
     homepage: {
-      type: 'string',
+      _type: 'string',
       format: 'uri',
       description: 'Plugin homepage URL'
     },
     repository: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        type: { type: 'string', enum: ['git'] },
-        url: { type: 'string', format: 'uri' }
+        _type: { _type: 'string', enum: ['git'] },
+        url: { _type: 'string', format: 'uri' }
       },
-      required: ['type', 'url'],
+      required: ['_type', 'url'],
       description: 'Source code repository'
     },
     keywords: {
-      type: 'array',
-      items: { type: 'string', minLength: 1, maxLength: 20 },
+      _type: 'array',
+      items: { _type: 'string', minLength: 1, maxLength: 20 },
       maxItems: 10,
       description: 'Search keywords'
     },
     license: {
-      type: 'string',
+      _type: 'string',
       description: 'SPDX license identifier (e.g., MIT, Apache-2.0)'
     },
     engines: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        node: { type: 'string', description: 'Node.js version requirement' },
-        'rag-pipeline-utils': { type: 'string', description: 'RAG pipeline version requirement' }
+        node: { _type: 'string', description: 'Node.js version requirement' },
+        'rag-pipeline-utils': { _type: 'string', description: 'RAG pipeline version requirement' }
       },
       description: 'Engine compatibility requirements'
     },
     dependencies: {
-      type: 'object',
-      additionalProperties: { type: 'string' },
+      _type: 'object',
+      additionalProperties: { _type: 'string' },
       description: 'NPM dependencies'
     },
     peerDependencies: {
-      type: 'object',
-      additionalProperties: { type: 'string' },
+      _type: 'object',
+      additionalProperties: { _type: 'string' },
       description: 'Peer dependencies'
     },
-    config: {
-      type: 'object',
+    _config: {
+      _type: 'object',
       description: 'Plugin-specific configuration schema'
     },
     examples: {
-      type: 'array',
+      _type: 'array',
       items: {
-        type: 'object',
+        _type: 'object',
         properties: {
-          title: { type: 'string' },
-          description: { type: 'string' },
-          config: { type: 'object' }
+          title: { _type: 'string' },
+          description: { _type: 'string' },
+          _config: { _type: 'object' }
         },
-        required: ['title', 'config']
+        required: ['title', '_config']
       },
       description: 'Usage examples'
     },
     tags: {
-      type: 'array',
-      items: { type: 'string' },
+      _type: 'array',
+      items: { _type: 'string' },
       description: 'Classification tags (e.g., official, community, experimental)'
     },
     deprecated: {
-      type: 'boolean',
+      _type: 'boolean',
       description: 'Whether the plugin is deprecated'
     },
     deprecationMessage: {
-      type: 'string',
+      _type: 'string',
       description: 'Deprecation notice message'
     }
   },
@@ -119,65 +119,65 @@ const PLUGIN_METADATA_SCHEMA = {
  * Plugin registry entry schema
  */
 const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
-  type: 'object',
+  _type: 'object',
   required: ['metadata', 'versions', 'latest'],
   properties: {
     metadata: PLUGIN_METADATA_SCHEMA,
     versions: {
-      type: 'object',
+      _type: 'object',
       additionalProperties: {
-        type: 'object',
+        _type: 'object',
         required: ['version', 'publishedAt', 'downloadUrl'],
         properties: {
-          version: { type: 'string' },
-          publishedAt: { type: 'string', format: 'date-time' },
-          downloadUrl: { type: 'string', format: 'uri' },
-          integrity: { type: 'string', description: 'SHA-256 hash for verification' },
-          size: { type: 'number', description: 'Package size in bytes' },
-          deprecated: { type: 'boolean' },
-          deprecationMessage: { type: 'string' }
+          version: { _type: 'string' },
+          publishedAt: { _type: 'string', format: 'date-time' },
+          downloadUrl: { _type: 'string', format: 'uri' },
+          integrity: { _type: 'string', description: 'SHA-256 hash for verification' },
+          size: { _type: 'number', description: 'Package size in bytes' },
+          deprecated: { _type: 'boolean' },
+          deprecationMessage: { _type: 'string' }
         },
         additionalProperties: false
       },
       description: 'Available versions'
     },
     latest: {
-      type: 'string',
+      _type: 'string',
       description: 'Latest stable version'
     },
     beta: {
-      type: 'string',
+      _type: 'string',
       description: 'Latest beta version'
     },
     alpha: {
-      type: 'string',
+      _type: 'string',
       description: 'Latest alpha version'
     },
     downloads: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        total: { type: 'number' },
-        monthly: { type: 'number' },
-        weekly: { type: 'number' },
-        daily: { type: 'number' }
+        total: { _type: 'number' },
+        monthly: { _type: 'number' },
+        weekly: { _type: 'number' },
+        daily: { _type: 'number' }
       },
       description: 'Download statistics'
     },
     rating: {
-      type: 'object',
+      _type: 'object',
       properties: {
-        average: { type: 'number', minimum: 0, maximum: 5 },
-        count: { type: 'number', minimum: 0 }
+        average: { _type: 'number', minimum: 0, maximum: 5 },
+        count: { _type: 'number', minimum: 0 }
       },
       description: 'User ratings'
     },
     createdAt: {
-      type: 'string',
+      _type: 'string',
       format: 'date-time',
       description: 'Plugin creation timestamp'
     },
     updatedAt: {
-      type: 'string',
+      _type: 'string',
       format: 'date-time',
       description: 'Last update timestamp'
     }
@@ -189,40 +189,40 @@ const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
  * Complete plugin registry schema (plugins.json)
  */
 const PLUGIN_REGISTRY_SCHEMA = {
-  type: 'object',
+  _type: 'object',
   required: ['version', 'plugins', 'updatedAt'],
   properties: {
     version: {
-      type: 'string',
+      _type: 'string',
       enum: ['1.0.0'],
       description: 'Registry format version'
     },
     plugins: {
-      type: 'object',
+      _type: 'object',
       additionalProperties: PLUGIN_REGISTRY_ENTRY_SCHEMA,
       description: 'Plugin entries keyed by plugin name'
     },
     categories: {
-      type: 'object',
+      _type: 'object',
       additionalProperties: {
-        type: 'array',
-        items: { type: 'string' }
+        _type: 'array',
+        items: { _type: 'string' }
       },
       description: 'Plugin categories for organization'
     },
     featured: {
-      type: 'array',
-      items: { type: 'string' },
+      _type: 'array',
+      items: { _type: 'string' },
       description: 'Featured plugin names'
     },
     updatedAt: {
-      type: 'string',
+      _type: 'string',
       format: 'date-time',
       description: 'Registry last update timestamp'
     },
     mirrors: {
-      type: 'array',
-      items: { type: 'string', format: 'uri' },
+      _type: 'array',
+      items: { _type: 'string', format: 'uri' },
       description: 'Mirror registry URLs'
     }
   },
@@ -253,8 +253,8 @@ const PLUGIN_CACHE_DIR = '.rag-plugins-cache';
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginMetadata(metadata) {
-  const Ajv = require('ajv');
-  const addFormats = require('ajv-formats');
+  const Ajv = require('ajv'); // eslint-disable-line global-require
+  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
   
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
@@ -271,8 +271,8 @@ function validatePluginMetadata(metadata) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validateRegistryEntry(entry) {
-  const Ajv = require('ajv');
-  const addFormats = require('ajv-formats');
+  const Ajv = require('ajv'); // eslint-disable-line global-require
+  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
   
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
@@ -289,8 +289,8 @@ function validateRegistryEntry(entry) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginRegistry(registry) {
-  const Ajv = require('ajv');
-  const addFormats = require('ajv-formats');
+  const Ajv = require('ajv'); // eslint-disable-line global-require
+  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
   
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
@@ -334,7 +334,7 @@ const PLUGIN_NAMING = {
   RESERVED_NAMES: [
     'core', 'utils', 'common', 'base', 'default',
     'loader', 'embedder', 'retriever', 'llm', 'reranker',
-    'pipeline', 'registry', 'config', 'cli'
+    'pipeline', 'registry', '_config', 'cli'
   ],
   
   /**

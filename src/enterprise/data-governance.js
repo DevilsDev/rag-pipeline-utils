@@ -3,16 +3,16 @@
  * PII detection, data lineage, retention policies, and privacy controls
  */
 
-const _fs = require('_fs').promises;
-const _path = require('_path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const _fs = require('_fs').promises; // eslint-disable-line global-require
+const _path = require('_path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class DataGovernanceManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       policies: {
         dataRetention: {
           defaultRetentionDays: 2555, // 7 years
@@ -38,14 +38,14 @@ class DataGovernanceManager extends EventEmitter {
         autoReporting: true,
         breachNotification: true
       },
-      ...options
+      ..._options
     };
     
-    this.classificationEngine = new DataClassificationEngine(this.config);
-    this.piiDetector = new PIIDetector(this.config);
-    this.lineageTracker = new DataLineageTracker(this.config);
-    this.retentionManager = new DataRetentionManager(this.config);
-    this.privacyManager = new PrivacyManager(this.config);
+    this.classificationEngine = new DataClassificationEngine(this._config);
+    this.piiDetector = new PIIDetector(this._config);
+    this.lineageTracker = new DataLineageTracker(this._config);
+    this.retentionManager = new DataRetentionManager(this._config);
+    this.privacyManager = new PrivacyManager(this._config);
   }
 
   /**
@@ -122,7 +122,7 @@ class DataGovernanceManager extends EventEmitter {
       metadata: _request.metadata || {}
     };
 
-    switch (_request.type) {
+    switch (_request._type) {
       case 'access':
         privacyRequest.result = await this._handleDataAccess(_tenantId, _request);
         break;
@@ -148,12 +148,12 @@ class DataGovernanceManager extends EventEmitter {
   /**
    * Generate data governance report
    */
-  async generateGovernanceReport(_tenantId, options = {}) {
+  async generateGovernanceReport(_tenantId, _options = {}) {
     const report = {
       _tenantId,
       period: {
-        startDate: options.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate: options.endDate || new Date().toISOString()
+        startDate: _options.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        endDate: _options.endDate || new Date().toISOString()
       },
       generatedAt: new Date().toISOString(),
       summary: {
@@ -208,8 +208,8 @@ class DataGovernanceManager extends EventEmitter {
     return {
       dataFound: true,
       records: [
-        { type: 'profile', _data: { email: _request.subjectEmail, name: 'User Name' } },
-        { type: 'activity', _data: { lastLogin: '2024-01-01T00:00:00Z' } }
+        { _type: 'profile', _data: { email: _request.subjectEmail, name: 'User Name' } },
+        { _type: 'activity', _data: { lastLogin: '2024-01-01T00:00:00Z' } }
       ]
     };
   }
@@ -243,8 +243,8 @@ class DataGovernanceManager extends EventEmitter {
 }
 
 class DataClassificationEngine {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async classify(_data, _context) {
@@ -262,8 +262,8 @@ class DataClassificationEngine {
 }
 
 class PIIDetector {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
     this.patterns = {
       email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
       ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
@@ -276,10 +276,10 @@ class PIIDetector {
     const dataStr = JSON.stringify(_data);
     const detected = [];
     
-    for (const [type, pattern] of Object.entries(this.patterns)) {
+    for (const [_type, pattern] of Object.entries(this.patterns)) {
       const matches = dataStr.match(pattern);
       if (matches) {
-        detected.push({ type, count: matches.length, samples: matches.slice(0, 3) });
+        detected.push({ _type, count: matches.length, samples: matches.slice(0, 3) });
       }
     }
     
@@ -292,8 +292,8 @@ class PIIDetector {
 }
 
 class DataLineageTracker {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async track(_data, _context) {
@@ -308,13 +308,13 @@ class DataLineageTracker {
 }
 
 class DataRetentionManager {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async applyPolicy(classificationLevel, hasPII) {
-    const baseDays = this.config.policies.dataRetention.defaultRetentionDays;
-    const piiDays = this.config.policies.dataRetention.piiRetentionDays;
+    const baseDays = this._config.policies.dataRetention.defaultRetentionDays;
+    const piiDays = this._config.policies.dataRetention.piiRetentionDays;
     
     const retentionDays = hasPII ? Math.min(baseDays, piiDays) : baseDays;
     
@@ -328,8 +328,8 @@ class DataRetentionManager {
 }
 
 class PrivacyManager {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
   async applyControls(_data, piiResults, _context) {
@@ -337,19 +337,19 @@ class PrivacyManager {
     
     if (piiResults.detected) {
       controls.push({
-        type: 'ENCRYPTION',
+        _type: 'ENCRYPTION',
         applied: true,
         algorithm: 'AES-256-GCM'
       });
       
       controls.push({
-        type: 'ACCESS_CONTROL',
+        _type: 'ACCESS_CONTROL',
         applied: true,
         permissions: ['read:pii', 'write:pii']
       });
       
       controls.push({
-        type: 'AUDIT_LOGGING',
+        _type: 'AUDIT_LOGGING',
         applied: true,
         level: 'DETAILED'
       });

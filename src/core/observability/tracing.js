@@ -3,8 +3,8 @@
  * Provides span-style lifecycle tracking with OpenTelemetry compatibility
  */
 
-const { randomBytes  } = require('crypto');
-const { eventLogger, EventTypes, EventSeverity  } = require('./event-logger.js');
+const { randomBytes  } = require('crypto'); // eslint-disable-line global-require
+const { eventLogger, EventTypes, EventSeverity  } = require('./event-logger.js'); // eslint-disable-line global-require
 
 /**
  * Span status codes (OpenTelemetry compatible)
@@ -51,20 +51,20 @@ class Span {
     
     // Handle legacy parameter format: (name, traceId, parentSpanId)
     // vs new options format: (name, options)
-    let options = {};
+    let _options = {};
     if (typeof traceIdOrOptions === 'string') {
       // Legacy format: second parameter is traceId
-      options.traceId = traceIdOrOptions;
-      options.parentSpanId = parentSpanId;
+      _options.traceId = traceIdOrOptions;
+      _options.parentSpanId = parentSpanId;
     } else {
       // New format: second parameter is options object
-      options = traceIdOrOptions || {};
+      _options = traceIdOrOptions || {};
     }
     
-    this.traceId = options.traceId || generateTraceId();
+    this.traceId = _options.traceId || generateTraceId();
     this.spanId = generateSpanId();
-    this.parentSpanId = options.parentSpanId || undefined;
-    this.kind = options.kind || SpanKind.INTERNAL;
+    this.parentSpanId = _options.parentSpanId || undefined;
+    this.kind = _options.kind || SpanKind.INTERNAL;
     this.startTime = new Date();
     this.endTime = null;
     this.duration = null;
@@ -72,13 +72,13 @@ class Span {
     this.attributes = new Map();
     this.events = [];
     this.links = [];
-    this.resource = options.resource || {};
-    this.instrumentationLibrary = options.instrumentationLibrary || {
+    this.resource = _options.resource || {};
+    this.instrumentationLibrary = _options.instrumentationLibrary || {
       name: 'rag-pipeline-utils',
       version: '2.1.8'
     };
     // Store reference to parent tracer for span lifecycle management
-    this._tracer = options._tracer || null;
+    this._tracer = _options._tracer || null;
     
     // Create a proxy for bracket notation access to attributes
     const attributesProxy = new Proxy(this.attributes, {
@@ -105,8 +105,8 @@ class Span {
     this.attributes = attributesProxy;
     
     // Set initial attributes if provided
-    if (options.attributes && typeof options.attributes === 'object') {
-      Object.entries(options.attributes).forEach(([key, value]) => {
+    if (_options.attributes && typeof _options.attributes === 'object') {
+      Object.entries(_options.attributes).forEach(([key, value]) => {
         this.attributes.set(key, value);
       });
     }
@@ -163,7 +163,7 @@ class Span {
    */
   recordException(exception) {
     const attributes = {
-      'exception.type': exception.name,
+      'exception._type': exception.name,
       'exception.message': exception.message,
       'exception.stacktrace': exception.stack
     };
@@ -200,7 +200,7 @@ class Span {
    */
   end(endTime = new Date()) {
     if (this.endTime !== null) {
-      console.warn(`Span ${this.name} already ended`);
+      console.warn(`Span ${this.name} already ended`); // eslint-disable-line no-console
       return;
     }
 
@@ -326,13 +326,13 @@ class Span {
  * Tracer implementation
  */
 class Tracer {
-  constructor(name, version = '1.0.0', options = {}) {
+  constructor(name, version = '1.0.0', _options = {}) {
     this.name = name;
     this.version = version;
     this.activeSpans = new Map();
     this.completedSpans = [];
-    this.maxCompletedSpans = options.maxCompletedSpans || 1000;
-    this.resource = options.resource || {
+    this.maxCompletedSpans = _options.maxCompletedSpans || 1000;
+    this.resource = _options.resource || {
       'service.name': 'rag-pipeline-utils',
       'service.version': '2.1.8'
     };
@@ -341,15 +341,15 @@ class Tracer {
   /**
    * Start a new span
    * @param {string} name - Span name
-   * @param {object} options - Span options
+   * @param {object} _options - Span _options
    * @returns {Span} New span
    */
-  startSpan(name, options = {}) {
+  startSpan(name, _options = {}) {
     // Handle parent span option
-    const spanOptions = { ...options };
-    if (options.parent) {
-      spanOptions.traceId = options.parent.traceId;
-      spanOptions.parentSpanId = options.parent.spanId;
+    const spanOptions = { ..._options };
+    if (_options.parent) {
+      spanOptions.traceId = _options.parent.traceId;
+      spanOptions.parentSpanId = _options.parent.spanId;
       delete spanOptions.parent; // Remove parent from options passed to Span constructor
     }
     
@@ -385,15 +385,15 @@ class Tracer {
   /**
    * Start an active span and execute callback
    * @param {string} name - Span name
-   * @param {Function} fn - Function to execute within span
-   * @param {object} options - Span options
+   * @param {Function} _fn - Function to execute within span
+   * @param {object} _options - Span _options
    * @returns {Promise<any>} Result of callback function
    */
-  async startActiveSpan(name, fn, options = {}) {
-    const span = this.startSpan(name, options);
+  async startActiveSpan(name, _fn, _options = {}) {
+    const span = this.startSpan(name, _options);
     
     try {
-      const result = await fn(span);
+      const result = await _fn(span);
       span.setStatus({ code: 'OK' });
       return result;
     } catch (error) {
@@ -529,9 +529,9 @@ class Tracer {
     });
     
     // If we have plugin-related spans, group them under 'plugin'
-    if (Object.keys(spansByType).some(type => ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(type))) {
+    if (Object.keys(spansByType).some(_type => ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(_type))) {
       const pluginCount = Object.entries(spansByType)
-        .filter(([type]) => ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(type))
+        .filter(([_type]) => ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(_type))
         .reduce((sum, [, count]) => sum + count, 0);
       if (pluginCount > 0) {
         spansByType.plugin = pluginCount;
@@ -556,8 +556,8 @@ class Tracer {
  * Pipeline tracer with plugin-specific instrumentation
  */
 class PipelineTracer extends Tracer {
-  constructor(options = {}) {
-    super('rag-pipeline-tracer', '1.0.0', options);
+  constructor(_options = {}) {
+    super('rag-pipeline-tracer', '1.0.0', _options);
   }
 
   /**
@@ -569,13 +569,13 @@ class PipelineTracer extends Tracer {
    * @param {object} context - Plugin execution context
    * @returns {Promise<any>} Plugin result
    */
-  async tracePlugin(pluginType, pluginName, fn, input, context = {}) {
+  async tracePlugin(pluginType, pluginName, _fn, input, context = {}) {
     return this.startActiveSpan(`plugin.${pluginType}.${pluginName}`, async (span) => {
       span.setAttributes({
-        'plugin.type': pluginType,
+        'plugin._type': pluginType,
         'plugin.name': pluginName,
         'plugin.input.size': this.getInputSize(input),
-        'operation.type': 'plugin_execution'
+        'operation._type': 'plugin_execution'
       });
 
       // Add context attributes if provided
@@ -588,7 +588,7 @@ class PipelineTracer extends Tracer {
       const startTime = Date.now();
       
       try {
-        const result = await fn(input);
+        const result = await _fn(input);
         const duration = Date.now() - startTime;
         
         span.setAttributes({
@@ -608,7 +608,7 @@ class PipelineTracer extends Tracer {
           'plugin.duration': duration,
           'plugin.status': 'error',
           'plugin.success': false,
-          'plugin.error.type': error.name,
+          'plugin.error._type': error.name,
           'plugin.error.message': error.message
         });
         
@@ -630,11 +630,11 @@ class PipelineTracer extends Tracer {
    * @param {object} metadata - Stage metadata
    * @returns {Promise<any>} Stage result
    */
-  async traceStage(stage, fn, context = {}, metadata = {}) {
+  async traceStage(stage, _fn, context = {}, metadata = {}) {
     return this.startActiveSpan(`pipeline.${stage}`, async (span) => {
       span.setAttributes({
         'pipeline.stage': stage,
-        'operation.type': 'pipeline_stage',
+        'operation._type': 'pipeline_stage',
         ...metadata
       });
 
@@ -646,7 +646,7 @@ class PipelineTracer extends Tracer {
       }
 
       try {
-        const result = await fn();
+        const result = await _fn();
         
         // Set success attributes
         span.setAttribute('stage.success', true);
@@ -702,7 +702,7 @@ const pipelineTracer = new PipelineTracer();
  * OpenTelemetry-compatible trace API
  */
 const trace = {
-  getTracer: (name, version, options) => new Tracer(name, version, options),
+  getTracer: (name, version, _options) => new Tracer(name, version, _options),
   getActiveSpan: () => null, // Simplified for now
   setSpan: () => {}, // Simplified for now
   deleteSpan: () => {} // Simplified for now

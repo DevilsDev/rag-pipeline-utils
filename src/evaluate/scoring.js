@@ -20,15 +20,15 @@ function tokenize(text) {
    * @param {string[]} reference - Reference tokens
    * @returns {number}
    */
-  function computeBLEU(candidate, reference) {
-    const candCounts = candidate.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
-    const refCounts = reference.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
+  function computeBLEU(_candidate, _reference) {
+    const candCounts = _candidate.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
+    const refCounts = _reference.reduce((acc, t) => (acc[t] = (acc[t] || 0) + 1, acc), {});
   
     let match = 0;
     for (const token of Object.keys(candCounts)) {
       match += Math.min(candCounts[token], refCounts[token] || 0);
     }
-    return candidate.length ? match / candidate.length : 0;
+    return _candidate.length ? match / _candidate.length : 0;
   }
   
   /**
@@ -37,14 +37,14 @@ function tokenize(text) {
    * @param {string[]} reference
    * @returns {number}
    */
-  function computeROUGE(candidate, reference) {
-    const m = candidate.length;
-    const n = reference.length;
+  function computeROUGE(_candidate, _reference) {
+    const m = _candidate.length;
+    const n = _reference.length;
     const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
   
     for (let i = 1; i <= m; i++) {
       for (let j = 1; j <= n; j++) {
-        if (candidate[i - 1] === reference[j - 1]) {
+        if (_candidate[i - 1] === _reference[j - 1]) {
           dp[i][j] = dp[i - 1][j - 1] + 1;
         } else {
           dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
@@ -53,7 +53,7 @@ function tokenize(text) {
     }
   
     const lcs = dp[m][n];
-    return reference.length ? lcs / reference.length : 0;
+    return _reference.length ? lcs / _reference.length : 0;
   }
   
   /**
@@ -62,9 +62,9 @@ function tokenize(text) {
    * @param {string} expected - Reference answer
    * @returns {{ bleu: number, rouge: number }}
    */
-  function scoreAnswer(actual, expected) {
-    const candTokens = tokenize(actual);
-    const refTokens = tokenize(expected);
+  function scoreAnswer(_actual, _expected) {
+    const candTokens = tokenize(_actual);
+    const refTokens = tokenize(_expected);
     return {
       bleu: computeBLEU(candTokens, refTokens),
       rouge: computeROUGE(candTokens, refTokens)

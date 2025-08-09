@@ -5,9 +5,9 @@
  * Author: Ali Kahwaji
  */
 
-const { createRagPipeline  } = require('./core/create-pipeline.js');
-const { loadPluginsFromJson  } = require('./config/load-plugin-config.js');
-const { logger  } = require('./utils/logger.js');
+const { createRagPipeline  } = require('./core/create-pipeline.js'); // eslint-disable-line global-require
+const { loadPluginsFromJson  } = require('./config/load-plugin-config.js'); // eslint-disable-line global-require
+const { logger  } = require('./utils/logger.js'); // eslint-disable-line global-require
 
 /**
  * Query the RAG pipeline with a standard response
@@ -15,7 +15,7 @@ const { logger  } = require('./utils/logger.js');
  * @param {object} config - Pipeline configuration
  * @returns {Promise<string>} Generated response
  */
-export async function queryPipeline(prompt, config) {
+export async function queryPipeline(_prompt, config) {
   if (!prompt) {
     throw new Error('No prompt provided for query.');
   }

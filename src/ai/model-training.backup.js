@@ -3,26 +3,26 @@
  * Custom embedding and LLM training with domain-specific optimization
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 /**
  * Model Training Manager - Orchestrates the training process
  */
 class ModelTrainingManager extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
+    this._config = {
       training: {
-        batchSize: options.batchSize || 32,
-        learningRate: options.learningRate || 1e-4,
-        epochs: options.epochs || 10,
-        validationSplit: options.validationSplit || 0.2,
-        earlyStoppingPatience: options.earlyStoppingPatience || 3,
-        checkpointInterval: options.checkpointInterval || 1000
+        batchSize: _options.batchSize || 32,
+        learningRate: _options.learningRate || 1e-4,
+        epochs: _options.epochs || 10,
+        validationSplit: _options.validationSplit || 0.2,
+        earlyStoppingPatience: _options.earlyStoppingPatience || 3,
+        checkpointInterval: _options.checkpointInterval || 1000
       },
       models: {
         embedding: {
@@ -47,18 +47,18 @@ class ModelTrainingManager extends EventEmitter {
         distributedTraining: true
       },
       infrastructure: {
-        gpuMemoryLimit: options.gpuMemoryLimit || '8GB',
-        parallelWorkers: options.parallelWorkers || 4,
-        checkpointDir: options.checkpointDir || './model-checkpoints',
-        tensorboardDir: options.tensorboardDir || './tensorboard-logs'
+        gpuMemoryLimit: _options.gpuMemoryLimit || '8GB',
+        parallelWorkers: _options.parallelWorkers || 4,
+        checkpointDir: _options.checkpointDir || './model-checkpoints',
+        tensorboardDir: _options.tensorboardDir || './tensorboard-logs'
       },
-      ...options
+      ..._options
     };
     
     this.trainingJobs = new Map();
-    this.modelRegistry = new ModelRegistry(this.config);
-    this.dataProcessor = new TrainingDataProcessor(this.config);
-    this.evaluator = new ModelEvaluator(this.config);
+    this.modelRegistry = new ModelRegistry(this._config);
+    this.dataProcessor = new TrainingDataProcessor(this._config);
+    this.evaluator = new ModelEvaluator(this._config);
   }
 
   /**
@@ -70,13 +70,13 @@ class ModelTrainingManager extends EventEmitter {
     const job = {
       id: jobId,
       tenantId,
-      type: 'embedding_finetune',
+      _type: 'embedding_finetune',
       status: 'initializing',
-      config: {
+      _config: {
         baseModel: trainingConfig.baseModel || 'sentence-transformers/all-MiniLM-L6-v2',
         taskType: trainingConfig.taskType || 'semantic_similarity',
         domainData: trainingConfig.domainData,
-        ...this.config.training,
+        ...this._config.training,
         ...trainingConfig
       },
       metrics: {
@@ -92,22 +92,22 @@ class ModelTrainingManager extends EventEmitter {
     this.trainingJobs.set(jobId, job);
     
     try {
-      this.emit('training_started', { jobId, tenantId, type: 'embedding' });
+      this.emit('training_started', { jobId, tenantId, _type: 'embedding' });
       
       // Step 1: Prepare training data
       job.status = 'preparing_data';
       const trainingData = await this.dataProcessor.prepareEmbeddingData(
         trainingConfig.domainData,
-        job.config
+        job._config
       );
       
       // Step 2: Initialize model architecture
       job.status = 'initializing_model';
-      const model = await this._initializeEmbeddingModel(job.config);
+      const model = await this._initializeEmbeddingModel(job._config);
       
       // Step 3: Setup training pipeline
       job.status = 'setting_up_training';
-      const trainer = new EmbeddingTrainer(model, job.config);
+      const trainer = new EmbeddingTrainer(model, job._config);
       
       // Step 4: Execute training loop
       job.status = 'training';
@@ -126,9 +126,9 @@ class ModelTrainingManager extends EventEmitter {
       const registeredModel = await this.modelRegistry.registerModel({
         jobId,
         tenantId,
-        type: 'embedding',
+        _type: 'embedding',
         path: modelPath,
-        config: job.config,
+        _config: job._config,
         evaluation,
         metadata: {
           trainingTime: Date.now() - new Date(job.startTime).getTime(),
@@ -170,13 +170,13 @@ class ModelTrainingManager extends EventEmitter {
     const job = {
       id: jobId,
       tenantId,
-      type: 'llm_finetune',
+      _type: 'llm_finetune',
       status: 'initializing',
-      config: {
+      _config: {
         baseModel: trainingConfig.baseModel || 'microsoft/DialoGPT-medium',
         taskType: trainingConfig.taskType || 'text_generation',
         domainData: trainingConfig.domainData,
-        ...this.config.training,
+        ...this._config.training,
         ...trainingConfig
       },
       metrics: {
@@ -192,22 +192,22 @@ class ModelTrainingManager extends EventEmitter {
     this.trainingJobs.set(jobId, job);
     
     try {
-      this.emit('training_started', { jobId, tenantId, type: 'llm' });
+      this.emit('training_started', { jobId, tenantId, _type: 'llm' });
       
       // Step 1: Prepare training data for language modeling
       job.status = 'preparing_data';
       const trainingData = await this.dataProcessor.prepareLLMData(
         trainingConfig.domainData,
-        job.config
+        job._config
       );
       
       // Step 2: Initialize LLM architecture
       job.status = 'initializing_model';
-      const model = await this._initializeLLMModel(job.config);
+      const model = await this._initializeLLMModel(job._config);
       
       // Step 3: Setup training with gradient accumulation
       job.status = 'setting_up_training';
-      const trainer = new LLMTrainer(model, job.config);
+      const trainer = new LLMTrainer(model, job._config);
       
       // Step 4: Execute training with checkpointing
       job.status = 'training';
@@ -226,9 +226,9 @@ class ModelTrainingManager extends EventEmitter {
       const registeredModel = await this.modelRegistry.registerModel({
         jobId,
         tenantId,
-        type: 'llm',
+        _type: 'llm',
         path: modelPath,
-        config: job.config,
+        _config: job._config,
         evaluation,
         metadata: {
           trainingTime: Date.now() - new Date(job.startTime).getTime(),
@@ -279,16 +279,16 @@ class ModelTrainingManager extends EventEmitter {
   /**
    * List training jobs for a tenant
    */
-  async listTrainingJobs(tenantId, options = {}) {
+  async listTrainingJobs(tenantId, _options = {}) {
     const jobs = Array.from(this.trainingJobs.values())
       .filter(job => job.tenantId === tenantId)
       .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
     
-    if (options.status) {
-      return jobs.filter(job => job.status === options.status);
+    if (_options.status) {
+      return jobs.filter(job => job.status === _options.status);
     }
     
-    return jobs.slice(0, options.limit || 50);
+    return jobs.slice(0, _options.limit || 50);
   }
 
   /**
@@ -313,47 +313,47 @@ class ModelTrainingManager extends EventEmitter {
   }
 
   // Private methods
-  async _initializeEmbeddingModel(config) {
+  async _initializeEmbeddingModel(_config) {
     // Mock model initialization - would use actual ML frameworks
     return {
       architecture: 'transformer-encoder',
       parameters: 22000000, // 22M parameters
-      config: {
-        hiddenSize: config.dimensions || 768,
+      _config: {
+        hiddenSize: _config.dimensions || 768,
         numLayers: 6,
         numAttentionHeads: 12,
-        maxPositionEmbeddings: config.maxSequenceLength || 512
+        maxPositionEmbeddings: _config.maxSequenceLength || 512
       },
       initialized: true
     };
   }
 
-  async _initializeLLMModel(config) {
+  async _initializeLLMModel(_config) {
     // Mock LLM initialization
     return {
       architecture: 'transformer-decoder',
       parameters: 117000000, // 117M parameters
-      config: {
-        hiddenSize: config.hiddenSize || 768,
-        numLayers: config.layers || 12,
-        numAttentionHeads: config.attentionHeads || 12,
-        contextLength: config.contextLength || 2048,
-        vocabularySize: config.vocabularySize || 50000
+      _config: {
+        hiddenSize: _config.hiddenSize || 768,
+        numLayers: _config.layers || 12,
+        numAttentionHeads: _config.attentionHeads || 12,
+        contextLength: _config.contextLength || 2048,
+        vocabularySize: _config.vocabularySize || 50000
       },
       initialized: true
     };
   }
 
   async _executeTrainingLoop(trainer, trainingData, job) {
-    const totalSteps = Math.ceil(trainingData.size / job.config.batchSize) * job.config.epochs;
+    const totalSteps = Math.ceil(trainingData.size / job._config.batchSize) * job._config.epochs;
     let currentStep = 0;
     
-    for (let epoch = 0; epoch < job.config.epochs; epoch++) {
+    for (let epoch = 0; epoch < job._config.epochs; epoch++) {
       let epochLoss = 0;
       let batchCount = 0;
       
       // Simulate training batches
-      for (let batch = 0; batch < Math.ceil(trainingData.size / job.config.batchSize); batch++) {
+      for (let batch = 0; batch < Math.ceil(trainingData.size / job._config.batchSize); batch++) {
         // Mock training step
         const batchLoss = Math.random() * 0.5 + 0.1; // Decreasing loss simulation
         epochLoss += batchLoss;
@@ -387,10 +387,10 @@ class ModelTrainingManager extends EventEmitter {
       const validationLoss = avgLoss * (0.8 + Math.random() * 0.4);
       job.metrics.validationLoss.push(validationLoss);
       
-      if (job.type === 'embedding_finetune') {
+      if (job._type === 'embedding_finetune') {
         job.metrics.accuracy.push(0.7 + Math.random() * 0.25);
         job.metrics.validationAccuracy.push(0.65 + Math.random() * 0.25);
-      } else if (job.type === 'llm_finetune') {
+      } else if (job._type === 'llm_finetune') {
         job.metrics.perplexity.push(Math.exp(avgLoss));
         job.metrics.bleuScore.push(0.3 + Math.random() * 0.4);
       }
@@ -401,11 +401,11 @@ class ModelTrainingManager extends EventEmitter {
         metrics: {
           loss: avgLoss,
           validationLoss,
-          ...(job.type === 'embedding_finetune' && {
+          ...(job._type === 'embedding_finetune' && {
             accuracy: job.metrics.accuracy[job.metrics.accuracy.length - 1],
             validationAccuracy: job.metrics.validationAccuracy[job.metrics.validationAccuracy.length - 1]
           }),
-          ...(job.type === 'llm_finetune' && {
+          ...(job._type === 'llm_finetune' && {
             perplexity: job.metrics.perplexity[job.metrics.perplexity.length - 1],
             bleuScore: job.metrics.bleuScore[job.metrics.bleuScore.length - 1]
           })
@@ -415,7 +415,7 @@ class ModelTrainingManager extends EventEmitter {
   }
 
   async _saveModel(model, jobId, modelType) {
-    const modelDir = path.join(this.config.infrastructure.checkpointDir, jobId);
+    const modelDir = path.join(this._config.infrastructure.checkpointDir, jobId);
     await fs.mkdir(modelDir, { recursive: true });
     
     const modelPath = path.join(modelDir, `${modelType}-model.json`);
@@ -430,8 +430,8 @@ class ModelTrainingManager extends EventEmitter {
 }
 
 class ModelRegistry {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
     this.models = new Map();
   }
 
@@ -462,11 +462,11 @@ class ModelRegistry {
 }
 
 class TrainingDataProcessor {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async prepareEmbeddingData(domainData, config) {
+  async prepareEmbeddingData(domainData, ___config) {
     // Mock data preparation for embedding training
     return {
       training: {
@@ -484,7 +484,7 @@ class TrainingDataProcessor {
     };
   }
 
-  async prepareLLMData(domainData, config) {
+  async prepareLLMData(domainData, ___config) {
     // Mock data preparation for LLM training
     return {
       training: {
@@ -504,11 +504,11 @@ class TrainingDataProcessor {
 }
 
 class ModelEvaluator {
-  constructor(config) {
-    this.config = config;
+  constructor(_config) {
+    this._config = _config;
   }
 
-  async evaluateEmbeddingModel(model, validationData) {
+  async evaluateEmbeddingModel(___model, ___validationData) {
     // Mock evaluation metrics
     return {
       accuracy: 0.85 + Math.random() * 0.1,
@@ -520,7 +520,7 @@ class ModelEvaluator {
     };
   }
 
-  async evaluateLLMModel(model, validationData) {
+  async evaluateLLMModel(___model, ___validationData) {
     // Mock LLM evaluation metrics
     return {
       perplexity: 15 + Math.random() * 10,
@@ -534,16 +534,16 @@ class ModelEvaluator {
 }
 
 class EmbeddingTrainer {
-  constructor(model, config) {
+  constructor(model, _config) {
     this.model = model;
-    this.config = config;
+    this._config = _config;
   }
 }
 
 class LLMTrainer {
-  constructor(model, config) {
+  constructor(model, _config) {
     this.model = model;
-    this.config = config;
+    this._config = _config;
   }
 }
 

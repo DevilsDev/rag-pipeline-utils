@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 /**
+const fs = require('fs');
+const path = require('path');
  * Comprehensive Script Test Suite
  * Version: 1.0.0
  * Description: Tests all refactored scripts to validate functionality and safety
@@ -62,8 +64,8 @@ const SCRIPTS_TO_TEST = [
  * @param {Object} test - Test configuration
  * @returns {Promise<boolean>} - Test result
  */
-async function runTest(scriptName, test) {
-  const command = `node scripts/${scriptName} ${test.args}`;
+async function runTest(_scriptName, _test) {
+  const command = `node scripts/${_scriptName} ${_test.args}`;
   
   try {
     logger.debug(`Running: ${command}`);
@@ -74,24 +76,24 @@ async function runTest(scriptName, test) {
       stdio: 'pipe'
     });
     
-    if (test.expectSuccess) {
-      logger.success(`✅ ${scriptName} - ${test.description}`);
+    if (_test.expectSuccess) {
+      logger.success(`✅ ${_scriptName} - ${_test.description}`);
       return true;
     } else {
-      logger.warn(`⚠️ ${scriptName} - ${test.description} (unexpected success)`);
+      logger.warn(`⚠️ ${_scriptName} - ${_test.description} (unexpected success)`);
       return false;
     }
     
   } catch (error) {
-    if (!test.expectSuccess) {
+    if (!_test.expectSuccess) {
       // Expected failure (e.g., missing GITHUB_TOKEN)
       if (error.stderr && error.stderr.includes('GITHUB_TOKEN')) {
-        logger.success(`✅ ${scriptName} - ${test.description} (expected auth failure)`);
+        logger.success(`✅ ${_scriptName} - ${_test.description} (expected auth failure)`);
         return true;
       }
     }
     
-    logger.error(`❌ ${scriptName} - ${test.description}: ${error.message}`);
+    logger.error(`❌ ${_scriptName} - ${_test.description}: ${error.message}`);
     return false;
   }
 }
@@ -135,22 +137,22 @@ async function testUtilities() {
 function testConfiguration() {
   logger.info('⚙️ Testing configuration...');
   
-  const configPath = path.resolve(__dirname, 'scripts.config.json');
+  const configPath = path.resolve(__dirname, 'scripts._config.json');
   
   try {
     if (!fs.existsSync(configPath)) {
-      logger.error('❌ scripts.config.json not found');
+      logger.error('❌ scripts._config.json not found');
       return false;
     }
     
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     
     // Validate required sections
     const requiredSections = ['github', 'roadmap', 'release', 'paths', 'logging'];
-    const missingSections = requiredSections.filter(section => !config[section]);
+    const missingSections = requiredSections.filter(section => !_config[section]);
     
     if (missingSections.length > 0) {
-      logger.error(`❌ Missing config sections: ${missingSections.join(', ')}`);
+      logger.error(`❌ Missing _config sections: ${missingSections.join(', ')}`);
       return false;
     }
     

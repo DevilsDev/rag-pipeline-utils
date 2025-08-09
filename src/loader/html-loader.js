@@ -1,13 +1,14 @@
 /**
+const fs = require('fs');
  * Version: 0.1.0
  * Path: /src/loader/html-loader.js
  * Description: Loader for HTML (.html) documents
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const { JSDOM  } = require('jsdom');
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { JSDOM  } = require('jsdom'); // eslint-disable-line global-require
 
 /**
  * HTMLLoader reads HTML files and extracts visible text.
@@ -16,11 +17,11 @@ const { JSDOM  } = require('jsdom');
 class HTMLLoader {
   /**
    * Load and extract text from an HTML file
-   * @param {string} filePath - Path to .html file
+   * @param {string} _filePath - Path to .html file
    * @returns {Promise<Array<{ chunk(): string[] }>>}
    */
-  async load(filePath) {
-    const absPath = path.resolve(filePath);
+  async load(_filePath) {
+    const absPath = path.resolve(_filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
     const dom = new JSDOM(raw);
     const text = dom.window.document.body.textContent || '';

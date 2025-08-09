@@ -8,11 +8,11 @@
 class PDFLoader {
   /**
    * Loads a mock PDF file and returns an array of chunked content.
-   * @param {string} filePath - Path to the PDF file
+   * @param {string} _filePath - Path to the PDF file
    * @returns {Promise<Array<{ chunk: () => string[] }>>}
    */
-  async load(filePath) {
-    return [{ chunk: () => [`Test loaded: ${filePath}`] }];
+  async load(_filePath) {
+    return [{ chunk: () => [`Test loaded: ${_filePath}`] }];
   }
 }
 

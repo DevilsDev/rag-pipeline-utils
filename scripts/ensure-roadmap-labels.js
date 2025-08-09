@@ -58,14 +58,14 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const token = process.env.GITHUB_TOKEN;
 
   if (!token || !owner || !repo) {
-    console.error('Missing required GITHUB_TOKEN or GITHUB_REPOSITORY');
+    console.error('Missing required GITHUB_TOKEN or GITHUB_REPOSITORY'); // eslint-disable-line no-console
     process.exit(1);
   }
 
   ensureRoadmapLabels({ token, owner, repo })
-    .then(() => console.log('✅ Roadmap labels ensured'))
+    .then(() => console.log('✅ Roadmap labels ensured')) // eslint-disable-line no-console
     .catch((err) => {
-      console.error('Label sync failed:', err);
+      console.error('Label sync failed:', err); // eslint-disable-line no-console
       process.exit(1);
     });
 }

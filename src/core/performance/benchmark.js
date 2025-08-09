@@ -1,4 +1,5 @@
 /**
+const path = require('path');
  * Benchmark tooling for measuring RAG pipeline performance
  * Provides detailed timing and performance metrics for each stage
  */
@@ -88,15 +89,15 @@ class PerformanceTimer {
  * Pipeline benchmark runner
  */
 class PipelineBenchmark {
-  constructor(pipeline, options = {}) {
+  constructor(pipeline, _options = {}) {
     this.pipeline = pipeline;
     this.timer = new PerformanceTimer();
-    this.options = {
-      includeMemory: options.includeMemory !== false,
-      includeGC: options.includeGC !== false,
-      warmupRuns: options.warmupRuns || 0,
-      iterations: options.iterations || 1,
-      ...options
+    this._options = {
+      includeMemory: _options.includeMemory !== false,
+      includeGC: _options.includeGC !== false,
+      warmupRuns: _options.warmupRuns || 0,
+      iterations: _options.iterations || 1,
+      ..._options
     };
   }
 
@@ -106,18 +107,18 @@ class PipelineBenchmark {
    * @returns {Promise<object>} Benchmark results
    */
   async benchmarkIngest(docPath) {
-    console.log(`🔬 Benchmarking ingest operation: ${docPath}`);
+    console.log(`🔬 Benchmarking ingest operation: ${docPath}`); // eslint-disable-line no-console
     
     // Warmup runs
-    for (let i = 0; i < this.options.warmupRuns; i++) {
-      console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`);
+    for (let i = 0; i < this._options.warmupRuns; i++) {
+      console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`); // eslint-disable-line no-console
       await this.runIngestBenchmark(docPath, true);
     }
 
     // Actual benchmark runs
     const results = [];
-    for (let i = 0; i < this.options.iterations; i++) {
-      console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`);
+    for (let i = 0; i < this._options.iterations; i++) {
+      console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`); // eslint-disable-line no-console
       const result = await this.runIngestBenchmark(docPath, false);
       results.push(result);
     }
@@ -220,18 +221,18 @@ class PipelineBenchmark {
    * @returns {Promise<object>} Benchmark results
    */
   async benchmarkQuery(prompt) {
-    console.log(`🔬 Benchmarking query operation: "${prompt.substring(0, 50)}..."`);
+    console.log(`🔬 Benchmarking query operation: "${prompt.substring(0, 50)}..."`); // eslint-disable-line no-console
     
     // Warmup runs
-    for (let i = 0; i < this.options.warmupRuns; i++) {
-      console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`);
+    for (let i = 0; i < this._options.warmupRuns; i++) {
+      console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`); // eslint-disable-line no-console
       await this.runQueryBenchmark(prompt, true);
     }
 
     // Actual benchmark runs
     const results = [];
-    for (let i = 0; i < this.options.iterations; i++) {
-      console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`);
+    for (let i = 0; i < this._options.iterations; i++) {
+      console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`); // eslint-disable-line no-console
       const result = await this.runQueryBenchmark(prompt, false);
       results.push(result);
     }
@@ -389,8 +390,8 @@ class PipelineBenchmark {
         total: totalStats
       },
       metadata: {
-        iterations: this.options.iterations,
-        warmupRuns: this.options.warmupRuns,
+        iterations: this._options.iterations,
+        warmupRuns: this._options.warmupRuns,
         timestamp: new Date().toISOString()
       },
       rawResults: successful

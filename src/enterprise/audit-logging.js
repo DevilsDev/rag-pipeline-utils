@@ -3,33 +3,33 @@
  * Compliance-grade activity tracking with immutable logs
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const crypto = require('crypto');
-const { EventEmitter } = require('events');
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 class AuditLogger extends EventEmitter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     super();
     
-    this.config = {
-      logDir: options.logDir || path.join(process.cwd(), '.rag-enterprise', 'audit-logs'),
+    this._config = {
+      logDir: _options.logDir || path.join(process.cwd(), '.rag-enterprise', 'audit-logs'),
       retention: {
-        days: options.retentionDays || 2555, // 7 years default for compliance
-        maxSizeMB: options.maxLogSizeMB || 1000,
-        compressionEnabled: options.compressionEnabled !== false
+        days: _options.retentionDays || 2555, // 7 years default for compliance
+        maxSizeMB: _options.maxLogSizeMB || 1000,
+        compressionEnabled: _options.compressionEnabled !== false
       },
       compliance: {
-        standards: options.standards || ['SOC2', 'GDPR', 'HIPAA', 'PCI-DSS'],
-        immutable: options.immutable !== false,
-        encryption: options.encryption !== false,
-        digitalSigning: options.digitalSigning !== false
+        standards: _options.standards || ['SOC2', 'GDPR', 'HIPAA', 'PCI-DSS'],
+        immutable: _options.immutable !== false,
+        encryption: _options.encryption !== false,
+        digitalSigning: _options.digitalSigning !== false
       },
       realtime: {
-        enabled: options.realtimeEnabled !== false,
-        batchSize: options.batchSize || 100,
-        flushInterval: options.flushInterval || 5000, // 5 seconds
-        webhookUrl: options.webhookUrl
+        enabled: _options.realtimeEnabled !== false,
+        batchSize: _options.batchSize || 100,
+        flushInterval: _options.flushInterval || 5000, // 5 seconds
+        webhookUrl: _options.webhookUrl
       },
       categories: {
         authentication: { level: 'HIGH', retention: 2555 },
@@ -42,12 +42,12 @@ class AuditLogger extends EventEmitter {
         pluginActivity: { level: 'MEDIUM', retention: 1095 },
         complianceEvents: { level: 'CRITICAL', retention: 3650 } // 10 years
       },
-      ...options
+      ..._options
     };
     
     this.logBuffer = [];
-    this.encryptionKey = options.encryptionKey || this._generateEncryptionKey();
-    this.signingKey = options.signingKey || this._generateSigningKey();
+    this.encryptionKey = _options.encryptionKey || this._generateEncryptionKey();
+    this.signingKey = _options.signingKey || this._generateSigningKey();
     this.sequenceNumber = 0;
     
     this._initializeAuditSystem();
@@ -58,16 +58,16 @@ class AuditLogger extends EventEmitter {
    */
   async _initializeAuditSystem() {
     // Create audit log directories
-    await fs.mkdir(this.config.logDir, { recursive: true });
-    await fs.mkdir(path.join(this.config.logDir, 'daily'), { recursive: true });
-    await fs.mkdir(path.join(this.config.logDir, 'archived'), { recursive: true });
-    await fs.mkdir(path.join(this.config.logDir, 'integrity'), { recursive: true });
+    await fs.mkdir(this._config.logDir, { recursive: true });
+    await fs.mkdir(path.join(this._config.logDir, 'daily'), { recursive: true });
+    await fs.mkdir(path.join(this._config.logDir, 'archived'), { recursive: true });
+    await fs.mkdir(path.join(this._config.logDir, 'integrity'), { recursive: true });
     
     // Start periodic flush
-    if (this.config.realtime.enabled) {
+    if (this._config.realtime.enabled) {
       this.flushTimer = setInterval(() => {
         this._flushLogs();
-      }, this.config.realtime.flushInterval);
+      }, this._config.realtime.flushInterval);
     }
     
     // Initialize integrity chain
@@ -185,7 +185,7 @@ class AuditLogger extends EventEmitter {
       userId: event._userId,
       workspaceId: event.workspaceId,
       data: {
-        type: event.dataType,
+        _type: event.dataType,
         classification: event.dataClassification,
         recordsAffected: event.recordsAffected,
         beforeHash: event.beforeHash,
@@ -319,12 +319,12 @@ class AuditLogger extends EventEmitter {
     auditEvent.integrity = await this._calculateIntegrityHash(auditEvent);
     
     // Encrypt sensitive data if enabled
-    if (this.config.compliance.encryption) {
+    if (this._config.compliance.encryption) {
       auditEvent = await this._encryptSensitiveFields(auditEvent);
     }
     
     // Digital signature if enabled
-    if (this.config.compliance.digitalSigning) {
+    if (this._config.compliance.digitalSigning) {
       auditEvent.signature = await this._signAuditEvent(auditEvent);
     }
     
@@ -337,7 +337,7 @@ class AuditLogger extends EventEmitter {
     }
     
     // Check buffer size
-    if (this.logBuffer.length >= this.config.realtime.batchSize) {
+    if (this.logBuffer.length >= this._config.realtime.batchSize) {
       await this._flushLogs();
     }
     
@@ -361,7 +361,7 @@ class AuditLogger extends EventEmitter {
     this.logBuffer = [];
     
     const today = new Date().toISOString().split('T')[0];
-    const logFile = path.join(this.config.logDir, 'daily', `audit-${today}.jsonl`);
+    const logFile = path.join(this._config.logDir, 'daily', `audit-${today}.jsonl`);
     
     try {
       // Write logs in JSONL format
@@ -372,7 +372,7 @@ class AuditLogger extends EventEmitter {
       await this._updateIntegrityChain(logsToFlush);
       
       // Send to webhook if configured
-      if (this.config.realtime.webhookUrl) {
+      if (this._config.realtime.webhookUrl) {
         await this._sendToWebhook(logsToFlush);
       }
       
@@ -438,14 +438,14 @@ class AuditLogger extends EventEmitter {
   /**
    * Generate compliance report
    */
-  async generateComplianceReport(options) {
+  async generateComplianceReport(_options) {
     const {
       _tenantId,
       standard, // GDPR, HIPAA, SOC2, PCI-DSS
       startDate,
       endDate,
       includeEvidence = false
-    } = options;
+    } = _options;
 
     const query = {
       _tenantId,
@@ -515,10 +515,10 @@ class AuditLogger extends EventEmitter {
   /**
    * Verify log integrity
    */
-  async verifyIntegrity(options = {}) {
-    const { startDate, endDate, _tenantId } = options;
+  async verifyIntegrity(_options = {}) {
+    const { startDate, endDate, _tenantId } = _options;
     
-    const integrityFile = path.join(this.config.logDir, 'integrity', 'chain.json');
+    const integrityFile = path.join(this._config.logDir, 'integrity', 'chain.json');
     const _integrityChain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
     
     const verification = {
@@ -703,7 +703,7 @@ class AuditLogger extends EventEmitter {
   }
 
   async _initializeIntegrityChain() {
-    const integrityFile = path.join(this.config.logDir, 'integrity', 'chain.json');
+    const integrityFile = path.join(this._config.logDir, 'integrity', 'chain.json');
     
     try {
       await fs.access(integrityFile);
@@ -720,7 +720,7 @@ class AuditLogger extends EventEmitter {
   }
 
   async _updateIntegrityChain(logs) {
-    const integrityFile = path.join(this.config.logDir, 'integrity', 'chain.json');
+    const integrityFile = path.join(this._config.logDir, 'integrity', 'chain.json');
     const chain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
     
     for (const log of logs) {
@@ -761,7 +761,7 @@ class AuditLogger extends EventEmitter {
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0];
       const filename = `audit-${dateStr}.jsonl`;
-      const filepath = path.join(this.config.logDir, 'daily', filename);
+      const filepath = path.join(this._config.logDir, 'daily', filename);
       
       try {
         await fs.access(filepath);
@@ -813,11 +813,11 @@ class AuditLogger extends EventEmitter {
   }
 
   async _sendToWebhook(logs) {
-    if (!this.config.realtime.webhookUrl) return;
+    if (!this._config.realtime.webhookUrl) return;
     
     try {
       // Mock webhook sending - would use actual HTTP client
-      console.log(`Sending ${logs.length} audit logs to webhook`);
+      console.log(`Sending ${logs.length} audit logs to webhook`); // eslint-disable-line no-console
     } catch (error) {
       this.emit('webhook_failed', { error: error.message, count: logs.length });
     }
@@ -835,7 +835,7 @@ class AuditLogger extends EventEmitter {
     };
 
     try {
-      const dailyDir = path.join(this.config.logDir, 'daily');
+      const dailyDir = path.join(this._config.logDir, 'daily');
       const files = await fs.readdir(dailyDir);
       
       for (const file of files) {
@@ -845,7 +845,7 @@ class AuditLogger extends EventEmitter {
         const stats = await fs.stat(filepath);
         const fileAge = (now - stats.mtime) / (1000 * 60 * 60 * 24); // days
         
-        if (fileAge > this.config.retention.days) {
+        if (fileAge > this._config.retention.days) {
           await fs.unlink(filepath);
           cleanupResults.filesRemoved++;
           cleanupResults.bytesFreed += stats.size;

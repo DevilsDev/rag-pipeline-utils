@@ -4,10 +4,10 @@
  * Resolves module.exports returning {} in CI environment
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
 
-console.log('🔧 Fixing Node.js module export issues...');
+console.log('🔧 Fixing Node.js module export issues...'); // eslint-disable-line no-console
 
 // Critical modules that must export correctly
 const criticalModules = [
@@ -23,7 +23,7 @@ const criticalModules = [
 
 function fixModuleExports(filePath) {
   if (!fs.existsSync(filePath)) {
-    console.log(`⚠️ File not found: ${filePath}`);
+    console.log(`⚠️ File not found: ${filePath}`); // eslint-disable-line no-console
     return;
   }
 
@@ -60,7 +60,7 @@ function fixModuleExports(filePath) {
 
   if (modified) {
     fs.writeFileSync(filePath, content);
-    console.log(`✅ Fixed exports in ${filePath}`);
+    console.log(`✅ Fixed exports in ${filePath}`); // eslint-disable-line no-console
   }
 }
 
@@ -85,4 +85,4 @@ function scanAndFix(dir) {
 
 scanAndFix('src');
 
-console.log('🎉 Module export fix completed!');
+console.log('🎉 Module export fix completed!'); // eslint-disable-line no-console

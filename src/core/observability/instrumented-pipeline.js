@@ -1,28 +1,29 @@
 /**
+const path = require('path');
  * Instrumented pipeline wrapper with observability features
  * Integrates event logging, tracing, and metrics collection
  */
 
-const { eventLogger, EventTypes, EventSeverity  } = require('./event-logger.js');
-const { pipelineTracer  } = require('./tracing.js');
-const { pipelineMetrics  } = require('./metrics.js');
+const { eventLogger, EventTypes, EventSeverity  } = require('./event-logger.js'); // eslint-disable-line global-require
+const { pipelineTracer  } = require('./tracing.js'); // eslint-disable-line global-require
+const { pipelineMetrics  } = require('./metrics.js'); // eslint-disable-line global-require
 
 /**
  * Instrumented pipeline wrapper that adds observability to any pipeline
  */
 class InstrumentedPipeline {
-  constructor(pipeline, options = {}) {
+  constructor(pipeline, _options = {}) {
     this.pipeline = pipeline;
-    this.options = {
-      enableTracing: options.enableTracing !== false,
-      enableMetrics: options.enableMetrics !== false,
-      enableEventLogging: options.enableEventLogging !== false,
-      verboseLogging: options.verboseLogging || false,
-      ...options
+    this._options = {
+      enableTracing: _options.enableTracing !== false,
+      enableMetrics: _options.enableMetrics !== false,
+      enableEventLogging: _options.enableEventLogging !== false,
+      verboseLogging: _options.verboseLogging || false,
+      ..._options
     };
     
     // Start memory monitoring
-    if (this.options.enableMetrics) {
+    if (this._options.enableMetrics) {
       this.startMemoryMonitoring();
     }
   }
@@ -58,12 +59,12 @@ class InstrumentedPipeline {
     const startTime = Date.now();
     
     // Event logging
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.logPluginStart(pluginType, pluginName, input);
     }
     
     // Metrics
-    if (this.options.enableMetrics) {
+    if (this._options.enableMetrics) {
       pipelineMetrics.recordOperationStart('plugin', pluginType, pluginName);
     }
 
@@ -71,7 +72,7 @@ class InstrumentedPipeline {
       let result;
       
       // Tracing
-      if (this.options.enableTracing) {
+      if (this._options.enableTracing) {
         result = await pipelineTracer.tracePlugin(pluginType, pluginName, pluginFn, input);
       } else {
         result = await pluginFn(input);
@@ -80,12 +81,12 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
       
       // Event logging
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logPluginEnd(pluginType, pluginName, duration, { success: true });
       }
       
       // Metrics
-      if (this.options.enableMetrics) {
+      if (this._options.enableMetrics) {
         pipelineMetrics.recordOperationEnd('plugin', pluginType, pluginName, duration, 'success');
         this.recordPluginSpecificMetrics(pluginType, pluginName, duration, input, result);
       }
@@ -96,12 +97,12 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
       
       // Event logging
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logPluginError(pluginType, pluginName, error, duration);
       }
       
       // Metrics
-      if (this.options.enableMetrics) {
+      if (this._options.enableMetrics) {
         pipelineMetrics.recordOperationEnd('plugin', pluginType, pluginName, duration, 'error');
         pipelineMetrics.recordError('plugin', pluginType, pluginName, error);
       }
@@ -112,7 +113,7 @@ class InstrumentedPipeline {
 
   /**
    * Record plugin-specific metrics
-   * @param {string} pluginType - Plugin type
+   * @param {string} pluginType - Plugin _type
    * @param {string} pluginName - Plugin name
    * @param {number} duration - Duration in ms
    * @param {any} input - Plugin input
@@ -174,7 +175,7 @@ class InstrumentedPipeline {
    * @returns {Promise<void>}
    */
   async ingest(docPath) {
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.logStageStart('ingest', { docPath });
     }
 
@@ -183,7 +184,7 @@ class InstrumentedPipeline {
     try {
       let result;
       
-      if (this.options.enableTracing) {
+      if (this._options.enableTracing) {
         result = await pipelineTracer.traceStage('ingest', async () => {
           return await this.pipeline.ingest(docPath);
         }, { docPath });
@@ -193,7 +194,7 @@ class InstrumentedPipeline {
       
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logStageEnd('ingest', duration, { docPath, success: true });
       }
       
@@ -202,7 +203,7 @@ class InstrumentedPipeline {
     } catch (error) {
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
@@ -221,7 +222,7 @@ class InstrumentedPipeline {
    * @returns {Promise<string>}
    */
   async query(prompt) {
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.logStageStart('query', { prompt: prompt.substring(0, 100) });
     }
 
@@ -230,7 +231,7 @@ class InstrumentedPipeline {
     try {
       let result;
       
-      if (this.options.enableTracing) {
+      if (this._options.enableTracing) {
         result = await pipelineTracer.traceStage('query', async () => {
           return await this.pipeline.query(prompt);
         }, { promptLength: prompt.length });
@@ -240,7 +241,7 @@ class InstrumentedPipeline {
       
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logStageEnd('query', duration, { 
           promptLength: prompt.length,
           responseLength: result.length,
@@ -253,7 +254,7 @@ class InstrumentedPipeline {
     } catch (error) {
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
@@ -272,7 +273,7 @@ class InstrumentedPipeline {
    * @returns {AsyncGenerator<string>}
    */
   async* queryStream(prompt) {
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.logStageStart('query_stream', { prompt: prompt.substring(0, 100) });
     }
 
@@ -280,7 +281,7 @@ class InstrumentedPipeline {
     let tokenCount = 0;
     
     try {
-      if (this.options.enableTracing) {
+      if (this._options.enableTracing) {
         const span = pipelineTracer.startSpan('pipeline.query_stream');
         span.setAttributes({
           'pipeline.stage': 'query_stream',
@@ -309,7 +310,7 @@ class InstrumentedPipeline {
       
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logStageEnd('query_stream', duration, { 
           promptLength: prompt.length,
           tokensGenerated: tokenCount,
@@ -320,7 +321,7 @@ class InstrumentedPipeline {
     } catch (error) {
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
@@ -343,7 +344,7 @@ class InstrumentedPipeline {
       throw new Error('Pipeline does not support streaming ingest');
     }
 
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.logStageStart('ingest_stream', { docPath });
     }
 
@@ -353,9 +354,9 @@ class InstrumentedPipeline {
     
     try {
       for await (const update of this.pipeline.ingestStream(docPath)) {
-        if (update.type === 'chunk_processed') {
+        if (update._type === 'chunk_processed') {
           chunksProcessed++;
-        } else if (update.type === 'chunk_failed') {
+        } else if (update._type === 'chunk_failed') {
           chunksFailed++;
         }
         
@@ -364,7 +365,7 @@ class InstrumentedPipeline {
       
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logStageEnd('ingest_stream', duration, { 
           docPath,
           chunksProcessed,
@@ -376,7 +377,7 @@ class InstrumentedPipeline {
     } catch (error) {
       const duration = Date.now() - startTime;
       
-      if (this.options.enableEventLogging) {
+      if (this._options.enableEventLogging) {
         eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
@@ -395,15 +396,15 @@ class InstrumentedPipeline {
    */
   getObservabilityStats() {
     const stats = {
-      enabled: this.options,
+      enabled: this._options,
       session: eventLogger.getSessionStats()
     };
     
-    if (this.options.enableMetrics) {
+    if (this._options.enableMetrics) {
       stats.metrics = pipelineMetrics.getSummary();
     }
     
-    if (this.options.enableTracing) {
+    if (this._options.enableTracing) {
       stats.tracing = pipelineTracer.getTraceStats();
     }
     
@@ -412,25 +413,25 @@ class InstrumentedPipeline {
 
   /**
    * Export observability data
-   * @param {object} options - Export options
+   * @param {object} _options - Export _options
    * @returns {object} Exported data
    */
-  exportObservabilityData(options = {}) {
+  exportObservabilityData(_options = {}) {
     const data = {
       timestamp: new Date().toISOString(),
       sessionId: eventLogger.sessionId
     };
     
-    if (this.options.enableEventLogging && options.includeEvents !== false) {
-      data.events = eventLogger.getEventHistory(options.eventFilters || {});
+    if (this._options.enableEventLogging && _options.includeEvents !== false) {
+      data.events = eventLogger.getEventHistory(_options.eventFilters || {});
     }
     
-    if (this.options.enableMetrics && options.includeMetrics !== false) {
+    if (this._options.enableMetrics && _options.includeMetrics !== false) {
       data.metrics = pipelineMetrics.exportMetrics();
     }
     
-    if (this.options.enableTracing && options.includeTraces !== false) {
-      data.traces = pipelineTracer.exportSpans(options.traceFilters || {});
+    if (this._options.enableTracing && _options.includeTraces !== false) {
+      data.traces = pipelineTracer.exportSpans(_options.traceFilters || {});
     }
     
     return data;
@@ -440,15 +441,15 @@ class InstrumentedPipeline {
    * Clear all observability data
    */
   clearObservabilityData() {
-    if (this.options.enableEventLogging) {
+    if (this._options.enableEventLogging) {
       eventLogger.clearHistory();
     }
     
-    if (this.options.enableMetrics) {
+    if (this._options.enableMetrics) {
       pipelineMetrics.clearMetrics();
     }
     
-    if (this.options.enableTracing) {
+    if (this._options.enableTracing) {
       pipelineTracer.clearCompletedSpans();
     }
   }
@@ -470,12 +471,12 @@ class InstrumentedPipeline {
     return {
       ...baseConfig,
       observability: {
-        enabled: this.options,
+        enabled: this._options,
         sessionId: eventLogger.sessionId,
         capabilities: {
-          eventLogging: this.options.enableEventLogging,
-          tracing: this.options.enableTracing,
-          metrics: this.options.enableMetrics
+          eventLogging: this._options.enableEventLogging,
+          tracing: this._options.enableTracing,
+          metrics: this._options.enableMetrics
         }
       }
     };
@@ -484,12 +485,12 @@ class InstrumentedPipeline {
 
 /**
  * Create instrumented pipeline wrapper
- * @param {object} pipeline - Base pipeline instance
- * @param {object} options - Observability options
+ * @param {object} pipeline - Base pipeline _instance
+ * @param {object} _options - Observability _options
  * @returns {InstrumentedPipeline} Instrumented pipeline
  */
-function createInstrumentedPipeline(pipeline, options = {}) {
-  return new InstrumentedPipeline(pipeline, options);
+function createInstrumentedPipeline(_pipeline, options = {}) {
+  return new InstrumentedPipeline(_pipeline, options);
 }
 
 

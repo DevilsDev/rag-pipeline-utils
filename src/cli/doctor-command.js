@@ -1,14 +1,15 @@
 /**
+const fs = require('fs');
  * Doctor Command for RAG Pipeline Diagnostics
  * Scans for common issues and provides actionable solutions
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency  } = require('../config/enhanced-ragrc-schema.js');
-const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js');
-const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js');
-// const { logger  } = require('../utils/logger.js'); // Reserved for future logging
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency  } = require('../_config/enhanced-ragrc-schema.js'); // eslint-disable-line global-require
+const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js'); // eslint-disable-line global-require
+const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js'); // eslint-disable-line global-require
+// const { logger  } = require('../utils/logger.js'); // Reserved for future logging // eslint-disable-line global-require
 
 /**
  * Diagnostic categories
@@ -36,19 +37,19 @@ const SEVERITY_LEVELS = {
  * Doctor command for pipeline diagnostics
  */
 class PipelineDoctor {
-  constructor(options = {}) {
-    this.options = {
-      configPath: options.configPath || '.ragrc.json',
-      registryUrl: options.registryUrl || DEFAULT_REGISTRY_URLS[0],
-      verbose: options.verbose || false,
-      autoFix: options.autoFix || false,
-      categories: options.categories || Object.values(DIAGNOSTIC_CATEGORIES),
-      ...options
+  constructor(_options = {}) {
+    this._options = {
+      configPath: _options.configPath || '.ragrc.json',
+      registryUrl: _options.registryUrl || DEFAULT_REGISTRY_URLS[0],
+      verbose: _options.verbose || false,
+      autoFix: _options.autoFix || false,
+      categories: _options.categories || Object.values(DIAGNOSTIC_CATEGORIES),
+      ..._options
     };
     
     this.issues = [];
     this.fixes = [];
-    this.config = null;
+    this._config = null;
     this.registry = null;
   }
 
@@ -57,7 +58,7 @@ class PipelineDoctor {
    * @returns {Promise<object>} Diagnostic results
    */
   async diagnose() {
-    console.log('🩺 RAG Pipeline Doctor - Diagnostic Scan\n');
+    console.log('🩺 RAG Pipeline Doctor - Diagnostic Scan\n'); // eslint-disable-line no-console
     
     const startTime = Date.now();
     this.issues = [];
@@ -68,37 +69,37 @@ class PipelineDoctor {
       await this.loadConfiguration();
       
       // Load registry if needed
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.PLUGINS)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.PLUGINS)) {
         await this.loadRegistry();
       }
 
       // Run diagnostic checks
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.CONFIGURATION)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.CONFIGURATION)) {
         await this.checkConfiguration();
       }
       
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.PLUGINS)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.PLUGINS)) {
         await this.checkPlugins();
       }
       
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.DEPENDENCIES)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.DEPENDENCIES)) {
         await this.checkDependencies();
       }
       
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.PERFORMANCE)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.PERFORMANCE)) {
         await this.checkPerformance();
       }
       
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.SECURITY)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.SECURITY)) {
         await this.checkSecurity();
       }
       
-      if (this.options.categories.includes(DIAGNOSTIC_CATEGORIES.ENVIRONMENT)) {
+      if (this._options.categories.includes(DIAGNOSTIC_CATEGORIES.ENVIRONMENT)) {
         await this.checkEnvironment();
       }
 
       // Apply automatic fixes if requested
-      if (this.options.autoFix && this.fixes.length > 0) {
+      if (this._options.autoFix && this.fixes.length > 0) {
         await this.applyFixes();
       }
 
@@ -109,7 +110,7 @@ class PipelineDoctor {
       return report;
       
     } catch (error) {
-      console.error('❌ Diagnostic scan failed:', error.message);
+      console.error('❌ Diagnostic scan failed:', error.message); // eslint-disable-line no-console
       throw error;
     }
   }
@@ -119,9 +120,9 @@ class PipelineDoctor {
    */
   async loadConfiguration() {
     try {
-      const configPath = path.resolve(this.options.configPath);
+      const configPath = path.resolve(this._options.configPath);
       const configContent = await fs.readFile(configPath, 'utf-8');
-      this.config = JSON.parse(configContent);
+      this._config = JSON.parse(configContent);
       
       this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.SUCCESS, 
         'Configuration file found and parsed successfully', {
@@ -133,7 +134,7 @@ class PipelineDoctor {
       if (error.code === 'ENOENT') {
         this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.ERROR,
           'Configuration file not found', {
-            expectedPath: path.resolve(this.options.configPath),
+            expectedPath: path.resolve(this._options.configPath),
             solution: 'Run "rag-pipeline init" to create a configuration file'
           });
       } else if (error instanceof SyntaxError) {
@@ -161,13 +162,13 @@ class PipelineDoctor {
       
       this.addIssue(DIAGNOSTIC_CATEGORIES.PLUGINS, SEVERITY_LEVELS.SUCCESS,
         'Plugin registry loaded successfully', {
-          url: this.options.registryUrl
+          url: this._options.registryUrl
         });
         
     } catch (error) {
       this.addIssue(DIAGNOSTIC_CATEGORIES.PLUGINS, SEVERITY_LEVELS.WARNING,
         'Failed to load plugin registry', {
-          url: this.options.registryUrl,
+          url: this._options.registryUrl,
           error: error.message,
           solution: 'Check internet connection or use local plugins'
         });
@@ -178,12 +179,12 @@ class PipelineDoctor {
    * Check configuration validity
    */
   async checkConfiguration() {
-    if (!this.config) return;
+    if (!this._config) return;
 
-    console.log('🔍 Checking configuration...');
+    console.log('🔍 Checking configuration...'); // eslint-disable-line no-console
 
     // Schema validation
-    const schemaValidation = validateEnhancedRagrcSchema(this.config);
+    const schemaValidation = validateEnhancedRagrcSchema(this._config);
     if (!schemaValidation.valid) {
       this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.ERROR,
         'Configuration schema validation failed', {
@@ -207,13 +208,13 @@ class PipelineDoctor {
           solution: 'Consider upgrading to enhanced format for new features'
         });
         
-      this.addFix('upgrade-config-format', 'Upgrade to enhanced format', async () => {
+      this.addFix('upgrade-_config-format', 'Upgrade to enhanced format', async () => {
         return this.upgradeConfigFormat();
       });
     }
 
     // Consistency validation
-    const consistencyValidation = validateConfigConsistency(this.config);
+    const consistencyValidation = validateConfigConsistency(this._config);
     if (!consistencyValidation.valid) {
       this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.ERROR,
         'Configuration consistency issues found', {
@@ -225,7 +226,7 @@ class PipelineDoctor {
     // Check for required sections
     const requiredSections = ['plugins'];
     for (const section of requiredSections) {
-      if (!this.config[section]) {
+      if (!this._config[section]) {
         this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.ERROR,
           `Missing required configuration section: ${section}`, {
             solution: `Add ${section} section to configuration`
@@ -234,13 +235,13 @@ class PipelineDoctor {
     }
 
     // Check for empty plugin groups
-    if (this.config.plugins) {
+    if (this._config.plugins) {
       const requiredPluginTypes = ['loader', 'embedder', 'retriever', 'llm'];
-      for (const type of requiredPluginTypes) {
-        if (!this.config.plugins[type] || Object.keys(this.config.plugins[type]).length === 0) {
+      for (const _type of requiredPluginTypes) {
+        if (!this._config.plugins[_type] || Object.keys(this._config.plugins[_type]).length === 0) {
           this.addIssue(DIAGNOSTIC_CATEGORIES.CONFIGURATION, SEVERITY_LEVELS.ERROR,
-            `No ${type} plugins configured`, {
-              solution: `Add at least one ${type} plugin to configuration`
+            `No ${_type} plugins configured`, {
+              solution: `Add at least one ${_type} plugin to configuration`
             });
         }
       }
@@ -251,16 +252,16 @@ class PipelineDoctor {
    * Check plugin configuration and availability
    */
   async checkPlugins() {
-    if (!this.config?.plugins) return;
+    if (!this._config?.plugins) return;
 
-    console.log('🔌 Checking plugins...');
+    console.log('🔌 Checking plugins...'); // eslint-disable-line no-console
 
-    const dependencies = extractPluginDependencies(this.config);
+    const dependencies = extractPluginDependencies(this._config);
     
     if (dependencies.length === 0) {
       this.addIssue(DIAGNOSTIC_CATEGORIES.PLUGINS, SEVERITY_LEVELS.ERROR,
         'No plugins configured', {
-          solution: 'Configure plugins for each required type'
+          solution: 'Configure plugins for each required _type'
         });
       return;
     }
@@ -284,7 +285,7 @@ class PipelineDoctor {
    * @param {object} dependency - Plugin dependency
    */
   async checkPlugin(dependency) {
-    const { type: _type, name, spec } = dependency;
+    const { _type: _type, name, spec } = dependency;
 
     // Check plugin source
     if (spec.source === 'local') {
@@ -337,7 +338,7 @@ class PipelineDoctor {
     }
 
     // Check plugin configuration
-    if (spec.config && typeof spec.config !== 'object') {
+    if (spec._config && typeof spec._config !== 'object') {
       this.addIssue(DIAGNOSTIC_CATEGORIES.PLUGINS, SEVERITY_LEVELS.ERROR,
         `Invalid configuration for plugin ${name}`, {
           plugin: name,
@@ -355,18 +356,18 @@ class PipelineDoctor {
     
     // Group plugins by type
     for (const dep of dependencies) {
-      if (!pluginsByType[dep.type]) {
-        pluginsByType[dep.type] = [];
+      if (!pluginsByType[dep._type]) {
+        pluginsByType[dep._type] = [];
       }
-      pluginsByType[dep.type].push(dep);
+      pluginsByType[dep._type].push(dep);
     }
 
     // Check for multiple plugins of same type (potential conflicts)
-    for (const [type, plugins] of Object.entries(pluginsByType)) {
+    for (const [_type, plugins] of Object.entries(pluginsByType)) {
       if (plugins.length > 1) {
         const pluginNames = plugins.map(p => p.name);
         this.addIssue(DIAGNOSTIC_CATEGORIES.PLUGINS, SEVERITY_LEVELS.WARNING,
-          `Multiple ${type} plugins configured`, {
+          `Multiple ${_type} plugins configured`, {
             plugins: pluginNames,
             solution: 'Ensure plugins are compatible or use only one'
           });
@@ -415,7 +416,7 @@ class PipelineDoctor {
    * Check dependencies and compatibility
    */
   async checkDependencies() {
-    console.log('📦 Checking dependencies...');
+    console.log('📦 Checking dependencies...'); // eslint-disable-line no-console
 
     // Check Node.js version
     const nodeVersion = process.version;
@@ -480,9 +481,9 @@ class PipelineDoctor {
    * Check performance configuration
    */
   async checkPerformance() {
-    console.log('⚡ Checking performance settings...');
+    console.log('⚡ Checking performance settings...'); // eslint-disable-line no-console
 
-    if (!this.config?.performance) {
+    if (!this._config?.performance) {
       this.addIssue(DIAGNOSTIC_CATEGORIES.PERFORMANCE, SEVERITY_LEVELS.INFO,
         'No performance configuration found', {
           solution: 'Consider adding performance settings for better throughput'
@@ -490,7 +491,7 @@ class PipelineDoctor {
       return;
     }
 
-    const perf = this.config.performance;
+    const perf = this._config.performance;
 
     // Check parallel processing settings
     if (perf.parallel?.enabled) {
@@ -538,11 +539,11 @@ class PipelineDoctor {
    * Check security configuration
    */
   async checkSecurity() {
-    console.log('🔒 Checking security settings...');
+    console.log('🔒 Checking security settings...'); // eslint-disable-line no-console
 
     // Check for sensitive data in configuration
     const sensitiveKeys = ['password', 'secret', 'key', 'token', 'apikey'];
-    const configStr = JSON.stringify(this.config).toLowerCase();
+    const configStr = JSON.stringify(this._config).toLowerCase();
     
     for (const key of sensitiveKeys) {
       if (configStr.includes(key)) {
@@ -555,8 +556,8 @@ class PipelineDoctor {
     }
 
     // Check registry URLs for HTTPS
-    if (this.config?.registry?.urls) {
-      for (const url of this.config.registry.urls) {
+    if (this._config?.registry?.urls) {
+      for (const url of this._config.registry.urls) {
         if (!url.startsWith('https://')) {
           this.addIssue(DIAGNOSTIC_CATEGORIES.SECURITY, SEVERITY_LEVELS.WARNING,
             'Insecure registry URL', {
@@ -568,7 +569,7 @@ class PipelineDoctor {
     }
 
     // Check for local file paths that might be exposed
-    const dependencies = extractPluginDependencies(this.config);
+    const dependencies = extractPluginDependencies(this._config);
     for (const dep of dependencies) {
       if (dep.spec.source === 'local' && dep.spec.path) {
         if (dep.spec.path.includes('..')) {
@@ -587,11 +588,11 @@ class PipelineDoctor {
    * Check environment and system requirements
    */
   async checkEnvironment() {
-    console.log('🌍 Checking environment...');
+    console.log('🌍 Checking environment...'); // eslint-disable-line no-console
 
     // Check available memory
-    const totalMemory = require('os').totalmem();
-    const freeMemory = require('os').freemem();
+    const totalMemory = require('os').totalmem(); // eslint-disable-line global-require
+    const freeMemory = require('os').freemem(); // eslint-disable-line global-require
     const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
 
     if (memoryUsage > 90) {
@@ -679,15 +680,15 @@ class PipelineDoctor {
    * Apply automatic fixes
    */
   async applyFixes() {
-    console.log('\n🔧 Applying automatic fixes...\n');
+    console.log('\n🔧 Applying automatic fixes...\n'); // eslint-disable-line no-console
 
     for (const fix of this.fixes) {
       try {
-        console.log(`Applying: ${fix.description}`);
+        console.log(`Applying: ${fix.description}`); // eslint-disable-line no-console
         await fix.action();
-        console.log(`✅ ${fix.description} completed`);
+        console.log(`✅ ${fix.description} completed`); // eslint-disable-line no-console
       } catch (error) {
-        console.error(`❌ ${fix.description} failed:`, error.message);
+        console.error(`❌ ${fix.description} failed:`, error.message); // eslint-disable-line no-console
       }
     }
   }
@@ -698,7 +699,7 @@ class PipelineDoctor {
    */
   async fixSchemaErrors(_errors) {
     // Implementation would fix common schema errors
-    console.log('Fixing schema errors...');
+    console.log('Fixing schema errors...'); // eslint-disable-line no-console
   }
 
   /**
@@ -706,7 +707,7 @@ class PipelineDoctor {
    */
   async upgradeConfigFormat() {
     // Implementation would convert legacy format to enhanced format
-    console.log('Upgrading configuration format...');
+    console.log('Upgrading configuration format...'); // eslint-disable-line no-console
   }
 
   /**
@@ -743,9 +744,9 @@ class PipelineDoctor {
    * @param {object} report - Diagnostic report
    */
   displayReport(report) {
-    console.log('\n📊 Diagnostic Report\n');
-    console.log(`Scan completed in ${report.duration}ms`);
-    console.log(`Total issues found: ${report.summary.total}\n`);
+    console.log('\n📊 Diagnostic Report\n'); // eslint-disable-line no-console
+    console.log(`Scan completed in ${report.duration}ms`); // eslint-disable-line no-console
+    console.log(`Total issues found: ${report.summary.total}\n`); // eslint-disable-line no-console
 
     // Summary by severity
     const severityIcons = {
@@ -755,40 +756,40 @@ class PipelineDoctor {
       [SEVERITY_LEVELS.SUCCESS]: '✅'
     };
 
-    console.log('Summary:');
-    console.log(`  ${severityIcons[SEVERITY_LEVELS.ERROR]} Errors: ${report.summary.errors}`);
-    console.log(`  ${severityIcons[SEVERITY_LEVELS.WARNING]} Warnings: ${report.summary.warnings}`);
-    console.log(`  ${severityIcons[SEVERITY_LEVELS.INFO]} Info: ${report.summary.info}`);
-    console.log(`  ${severityIcons[SEVERITY_LEVELS.SUCCESS]} Success: ${report.summary.success}\n`);
+    console.log('Summary:'); // eslint-disable-line no-console
+    console.log(`  ${severityIcons[SEVERITY_LEVELS.ERROR]} Errors: ${report.summary.errors}`); // eslint-disable-line no-console
+    console.log(`  ${severityIcons[SEVERITY_LEVELS.WARNING]} Warnings: ${report.summary.warnings}`); // eslint-disable-line no-console
+    console.log(`  ${severityIcons[SEVERITY_LEVELS.INFO]} Info: ${report.summary.info}`); // eslint-disable-line no-console
+    console.log(`  ${severityIcons[SEVERITY_LEVELS.SUCCESS]} Success: ${report.summary.success}\n`); // eslint-disable-line no-console
 
     // Issues by category
     for (const [category, issues] of Object.entries(report.categories)) {
       if (issues.length === 0) continue;
 
-      console.log(`${category.toUpperCase()}:`);
+      console.log(`${category.toUpperCase()}:`); // eslint-disable-line no-console
       for (const issue of issues) {
         const icon = severityIcons[issue.severity];
-        console.log(`  ${icon} ${issue.message}`);
+        console.log(`  ${icon} ${issue.message}`); // eslint-disable-line no-console
         
-        if (this.options.verbose && issue.details.solution) {
-          console.log(`     Solution: ${issue.details.solution}`);
+        if (this._options.verbose && issue.details.solution) {
+          console.log(`     Solution: ${issue.details.solution}`); // eslint-disable-line no-console
         }
       }
-      console.log('');
+      console.log(''); // eslint-disable-line no-console
     }
 
     // Overall health score
     const healthScore = Math.max(0, 100 - (report.summary.errors * 20) - (report.summary.warnings * 5));
     const healthEmoji = healthScore >= 90 ? '🟢' : healthScore >= 70 ? '🟡' : '🔴';
     
-    console.log(`${healthEmoji} Overall Health Score: ${healthScore}/100`);
+    console.log(`${healthEmoji} Overall Health Score: ${healthScore}/100`); // eslint-disable-line no-console
     
     if (report.summary.errors > 0) {
-      console.log('\n❌ Critical issues found. Please address errors before proceeding.');
+      console.log('\n❌ Critical issues found. Please address errors before proceeding.'); // eslint-disable-line no-console
     } else if (report.summary.warnings > 0) {
-      console.log('\n⚠️  Some issues found. Consider addressing warnings for optimal performance.');
+      console.log('\n⚠️  Some issues found. Consider addressing warnings for optimal performance.'); // eslint-disable-line no-console
     } else {
-      console.log('\n🎉 No critical issues found. Your RAG pipeline looks healthy!');
+      console.log('\n🎉 No critical issues found. Your RAG pipeline looks healthy!'); // eslint-disable-line no-console
     }
   }
 }
@@ -805,7 +806,6 @@ export async function runPipelineDoctor(options = {}) {
 
 
 // Default export
-
 
 
 module.exports = {

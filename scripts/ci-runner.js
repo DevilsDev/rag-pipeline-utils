@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 /**
+const path = require('path');
  * CI Pipeline Runner
  * Version: 2.0.0
  * Description: Orchestrates linting, mock validation, and testing with enhanced logging and dry-run support
