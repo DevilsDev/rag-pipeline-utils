@@ -1,50 +1,41 @@
-# .github/workflows/release-sync.yml
-# Version: 1.0.0
-# Description: Syncs changelog/tag to blog post
-# Author: Ali Kahwaji
-
 name: 🔄 Release Sync
-
-on:
+'on':
   push:
     tags:
-      - 'v*' # any pushed Git tag
+      - v*
     paths:
-      - 'CHANGELOG.md'
-      - 'scripts/**'
-      - '.github/workflows/release-sync.yml'
-
+      - CHANGELOG.md
+      - scripts/**
+      - .github/workflows/release-sync.yml
 permissions:
   contents: write
   id-token: write
-
 jobs:
   publish-release-blog:
     name: 📝 Create Blog Post from CHANGELOG + Tag
     runs-on: ubuntu-latest
-
     steps:
       - name: 🧾 Checkout Repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # get full commit history for changelog diff
-
+          fetch-depth: 0
       - name: 🧰 Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: 📦 Install deps
         run: npm ci
-
       - name: 🔁 Generate blog post
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           PREV=$(git tag --sort=committerdate | grep -B1 $VERSION | head -n1)
           node scripts/generate-release-note.js $VERSION $PREV
-
       - name: 💬 Commit release blog
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs(blog): auto-publish release notes for ${{ github.ref_name }}"
-          file_pattern: "docs-site/blog/*.md"
+          commit_message: 'docs(blog): auto-publish release notes for ${{ github.ref_name }}'
+          file_pattern: docs-site/blog/*.md
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
