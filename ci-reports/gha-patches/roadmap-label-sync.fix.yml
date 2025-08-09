@@ -1,0 +1,6 @@
+workflow: roadmap-label-sync.yml
+patches:
+  - type: add_timeout
+    description: Add timeout to job 'sync-labels'
+    changes:
+      timeout-minutes: 30

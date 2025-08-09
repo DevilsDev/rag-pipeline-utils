@@ -42,7 +42,15 @@
     "security:fix": "npm audit fix",
     "security:fix:force": "npm audit fix --force",
     "security:check": "npm audit && echo 'Security check passed'",
-    "security:report": "npm run security:audit:json && echo 'Security report generated: security-audit-report.json'"
+    "security:report": "npm run security:audit:json && echo 'Security report generated: security-audit-report.json'",
+    "ci:hardening": "node scripts/ci/harden-workflows.js",
+    "ci:audit": "node scripts/audit/gha-audit.js",
+    "ci:targeted-fixes": "node scripts/ci/targeted-security-fixes.js",
+    "ci:comprehensive-hardening": "node scripts/ci/comprehensive-hardening.js",
+    "ci:shell-security": "node scripts/ci/shell-security-hardening.js",
+    "ci:final-fixes": "node scripts/ci/final-shell-injection-fixes.js",
+    "ci:test-workflows": "node scripts/ci/test-workflows.js",
+    "ci:fix-remaining": "node scripts/ci/fix-remaining-actions.js"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

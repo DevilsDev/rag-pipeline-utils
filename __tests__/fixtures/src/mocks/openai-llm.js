@@ -2,7 +2,7 @@
  * Mock OpenAI LLM Plugin
  * Implements: llm.generate(prompt, options)
  */
-export default class OpenAILLM {
+class OpenAILLM {
   async generate(prompt, options = {}) {
     if (options.stream) {
       return this.generateStream(prompt);
@@ -41,3 +41,6 @@ export default class OpenAILLM {
     yield { token: '', done: true };
   }
 }
+
+
+module.exports = OpenAILLM;

@@ -1,0 +1,6 @@
+workflow: release-sync.yml
+patches:
+  - type: add_timeout
+    description: Add timeout to job 'publish-release-blog'
+    changes:
+      timeout-minutes: 30

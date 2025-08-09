@@ -9,7 +9,7 @@ const { mkdirSync, rmSync, writeFileSync, copyFileSync, existsSync  } = require(
 const { join, resolve  } = require('path');
 const { fileURLToPath  } = require('url');
 
-const __filename = fileURLToPath(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url); // Fixed: duplicate declaration
 const __dirname = resolve(__filename, '..');
 
 const TEMP_DIR = resolve('__tests__/__temp__/load-config');

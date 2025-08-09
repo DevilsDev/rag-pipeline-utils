@@ -31,7 +31,7 @@ describe('PluginRegistry', () => {
   });
 
   test('throws error for unknown plugin type on registration', () => {
-    expect(() => registry.register('unknown-type', 'x', {})).toThrow(/Unknown plugin type/);
+    expect(() => registry.register('unknown-type', 'x', {})).toThrow(/Unknown plugin _type/);
   });
 
   test('throws error when retrieving a nonexistent plugin', () => {
@@ -39,7 +39,9 @@ describe('PluginRegistry', () => {
   });
 
   test('lists all registered plugin names for a type', () => {
-    registry.register('llm', 'gpt-4', {});
+    registry.register('llm', 'gpt-4', { 
+            generate: jest.fn().mockResolvedValue('response') 
+          });
     registry.register('llm', 'gpt-3.5', {});
     const list = registry.list('llm');
     expect(list).toContain('gpt-4');
@@ -48,7 +50,7 @@ describe('PluginRegistry', () => {
   });
 
   test('throws error when listing plugins for invalid type', () => {
-    expect(() => registry.list('invalid')).toThrow(/Unknown plugin type/);
+    expect(() => registry.list('invalid')).toThrow(/Unknown plugin _type/);
   });
 });
 

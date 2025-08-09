@@ -16,7 +16,7 @@ const { mkdirSync,
 const { join, resolve  } = require('path');
 const { fileURLToPath  } = require('url');
 
-const __filename = fileURLToPath(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url); // Fixed: duplicate declaration
 const __dirname = resolve(__filename, '..');
 
 const CLI_PATH = resolve('bin/cli.js');

@@ -1,46 +1,46 @@
-# .github/workflows/docs-ci.yml
-# Version: 1.2.0
-# Description: CI pipeline for linting, testing, and building docs with improved caching and consistency
-# Author: Ali Kahwaji
-
-name: 📘 Docs CI
-
-on:
+name: 📘 Docs CI (Security Hardened)
+"on":
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   docs-ci:
     runs-on: ubuntu-latest
-
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-
+          cache: npm
+          cache-dependency-path: "**/package-lock.json"
       - name: 📦 Install dependencies
         run: npm ci
-
+        shell: bash
       - name: 🧹 Lint codebase
         run: npm run lint
-
+        shell: bash
       - name: 🛠 Build documentation
         run: npm run docs:build
-
+        shell: bash
       - name: ✅ Run tests
         run: npm test
         if: ${{ always() }}
-
+        shell: bash
       - name: 📦 Upload built docs (optional)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: docusaurus-build
           path: docs-site/build
+    timeout-minutes: 30
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read

@@ -8,9 +8,18 @@ const { execSync  } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Mock child_process for CLI testing
-jest.mock('child_process');
-jest.mock('fs');
+// Mock setup
+const mockExecSync = jest.fn();
+jest.mock('child_process', () => ({
+  execSync: mockExecSync
+}));
+
+const mockFs = {
+  writeFileSync: jest.fn(),
+  readFileSync: jest.fn(),
+  existsSync: jest.fn()
+};
+jest.mock('fs', () => mockFs);
 
 describe('Enhanced CLI Features', () => {
   const mockExecSync = execSync;

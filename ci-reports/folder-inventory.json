@@ -1,0 +1,1138 @@
+[
+  {
+    "path": ".git",
+    "depth": 1,
+    "files_count": 3369,
+    "dirs_count": 275,
+    "size_bytes": 26310930,
+    "summarized": true
+  },
+  {
+    "path": ".github\\act-events",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 1777,
+    "summarized": false
+  },
+  {
+    "path": ".github\\workflows",
+    "depth": 2,
+    "files_count": 20,
+    "dirs_count": 0,
+    "size_bytes": 116670,
+    "summarized": false
+  },
+  {
+    "path": ".github",
+    "depth": 1,
+    "files_count": 6,
+    "dirs_count": 2,
+    "size_bytes": 17288,
+    "summarized": false
+  },
+  {
+    "path": ".husky\\_",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 718,
+    "summarized": false
+  },
+  {
+    "path": ".husky",
+    "depth": 1,
+    "files_count": 1,
+    "dirs_count": 1,
+    "size_bytes": 137,
+    "summarized": false
+  },
+  {
+    "path": "bin",
+    "depth": 1,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 395,
+    "summarized": false
+  },
+  {
+    "path": "ci-reports",
+    "depth": 1,
+    "files_count": 9,
+    "dirs_count": 0,
+    "size_bytes": 3212352,
+    "summarized": false
+  },
+  {
+    "path": "comprehensive-security-reports",
+    "depth": 1,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 6643,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\ai",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 153441,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\config",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 27949,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\core\\observability",
+    "depth": 4,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 140055,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\core\\performance",
+    "depth": 4,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 343193,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\core",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 2,
+    "size_bytes": 34664,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\dag",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 81222,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\dx",
+    "depth": 3,
+    "files_count": 6,
+    "dirs_count": 0,
+    "size_bytes": 335290,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\ecosystem",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 173149,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\reranker",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 11688,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\scripts",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 17678,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\config",
+    "depth": 4,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 30670,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\core\\observability",
+    "depth": 5,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 213609,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\core\\performance",
+    "depth": 5,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 158886,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\core",
+    "depth": 4,
+    "files_count": 3,
+    "dirs_count": 2,
+    "size_bytes": 33539,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\dag",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 30139,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\reranker",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 11752,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src\\utils",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 10928,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\src",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 5,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\utils",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 11247,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\__tests__\\fixtures\\src\\mocks",
+    "depth": 6,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 28340,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\__tests__\\fixtures\\src",
+    "depth": 5,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\__tests__\\fixtures",
+    "depth": 4,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\__tests__\\utils",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 82410,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report\\__tests__",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 2,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "coverage\\lcov-report",
+    "depth": 2,
+    "files_count": 20,
+    "dirs_count": 11,
+    "size_bytes": 912207,
+    "summarized": false
+  },
+  {
+    "path": "coverage",
+    "depth": 1,
+    "files_count": 3,
+    "dirs_count": 1,
+    "size_bytes": 399,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\grafana\\dashboards",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 4249,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\grafana",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\helm\\rag-pipeline",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 7454,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\helm",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\kubernetes",
+    "depth": 2,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 13748,
+    "summarized": false
+  },
+  {
+    "path": "deployment\\prometheus",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 4251,
+    "summarized": false
+  },
+  {
+    "path": "deployment",
+    "depth": 1,
+    "files_count": 0,
+    "dirs_count": 4,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs",
+    "depth": 1,
+    "files_count": 13,
+    "dirs_count": 0,
+    "size_bytes": 92443,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-blog\\default\\p",
+    "depth": 5,
+    "files_count": 11,
+    "dirs_count": 0,
+    "size_bytes": 12288,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-blog\\default",
+    "depth": 4,
+    "files_count": 9,
+    "dirs_count": 1,
+    "size_bytes": 9514,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-blog",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-docs\\default\\p",
+    "depth": 5,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 3464,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-docs\\default",
+    "depth": 4,
+    "files_count": 11,
+    "dirs_count": 1,
+    "size_bytes": 7260,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-docs",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-pages\\default",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 378,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-content-pages",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-debug\\default\\p",
+    "depth": 5,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 15944,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-debug\\default",
+    "depth": 4,
+    "files_count": 1,
+    "dirs_count": 1,
+    "size_bytes": 58,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus\\docusaurus-plugin-debug",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\.docusaurus",
+    "depth": 2,
+    "files_count": 12,
+    "dirs_count": 4,
+    "size_bytes": 52877,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\blog",
+    "depth": 2,
+    "files_count": 13,
+    "dirs_count": 0,
+    "size_bytes": 5659,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\build",
+    "depth": 2,
+    "files_count": 99,
+    "dirs_count": 39,
+    "size_bytes": 3945975,
+    "summarized": true
+  },
+  {
+    "path": "docs-site\\docs",
+    "depth": 2,
+    "files_count": 14,
+    "dirs_count": 0,
+    "size_bytes": 155243,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\node_modules",
+    "depth": 2,
+    "files_count": 31540,
+    "dirs_count": 4368,
+    "size_bytes": 156968246,
+    "summarized": true
+  },
+  {
+    "path": "docs-site\\src\\components\\HomepageFeatures",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 2954,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\src\\components\\HomepageHeader",
+    "depth": 4,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 2977,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\src\\components",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 2,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\src\\css",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 2669,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\src\\pages",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 1027,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\src",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 3,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\static\\img\\authors",
+    "depth": 4,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 32916,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\static\\img",
+    "depth": 3,
+    "files_count": 4,
+    "dirs_count": 1,
+    "size_bytes": 2499298,
+    "summarized": false
+  },
+  {
+    "path": "docs-site\\static",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "docs-site",
+    "depth": 1,
+    "files_count": 6,
+    "dirs_count": 7,
+    "size_bytes": 693063,
+    "summarized": false
+  },
+  {
+    "path": "e2e-reports",
+    "depth": 1,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 247,
+    "summarized": false
+  },
+  {
+    "path": "examples",
+    "depth": 1,
+    "files_count": 0,
+    "dirs_count": 0,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "node_modules",
+    "depth": 1,
+    "files_count": 50998,
+    "dirs_count": 7975,
+    "size_bytes": 531483465,
+    "summarized": true
+  },
+  {
+    "path": "pipelines",
+    "depth": 1,
+    "files_count": 198,
+    "dirs_count": 0,
+    "size_bytes": 239151,
+    "summarized": false
+  },
+  {
+    "path": "profiling-reports",
+    "depth": 1,
+    "files_count": 78,
+    "dirs_count": 0,
+    "size_bytes": 86440,
+    "summarized": false
+  },
+  {
+    "path": "public\\dist",
+    "depth": 2,
+    "files_count": 10,
+    "dirs_count": 1,
+    "size_bytes": 1666847,
+    "summarized": true
+  },
+  {
+    "path": "public\\node_modules",
+    "depth": 2,
+    "files_count": 19293,
+    "dirs_count": 3628,
+    "size_bytes": 123770456,
+    "summarized": true
+  },
+  {
+    "path": "public\\results",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 13769,
+    "summarized": false
+  },
+  {
+    "path": "public\\src\\components",
+    "depth": 3,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 47810,
+    "summarized": false
+  },
+  {
+    "path": "public\\src\\contexts",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1962,
+    "summarized": false
+  },
+  {
+    "path": "public\\src\\styles",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 0,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "public\\src\\utils",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 10348,
+    "summarized": false
+  },
+  {
+    "path": "public\\src",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 4,
+    "size_bytes": 30754,
+    "summarized": false
+  },
+  {
+    "path": "public",
+    "depth": 1,
+    "files_count": 10,
+    "dirs_count": 4,
+    "size_bytes": 247338,
+    "summarized": false
+  },
+  {
+    "path": "scripts\\audit",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 18495,
+    "summarized": false
+  },
+  {
+    "path": "scripts\\docs",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 0,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "scripts\\maintenance",
+    "depth": 2,
+    "files_count": 13,
+    "dirs_count": 0,
+    "size_bytes": 112854,
+    "summarized": false
+  },
+  {
+    "path": "scripts\\utils",
+    "depth": 2,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 14097,
+    "summarized": false
+  },
+  {
+    "path": "scripts",
+    "depth": 1,
+    "files_count": 44,
+    "dirs_count": 4,
+    "size_bytes": 217635,
+    "summarized": false
+  },
+  {
+    "path": "security-reports",
+    "depth": 1,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 257,
+    "summarized": false
+  },
+  {
+    "path": "src\\ai",
+    "depth": 2,
+    "files_count": 11,
+    "dirs_count": 0,
+    "size_bytes": 185068,
+    "summarized": false
+  },
+  {
+    "path": "src\\cli\\commands",
+    "depth": 3,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 88245,
+    "summarized": false
+  },
+  {
+    "path": "src\\cli",
+    "depth": 2,
+    "files_count": 4,
+    "dirs_count": 1,
+    "size_bytes": 111838,
+    "summarized": false
+  },
+  {
+    "path": "src\\config",
+    "depth": 2,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 21453,
+    "summarized": false
+  },
+  {
+    "path": "src\\core\\observability",
+    "depth": 3,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 63581,
+    "summarized": false
+  },
+  {
+    "path": "src\\core\\performance",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 31686,
+    "summarized": false
+  },
+  {
+    "path": "src\\core\\plugin-marketplace",
+    "depth": 3,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 55255,
+    "summarized": false
+  },
+  {
+    "path": "src\\core",
+    "depth": 2,
+    "files_count": 3,
+    "dirs_count": 3,
+    "size_bytes": 19886,
+    "summarized": false
+  },
+  {
+    "path": "src\\dag",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 17248,
+    "summarized": false
+  },
+  {
+    "path": "src\\dx",
+    "depth": 2,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 74047,
+    "summarized": false
+  },
+  {
+    "path": "src\\ecosystem",
+    "depth": 2,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 58637,
+    "summarized": false
+  },
+  {
+    "path": "src\\enterprise",
+    "depth": 2,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 70437,
+    "summarized": false
+  },
+  {
+    "path": "src\\evaluate",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 4317,
+    "summarized": false
+  },
+  {
+    "path": "src\\loader",
+    "depth": 2,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 5508,
+    "summarized": false
+  },
+  {
+    "path": "src\\mocks",
+    "depth": 2,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 5800,
+    "summarized": false
+  },
+  {
+    "path": "src\\reranker",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1120,
+    "summarized": false
+  },
+  {
+    "path": "src\\utils\\ci",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1744,
+    "summarized": false
+  },
+  {
+    "path": "src\\utils",
+    "depth": 2,
+    "files_count": 4,
+    "dirs_count": 1,
+    "size_bytes": 16777,
+    "summarized": false
+  },
+  {
+    "path": "src",
+    "depth": 1,
+    "files_count": 2,
+    "dirs_count": 13,
+    "size_bytes": 3552,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\ai",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 21257,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\ci",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 35177,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\compatibility",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 13952,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\dx",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 30330,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\e2e",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 54003,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\ecosystem",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 19666,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\fixtures\\e2e-data",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 603931,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\fixtures\\src\\mocks",
+    "depth": 4,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 7144,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\fixtures\\src",
+    "depth": 3,
+    "files_count": 0,
+    "dirs_count": 1,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\fixtures",
+    "depth": 2,
+    "files_count": 5,
+    "dirs_count": 2,
+    "size_bytes": 1550,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\integration\\cli",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 3658,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\integration\\config",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1939,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\integration",
+    "depth": 2,
+    "files_count": 3,
+    "dirs_count": 2,
+    "size_bytes": 46356,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\load",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 16800,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\performance",
+    "depth": 2,
+    "files_count": 5,
+    "dirs_count": 0,
+    "size_bytes": 89309,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\property",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 19448,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\scripts",
+    "depth": 2,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1978,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\security",
+    "depth": 2,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 53071,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\cli",
+    "depth": 3,
+    "files_count": 4,
+    "dirs_count": 0,
+    "size_bytes": 72970,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\config",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 4138,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\core",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 1824,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\dag",
+    "depth": 3,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 31577,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\observability",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 47061,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\performance",
+    "depth": 3,
+    "files_count": 3,
+    "dirs_count": 0,
+    "size_bytes": 35761,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\plugins",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 9681,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\reranker\\__snapshots__",
+    "depth": 4,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 174,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\reranker",
+    "depth": 3,
+    "files_count": 5,
+    "dirs_count": 1,
+    "size_bytes": 3324,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\scripts",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 14280,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit\\streaming",
+    "depth": 3,
+    "files_count": 1,
+    "dirs_count": 0,
+    "size_bytes": 6213,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\unit",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 10,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\utils",
+    "depth": 2,
+    "files_count": 2,
+    "dirs_count": 0,
+    "size_bytes": 33791,
+    "summarized": false
+  },
+  {
+    "path": "__tests__\\__temp__",
+    "depth": 2,
+    "files_count": 0,
+    "dirs_count": 0,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": "__tests__",
+    "depth": 1,
+    "files_count": 0,
+    "dirs_count": 16,
+    "size_bytes": 0,
+    "summarized": false
+  },
+  {
+    "path": ".",
+    "depth": 0,
+    "files_count": 64,
+    "dirs_count": 20,
+    "size_bytes": 7646349,
+    "summarized": false
+  }
+]

@@ -1,0 +1,6 @@
+workflow: docs-ci.yml
+patches:
+  - type: add_timeout
+    description: Add timeout to job 'docs-ci'
+    changes:
+      timeout-minutes: 30

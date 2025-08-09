@@ -1,33 +1,24 @@
-# .github/workflows/enforce-release-review.yml
-# Version: 1.1.0
-# Description: Validates CHANGELOG.md and blog edits on PRs and tag pushes. Emits status badge.
-# Author: Ali Kahwaji
-
-name: 🛡 Release Review Passed
-
-on:
+name: 🛡 Release Review Passed (Security Hardened)
+"on":
   push:
     tags:
-      - 'v*.*.*'
-  workflow_dispatch:
-  # Removed pull_request trigger to avoid blocking development PRs
-
+      - v*.*.*
+  workflow_dispatch: null
 permissions:
   contents: read
-  pull-requests: write
-
+  actions: read
 jobs:
   review:
     name: 📝 Release Review Check
     runs-on: ubuntu-latest
-
     steps:
       - name: 📥 Checkout repo
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: 🔍 Scan for changelog or blog edits
         id: check
         run: |
+          set -e
+          set -o pipefail
           git fetch origin main --depth=1
           CHANGED_FILES=$(git diff --name-only origin/main...HEAD || true)
 
@@ -36,14 +27,22 @@ jobs:
 
           if echo "$CHANGED_FILES" | grep -qE 'CHANGELOG\.md|docs-site/blog/'; then
             echo "✅ Changelog or blog post updated."
-            echo "result=pass" >> "$GITHUB_OUTPUT"
+            echo "result=pass" >> ""$GITHUB_OUTPUT""
           else
             echo "❌ No changelog or blog edits found."
-            echo "result=fail" >> "$GITHUB_OUTPUT"
+            echo "result=fail" >> ""$GITHUB_OUTPUT""
           fi
-
+        shell: bash
       - name: 🚫 Fail if missing changelog or blog
         if: steps.check.outputs.result == 'fail'
         run: |
+          set -e
+          set -o pipefail
           echo "Missing required changelog or blog post for release."
           exit 1
+        shell: bash
+    timeout-minutes: 30
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true

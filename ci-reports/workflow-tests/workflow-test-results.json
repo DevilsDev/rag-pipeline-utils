@@ -1,0 +1,703 @@
+{
+  "timestamp": "2025-08-09T22:30:47.737Z",
+  "summary": {
+    "totalWorkflows": 20,
+    "passed": 18,
+    "failed": 0,
+    "warnings": 2
+  },
+  "workflows": [
+    {
+      "name": "auto-release-note.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'generate-note' has runner",
+          "✅ Job 'generate-note' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "blog-release.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'generate-content' has runner",
+          "✅ Job 'generate-content' has steps",
+          "✅ Job 'verify-badges' has runner",
+          "✅ Job 'verify-badges' has steps",
+          "✅ Job 'summary' has runner",
+          "✅ Job 'summary' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "ci.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'critical-checks' has runner",
+          "✅ Job 'critical-checks' has steps",
+          "✅ Job 'diagnostics' has runner",
+          "✅ Job 'diagnostics' has steps",
+          "✅ Job 'extended-tests' has runner",
+          "✅ Job 'extended-tests' has steps",
+          "✅ Job 'deploy' has runner",
+          "✅ Job 'deploy' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "comprehensive-testing.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'setup' has runner",
+          "✅ Job 'setup' has steps",
+          "✅ Job 'unit-tests' has runner",
+          "✅ Job 'unit-tests' has steps",
+          "✅ Job 'integration-tests' has runner",
+          "✅ Job 'integration-tests' has steps",
+          "✅ Job 'performance-tests' has runner",
+          "✅ Job 'performance-tests' has steps",
+          "✅ Job 'security-tests' has runner",
+          "✅ Job 'security-tests' has steps",
+          "✅ Job 'property-based-tests' has runner",
+          "✅ Job 'property-based-tests' has steps",
+          "✅ Job 'compatibility-tests' has runner",
+          "✅ Job 'compatibility-tests' has steps",
+          "✅ Job 'generate-reports' has runner",
+          "✅ Job 'generate-reports' has steps",
+          "✅ Job 'notify-results' has runner",
+          "✅ Job 'notify-results' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "contract-validation.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'validate-contracts' has runner",
+          "✅ Job 'validate-contracts' has steps",
+          "✅ Job 'breaking-change-detection' has runner",
+          "✅ Job 'breaking-change-detection' has steps",
+          "✅ Job 'generate-documentation' has runner",
+          "✅ Job 'generate-documentation' has steps",
+          "✅ Job 'pre-publish-validation' has runner",
+          "✅ Job 'pre-publish-validation' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "deploy-production.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'security-checks' has runner",
+          "✅ Job 'security-checks' has steps",
+          "✅ Job 'build-and-push' has runner",
+          "✅ Job 'build-and-push' has steps",
+          "✅ Job 'container-security' has runner",
+          "✅ Job 'container-security' has steps",
+          "✅ Job 'deploy-staging' has runner",
+          "✅ Job 'deploy-staging' has steps",
+          "✅ Job 'deploy-production' has runner",
+          "✅ Job 'deploy-production' has steps",
+          "✅ Job 'post-deployment' has runner",
+          "✅ Job 'post-deployment' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "docs-ci.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'docs-ci' has runner",
+          "✅ Job 'docs-ci' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "docs-deploy.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [
+          "Unpinned action: peaceiris/actions-gh-pages@v4"
+        ],
+        "passed": [
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 80
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'deploy' has runner",
+          "✅ Job 'deploy' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "WARN"
+      }
+    },
+    {
+      "name": "enforce-release-review.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'review' has runner",
+          "✅ Job 'review' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "post-release-generate-blog.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'generate-blog' has runner",
+          "✅ Job 'generate-blog' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "publish-release-blog.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'publish-blog-post' has runner",
+          "✅ Job 'publish-blog-post' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "release-protection.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [
+          "Unpinned action: softprops/action-gh-release@v1"
+        ],
+        "passed": [
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 80
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'validate-release-tags' has runner",
+          "✅ Job 'validate-release-tags' has steps",
+          "✅ Job 'enforce-immutability' has runner",
+          "✅ Job 'enforce-immutability' has steps",
+          "✅ Job 'audit-releases' has runner",
+          "✅ Job 'audit-releases' has steps",
+          "✅ Job 'create-immutable-release' has runner",
+          "✅ Job 'create-immutable-release' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "WARN"
+      }
+    },
+    {
+      "name": "release-sync.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'publish-release-blog' has runner",
+          "✅ Job 'publish-release-blog' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "roadmap-label-sync.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'sync-labels' has runner",
+          "✅ Job 'sync-labels' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "roadmap-labels.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'sync-labels' has runner",
+          "✅ Job 'sync-labels' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "roadmap-maintenance.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'roadmap-maintenance' has runner",
+          "✅ Job 'roadmap-maintenance' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "roadmap-sync.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'roadmap-sync' has runner",
+          "✅ Job 'roadmap-sync' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "security-audit.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'security-audit' has runner",
+          "✅ Job 'security-audit' has steps",
+          "✅ Job 'dependency-review' has runner",
+          "✅ Job 'dependency-review' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "sync-roadmap.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'sync' has runner",
+          "✅ Job 'sync' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    },
+    {
+      "name": "verify-blog-badge.yml",
+      "yaml": {
+        "valid": true,
+        "error": null
+      },
+      "security": {
+        "issues": [],
+        "passed": [
+          "✅ Action SHA pinning",
+          "✅ Permissions defined",
+          "✅ Job timeouts configured",
+          "✅ Concurrency control",
+          "✅ Shell security hardening"
+        ],
+        "score": 100
+      },
+      "structure": {
+        "issues": [],
+        "passed": [
+          "✅ Workflow name defined",
+          "✅ Trigger events defined",
+          "✅ Jobs defined",
+          "✅ Job 'verify' has runner",
+          "✅ Job 'verify' has steps"
+        ],
+        "score": 100
+      },
+      "overall": {
+        "status": "PASS"
+      }
+    }
+  ]
+}

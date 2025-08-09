@@ -1,0 +1,92 @@
+[
+  {
+    "patch": "auto-release-note.fix.yml",
+    "status": "APPLIED",
+    "workflow": "auto-release-note.yml"
+  },
+  {
+    "patch": "blog-release.fix.yml",
+    "status": "APPLIED",
+    "workflow": "blog-release.yml"
+  },
+  {
+    "patch": "comprehensive-testing.fix.yml",
+    "status": "APPLIED",
+    "workflow": "comprehensive-testing.yml"
+  },
+  {
+    "patch": "contract-validation.fix.yml",
+    "status": "APPLIED",
+    "workflow": "contract-validation.yml"
+  },
+  {
+    "patch": "docs-ci.fix.yml",
+    "status": "APPLIED",
+    "workflow": "docs-ci.yml"
+  },
+  {
+    "patch": "docs-deploy.fix.yml",
+    "status": "APPLIED",
+    "workflow": "docs-deploy.yml"
+  },
+  {
+    "patch": "enforce-release-review.fix.yml",
+    "status": "APPLIED",
+    "workflow": "enforce-release-review.yml"
+  },
+  {
+    "patch": "post-release-generate-blog.fix.yml",
+    "status": "APPLIED",
+    "workflow": "post-release-generate-blog.yml"
+  },
+  {
+    "patch": "publish-release-blog.fix.yml",
+    "status": "APPLIED",
+    "workflow": "publish-release-blog.yml"
+  },
+  {
+    "patch": "release-protection.fix.yml",
+    "status": "APPLIED",
+    "workflow": "release-protection.yml"
+  },
+  {
+    "patch": "release-sync.fix.yml",
+    "status": "APPLIED",
+    "workflow": "release-sync.yml"
+  },
+  {
+    "patch": "roadmap-label-sync.fix.yml",
+    "status": "APPLIED",
+    "workflow": "roadmap-label-sync.yml"
+  },
+  {
+    "patch": "roadmap-labels.fix.yml",
+    "status": "APPLIED",
+    "workflow": "roadmap-labels.yml"
+  },
+  {
+    "patch": "roadmap-maintenance.fix.yml",
+    "status": "APPLIED",
+    "workflow": "roadmap-maintenance.yml"
+  },
+  {
+    "patch": "roadmap-sync.fix.yml",
+    "status": "APPLIED",
+    "workflow": "roadmap-sync.yml"
+  },
+  {
+    "patch": "security-audit.fix.yml",
+    "status": "APPLIED",
+    "workflow": "security-audit.yml"
+  },
+  {
+    "patch": "sync-roadmap.fix.yml",
+    "status": "APPLIED",
+    "workflow": "sync-roadmap.yml"
+  },
+  {
+    "patch": "verify-blog-badge.fix.yml",
+    "status": "APPLIED",
+    "workflow": "verify-blog-badge.yml"
+  }
+]

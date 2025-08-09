@@ -88,7 +88,7 @@ const pluginSchema = {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validateRagrcSchema(config) {
-  const ajv = new Ajv({ allErrors: true });
+  const ajv = new Ajv({ allErrors: true, strict: false });
   const validate = ajv.compile(ragrcSchema);
   const valid = validate(config);
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
@@ -100,7 +100,7 @@ function validateRagrcSchema(config) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginSchema(config) {
-  const ajv = new Ajv({ allErrors: true });
+  const ajv = new Ajv({ allErrors: true, strict: false });
   const validate = ajv.compile(pluginSchema);
   const valid = validate(config);
   return valid ? { valid: true } : { valid: false, errors: validate.errors };

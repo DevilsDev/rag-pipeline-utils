@@ -1,34 +1,33 @@
-# Contract Schema Validation Workflow
-# Version: 2.0.0 - Security Hardened
-# Security Review: 2025-08-08 - All actions SHA pinned, permissions minimized
-# Validates plugin contracts and prevents breaking changes before publishing
-name: Contract Schema Validation
-
-on:
+name: Contract Schema Validation (Security Hardened)
+"on":
   push:
-    branches: [ main, develop ]
-    paths: 
-      - 'src/contracts/**'
-      - 'src/plugins/**'
-      - 'package.json'
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
-  pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
     paths:
-      - 'src/contracts/**'
-      - 'src/plugins/**'
-      - 'package.json'
+      - src/contracts/**
+      - src/plugins/**
+      - package.json
     paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/ISSUE_TEMPLATE/**'
+      - docs/**
+      - "*.md"
+      - .github/ISSUE_TEMPLATE/**
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - src/contracts/**
+      - src/plugins/**
+      - package.json
+    paths-ignore:
+      - docs/**
+      - "*.md"
+      - .github/ISSUE_TEMPLATE/**
   workflow_dispatch:
     inputs:
       validation_type:
-        description: 'Type of validation to run'
+        description: Type of validation to run
         required: true
         type: choice
         options:
@@ -36,25 +35,17 @@ on:
           - breaking-change-check
           - contract-documentation
           - typescript-generation
-
-# Concurrency controls to prevent resource conflicts
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
-# Minimal permissions (security-first)
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
-
+  actions: read
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
   FORCE_COLOR: 1
   CI: true
-
 jobs:
-  # Validate contract schemas and plugin implementations
   validate-contracts:
     name: Validate Plugin Contracts
     runs-on: ubuntu-latest
@@ -62,40 +53,39 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    
     steps:
       - name: Checkout code
-        # actions/checkout@v4
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          
       - name: Setup Node.js
-        # actions/setup-node@v4
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
-          
+          cache: npm
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
-        
+        shell: bash
       - name: Run contract schema validation tests
         run: |
+          set -e
+          set -o pipefail
           npm test -- __tests__/ci/contract-schema-validation.test.js --verbose
-          
+        shell: bash
       - name: Generate contract validation report
         run: |
+          set -e
+          set -o pipefail
           echo "# Contract Validation Report" > contract-validation-report.md
           echo "" >> contract-validation-report.md
           echo "**Generated:** $(date -u)" >> contract-validation-report.md
-          echo "**Commit:** ${{ github.sha }}" >> contract-validation-report.md
+          echo "**Commit:** "${{ github.sha }"}" >> contract-validation-report.md
           echo "" >> contract-validation-report.md
-          
+
           # Run validation and capture output
           npm test -- __tests__/ci/contract-schema-validation.test.js --reporter=json > test-results.json || true
-          
+
           # Parse results and add to report
           if [ -f test-results.json ]; then
             node -e "
@@ -122,9 +112,7 @@ jobs:
                         console.log('- ❌ ' + test.title);
                         if (test.failureMessages) {
                           test.failureMessages.forEach(msg => {
-                            console.log('  ```');
-                            console.log('  ' + msg.split('\\n')[0]);
-                            console.log('  ```');
+                            console.log('  ``"$($1)"``');
                           });
                         }
                       }
@@ -134,51 +122,49 @@ jobs:
               }
             " >> contract-validation-report.md
           fi
-          
+        shell: bash
       - name: Upload validation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: contract-validation-report
           path: contract-validation-report.md
           retention-days: 30
-
-  # Check for breaking changes in contracts
   breaking-change-detection:
     name: Breaking Change Detection
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.event.inputs.validation_type == 'breaking-change-check'
-    
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           path: current
-          
       - name: Checkout base branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           ref: ${{ github.base_ref || 'main' }}
           path: base
-          
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
-          node-version: '20'
-          
+          node-version: "20"
       - name: Install dependencies
         run: |
+          set -e
+          set -o pipefail
           cd current && npm ci
           cd ../base && npm ci
-          
+        shell: bash
       - name: Compare contract versions
         run: |
+          set -e
+          set -o pipefail
           echo "🔍 Checking for breaking changes in plugin contracts..."
-          
+
           # Compare contract files
           cd current
-          
+
           breaking_changes=0
-          
+
           for contract_file in src/contracts/*.json; do
             if [ -f "$contract_file" ]; then
               filename=$(basename "$contract_file")
@@ -244,69 +230,67 @@ jobs:
               echo "---"
             fi
           done
-          
+
           if [ $breaking_changes -gt 0 ]; then
             echo "❌ $breaking_changes breaking changes detected!"
             exit 1
           else
             echo "✅ No breaking changes detected"
           fi
-          
+        shell: bash
       - name: Comment on PR with breaking change analysis
         if: github.event_name == 'pull_request' && failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@35b1cdd1b2c1fc704b1cd442536d6e4b28b2ba4e
         with:
           script: |
             const comment = `## 🚨 Breaking Changes Detected
-            
+
             This PR contains breaking changes to plugin contracts that could affect existing implementations.
-            
+
             ### What are breaking changes?
             - Removing existing methods from contracts
             - Removing required parameters from existing methods
             - Changing return types of existing methods
             - Changing parameter types of existing methods
-            
+
             ### Next Steps
             1. **If intentional:** Bump the major version in the contract
             2. **If unintentional:** Revert the breaking changes
             3. **Migration needed:** Provide migration guide for plugin developers
-            
+
             ### Contract Validation
             All contract changes are automatically validated to ensure backward compatibility.
-            
+
             Please review the changes and update accordingly.`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: comment
             });
-
-  # Generate contract documentation
+    timeout-minutes: 30
   generate-documentation:
     name: Generate Contract Documentation
     runs-on: ubuntu-latest
     if: github.event.inputs.validation_type == 'contract-documentation' || github.ref == 'refs/heads/main'
-    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
-          node-version: '20'
-          cache: 'npm'
-          
+          node-version: "20"
+          cache: npm
       - name: Install dependencies
         run: npm ci
-        
+        shell: bash
       - name: Generate contract documentation
         run: |
+          set -e
+          set -o pipefail
           mkdir -p docs/contracts
-          
+
           # Generate markdown documentation from contracts
           node -e "
             const fs = require('fs');
@@ -327,44 +311,44 @@ jobs:
                 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
                 
                 const pluginType = contract.type || file.replace('-contract.json', '');
-                doc += \`## \${pluginType.charAt(0).toUpperCase() + pluginType.slice(1)} Contract\\n\\n\`;
-                doc += \`**Version:** \${contract.version}\\n\\n\`;
+                doc += \"$($1)";
+                doc += \"$($1)";
                 
                 if (contract.description) {
-                  doc += \`\${contract.description}\\n\\n\`;
+                  doc += \"$($1)";
                 }
                 
                 if (contract.methods) {
                   doc += '### Methods\\n\\n';
                   
                   for (const method of contract.methods) {
-                    doc += \`#### \${method.name}\\n\\n\`;
+                    doc += \"$($1)";
                     
                     if (method.description) {
-                      doc += \`\${method.description}\\n\\n\`;
+                      doc += \"$($1)";
                     }
                     
                     doc += '**Parameters:**\\n\\n';
                     if (Array.isArray(method.parameters)) {
                       for (const param of method.parameters) {
                         if (typeof param === 'string') {
-                          doc += \`- \${param}\\n\`;
+                          doc += \"$($1)";
                         } else {
                           const required = param.required ? '' : ' (optional)';
-                          doc += \`- \${param.name}: \${param.type}\${required}\\n\`;
+                          doc += \"$($1)";
                         }
                       }
                     } else {
-                      doc += \`- \${method.parameters}\\n\`;
+                      doc += \"$($1)";
                     }
                     
                     doc += '\\n**Returns:**\\n\\n';
                     if (typeof method.returns === 'string') {
-                      doc += \`- \${method.returns}\\n\\n\`;
+                      doc += \"$($1)";
                     } else {
-                      doc += \`- Type: \${method.returns.type}\\n\`;
+                      doc += \"$($1)";
                       if (method.returns.description) {
-                        doc += \`- Description: \${method.returns.description}\\n\`;
+                        doc += \"$($1)";
                       }
                       doc += '\\n';
                     }
@@ -378,11 +362,13 @@ jobs:
             fs.writeFileSync(outputFile, doc);
             console.log('Contract documentation generated: ' + outputFile);
           "
-          
+        shell: bash
       - name: Generate TypeScript definitions
         run: |
+          set -e
+          set -o pipefail
           mkdir -p types
-          
+
           # Generate TypeScript definitions from contracts
           node -e "
             const fs = require('fs');
@@ -401,9 +387,9 @@ jobs:
                 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
                 
                 const pluginType = contract.type || file.replace('-contract.json', '');
-                const interfaceName = \`\${pluginType.charAt(0).toUpperCase() + pluginType.slice(1)}Plugin\`;
+                const interfaceName = \"$($1)";
                 
-                typedef += \`export interface \${interfaceName} {\\n\`;
+                typedef += \"$($1)";
                 
                 if (contract.methods) {
                   for (const method of contract.methods) {
@@ -411,11 +397,11 @@ jobs:
                     if (Array.isArray(method.parameters)) {
                       params = method.parameters.map(p => {
                         if (typeof p === 'string') {
-                          return \`\${p}: any\`;
+                          return \"$($1)";
                         } else {
                           const optional = !p.required ? '?' : '';
                           const type = p.type || 'any';
-                          return \`\${p.name}\${optional}: \${type}\`;
+                          return \"$($1)";
                         }
                       }).join(', ');
                     }
@@ -427,10 +413,10 @@ jobs:
                                   method.returns === 'response' ? 'string' : 'any';
                     } else if (method.returns.type) {
                       returnType = method.returns.type === 'array' ? 
-                                  \`\${method.returns.items || 'any'}[]\` : method.returns.type;
+                                  \"$($1)" : method.returns.type;
                     }
                     
-                    typedef += \`  \${method.name}(\${params}): Promise<\${returnType}>;\\n\`;
+                    typedef += \"$($1)";
                   }
                 }
                 
@@ -441,13 +427,15 @@ jobs:
             fs.writeFileSync(outputFile, typedef);
             console.log('TypeScript definitions generated: ' + outputFile);
           "
-          
+        shell: bash
       - name: Commit generated documentation
         if: github.ref == 'refs/heads/main'
         run: |
+          set -e
+          set -o pipefail
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if [ -n "$(git status --porcelain)" ]; then
             git add docs/contracts/ types/
             git commit -m "docs: auto-generate contract documentation and TypeScript definitions"
@@ -455,39 +443,38 @@ jobs:
           else
             echo "No changes to commit"
           fi
-
-  # Pre-publish validation
+        shell: bash
+    timeout-minutes: 30
   pre-publish-validation:
     name: Pre-Publish Contract Validation
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
-          node-version: '20'
-          cache: 'npm'
-          
+          node-version: "20"
+          cache: npm
       - name: Install dependencies
         run: npm ci
-        
+        shell: bash
       - name: Validate all contracts before publish
         run: |
+          set -e
+          set -o pipefail
           echo "🔍 Running comprehensive contract validation before publish..."
-          
+
           # Run all contract validation tests
           npm test -- __tests__/ci/contract-schema-validation.test.js
-          
+
           # Validate package.json includes contract files
           if ! jq -e '.files[] | select(contains("contracts") or contains("src/contracts"))' package.json > /dev/null; then
             echo "❌ Contract files not included in package.json files array"
             exit 1
           fi
-          
+
           # Validate all plugins have proper metadata
           find src/plugins -name "*.js" -not -path "*/mocks/*" | while read -r plugin_file; do
             if ! grep -q "metadata.*:" "$plugin_file"; then
@@ -495,12 +482,16 @@ jobs:
               exit 1
             fi
           done
-          
+
           echo "✅ All contract validations passed - ready for publish"
-          
+        shell: bash
       - name: Block publish on validation failure
         if: failure()
         run: |
+          set -e
+          set -o pipefail
           echo "❌ Contract validation failed - blocking publish"
           echo "Please fix contract issues before publishing"
           exit 1
+        shell: bash
+    timeout-minutes: 30
