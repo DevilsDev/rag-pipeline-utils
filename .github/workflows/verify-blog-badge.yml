@@ -1,27 +1,19 @@
-# .github/workflows/verify-blog-badge.yml
-# Version: 1.3.0
-# Description: Validates presence of blog generation badge + GitHub Action output
-# Author: Ali Kahwaji
-
 name: 🖍 Blog Badge Verification
-
-on:
-  workflow_dispatch:
+'on':
+  workflow_dispatch: null
   workflow_run:
-    workflows: ["Auto Generate Blog + Changelog"]
+    workflows:
+      - Auto Generate Blog + Changelog
     types:
       - completed
-
 jobs:
   verify:
     name: 🌟 Verify Blog Badge and Output
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
-
       - name: 🔍 Validate README badge reference
         run: |
           echo "Checking for badge reference in README.md..."
@@ -29,22 +21,29 @@ jobs:
             echo "❌ Missing badge for post-release-generate-blog.yml in README.md"
             exit 1
           }
-
       - name: 🌐 Validate badge URL status
-        run: |
+        run: >
           BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/post-release-generate-blog.yml/badge.svg?branch=main"
+
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
 
+
           echo "Badge response: $STATUS"
+
           if [ "$STATUS" != "200" ]; then
             echo "❌ Blog badge not reachable (HTTP $STATUS)"
             exit 1
           fi
-
       - name: 🧾 Log assumed blog generation output (manual mapping)
         run: |
           echo "⚠️ Outputs from 'workflow_run' do not include job outputs."
           echo "Assuming blog_generated=true based on successful workflow completion."
-
       - name: ✅ Blog badge verified
         run: echo "✅ Blog badge verified and present in README."
+concurrency:
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+permissions:
+  permissions:
+    contents: read
