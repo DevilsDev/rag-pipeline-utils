@@ -75,14 +75,6 @@ class OpenAIEmbedder {
   }
 }
 
-// Export default instance for easy use
- OpenAIEmbedder();
-
-
-// Default export
-
-
-
 module.exports = {
   OpenAIEmbedder
 };
