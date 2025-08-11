@@ -1,9 +1,10 @@
 /**
-const path = require('path');
  * Version: 2.0.0
  * Description: Shared plugin interface contracts for runtime + CI mock validation
  * Author: Ali Kahwaji
  */
+
+// const path = require('path'); // Removed unused import
 
 const pluginContracts = {
   loader: {

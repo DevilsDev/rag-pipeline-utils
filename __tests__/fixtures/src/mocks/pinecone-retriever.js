@@ -2,7 +2,7 @@
  * Mock Pinecone Retriever Plugin
  * Implements: retriever.store(vectors), retriever.retrieve(queryVector, options)
  */
-export default class PineconeRetriever {
+class PineconeRetriever {
   constructor() {
     this._store = [];
   }
@@ -70,3 +70,5 @@ export default class PineconeRetriever {
       .slice(0, topK);
   }
 }
+
+module.exports = PineconeRetriever;

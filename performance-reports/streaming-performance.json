@@ -1,0 +1,14 @@
+{
+  "testSuite": "Streaming Token Output Load Tests",
+  "timestamp": "2025-08-10T11:45:26.755Z",
+  "summary": {
+    "totalTests": 0,
+    "avgThroughput": null,
+    "maxThroughput": null,
+    "avgLatency": null,
+    "maxLatency": null,
+    "minLatency": null
+  },
+  "metrics": [],
+  "latencyDetails": []
+}

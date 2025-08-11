@@ -33,28 +33,28 @@ class PluginAnalyticsDashboard extends EventEmitter {
   initializeMetrics() {
     // Plugin usage metrics
     this.metrics.set('plugin_installs', {
-      _type: 'counter',
+      type: 'counter',
       description: 'Total plugin installations',
       value: 0,
       history: []
     });
     
     this.metrics.set('plugin_searches', {
-      _type: 'counter',
+      type: 'counter',
       description: 'Total plugin searches',
       value: 0,
       history: []
     });
     
     this.metrics.set('plugin_ratings', {
-      _type: 'histogram',
+      type: 'histogram',
       description: 'Plugin rating distribution',
       buckets: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
       history: []
     });
     
     this.metrics.set('active_plugins', {
-      _type: 'gauge',
+      type: 'gauge',
       description: 'Currently active plugins',
       value: 0,
       history: []
@@ -62,14 +62,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Performance metrics
     this.metrics.set('installation_time', {
-      _type: 'histogram',
+      type: 'histogram',
       description: 'Plugin installation time (ms)',
       buckets: {},
       history: []
     });
     
     this.metrics.set('search_latency', {
-      _type: 'histogram',
+      type: 'histogram',
       description: 'Search response time (ms)',
       buckets: {},
       history: []
@@ -77,14 +77,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Security metrics
     this.metrics.set('security_scans', {
-      _type: 'counter',
+      type: 'counter',
       description: 'Security scans performed',
       value: 0,
       history: []
     });
     
     this.metrics.set('security_issues', {
-      _type: 'counter',
+      type: 'counter',
       description: 'Security issues detected',
       value: 0,
       history: []
@@ -92,14 +92,14 @@ class PluginAnalyticsDashboard extends EventEmitter {
     
     // Certification metrics
     this.metrics.set('certification_requests', {
-      _type: 'counter',
+      type: 'counter',
       description: 'Certification requests submitted',
       value: 0,
       history: []
     });
     
     this.metrics.set('certified_plugins', {
-      _type: 'gauge',
+      type: 'gauge',
       description: 'Total certified plugins',
       value: 0,
       history: []
@@ -133,7 +133,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     this.recordHistogram('installation_time', metadata.installTime || 0);
     
     this.realTimeData.set(`install_${timestamp}`, {
-      _type: 'installation',
+      type: 'installation',
       pluginId,
       version,
       timestamp,
@@ -153,7 +153,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     this.recordHistogram('search_latency', latency);
     
     this.realTimeData.set(`search_${timestamp}`, {
-      _type: 'search',
+      type: 'search',
       query,
       resultCount: results.length,
       latency,
@@ -175,7 +175,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`rating_${timestamp}`, {
-      _type: 'rating',
+      type: 'rating',
       pluginId,
       rating,
       review,
@@ -198,7 +198,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`security_${timestamp}`, {
-      _type: 'security_scan',
+      type: 'security_scan',
       pluginId,
       risk: result.risk,
       issueCount: result.issues?.length || 0,
@@ -221,7 +221,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
     }
     
     this.realTimeData.set(`cert_${timestamp}`, {
-      _type: 'certification',
+      type: 'certification',
       pluginId,
       level,
       approved: result.approved,
@@ -297,22 +297,22 @@ class PluginAnalyticsDashboard extends EventEmitter {
       
       series.installs.push({
         timestamp: time,
-        value: hourData.filter(item => item._type === 'installation').length
+        value: hourData.filter(item => item.type === 'installation').length
       });
       
       series.searches.push({
         timestamp: time,
-        value: hourData.filter(item => item._type === 'search').length
+        value: hourData.filter(item => item.type === 'search').length
       });
       
       series.ratings.push({
         timestamp: time,
-        value: hourData.filter(item => item._type === 'rating').length
+        value: hourData.filter(item => item.type === 'rating').length
       });
       
       series.securityScans.push({
         timestamp: time,
-        value: hourData.filter(item => item._type === 'security_scan').length
+        value: hourData.filter(item => item.type === 'security_scan').length
       });
     }
     
@@ -339,7 +339,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
         
         const stats = pluginStats.get(item.pluginId);
         
-        switch (item._type) {
+        switch (item.type) {
           case 'installation':
             stats.installs++;
             break;
@@ -371,11 +371,11 @@ class PluginAnalyticsDashboard extends EventEmitter {
    */
   getPerformanceSummary() {
     const installTimes = Array.from(this.realTimeData.values())
-      .filter(item => item._type === 'installation' && item.metadata?.installTime)
+      .filter(item => item.type === 'installation' && item.metadata?.installTime)
       .map(item => item.metadata.installTime);
     
     const searchLatencies = Array.from(this.realTimeData.values())
-      .filter(item => item._type === 'search' && item.latency)
+      .filter(item => item.type === 'search' && item.latency)
       .map(item => item.latency);
     
     return {
@@ -393,7 +393,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
    */
   getSecurityOverview() {
     const securityScans = Array.from(this.realTimeData.values())
-      .filter(item => item._type === 'security_scan');
+      .filter(item => item.type === 'security_scan');
     
     const riskDistribution = { low: 0, medium: 0, high: 0 };
     let totalIssues = 0;
@@ -495,7 +495,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
             ${data.recentActivity.map(activity => `
                 <div class="activity-item">
                     <span class="status-indicator status-${this.getActivityStatus(activity)}"></span>
-                    <strong>${activity._type.replace('_', ' ').toUpperCase()}</strong>
+                    <strong>${activity.type.replace('_', ' ').toUpperCase()}</strong>
                     ${this.formatActivityDescription(activity)}
                     <div class="activity-time">${new Date(activity.timestamp).toLocaleString()}</div>
                 </div>
@@ -614,7 +614,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   }
 
   getActivityStatus(activity) {
-    switch (activity._type) {
+    switch (activity.type) {
       case 'installation':
         return 'success';
       case 'security_scan':
@@ -627,7 +627,7 @@ class PluginAnalyticsDashboard extends EventEmitter {
   }
 
   formatActivityDescription(activity) {
-    switch (activity._type) {
+    switch (activity.type) {
       case 'installation':
         return `Plugin ${activity.pluginId}@${activity.version} installed`;
       case 'search':

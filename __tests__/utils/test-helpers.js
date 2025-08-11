@@ -3,7 +3,7 @@
  * Provides common utilities for streaming, mocking, and validation
  */
 
-export class StreamingTestHelper {
+class StreamingTestHelper {
   /**
    * Collect all tokens from an async stream
    */
@@ -86,7 +86,7 @@ export class StreamingTestHelper {
   }
 }
 
-export class MockFactory {
+class MockFactory {
   /**
    * Create a mock LLM with configurable behavior
    */
@@ -195,7 +195,7 @@ export class MockFactory {
   }
 }
 
-export class TestDataGenerator {
+class TestDataGenerator {
   /**
    * Generate realistic test documents
    */
@@ -254,7 +254,7 @@ export class TestDataGenerator {
   }
 }
 
-export class ValidationHelper {
+class ValidationHelper {
   /**
    * Validate streaming response format
    */
@@ -367,7 +367,7 @@ export class ValidationHelper {
   }
 }
 
-export class PerformanceHelper {
+class PerformanceHelper {
   /**
    * Measure execution time of async functions
    */
@@ -438,7 +438,7 @@ export class PerformanceHelper {
   }
 }
 
-export class ErrorSimulator {
+class ErrorSimulator {
   /**
    * Create functions that fail in specific ways
    */
@@ -494,8 +494,8 @@ export class ErrorSimulator {
   }
 }
 
-// Export all helpers as default
-export default {
+// Export all helpers using CommonJS
+module.exports = {
   StreamingTestHelper,
   MockFactory,
   TestDataGenerator,

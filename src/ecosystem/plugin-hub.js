@@ -56,7 +56,7 @@ class PluginHub extends EventEmitter {
         facets: response.facets
       };
     } catch (error) {
-      this.emit('error', { _type: 'search_failed', query, error });
+      this.emit('error', { type: 'search_failed', query, error });
       throw new Error(`Plugin search failed: ${error.message}`);
     }
   }
@@ -90,7 +90,7 @@ class PluginHub extends EventEmitter {
       
       return pluginInfo;
     } catch (error) {
-      this.emit('error', { _type: 'plugin_info_failed', pluginId, error });
+      this.emit('error', { type: 'plugin_info_failed', pluginId, error });
       throw new Error(`Failed to get plugin info: ${error.message}`);
     }
   }
@@ -246,7 +246,7 @@ class PluginHub extends EventEmitter {
       
       return response;
     } catch (error) {
-      this.emit('error', { _type: 'review_failed', pluginId, error });
+      this.emit('error', { type: 'review_failed', pluginId, error });
       throw new Error(`Failed to submit review: ${error.message}`);
     }
   }
@@ -386,6 +386,7 @@ class PluginHub extends EventEmitter {
       reviewCount: plugin.reviewCount || 0,
       downloadCount: plugin.downloadCount || 0,
       certified: plugin.certified || false,
+      certificationId: plugin.certificationId,
       verifiedPublisher: plugin.verifiedPublisher || false,
       lastUpdated: plugin.lastUpdated,
       createdAt: plugin.createdAt,
@@ -549,21 +550,22 @@ class PluginAnalytics {
   async getLastUsed(pluginId) {
     // Get last usage timestamp for a plugin
     const usageEvents = this.events.filter(e => 
-      e._type === 'plugin_usage' && e.data.pluginId === pluginId
+      e.type === 'plugin_usage' && e.data.pluginId === pluginId
     );
     
     if (usageEvents.length === 0) {
       return null;
     }
     
-    return Math.max(...usageEvents.map(e => e.data.timestamp));
+    return Math.max(...usageEvents.map(e => e.timestamp));
   }
 
-  _track(_type, data) {
+  _track(type, data) {
     this.events.push({
-      _type,
+      type: type,
       data,
-      sessionId: this._getSessionId()
+      sessionId: this._getSessionId(),
+      timestamp: Date.now()
     });
     
     // Keep only recent events in memory

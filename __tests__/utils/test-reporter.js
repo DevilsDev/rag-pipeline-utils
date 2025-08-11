@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-export class TestReporter {
+class TestReporter {
   constructor(options = {}) {
     this.outputDir = options.outputDir || path.join(process.cwd(), 'test-reports');
     this.enableVisualReports = options.enableVisualReports !== false;
@@ -758,4 +758,4 @@ export class TestReporter {
   }
 }
 
-export default TestReporter;
+module.exports = TestReporter;

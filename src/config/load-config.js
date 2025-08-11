@@ -6,13 +6,10 @@
 
 const fs = require('fs'); // eslint-disable-line global-require
 const path = require('path'); // eslint-disable-line global-require
-const { fileURLToPath } = require('url'); // eslint-disable-line global-require
 const { validateRagrcSchema } = require('./validate-schema.js'); // eslint-disable-line global-require
 const { logger } = require('../utils/logger.js'); // eslint-disable-line global-require
 
-const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
-const __dirname = path.dirname(__filename);
+// Use CommonJS __dirname (already available in Node.js CommonJS modules)
 
 const CONFIG_FILENAME = '.ragrc.json';
 

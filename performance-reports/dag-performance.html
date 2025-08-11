@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DAG Pipeline Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .metric { display: inline-block; margin: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        h1 { color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+        .summary { display: flex; flex-wrap: wrap; justify-content: space-around; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔀 DAG Pipeline Performance Report</h1>
+        <p><strong>Generated:</strong> 2025-08-10T11:45:25.339Z</p>
+        
+        <div class="summary">
+            <div class="metric">
+                <h3>Avg Throughput</h3>
+                <p>NaN nodes/sec</p>
+            </div>
+            <div class="metric">
+                <h3>Max Throughput</h3>
+                <p>-Infinity nodes/sec</p>
+            </div>
+            <div class="metric">
+                <h3>Avg Parallelization</h3>
+                <p>NaNx</p>
+            </div>
+            <div class="metric">
+                <h3>Max Parallelization</h3>
+                <p>-Infinityx</p>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="throughputChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="parallelizationChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="scalabilityChart"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        const data = {"testSuite":"DAG Pipeline Performance Tests","timestamp":"2025-08-10T11:45:25.339Z","summary":{"totalTests":0,"avgThroughput":null,"maxThroughput":null,"avgParallelization":null,"maxParallelization":null},"metrics":[]};
+        
+        // Throughput Chart
+        const throughputData = data.metrics.filter(m => m.nodesPerSecond);
+        new Chart(document.getElementById('throughputChart'), {
+            type: 'bar',
+            data: {
+                labels: throughputData.map(m => m.testName.replace('dag-execution-', '')),
+                datasets: [{
+                    label: 'Throughput (nodes/sec)',
+                    data: throughputData.map(m => m.nodesPerSecond),
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'DAG Execution Throughput' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        
+        // Parallelization Chart
+        new Chart(document.getElementById('parallelizationChart'), {
+            type: 'line',
+            data: {
+                labels: throughputData.map(m => m.nodeCount),
+                datasets: [{
+                    label: 'Parallelization Ratio',
+                    data: throughputData.map(m => m.parallelizationRatio),
+                    borderColor: 'rgb(255, 193, 7)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Parallelization Efficiency' } },
+                scales: { 
+                    y: { beginAtZero: true },
+                    x: { title: { display: true, text: 'Node Count' } }
+                }
+            }
+        });
+        
+        // Scalability Chart
+        new Chart(document.getElementById('scalabilityChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Execution Time vs Node Count',
+                    data: throughputData.map(m => ({ x: m.nodeCount, y: m.totalDuration })),
+                    backgroundColor: 'rgba(220, 53, 69, 0.6)',
+                    borderColor: 'rgba(220, 53, 69, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Scalability Analysis' } },
+                scales: { 
+                    x: { title: { display: true, text: 'Node Count' } },
+                    y: { title: { display: true, text: 'Execution Time (ms)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+    

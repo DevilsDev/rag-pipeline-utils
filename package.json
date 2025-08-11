@@ -50,7 +50,11 @@
     "ci:shell-security": "node scripts/ci/shell-security-hardening.js",
     "ci:final-fixes": "node scripts/ci/final-shell-injection-fixes.js",
     "ci:test-workflows": "node scripts/ci/test-workflows.js",
-    "ci:fix-remaining": "node scripts/ci/fix-remaining-actions.js"
+    "ci:fix-remaining": "node scripts/ci/fix-remaining-actions.js",
+    "tests:categorize": "node scripts/test-categorizer.js",
+    "tests:affected": "node scripts/run-affected.js",
+    "tests:full": "jest --runInBand --reporters=default --json --outputFile=test-results-current.json",
+    "tests:ci": "jest --maxWorkers=50% --reporters=default --json --outputFile=test-results-current.json"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

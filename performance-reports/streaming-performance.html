@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Streaming Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .metric { display: inline-block; margin: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .summary { display: flex; flex-wrap: wrap; justify-content: space-around; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Streaming Token Performance Report</h1>
+        <p><strong>Generated:</strong> 2025-08-10T11:45:26.755Z</p>
+        
+        <div class="summary">
+            <div class="metric">
+                <h3>Avg Throughput</h3>
+                <p>NaN tokens/sec</p>
+            </div>
+            <div class="metric">
+                <h3>Max Throughput</h3>
+                <p>-Infinity tokens/sec</p>
+            </div>
+            <div class="metric">
+                <h3>Avg Latency</h3>
+                <p>NaN ms</p>
+            </div>
+            <div class="metric">
+                <h3>Latency Range</h3>
+                <p>Infinity - -Infinity ms</p>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="throughputChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="latencyChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="latencyDistribution"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        const data = {"testSuite":"Streaming Token Output Load Tests","timestamp":"2025-08-10T11:45:26.755Z","summary":{"totalTests":0,"avgThroughput":null,"maxThroughput":null,"avgLatency":null,"maxLatency":null,"minLatency":null},"metrics":[],"latencyDetails":[]};
+        
+        // Throughput Chart
+        const throughputData = data.metrics.filter(m => m.tokensPerSecond);
+        new Chart(document.getElementById('throughputChart'), {
+            type: 'line',
+            data: {
+                labels: throughputData.map(m => m.tokenCount || 'Concurrent'),
+                datasets: [{
+                    label: 'Throughput (tokens/sec)',
+                    data: throughputData.map(m => m.tokensPerSecond || m.overallThroughput),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Streaming Throughput Performance' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        
+        // Latency Chart
+        new Chart(document.getElementById('latencyChart'), {
+            type: 'line',
+            data: {
+                labels: throughputData.map(m => m.tokenCount || 'Concurrent'),
+                datasets: [
+                    {
+                        label: 'Avg Latency (ms)',
+                        data: throughputData.map(m => m.avgTokenLatency),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Max Latency (ms)',
+                        data: throughputData.map(m => m.maxTokenLatency),
+                        borderColor: 'rgb(255, 159, 64)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Token Latency Analysis' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        
+        // Latency Distribution
+        const latencyBuckets = {};
+        data.latencyDetails.forEach(l => {
+            const bucket = Math.floor(l.latency / 2) * 2; // 2ms buckets
+            latencyBuckets[bucket] = (latencyBuckets[bucket] || 0) + 1;
+        });
+        
+        new Chart(document.getElementById('latencyDistribution'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(latencyBuckets).sort((a, b) => a - b),
+                datasets: [{
+                    label: 'Token Count',
+                    data: Object.keys(latencyBuckets).sort((a, b) => a - b).map(k => latencyBuckets[k]),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Token Latency Distribution (2ms buckets)' } },
+                scales: { 
+                    y: { beginAtZero: true },
+                    x: { title: { display: true, text: 'Latency (ms)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+    

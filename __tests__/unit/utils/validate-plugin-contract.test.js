@@ -1,4 +1,4 @@
-import { validatePluginContract } from '../../../src/utils/validate-plugin-contract.js';
+const { validatePluginContract } = require('../../../src/utils/validate-plugin-contract.js');
 
 const dummyPath = 'mock-plugin.js';
 

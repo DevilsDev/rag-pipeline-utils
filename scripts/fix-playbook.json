@@ -1,0 +1,111 @@
+{
+  "fieldRenames": [
+    {
+      "filePattern": "src/**/plugin-analytics*.js",
+      "from": "_type",
+      "to": "type",
+      "description": "Analytics event structure standardization",
+      "applied": true,
+      "files": ["src/ecosystem/plugin-hub.js"]
+    }
+  ],
+  "encoding": [
+    {
+      "context": "query params",
+      "expectation": "space as +",
+      "tests": "__tests__/ecosystem/**",
+      "description": "URL encoding for search queries uses + not %20",
+      "applied": true,
+      "files": ["__tests__/ecosystem/plugin-hub.test.js"]
+    }
+  ],
+  "checksum": [
+    {
+      "filePattern": "src/**/integrity*.js",
+      "note": "Normalize ArrayBuffer -> Buffer before SHA256",
+      "description": "Plugin integrity verification requires proper Buffer handling",
+      "applied": true,
+      "files": ["__tests__/ecosystem/plugin-hub.test.js"]
+    }
+  ],
+  "esmCjs": [
+    {
+      "rule": "Prefer CommonJS in tests",
+      "actions": ["replace import with require", "ensure module.exports not overridden later"],
+      "description": "Jest configuration requires CommonJS for stability",
+      "applied": false,
+      "priority": "P0"
+    }
+  ],
+  "cliSchema": [
+    {
+      "rule": "Strict JSON Schema; add defaults in loader",
+      "tests": "__tests__/cli/**",
+      "description": "CLI configuration validation needs proper defaults and schema strictness",
+      "applied": false,
+      "priority": "P1"
+    }
+  ],
+  "timing": [
+    {
+      "rule": "Use event-driven waits over setTimeout",
+      "note": "Await state/stream events",
+      "description": "Async tests should use deterministic waits not arbitrary timeouts",
+      "applied": false,
+      "priority": "P1"
+    }
+  ],
+  "mockContract": [
+    {
+      "rule": "Update mock signatures to match implementation",
+      "examples": ["ask() → generate()", "search() → retrieve()"],
+      "description": "Plugin contract mocks must match current implementation signatures",
+      "applied": false,
+      "priority": "P0"
+    }
+  ],
+  "moduleResolution": [
+    {
+      "rule": "Fix empty exports and missing modules",
+      "actions": ["ensure proper module.exports", "fix import/require paths", "add missing files"],
+      "description": "Module resolution failures from missing or malformed exports",
+      "applied": false,
+      "priority": "P0"
+    }
+  ],
+  "implementation": [
+    {
+      "rule": "Align test expectations with actual implementation",
+      "examples": ["certificationId field", "fetch call counts", "error message formats"],
+      "description": "Tests must match actual implementation behavior and signatures",
+      "applied": true,
+      "files": ["src/ecosystem/plugin-hub.js", "__tests__/ecosystem/plugin-hub.test.js"]
+    }
+  ],
+  "mockContract": [
+    {
+      "from": "ask",
+      "to": "generate",
+      "description": "LLM method rename for consistency"
+    },
+    {
+      "from": "_type",
+      "to": "type", 
+      "description": "Event property standardization"
+    },
+    {
+      "ensure": ["type", "timestamp", "payload"],
+      "description": "Required fields in mock responses"
+    }
+  ],
+  "cliSchema": [
+    {
+      "rule": "Keep schema strict; add defaults in loader/normalizer",
+      "examples": ["loadConfig() applies defaults", "schema validates structure"]
+    },
+    {
+      "rule": "Error messages must be actionable for developers",
+      "examples": ["'Missing required field: apiKey'", "'Invalid format: expected URL'"]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "batchId": 1,
+  "timestamp": "2025-08-10T22:43:45+12:00",
+  "priority": "P0",
+  "category": "Implementation Failures",
+  "description": "Critical implementation mismatches, module resolution, and function signature issues",
+  "targetFiles": [
+    "__tests__/unit/dag/error-handling.test.js",
+    "__tests__/unit/plugins/plugin-registry.test.js", 
+    "__tests__/unit/cli/enhanced-cli.test.js",
+    "__tests__/unit/config/load-config.test.js",
+    "__tests__/integration/pipeline-integration.test.js",
+    "__tests__/unit/analytics/plugin-analytics.test.js",
+    "__tests__/unit/sandbox/plugin-sandbox.test.js",
+    "__tests__/unit/performance/benchmark.test.js"
+  ],
+  "estimatedTests": 30,
+  "expectedIssues": [
+    "Function signature mismatches (seedOrOptions parameter)",
+    "Module resolution failures (missing/moved files)",
+    "Plugin contract validation errors",
+    "Analytics event structure bugs (_type vs type)",
+    "Configuration schema validation issues",
+    "CLI command parameter mismatches"
+  ],
+  "fixPatterns": [
+    "field_rename",
+    "function_signature",
+    "module_resolution",
+    "plugin_contract",
+    "schema_validation"
+  ],
+  "guardrails": {
+    "maxRegressions": 0,
+    "maxRetries": 2,
+    "rollbackOnFailure": true,
+    "requireNetDecrease": true
+  },
+  "baseline": {
+    "totalTests": 446,
+    "failedTests": 140,
+    "passRate": 68.6,
+    "failedSuites": 38
+  }
+}
