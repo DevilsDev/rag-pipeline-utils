@@ -1,11 +1,19 @@
 {
   "testSuite": "Security Scanning and Validation Tests",
-  "timestamp": "2025-08-10T11:45:21.888Z",
+  "timestamp": "2025-08-12T03:28:52.164Z",
   "summary": {
-    "totalTests": 0,
+    "totalTests": 1,
     "highSeverityIssues": 0,
     "mediumSeverityIssues": 0,
-    "lowSeverityIssues": 0
+    "lowSeverityIssues": 1
   },
-  "results": []
+  "results": [
+    {
+      "testName": "secrets-scanning",
+      "filesScanned": 764,
+      "secretsFound": 0,
+      "severity": "LOW",
+      "timestamp": "2025-08-12T03:28:52.149Z"
+    }
+  ]
 }

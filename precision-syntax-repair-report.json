@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-08-15T22:58:40.067Z",
+  "summary": {
+    "totalFilesProcessed": 8,
+    "filesFixed": 8,
+    "errors": 0
+  },
+  "fixedFiles": [
+    {
+      "path": "__tests__/unit/cli/enhanced-cli-commands.test.js",
+      "issues": [
+        "499/516 parens",
+        "1 malformed expect"
+      ],
+      "fixes": 2
+    },
+    {
+      "path": "__tests__/unit/cli/enhanced-cli.test.js",
+      "issues": [
+        "266/268 parens"
+      ],
+      "fixes": 1
+    },
+    {
+      "path": "__tests__/unit/cli/interactive-wizard.test.js",
+      "issues": [
+        "299/311 parens"
+      ],
+      "fixes": 1
+    },
+    {
+      "path": "__tests__/performance/dag-pipeline-performance.test.js",
+      "issues": [
+        "2 malformed expects"
+      ],
+      "fixes": 1
+    },
+    {
+      "path": "__tests__/performance/pipeline-performance.test.js",
+      "issues": [
+        "69/70 braces",
+        "6 malformed expects"
+      ],
+      "fixes": 2
+    },
+    {
+      "path": "__tests__/compatibility/node-versions.test.js",
+      "issues": [
+        "270/272 parens",
+        "1 malformed expect"
+      ],
+      "fixes": 2
+    },
+    {
+      "path": "__tests__/property/plugin-contracts.test.js",
+      "issues": [
+        "130/137 braces"
+      ],
+      "fixes": 1
+    },
+    {
+      "path": "__tests__/security/secrets-and-validation.test.js",
+      "issues": [
+        "249/251 parens"
+      ],
+      "fixes": 1
+    }
+  ],
+  "errors": []
+}

@@ -1,13 +1,11 @@
 /**
-const fs = require('fs');
  * Unit tests for Doctor Command
  * Tests pipeline diagnostics, issue detection, and automatic fixes
  */
 
-// Jest is available globally in CommonJS mode;
 const fs = require('fs/promises');
 const path = require('path');
-const { runPipelineDoctor, PipelineDoctor  } = require('../../../src/cli/doctor-command.js');
+const { runPipelineDoctor, PipelineDoctor } = require('../../../src/cli/doctor-command.js');
 
 // Mock dependencies
 jest.mock('fs/promises');
@@ -71,6 +69,8 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkConfiguration();
 
+      expect(issues).toBeDefined();
+      expect(Array.isArray(issues)).toBe(true);
       expect(issues).toContainEqual({
         category: 'configuration',
         severity: 'error',
@@ -87,6 +87,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkConfiguration();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'configuration',
         severity: 'error',
@@ -121,6 +122,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkConfiguration();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'configuration',
         severity: 'error',
@@ -137,6 +139,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkConfiguration();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'configuration',
         severity: 'warning',
@@ -176,6 +179,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkPlugins();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'plugins',
         severity: 'error',
@@ -202,6 +206,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkPlugins();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'plugins',
         severity: 'warning',
@@ -230,6 +235,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkPlugins();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'plugins',
         severity: 'info',
@@ -252,6 +258,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkDependencies();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'dependencies',
         severity: 'error',
@@ -273,6 +280,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkDependencies();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'dependencies',
         severity: 'warning',
@@ -300,6 +308,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkDependencies();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'dependencies',
         severity: 'error',
@@ -322,6 +331,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkPerformance();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'performance',
         severity: 'warning',
@@ -342,6 +352,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkPerformance();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'performance',
         severity: 'warning',
@@ -370,6 +381,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkSecurity();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'security',
         severity: 'error',
@@ -387,6 +399,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkSecurity();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'security',
         severity: 'warning',
@@ -419,6 +432,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkEnvironment();
 
+      expect(issues).toBeDefined();
       expect(issues).toContainEqual({
         category: 'environment',
         severity: 'error',
@@ -444,6 +458,7 @@ describe('PipelineDoctor', () => {
 
       const issues = await doctor.checkEnvironment();
 
+      expect(issues).toBeDefined();
       // Should not have platform issues for Windows
       expect(issues.filter(issue => issue.code === 'PLATFORM_INCOMPATIBLE')).toHaveLength(0);
 
@@ -469,6 +484,7 @@ describe('PipelineDoctor', () => {
 
       const result = await doctor.autoFix(issue);
 
+      expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.message).toBe('Dependencies installed');
       expect(mockExec).toHaveBeenCalledWith('npm install');
@@ -487,6 +503,7 @@ describe('PipelineDoctor', () => {
 
       const result = await doctor.autoFix(issue);
 
+      expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(mockExec).toHaveBeenCalledWith('chmod 600 .ragrc.json');
     });
@@ -500,6 +517,7 @@ describe('PipelineDoctor', () => {
 
       const result = await doctor.autoFix(issue);
 
+      expect(result).toBeDefined();
       expect(result.success).toBe(false);
       expect(result.message).toBe('Issue is not auto-fixable');
     });
@@ -530,6 +548,7 @@ describe('PipelineDoctor', () => {
 
       const report = doctor.generateReport(issues);
 
+      expect(report).toBeDefined();
       expect(report).toEqual({
         timestamp: expect.any(String),
         summary: {
@@ -561,6 +580,7 @@ describe('PipelineDoctor', () => {
 
       const report = doctor.generateReport(issues);
 
+      expect(report).toBeDefined();
       // Health score: 100 - (errors * 25 + warnings * 10 + info * 2)
       // = 100 - (2 * 25 + 1 * 10 + 1 * 2) = 100 - 62 = 38
       expect(report.summary.healthScore).toBe(38);
@@ -578,6 +598,7 @@ describe('PipelineDoctor', () => {
 
       const report = await doctor.run();
 
+      expect(report).toBeDefined();
       expect(doctor.checkConfiguration).toHaveBeenCalled();
       expect(doctor.checkPlugins).toHaveBeenCalled();
       expect(doctor.checkDependencies).toHaveBeenCalled();
@@ -656,6 +677,7 @@ describe('runPipelineDoctor', () => {
     const doctor = new PipelineDoctor(options);
     const report = await doctor.run();
 
+    expect(report).toBeDefined();
     expect(report).toHaveProperty('summary');
     expect(report).toHaveProperty('issues');
   });

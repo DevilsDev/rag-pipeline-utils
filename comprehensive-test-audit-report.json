@@ -1,0 +1,1101 @@
+{
+  "auditDate": "2025-08-12T04:18:49.409Z",
+  "summary": {
+    "totalTestFiles": 48,
+    "totalTestSuites": 48,
+    "totalTestCases": 580,
+    "categories": 12,
+    "passRate": "Not determined",
+    "suitePassRate": "Not determined"
+  },
+  "categories": [
+    {
+      "name": "AI/ML Tests",
+      "fileCount": 1,
+      "testCount": 0
+    },
+    {
+      "name": "Other Tests",
+      "fileCount": 2,
+      "testCount": 11
+    },
+    {
+      "name": "Compatibility Tests",
+      "fileCount": 1,
+      "testCount": 20
+    },
+    {
+      "name": "Developer Experience Tests",
+      "fileCount": 2,
+      "testCount": 0
+    },
+    {
+      "name": "Integration Tests",
+      "fileCount": 7,
+      "testCount": 79
+    },
+    {
+      "name": "Ecosystem Tests",
+      "fileCount": 1,
+      "testCount": 0
+    },
+    {
+      "name": "Load Tests",
+      "fileCount": 1,
+      "testCount": 10
+    },
+    {
+      "name": "Performance Tests",
+      "fileCount": 5,
+      "testCount": 23
+    },
+    {
+      "name": "Property Tests",
+      "fileCount": 1,
+      "testCount": 10
+    },
+    {
+      "name": "Script Tests",
+      "fileCount": 1,
+      "testCount": 2
+    },
+    {
+      "name": "Security Tests",
+      "fileCount": 3,
+      "testCount": 28
+    },
+    {
+      "name": "Unit Tests",
+      "fileCount": 23,
+      "testCount": 397
+    }
+  ],
+  "testFiles": [
+    {
+      "path": "__tests__\\ai\\advanced-ai-capabilities.test.js",
+      "category": "AI/ML Tests",
+      "suiteCount": 6,
+      "testCount": 0,
+      "lineCount": 619,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration"
+      ]
+    },
+    {
+      "path": "__tests__\\ci\\contract-schema-validation.test.js",
+      "category": "Other Tests",
+      "suiteCount": 6,
+      "testCount": 1,
+      "lineCount": 455,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\ci\\pipeline-hardening.test.js",
+      "category": "Other Tests",
+      "suiteCount": 5,
+      "testCount": 10,
+      "lineCount": 535,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Contains console.log statements"
+      ]
+    },
+    {
+      "path": "__tests__\\compatibility\\node-versions.test.js",
+      "category": "Compatibility Tests",
+      "suiteCount": 9,
+      "testCount": 20,
+      "lineCount": 413,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 11,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\dx\\dx-enhancements.test.js",
+      "category": "Developer Experience Tests",
+      "suiteCount": 6,
+      "testCount": 0,
+      "lineCount": 617,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration"
+      ]
+    },
+    {
+      "path": "__tests__\\dx\\dx-simple.test.js",
+      "category": "Developer Experience Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 177,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\e2e\\full-pipeline-integration.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 3,
+      "testCount": 6,
+      "lineCount": 662,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 8,
+      "issues": [
+        "Contains console.log statements",
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\e2e\\real-data-integration.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 4,
+      "testCount": 7,
+      "lineCount": 745,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 7,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\ecosystem\\plugin-hub.test.js",
+      "category": "Ecosystem Tests",
+      "suiteCount": 10,
+      "testCount": 0,
+      "lineCount": 699,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration"
+      ]
+    },
+    {
+      "path": "__tests__\\integration\\cli\\config-flow.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 100,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\integration\\config\\load-config.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 56,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\integration\\enhanced-cli-integration.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 15,
+      "testCount": 45,
+      "lineCount": 749,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\integration\\observability-integration.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 8,
+      "testCount": 12,
+      "lineCount": 413,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 3,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\integration\\streaming-pipeline.test.js",
+      "category": "Integration Tests",
+      "suiteCount": 5,
+      "testCount": 9,
+      "lineCount": 365,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 10,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\load\\concurrent-load.test.js",
+      "category": "Load Tests",
+      "suiteCount": 5,
+      "testCount": 10,
+      "lineCount": 479,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 10,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\performance\\concurrent-pipeline-simulation.test.js",
+      "category": "Performance Tests",
+      "suiteCount": 3,
+      "testCount": 1,
+      "lineCount": 419,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 3,
+      "issues": [
+        "Contains console.log statements",
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\performance\\dag-pipeline-performance.test.js",
+      "category": "Performance Tests",
+      "suiteCount": 6,
+      "testCount": 5,
+      "lineCount": 654,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 7,
+      "issues": [
+        "Contains console.log statements",
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\performance\\large-batch-processing.test.js",
+      "category": "Performance Tests",
+      "suiteCount": 4,
+      "testCount": 3,
+      "lineCount": 385,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 5,
+      "issues": [
+        "Contains console.log statements",
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\performance\\pipeline-performance.test.js",
+      "category": "Performance Tests",
+      "suiteCount": 6,
+      "testCount": 11,
+      "lineCount": 402,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 11,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\performance\\streaming-load.test.js",
+      "category": "Performance Tests",
+      "suiteCount": 5,
+      "testCount": 3,
+      "lineCount": 551,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 5,
+      "issues": [
+        "Contains console.log statements",
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\property\\plugin-contracts.test.js",
+      "category": "Property Tests",
+      "suiteCount": 6,
+      "testCount": 10,
+      "lineCount": 516,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 11,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\scripts\\ensure-roadmap-labels.test.js",
+      "category": "Script Tests",
+      "suiteCount": 1,
+      "testCount": 2,
+      "lineCount": 65,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 2,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\security\\comprehensive-security-suite.test.js",
+      "category": "Security Tests",
+      "suiteCount": 4,
+      "testCount": 10,
+      "lineCount": 481,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "Contains console.log statements"
+      ]
+    },
+    {
+      "path": "__tests__\\security\\plugin-isolation.test.js",
+      "category": "Security Tests",
+      "suiteCount": 5,
+      "testCount": 12,
+      "lineCount": 562,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 13,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\security\\secrets-and-validation.test.js",
+      "category": "Security Tests",
+      "suiteCount": 4,
+      "testCount": 6,
+      "lineCount": 474,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 3,
+      "issues": [
+        "Contains console.log statements",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\cli\\doctor-command.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 12,
+      "testCount": 27,
+      "lineCount": 663,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": true,
+      "hasAsync": true,
+      "issueCount": 22,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\cli\\enhanced-cli-commands.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 17,
+      "testCount": 42,
+      "lineCount": 635,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": true,
+      "hasAsync": true,
+      "issueCount": 36,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\cli\\enhanced-cli.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 9,
+      "testCount": 23,
+      "lineCount": 417,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": true,
+      "hasAsync": false,
+      "issueCount": 20,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\cli\\interactive-wizard.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 11,
+      "testCount": 21,
+      "lineCount": 510,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": true,
+      "hasAsync": true,
+      "issueCount": 20,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\config\\validate-schema.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 2,
+      "testCount": 0,
+      "lineCount": 122,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\unit\\core\\plugin-registry.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 58,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\unit\\dag\\dag-engine.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 10,
+      "testCount": 38,
+      "lineCount": 493,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 5,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\dag\\error-handling.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 7,
+      "testCount": 25,
+      "lineCount": 432,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 16,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\observability\\event-logger.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 11,
+      "testCount": 33,
+      "lineCount": 363,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 23,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\observability\\metrics.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 32,
+      "testCount": 44,
+      "lineCount": 551,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": true,
+      "hasAsync": false,
+      "issueCount": 5,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\observability\\tracing.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 19,
+      "testCount": 35,
+      "lineCount": 444,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 10,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\performance\\benchmark.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 9,
+      "testCount": 22,
+      "lineCount": 407,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 10,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\performance\\parallel-processor.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 6,
+      "testCount": 17,
+      "lineCount": 263,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 5,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\performance\\streaming-safeguards.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 14,
+      "testCount": 19,
+      "lineCount": 404,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": true,
+      "hasAsync": true,
+      "issueCount": 12,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\plugins\\reranker.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 6,
+      "testCount": 17,
+      "lineCount": 268,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 10,
+      "issues": [
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\reranker\\llm-reranker.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 18,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 0,
+      "issues": []
+    },
+    {
+      "path": "__tests__\\unit\\reranker\\reranker.enriched.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 0,
+      "testCount": 0,
+      "lineCount": 19,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "No test suites (describe blocks) found"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\reranker\\reranker.fallback.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 0,
+      "testCount": 0,
+      "lineCount": 15,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "No test suites (describe blocks) found"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\reranker\\reranker.snapshot.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 0,
+      "testCount": 0,
+      "lineCount": 15,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "No test suites (describe blocks) found"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\reranker\\reranker.structured-output.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 0,
+      "testCount": 0,
+      "lineCount": 17,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 1,
+      "issues": [
+        "No test suites (describe blocks) found"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\scripts\\script-utilities.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 8,
+      "testCount": 24,
+      "lineCount": 468,
+      "hasSetup": true,
+      "hasTeardown": true,
+      "hasMocks": true,
+      "hasAsync": true,
+      "issueCount": 18,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\streaming\\llm-streaming.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 5,
+      "testCount": 10,
+      "lineCount": 188,
+      "hasSetup": true,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": true,
+      "issueCount": 9,
+      "issues": [
+        "Uses setTimeout without Jest timeout configuration",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected",
+        "Test case without assertions detected"
+      ]
+    },
+    {
+      "path": "__tests__\\unit\\utils\\validate-plugin-contract.test.js",
+      "category": "Unit Tests",
+      "suiteCount": 1,
+      "testCount": 0,
+      "lineCount": 25,
+      "hasSetup": false,
+      "hasTeardown": false,
+      "hasMocks": false,
+      "hasAsync": false,
+      "issueCount": 0,
+      "issues": []
+    }
+  ],
+  "coverage": {
+    "executionStatus": "TIMEOUT_OR_ERROR",
+    "message": "Could not complete full test execution within timeout"
+  },
+  "issues": [],
+  "recommendations": [
+    {
+      "category": "Code Quality",
+      "priority": "Medium",
+      "issue": "41 test files have quality issues",
+      "recommendation": "Review and fix test quality issues (console.log, missing assertions, etc.)"
+    }
+  ],
+  "detailedAnalysis": {
+    "filesWithIssues": 41,
+    "filesWithMocks": 7,
+    "filesWithAsync": 39,
+    "filesWithSetup": 37,
+    "averageTestsPerFile": 12
+  }
+}

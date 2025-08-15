@@ -9,7 +9,7 @@
   "scripts": {
     "validate-fixtures": "node ./scripts/verify-fixtures.js",
     "setup": "node ./scripts/setup.js",
-    "test": "node ./scripts/setup.js && jest --coverage",
+    "test": "node ./scripts/setup.js && jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .js,.jsx --ignore-path .gitignore",
     "lint:fix": "eslint . --ext .js,.jsx --ignore-path .gitignore --fix",
@@ -54,7 +54,10 @@
     "tests:categorize": "node scripts/test-categorizer.js",
     "tests:affected": "node scripts/run-affected.js",
     "tests:full": "jest --runInBand --reporters=default --json --outputFile=test-results-current.json",
-    "tests:ci": "jest --maxWorkers=50% --reporters=default --json --outputFile=test-results-current.json"
+    "tests:ci": "jest --maxWorkers=50% --reporters=default --json --outputFile=test-results-current.json",
+    "test:unit": "jest __tests__/unit",
+    "test:integration": "jest __tests__/integration",
+    "test:simple": "jest --maxWorkers=1 --no-coverage"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

@@ -1,0 +1,118 @@
+{
+  "id": "pipeline_1754962816339",
+  "name": "Test Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "loader_1754962816339",
+      "_type": "loader",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "_config": {
+        "source": {
+          "_type": "string",
+          "required": true
+        },
+        "format": {
+          "_type": "select",
+          "_options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "documents"
+      ]
+    }
+  ],
+  "connections": [],
+  "_config": {},
+  "created": "2025-08-12T01:40:16.339Z",
+  "modified": "2025-08-12T01:40:16.339Z"
+}  },
+      "_config": {
+        "model": {
+          "_type": "string",
+          "default": "openai"
+        },
+        "dimensions": {
+          "_type": "number",
+          "default": 1536
+        }
+      },
+      "inputs": [
+        "documents"
+      ],
+      "outputs": [
+        "embeddings"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1754962816339",
+      "source": {
+        "componentId": "loader_1754962816339",
+        "output": "documents"
+      },
+      "target": {
+        "componentId": "embedder_1754962816339",
+        "input": "documents"
+      }
+    }
+  ],
+  "_config": {},
+  "created": "2025-08-12T01:40:16.339Z",
+  "modified": "2025-08-12T01:40:16.339Z"
+}ry"
+      ],
+      "outputs": [
+        "results"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1754962816339",
+      "source": {
+        "componentId": "loader_1754962816339",
+        "output": "documents"
+      },
+      "target": {
+        "componentId": "embedder_1754962816339",
+        "input": "documents"
+      }
+    },
+    {
+      "id": "conn_1754962816339",
+      "source": {
+        "componentId": "embedder_1754962816339",
+        "output": "embeddings"
+      },
+      "target": {
+        "componentId": "retriever_1754962816339",
+        "input": "embeddings"
+      }
+    },
+    {
+      "id": "conn_1754962816339",
+      "source": {
+        "componentId": "retriever_1754962816339",
+        "output": "results"
+      },
+      "target": {
+        "componentId": "embedder_1754962816339",
+        "input": "documents"
+      }
+    }
+  ],
+  "_config": {},
+  "created": "2025-08-12T01:40:16.339Z",
+  "modified": "2025-08-12T01:40:16.339Z"
+}

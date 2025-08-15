@@ -132,8 +132,8 @@ describe('Streaming Token Output Load Tests', () => {
       
       const concurrentStreamingLLM = {
         async *generateStream(prompt, streamId) {
-          const tokens = TestDataGenerator.generateTokens(tokensPerStream);
           const startTime = performance.now();
+          const tokens = TestDataGenerator.generateTokens(tokensPerStream);
           
           for (let i = 0; i < tokens.length; i++) {
             const tokenStartTime = performance.now();
@@ -162,11 +162,9 @@ describe('Streaming Token Output Load Tests', () => {
       };
 
       const startTime = performance.now();
-      
-      // Create concurrent streams
       const streamPromises = Array.from({ length: concurrentStreams }, async (_, streamId) => {
-        const stream = concurrentStreamingLLM.generateStream(`Prompt ${streamId}`, streamId);
         const tokens = [];
+        const stream = concurrentStreamingLLM.generateStream(`Prompt ${streamId}`, streamId);
         
         for await (const chunk of stream) {
           tokens.push(chunk);
@@ -222,7 +220,6 @@ describe('Streaming Token Output Load Tests', () => {
       const memoryConstrainedLLM = {
         async *generateStream(___prompt) {
           const startMemory = process.memoryUsage();
-          let tokenBuffer = [];
           const bufferLimit = 100; // Keep only 100 tokens in memory
           
           for (let i = 0; i < largeTokenCount; i++) {
@@ -230,13 +227,10 @@ describe('Streaming Token Output Load Tests', () => {
             const tokenStartTime = performance.now();
             
             // Add to buffer
+            let tokenBuffer = [];
             tokenBuffer.push(token);
-            
-            // Clear buffer if it gets too large
             if (tokenBuffer.length > bufferLimit) {
               tokenBuffer = tokenBuffer.slice(-bufferLimit);
-              
-              // Force garbage collection if available
               if (global.gc) {
                 global.gc();
               }
@@ -265,8 +259,8 @@ describe('Streaming Token Output Load Tests', () => {
       };
 
       const stream = memoryConstrainedLLM.generateStream('Memory test prompt');
-      const tokens = [];
       let maxMemoryIncrease = 0;
+      const tokens = [];
       
       for await (const chunk of stream) {
         tokens.push(chunk);
@@ -321,13 +315,11 @@ describe('Streaming Token Output Load Tests', () => {
       };
 
       const stream = backpressureLLM.generateStream('Backpressure test');
-      const tokens = [];
       let processingDelays = [];
+      const tokens = [];
       
-      for await (const chunk of tokens) {
+      for await (const chunk of stream) {
         const processingStart = performance.now();
-        
-        // Simulate slow consumer (every 10th token)
         if (chunk.index && chunk.index % 10 === 0) {
           await new Promise(resolve => setTimeout(resolve, 20)); // 20ms delay
         }

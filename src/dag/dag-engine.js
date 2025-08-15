@@ -297,7 +297,8 @@ class DAGNode {
             const restNodes = cyclePath.slice(1, -1).reverse();
             cyclePath = [startNode, ...restNodes, startNode];
           }
-          const error = new Error('Cycle detected in DAG');
+          cyclePath = cyclePath.join(' -> ');
+            const error = new Error(`Cycle detected involving node: ${cyclePath}`);
           error.cycle = cyclePath;
           throw error;
         }
@@ -350,7 +351,17 @@ class DAGNode {
       try {
         this.topoSort();
       } catch (error) {
-        throw new Error(`DAG validation failed: ${error.message}`);
+        // Preserve cycle detection errors with their properties
+        if (error.message.includes('Cycle detected')) {
+          if (error.message.includes('Cycle detected involving node:')) {
+            throw new Error(`DAG validation failed: ${error.message}`);
+          }
+          throw new Error(`DAG validation failed: ${error.message}`);
+        }
+        if (error.message.includes('Cycle detected involving node:')) {
+            throw new Error(`DAG validation failed: ${error.message}`);
+          }
+          throw new Error(`DAG validation failed: ${error.message}`);
       }
 
       // Check for orphaned nodes (nodes with no path to execution)

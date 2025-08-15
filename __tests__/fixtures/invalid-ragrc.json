@@ -1,4 +1,8 @@
 {
   "loader": "./src/mocks/pdf-loader.js",
-  "namespace": 12345
+  "namespace": 12345,
+  "embedder": "missing_required_field",
+  "retriever": null,
+  "llm": {},
+  "pipeline": "invalid_type_should_be_array"
 }

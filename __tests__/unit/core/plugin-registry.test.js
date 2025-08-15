@@ -31,7 +31,7 @@ describe('PluginRegistry', () => {
   });
 
   test('throws error for unknown plugin type on registration', () => {
-    expect(() => registry.register('unknown-type', 'x', {})).toThrow(/Unknown plugin _type/);
+    expect(() => registry.register('unknown-type', 'x', {})).toThrow(/Unknown plugin type/);
   });
 
   test('throws error when retrieving a nonexistent plugin', () => {
@@ -50,7 +50,7 @@ describe('PluginRegistry', () => {
   });
 
   test('throws error when listing plugins for invalid type', () => {
-    expect(() => registry.list('invalid')).toThrow(/Unknown plugin _type/);
+    expect(() => registry.list('invalid')).toThrow(/Unknown plugin type/);
   });
 });
 

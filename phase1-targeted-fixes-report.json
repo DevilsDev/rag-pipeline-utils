@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-08-15T22:45:58.319Z",
+  "summary": {
+    "totalFilesFixed": 1,
+    "totalAssertionsAdded": 0,
+    "errors": 0
+  },
+  "fixedFiles": [
+    {
+      "path": "__tests__\\unit\\cli\\doctor-command.test.js",
+      "category": "CLI",
+      "fixes": 0
+    }
+  ],
+  "errors": []
+}

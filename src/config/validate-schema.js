@@ -11,37 +11,37 @@ const Ajv = require('ajv'); // eslint-disable-line global-require
  * Full .ragrc.json schema (used in load-_config.js)
  */
 const ragrcSchema = {
-  _type: 'object',
+  type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
   properties: {
     loader: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     embedder: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     retriever: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     llm: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     namespace: {
-      _type: 'string',
+      type: 'string',
       minLength: 1
     },
     pipeline: {
-      _type: 'array',
+      type: 'array',
       items: {
-        _type: 'string',
+        type: 'string',
         enum: ['loader', 'embedder', 'retriever']
       },
       minItems: 1,
@@ -55,28 +55,28 @@ const ragrcSchema = {
  * Minimal plugin-only schema (used in load-plugin-_config.js)
  */
 const pluginSchema = {
-  _type: 'object',
+  type: 'object',
   required: ['loader', 'embedder', 'retriever', 'llm'],
   properties: {
     loader: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     embedder: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     retriever: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     },
     llm: {
-      _type: 'object',
+      type: 'object',
       minProperties: 1,
-      additionalProperties: { _type: 'string' }
+      additionalProperties: { type: 'string' }
     }
   },
   additionalProperties: true // allow namespace, pipeline, etc.

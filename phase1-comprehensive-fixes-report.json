@@ -1,0 +1,93 @@
+{
+  "timestamp": "2025-08-15T22:47:37.328Z",
+  "summary": {
+    "totalFilesProcessed": 13,
+    "totalFilesFixed": 12,
+    "totalAssertionsAdded": 17,
+    "errors": 0,
+    "expectedIssues": 171
+  },
+  "fixedFiles": [
+    {
+      "path": "__tests__\\unit\\cli\\doctor-command.test.js",
+      "category": "CLI",
+      "fixes": 4,
+      "expectedIssues": 22
+    },
+    {
+      "path": "__tests__\\unit\\cli\\enhanced-cli-commands.test.js",
+      "category": "CLI",
+      "fixes": 6,
+      "expectedIssues": 36
+    },
+    {
+      "path": "__tests__\\unit\\cli\\enhanced-cli.test.js",
+      "category": "CLI",
+      "fixes": 2,
+      "expectedIssues": 15
+    },
+    {
+      "path": "__tests__\\unit\\cli\\interactive-wizard.test.js",
+      "category": "CLI",
+      "fixes": 5,
+      "expectedIssues": 8
+    },
+    {
+      "path": "__tests__\\performance\\dag-pipeline-performance.test.js",
+      "category": "Performance",
+      "fixes": 0,
+      "expectedIssues": 12
+    },
+    {
+      "path": "__tests__\\performance\\pipeline-performance.test.js",
+      "category": "Performance",
+      "fixes": 0,
+      "expectedIssues": 10
+    },
+    {
+      "path": "__tests__\\performance\\large-batch-processing.test.js",
+      "category": "Performance",
+      "fixes": 0,
+      "expectedIssues": 8
+    },
+    {
+      "path": "__tests__\\performance\\streaming-load.test.js",
+      "category": "Performance",
+      "fixes": 0,
+      "expectedIssues": 6
+    },
+    {
+      "path": "__tests__\\compatibility\\node-versions.test.js",
+      "category": "Compatibility",
+      "fixes": 0,
+      "expectedIssues": 11
+    },
+    {
+      "path": "__tests__\\property\\plugin-contracts.test.js",
+      "category": "Property",
+      "fixes": 0,
+      "expectedIssues": 14
+    },
+    {
+      "path": "__tests__\\security\\secrets-and-validation.test.js",
+      "category": "Security",
+      "fixes": 0,
+      "expectedIssues": 7
+    },
+    {
+      "path": "__tests__\\unit\\scripts\\script-utilities.test.js",
+      "category": "Scripts",
+      "fixes": 0,
+      "expectedIssues": 13
+    }
+  ],
+  "errors": [],
+  "categories": {
+    "CLI": 4,
+    "Performance": 4,
+    "Compatibility": 1,
+    "Security": 1,
+    "Scripts": 1,
+    "Property": 1
+  }
+}
