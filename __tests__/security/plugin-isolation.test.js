@@ -1,9 +1,9 @@
 /**
-const fs = require('fs');
  * Security Testing Suite for Plugin Isolation
  * Tests plugin security, data sanitization, and access controls
  */
 
+const fs = require('fs');
 // Jest is available globally in CommonJS mode;
 const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
 const { ErrorSimulator, ValidationHelper  } = require('../utils/test-helpers.js');

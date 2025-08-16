@@ -1,14 +1,25 @@
 {
   "testSuite": "Streaming Token Output Load Tests",
-  "timestamp": "2025-08-12T04:20:16.434Z",
+  "timestamp": "2025-08-16T00:22:20.868Z",
   "summary": {
-    "totalTests": 0,
+    "totalTests": 1,
     "avgThroughput": null,
     "maxThroughput": null,
     "avgLatency": null,
     "maxLatency": null,
     "minLatency": null
   },
-  "metrics": [],
+  "metrics": [
+    {
+      "testName": "concurrent-streaming",
+      "concurrentStreams": 10,
+      "tokensPerStream": 500,
+      "totalDuration": 8134.3176,
+      "overallThroughput": 614.6797120387824,
+      "avgStreamDuration": 8077.762319999999,
+      "memoryUsage": 27.732276916503906,
+      "timestamp": "2025-08-16T00:21:19.572Z"
+    }
+  ],
   "latencyDetails": []
 }

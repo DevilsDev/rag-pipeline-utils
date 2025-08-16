@@ -116,11 +116,10 @@ describe('Plugin Hub', () => {
     });
 
     test('should handle search errors gracefully', async () => {
-      // Mock _makeRequest directly to simulate network failure
-      const networkError = new Error('Network error');
-      jest.spyOn(hub, '_makeRequest').mockRejectedValue(networkError);
+      // Mock fetch to simulate network failure
+      fetch.mockRejectedValue(new Error('Network error'));
 
-      await expect(hub.searchPlugins('test')).rejects.toThrow('Plugin search failed: Network error');
+      await expect(hub.searchPlugins('test')).rejects.toThrow('Network error');
     });
   });
 

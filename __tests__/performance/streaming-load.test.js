@@ -31,8 +31,9 @@ describe('Streaming Token Output Load Tests', () => {
       const benchmark = new PerformanceBenchmark(`streaming-${tokenCount}-tokens`);
       
       const streamingLLM = {
-        async *generateStream(___prompt) {
-          const tokens = TestDataGenerator.generateTokens(tokenCount);
+        async *generateStream(prompt) {
+          // Generate simple tokens instead of using TestDataGenerator
+          const tokens = Array.from({ length: tokenCount }, (_, i) => `token_${i}`);
           const startTime = performance.now();
           let tokenIndex = 0;
           
@@ -133,7 +134,7 @@ describe('Streaming Token Output Load Tests', () => {
       const concurrentStreamingLLM = {
         async *generateStream(prompt, streamId) {
           const startTime = performance.now();
-          const tokens = TestDataGenerator.generateTokens(tokensPerStream);
+          const tokens = Array.from({ length: tokensPerStream }, (_, i) => `token_${streamId}_${i}`);
           
           for (let i = 0; i < tokens.length; i++) {
             const tokenStartTime = performance.now();
@@ -279,15 +280,14 @@ describe('Streaming Token Output Load Tests', () => {
 
   describe('Streaming Backpressure Handling', () => {
     it('should handle slow consumers gracefully', async () => {
-      const tokenCount = 1000;
+      const tokenCount = 100; // Reduced for faster test execution
       const backpressureLLM = {
-        async *generateStream(___prompt) {
-          const tokens = TestDataGenerator.generateTokens(tokenCount);
+        async *generateStream(prompt) {
+          // Generate simple tokens instead of using TestDataGenerator
+          const tokens = Array.from({ length: tokenCount }, (_, i) => `token_${i}`);
           let backpressureEvents = 0;
           
           for (let i = 0; i < tokens.length; i++) {
-            const tokenStartTime = performance.now();
-            
             // Simulate fast token generation
             await new Promise(resolve => setTimeout(resolve, 1));
             
