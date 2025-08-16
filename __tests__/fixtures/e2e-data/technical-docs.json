@@ -2,7 +2,7 @@
   "documents": [
     {
       "id": "doc-0",
-      "title": "Technical Guide 0: CI/CD Best Practices",
+      "title": "Technical Guide 0: API Design Patterns",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -12,12 +12,12 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-12-06T15:34:00.634Z",
-      "version": "v3.9",
+      "lastUpdated": "2025-07-09T16:32:34.852Z",
+      "version": "v4.6",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "beginner"
       }
     },
     {
@@ -32,17 +32,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-02-21T08:59:57.013Z",
-      "version": "v3.8",
+      "lastUpdated": "2024-11-28T23:22:28.805Z",
+      "version": "v2.2",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "beginner"
       }
     },
     {
       "id": "doc-2",
-      "title": "Technical Guide 2: Database Optimization",
+      "title": "Technical Guide 2: Container Orchestration",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -52,17 +52,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-06-13T22:29:43.858Z",
-      "version": "v2.4",
+      "lastUpdated": "2025-01-13T07:44:59.951Z",
+      "version": "v5.5",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "beginner"
       }
     },
     {
       "id": "doc-3",
-      "title": "Technical Guide 3: CI/CD Best Practices",
+      "title": "Technical Guide 3: Container Orchestration",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -72,8 +72,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-03-12T23:04:58.485Z",
-      "version": "v2.9",
+      "lastUpdated": "2025-01-27T21:21:32.486Z",
+      "version": "v3.9",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -82,7 +82,7 @@
     },
     {
       "id": "doc-4",
-      "title": "Technical Guide 4: API Design Patterns",
+      "title": "Technical Guide 4: Container Orchestration",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -92,17 +92,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-04-04T02:14:45.998Z",
-      "version": "v3.1",
+      "lastUpdated": "2025-01-24T21:09:27.871Z",
+      "version": "v5.3",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "advanced"
       }
     },
     {
       "id": "doc-5",
-      "title": "Technical Guide 5: Microservices Authentication",
+      "title": "Technical Guide 5: API Design Patterns",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -112,17 +112,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-12-29T18:40:36.612Z",
-      "version": "v1.2",
+      "lastUpdated": "2025-08-04T23:21:07.432Z",
+      "version": "v1.7",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "advanced"
       }
     },
     {
       "id": "doc-6",
-      "title": "Technical Guide 6: CI/CD Best Practices",
+      "title": "Technical Guide 6: API Design Patterns",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -132,52 +132,52 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-05-09T13:14:40.951Z",
-      "version": "v5.8",
-      "metadata": {
-        "type": "technical_documentation",
-        "domain": "software_engineering",
-        "difficulty": "beginner"
-      }
-    },
-    {
-      "id": "doc-7",
-      "title": "Technical Guide 7: Database Optimization",
-      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
-      "sections": [
-        "Introduction",
-        "Prerequisites",
-        "Implementation",
-        "Testing",
-        "Deployment",
-        "Troubleshooting"
-      ],
-      "lastUpdated": "2025-05-19T04:46:08.293Z",
-      "version": "v2.6",
-      "metadata": {
-        "type": "technical_documentation",
-        "domain": "software_engineering",
-        "difficulty": "beginner"
-      }
-    },
-    {
-      "id": "doc-8",
-      "title": "Technical Guide 8: Microservices Authentication",
-      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
-      "sections": [
-        "Introduction",
-        "Prerequisites",
-        "Implementation",
-        "Testing",
-        "Deployment",
-        "Troubleshooting"
-      ],
-      "lastUpdated": "2024-12-07T22:44:01.279Z",
-      "version": "v3.2",
+      "lastUpdated": "2025-07-27T00:41:30.933Z",
+      "version": "v3.5",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
         "difficulty": "intermediate"
+      }
+    },
+    {
+      "id": "doc-7",
+      "title": "Technical Guide 7: Microservices Authentication",
+      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
+      "sections": [
+        "Introduction",
+        "Prerequisites",
+        "Implementation",
+        "Testing",
+        "Deployment",
+        "Troubleshooting"
+      ],
+      "lastUpdated": "2025-04-20T01:24:44.114Z",
+      "version": "v4.6",
+      "metadata": {
+        "type": "technical_documentation",
+        "domain": "software_engineering",
+        "difficulty": "advanced"
+      }
+    },
+    {
+      "id": "doc-8",
+      "title": "Technical Guide 8: API Design Patterns",
+      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
+      "sections": [
+        "Introduction",
+        "Prerequisites",
+        "Implementation",
+        "Testing",
+        "Deployment",
+        "Troubleshooting"
+      ],
+      "lastUpdated": "2025-05-06T07:33:22.454Z",
+      "version": "v5.4",
+      "metadata": {
+        "type": "technical_documentation",
+        "domain": "software_engineering",
+        "difficulty": "advanced"
       }
     },
     {
@@ -192,28 +192,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-10-17T12:12:59.140Z",
-      "version": "v3.0",
-      "metadata": {
-        "type": "technical_documentation",
-        "domain": "software_engineering",
-        "difficulty": "beginner"
-      }
-    },
-    {
-      "id": "doc-10",
-      "title": "Technical Guide 10: CI/CD Best Practices",
-      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
-      "sections": [
-        "Introduction",
-        "Prerequisites",
-        "Implementation",
-        "Testing",
-        "Deployment",
-        "Troubleshooting"
-      ],
-      "lastUpdated": "2024-10-17T05:06:23.835Z",
-      "version": "v2.1",
+      "lastUpdated": "2025-04-07T15:02:40.434Z",
+      "version": "v1.9",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -221,8 +201,8 @@
       }
     },
     {
-      "id": "doc-11",
-      "title": "Technical Guide 11: Container Orchestration",
+      "id": "doc-10",
+      "title": "Technical Guide 10: API Design Patterns",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -232,8 +212,28 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-08-07T20:00:48.572Z",
-      "version": "v2.6",
+      "lastUpdated": "2025-05-22T21:10:08.554Z",
+      "version": "v3.7",
+      "metadata": {
+        "type": "technical_documentation",
+        "domain": "software_engineering",
+        "difficulty": "intermediate"
+      }
+    },
+    {
+      "id": "doc-11",
+      "title": "Technical Guide 11: Microservices Authentication",
+      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
+      "sections": [
+        "Introduction",
+        "Prerequisites",
+        "Implementation",
+        "Testing",
+        "Deployment",
+        "Troubleshooting"
+      ],
+      "lastUpdated": "2024-11-23T21:19:42.501Z",
+      "version": "v3.5",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -242,7 +242,7 @@
     },
     {
       "id": "doc-12",
-      "title": "Technical Guide 12: API Design Patterns",
+      "title": "Technical Guide 12: Database Optimization",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -252,48 +252,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-09-08T18:57:55.370Z",
-      "version": "v3.8",
-      "metadata": {
-        "type": "technical_documentation",
-        "domain": "software_engineering",
-        "difficulty": "intermediate"
-      }
-    },
-    {
-      "id": "doc-13",
-      "title": "Technical Guide 13: API Design Patterns",
-      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
-      "sections": [
-        "Introduction",
-        "Prerequisites",
-        "Implementation",
-        "Testing",
-        "Deployment",
-        "Troubleshooting"
-      ],
-      "lastUpdated": "2025-01-18T07:13:00.462Z",
-      "version": "v5.9",
-      "metadata": {
-        "type": "technical_documentation",
-        "domain": "software_engineering",
-        "difficulty": "beginner"
-      }
-    },
-    {
-      "id": "doc-14",
-      "title": "Technical Guide 14: Container Orchestration",
-      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
-      "sections": [
-        "Introduction",
-        "Prerequisites",
-        "Implementation",
-        "Testing",
-        "Deployment",
-        "Troubleshooting"
-      ],
-      "lastUpdated": "2024-10-19T06:40:45.301Z",
-      "version": "v3.3",
+      "lastUpdated": "2025-01-16T06:59:46.651Z",
+      "version": "v4.1",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -301,8 +261,8 @@
       }
     },
     {
-      "id": "doc-15",
-      "title": "Technical Guide 15: Microservices Authentication",
+      "id": "doc-13",
+      "title": "Technical Guide 13: Microservices Authentication",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -312,8 +272,48 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-10-02T05:14:04.051Z",
-      "version": "v5.1",
+      "lastUpdated": "2025-04-14T00:20:57.720Z",
+      "version": "v4.9",
+      "metadata": {
+        "type": "technical_documentation",
+        "domain": "software_engineering",
+        "difficulty": "intermediate"
+      }
+    },
+    {
+      "id": "doc-14",
+      "title": "Technical Guide 14: API Design Patterns",
+      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
+      "sections": [
+        "Introduction",
+        "Prerequisites",
+        "Implementation",
+        "Testing",
+        "Deployment",
+        "Troubleshooting"
+      ],
+      "lastUpdated": "2025-04-18T20:08:56.969Z",
+      "version": "v3.8",
+      "metadata": {
+        "type": "technical_documentation",
+        "domain": "software_engineering",
+        "difficulty": "beginner"
+      }
+    },
+    {
+      "id": "doc-15",
+      "title": "Technical Guide 15: Database Optimization",
+      "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
+      "sections": [
+        "Introduction",
+        "Prerequisites",
+        "Implementation",
+        "Testing",
+        "Deployment",
+        "Troubleshooting"
+      ],
+      "lastUpdated": "2025-04-29T02:49:27.972Z",
+      "version": "v2.6",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -332,8 +332,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-12-22T03:44:51.220Z",
-      "version": "v5.1",
+      "lastUpdated": "2024-10-09T14:03:53.326Z",
+      "version": "v1.8",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -342,7 +342,7 @@
     },
     {
       "id": "doc-17",
-      "title": "Technical Guide 17: Container Orchestration",
+      "title": "Technical Guide 17: Database Optimization",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -352,8 +352,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-06-28T16:57:28.612Z",
-      "version": "v4.0",
+      "lastUpdated": "2024-10-26T11:41:27.584Z",
+      "version": "v4.6",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -362,7 +362,7 @@
     },
     {
       "id": "doc-18",
-      "title": "Technical Guide 18: Microservices Authentication",
+      "title": "Technical Guide 18: CI/CD Best Practices",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -372,17 +372,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-03-14T04:11:54.599Z",
-      "version": "v1.4",
+      "lastUpdated": "2024-12-08T20:49:27.134Z",
+      "version": "v5.2",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "beginner"
+        "difficulty": "intermediate"
       }
     },
     {
       "id": "doc-19",
-      "title": "Technical Guide 19: Container Orchestration",
+      "title": "Technical Guide 19: Microservices Authentication",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -392,17 +392,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-06-27T03:32:28.701Z",
-      "version": "v3.4",
+      "lastUpdated": "2025-04-14T06:24:47.837Z",
+      "version": "v4.4",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "advanced"
+        "difficulty": "intermediate"
       }
     },
     {
       "id": "doc-20",
-      "title": "Technical Guide 20: Database Optimization",
+      "title": "Technical Guide 20: Container Orchestration",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -412,8 +412,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-05-01T23:08:47.131Z",
-      "version": "v5.8",
+      "lastUpdated": "2025-03-31T16:06:37.116Z",
+      "version": "v2.9",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -422,7 +422,7 @@
     },
     {
       "id": "doc-21",
-      "title": "Technical Guide 21: Microservices Authentication",
+      "title": "Technical Guide 21: Database Optimization",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -432,17 +432,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-03-06T06:11:55.814Z",
-      "version": "v3.3",
+      "lastUpdated": "2025-02-17T20:58:16.054Z",
+      "version": "v1.4",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "advanced"
+        "difficulty": "intermediate"
       }
     },
     {
       "id": "doc-22",
-      "title": "Technical Guide 22: CI/CD Best Practices",
+      "title": "Technical Guide 22: Container Orchestration",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -452,8 +452,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2024-08-29T09:26:53.152Z",
-      "version": "v4.0",
+      "lastUpdated": "2024-12-06T04:27:05.956Z",
+      "version": "v4.3",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -462,7 +462,7 @@
     },
     {
       "id": "doc-23",
-      "title": "Technical Guide 23: CI/CD Best Practices",
+      "title": "Technical Guide 23: API Design Patterns",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -472,12 +472,12 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-07-27T11:57:09.285Z",
-      "version": "v4.1",
+      "lastUpdated": "2025-08-11T16:32:21.507Z",
+      "version": "v3.3",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "beginner"
       }
     },
     {
@@ -492,17 +492,17 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-01-29T07:38:23.461Z",
-      "version": "v4.9",
+      "lastUpdated": "2025-07-10T05:52:29.697Z",
+      "version": "v4.1",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "beginner"
+        "difficulty": "intermediate"
       }
     },
     {
       "id": "doc-25",
-      "title": "Technical Guide 25: Microservices Authentication",
+      "title": "Technical Guide 25: Database Optimization",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -512,8 +512,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-04-27T11:39:42.994Z",
-      "version": "v1.0",
+      "lastUpdated": "2025-02-13T14:04:36.250Z",
+      "version": "v2.2",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -532,8 +532,8 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-07-10T12:02:53.978Z",
-      "version": "v3.0",
+      "lastUpdated": "2025-01-05T01:43:01.386Z",
+      "version": "v1.4",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
@@ -542,7 +542,7 @@
     },
     {
       "id": "doc-27",
-      "title": "Technical Guide 27: Container Orchestration",
+      "title": "Technical Guide 27: Microservices Authentication",
       "content": "This guide covers the implementation details and best practices for... Prerequisites: Basic knowledge of... Step 1: Configure your environment... Step 2: Implement the core functionality...",
       "sections": [
         "Introduction",
@@ -552,12 +552,12 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-03-05T10:37:24.801Z",
-      "version": "v2.4",
+      "lastUpdated": "2025-01-29T23:17:13.837Z",
+      "version": "v4.2",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "advanced"
       }
     },
     {
@@ -572,12 +572,12 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-02-24T11:07:37.753Z",
-      "version": "v3.5",
+      "lastUpdated": "2024-12-24T08:47:55.643Z",
+      "version": "v4.7",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "advanced"
       }
     },
     {
@@ -592,12 +592,12 @@
         "Deployment",
         "Troubleshooting"
       ],
-      "lastUpdated": "2025-02-28T05:19:58.604Z",
-      "version": "v5.8",
+      "lastUpdated": "2025-04-19T23:24:04.822Z",
+      "version": "v2.7",
       "metadata": {
         "type": "technical_documentation",
         "domain": "software_engineering",
-        "difficulty": "intermediate"
+        "difficulty": "beginner"
       }
     }
   ]

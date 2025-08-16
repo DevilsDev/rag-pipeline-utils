@@ -1,0 +1,73 @@
+{
+  "id": "pipeline_1755308120668",
+  "name": "Test Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "loader_1755308120668",
+      "_type": "loader",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "_config": {
+        "source": {
+          "_type": "string",
+          "required": true
+        },
+        "format": {
+          "_type": "select",
+          "_options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "documents"
+      ]
+    }
+  ],
+  "connections": [],
+  "_config": {},
+  "created": "2025-08-16T01:35:20.668Z",
+  "modified": "2025-08-16T01:35:20.668Z"
+}  },
+      "_config": {
+        "model": {
+          "_type": "string",
+          "default": "openai"
+        },
+        "dimensions": {
+          "_type": "number",
+          "default": 1536
+        }
+      },
+      "inputs": [
+        "documents"
+      ],
+      "outputs": [
+        "embeddings"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1755308120668",
+      "source": {
+        "componentId": "loader_1755308120668",
+        "output": "documents"
+      },
+      "target": {
+        "componentId": "embedder_1755308120668",
+        "input": "documents"
+      }
+    }
+  ],
+  "_config": {},
+  "created": "2025-08-16T01:35:20.668Z",
+  "modified": "2025-08-16T01:35:20.668Z"
+}

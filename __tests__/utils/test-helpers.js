@@ -220,6 +220,13 @@ class TestDataGenerator {
   }
   
   /**
+   * Generate test tokens for streaming tests
+   */
+  static generateTokens(count) {
+    return Array.from({ length: count }, (_, i) => `token_${i}`);
+  }
+  
+  /**
    * Generate test vectors for embedding tests
    */
   static generateVectors(count = 10, dimensions = 1536) {
@@ -494,8 +501,7 @@ class ErrorSimulator {
   }
 }
 
-// Export all helpers using CommonJS
-module.exports = {
+const TestHelpers = {
   StreamingTestHelper,
   MockFactory,
   TestDataGenerator,
@@ -503,3 +509,5 @@ module.exports = {
   PerformanceHelper,
   ErrorSimulator
 };
+
+module.exports = TestHelpers;

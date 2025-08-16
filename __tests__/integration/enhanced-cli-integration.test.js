@@ -1,17 +1,13 @@
 /**
-const fs = require('fs');
  * Integration tests for Enhanced CLI UX Features
  * Tests end-to-end functionality of interactive wizard, doctor command, and enhanced CLI
  */
 
-const { jest } = require('@jest/globals');
 const { spawn } = require('child_process');
 const fs = require('fs/promises');
 const path = require('path');
-const { fileURLToPath } = require('url');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = __dirname || path.dirname(__filename);
 const CLI_PATH = path.resolve(__dirname, '../../bin/cli.js');
 const TEST_CONFIG_DIR = path.resolve(__dirname, '../fixtures/cli');
 
@@ -157,6 +153,10 @@ async function cleanupTestFixtures() {
 }
 
 describe('Enhanced CLI Integration Tests', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+  });
   beforeAll(async () => {
     await setupTestFixtures();
   });

@@ -795,21 +795,18 @@ class PipelineDoctor {
 }
 
 /**
- * Create and run pipeline doctor
+ * Main doctor function for CLI usage
  * @param {object} options - Doctor options
  * @returns {Promise<object>} Diagnostic report
  */
-export async function runPipelineDoctor(options = {}) {
+async function runPipelineDoctor(options = {}) {
   const doctor = new PipelineDoctor(options);
   return await doctor.diagnose();
 }
 
-
-// Default export
-
-
 module.exports = {
   PipelineDoctor,
+  runPipelineDoctor,
   DIAGNOSTIC_CATEGORIES,
   SEVERITY_LEVELS
 };

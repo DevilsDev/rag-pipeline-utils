@@ -10,6 +10,10 @@ const { performance  } = require('perf_hooks');
 const { TestDataGenerator, ValidationHelper  } = require('../utils/test-helpers.js');
 
 describe('Full Pipeline End-to-End Integration Tests', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+  });
   let e2eResults = [];
   
   beforeAll(async () => {

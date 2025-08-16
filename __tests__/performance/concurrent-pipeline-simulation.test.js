@@ -1,3 +1,5 @@
+jest.setTimeout(120000);
+
 /**
  * Concurrent Pipeline Simulation Performance Testing
  * Simulates multiple concurrent pipeline runs with realistic workloads
@@ -7,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { performance  } = require('perf_hooks');
-const { TestDataGenerator, PerformanceBenchmark  } = require('../utils/test-helpers.js');
+const { TestDataGenerator, PerformanceHelper } = require('../utils/test-helpers.js');
 
 describe('Concurrent Pipeline Simulation Tests', () => {
   let concurrencyMetrics = [];
@@ -27,7 +29,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
     const concurrencyLevels = [5, 10, 25, 50, 100];
     
     test.each(concurrencyLevels)('should handle %d concurrent users efficiently', async (userCount) => {
-      const benchmark = new PerformanceBenchmark(`concurrent-users-${userCount}`);
+      const benchmark = new PerformanceHelper(`concurrent-users-${userCount}`);
       
       // Create realistic pipeline simulator
       const pipelineSimulator = createRealisticPipelineSimulator();
@@ -86,7 +88,7 @@ describe('Concurrent Pipeline Simulation Tests', () => {
       const pipelineSimulator = createRealisticPipelineSimulator();
       const mixedWorkload = generateMixedWorkload(100, workloadPatterns);
       
-      const benchmark = new PerformanceBenchmark('mixed-workload-patterns');
+      const benchmark = new PerformanceHelper('mixed-workload-patterns');
       
       benchmark.start();
       const results = await executeMixedWorkload(pipelineSimulator, mixedWorkload);

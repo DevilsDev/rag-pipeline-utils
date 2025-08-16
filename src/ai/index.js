@@ -588,12 +588,13 @@ class MultiModalProcessor extends EventEmitter {
     // Determine modality from content object
     let modalityType = 'text'; // default
     if (content && typeof content === 'object') {
-      if (content._type) {
+      const contentType = content.type || content._type;
+      if (contentType) {
         // Extract modality from MIME type or content type
-        if (content._type.startsWith('image/')) modalityType = 'image';
-        else if (content._type.startsWith('audio/')) modalityType = 'audio';
-        else if (content._type.startsWith('video/')) modalityType = 'video';
-        else if (content._type.startsWith('text/')) modalityType = 'text';
+        if (contentType.startsWith('image/')) modalityType = 'image';
+        else if (contentType.startsWith('audio/')) modalityType = 'audio';
+        else if (contentType.startsWith('video/')) modalityType = 'video';
+        else if (contentType.startsWith('text/')) modalityType = 'text';
       }
     }
     
@@ -740,29 +741,33 @@ class MultiModalProcessor extends EventEmitter {
 
   async generateContentDescription(contentId) {
     // Find the content by searching through all tenants
-    let content = null;
+    let contentItem = null;
     
-    for (const [tenantId, tenantEmbeddings] of this.embeddings.entries()) {
-      const found = tenantEmbeddings.find(e => e.id === contentId);
+    for (const [tenantId, tenantContent] of this.contentStore.entries()) {
+      const found = tenantContent.find(c => c.id === contentId);
       if (found) {
-        content = found;
+        contentItem = found;
         break;
       }
     }
     
-    if (!content) {
+    if (!contentItem) {
       throw new Error(`Content with ID ${contentId} not found`);
     }
     
+    const { content, modality } = contentItem;
+    
     // Generate descriptions based on modality
     const descriptions = {
-      unified: `This is ${content.modality} content with rich semantic features and contextual information.`
+      unified: `This is ${modality} content with rich semantic features and contextual information.`
     };
     
     // Add modality-specific descriptions
-    switch (content.modality) {
+    switch (modality) {
       case 'text':
-        descriptions.text = `Text content containing ${content.content.text ? content.content.text.split(' ').length : 'multiple'} words with semantic meaning and contextual relevance.`;
+        const textContent = typeof content === 'string' ? content : (content.text || content.content || 'text content');
+        const wordCount = textContent.split(' ').length;
+        descriptions.text = `Text content containing ${wordCount} words with semantic meaning and contextual relevance.`;
         break;
       case 'image':
         descriptions.image = 'Visual content depicting scenes, objects, and visual elements with rich spatial and semantic information.';
@@ -774,13 +779,13 @@ class MultiModalProcessor extends EventEmitter {
         descriptions.video = 'Video content combining visual and temporal elements, including scenes, actions, and narrative structure.';
         break;
       default:
-        descriptions[content.modality] = `${content.modality} content with specialized features and semantic properties.`;
+        descriptions[modality] = `${modality} content with specialized features and semantic properties.`;
     }
     
     // Add unified description that combines all aspects
-    descriptions.unified = `Multi-modal ${content.modality} content with comprehensive semantic understanding, featuring contextual relevance and rich feature extraction for enhanced retrieval and analysis.`;
+    descriptions.unified = `Multi-modal ${modality} content with comprehensive semantic understanding, featuring contextual relevance and rich feature extraction for enhanced retrieval and analysis.`;
     
-    this.emit('descriptionGenerated', { contentId, modality: content.modality });
+    this.emit('descriptionGenerated', { contentId, modality });
     
     return descriptions;
   }

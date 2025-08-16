@@ -1,0 +1,16 @@
+{
+  "configs": [
+    {
+      "name": "basic",
+      "loader": "file",
+      "embedder": "openai",
+      "retriever": "vector"
+    },
+    {
+      "name": "advanced",
+      "loader": "web",
+      "embedder": "huggingface",
+      "retriever": "hybrid"
+    }
+  ]
+}

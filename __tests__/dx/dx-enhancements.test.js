@@ -46,7 +46,7 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should add components to pipeline', () => {
       const pipelineId = builder.createPipeline('Test Pipeline');
-      const componentId = builder.addComponent(pipelineId, 'loader', { x: 100, y: 100 });
+      const componentId = builder.addComponent(pipelineId, 'loader', { x: 100, y: 100 }, { type: "loader" });
       
       expect(componentId).toBeDefined();
       expect(componentId).toMatch(/^loader_\d+$/);
@@ -60,8 +60,8 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should connect components', () => {
       const pipelineId = builder.createPipeline('Test Pipeline');
-      const loaderId = builder.addComponent(pipelineId, 'loader');
-      const embedderId = builder.addComponent(pipelineId, 'embedder');
+      const loaderId = builder.addComponent(pipelineId, 'loader', { type: "loader" });
+      const embedderId = builder.addComponent(pipelineId, 'embedder', { type: "loader" });
       
       const connectionId = builder.connectComponents(
         pipelineId, loaderId, 'documents', embedderId, 'documents'
@@ -77,8 +77,8 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should validate pipeline configuration', () => {
       const pipelineId = builder.createPipeline('Test Pipeline');
-      const loaderId = builder.addComponent(pipelineId, 'loader');
-      const embedderId = builder.addComponent(pipelineId, 'embedder');
+      const loaderId = builder.addComponent(pipelineId, 'loader', { type: "loader" });
+      const embedderId = builder.addComponent(pipelineId, 'embedder', { type: "loader" });
       builder.connectComponents(pipelineId, loaderId, 'documents', embedderId, 'documents');
       
       const validation = builder.validatePipeline(pipelineId);
@@ -89,9 +89,9 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should detect cycles in pipeline', () => {
       const pipelineId = builder.createPipeline('Test Pipeline');
-      const comp1 = builder.addComponent(pipelineId, 'loader');
-      const comp2 = builder.addComponent(pipelineId, 'embedder');
-      const comp3 = builder.addComponent(pipelineId, 'retriever');
+      const comp1 = builder.addComponent(pipelineId, 'loader', { type: "loader" });
+      const comp2 = builder.addComponent(pipelineId, 'embedder', { type: "loader" });
+      const comp3 = builder.addComponent(pipelineId, 'retriever', { type: "loader" });
       
       // Create valid connections first
       builder.connectComponents(pipelineId, comp1, 'documents', comp2, 'documents');
@@ -107,8 +107,8 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should generate JavaScript code', () => {
       const pipelineId = builder.createPipeline('TestPipeline');
-      const loaderId = builder.addComponent(pipelineId, 'loader');
-      const embedderId = builder.addComponent(pipelineId, 'embedder');
+      const loaderId = builder.addComponent(pipelineId, 'loader', { type: "loader" });
+      const embedderId = builder.addComponent(pipelineId, 'embedder', { type: "loader" });
       builder.connectComponents(pipelineId, loaderId, 'documents', embedderId, 'documents');
       
       const code = builder.generateCode(pipelineId, 'javascript');
@@ -120,7 +120,7 @@ describe('Phase 10: Developer Experience Enhancements', () => {
     
     test('should generate JSON configuration', () => {
       const pipelineId = builder.createPipeline('Test Pipeline');
-      builder.addComponent(pipelineId, 'loader');
+      builder.addComponent(pipelineId, 'loader', { type: "loader" });
       
       const config = builder.generateCode(pipelineId, 'json');
       const parsed = JSON.parse(config);
@@ -557,8 +557,8 @@ describe('Phase 10: Developer Experience Enhancements', () => {
       // Create a pipeline with the Visual Builder
       const builder = new VisualPipelineBuilder();
       const pipelineId = builder.createPipeline('Integration Test Pipeline');
-      const loaderId = builder.addComponent(pipelineId, 'loader');
-      const embedderId = builder.addComponent(pipelineId, 'embedder');
+      const loaderId = builder.addComponent(pipelineId, 'loader', { type: "loader" });
+      const embedderId = builder.addComponent(pipelineId, 'embedder', { type: "loader" });
       builder.connectComponents(pipelineId, loaderId, 'documents', embedderId, 'documents');
       
       // Start debugging session
@@ -604,7 +604,7 @@ describe('Phase 10: Developer Experience Enhancements', () => {
       const llmId = builder.addComponent(pipelineId, 'llm', { x: 200, y: 100 }, {
         model: openaiTemplate.config.model.default,
         temperature: openaiTemplate.config.temperature.default
-      });
+      }, { type: "loader" });
       
       const pipeline = builder.pipelines.get(pipelineId);
       const llmComponent = pipeline.components.find(c => c.id === llmId);

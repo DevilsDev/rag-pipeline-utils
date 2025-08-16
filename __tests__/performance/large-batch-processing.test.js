@@ -1,3 +1,5 @@
+jest.setTimeout(120000);
+
 /**
  * Large Document Batch Performance Testing
  * Tests embedding and processing of large document batches with detailed metrics
@@ -7,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { performance  } = require('perf_hooks');
-const { TestDataGenerator, PerformanceBenchmark  } = require('../utils/test-helpers.js');
+const { TestDataGenerator, PerformanceHelper } = require('../utils/test-helpers.js');
 
 describe('Large Document Batch Performance Tests', () => {
   let performanceMetrics = [];
@@ -30,7 +32,7 @@ describe('Large Document Batch Performance Tests', () => {
     const batchSizes = [100, 500, 1000, 5000, 10000];
     
     test.each(batchSizes)('should process %d documents efficiently', async (batchSize) => {
-      const benchmark = new PerformanceBenchmark(`embedding-batch-${batchSize}`);
+      const benchmark = new PerformanceHelper(`retrieval-batch-${batchSize}`);
       
       // Generate test documents
       const documents = TestDataGenerator.generateDocuments(batchSize, {

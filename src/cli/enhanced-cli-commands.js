@@ -826,10 +826,6 @@ async function runEnhancedCLI(argv = process.argv) {
   await enhancedCLI.run(argv);
 }
 
-
-// Default export
-
-
 module.exports = {
   EnhancedCLI,
   enhancedCLI,

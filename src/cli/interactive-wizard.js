@@ -812,19 +812,16 @@ class InteractiveWizard {
 }
 
 /**
- * Create and run interactive wizard
+ * Main wizard function for CLI usage
  * @param {object} options - Wizard options
  * @returns {Promise<object>} Generated configuration
  */
-export async function runInteractiveWizard(options = {}) {
+async function runInteractiveWizard(options = {}) {
   const wizard = new InteractiveWizard(options);
   return await wizard.run();
 }
 
-
-// Default export
-
-
 module.exports = {
-  InteractiveWizard
+  InteractiveWizard,
+  runInteractiveWizard
 };

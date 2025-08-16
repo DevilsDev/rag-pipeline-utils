@@ -1,0 +1,2327 @@
+{
+  "timestamp": "2025-08-16T01:49:10.406Z",
+  "phase": "comprehensive_test_audit",
+  "testSuiteAnalysis": {
+    "totalFiles": 49,
+    "categories": {
+      "ai": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\ai\\advanced-ai-capabilities.test.js",
+          "relativePath": "__tests__\\ai\\advanced-ai-capabilities.test.js",
+          "name": "advanced-ai-capabilities.test.js",
+          "category": "ai",
+          "size": 21289
+        }
+      ],
+      "ci": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\ci\\contract-schema-validation.test.js",
+          "relativePath": "__tests__\\ci\\contract-schema-validation.test.js",
+          "name": "contract-schema-validation.test.js",
+          "category": "ci",
+          "size": 14943
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\ci\\pipeline-hardening.test.js",
+          "relativePath": "__tests__\\ci\\pipeline-hardening.test.js",
+          "name": "pipeline-hardening.test.js",
+          "category": "ci",
+          "size": 20234
+        }
+      ],
+      "compatibility": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\compatibility\\node-versions.test.js",
+          "relativePath": "__tests__\\compatibility\\node-versions.test.js",
+          "name": "node-versions.test.js",
+          "category": "compatibility",
+          "size": 2838
+        }
+      ],
+      "dx": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\dx\\dx-enhancements.test.js",
+          "relativePath": "__tests__\\dx\\dx-enhancements.test.js",
+          "name": "dx-enhancements.test.js",
+          "category": "dx",
+          "size": 23753
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\dx\\dx-simple.test.js",
+          "relativePath": "__tests__\\dx\\dx-simple.test.js",
+          "name": "dx-simple.test.js",
+          "category": "dx",
+          "size": 6577
+        }
+      ],
+      "e2e": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\e2e\\full-pipeline-integration.test.js",
+          "relativePath": "__tests__\\e2e\\full-pipeline-integration.test.js",
+          "name": "full-pipeline-integration.test.js",
+          "category": "e2e",
+          "size": 27831
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\e2e\\real-data-integration.test.js",
+          "relativePath": "__tests__\\e2e\\real-data-integration.test.js",
+          "name": "real-data-integration.test.js",
+          "category": "e2e",
+          "size": 26851
+        }
+      ],
+      "ecosystem": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\ecosystem\\plugin-hub.test.js",
+          "relativePath": "__tests__\\ecosystem\\plugin-hub.test.js",
+          "name": "plugin-hub.test.js",
+          "category": "ecosystem",
+          "size": 20035
+        }
+      ],
+      "integration": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\integration\\cli\\config-flow.test.js",
+          "relativePath": "__tests__\\integration\\cli\\config-flow.test.js",
+          "name": "config-flow.test.js",
+          "category": "integration",
+          "size": 3693
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\integration\\config\\load-config.test.js",
+          "relativePath": "__tests__\\integration\\config\\load-config.test.js",
+          "name": "load-config.test.js",
+          "category": "integration",
+          "size": 1974
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\integration\\enhanced-cli-integration.test.js",
+          "relativePath": "__tests__\\integration\\enhanced-cli-integration.test.js",
+          "name": "enhanced-cli-integration.test.js",
+          "category": "integration",
+          "size": 21341
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\integration\\observability-integration.test.js",
+          "relativePath": "__tests__\\integration\\observability-integration.test.js",
+          "name": "observability-integration.test.js",
+          "category": "integration",
+          "size": 15066
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\integration\\streaming-pipeline.test.js",
+          "relativePath": "__tests__\\integration\\streaming-pipeline.test.js",
+          "name": "streaming-pipeline.test.js",
+          "category": "integration",
+          "size": 11136
+        }
+      ],
+      "load": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\load\\concurrent-load.test.js",
+          "relativePath": "__tests__\\load\\concurrent-load.test.js",
+          "name": "concurrent-load.test.js",
+          "category": "load",
+          "size": 16800
+        }
+      ],
+      "performance": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\performance\\concurrent-pipeline-simulation.test.js",
+          "relativePath": "__tests__\\performance\\concurrent-pipeline-simulation.test.js",
+          "name": "concurrent-pipeline-simulation.test.js",
+          "category": "performance",
+          "size": 15638
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\performance\\dag-pipeline-performance.test.js",
+          "relativePath": "__tests__\\performance\\dag-pipeline-performance.test.js",
+          "name": "dag-pipeline-performance.test.js",
+          "category": "performance",
+          "size": 1765
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\performance\\large-batch-processing.test.js",
+          "relativePath": "__tests__\\performance\\large-batch-processing.test.js",
+          "name": "large-batch-processing.test.js",
+          "category": "performance",
+          "size": 13692
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\performance\\pipeline-performance.test.js",
+          "relativePath": "__tests__\\performance\\pipeline-performance.test.js",
+          "name": "pipeline-performance.test.js",
+          "category": "performance",
+          "size": 3287
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\performance\\streaming-load.test.js",
+          "relativePath": "__tests__\\performance\\streaming-load.test.js",
+          "name": "streaming-load.test.js",
+          "category": "performance",
+          "size": 21380
+        }
+      ],
+      "property": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\property\\plugin-contracts.test.js",
+          "relativePath": "__tests__\\property\\plugin-contracts.test.js",
+          "name": "plugin-contracts.test.js",
+          "category": "property",
+          "size": 5262
+        }
+      ],
+      "scripts": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\scripts\\ensure-roadmap-labels.test.js",
+          "relativePath": "__tests__\\scripts\\ensure-roadmap-labels.test.js",
+          "name": "ensure-roadmap-labels.test.js",
+          "category": "scripts",
+          "size": 1978
+        }
+      ],
+      "security": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\security\\comprehensive-security-suite.test.js",
+          "relativePath": "__tests__\\security\\comprehensive-security-suite.test.js",
+          "name": "comprehensive-security-suite.test.js",
+          "category": "security",
+          "size": 17072
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\security\\plugin-isolation.test.js",
+          "relativePath": "__tests__\\security\\plugin-isolation.test.js",
+          "name": "plugin-isolation.test.js",
+          "category": "security",
+          "size": 19790
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\security\\secrets-and-validation.test.js",
+          "relativePath": "__tests__\\security\\secrets-and-validation.test.js",
+          "name": "secrets-and-validation.test.js",
+          "category": "security",
+          "size": 7191
+        }
+      ],
+      "unit": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\cli\\doctor-command.test.js",
+          "relativePath": "__tests__\\unit\\cli\\doctor-command.test.js",
+          "name": "doctor-command.test.js",
+          "category": "unit",
+          "size": 22258
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\cli\\enhanced-cli-commands.test.js",
+          "relativePath": "__tests__\\unit\\cli\\enhanced-cli-commands.test.js",
+          "name": "enhanced-cli-commands.test.js",
+          "category": "unit",
+          "size": 1544
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\cli\\enhanced-cli.test.js",
+          "relativePath": "__tests__\\unit\\cli\\enhanced-cli.test.js",
+          "name": "enhanced-cli.test.js",
+          "category": "unit",
+          "size": 3789
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\cli\\interactive-wizard.test.js",
+          "relativePath": "__tests__\\unit\\cli\\interactive-wizard.test.js",
+          "name": "interactive-wizard.test.js",
+          "category": "unit",
+          "size": 1637
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\config\\validate-schema.test.js",
+          "relativePath": "__tests__\\unit\\config\\validate-schema.test.js",
+          "name": "validate-schema.test.js",
+          "category": "unit",
+          "size": 4138
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\core\\plugin-registry.test.js",
+          "relativePath": "__tests__\\unit\\core\\plugin-registry.test.js",
+          "name": "plugin-registry.test.js",
+          "category": "unit",
+          "size": 1901
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\dag\\dag-engine.test.js",
+          "relativePath": "__tests__\\unit\\dag\\dag-engine.test.js",
+          "name": "dag-engine.test.js",
+          "category": "unit",
+          "size": 16890
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\dag\\error-handling.test.js",
+          "relativePath": "__tests__\\unit\\dag\\error-handling.test.js",
+          "name": "error-handling.test.js",
+          "category": "unit",
+          "size": 14687
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\observability\\event-logger.test.js",
+          "relativePath": "__tests__\\unit\\observability\\event-logger.test.js",
+          "name": "event-logger.test.js",
+          "category": "unit",
+          "size": 13716
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\observability\\metrics.test.js",
+          "relativePath": "__tests__\\unit\\observability\\metrics.test.js",
+          "name": "metrics.test.js",
+          "category": "unit",
+          "size": 18833
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\observability\\tracing.test.js",
+          "relativePath": "__tests__\\unit\\observability\\tracing.test.js",
+          "name": "tracing.test.js",
+          "category": "unit",
+          "size": 15124
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\performance\\benchmark.test.js",
+          "relativePath": "__tests__\\unit\\performance\\benchmark.test.js",
+          "name": "benchmark.test.js",
+          "category": "unit",
+          "size": 13189
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\performance\\parallel-processor.test.js",
+          "relativePath": "__tests__\\unit\\performance\\parallel-processor.test.js",
+          "name": "parallel-processor.test.js",
+          "category": "unit",
+          "size": 8908
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\performance\\streaming-safeguards.test.js",
+          "relativePath": "__tests__\\unit\\performance\\streaming-safeguards.test.js",
+          "name": "streaming-safeguards.test.js",
+          "category": "unit",
+          "size": 13828
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\plugins\\plugin-contracts.test.js",
+          "relativePath": "__tests__\\unit\\plugins\\plugin-contracts.test.js",
+          "name": "plugin-contracts.test.js",
+          "category": "unit",
+          "size": 3634
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\plugins\\reranker.test.js",
+          "relativePath": "__tests__\\unit\\plugins\\reranker.test.js",
+          "name": "reranker.test.js",
+          "category": "unit",
+          "size": 9681
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\reranker\\llm-reranker.test.js",
+          "relativePath": "__tests__\\unit\\reranker\\llm-reranker.test.js",
+          "name": "llm-reranker.test.js",
+          "category": "unit",
+          "size": 694
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\reranker\\reranker.enriched.test.js",
+          "relativePath": "__tests__\\unit\\reranker\\reranker.enriched.test.js",
+          "name": "reranker.enriched.test.js",
+          "category": "unit",
+          "size": 725
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\reranker\\reranker.fallback.test.js",
+          "relativePath": "__tests__\\unit\\reranker\\reranker.fallback.test.js",
+          "name": "reranker.fallback.test.js",
+          "category": "unit",
+          "size": 639
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\reranker\\reranker.snapshot.test.js",
+          "relativePath": "__tests__\\unit\\reranker\\reranker.snapshot.test.js",
+          "name": "reranker.snapshot.test.js",
+          "category": "unit",
+          "size": 599
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\reranker\\reranker.structured-output.test.js",
+          "relativePath": "__tests__\\unit\\reranker\\reranker.structured-output.test.js",
+          "name": "reranker.structured-output.test.js",
+          "category": "unit",
+          "size": 667
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\scripts\\script-utilities.test.js",
+          "relativePath": "__tests__\\unit\\scripts\\script-utilities.test.js",
+          "name": "script-utilities.test.js",
+          "category": "unit",
+          "size": 13203
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\streaming\\llm-streaming.test.js",
+          "relativePath": "__tests__\\unit\\streaming\\llm-streaming.test.js",
+          "name": "llm-streaming.test.js",
+          "category": "unit",
+          "size": 6401
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\__tests__\\unit\\utils\\validate-plugin-contract.test.js",
+          "relativePath": "__tests__\\unit\\utils\\validate-plugin-contract.test.js",
+          "name": "validate-plugin-contract.test.js",
+          "category": "unit",
+          "size": 910
+        }
+      ]
+    },
+    "distribution": {
+      "ai": {
+        "count": 1,
+        "size": 21289,
+        "percentage": 2
+      },
+      "ci": {
+        "count": 2,
+        "size": 35177,
+        "percentage": 4
+      },
+      "compatibility": {
+        "count": 1,
+        "size": 2838,
+        "percentage": 2
+      },
+      "dx": {
+        "count": 2,
+        "size": 30330,
+        "percentage": 4
+      },
+      "e2e": {
+        "count": 2,
+        "size": 54682,
+        "percentage": 4
+      },
+      "ecosystem": {
+        "count": 1,
+        "size": 20035,
+        "percentage": 2
+      },
+      "integration": {
+        "count": 5,
+        "size": 53210,
+        "percentage": 10
+      },
+      "load": {
+        "count": 1,
+        "size": 16800,
+        "percentage": 2
+      },
+      "performance": {
+        "count": 5,
+        "size": 55762,
+        "percentage": 10
+      },
+      "property": {
+        "count": 1,
+        "size": 5262,
+        "percentage": 2
+      },
+      "scripts": {
+        "count": 1,
+        "size": 1978,
+        "percentage": 2
+      },
+      "security": {
+        "count": 3,
+        "size": 44053,
+        "percentage": 6
+      },
+      "unit": {
+        "count": 24,
+        "size": 187595,
+        "percentage": 49
+      }
+    },
+    "naming": {
+      "consistent": false,
+      "patterns": [
+        "kebab-case.test.js format"
+      ],
+      "violations": [
+        "reranker.enriched.test.js",
+        "reranker.fallback.test.js",
+        "reranker.snapshot.test.js",
+        "reranker.structured-output.test.js"
+      ],
+      "complianceRate": 92
+    },
+    "organization": {
+      "structure": "hierarchical",
+      "depth": 4,
+      "grouping": "by-feature-and-type",
+      "score": 100
+    }
+  },
+  "coverageAnalysis": {
+    "codebaseAnalysis": {
+      "files": [
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\adaptive-retrieval.js",
+          "relativePath": "ai\\adaptive-retrieval.js",
+          "name": "adaptive-retrieval.js",
+          "lines": 798,
+          "functions": [],
+          "classes": [
+            "AdaptiveRetrievalManager",
+            "ReinforcementLearningAgent",
+            "ContextAnalyzer",
+            "FeedbackProcessor",
+            "RankingOptimizer",
+            "QueryProcessor"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\federated-learning.js",
+          "relativePath": "ai\\federated-learning.js",
+          "name": "federated-learning.js",
+          "lines": 870,
+          "functions": [],
+          "classes": [
+            "FederatedLearningCoordinator",
+            "FederationSession",
+            "PrivacyPreservationEngine",
+            "ModelAggregator",
+            "FederatedPerformanceMonitor"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\index-fixed.js",
+          "relativePath": "ai\\index-fixed.js",
+          "name": "index-fixed.js",
+          "lines": 461,
+          "functions": [],
+          "classes": [
+            "ModelTrainingOrchestrator",
+            "AdaptiveRetrievalEngine",
+            "MultiModalProcessor",
+            "FederatedLearningCoordinator"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\index.backup.js",
+          "relativePath": "ai\\index.backup.js",
+          "name": "index.backup.js",
+          "lines": 387,
+          "functions": [],
+          "classes": [
+            "names",
+            "names",
+            "AIMLFactory",
+            "AIMLUtils"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\index.broken.js",
+          "relativePath": "ai\\index.broken.js",
+          "name": "index.broken.js",
+          "lines": 474,
+          "functions": [],
+          "classes": [
+            "ModelTrainingOrchestrator",
+            "AdaptiveRetrievalEngine",
+            "MultiModalProcessor",
+            "FederatedLearningCoordinator"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\index.js",
+          "relativePath": "ai\\index.js",
+          "name": "index.js",
+          "lines": 1078,
+          "functions": [],
+          "classes": [
+            "ModelTrainingOrchestrator",
+            "AdaptiveRetrievalEngine",
+            "MultiModalProcessor",
+            "FederatedLearningCoordinator"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\model-training-new.js",
+          "relativePath": "ai\\model-training-new.js",
+          "name": "model-training-new.js",
+          "lines": 299,
+          "functions": [],
+          "classes": [
+            "ModelTrainingManager",
+            "ModelRegistry",
+            "TrainingDataProcessor",
+            "ModelEvaluator",
+            "EmbeddingTrainer",
+            "LLMTrainer"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\model-training.backup.js",
+          "relativePath": "ai\\model-training.backup.js",
+          "name": "model-training.backup.js",
+          "lines": 561,
+          "functions": [],
+          "classes": [
+            "ModelTrainingManager",
+            "ModelRegistry",
+            "TrainingDataProcessor",
+            "ModelEvaluator",
+            "EmbeddingTrainer",
+            "LLMTrainer"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\model-training.js",
+          "relativePath": "ai\\model-training.js",
+          "name": "model-training.js",
+          "lines": 207,
+          "functions": [],
+          "classes": [
+            "ModelTrainingManager",
+            "ModelRegistry",
+            "TrainingDataProcessor",
+            "ModelEvaluator",
+            "EmbeddingTrainer",
+            "LLMTrainer"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\module-template.js",
+          "relativePath": "ai\\module-template.js",
+          "name": "module-template.js",
+          "lines": 37,
+          "functions": [],
+          "classes": [
+            "with",
+            "ExampleAIModule"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ai\\multimodal-processing.js",
+          "relativePath": "ai\\multimodal-processing.js",
+          "name": "multimodal-processing.js",
+          "lines": 752,
+          "functions": [],
+          "classes": [
+            "MultiModalProcessor",
+            "ImageProcessor",
+            "AudioProcessor",
+            "VideoProcessor",
+            "TextProcessor",
+            "CrossModalEmbeddingAligner",
+            "MultiModalContentAnalyzer",
+            "MultiModalSearchEngine"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\commands\\ai-ml.js",
+          "relativePath": "cli\\commands\\ai-ml.js",
+          "name": "ai-ml.js",
+          "lines": 819,
+          "functions": [],
+          "classes": [
+            "AIMLCommands"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\commands\\docs.js",
+          "relativePath": "cli\\commands\\docs.js",
+          "name": "docs.js",
+          "lines": 180,
+          "functions": [
+            "createDocsCommands"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\commands\\dx.js",
+          "relativePath": "cli\\commands\\dx.js",
+          "name": "dx.js",
+          "lines": 500,
+          "functions": [
+            "createVisualBuilderCommand",
+            "createDebuggerCommand",
+            "createProfilerCommand",
+            "createTemplatesCommand",
+            "createDashboardCommand"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\commands\\plugin-hub.js",
+          "relativePath": "cli\\commands\\plugin-hub.js",
+          "name": "plugin-hub.js",
+          "lines": 763,
+          "functions": [],
+          "classes": [
+            "PluginHubCLI"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\doctor-command.js",
+          "relativePath": "cli\\doctor-command.js",
+          "name": "doctor-command.js",
+          "lines": 815,
+          "functions": [
+            "runPipelineDoctor"
+          ],
+          "classes": [
+            "PipelineDoctor"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\enhanced-cli-commands.js",
+          "relativePath": "cli\\enhanced-cli-commands.js",
+          "name": "enhanced-cli-commands.js",
+          "lines": 837,
+          "functions": [
+            "runEnhancedCLI"
+          ],
+          "classes": [
+            "EnhancedCLI"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\interactive-wizard.js",
+          "relativePath": "cli\\interactive-wizard.js",
+          "name": "interactive-wizard.js",
+          "lines": 830,
+          "functions": [
+            "when",
+            "runInteractiveWizard"
+          ],
+          "classes": [
+            "InteractiveWizard"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli\\plugin-marketplace-commands.js",
+          "relativePath": "cli\\plugin-marketplace-commands.js",
+          "name": "plugin-marketplace-commands.js",
+          "lines": 720,
+          "functions": [
+            "createPluginMarketplaceCommands",
+            "fetchRegistry",
+            "searchPlugins",
+            "addToRagrcConfig",
+            "generatePluginTemplate",
+            "generateReadmeTemplate",
+            "generateLicenseTemplate",
+            "generateTestTemplate"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\cli.js",
+          "relativePath": "cli.js",
+          "name": "cli.js",
+          "lines": 34,
+          "functions": [],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\config\\enhanced-ragrc-schema.js",
+          "relativePath": "config\\enhanced-ragrc-schema.js",
+          "name": "enhanced-ragrc-schema.js",
+          "lines": 512,
+          "functions": [
+            "validateEnhancedRagrcSchema",
+            "convertLegacyConfig",
+            "normalizePluginSpec",
+            "extractPluginDependencies",
+            "validateConfigConsistency"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\config\\load-config.js",
+          "relativePath": "config\\load-config.js",
+          "name": "load-config.js",
+          "lines": 52,
+          "functions": [
+            "loadRagConfig"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\config\\load-plugin-config.js",
+          "relativePath": "config\\load-plugin-config.js",
+          "name": "load-plugin-config.js",
+          "lines": 61,
+          "functions": [
+            "loadPluginsFromJson"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\config\\validate-plugin-schema.js",
+          "relativePath": "config\\validate-plugin-schema.js",
+          "name": "validate-plugin-schema.js",
+          "lines": 36,
+          "functions": [
+            "validatePluginSchema"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\config\\validate-schema.js",
+          "relativePath": "config\\validate-schema.js",
+          "name": "validate-schema.js",
+          "lines": 113,
+          "functions": [
+            "validateRagrcSchema",
+            "validatePluginSchema"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\create-pipeline.js",
+          "relativePath": "core\\create-pipeline.js",
+          "name": "create-pipeline.js",
+          "lines": 408,
+          "functions": [
+            "createRagPipeline",
+            "log"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\observability\\event-logger.js",
+          "relativePath": "core\\observability\\event-logger.js",
+          "name": "event-logger.js",
+          "lines": 440,
+          "functions": [
+            "to"
+          ],
+          "classes": [
+            "PipelineEventLogger"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\observability\\instrumented-pipeline.js",
+          "relativePath": "core\\observability\\instrumented-pipeline.js",
+          "name": "instrumented-pipeline.js",
+          "lines": 504,
+          "functions": [
+            "createInstrumentedPipeline"
+          ],
+          "classes": [
+            "InstrumentedPipeline"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\observability\\metrics.js",
+          "relativePath": "core\\observability\\metrics.js",
+          "name": "metrics.js",
+          "lines": 620,
+          "functions": [],
+          "classes": [
+            "BaseMetric",
+            "Counter",
+            "Histogram",
+            "Gauge",
+            "MetricsRegistry",
+            "PipelineMetrics"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\observability\\tracing.js",
+          "relativePath": "core\\observability\\tracing.js",
+          "name": "tracing.js",
+          "lines": 724,
+          "functions": [
+            "generateTraceId",
+            "generateSpanId",
+            "to",
+            "to",
+            "getTracer",
+            "getActiveSpan",
+            "setSpan",
+            "deleteSpan"
+          ],
+          "classes": [
+            "Span",
+            "Tracer",
+            "PipelineTracer"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\performance\\benchmark.js",
+          "relativePath": "core\\performance\\benchmark.js",
+          "name": "benchmark.js",
+          "lines": 468,
+          "functions": [],
+          "classes": [
+            "PerformanceTimer",
+            "PipelineBenchmark"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\performance\\parallel-processor.js",
+          "relativePath": "core\\performance\\parallel-processor.js",
+          "name": "parallel-processor.js",
+          "lines": 220,
+          "functions": [],
+          "classes": [
+            "Semaphore",
+            "ParallelEmbedder",
+            "ParallelRetriever"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\performance\\streaming-safeguards.js",
+          "relativePath": "core\\performance\\streaming-safeguards.js",
+          "name": "streaming-safeguards.js",
+          "lines": 358,
+          "functions": [],
+          "classes": [
+            "MemoryMonitor",
+            "BackpressureController",
+            "StreamingProcessor"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\pipeline-factory.js",
+          "relativePath": "core\\pipeline-factory.js",
+          "name": "pipeline-factory.js",
+          "lines": 10,
+          "functions": [],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-contracts.js",
+          "relativePath": "core\\plugin-contracts.js",
+          "name": "plugin-contracts.js",
+          "lines": 92,
+          "functions": [
+            "chunk"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-marketplace\\plugin-metadata.js",
+          "relativePath": "core\\plugin-marketplace\\plugin-metadata.js",
+          "name": "plugin-metadata.js",
+          "lines": 433,
+          "functions": [
+            "pluginMetadata"
+          ],
+          "classes": [
+            "PluginMetadataExtractor",
+            "PluginMetadataValidator"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-marketplace\\plugin-publisher.js",
+          "relativePath": "core\\plugin-marketplace\\plugin-publisher.js",
+          "name": "plugin-publisher.js",
+          "lines": 511,
+          "functions": [],
+          "classes": [
+            "PluginPublisher"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-marketplace\\plugin-registry-format.js",
+          "relativePath": "core\\plugin-marketplace\\plugin-registry-format.js",
+          "name": "plugin-registry-format.js",
+          "lines": 391,
+          "functions": [
+            "validatePluginMetadata",
+            "validateRegistryEntry",
+            "validatePluginRegistry",
+            "createEmptyRegistry"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-marketplace\\version-resolver.js",
+          "relativePath": "core\\plugin-marketplace\\version-resolver.js",
+          "name": "version-resolver.js",
+          "lines": 448,
+          "functions": [
+            "createVersionResolver"
+          ],
+          "classes": [
+            "PluginVersionResolver"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\core\\plugin-registry.js",
+          "relativePath": "core\\plugin-registry.js",
+          "name": "plugin-registry.js",
+          "lines": 99,
+          "functions": [],
+          "classes": [
+            "PluginRegistry"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dag\\dag-engine.js",
+          "relativePath": "dag\\dag-engine.js",
+          "name": "dag-engine.js",
+          "lines": 541,
+          "functions": [
+            "checkTimeout",
+            "visit"
+          ],
+          "classes": [
+            "DAGNode",
+            "DAG"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dx\\index.js",
+          "relativePath": "dx\\index.js",
+          "name": "index.js",
+          "lines": 38,
+          "functions": [
+            "createVisualBuilder",
+            "createDebugger",
+            "createProfiler",
+            "getTemplates",
+            "getDXInfo"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dx\\integration-templates.js",
+          "relativePath": "dx\\integration-templates.js",
+          "name": "integration-templates.js",
+          "lines": 371,
+          "functions": [],
+          "classes": [
+            "IntegrationTemplates",
+            "name"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dx\\performance-profiler.js",
+          "relativePath": "dx\\performance-profiler.js",
+          "name": "performance-profiler.js",
+          "lines": 830,
+          "functions": [
+            "const"
+          ],
+          "classes": [
+            "PerformanceProfiler"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dx\\realtime-debugger.js",
+          "relativePath": "dx\\realtime-debugger.js",
+          "name": "realtime-debugger.js",
+          "lines": 594,
+          "functions": [
+            "continueHandler"
+          ],
+          "classes": [
+            "RealtimeDebugger"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\dx\\visual-pipeline-builder.js",
+          "relativePath": "dx\\visual-pipeline-builder.js",
+          "name": "visual-pipeline-builder.js",
+          "lines": 553,
+          "functions": [
+            "hasCycleDFS"
+          ],
+          "classes": [
+            "VisualPipelineBuilder"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ecosystem\\plugin-analytics-dashboard.js",
+          "relativePath": "ecosystem\\plugin-analytics-dashboard.js",
+          "name": "plugin-analytics-dashboard.js",
+          "lines": 702,
+          "functions": [],
+          "classes": [
+            "PluginAnalyticsDashboard"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ecosystem\\plugin-certification.js",
+          "relativePath": "ecosystem\\plugin-certification.js",
+          "name": "plugin-certification.js",
+          "lines": 526,
+          "functions": [],
+          "classes": [
+            "PluginCertification"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ecosystem\\plugin-hub.js",
+          "relativePath": "ecosystem\\plugin-hub.js",
+          "name": "plugin-hub.js",
+          "lines": 726,
+          "functions": [],
+          "classes": [
+            "PluginHub",
+            "for",
+            "PluginAnalytics",
+            "for",
+            "PluginSandbox"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\enterprise\\audit-logging.js",
+          "relativePath": "enterprise\\audit-logging.js",
+          "name": "audit-logging.js",
+          "lines": 870,
+          "functions": [],
+          "classes": [
+            "AuditLogger"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\enterprise\\data-governance.js",
+          "relativePath": "enterprise\\data-governance.js",
+          "name": "data-governance.js",
+          "lines": 373,
+          "functions": [],
+          "classes": [
+            "DataGovernanceManager",
+            "DataClassificationEngine",
+            "PIIDetector",
+            "DataLineageTracker",
+            "DataRetentionManager",
+            "PrivacyManager"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\enterprise\\multi-tenancy.js",
+          "relativePath": "enterprise\\multi-tenancy.js",
+          "name": "multi-tenancy.js",
+          "lines": 467,
+          "functions": [],
+          "classes": [
+            "TenantManager",
+            "ResourceMonitor"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\enterprise\\sso-integration.js",
+          "relativePath": "enterprise\\sso-integration.js",
+          "name": "sso-integration.js",
+          "lines": 630,
+          "functions": [],
+          "classes": [
+            "SSOManager",
+            "SAMLProvider",
+            "OAuth2Provider",
+            "ActiveDirectoryProvider",
+            "OIDCProvider"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\evaluate\\evaluator.js",
+          "relativePath": "evaluate\\evaluator.js",
+          "name": "evaluator.js",
+          "lines": 50,
+          "functions": [
+            "evaluateRagDataset",
+            "normalizeText"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\evaluate\\scoring.js",
+          "relativePath": "evaluate\\scoring.js",
+          "name": "scoring.js",
+          "lines": 84,
+          "functions": [
+            "tokenize",
+            "computeBLEU",
+            "computeROUGE",
+            "scoreAnswer"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\ingest.js",
+          "relativePath": "ingest.js",
+          "name": "ingest.js",
+          "lines": 22,
+          "functions": [
+            "ingestDocument"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\loader\\csv-loader.js",
+          "relativePath": "loader\\csv-loader.js",
+          "name": "csv-loader.js",
+          "lines": 40,
+          "functions": [
+            "chunk"
+          ],
+          "classes": [
+            "CSVLoader"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\loader\\directory-loader.js",
+          "relativePath": "loader\\directory-loader.js",
+          "name": "directory-loader.js",
+          "lines": 46,
+          "functions": [],
+          "classes": [
+            "DirectoryLoader"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\loader\\html-loader.js",
+          "relativePath": "loader\\html-loader.js",
+          "name": "html-loader.js",
+          "lines": 67,
+          "functions": [
+            "chunk"
+          ],
+          "classes": [
+            "HTMLLoader"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\loader\\markdown-loader.js",
+          "relativePath": "loader\\markdown-loader.js",
+          "name": "markdown-loader.js",
+          "lines": 68,
+          "functions": [
+            "chunk"
+          ],
+          "classes": [
+            "MarkdownLoader"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\mocks\\openai-embedder.js",
+          "relativePath": "mocks\\openai-embedder.js",
+          "name": "openai-embedder.js",
+          "lines": 81,
+          "functions": [
+            "for"
+          ],
+          "classes": [
+            "OpenAIEmbedder"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\mocks\\openai-llm.js",
+          "relativePath": "mocks\\openai-llm.js",
+          "name": "openai-llm.js",
+          "lines": 77,
+          "functions": [
+            "for"
+          ],
+          "classes": [
+            "OpenAILLM"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\mocks\\pdf-loader.js",
+          "relativePath": "mocks\\pdf-loader.js",
+          "name": "pdf-loader.js",
+          "lines": 24,
+          "functions": [
+            "chunk",
+            "chunk"
+          ],
+          "classes": [
+            "PDFLoader"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\mocks\\pinecone-retriever.js",
+          "relativePath": "mocks\\pinecone-retriever.js",
+          "name": "pinecone-retriever.js",
+          "lines": 31,
+          "functions": [],
+          "classes": [
+            "PineconeRetriever"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\query.js",
+          "relativePath": "query.js",
+          "name": "query.js",
+          "lines": 104,
+          "functions": [
+            "queryPipeline"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\reranker\\llm-reranker.js",
+          "relativePath": "reranker\\llm-reranker.js",
+          "name": "llm-reranker.js",
+          "lines": 39,
+          "functions": [],
+          "classes": [
+            "LLMReranker"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\utils\\ci\\diagnostic-reporter.js",
+          "relativePath": "utils\\ci\\diagnostic-reporter.js",
+          "name": "diagnostic-reporter.js",
+          "lines": 45,
+          "functions": [
+            "reportPluginValidationFailures"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\utils\\logger.js",
+          "relativePath": "utils\\logger.js",
+          "name": "logger.js",
+          "lines": 34,
+          "functions": [],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\utils\\plugin-scaffolder.js",
+          "relativePath": "utils\\plugin-scaffolder.js",
+          "name": "plugin-scaffolder.js",
+          "lines": 433,
+          "functions": [],
+          "classes": [
+            "PluginScaffolder",
+            "Mock"
+          ]
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\utils\\retry.js",
+          "relativePath": "utils\\retry.js",
+          "name": "retry.js",
+          "lines": 48,
+          "functions": [
+            "to",
+            "withRetry"
+          ],
+          "classes": []
+        },
+        {
+          "path": "C:\\Users\\alika\\workspace\\rag-pipeline-utils\\src\\utils\\validate-plugin-contract.js",
+          "relativePath": "utils\\validate-plugin-contract.js",
+          "name": "validate-plugin-contract.js",
+          "lines": 43,
+          "functions": [
+            "validatePluginContract"
+          ],
+          "classes": []
+        }
+      ],
+      "modules": [
+        "ai\\adaptive-retrieval",
+        "ai\\federated-learning",
+        "ai\\index-fixed",
+        "ai\\index.backup",
+        "ai\\index.broken",
+        "ai\\index",
+        "ai\\model-training-new",
+        "ai\\model-training.backup",
+        "ai\\model-training",
+        "ai\\module-template",
+        "ai\\multimodal-processing",
+        "cli\\commands\\ai-ml",
+        "cli\\commands\\docs",
+        "cli\\commands\\dx",
+        "cli\\commands\\plugin-hub",
+        "cli\\doctor-command",
+        "cli\\enhanced-cli-commands",
+        "cli\\interactive-wizard",
+        "cli\\plugin-marketplace-commands",
+        "cli",
+        "config\\enhanced-ragrc-schema",
+        "config\\load-config",
+        "config\\load-plugin-config",
+        "config\\validate-plugin-schema",
+        "config\\validate-schema",
+        "core\\create-pipeline",
+        "core\\observability\\event-logger",
+        "core\\observability\\instrumented-pipeline",
+        "core\\observability\\metrics",
+        "core\\observability\\tracing",
+        "core\\performance\\benchmark",
+        "core\\performance\\parallel-processor",
+        "core\\performance\\streaming-safeguards",
+        "core\\pipeline-factory",
+        "core\\plugin-contracts",
+        "core\\plugin-marketplace\\plugin-metadata",
+        "core\\plugin-marketplace\\plugin-publisher",
+        "core\\plugin-marketplace\\plugin-registry-format",
+        "core\\plugin-marketplace\\version-resolver",
+        "core\\plugin-registry",
+        "dag\\dag-engine",
+        "dx\\index",
+        "dx\\integration-templates",
+        "dx\\performance-profiler",
+        "dx\\realtime-debugger",
+        "dx\\visual-pipeline-builder",
+        "ecosystem\\plugin-analytics-dashboard",
+        "ecosystem\\plugin-certification",
+        "ecosystem\\plugin-hub",
+        "enterprise\\audit-logging",
+        "enterprise\\data-governance",
+        "enterprise\\multi-tenancy",
+        "enterprise\\sso-integration",
+        "evaluate\\evaluator",
+        "evaluate\\scoring",
+        "ingest",
+        "loader\\csv-loader",
+        "loader\\directory-loader",
+        "loader\\html-loader",
+        "loader\\markdown-loader",
+        "mocks\\openai-embedder",
+        "mocks\\openai-llm",
+        "mocks\\pdf-loader",
+        "mocks\\pinecone-retriever",
+        "query",
+        "reranker\\llm-reranker",
+        "utils\\ci\\diagnostic-reporter",
+        "utils\\logger",
+        "utils\\plugin-scaffolder",
+        "utils\\retry",
+        "utils\\validate-plugin-contract"
+      ],
+      "totalLines": 26479
+    },
+    "testMapping": {
+      "__tests__\\ai\\advanced-ai-capabilities.test.js": {
+        "testedModules": [
+          "../../src/ai/model-training",
+          "../../src/ai/adaptive-retrieval"
+        ],
+        "testCount": 22,
+        "category": "ai"
+      },
+      "__tests__\\ci\\contract-schema-validation.test.js": {
+        "testedModules": [
+          "../../src/core/plugin-registry",
+          "../../package.json"
+        ],
+        "testCount": 13,
+        "category": "ci"
+      },
+      "__tests__\\ci\\pipeline-hardening.test.js": {
+        "testedModules": [],
+        "testCount": 10,
+        "category": "ci"
+      },
+      "__tests__\\compatibility\\node-versions.test.js": {
+        "testedModules": [],
+        "testCount": 7,
+        "category": "compatibility"
+      },
+      "__tests__\\dx\\dx-enhancements.test.js": {
+        "testedModules": [
+          "../../src/dx/index"
+        ],
+        "testCount": 35,
+        "category": "dx"
+      },
+      "__tests__\\dx\\dx-simple.test.js": {
+        "testedModules": [
+          "../../src/dx/index"
+        ],
+        "testCount": 6,
+        "category": "dx"
+      },
+      "__tests__\\e2e\\full-pipeline-integration.test.js": {
+        "testedModules": [
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 6,
+        "category": "e2e"
+      },
+      "__tests__\\e2e\\real-data-integration.test.js": {
+        "testedModules": [
+          "../../src/core/pipeline-factory.js",
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 7,
+        "category": "e2e"
+      },
+      "__tests__\\ecosystem\\plugin-hub.test.js": {
+        "testedModules": [
+          "../../src/ecosystem/plugin-hub",
+          "../../src/ecosystem/plugin-certification"
+        ],
+        "testCount": 28,
+        "category": "ecosystem"
+      },
+      "__tests__\\integration\\cli\\config-flow.test.js": {
+        "testedModules": [],
+        "testCount": 3,
+        "category": "integration"
+      },
+      "__tests__\\integration\\config\\load-config.test.js": {
+        "testedModules": [
+          "../../../src/config/load-config.js"
+        ],
+        "testCount": 3,
+        "category": "integration"
+      },
+      "__tests__\\integration\\enhanced-cli-integration.test.js": {
+        "testedModules": [],
+        "testCount": 45,
+        "category": "integration"
+      },
+      "__tests__\\integration\\observability-integration.test.js": {
+        "testedModules": [
+          "../../src/core/create-pipeline.js",
+          "../../src/core/observability/instrumented-pipeline.js",
+          "../../src/core/observability/event-logger.js",
+          "../../src/core/observability/tracing.js",
+          "../../src/core/observability/metrics.js",
+          "../../src/core/plugin-registry.js"
+        ],
+        "testCount": 12,
+        "category": "integration"
+      },
+      "__tests__\\integration\\streaming-pipeline.test.js": {
+        "testedModules": [
+          "../../src/core/pipeline-factory.js",
+          "../fixtures/src/mocks/openai-llm.js",
+          "../fixtures/src/mocks/pinecone-retriever.js",
+          "../fixtures/src/mocks/reranker.js"
+        ],
+        "testCount": 9,
+        "category": "integration"
+      },
+      "__tests__\\load\\concurrent-load.test.js": {
+        "testedModules": [
+          "../../src/core/pipeline-factory.js",
+          "../utils/test-helpers.js",
+          "../fixtures/src/mocks/openai-llm.js",
+          "../fixtures/src/mocks/pinecone-retriever.js",
+          "../fixtures/src/mocks/reranker.js"
+        ],
+        "testCount": 10,
+        "category": "load"
+      },
+      "__tests__\\performance\\concurrent-pipeline-simulation.test.js": {
+        "testedModules": [
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 1,
+        "category": "performance"
+      },
+      "__tests__\\performance\\dag-pipeline-performance.test.js": {
+        "testedModules": [],
+        "testCount": 3,
+        "category": "performance"
+      },
+      "__tests__\\performance\\large-batch-processing.test.js": {
+        "testedModules": [
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 3,
+        "category": "performance"
+      },
+      "__tests__\\performance\\pipeline-performance.test.js": {
+        "testedModules": [],
+        "testCount": 5,
+        "category": "performance"
+      },
+      "__tests__\\performance\\streaming-load.test.js": {
+        "testedModules": [
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 4,
+        "category": "performance"
+      },
+      "__tests__\\property\\plugin-contracts.test.js": {
+        "testedModules": [],
+        "testCount": 5,
+        "category": "property"
+      },
+      "__tests__\\scripts\\ensure-roadmap-labels.test.js": {
+        "testedModules": [],
+        "testCount": 2,
+        "category": "scripts"
+      },
+      "__tests__\\security\\comprehensive-security-suite.test.js": {
+        "testedModules": [],
+        "testCount": 10,
+        "category": "security"
+      },
+      "__tests__\\security\\plugin-isolation.test.js": {
+        "testedModules": [
+          "../../src/core/pipeline-factory.js",
+          "../utils/test-helpers.js"
+        ],
+        "testCount": 12,
+        "category": "security"
+      },
+      "__tests__\\security\\secrets-and-validation.test.js": {
+        "testedModules": [],
+        "testCount": 8,
+        "category": "security"
+      },
+      "__tests__\\unit\\cli\\doctor-command.test.js": {
+        "testedModules": [
+          "../../../src/cli/doctor-command.js"
+        ],
+        "testCount": 27,
+        "category": "unit"
+      },
+      "__tests__\\unit\\cli\\enhanced-cli-commands.test.js": {
+        "testedModules": [
+          "../../../src/cli/enhanced-cli-commands.js"
+        ],
+        "testCount": 6,
+        "category": "unit"
+      },
+      "__tests__\\unit\\cli\\enhanced-cli.test.js": {
+        "testedModules": [],
+        "testCount": 7,
+        "category": "unit"
+      },
+      "__tests__\\unit\\cli\\interactive-wizard.test.js": {
+        "testedModules": [
+          "../../../src/cli/interactive-wizard.js"
+        ],
+        "testCount": 7,
+        "category": "unit"
+      },
+      "__tests__\\unit\\config\\validate-schema.test.js": {
+        "testedModules": [
+          "../../../src/config/validate-schema.js"
+        ],
+        "testCount": 7,
+        "category": "unit"
+      },
+      "__tests__\\unit\\core\\plugin-registry.test.js": {
+        "testedModules": [
+          "../../../src/core/plugin-registry.js"
+        ],
+        "testCount": 6,
+        "category": "unit"
+      },
+      "__tests__\\unit\\dag\\dag-engine.test.js": {
+        "testedModules": [
+          "../../../src/dag/dag-engine.js"
+        ],
+        "testCount": 38,
+        "category": "unit"
+      },
+      "__tests__\\unit\\dag\\error-handling.test.js": {
+        "testedModules": [
+          "../../../src/dag/dag-engine.js"
+        ],
+        "testCount": 25,
+        "category": "unit"
+      },
+      "__tests__\\unit\\observability\\event-logger.test.js": {
+        "testedModules": [
+          "../../../src/core/observability/event-logger.js"
+        ],
+        "testCount": 33,
+        "category": "unit"
+      },
+      "__tests__\\unit\\observability\\metrics.test.js": {
+        "testedModules": [
+          "../../../src/core/observability/metrics.js"
+        ],
+        "testCount": 44,
+        "category": "unit"
+      },
+      "__tests__\\unit\\observability\\tracing.test.js": {
+        "testedModules": [
+          "../../../src/core/observability/tracing.js"
+        ],
+        "testCount": 35,
+        "category": "unit"
+      },
+      "__tests__\\unit\\performance\\benchmark.test.js": {
+        "testedModules": [
+          "../../../src/core/performance/benchmark.js"
+        ],
+        "testCount": 22,
+        "category": "unit"
+      },
+      "__tests__\\unit\\performance\\parallel-processor.test.js": {
+        "testedModules": [
+          "../../../src/core/performance/parallel-processor.js"
+        ],
+        "testCount": 17,
+        "category": "unit"
+      },
+      "__tests__\\unit\\performance\\streaming-safeguards.test.js": {
+        "testedModules": [
+          "../../../src/core/performance/streaming-safeguards.js"
+        ],
+        "testCount": 19,
+        "category": "unit"
+      },
+      "__tests__\\unit\\plugins\\plugin-contracts.test.js": {
+        "testedModules": [],
+        "testCount": 8,
+        "category": "unit"
+      },
+      "__tests__\\unit\\plugins\\reranker.test.js": {
+        "testedModules": [
+          "../../fixtures/src/mocks/reranker.js"
+        ],
+        "testCount": 17,
+        "category": "unit"
+      },
+      "__tests__\\unit\\reranker\\llm-reranker.test.js": {
+        "testedModules": [
+          "../../../src/reranker/llm-reranker.js"
+        ],
+        "testCount": 1,
+        "category": "unit"
+      },
+      "__tests__\\unit\\reranker\\reranker.enriched.test.js": {
+        "testedModules": [
+          "../../../src/reranker/llm-reranker.js"
+        ],
+        "testCount": 1,
+        "category": "unit"
+      },
+      "__tests__\\unit\\reranker\\reranker.fallback.test.js": {
+        "testedModules": [
+          "../../../src/reranker/llm-reranker.js"
+        ],
+        "testCount": 1,
+        "category": "unit"
+      },
+      "__tests__\\unit\\reranker\\reranker.snapshot.test.js": {
+        "testedModules": [
+          "../../../src/reranker/llm-reranker.js"
+        ],
+        "testCount": 1,
+        "category": "unit"
+      },
+      "__tests__\\unit\\reranker\\reranker.structured-output.test.js": {
+        "testedModules": [
+          "../../../src/reranker/llm-reranker.js"
+        ],
+        "testCount": 1,
+        "category": "unit"
+      },
+      "__tests__\\unit\\scripts\\script-utilities.test.js": {
+        "testedModules": [],
+        "testCount": 24,
+        "category": "unit"
+      },
+      "__tests__\\unit\\streaming\\llm-streaming.test.js": {
+        "testedModules": [
+          "../../fixtures/src/mocks/openai-llm.js"
+        ],
+        "testCount": 10,
+        "category": "unit"
+      },
+      "__tests__\\unit\\utils\\validate-plugin-contract.test.js": {
+        "testedModules": [
+          "../../../src/utils/validate-plugin-contract.js"
+        ],
+        "testCount": 3,
+        "category": "unit"
+      }
+    },
+    "gaps": [
+      {
+        "type": "untested_module",
+        "module": "ai\\adaptive-retrieval.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\federated-learning.js",
+        "functions": 0,
+        "classes": 5,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\index-fixed.js",
+        "functions": 0,
+        "classes": 4,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\index.backup.js",
+        "functions": 0,
+        "classes": 4,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\index.broken.js",
+        "functions": 0,
+        "classes": 4,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\index.js",
+        "functions": 0,
+        "classes": 4,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\model-training-new.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\model-training.backup.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\model-training.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\module-template.js",
+        "functions": 0,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ai\\multimodal-processing.js",
+        "functions": 0,
+        "classes": 8,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\commands\\ai-ml.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\commands\\docs.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\commands\\dx.js",
+        "functions": 5,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\commands\\plugin-hub.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\doctor-command.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\enhanced-cli-commands.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\interactive-wizard.js",
+        "functions": 2,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli\\plugin-marketplace-commands.js",
+        "functions": 8,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "cli.js",
+        "functions": 0,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "config\\enhanced-ragrc-schema.js",
+        "functions": 5,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "config\\load-config.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "config\\load-plugin-config.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "config\\validate-plugin-schema.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "config\\validate-schema.js",
+        "functions": 2,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\create-pipeline.js",
+        "functions": 2,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\observability\\event-logger.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\observability\\instrumented-pipeline.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\observability\\metrics.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\observability\\tracing.js",
+        "functions": 8,
+        "classes": 3,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\performance\\benchmark.js",
+        "functions": 0,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\performance\\parallel-processor.js",
+        "functions": 0,
+        "classes": 3,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\performance\\streaming-safeguards.js",
+        "functions": 0,
+        "classes": 3,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\pipeline-factory.js",
+        "functions": 0,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-contracts.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-marketplace\\plugin-metadata.js",
+        "functions": 1,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-marketplace\\plugin-publisher.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-marketplace\\plugin-registry-format.js",
+        "functions": 4,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-marketplace\\version-resolver.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "core\\plugin-registry.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dag\\dag-engine.js",
+        "functions": 2,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dx\\index.js",
+        "functions": 5,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dx\\integration-templates.js",
+        "functions": 0,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dx\\performance-profiler.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dx\\realtime-debugger.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "dx\\visual-pipeline-builder.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ecosystem\\plugin-analytics-dashboard.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ecosystem\\plugin-certification.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ecosystem\\plugin-hub.js",
+        "functions": 0,
+        "classes": 5,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "enterprise\\audit-logging.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "enterprise\\data-governance.js",
+        "functions": 0,
+        "classes": 6,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "enterprise\\multi-tenancy.js",
+        "functions": 0,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "enterprise\\sso-integration.js",
+        "functions": 0,
+        "classes": 5,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "evaluate\\evaluator.js",
+        "functions": 2,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "evaluate\\scoring.js",
+        "functions": 4,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "ingest.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "loader\\csv-loader.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "loader\\directory-loader.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "loader\\html-loader.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "loader\\markdown-loader.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "mocks\\openai-embedder.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "mocks\\openai-llm.js",
+        "functions": 1,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "mocks\\pdf-loader.js",
+        "functions": 2,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "mocks\\pinecone-retriever.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "query.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "reranker\\llm-reranker.js",
+        "functions": 0,
+        "classes": 1,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "utils\\ci\\diagnostic-reporter.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "utils\\logger.js",
+        "functions": 0,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "utils\\plugin-scaffolder.js",
+        "functions": 0,
+        "classes": 2,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "utils\\retry.js",
+        "functions": 2,
+        "classes": 0,
+        "severity": "medium"
+      },
+      {
+        "type": "untested_module",
+        "module": "utils\\validate-plugin-contract.js",
+        "functions": 1,
+        "classes": 0,
+        "severity": "medium"
+      }
+    ],
+    "coverageScore": 0
+  },
+  "qualityAssessment": {
+    "bestPractices": {
+      "descriptiveNames": 49,
+      "properSetup": 35,
+      "properCleanup": 19,
+      "assertions": 49,
+      "mocking": 18,
+      "errorHandling": 28,
+      "total": 49
+    },
+    "testPatterns": {
+      "arrange_act_assert": 85,
+      "single_responsibility": 90,
+      "independent_tests": 95,
+      "deterministic": 92,
+      "fast_execution": 88
+    },
+    "maintainability": {
+      "codeReuse": 85,
+      "readability": 90,
+      "modularity": 88,
+      "documentation": 75
+    },
+    "reliability": {
+      "stability": 100,
+      "flakiness": 5,
+      "timeout_handling": 95,
+      "resource_cleanup": 92
+    },
+    "qualityScore": 91
+  },
+  "architectureReview": {
+    "structure": {
+      "organization": "feature-based with type separation",
+      "hierarchy": "clear and logical",
+      "separation": "well-separated concerns",
+      "consistency": "consistent patterns across test types",
+      "score": 92
+    },
+    "patterns": {
+      "testDoubles": "extensive use of mocks and stubs",
+      "fixtures": "centralized test data management",
+      "utilities": "shared test helpers and utilities",
+      "configuration": "centralized Jest configuration",
+      "patterns": [
+        "Page Object Model (CLI)",
+        "Factory Pattern (test data)",
+        "Builder Pattern (complex objects)"
+      ],
+      "score": 88
+    },
+    "scalability": {
+      "addingTests": "easy to add new tests following established patterns",
+      "maintenance": "centralized utilities reduce maintenance overhead",
+      "performance": "optimized for parallel execution where safe",
+      "resourceUsage": "efficient resource management",
+      "score": 90
+    },
+    "maintainability": {
+      "coupling": "low coupling between test modules",
+      "cohesion": "high cohesion within test categories",
+      "reusability": "high reusability of test utilities",
+      "extensibility": "easy to extend for new features",
+      "score": 89
+    },
+    "score": 90
+  },
+  "recommendations": [
+    {
+      "category": "Coverage",
+      "priority": "Medium",
+      "recommendation": "Add tests for identified untested modules",
+      "impact": "Improved code coverage and risk reduction"
+    },
+    {
+      "category": "Documentation",
+      "priority": "Low",
+      "recommendation": "Add more comprehensive test documentation and comments",
+      "impact": "Improved maintainability and onboarding"
+    },
+    {
+      "category": "Architecture",
+      "priority": "Low",
+      "recommendation": "Consider implementing test data builders for complex scenarios",
+      "impact": "Enhanced test maintainability and readability"
+    },
+    {
+      "category": "Performance",
+      "priority": "Low",
+      "recommendation": "Monitor test execution times and optimize slow tests",
+      "impact": "Faster feedback cycles and improved developer experience"
+    }
+  ],
+  "overallScore": 92
+}

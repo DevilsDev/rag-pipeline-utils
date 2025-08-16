@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1",
+    "content": "Sample document 1",
+    "metadata": {
+      "type": "test"
+    }
+  },
+  {
+    "id": "2",
+    "content": "Sample document 2",
+    "metadata": {
+      "type": "test"
+    }
+  }
+]

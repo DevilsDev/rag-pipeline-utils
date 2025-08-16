@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-08-16T01:19:11.212Z",
+  "error": "spawn npx ENOENT",
+  "recommendations": [
+    "Check Jest configuration and dependencies",
+    "Verify test file syntax and imports",
+    "Review system resources and timeouts",
+    "Consider running tests in smaller batches"
+  ]
+}

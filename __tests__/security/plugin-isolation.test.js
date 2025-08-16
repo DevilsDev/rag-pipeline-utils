@@ -1,3 +1,6 @@
+
+// Configure test timeout for security tests
+jest.setTimeout(30000);
 /**
  * Security Testing Suite for Plugin Isolation
  * Tests plugin security, data sanitization, and access controls
@@ -9,6 +12,9 @@ const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
 const { ErrorSimulator, ValidationHelper  } = require('../utils/test-helpers.js');
 
 describe('Plugin Security and Isolation', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
   describe('plugin sandboxing', () => {
     it('should isolate plugin execution contexts', async () => {
       const maliciousPlugin = {

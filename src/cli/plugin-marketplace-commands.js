@@ -529,7 +529,7 @@ const metadata = ${JSON.stringify(metadata, null, 2)};
 /**
  * ${className} plugin implementation
  */
-export class ${className} {
+class ${className} {
   constructor(_config = {}) {
     this._config = _config;
   }
@@ -557,8 +557,7 @@ export class ${className} {
   }
 }
 
-// Default export
-export default ${className};
+module.exports = ${className};
 `;
 }
 
@@ -706,10 +705,6 @@ describe('${className}', () => {
 });
 `;
 }
-
-
-// Default export
-
 
 
 const metadata = {}; // Initialize metadata object
