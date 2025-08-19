@@ -1,0 +1,33 @@
+{
+  "id": "test-profile",
+  "_config": {},
+  "startTime": 1755640165894,
+  "endTime": 1755640165894,
+  "samples": [],
+  "metrics": {},
+  "components": {},
+  "flamegraph": null,
+  "recommendations": [],
+  "status": "completed",
+  "analysis": {
+    "summary": {
+      "totalDuration": 0,
+      "totalExecutions": 0,
+      "totalErrors": 0,
+      "errorRate": 0,
+      "avgComponentDuration": null,
+      "memoryPeak": null,
+      "memoryGrowth": 0,
+      "samplesCollected": 0,
+      "componentsProfiled": 0
+    },
+    "bottlenecks": [],
+    "recommendations": [],
+    "flamegraph": {
+      "name": "Pipeline",
+      "value": 0,
+      "children": []
+    },
+    "trends": {}
+  }
+}
