@@ -1,6 +1,0 @@
-workflow: docs-deploy.yml
-patches:
-  - type: add_timeout
-    description: Add timeout to job 'deploy'
-    changes:
-      timeout-minutes: 30

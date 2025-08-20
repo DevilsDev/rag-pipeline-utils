@@ -1,0 +1,38 @@
+name: Roadmap & Project Management
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Weekly on Monday
+  issues:
+    types: [opened, closed, labeled]
+  workflow_dispatch:
+
+jobs:
+  # Roadmap maintenance and label sync
+  roadmap-sync:
+    name: Roadmap Synchronization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Sync roadmap labels
+        run: npm run labels:sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Close completed roadmap items
+        run: npm run roadmap:close
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Update roadmap maintenance
+        run: node scripts/roadmap-maintenance.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,62 @@
+name: Documentation & Release
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'README.md', '*.md']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  # Documentation build and deployment
+  docs:
+    name: Build & Deploy Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build documentation
+        run: npm run build:docs
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs-site/build
+
+  # Release blog generation
+  release-blog:
+    name: Generate Release Blog
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Generate release blog
+        run: npm run release:tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Commit blog post
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs-site/blog/
+          git commit -m "docs: add release blog for ${{ github.event.release.tag_name }}" || exit 0
+          git push

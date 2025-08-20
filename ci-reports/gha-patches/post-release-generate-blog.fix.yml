@@ -1,6 +1,0 @@
-workflow: post-release-generate-blog.yml
-patches:
-  - type: add_timeout
-    description: Add timeout to job 'generate-blog'
-    changes:
-      timeout-minutes: 30

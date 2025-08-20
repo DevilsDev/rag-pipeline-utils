@@ -1,2 +1,0 @@
-Test Name,Token Count,Duration (ms),Avg Latency (ms),Max Latency (ms),Tokens/sec,Memory (MB)
-concurrent-streaming,500,7071.31,N/A,N/A,141.42,46.38
