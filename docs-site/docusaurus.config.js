@@ -7,14 +7,16 @@
 
 // @ts-check
 
-export default {
+/** @type {import('@docusaurus/types').Config} */
+const config = {
   title: 'RAG Pipeline Utils',
   tagline: 'Composable pipelines for LLMs',
   url: 'https://devilsdev.github.io',
   baseUrl: '/rag-pipeline-utils/',
   deploymentBranch: 'gh-pages',
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
+  trailingSlash: false,
 
   favicon: 'img/favicon.ico',
 
@@ -67,9 +69,9 @@ export default {
       'classic',
       {
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: './sidebars.js',
           editUrl:
-            'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/'
+            'https://github.com/DevilsDev/rag-pipeline-utils/edit/develop/docs-site/'
         },
         blog: {
           showReadingTime: true,
@@ -77,12 +79,20 @@ export default {
           blogSidebarCount: 'ALL',
           onUntruncatedBlogPosts: 'ignore',
           editUrl:
-            'https://github.com/DevilsDev/rag-pipeline-utils/edit/main/docs-site/blog/'
+            'https://github.com/DevilsDev/rag-pipeline-utils/edit/develop/docs-site/blog/'
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css')
+          customCss: './src/css/custom.css'
+        },
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/tags/**'],
+          filename: 'sitemap.xml'
         }
       }
     ]
   ]
 };
+
+module.exports = config;

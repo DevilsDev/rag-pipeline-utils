@@ -1,57 +1,33 @@
-name: 📚 Deploy Docs to GitHub Pages (Security Hardened)
-"on":
+name: Deploy Docusaurus to GH Pages
+on:
   push:
-    branches:
-      - main
+    branches: [ "develop" ]
     paths:
-      - docs-site/**
-      - docs/**
-      - blog/**
-      - sidebars.js
-      - docusaurus.config.js
-      - package.json
-  workflow_dispatch: null
-permissions:
-  contents: read
-  actions: read
+      - "docs-site/**"
+  workflow_dispatch: {}
 jobs:
-  deploy:
-    name: Deploy Website
+  build-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    defaults:
+      run:
+        working-directory: docs-site
     steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-      - name: 🛠 Setup Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
-        with:
-          node-version: "20"
-          cache: npm
-      - name: 📦 Install dependencies
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: docs-site/package-lock.json
+      - name: Install
         run: npm ci
-        shell: bash
-      - name: 🛠 Build documentation
-        run: npm run docs:build
-        shell: bash
-      - name: 🔐 Configure Git user
-        run: |
-          set -e
-          set -o pipefail
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        shell: bash
-      - name: 🚀 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs-site/build
-          publish_branch: gh-pages
-          keep_files: true
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
-    timeout-minutes: 30
-concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+      - name: Link Check (build)
+        run: npm run check:links
+      - name: Deploy
+        env:
+          GIT_USER: github-actions[bot]
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run deploy
