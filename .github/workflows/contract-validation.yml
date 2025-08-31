@@ -8,10 +8,6 @@ name: Contract Schema Validation (Security Hardened)
       - src/contracts/**
       - src/plugins/**
       - package.json
-    paths-ignore:
-      - docs/**
-      - "*.md"
-      - .github/ISSUE_TEMPLATE/**
   pull_request:
     branches:
       - main
@@ -20,10 +16,6 @@ name: Contract Schema Validation (Security Hardened)
       - src/contracts/**
       - src/plugins/**
       - package.json
-    paths-ignore:
-      - docs/**
-      - "*.md"
-      - .github/ISSUE_TEMPLATE/**
   workflow_dispatch:
     inputs:
       validation_type:

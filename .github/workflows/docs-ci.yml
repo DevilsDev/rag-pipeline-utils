@@ -37,9 +37,9 @@ jobs:
           name: docusaurus-build
           path: docs-site/build
     timeout-minutes: 30
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
