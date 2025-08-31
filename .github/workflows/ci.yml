@@ -35,12 +35,12 @@ jobs:
       test-status: ${{ steps.test.outcome }}
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 1
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -100,12 +100,12 @@ jobs:
     if: always()
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 1
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -130,7 +130,7 @@ jobs:
           npm test -- --coverage --testPathPattern="(core|pipeline)" || echo "Partial coverage generated"
         continue-on-error: true
       - name: 📊 Upload Partial Coverage
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+        uses: codecov/codecov-action@v4
         if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -161,12 +161,12 @@ jobs:
             timeout: 15
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 1
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -204,12 +204,12 @@ jobs:
       github.actor != 'github-actions[bot]'
     steps:
       - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -235,7 +235,7 @@ jobs:
           npm run validate-fixtures || echo "Fixtures validation failed but continuing..."
         continue-on-error: true
       - name: 📊 Upload coverage to Codecov
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: DevilsDev/rag-pipeline-utils
@@ -255,7 +255,7 @@ jobs:
         timeout-minutes: 15
       - name: 📋 Upload Release Artifacts
         if: failure()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@v4
         with:
           name: release-failure-logs
           path: |
