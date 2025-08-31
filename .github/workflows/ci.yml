@@ -84,4 +84,5 @@ jobs:
       - name: Upload to Codecov
         uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
