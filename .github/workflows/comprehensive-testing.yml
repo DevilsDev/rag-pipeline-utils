@@ -64,7 +64,7 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "key=node-modules-"${{ runner.os }"}-"${{ hashFiles('**/package-lock.json') }"}" >> "$GITHUB_OUTPUT"
+          echo "key=node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: Cache dependencies
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
@@ -92,10 +92,10 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          if [ ""${{ github.event.inputs.test_suite }"}" = "all" ] || [ -z ""${{ github.event.inputs.test_suite }"}" ]; then
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ -z "${{ github.event.inputs.test_suite }}" ]; then
             matrix='["unit", "integration", "performance", "security", "compatibility"]'
           else
-            matrix='[""${{ github.event.inputs.test_suite }"}"]'
+            matrix='["${{ github.event.inputs.test_suite }}"]'
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
         shell: bash
@@ -355,7 +355,7 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-"${{ matrix.os }"}-"${{ matrix.node-version }"}.json
+          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-${{ matrix.os }}-${{ matrix.node-version }}.json
         env:
           NODE_ENV: test
         shell: bash
@@ -403,9 +403,9 @@ jobs:
           node scripts/generate-test-reports.js
         env:
           ARTIFACTS_PATH: test-artifacts
-          GITHUB_RUN_ID: "\"${{ github.run_id }}\""
-          GITHUB_SHA: "\"${{ github.sha }}\""
-          GITHUB_REF: "\"${{ github.ref }}\""
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF: ${{ github.ref }}
         shell: bash
       - name: Upload HTML reports
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
@@ -468,12 +468,12 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          if [ ""${{ needs.generate-reports.result }"}" = "success" ]; then
+          if [ "${{ needs.generate-reports.result }}" = "success" ]; then
             echo "status=success" >> "$GITHUB_OUTPUT"
-            echo "message=All tests passed successfully! ✅" >> "$GITHUB_OUTPUT"
+            echo "message=All tests passed successfully! " >> "$GITHUB_OUTPUT"
           else
             echo "status=failure" >> "$GITHUB_OUTPUT"
-            echo "message=Some tests failed. Please check the reports. ❌" >> "$GITHUB_OUTPUT"
+            echo "message=Some tests failed. Please check the reports. " >> "$GITHUB_OUTPUT"
           fi
         shell: bash
       - name: Create status check
@@ -504,5 +504,5 @@ jobs:
 
             View details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
-          SLACK_WEBHOOK_URL: "\"${{ secrets.SLACK_WEBHOOK_URL }}\""
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     timeout-minutes: 30

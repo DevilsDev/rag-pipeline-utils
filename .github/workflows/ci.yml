@@ -67,7 +67,7 @@ jobs:
         id: lint
         shell: bash
         env:
-          EVENT_NAME: "\"${{ github.event_name }}\""
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -e
           set -o pipefail
@@ -177,9 +177,9 @@ jobs:
       - name: 🧪 Run ${{ matrix.test-suite.name }} Tests
         shell: bash
         env:
-          TEST_PATTERN: "\"${{ matrix.test-suite.pattern }}\""
-          TEST_NAME: "\"${{ matrix.test-suite.name }}\""
-          TEST_TIMEOUT: "\"${{ matrix.test-suite.timeout }}\""
+          TEST_PATTERN: ${{ matrix.test-suite.pattern }}
+          TEST_NAME: ${{ matrix.test-suite.name }}
+          TEST_TIMEOUT: ${{ matrix.test-suite.timeout }}
         run: |
           set -e
           set -o pipefail
@@ -243,10 +243,10 @@ jobs:
       - name: 🚀 Semantic Release
         shell: bash
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GH_TOKEN: "\"${{ secrets.GH_TOKEN }}\""
-          NPM_TOKEN: "\"${{ secrets.NPM_TOKEN }}\""
-          NODE_AUTH_TOKEN: "\"${{ secrets.NPM_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -e
           set -o pipefail

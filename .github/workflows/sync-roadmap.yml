@@ -30,29 +30,28 @@ jobs:
       - name: 🔖 Ensure roadmap labels exist
         run: node scripts/ensure-roadmap-labels.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         shell: bash
       - name: 🗂 Sync roadmap issues
         run: node scripts/create-roadmap-issues.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         shell: bash
       - name: 🏷 Apply labels to roadmap issues
         run: node scripts/label-roadmap-issues.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         shell: bash
       - name: ✅ Close completed issues
         run: node scripts/close-done-roadmap-issues.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

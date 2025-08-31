@@ -26,10 +26,9 @@ jobs:
       - name: 🔖 Run label sync script
         run: node scripts/sync-roadmap-labels.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

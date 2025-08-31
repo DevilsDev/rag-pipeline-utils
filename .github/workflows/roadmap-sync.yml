@@ -30,15 +30,14 @@ jobs:
       - name: 🔖 Sync GitHub labels from roadmap-labels.yml
         run: node scripts/ensure-roadmap-labels.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
       - name: 📝 Create or update roadmap issues
         run: node scripts/create-roadmap-issues.js
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

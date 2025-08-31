@@ -77,7 +77,7 @@ jobs:
         id: npm-audit
         shell: bash
         env:
-          AUDIT_LEVEL: "\"${{ github.event.inputs.audit_level || 'moderate' }}\""
+          AUDIT_LEVEL: ${{ github.event.inputs.audit_level || 'moderate' }}
         run: |
           set -e
           set -o pipefail
@@ -225,7 +225,7 @@ jobs:
         if: steps.parse-audit.outputs.should_fail == 'true'
         shell: bash
         env:
-          FAIL_REASON: "\"${{ steps.parse-audit.outputs.fail_reason }}\""
+          FAIL_REASON: ${{ steps.parse-audit.outputs.fail_reason }}
         run: |
           set -e
           set -o pipefail

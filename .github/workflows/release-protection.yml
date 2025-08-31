@@ -107,19 +107,19 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "❌ Release modification detected!"
-          echo "Event: "${{ github.event.action }"}"
-          echo "Release: "${{ github.event.release.tag_name }"}"
+          echo "Release modification detected!"
+          echo "Event: ${{ github.event.action }}"
+          echo "Release: ${{ github.event.release.tag_name }}"
 
           # Send notification about immutability violation
           curl -X POST \
-            -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }"}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{
-              "body": "🚨 **IMMUTABILITY VIOLATION DETECTED** 🚨\n\nRelease "$($1)" was modified after publication.\n\n**Action:** "${{ github.event.action }"}\n**Time:** $(date -u)\n**Actor:** "${{ github.actor }"}\n\nReleases are immutable once published. Please create a new release version instead.",
+              "body": "**IMMUTABILITY VIOLATION DETECTED**\n\nRelease was modified after publication.\n\n**Action:** ${{ github.event.action }}\n**Time:** $(date -u)\n**Actor:** ${{ github.actor }}\n\nReleases are immutable once published. Please create a new release version instead.",
               "event": "REQUEST_CHANGES"
             }' \
-            ""${{ github.api_url }"}/repos/"${{ github.repository }"}/pulls/comments"
+            "${{ github.api_url }}/repos/${{ github.repository }}/pulls/comments"
             
           exit 1
         shell: bash
@@ -128,19 +128,19 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "✅ Validating release artifacts for immutability"
+          echo "Validating release artifacts for immutability"
 
           # Check that release has required artifacts
-          RELEASE_ID="${{ github.event.release.id }"}
-          ASSETS=$(curl -s -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }"}" \
-            ""${{ github.api_url }"}/repos/"${{ github.repository }"}/releases/"$RELEASE_ID"/assets")
+          RELEASE_ID="${{ github.event.release.id }}"
+          ASSETS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
 
           echo "Release assets:"
           echo "$ASSETS" | jq -r '.[].name'
 
           # Ensure checksums are present
           if ! echo "$ASSETS" | jq -r '.[].name' | grep -q "checksums"; then
-            echo "⚠️ Warning: No checksum file found in release assets"
+            echo "Warning: No checksum file found in release assets"
           fi
         shell: bash
     timeout-minutes: 30
@@ -161,11 +161,11 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "🔍 Auditing all releases for compliance..."
+          echo "Auditing all releases for compliance..."
 
           # Get all releases
-          RELEASES=$(curl -s -H "Authorization: Bearer "${{ secrets.GITHUB_TOKEN }"}" \
-            ""${{ github.api_url }"}/repos/"${{ github.repository }"}/releases")
+          RELEASES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/releases")
 
           echo "$RELEASES" | jq -r '.[] | "\(.tag_name) \(.published_at) \(.draft) \(.prerelease)"' | \
           while read -r tag_name published_at draft prerelease; do
@@ -173,16 +173,16 @@ jobs:
             
             # Validate tag format
             if [[ ! $tag_name =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$ ]]; then
-              echo "❌ Invalid tag format: $tag_name"
+              echo "Invalid tag format: $tag_name"
             else
-              echo "✅ Valid tag format: $tag_name"
+              echo "Valid tag format: $tag_name"
             fi
             
             # Check if published (not draft)
             if [ "$draft" = "true" ]; then
-              echo "⚠️ Draft release: $tag_name"
+              echo "Draft release: $tag_name"
             else
-              echo "✅ Published release: $tag_name"
+              echo "Published release: $tag_name"
             fi
             
             echo "---"
@@ -192,13 +192,13 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "📊 Generating release compliance report..."
+          echo "Generating release compliance report..."
 
           cat > release-compliance-report.md << 'EOF'
           # Release Compliance Report
 
           **Generated:** $(date -u)
-          **Repository:** "${{ github.repository }"}
+          **Repository:** "${{ github.repository }}"
 
           ## Summary
 
@@ -206,11 +206,11 @@ jobs:
 
           ## Compliance Checks
 
-          - ✅ Semantic versioning format validation
-          - ✅ Tag uniqueness verification
-          - ✅ Version progression validation
-          - ✅ Release artifact validation
-          - ✅ Immutability enforcement
+          - Semantic versioning format validation
+          - Tag uniqueness verification
+          - Version progression validation
+          - Release artifact validation
+          - Immutability enforcement
 
           ## Recommendations
 
@@ -274,8 +274,8 @@ jobs:
           done
 
           # Sign checksums if GPG key is available
-          if [ -n ""${{ secrets.GPG_PRIVATE_KEY }"}" ]; then
-            echo ""${{ secrets.GPG_PRIVATE_KEY }"}" | gpg --batch --import
+          if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
             gpg --batch --yes --detach-sign --armor checksums.txt
           fi
         shell: bash
@@ -326,9 +326,8 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

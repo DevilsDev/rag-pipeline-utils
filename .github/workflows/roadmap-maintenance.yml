@@ -53,8 +53,8 @@ jobs:
       - name: 🔖 Sync roadmap labels
         if: ${{ github.event.inputs.sync_labels != 'false' }}
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           set -e
           set -o pipefail
@@ -127,9 +127,9 @@ jobs:
       - name: 🗂️ Sync roadmap issues
         if: ${{ github.event.inputs.sync_issues != 'false' }}
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
-          FORCE_UPDATE: "\"${{ github.event.inputs.force_update }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          FORCE_UPDATE: ${{ github.event.inputs.force_update }}
         run: |
           set -e
           set -o pipefail
@@ -147,8 +147,8 @@ jobs:
           set -e
           set -o pipefail
           echo "✅ Roadmap maintenance workflow completed successfully"
-          echo "🔖 Labels synced: "${{ github.event.inputs.sync_labels != 'false' }"}"
-          echo "🗂️ Issues synced: "${{ github.event.inputs.sync_issues != 'false' }"}"
-          echo "🔄 Force update: "${{ github.event.inputs.force_update }"}"
+          echo "🔖 Labels synced: ${{ github.event.inputs.sync_labels != 'false' }}"
+          echo "🗂️ Issues synced: ${{ github.event.inputs.sync_issues != 'false' }}"
+          echo "🔄 Force update: ${{ github.event.inputs.force_update }}"
         shell: bash
     timeout-minutes: 30

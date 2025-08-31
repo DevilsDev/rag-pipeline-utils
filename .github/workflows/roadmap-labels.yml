@@ -19,8 +19,8 @@ jobs:
         shell: bash
       - name: 🔖 Run label sync
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          GITHUB_REPO: "\"${{ github.repository }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           set -e
           set -o pipefail
@@ -61,9 +61,8 @@ jobs:
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
