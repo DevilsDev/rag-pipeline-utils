@@ -67,7 +67,7 @@ jobs:
           echo "key=node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: Cache dependencies
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ steps.cache-key.outputs.key }}
@@ -281,7 +281,7 @@ jobs:
           npm audit --audit-level=moderate --json > audit-results.json || true
         shell: bash
       - name: Upload security results
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-test-results
@@ -317,7 +317,7 @@ jobs:
           PROPERTY_TESTING: true
         shell: bash
       - name: Upload property test results
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: property-test-results
@@ -360,7 +360,7 @@ jobs:
           NODE_ENV: test
         shell: bash
       - name: Upload compatibility results
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: compatibility-test-results-${{ matrix.os }}-${{ matrix.node-version }}
@@ -392,7 +392,7 @@ jobs:
         run: npm ci
         shell: bash
       - name: Download all test artifacts
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@v4
         with:
           path: test-artifacts
       - name: Generate comprehensive test report
@@ -408,7 +408,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
         shell: bash
       - name: Upload HTML reports
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-html
           path: test-reports/
@@ -491,7 +491,7 @@ jobs:
             });
       - name: Slack notification
         if: failure() && github.ref == 'refs/heads/main'
-        uses: 8398a7/action-slack@28ba43ae48961b90ced0e7aac97fc847a4ab1666
+        uses: 8398a7/action-slack@v3
         with:
           status: failure
           channel: "#dev-alerts"

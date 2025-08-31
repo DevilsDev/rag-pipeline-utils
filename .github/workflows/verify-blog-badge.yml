@@ -1,11 +1,17 @@
 name: 🖍 Blog Badge Verification (Security Hardened)
 "on":
-  workflow_dispatch: null
+  workflow_dispatch:
   workflow_run:
     workflows:
       - Auto Generate Blog + Changelog
     types:
       - completed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
 jobs:
   verify:
     name: 🌟 Verify Blog Badge and Output
@@ -48,9 +54,3 @@ jobs:
         run: echo "✅ Blog badge verified and present in README."
         shell: bash
     timeout-minutes: 30
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-permissions:
-  contents: read
-  actions: read

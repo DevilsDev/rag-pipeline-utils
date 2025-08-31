@@ -350,7 +350,7 @@ jobs:
           done
       - name: Send deployment notification
         if: always()
-        uses: 8398a7/action-slack@28ba43ae48961b90ced0e3a2b7f9a3b3fb92dd30
+        uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           channel: "#deployments"

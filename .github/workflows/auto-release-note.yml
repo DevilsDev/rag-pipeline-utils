@@ -4,6 +4,9 @@ name: ✫ Auto Release Note (Security Hardened)
     tags:
       - v*
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
@@ -61,6 +64,3 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: 📢 Blog + Changelog updated for ${{ github.ref_name }} 🎉
     timeout-minutes: 30
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
