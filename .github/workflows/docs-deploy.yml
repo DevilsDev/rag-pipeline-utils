@@ -1,33 +1,57 @@
-name: Deploy Docusaurus to GH Pages
+name: Docs
 on:
   push:
-    branches: [ "develop" ]
+    branches: [main]
     paths:
+      - "docs/**"
       - "docs-site/**"
-  workflow_dispatch: {}
+      - ".github/workflows/docs-deploy.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  build-deploy:
+  build:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    defaults:
-      run:
-        working-directory: docs-site
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
+        with:
+          egress-policy: audit
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm'
-          cache-dependency-path: docs-site/package-lock.json
-      - name: Install
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install root deps
         run: npm ci
-      - name: Link Check (build)
-        run: npm run check:links
-      - name: Deploy
-        env:
-          GIT_USER: github-actions[bot]
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run deploy
+      - name: Build Docusaurus
+        working-directory: docs-site
+        run: |
+          npm ci
+          npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: docs-site/build
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

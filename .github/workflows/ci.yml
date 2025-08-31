@@ -1,264 +1,86 @@
-name: CI & Release (Security Hardened)
-"on":
-  push:
-    branches:
-      - main
-    tags:
-      - v*
-    paths-ignore:
-      - docs/**
-      - "*.md"
-      - .github/ISSUE_TEMPLATE/**
+name: CI
+on:
   pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - docs/**
-      - "*.md"
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "src/**"
+      - "__tests__/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/**"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "__tests__/**"
+      - "package.json"
+      - "package-lock.json"
+
 permissions:
   contents: read
-  actions: read
-env:
-  NODE_VERSION: "20"
-  FORCE_COLOR: 1
-  CI: true
+
+run-name: "CI — ${{ github.ref_name }} @ ${{ github.sha }}"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  critical-checks:
-    name: 🔥 Critical Quality Gates
+  test:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    outputs:
-      lint-status: ${{ steps.lint.outcome }}
-      test-status: ${{ steps.test.outcome }}
     steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
         with:
-          persist-credentials: false
-          fetch-depth: 1
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          registry-url: https://registry.npmjs.org/
-          cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
-        run: npm ci
-        shell: bash
-      - name: 🔧 Fix Node.js module exports
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          echo "Fixing Node.js module export issues..."
-          # Safe file processing without shell injection risks
-          find src/ -name "*.js" -exec grep -l "module.exports" {} \; | while IFS= read -r file; do
-            if [[ -f "$file" ]] && [[ ! $(tail -1 "$file") =~ module\.exports ]]; then
-              echo "// Ensure module.exports is properly defined" >> "$file"
-              echo "Fixed exports in: $file"
-            fi
-          done
-      - name: 🧹 Lint (Resilient)
-        id: lint
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          if [[ ""$EVENT_NAME"" == "pull_request" ]]; then
-            echo "📝 PR Mode: Warnings allowed, errors reported"
-            npm run lint:errors-only || echo "::warning::Lint errors found but not blocking PR"
-          else
-            echo "🔒 Main branch: Strict linting enforced"
-            npm run lint:strict
-          fi
-        continue-on-error: ${{ github.event_name == 'pull_request' }}
-      - name: ✅ Core Tests
-        id: test
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          echo "Running critical test suite..."
-          npm test -- --testPathPattern="(core|pipeline|cli)" --maxWorkers=2
-        continue-on-error: false
-        timeout-minutes: 15
-  diagnostics:
-    name: 📊 Quality Diagnostics
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs:
-      - critical-checks
-    if: always()
-    steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          persist-credentials: false
-          fetch-depth: 1
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
+
+      - name: Install
         run: npm ci
-        shell: bash
-      - name: 📊 Full Lint Report
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          npm run lint:diagnostic
-        continue-on-error: true
-      - name: 📈 Coverage Report
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          npm test -- --coverage --testPathPattern="(core|pipeline)" || echo "Partial coverage generated"
-        continue-on-error: true
-      - name: 📊 Upload Partial Coverage
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Type check
+        run: npm run typecheck --if-present
+      - name: Test
+        run: npm test -- --ci --reporters=default --reporters=jest-junit
+
+      - name: Upload JUnit
         if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: DevilsDev/rag-pipeline-utils
-          fail_ci_if_error: false
-  extended-tests:
-    name: 🧪 Extended Test Suite
+          name: junit
+          path: junit.xml
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874
+        with:
+          name: coverage
+          path: coverage
+
+  coverage:
+    needs: test
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    timeout-minutes: 5
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs:
-      - critical-checks
-    if: needs.critical-checks.outputs.test-status == 'success'
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite:
-          - name: AI/ML
-            pattern: ai
-            timeout: 10
-          - name: DX Tools
-            pattern: dx
-            timeout: 5
-          - name: Enterprise
-            pattern: enterprise
-            timeout: 8
-          - name: Integration
-            pattern: integration
-            timeout: 15
     steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
         with:
-          persist-credentials: false
-          fetch-depth: 1
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+          egress-policy: audit
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
-        run: npm ci
-        shell: bash
-      - name: 🧪 Run ${{ matrix.test-suite.name }} Tests
-        shell: bash
-        env:
-          TEST_PATTERN: ${{ matrix.test-suite.pattern }}
-          TEST_NAME: ${{ matrix.test-suite.name }}
-          TEST_TIMEOUT: ${{ matrix.test-suite.timeout }}
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          timeout "${TEST_TIMEOUT}m" npm test -- --testPathPattern="$TEST_PATTERN" --maxWorkers=1 || echo "${TEST_NAME} tests completed with issues"
-        continue-on-error: true
-        timeout-minutes: ${{ matrix.test-suite.timeout }}
-  deploy:
-    name: 🚀 Deploy & Release
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    permissions:
-      contents: write
-      packages: write
-      id-token: write
-    needs:
-      - critical-checks
-    if: |
-      github.ref == 'refs/heads/main' && 
-      needs.critical-checks.outputs.lint-status == 'success' && 
-      needs.critical-checks.outputs.test-status == 'success' &&
-      github.actor != 'github-actions[bot]'
-    steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          registry-url: https://registry.npmjs.org/
-          cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
-        run: npm ci
-        shell: bash
-      - name: ✅ Run tests with coverage
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          npm test
-        timeout-minutes: 20
-      - name: 🧪 Validate Fixtures (Non-blocking)
-        shell: bash
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          npm run validate-fixtures || echo "Fixtures validation failed but continuing..."
-        continue-on-error: true
-      - name: 📊 Upload coverage to Codecov
+          name: coverage
+          path: coverage
+      - name: Upload to Codecov
         uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: DevilsDev/rag-pipeline-utils
           fail_ci_if_error: false
-      - name: 🚀 Semantic Release
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          npx semantic-release
-        timeout-minutes: 15
-      - name: 📋 Upload Release Artifacts
-        if: failure()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
-        with:
-          name: release-failure-logs
-          path: |
-            npm-debug.log*
-            .npm/_logs/*
-          retention-days: 7
