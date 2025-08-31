@@ -9,7 +9,7 @@ on:
       - "package-lock.json"
       - ".github/workflows/**"
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - "src/**"
       - "__tests__/**"
