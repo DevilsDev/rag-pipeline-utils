@@ -3,7 +3,7 @@ name: ✫ Auto Release Note (Security Hardened)
   push:
     tags:
       - v*
-  workflow_dispatch: null
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read
@@ -23,7 +23,7 @@ jobs:
         shell: bash
       - name: 📑 Generate release note from tag
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           set -o pipefail
@@ -44,7 +44,7 @@ jobs:
         run: echo "Release blog + changelog committed and pushed."
         shell: bash
       - name: 📈 Emit Blog Badge Trigger
-        run: echo "::set-output name=blog::generated"
+        run: echo "blog=generated" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: 🌟 Trigger Badge (Optional)
         if: always()
@@ -53,7 +53,7 @@ jobs:
           issue-number: 1
           body: "Blog Post + Changelog updated for ${{ github.ref_name }} :rocket:"
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 💬 Comment on PR (optional)
         if: github.event.pull_request.number != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
@@ -62,6 +62,5 @@ jobs:
           body: 📢 Blog + Changelog updated for ${{ github.ref_name }} 🎉
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

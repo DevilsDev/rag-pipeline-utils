@@ -38,9 +38,8 @@ jobs:
           path: docs-site/build
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
