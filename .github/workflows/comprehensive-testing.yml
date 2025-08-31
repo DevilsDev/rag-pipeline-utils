@@ -355,7 +355,7 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-"${{ matrix.os }"}-"${{ matrix.node-version }"}.json
+          npm test -- --testPathPattern="__tests__/compatibility" --json --outputFile=compatibility-results-"${{ matrix.os }}"-"${{ matrix.node-version }}".json
         env:
           NODE_ENV: test
         shell: bash
@@ -468,7 +468,7 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          if [ ""${{ needs.generate-reports.result }"}" = "success" ]; then
+          if [ "${{ needs.generate-reports.result }}" = "success" ]; then
             echo "status=success" >> "$GITHUB_OUTPUT"
             echo "message=All tests passed successfully! ✅" >> "$GITHUB_OUTPUT"
           else
@@ -504,5 +504,5 @@ jobs:
 
             View details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
-          SLACK_WEBHOOK_URL: "\"${{ secrets.SLACK_WEBHOOK_URL }}\""
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     timeout-minutes: 30

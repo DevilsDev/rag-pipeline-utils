@@ -208,7 +208,7 @@ jobs:
           set -e
           set -o pipefail
           set -Eeuo pipefail
-          echo ""${{ secrets.KUBE_CONFIG_STAGING }"}" | base64 -d > kubeconfig
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl cluster-info
       - name: Deploy with Helm
@@ -224,7 +224,7 @@ jobs:
           helm upgrade --install rag-pipeline-staging ./deployment/helm/rag-pipeline \
             --namespace rag-pipeline-staging \
             --create-namespace \
-            --set image.tag="${{ github.sha }"} \
+            --set image.tag="${{ github.sha }}" \
             --set ingress.hosts[0].host=staging.rag-pipeline.yourdomain.com \
             --set-string secrets.openaiApiKey=""${OPENAI_API_KEY}"" \
             --set-string secrets.pineconeApiKey=""${PINECONE_API_KEY}"" \
@@ -271,7 +271,7 @@ jobs:
           set -e
           set -o pipefail
           set -Eeuo pipefail
-          echo ""${{ secrets.KUBE_CONFIG_PRODUCTION }"}" | base64 -d > kubeconfig
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
           kubectl cluster-info
       - name: Deploy with Helm
@@ -287,7 +287,7 @@ jobs:
           helm upgrade --install rag-pipeline ./deployment/helm/rag-pipeline \
             --namespace rag-pipeline \
             --create-namespace \
-            --set image.tag="${{ github.sha }"} \
+            --set image.tag="${{ github.sha }}" \
             --set ingress.hosts[0].host=rag-pipeline.yourdomain.com \
             --set-string secrets.openaiApiKey=""${OPENAI_API_KEY}"" \
             --set-string secrets.pineconeApiKey=""${PINECONE_API_KEY}"" \

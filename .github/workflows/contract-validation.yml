@@ -80,7 +80,7 @@ jobs:
           echo "# Contract Validation Report" > contract-validation-report.md
           echo "" >> contract-validation-report.md
           echo "**Generated:** $(date -u)" >> contract-validation-report.md
-          echo "**Commit:** "${{ github.sha }"}" >> contract-validation-report.md
+          echo "**Commit:** ${{ github.sha }}" >> contract-validation-report.md
           echo "" >> contract-validation-report.md
 
           # Run validation and capture output
