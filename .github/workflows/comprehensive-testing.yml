@@ -67,7 +67,7 @@ jobs:
           echo "key=node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: Cache dependencies
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ steps.cache-key.outputs.key }}
@@ -92,10 +92,10 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          if [ ""${{ github.event.inputs.test_suite }"}" = "all" ] || [ -z ""${{ github.event.inputs.test_suite }"}" ]; then
+          if [ "${{ github.event.inputs.test_suite }}" = "all" ] || [ -z "${{ github.event.inputs.test_suite }}" ]; then
             matrix='["unit", "integration", "performance", "security", "compatibility"]'
           else
-            matrix='[""${{ github.event.inputs.test_suite }"}"]'
+            matrix='["${{ github.event.inputs.test_suite }}"]'
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
         shell: bash
@@ -133,7 +133,7 @@ jobs:
           npm run test:unit:coverage
         shell: bash
       - name: Upload coverage reports
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+        uses: codecov/codecov-action@v4
         if: matrix.node-version == 20
         with:
           file: ./coverage/lcov.info
@@ -141,7 +141,7 @@ jobs:
           name: unit-tests-coverage
       - name: Upload failure logs
         if: failure()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-failure-logs-${{ matrix.node-version }}-${{ github.run_number }}
           path: |
@@ -201,7 +201,7 @@ jobs:
           npm run test:integration:coverage
         shell: bash
       - name: Upload integration test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results
@@ -240,7 +240,7 @@ jobs:
           npm run benchmark:cpu
         shell: bash
       - name: Upload performance results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: performance-results
@@ -392,7 +392,7 @@ jobs:
         run: npm ci
         shell: bash
       - name: Download all test artifacts
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: actions/download-artifact@v4
         with:
           path: test-artifacts
       - name: Generate comprehensive test report
