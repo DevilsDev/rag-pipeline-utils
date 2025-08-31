@@ -24,9 +24,15 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Enterprise',
+      collapsed: false,
+      items: ['Enterprise', 'Observability', 'Security'],
+    },
+    {
+      type: 'category',
       label: 'Advanced',
       collapsed: true,
-      items: ['Evaluation', 'FAQ'],
+      items: ['Evaluation', 'Performance', 'Migration', 'Troubleshooting', 'FAQ'],
     },
     {
       type: 'link',

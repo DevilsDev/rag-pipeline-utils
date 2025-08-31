@@ -658,10 +658,10 @@ class AutoScaler {
 
 ### **3. Monitoring Checklist**
 
-- [ ] Track response latency (target: <2s)
+- [ ] Track response latency (target: less than 2s)
 - [ ] Monitor throughput (documents/second)
-- [ ] Watch memory usage (keep <80%)
-- [ ] Monitor error rates (keep <1%)
+- [ ] Watch memory usage (keep under 80%)
+- [ ] Monitor error rates (keep under 1%)
 - [ ] Track token usage costs
 - [ ] Set up alerting for anomalies
 

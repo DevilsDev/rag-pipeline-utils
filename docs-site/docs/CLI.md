@@ -581,33 +581,272 @@ rag-pipeline evaluate ./all-queries.json --metrics all --detailed --output final
 
 ---
 
-*This comprehensive CLI reference covers all available commands and options in @DevilsDev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), or explore [Plugin Development](./Plugins.md) for extending functionality.*
-- Reorders retrieved context using an LLM reranker
+## 🏥 Enterprise Commands
+
+### **`doctor` - System Diagnostics**
+
+Comprehensive system health checking and troubleshooting.
+
+```bash
+# Run full diagnostic suite
+rag-pipeline doctor
+
+# Check specific components
+rag-pipeline doctor --check dependencies
+rag-pipeline doctor --check configuration
+rag-pipeline doctor --check plugins
+rag-pipeline doctor --check external-services
+
+# Generate diagnostic report
+rag-pipeline doctor --report --output diagnostic-report.json
+
+# Fix common issues automatically
+rag-pipeline doctor --fix --auto
+```
+
+**Options:**
+- `--check <component>`: Check specific component
+- `--report`: Generate detailed diagnostic report
+- `--output, -o <file>`: Save report to file
+- `--fix`: Attempt to fix detected issues
+- `--auto`: Apply fixes automatically without prompts
+
+### **`slo` - SLO Management**
+
+Manage Service Level Objectives and monitoring.
+
+```bash
+# List defined SLOs
+rag-pipeline slo list
+
+# Define new SLO
+rag-pipeline slo define availability \
+  --objective 0.999 \
+  --window 30d \
+  --indicator "http_success_rate"
+
+# Check SLO status
+rag-pipeline slo status
+rag-pipeline slo status --slo availability
+
+# Generate SLO report
+rag-pipeline slo report --period monthly --output slo-report.pdf
+```
+
+### **`ai-ml` - Advanced AI Operations**
+
+Manage advanced AI capabilities and model training.
+
+```bash
+# Multi-modal processing
+rag-pipeline ai-ml process-multimodal ./mixed-content \
+  --text-weight 0.5 \
+  --image-weight 0.3 \
+  --table-weight 0.2
+
+# Federated learning coordination
+rag-pipeline ai-ml federated-train \
+  --participants ./nodes.json \
+  --rounds 10 \
+  --privacy-budget 1.0
+
+# Adaptive retrieval optimization
+rag-pipeline ai-ml optimize-retrieval \
+  --strategy performance-based \
+  --learning-rate 0.01
+```
 
 ---
 
-## `.ragrc.json` Config
+## 🔧 Enhanced Configuration
 
-Defaults can be set in a file:
+### **Enterprise `.ragrc.json` Schema**
+
 ```json
 {
-  "loader": "directory",
-  "embedder": "openai",
-  "retriever": "pinecone",
-  "llm": "openai-gpt-4",
-  "useReranker": true
+  "pipeline": {
+    "loader": "markdown",
+    "embedder": "openai",
+    "retriever": "pinecone",
+    "llm": "openai-gpt-4",
+    "useReranker": true
+  },
+  "enterprise": {
+    "dependencyInjection": {
+      "enabled": true,
+      "container": "default"
+    },
+    "sloMonitoring": {
+      "enabled": true,
+      "storage": "prometheus",
+      "alerting": {
+        "webhook": "${SLACK_WEBHOOK_URL}",
+        "channels": ["#rag-alerts"]
+      }
+    },
+    "observability": {
+      "structuredLogging": true,
+      "correlationIds": true,
+      "tracing": {
+        "enabled": true,
+        "exporter": "jaeger",
+        "samplingRate": 0.1
+      },
+      "metrics": {
+        "enabled": true,
+        "prefix": "rag_pipeline",
+        "exporters": ["prometheus"]
+      }
+    },
+    "security": {
+      "authentication": {
+        "provider": "azure-ad",
+        "tenantId": "${AZURE_TENANT_ID}"
+      },
+      "auditLogging": {
+        "enabled": true,
+        "storage": "elasticsearch",
+        "retention": "7y"
+      }
+    }
+  },
+  "ai": {
+    "multiModal": {
+      "enabled": true,
+      "fusionStrategy": "weighted-average"
+    },
+    "federatedLearning": {
+      "enabled": false,
+      "privacyBudget": 1.0
+    },
+    "adaptiveRetrieval": {
+      "enabled": true,
+      "strategies": ["semantic", "keyword", "hybrid"]
+    }
+  },
+  "deployment": {
+    "kubernetes": {
+      "namespace": "rag-pipeline",
+      "replicas": 3,
+      "resources": {
+        "requests": { "memory": "512Mi", "cpu": "250m" },
+        "limits": { "memory": "1Gi", "cpu": "500m" }
+      }
+    },
+    "monitoring": {
+      "prometheus": true,
+      "grafana": true,
+      "alertManager": true
+    }
+  }
 }
 ```
 
 ---
 
-##  Docker Usage
+## 🐳 Enterprise Docker Usage
+
+### **Production Deployment**
 
 ```bash
-docker build -t rag-pipeline .
-docker run --rm -v $PWD:/data rag-pipeline query "What is retrieval?"
+# Build production image
+docker build -t rag-pipeline:enterprise -f Dockerfile.enterprise .
+
+# Run with enterprise features
+docker run -d \
+  --name rag-pipeline-prod \
+  -p 3000:3000 \
+  -p 9090:9090 \
+  -e NODE_ENV=production \
+  -e OPENAI_API_KEY=${OPENAI_API_KEY} \
+  -e PINECONE_API_KEY=${PINECONE_API_KEY} \
+  -v ./config:/app/config \
+  -v ./logs:/app/logs \
+  rag-pipeline:enterprise
+
+# Health check
+docker exec rag-pipeline-prod rag-pipeline doctor --check all
+```
+
+### **Docker Compose Stack**
+
+```yaml
+# docker-compose.enterprise.yml
+version: '3.8'
+services:
+  rag-pipeline:
+    image: rag-pipeline:enterprise
+    ports:
+      - "3000:3000"
+      - "9090:9090"
+    environment:
+      - NODE_ENV=production
+      - PROMETHEUS_ENABLED=true
+      - JAEGER_ENDPOINT=http://jaeger:14268
+    depends_on:
+      - prometheus
+      - jaeger
+      - elasticsearch
+  
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./deployment/grafana/dashboards:/var/lib/grafana/dashboards
 ```
 
 ---
 
-Next → [Architecture](./Architecture.md)
+## 🚀 CI/CD Integration
+
+### **GitHub Actions Workflow**
+
+```yaml
+# .github/workflows/rag-pipeline-deploy.yml
+name: RAG Pipeline Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run diagnostics
+        run: npx rag-pipeline doctor --check all
+      
+      - name: Run tests with mocking
+        run: npm test
+        env:
+          RAG_MOCK_EXTERNAL_APIS: true
+  
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Kubernetes
+        run: |
+          helm upgrade --install rag-pipeline ./deployment/helm/rag-pipeline \
+            --set image.tag=${{ github.sha }} \
+            --set config.openai.apiKey=${{ secrets.OPENAI_API_KEY }}
+```
+
+---
+
+*This comprehensive CLI reference covers all available commands and enterprise features in @DevilsDev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), explore [Enterprise Features](./Enterprise.md) for production deployments, or check [Observability](./Observability.md) for monitoring and alerting.*

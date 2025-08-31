@@ -461,30 +461,246 @@ Security is built into the architecture at multiple levels:
 
 ---
 
-*This architecture enables @DevilsDev/rag-pipeline-utils to scale from simple prototypes to enterprise-grade production systems while maintaining flexibility and extensibility. Continue to [Usage](./Usage.md) for practical implementation examples, or explore [Plugins](./Plugins.md) to learn about creating custom components.*
-interface Loader {
-  load(path: string): Promise<{ chunk(): string[] }[]>;
-}
+## 🏢 Enterprise Architecture Components
 
-interface Embedder {
-  embed(chunks: string[]): Vector[];
-  embedQuery(prompt: string): Vector;
-}
+### **Dependency Injection Container**
 
-interface Retriever {
-  store(vectors: Vector[]): Promise<void>;
-  retrieve(query: Vector): Promise<Context[]>;
+The enterprise-grade dependency injection system provides IoC (Inversion of Control) for modular, testable architecture:
+
+```typescript
+// src/core/dependency-injection.js
+class DependencyContainer {
+  private services: Map<string, ServiceDefinition> = new Map();
+  private instances: Map<string, any> = new Map();
+  
+  register<T>(name: string, factory: ServiceFactory<T>, options?: ServiceOptions): void {
+    this.services.set(name, {
+      factory,
+      lifecycle: options?.lifecycle || 'singleton',
+      dependencies: options?.dependencies || []
+    });
+  }
+  
+  resolve<T>(name: string): T {
+    if (this.instances.has(name)) {
+      return this.instances.get(name);
+    }
+    
+    const service = this.services.get(name);
+    if (!service) {
+      throw new ServiceNotFoundError(`Service ${name} not registered`);
+    }
+    
+    // Resolve dependencies
+    const dependencies = service.dependencies.map(dep => this.resolve(dep));
+    
+    // Create instance
+    const instance = service.factory(...dependencies);
+    
+    if (service.lifecycle === 'singleton') {
+      this.instances.set(name, instance);
+    }
+    
+    return instance;
+  }
+}
+```
+
+### **SLO Monitoring System**
+
+Built-in Service Level Objectives tracking with error budgets and alerting:
+
+```typescript
+// src/observability/slo-monitor.js
+class SLOMonitor {
+  private slos: Map<string, SLODefinition> = new Map();
+  private measurements: TimeSeriesDB = new TimeSeriesDB();
+  
+  defineSLO(name: string, definition: SLODefinition): void {
+    this.slos.set(name, {
+      ...definition,
+      errorBudget: this.calculateErrorBudget(definition)
+    });
+  }
+  
+  recordMeasurement(sloName: string, success: boolean, latency?: number): void {
+    const measurement = {
+      timestamp: Date.now(),
+      success,
+      latency,
+      slo: sloName
+    };
+    
+    this.measurements.record(measurement);
+    this.checkSLOViolation(sloName, measurement);
+  }
+  
+  getErrorBudgetStatus(sloName: string): ErrorBudgetStatus {
+    const slo = this.slos.get(sloName);
+    const recentMeasurements = this.measurements.getRecent(sloName, slo.window);
+    
+    return {
+      remaining: this.calculateRemainingBudget(slo, recentMeasurements),
+      burnRate: this.calculateBurnRate(recentMeasurements),
+      alerting: this.shouldAlert(slo, recentMeasurements)
+    };
+  }
+}
+```
+
+### **External API Mocking Infrastructure**
+
+Deterministic test infrastructure with network simulation for reliable CI/CD:
+
+```typescript
+// __tests__/mocks/external-apis.js
+class ExternalAPIMocker {
+  private mocks: Map<string, MockDefinition> = new Map();
+  private networkSimulator: NetworkSimulator;
+  
+  mockAPI(service: string, config: MockConfig): void {
+    this.mocks.set(service, {
+      responses: config.responses,
+      latency: config.latency || { min: 100, max: 500 },
+      errorRate: config.errorRate || 0.05,
+      rateLimiting: config.rateLimiting
+    });
+  }
+  
+  async simulateRequest(service: string, request: APIRequest): Promise<APIResponse> {
+    const mock = this.mocks.get(service);
+    
+    // Simulate network conditions
+    await this.networkSimulator.delay(mock.latency);
+    
+    // Simulate errors
+    if (Math.random() < mock.errorRate) {
+      throw new MockNetworkError('Simulated network failure');
+    }
+    
+    // Return mock response
+    return this.generateResponse(mock, request);
+  }
 }
 ```
 
 ---
 
-## DAG Support
+## 🚀 Advanced AI Architecture
 
-The `dag-engine.js` module supports chaining multiple components:
-- Example: Summarize → Retrieve → Rerank → LLM
-- Enables more complex workflows than linear ingestion/query
+### **Multi-Modal Processing Engine**
+
+Handle text, images, and structured data in unified pipelines:
+
+```typescript
+// src/ai/multimodal/multi-modal-processor.js
+class MultiModalProcessor {
+  private processors: Map<string, ModalityProcessor> = new Map();
+  
+  async process(input: MultiModalInput): Promise<ProcessedContent> {
+    const results = await Promise.all(
+      input.modalities.map(async (modality) => {
+        const processor = this.processors.get(modality.type);
+        return processor.process(modality.content, modality.metadata);
+      })
+    );
+    
+    return this.fuseResults(results, input.fusionStrategy);
+  }
+}
+```
+
+### **Federated Learning Coordinator**
+
+Distributed model training with privacy-preserving aggregation:
+
+```typescript
+// src/ai/federation/federated-learning-coordinator.js
+class FederatedLearningCoordinator {
+  async coordinateTraining(participants: FederatedNode[]): Promise<GlobalModel> {
+    // Distribute training tasks
+    const localUpdates = await this.distributeTraining(participants);
+    
+    // Aggregate updates with differential privacy
+    const aggregatedUpdate = await this.aggregateWithPrivacy(localUpdates);
+    
+    // Update global model
+    return this.updateGlobalModel(aggregatedUpdate);
+  }
+}
+```
+
+### **Adaptive Retrieval Engine**
+
+Dynamic retrieval strategies with performance optimization:
+
+```typescript
+// src/ai/retrieval/adaptive-retrieval-engine.js
+class AdaptiveRetrievalEngine {
+  async adaptiveRetrieve(query: Query, context: RetrievalContext): Promise<RetrievalResult> {
+    // Analyze query complexity
+    const strategy = await this.selectStrategy(query, context);
+    
+    // Execute retrieval with chosen strategy
+    const results = await this.executeStrategy(strategy, query);
+    
+    // Learn from results for future optimization
+    await this.updateStrategyPerformance(strategy, results);
+    
+    return results;
+  }
+}
+```
 
 ---
 
-Next → [Evaluation](./Evaluation.md)
+## 🔧 Enhanced Developer Tools
+
+### **CLI Doctor Diagnostics**
+
+Comprehensive system health checking and troubleshooting:
+
+```typescript
+// src/cli/doctor-command.js
+class DoctorCommand {
+  async runDiagnostics(): Promise<DiagnosticReport> {
+    const checks = [
+      this.checkNodeVersion(),
+      this.checkDependencies(),
+      this.checkConfiguration(),
+      this.checkPluginHealth(),
+      this.checkExternalServices(),
+      this.checkPerformanceBottlenecks()
+    ];
+    
+    const results = await Promise.allSettled(checks);
+    return this.generateReport(results);
+  }
+}
+```
+
+### **Plugin Marketplace**
+
+Certified plugin ecosystem with discovery and installation workflows:
+
+```typescript
+// src/core/plugin-marketplace/marketplace.js
+class PluginMarketplace {
+  async discoverPlugins(criteria: SearchCriteria): Promise<PluginListing[]> {
+    const plugins = await this.searchRegistry(criteria);
+    return plugins.filter(plugin => this.meetsCertificationStandards(plugin));
+  }
+  
+  async installPlugin(pluginId: string): Promise<InstallationResult> {
+    // Verify plugin certification
+    await this.verifyCertification(pluginId);
+    
+    // Install with security scanning
+    return this.secureInstall(pluginId);
+  }
+}
+```
+
+---
+
+*This enterprise-grade architecture enables @DevilsDev/rag-pipeline-utils to scale from simple prototypes to mission-critical production systems while maintaining flexibility, security, and observability. Continue to [Usage](./Usage.md) for practical implementation examples, or explore [Plugins](./Plugins.md) to learn about creating custom components.*

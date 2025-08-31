@@ -13,16 +13,16 @@ import FeatureImage from '@site/static/img/logo.svg';
 
 const features = [
   {
-    title: 'Composable Pipelines',
-    description: 'Build flexible RAG workflows with interchangeable loaders, embedders, retrievers, and LLM runners using a clean plugin-based design.',
+    title: 'Enterprise-Grade Architecture',
+    description: 'Production-ready with dependency injection, SLO monitoring, semantic release automation, and comprehensive observability for mission-critical deployments.',
   },
   {
-    title: 'Evaluation & Dashboard',
-    description: 'Use built-in CLI tooling and React dashboards to assess LLM accuracy, BLEU/ROUGE scores, and prompt results at scale.',
+    title: 'Advanced AI Capabilities',
+    description: 'Multi-modal processing, federated learning, adaptive retrieval engines, and model training orchestration with external API mocking for reliable testing.',
   },
   {
-    title: 'Fully Extendable',
-    description: 'Register custom components with the PluginRegistry and extend the system without modifying the core logic.',
+    title: 'Developer Experience Excellence',
+    description: 'Enhanced CLI with doctor diagnostics, interactive wizards, streaming evaluation dashboards, and plugin marketplace with certification workflows.',
   },
 ];
 
