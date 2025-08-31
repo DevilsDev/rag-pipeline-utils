@@ -1,0 +1,11 @@
+{
+  "testSuite": "Full Pipeline End-to-End Integration Tests",
+  "timestamp": "2025-08-16T00:55:53.827Z",
+  "summary": {
+    "totalTests": 0,
+    "avgDuration": null,
+    "avgQuality": null,
+    "successRate": null
+  },
+  "results": []
+}

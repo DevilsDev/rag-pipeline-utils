@@ -9,7 +9,11 @@ jest.setTimeout(120000);
 const fs = require('fs');
 const path = require('path');
 const { performance  } = require('perf_hooks');
+<<<<<<< Updated upstream
 const { TestDataGenerator, PerformanceHelper } = require('../utils/test-helpers.js');
+=======
+const { TestDataGenerator, PerformanceBenchmark } = require('../utils/test-helpers.js');
+>>>>>>> Stashed changes
 
 describe('Streaming Token Output Load Tests', () => {
   afterEach(async () => {

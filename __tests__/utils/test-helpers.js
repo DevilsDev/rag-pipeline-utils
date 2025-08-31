@@ -206,7 +206,12 @@ class TestDataGenerator {
     for (let i = 0; i < count; i++) {
       const topic = topics[i % topics.length];
       documents.push({
-        id: `doc-${i}`,
+        id: `doc-${i
+  static generateTokens(count) {
+    return Array.from({ length: count }, (_, i) => `token_${i}`);
+  }
+
+}`,
         content: `This is a document about ${topic}. It contains relevant information for testing purposes. Document ${i} has unique content that can be used for retrieval and reranking tests.`,
         metadata: {
           topic,
