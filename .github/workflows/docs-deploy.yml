@@ -1,33 +1,50 @@
-name: Deploy Docusaurus to GH Pages
+name: Deploy Docs to GitHub Pages
+
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ main, develop ]
     paths:
-      - "docs-site/**"
-  workflow_dispatch: {}
+      - 'docs-site/**'
+  workflow_dispatch:
+
 jobs:
-  build-deploy:
+  deploy:
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pages: write
       id-token: write
-    defaults:
-      run:
-        working-directory: docs-site
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: '18'
           cache: 'npm'
           cache-dependency-path: docs-site/package-lock.json
-      - name: Install
+          
+      - name: Install dependencies
         run: npm ci
-      - name: Link Check (build)
-        run: npm run check:links
-      - name: Deploy
-        env:
-          GIT_USER: github-actions[bot]
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run deploy
+        working-directory: docs-site
+        
+      - name: Build website
+        run: npm run build
+        working-directory: docs-site
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs-site/build
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

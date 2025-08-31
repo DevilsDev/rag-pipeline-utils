@@ -8,8 +8,8 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 export default function Home() {
   return (
     <Layout
-      title="RAG Pipeline Utils"
-      description="Composable RAG pipelines, dashboards, and plugin architecture for Node.js"
+      title="Enterprise RAG Pipeline Utils"
+      description="Enterprise-grade composable RAG pipelines with advanced AI capabilities, comprehensive observability, and production-ready architecture for Node.js"
     >
       <HomepageHeader />
       <main>

@@ -10,15 +10,19 @@
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'RAG Pipeline Utils',
-  tagline: 'Composable pipelines for LLMs',
+  tagline: 'Enterprise-grade composable RAG pipelines with advanced AI capabilities',
   url: 'https://devilsdev.github.io',
   baseUrl: '/rag-pipeline-utils/',
   deploymentBranch: 'gh-pages',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   trailingSlash: false,
 
   favicon: 'img/favicon.ico',
+  
+  // GitHub Pages deployment config
+  organizationName: 'DevilsDev',
+  projectName: 'rag-pipeline-utils',
 
   themeConfig: {
     metadata: [
@@ -38,18 +42,39 @@ const config = {
 
     // ✅ Sticky header
     navbar: {
-      title: 'RAG Utils',
+      title: 'RAG Pipeline Utils',
       hideOnScroll: false,
       logo: {
-        alt: '',
-        src: '/img/logo.svg'
+        alt: 'RAG Pipeline Utils Logo',
+        src: 'img/logo.svg'
       },
       items: [
-        { to: '/docs/Introduction', label: 'Docs', position: 'left' },
+        { 
+          type: 'docSidebar',
+          sidebarId: 'tutorialSidebar',
+          position: 'left',
+          label: 'Documentation'
+        },
         { to: '/blog', label: 'Blog', position: 'left' },
+        {
+          type: 'dropdown',
+          label: 'Enterprise',
+          position: 'left',
+          items: [
+            { to: '/docs/Enterprise', label: 'Enterprise Features' },
+            { to: '/docs/Observability', label: 'Observability' },
+            { to: '/docs/Security', label: 'Security' },
+            { to: '/docs/Performance', label: 'Performance' }
+          ]
+        },
         {
           href: 'https://github.com/DevilsDev/rag-pipeline-utils',
           label: 'GitHub',
+          position: 'right'
+        },
+        {
+          href: 'https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils',
+          label: 'npm',
           position: 'right'
         }
       ]
@@ -57,12 +82,45 @@ const config = {
 
     footer: {
       style: 'dark',
-      copyright: `© ${new Date().getFullYear()} Ali Kahwaji`
+      links: [
+        {
+          title: 'Documentation',
+          items: [
+            { label: 'Getting Started', to: '/docs/Introduction' },
+            { label: 'Architecture', to: '/docs/Architecture' },
+            { label: 'CLI Reference', to: '/docs/CLI' },
+            { label: 'Tutorials', to: '/docs/Tutorials' }
+          ]
+        },
+        {
+          title: 'Enterprise',
+          items: [
+            { label: 'Enterprise Features', to: '/docs/Enterprise' },
+            { label: 'Observability', to: '/docs/Observability' },
+            { label: 'Security', to: '/docs/Security' },
+            { label: 'Performance', to: '/docs/Performance' }
+          ]
+        },
+        {
+          title: 'Community',
+          items: [
+            { label: 'GitHub', href: 'https://github.com/DevilsDev/rag-pipeline-utils' },
+            { label: 'Issues', href: 'https://github.com/DevilsDev/rag-pipeline-utils/issues' },
+            { label: 'Discussions', href: 'https://github.com/DevilsDev/rag-pipeline-utils/discussions' }
+          ]
+        },
+        {
+          title: 'More',
+          items: [
+            { label: 'Blog', to: '/blog' },
+            { label: 'npm Package', href: 'https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils' },
+            { label: 'License', href: 'https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE' }
+          ]
+        }
+      ],
+      copyright: `© ${new Date().getFullYear()} Ali Kahwaji. Built with Docusaurus.`
     }
   },
-
-  organizationName: 'DevilsDev',
-  projectName: 'rag-pipeline-utils',
 
   presets: [
     [

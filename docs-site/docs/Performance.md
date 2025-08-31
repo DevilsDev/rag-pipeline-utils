@@ -65,10 +65,10 @@ class OptimizedEmbedder extends BaseEmbedder {
 
   async embedBatch(texts, options = {}) {
     // Filter cached texts
-    const uncachedTexts = texts.filter(text => !this.cache.has(text));
+    const uncachedTexts = texts.filter(text =&gt; !this.cache.has(text));
     
     if (uncachedTexts.length === 0) {
-      return texts.map(text => this.cache.get(text));
+      return texts.map(text =&gt; this.cache.get(text));
     }
 
     // Create batches for parallel processing
@@ -81,18 +81,18 @@ class OptimizedEmbedder extends BaseEmbedder {
     });
 
     // Cache results
-    results.forEach((embedding, index) => {
+    results.forEach((embedding, index) =&gt; {
       this.cache.set(uncachedTexts[index], embedding);
     });
 
-    return texts.map(text => this.cache.get(text));
+    return texts.map(text =&gt; this.cache.get(text));
   }
 
   async processBatchesParallel(batches, options) {
     const semaphore = new Semaphore(options.concurrency);
     
     return Promise.all(
-      batches.map(async (batch) => {
+      batches.map(async (batch) =&gt; {
         await semaphore.acquire();
         try {
           return await this.processBatch(batch);
@@ -262,7 +262,7 @@ class TokenOptimizer {
     
     for (const sentence of sentences) {
       const sentenceTokens = this.tokenizer.encode(sentence).length;
-      if (tokenCount + sentenceTokens > maxTokens) break;
+      if (tokenCount + sentenceTokens &gt; maxTokens) break;
       
       truncated += sentence + '.';
       tokenCount += sentenceTokens;
@@ -296,10 +296,10 @@ class StreamingPipeline {
     for await (const batch of embeddingStream) {
       // Process embeddings in parallel
       const results = await Promise.allSettled(
-        batch.map(item => this.processEmbedding(item))
+        batch.map(item =&gt; this.processEmbedding(item))
       );
       
-      yield results.filter(r => r.status === 'fulfilled').map(r => r.value);
+      yield results.filter(r =&gt; r.status === 'fulfilled').map(r =&gt; r.value);
     }
   }
 
@@ -310,12 +310,12 @@ class StreamingPipeline {
       const chunks = await this.chunkDocument(document);
       buffer.push(...chunks);
       
-      if (buffer.length >= this.bufferSize) {
+      if (buffer.length &gt;= this.bufferSize) {
         yield buffer.splice(0, this.bufferSize);
       }
     }
     
-    if (buffer.length > 0) yield buffer;
+    if (buffer.length &gt; 0) yield buffer;
   }
 }
 ```
@@ -339,12 +339,12 @@ class MemoryOptimizedPipeline {
       const memoryUsage = process.memoryUsage();
       const memoryPercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
       
-      if (memoryPercent > this.gcThreshold) {
+      if (memoryPercent &gt; this.gcThreshold) {
         // Force garbage collection
         if (global.gc) global.gc();
         
         // Reduce batch size if memory pressure continues
-        if (memoryPercent > 0.9) {
+        if (memoryPercent &gt; 0.9) {
           this.batchSize = Math.max(10, Math.floor(this.batchSize * 0.8));
         }
       }
@@ -499,10 +499,10 @@ class CustomMetrics {
     const values = this.metrics.get(name) || [];
     if (values.length === 0) return null;
     
-    const nums = values.map(v => v.value);
+    const nums = values.map(v =&gt; v.value);
     return {
       count: nums.length,
-      average: nums.reduce((a, b) => a + b, 0) / nums.length,
+      average: nums.reduce((a, b) =&gt; a + b, 0) / nums.length,
       min: Math.min(...nums),
       max: Math.max(...nums),
       p95: this.percentile(nums, 0.95),
@@ -594,9 +594,9 @@ class AutoScaler {
     const avgCPU = metrics.cpu.average;
     const avgMemory = metrics.memory.average;
     
-    if (avgCPU > this.scaleUpThreshold && this.instances.length < this.maxInstances) {
+    if (avgCPU &gt; this.scaleUpThreshold && this.instances.length &lt; this.maxInstances) {
       await this.scaleUp();
-    } else if (avgCPU < this.scaleDownThreshold && this.instances.length > this.minInstances) {
+    } else if (avgCPU &lt; this.scaleDownThreshold && this.instances.length &gt; this.minInstances) {
       await this.scaleDown();
     }
   }
@@ -680,11 +680,11 @@ class AutoScaler {
 
 ### **Optimization Targets**
 
-- **Embedding**: >500 texts/second
-- **Retrieval**: <200ms P95 latency
-- **Generation**: <5s P95 latency
-- **Memory**: <1GB for 10k documents
-- **Error Rate**: <0.5%
+- **Embedding**: greater than 500 texts/second
+- **Retrieval**: under 200ms P95 latency
+- **Generation**: under 5s P95 latency
+- **Memory**: under 1GB for 10k documents
+- **Error Rate**: under 0.5%
 
 ---
 

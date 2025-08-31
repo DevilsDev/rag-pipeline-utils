@@ -1,7 +1,16 @@
 {
-  "name": "rag-docs-test",
-  "version": "0.0.0",
+  "name": "@devilsdev/rag-pipeline-utils-docs",
+  "version": "2.2.0",
   "private": true,
+  "description": "Enterprise-grade RAG Pipeline Utils documentation site",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "directory": "docs-site"
+  },
+  "author": "Ali Kahwaji <ali@devilsdev.com>",
+  "license": "MIT",
   "scripts": {
     "clean": "rimraf build .docusaurus",
     "build": "docusaurus build",
