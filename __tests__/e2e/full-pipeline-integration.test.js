@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { performance  } = require('perf_hooks');
-const { TestDataGenerator, ValidationHelper  } = require('../utils/test-helpers.js');
+const { _ValidationHelper, _TestDataGenerator } = require('../utils/test-helpers');
 
 describe('Full Pipeline End-to-End Integration Tests', () => {
   afterEach(() => {
