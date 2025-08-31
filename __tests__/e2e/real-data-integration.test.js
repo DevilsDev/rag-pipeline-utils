@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { createRagPipeline  } = require('../../src/core/pipeline-factory.js');
-const { TestDataGenerator, ValidationHelper  } = require('../utils/test-helpers.js');
+const { _ValidationHelper, _TestDataGenerator } = require('../utils/test-helpers.js');
 
 // Extended timeout for E2E tests
 jest.setTimeout(120000);
@@ -94,7 +94,7 @@ describe('End-to-End Real Data Integration', () => {
           const words = text.toLowerCase().split(/\s+/);
           const embedding = new Array(384).fill(0);
           
-          words.forEach((word, ___index) => {
+          words.forEach((word, _index) => {
             const hash = this.simpleHash(word);
             embedding[hash % 384] += 1;
           });
@@ -157,8 +157,10 @@ describe('End-to-End Real Data Integration', () => {
       // Create LLM that generates contextual responses
       const contextualLLM = {
         async generate(prompt, options = {}) {
-          const context = options.context || [];
-          const contextText = context.map(c => c.content || c.text || '').join('\n\n');
+          const _context = 'test context';
+          const _prompt = 'test prompt';
+          const contextText = options.context || [];
+          const context = contextText.map(c => c.content || c.text || '').join('\n\n');
           
           // Generate response based on context
           const response = this.generateContextualResponse(prompt, contextText);

@@ -213,7 +213,7 @@ describe('Advanced AI/ML Capabilities', () => {
         preferences: {},
         learningHistory: []
       });
-      const _profileResult = await adaptiveRetrieval.initializeUserProfile(userId);
+      const feedbackProfileResult = await adaptiveRetrieval.initializeUserProfile(userId);
 
       // Simulate retrieval and feedback
       const query = 'machine learning algorithms';
@@ -258,7 +258,7 @@ describe('Advanced AI/ML Capabilities', () => {
         preferences: {},
         learningHistory: []
       });
-      const _profileResult = await adaptiveRetrieval.initializeUserProfile(userId);
+      const reinforcementProfileResult = await adaptiveRetrieval.initializeUserProfile(userId);
 
       // Simulate multiple interactions
       for (let i = 0; i < 5; i++) {
@@ -267,7 +267,7 @@ describe('Advanced AI/ML Capabilities', () => {
           documents: [{ id: i, content: `doc ${i}` }],
           adaptationMetadata: { adapted: true }
         });
-        const retrievalResult = await adaptiveRetrieval.adaptiveRetrieve(userId, query);
+        const _retrievalResult = await adaptiveRetrieval.adaptiveRetrieve(userId, query);
         
         adaptiveRetrieval.processFeedback = jest.fn().mockResolvedValue({ updated: true });
         const _feedbackResult = await adaptiveRetrieval.processFeedback(userId, {
@@ -284,9 +284,9 @@ describe('Advanced AI/ML Capabilities', () => {
         preferences: { queryPatterns: ['test query'] },
         learningHistory: new Array(5).fill({ query: 'test', feedback: 'positive' })
       });
-      const profile = await adaptiveRetrieval.getUserProfile(userId);
-      expect(profile.learningHistory.length).toBe(5);
-      expect(profile.preferences).toHaveProperty('queryPatterns');
+      const userProfileResult = await adaptiveRetrieval.getUserProfile(userId);
+      expect(userProfileResult.learningHistory.length).toBe(5);
+      expect(userProfileResult.preferences).toHaveProperty('queryPatterns');
     });
 
     test('should generate personalized rankings', async () => {
@@ -655,7 +655,7 @@ describe('Advanced AI/ML Capabilities', () => {
         preferences: {},
         learningHistory: []
       });
-      const _profileResult = await adaptiveRetrieval.initializeUserProfile(userId);
+      const integrationProfileResult = await adaptiveRetrieval.initializeUserProfile(userId);
 
       adaptiveRetrieval.adaptiveRetrieve = jest.fn().mockResolvedValue({
         documents: [{ id: 1, content: 'test doc' }],

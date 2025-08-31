@@ -1,39 +1,37 @@
-name: CI & Release (Security Hardened)
-"on":
-  push:
-    branches:
-      - main
-    tags:
-      - v*
-    paths-ignore:
-      - docs/**
-      - "*.md"
-      - .github/ISSUE_TEMPLATE/**
+name: CI
+on:
   pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - docs/**
-      - "*.md"
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "src/**"
+      - "__tests__/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/**"
+  push:
+    branches: [main, develop]
+    paths:
+      - "src/**"
+      - "__tests__/**"
+      - "package.json"
+      - "package-lock.json"
+
 permissions:
   contents: read
-  actions: read
-env:
-  NODE_VERSION: "20"
-  FORCE_COLOR: 1
-  CI: true
+
+run-name: "CI — ${{ github.ref_name }} @ ${{ github.sha }}"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  critical-checks:
-    name: 🔥 Critical Quality Gates
+  test:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    outputs:
-      lint-status: ${{ steps.lint.outcome }}
-      test-status: ${{ steps.test.outcome }}
     steps:
+<<<<<<< HEAD
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
@@ -108,10 +106,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+=======
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+>>>>>>> develop
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
+
+      - name: Install
         run: npm ci
+<<<<<<< HEAD
         shell: bash
       - name: 📊 Full Lint Report
         shell: bash
@@ -131,35 +142,36 @@ jobs:
         continue-on-error: true
       - name: 📊 Upload Partial Coverage
         uses: codecov/codecov-action@v4
+=======
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Type check
+        run: npm run typecheck --if-present
+      - name: Test
+        run: npm test -- --ci --reporters=default --reporters=jest-junit --passWithNoTests
+
+      - name: Upload JUnit
+>>>>>>> develop
         if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: DevilsDev/rag-pipeline-utils
-          fail_ci_if_error: false
-  extended-tests:
-    name: 🧪 Extended Test Suite
+          name: junit
+          path: junit.xml
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874
+        with:
+          name: coverage
+          path: coverage
+
+  coverage:
+    needs: test
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    timeout-minutes: 5
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs:
-      - critical-checks
-    if: needs.critical-checks.outputs.test-status == 'success'
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite:
-          - name: AI/ML
-            pattern: ai
-            timeout: 10
-          - name: DX Tools
-            pattern: dx
-            timeout: 5
-          - name: Enterprise
-            pattern: enterprise
-            timeout: 8
-          - name: Integration
-            pattern: integration
-            timeout: 15
     steps:
+<<<<<<< HEAD
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
         with:
@@ -167,25 +179,18 @@ jobs:
           fetch-depth: 1
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
+=======
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - name: 📦 Install dependencies
-        run: npm ci
-        shell: bash
-      - name: 🧪 Run ${{ matrix.test-suite.name }} Tests
-        shell: bash
-        env:
-          TEST_PATTERN: "\"${{ matrix.test-suite.pattern }}\""
-          TEST_NAME: "\"${{ matrix.test-suite.name }}\""
-          TEST_TIMEOUT: "\"${{ matrix.test-suite.timeout }}\""
-        run: |
-          set -e
-          set -o pipefail
-          set -Eeuo pipefail
-          timeout "${TEST_TIMEOUT}m" npm test -- --testPathPattern="$TEST_PATTERN" --maxWorkers=1 || echo "${TEST_NAME} tests completed with issues"
+          egress-policy: audit
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+>>>>>>> develop
+        with:
+          name: coverage
+          path: coverage
         continue-on-error: true
+<<<<<<< HEAD
         timeout-minutes: ${{ matrix.test-suite.timeout }}
   deploy:
     name: 🚀 Deploy & Release
@@ -236,10 +241,14 @@ jobs:
         continue-on-error: true
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+=======
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a
+>>>>>>> develop
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: DevilsDev/rag-pipeline-utils
           fail_ci_if_error: false
+<<<<<<< HEAD
       - name: 🚀 Semantic Release
         shell: bash
         env:
@@ -262,3 +271,5 @@ jobs:
             npm-debug.log*
             .npm/_logs/*
           retention-days: 7
+=======
+>>>>>>> develop

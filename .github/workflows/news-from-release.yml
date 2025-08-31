@@ -1,0 +1,61 @@
+name: Website News from Release
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  post:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare blog entry
+        id: prep
+        env:
+          REL_TAG: ${{ github.event.release.tag_name }}
+          REL_NAME: ${{ github.event.release.name }}
+          REL_BODY: ${{ github.event.release.body }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs-site/blog
+          TS="$(date -u +"%Y-%m-%d")"
+          SLUG="$(echo "${REL_TAG}" | tr -cd '[:alnum:]-._' | tr '[:upper:]' '[:lower:]')"
+          FILE="docs-site/blog/${TS}-${SLUG}.md"
+          cat > "${FILE}" <<'EOF'
+          ---
+          title: "${REL_NAME}"
+          slug: "${SLUG}"
+          authors: [maintainers]
+          tags: [release]
+          ---
+          
+          ${REL_BODY}
+          EOF
+          echo "file=${FILE}" >> $GITHUB_OUTPUT
+
+      - name: Create PR with blog post
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f
+        with:
+          commit-message: "docs: add release news for ${{ github.event.release.tag_name }}"
+          title: "docs: add release news for ${{ github.event.release.tag_name }}"
+          body: "Automated news post generated from GitHub Release."
+          branch: chore/news-${{ github.event.release.tag_name }}
+          add-paths: |
+            ${{ steps.prep.outputs.file }}
