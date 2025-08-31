@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@v4
       - name: 🟢 Setup Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: 📦 Install octokit
@@ -47,10 +47,10 @@ jobs:
 
             for (const label of labels) {
               if (!existingNames.has(label.name)) {
-                console.log("$($1)");
+                console.log(`Creating label: ${label.name}`);
                 await octokit.rest.issues.createLabel({ owner, repo, ...label });
               } else {
-                console.log("$($1)");
+                console.log(`Label exists: ${label.name}`);
               }
             }
           })().catch(err => {
@@ -61,7 +61,6 @@ jobs:
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 permissions:

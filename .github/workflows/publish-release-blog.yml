@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout main branch
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
       - name: 🔧 Set up Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        uses: actions/setup-node@v4
         with:
           node-version: 18
       - name: ✏️ Generate blog post
@@ -30,22 +30,21 @@ jobs:
           echo "authors: [ali]" >> "$FILE"
           echo "tags: [release, changelog]" >> "$FILE"
           echo "---" >> "$FILE"
-          echo ">> $FILE"
+          echo "" >> "$FILE"
           echo "RAG Pipeline Utils v"${VERSION}" is now available on NPM!" >> "$FILE"
-          echo ">> $FILE"
+          echo "" >> "$FILE"
           echo "#### Highlights" >> "$FILE"
           echo "- 🚀 Auto-published blog from GitHub Release" >> "$FILE"
           echo "- 📦 Version bump: "${VERSION}"" >> "$FILE"
           echo "- 📘 See CHANGELOG.md for full details" >> "$FILE"
         shell: bash
       - name: 📋 Commit blog post
-        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs(blog): add release post for ${{ github.ref_name }}"
           file_pattern: docs-site/blog/*.md
     timeout-minutes: 30
 concurrency:
-  concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 permissions:
