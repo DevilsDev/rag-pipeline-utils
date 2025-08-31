@@ -4,196 +4,62 @@
         <title>RAG Pipeline Utils Blog</title>
         <link>https://devilsdev.github.io/rag-pipeline-utils/blog</link>
         <description>RAG Pipeline Utils Blog</description>
-        <lastBuildDate>Sat, 26 Apr 2025 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 31 Jan 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <item>
-            <title><![CDATA[🚀 Version v2.1.8 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8</guid>
-            <pubDate>Sat, 26 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils v2.1.8 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils <strong>v2.1.8</strong> is now available on NPM!</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changes">🔧 Changes<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8#-changes" class="hash-link" aria-label="Direct link to 🔧 Changes" title="Direct link to 🔧 Changes">​</a></h2>
+            <title><![CDATA[🚀 RAG Pipeline Utils v2.2.0 - Enterprise Edition]]></title>
+            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0</link>
+            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0</guid>
+            <pubDate>Fri, 31 Jan 2025 00:00:00 GMT</pubDate>
+            <description><![CDATA[We're excited to announce the release of RAG Pipeline Utils v2.2.0 - Enterprise Edition! This major release transforms our platform into a production-ready, enterprise-grade solution with advanced AI capabilities.]]></description>
+            <content:encoded><![CDATA[<p>We're excited to announce the release of RAG Pipeline Utils v2.2.0 - Enterprise Edition! This major release transforms our platform into a production-ready, enterprise-grade solution with advanced AI capabilities.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-enterprise-features">🌟 Enterprise Features<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#-enterprise-features" class="hash-link" aria-label="Direct link to 🌟 Enterprise Features" title="Direct link to 🌟 Enterprise Features">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="advanced-ai-capabilities">Advanced AI Capabilities<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#advanced-ai-capabilities" class="hash-link" aria-label="Direct link to Advanced AI Capabilities" title="Direct link to Advanced AI Capabilities">​</a></h3>
 <ul>
-<li>chore(ci): remove legacy blog generator in favor of unified post-release workflow</li>
-<li>chore(ci): remove legacy blog generator in favor of unified post-release workflow</li>
-<li>docs(blog): add release post for v2.1.7</li>
+<li><strong>Multi-modal Processing</strong>: Support for text, images, audio, and video content</li>
+<li><strong>Federated Learning</strong>: Privacy-preserving distributed model training</li>
+<li><strong>Adaptive Retrieval</strong>: Learning-based relevance optimization with reinforcement learning</li>
+<li><strong>Model Training Orchestration</strong>: Custom embedding and LLM fine-tuning infrastructure</li>
 </ul>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-resources">🔗 Resources<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.8#-resources" class="hash-link" aria-label="Direct link to 🔗 Resources" title="Direct link to 🔗 Resources">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="production-ready-architecture">Production-Ready Architecture<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#production-ready-architecture" class="hash-link" aria-label="Direct link to Production-Ready Architecture" title="Direct link to Production-Ready Architecture">​</a></h3>
 <ul>
-<li>GitHub Compare: <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.7...v2.1.8" target="_blank" rel="noopener noreferrer">v2.1.7...v2.1.8</a></li>
-<li>View full <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG on GitHub</a></li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[✨ Version v2.1.7 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7</guid>
-            <pubDate>Fri, 25 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils vv2.1.7 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.7 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.7#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
-<ul>
-<li>🚀 Auto-published blog from GitHub Release</li>
-<li>📦 Version bump: v2.1.7</li>
-<li>📘 See CHANGELOG.md for full details</li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[🚀 Version v2.1.6 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6</guid>
-            <pubDate>Thu, 24 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils v2.1.6 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils <strong>v2.1.6</strong> is now available on NPM!</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changes">🔧 Changes<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-changes" class="hash-link" aria-label="Direct link to 🔧 Changes" title="Direct link to 🔧 Changes">​</a></h2>
-<ul>
-<li>chore: remove legacy changelog workflow and finalize blog badge</li>
-<li>ci(workflows): add blog badge verification workflow</li>
-<li>ci(workflows): add blog badge verification workflow</li>
-<li>ci(workflows): add blog badge verification workflow</li>
-<li>docs(blog): add release post for v2.1.5</li>
+<li><strong>Dependency Injection Container</strong>: IoC patterns for modular, testable code</li>
+<li><strong>SLO Monitoring</strong>: Comprehensive observability with error budget tracking</li>
+<li><strong>External API Mocking</strong>: Deterministic testing for reliable CI/CD pipelines</li>
+<li><strong>Performance Optimization</strong>: Advanced caching, streaming, and memory management</li>
 </ul>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-resources">🔗 Resources<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.6#-resources" class="hash-link" aria-label="Direct link to 🔗 Resources" title="Direct link to 🔗 Resources">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="developer-experience">Developer Experience<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#developer-experience" class="hash-link" aria-label="Direct link to Developer Experience" title="Direct link to Developer Experience">​</a></h3>
 <ul>
-<li>GitHub Compare: <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.1.5...v2.1.6" target="_blank" rel="noopener noreferrer">v2.1.5...v2.1.6</a></li>
-<li>View full <a href="https://devilsdev.github.io/CHANGELOG.md">CHANGELOG.md</a></li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[✨ Version v2.1.5 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5</guid>
-            <pubDate>Tue, 22 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils vv2.1.5 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.5 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.5#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<li><strong>Enhanced CLI</strong>: Doctor diagnostics, interactive wizards, and streaming dashboards</li>
+<li><strong>Plugin Marketplace</strong>: Community-driven ecosystem with certification workflows</li>
+<li><strong>Visual Pipeline Builder</strong>: Drag-and-drop interface for creating RAG workflows</li>
+<li><strong>Real-time Debugger</strong>: Live pipeline inspection and performance profiling</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-security--compliance">🔒 Security &amp; Compliance<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#-security--compliance" class="hash-link" aria-label="Direct link to 🔒 Security &amp; Compliance" title="Direct link to 🔒 Security &amp; Compliance">​</a></h2>
 <ul>
-<li>🚀 Auto-published blog from GitHub Release</li>
-<li>📦 Version bump: v2.1.5</li>
-<li>📘 See CHANGELOG.md for full details</li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[✨ Version v2.1.3 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3</guid>
-            <pubDate>Mon, 21 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils vv2.1.3 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.3 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.3#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
+<li><strong>Comprehensive Security Scanning</strong>: 83% reduction in vulnerabilities</li>
+<li><strong>Audit Logging</strong>: Immutable security-sensitive action tracking</li>
+<li><strong>Multi-tenant Support</strong>: Tenant isolation at all boundaries</li>
+<li><strong>OWASP/NIST Compliance</strong>: 95/100 security score achieved</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-quality-metrics">📊 Quality Metrics<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#-quality-metrics" class="hash-link" aria-label="Direct link to 📊 Quality Metrics" title="Direct link to 📊 Quality Metrics">​</a></h2>
 <ul>
-<li>🚀 Auto-published blog from GitHub Release</li>
-<li>📦 Version bump: v2.1.3</li>
-<li>📘 See CHANGELOG.md for full details</li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[✨ Version v2.1.4 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4</guid>
-            <pubDate>Mon, 21 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils vv2.1.4 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.4 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.4#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
-<ul>
-<li>🚀 Auto-published blog from GitHub Release</li>
-<li>📦 Version bump: v2.1.4</li>
-<li>📘 See CHANGELOG.md for full details</li>
-</ul>]]></content:encoded>
-            <category>Release</category>
-            <category>Changelog</category>
-        </item>
-        <item>
-            <title><![CDATA[Image Showcase with LQIP]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/image-showcase</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/image-showcase</guid>
-            <pubDate>Sun, 20 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[Demonstration of how low-quality image placeholders (LQIP) improve blog UX and optimize web performance.]]></description>
-            <content:encoded><![CDATA[<p>Demonstration of how low-quality image placeholders (LQIP) improve blog UX and optimize web performance.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="details">Details<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/image-showcase#details" class="hash-link" aria-label="Direct link to Details" title="Direct link to Details">​</a></h2>
-<p>This post showcases <code>BlogImage</code> and <code>BlogCard</code> with LQIP integration via Plaiceholder and SSR-safe fallbacks.</p>]]></content:encoded>
-            <category>Image</category>
-            <category>Tutorials</category>
-        </item>
-        <item>
-            <title><![CDATA[release-2.1.1]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1</guid>
-            <pubDate>Sun, 20 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[Published: 2025-04-20]]></description>
-            <content:encoded><![CDATA[<p><strong>Published:</strong> <code>2025-04-20</code><br>
-<strong>Compare changes:</strong> <a href="https://github.com/DevilsDev/rag-pipeline-utils/compare/v2.0.0...v2.1.1" target="_blank" rel="noopener noreferrer">View diff</a><br>
-<strong>Contributors:</strong> <code>3</code><br>
-<strong>Commits:</strong> <code>17</code></p>
+<li><strong>Test Coverage</strong>: 90%+ with enterprise-grade reliability testing</li>
+<li><strong>Performance</strong>: 500+ texts/second embedding, sub-200ms retrieval</li>
+<li><strong>Scalability</strong>: Kubernetes-ready with Helm charts and monitoring</li>
+<li><strong>Documentation</strong>: Comprehensive guides for enterprise deployment</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-getting-started">🚀 Getting Started<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/enterprise-release-v2.2.0#-getting-started" class="hash-link" aria-label="Direct link to 🚀 Getting Started" title="Direct link to 🚀 Getting Started">​</a></h2>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#bfc7d5;--prism-background-color:#292d3e"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#bfc7d5;background-color:#292d3e"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#bfc7d5"><span class="token plain">npm install @devilsdev/rag-pipeline-utils@latest</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>Visit our <a href="https://devilsdev.github.io/rag-pipeline-utils/docs/Enterprise">Enterprise Documentation</a> to explore all the new features and deployment options.</p>
 <hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-whats-new">📦 What's New<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-whats-new" class="hash-link" aria-label="Direct link to 📦 What's New" title="Direct link to 📦 What's New">​</a></h2>
-<ul>
-<li>Placeholder for changelog details or highlights.</li>
-</ul>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="-changelog">📘 Changelog<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/2025/04/20/release-2.1.1#-changelog" class="hash-link" aria-label="Direct link to 📘 Changelog" title="Direct link to 📘 Changelog">​</a></h2>
-<p>See full details in <a href="https://devilsdev.github.io/rag-pipeline-utils/CHANGELOG.md">CHANGELOG.md</a></p>]]></content:encoded>
-        </item>
-        <item>
-            <title><![CDATA[Prompt Engineering Best Practices]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/prompt-engineering-best-practices</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/prompt-engineering-best-practices</guid>
-            <pubDate>Sat, 19 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[Design better prompts for your LLM-driven RAG workflows using templating, in-context examples, and task-specific embeddings.]]></description>
-            <content:encoded><![CDATA[<p>Design better prompts for your LLM-driven RAG workflows using templating, in-context examples, and task-specific embeddings.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="tips">Tips<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/prompt-engineering-best-practices#tips" class="hash-link" aria-label="Direct link to Tips" title="Direct link to Tips">​</a></h2>
-<ul>
-<li>Use instructions + context</li>
-<li>Dynamically inject retrieved passages</li>
-<li>Validate through CLI or dashboard</li>
-</ul>]]></content:encoded>
-            <category>Prompt Engineering</category>
-            <category>Tutorials</category>
-        </item>
-        <item>
-            <title><![CDATA[RAG Architecture Overview]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/architecture-overview</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/architecture-overview</guid>
-            <pubDate>Fri, 18 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[Explore the modular RAG pipeline architecture. Components like loaders, embedders, retrievers, and generators are pluggable and testable.]]></description>
-            <content:encoded><![CDATA[<p>Explore the modular RAG pipeline architecture. Components like loaders, embedders, retrievers, and generators are pluggable and testable.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="key-concepts">Key Concepts<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/architecture-overview#key-concepts" class="hash-link" aria-label="Direct link to Key Concepts" title="Direct link to Key Concepts">​</a></h2>
-<ul>
-<li>Plugin registry for clean composition</li>
-<li>Evaluation layer for metrics like BLEU and recall</li>
-<li>CLI integration for dev-first workflows</li>
-</ul>]]></content:encoded>
-            <category>Architecture</category>
-            <category>Modular</category>
-        </item>
-        <item>
-            <title><![CDATA[✨ Version v2.1.1 Released]]></title>
-            <link>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.1</link>
-            <guid>https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.1</guid>
-            <pubDate>Fri, 18 Apr 2025 00:00:00 GMT</pubDate>
-            <description><![CDATA[RAG Pipeline Utils vv2.1.1 is now available on NPM!]]></description>
-            <content:encoded><![CDATA[<p>RAG Pipeline Utils vv2.1.1 is now available on NPM!</p>
-<h4 class="anchor anchorWithStickyNavbar_LWe7" id="highlights">Highlights<a href="https://devilsdev.github.io/rag-pipeline-utils/blog/release-v2.1.1#highlights" class="hash-link" aria-label="Direct link to Highlights" title="Direct link to Highlights">​</a></h4>
-<ul>
-<li>🚀 Auto-published blog from GitHub release</li>
-<li>📦 Version bump: v2.1.1</li>
-<li>📘 See CHANGELOG.md for full details</li>
-</ul>]]></content:encoded>
+<p><em>Ready to transform your RAG pipelines with enterprise-grade capabilities? Get started today!</em></p>]]></content:encoded>
             <category>Release</category>
-            <category>Changelog</category>
+            <category>enterprise</category>
+            <category>ai</category>
+            <category>observability</category>
         </item>
     </channel>
 </rss>
