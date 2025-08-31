@@ -59,10 +59,10 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          if [[ ""${{ github.event_name }"}" == "release" ]]; then
-            VERSION=""${{ github.event.release.tag_name }"}"
-          elif [[ ""${{ github.ref }"}" == refs/tags/* ]]; then
-            VERSION=""${GITHUB_REF#refs/tags/}""
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
           else
             VERSION=$(node -p "require('./package.json').version")
           fi
@@ -70,31 +70,31 @@ jobs:
           # Clean version (remove 'v' prefix if present)
           CLEAN_VERSION="${VERSION#v}"
 
-          echo "version=${VERSION}" >> ""$GITHUB_OUTPUT""
-          echo "clean_version=${CLEAN_VERSION}" >> ""$GITHUB_OUTPUT""
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "clean_version=${CLEAN_VERSION}" >> "$GITHUB_OUTPUT"
           echo "📦 Detected version: ${VERSION}"
         shell: bash
       - name: 📝 Generate blog post and changelog
         id: generate
         env:
-          GITHUB_TOKEN: "\"${{ secrets.GITHUB_TOKEN }}\""
-          DRY_RUN: "\"${{ github.event.inputs.dry_run }}\""
-          FORCE_REGENERATE: "\"${{ github.event.inputs.force_regenerate }}\""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          FORCE_REGENERATE: ${{ github.event.inputs.force_regenerate }}
         run: |
           set -e
           set -o pipefail
-          VERSION=""${{ steps.version.outputs.version }"}"
-          CLEAN_VERSION=""${{ steps.version.outputs.clean_version }"}"
+          VERSION="${{ steps.version.outputs.version }}"
+          CLEAN_VERSION="${{ steps.version.outputs.clean_version }}"
           DATE=$(date +'%Y-%m-%d')
-          BLOG_FILE="docs-site/blog/"${DATE}"-release-"${CLEAN_VERSION}".md"
+          BLOG_FILE="docs-site/blog/${DATE}-release-${CLEAN_VERSION}.md"
 
-          echo "📝 Generating content for version ${$VERSION}""..."
+          echo "📝 Generating content for version ${VERSION}..."
 
           # Check if blog post already exists
-          if [[ -f ""$BLOG_FILE"" && ""$FORCE_REGENERATE"" != "true" ]]; then
+          if [[ -f "$BLOG_FILE" && "$FORCE_REGENERATE" != "true" ]]; then
             echo "⚠️ Blog post already exists: $BLOG_FILE"
             echo "💡 Use force_regenerate=true to overwrite"
-            echo "blog_generated=false" >> ""$GITHUB_OUTPUT""
+            echo "blog_generated=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -102,15 +102,15 @@ jobs:
           mkdir -p docs-site/blog
 
           # Generate blog post
-          cat > ""$BLOG_FILE"" << EOF
+          cat > "$BLOG_FILE" << EOF
           ---
-          slug: release-"${CLEAN_VERSION}"
-          title: ✨ RAG Pipeline Utils v"${CLEAN_VERSION}" Released
+          slug: release-${CLEAN_VERSION}
+          title: ✨ RAG Pipeline Utils v${CLEAN_VERSION} Released
           authors: [ali]
           tags: [release, changelog, rag, pipeline]
           ---
 
-          🎉 **RAG Pipeline Utils v"${CLEAN_VERSION}" is now available!**
+          🎉 **RAG Pipeline Utils v${CLEAN_VERSION} is now available!**
 
           This release brings exciting improvements to our modular RAG toolkit, enhancing developer experience, performance, and reliability.
 
@@ -119,7 +119,7 @@ jobs:
           - 📦 **Version**: "${VERSION}"
           - 🔄 **Auto-generated**: Blog post created from GitHub Release
           - 📘 **Full Details**: See [CHANGELOG.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md) for complete changes
-          - 📥 **Installation**: \"$($1)"
+          - 📥 **Installation**: "npm install @rag-pipeline/utils@${VERSION}"
 
           ## 🛠 Key Features
 
@@ -131,7 +131,7 @@ jobs:
 
           ## 📖 Getting Started
 
-          \"$($1)"\"$($1)"\"$($1)"
+          "npm install @rag-pipeline/utils@${VERSION}"
 
           ## 🤝 Community
 
@@ -148,13 +148,13 @@ jobs:
           # Use existing script if available, otherwise skip changelog generation
           if [[ -f "scripts/generate-release-note.js" ]]; then
             echo "📋 Generating changelog using existing script..."
-            node scripts/generate-release-note.js ""$VERSION""
+            node scripts/generate-release-note.js "${VERSION}"
           else
             echo "⚠️ scripts/generate-release-note.js not found, skipping changelog generation"
             echo "💡 Consider creating this script for automated changelog generation"
           fi
 
-          echo "blog_generated=true" >> ""$GITHUB_OUTPUT""
+          echo "blog_generated=true" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: 📄 Commit generated content
         if: ${{ steps.generate.outputs.blog_generated == 'true' && github.event.inputs.dry_run != 'true' }}
@@ -208,13 +208,13 @@ jobs:
           BADGE_URL="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/blog-release.yml/badge.svg?branch=main"
           echo "🌐 Testing badge URL: $BADGE_URL"
 
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" ""$BADGE_URL"")
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BADGE_URL")
           echo "📊 Badge response: HTTP $STATUS"
 
-          if [ ""$STATUS"" = "200" ]; then
+          if [ "$STATUS" = "200" ]; then
             echo "✅ Blog workflow badge is accessible"
           else
-            echo "❌ Blog workflow badge not accessible (HTTP ${$STATUS}"")"
+            echo "❌ Blog workflow badge not accessible (HTTP $STATUS)"
             echo "💡 Badge may not be available until workflow runs successfully"
           fi
         shell: bash
@@ -224,9 +224,9 @@ jobs:
           set -o pipefail
           echo "📋 Badge verification completed"
           echo "🔗 Workflow: blog-release.yml"
-          echo "📊 Status: "${{ job.status }"}"
-          if [[ ""${{ needs.generate-content.outputs.blog_generated }"}" == "true" ]]; then
-            echo "📝 Blog generated: Yes (v"${{ needs.generate-content.outputs.version }"})"
+          echo "📊 Status: "${{ job.status }}"
+          if [[ "${{ needs.generate-content.outputs.blog_generated }}" == "true" ]]; then
+            echo "📝 Blog generated: Yes (v"${{ needs.generate-content.outputs.version }}")"
           else
             echo "📝 Blog generated: No"
           fi
@@ -250,15 +250,15 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Job | Status | Details |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-----|--------|---------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Generate Content | "${{ needs.generate-content.result }"} | Blog: "${{ needs.generate-content.outputs.blog_generated || 'N/A' }"} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Verify Badges | "${{ needs.verify-badges.result }"} | Badge validation completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Generate Content | "${{ needs.generate-content.result }}" | Blog: "${{ needs.generate-content.outputs.blog_generated || 'N/A' }}" |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Verify Badges | "${{ needs.verify-badges.result }}" | Badge validation completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          if [[ ""${{ needs.generate-content.outputs.version }"}" != "" ]]; then
+          if [[ "${{ needs.generate-content.outputs.version }}" != "" ]]; then
             echo "## 📦 Version Information" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Version**: "${{ needs.generate-content.outputs.version }"}" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Trigger**: "${{ github.event_name }"}" >> "$GITHUB_STEP_SUMMARY"
-            echo "- **Dry Run**: "${{ github.event.inputs.dry_run || 'false' }"}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Version**: "${{ needs.generate-content.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Trigger**: "${{ github.event_name }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Dry Run**: "${{ github.event.inputs.dry_run || 'false' }}" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           echo "" >> "$GITHUB_STEP_SUMMARY"

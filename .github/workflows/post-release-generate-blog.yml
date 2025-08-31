@@ -38,18 +38,18 @@ jobs:
         run: |
           set -e
           set -o pipefail
-          echo "tag="${GITHUB_REF#refs/tags/}"" >> ""$GITHUB_OUTPUT""
-          echo "dry_run="${{ github.event.inputs.dry_run || 'false' }"}" >> ""$GITHUB_OUTPUT""
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "dry_run=${{ github.event.inputs.dry_run || 'false' }}" >> "$GITHUB_OUTPUT"
         shell: bash
       - name: 📝 Generate release notes
         id: generate_notes
         run: |
           set -e
           set -o pipefail
-          echo "Generating release notes for "${{ steps.version.outputs.tag }"}"
-          node scripts/generate-release-note.js ""${{ steps.version.outputs.tag }"}"
+          echo "Generating release notes for ${{ steps.version.outputs.tag }}"
+          node scripts/generate-release-note.js "${{ steps.version.outputs.tag }}"
         env:
-          DRY_RUN: "\"${{ steps.version.outputs.dry_run }}\""
+          DRY_RUN: ${{ steps.version.outputs.dry_run }}
         shell: bash
       - name: 🔒 Commit generated blog and changelog
         if: steps.version.outputs.dry_run != 'true'
@@ -66,10 +66,9 @@ jobs:
         continue-on-error: true
       - name: ✅ Output success for badge
         id: output_blog
-        run: echo "blog_generated=true" >> ""$GITHUB_OUTPUT""
+        run: echo "blog_generated=true" >> "$GITHUB_OUTPUT"
         shell: bash
     timeout-minutes: 30
 concurrency:
-  concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
