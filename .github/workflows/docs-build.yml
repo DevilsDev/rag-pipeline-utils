@@ -48,13 +48,13 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install root dependencies
-        run: npm ci --prefer-offline
+        run: npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
         shell: bash
 
       - name: Build Docusaurus site
         working-directory: docs-site
         run: |
-          npm ci --prefer-offline
+          npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
           npm run build
         shell: bash
 
