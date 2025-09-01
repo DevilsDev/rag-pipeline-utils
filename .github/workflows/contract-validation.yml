@@ -316,44 +316,44 @@ jobs:
                 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
                 
                 const pluginType = contract.type || file.replace('-contract.json', '');
-                doc += \"$($1)";
-                doc += \"$($1)";
+                doc += '## ' + pluginType.charAt(0).toUpperCase() + pluginType.slice(1) + ' Plugin\\n\\n';
+                doc += '**Version:** ' + (contract.version || '1.0.0') + '\\n\\n';
                 
                 if (contract.description) {
-                  doc += \"$($1)";
+                  doc += contract.description + '\\n\\n';
                 }
                 
                 if (contract.methods) {
                   doc += '### Methods\\n\\n';
                   
                   for (const method of contract.methods) {
-                    doc += \"$($1)";
+                    doc += '#### ' + method.name + '()\\n\\n';
                     
                     if (method.description) {
-                      doc += \"$($1)";
+                      doc += method.description + '\\n\\n';
                     }
                     
                     doc += '**Parameters:**\\n\\n';
                     if (Array.isArray(method.parameters)) {
                       for (const param of method.parameters) {
                         if (typeof param === 'string') {
-                          doc += \"$($1)";
+                          doc += '- ' + param + '\\n';
                         } else {
                           const required = param.required ? '' : ' (optional)';
-                          doc += \"$($1)";
+                          doc += '- **' + param.name + '** (' + (param.type || 'any') + ')' + required + '\\n';
                         }
                       }
                     } else {
-                      doc += \"$($1)";
+                      doc += '- None\\n';
                     }
                     
                     doc += '\\n**Returns:**\\n\\n';
                     if (typeof method.returns === 'string') {
-                      doc += \"$($1)";
+                      doc += '- ' + method.returns + '\\n\\n';
                     } else {
-                      doc += \"$($1)";
+                      doc += '- **Type:** ' + (method.returns.type || 'any') + '\\n';
                       if (method.returns.description) {
-                        doc += \"$($1)";
+                        doc += '- **Description:** ' + method.returns.description + '\\n';
                       }
                       doc += '\\n';
                     }
