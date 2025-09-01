@@ -1,0 +1,118 @@
+{
+  "id": "pipeline_1756712378526",
+  "name": "Test Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "loader_1756712378526",
+      "_type": "loader",
+      "position": {
+        "type": "loader"
+      },
+      "_config": {
+        "source": {
+          "_type": "string",
+          "required": true
+        },
+        "format": {
+          "_type": "select",
+          "_options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "documents"
+      ]
+    },
+    {
+      "id": "embedder_1756712378526",
+      "_type": "embedder",
+      "position": {
+        "type": "loader"
+      },
+      "_config": {
+        "model": {
+          "_type": "string",
+          "default": "openai"
+        },
+        "dimensions": {
+          "_type": "number",
+          "default": 1536
+        }
+      },
+      "inputs": [
+        "documents"
+      ],
+      "outputs": [
+        "embeddings"
+      ]
+    },
+    {
+      "id": "retriever_1756712378526",
+      "_type": "retriever",
+      "position": {
+        "type": "loader"
+      },
+      "_config": {
+        "topK": {
+          "_type": "number",
+          "default": 5
+        },
+        "threshold": {
+          "_type": "number",
+          "default": 0.7
+        }
+      },
+      "inputs": [
+        "embeddings",
+        "query"
+      ],
+      "outputs": [
+        "results"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1756712378527",
+      "source": {
+        "componentId": "loader_1756712378526",
+        "output": "documents"
+      },
+      "target": {
+        "componentId": "embedder_1756712378526",
+        "input": "documents"
+      }
+    },
+    {
+      "id": "conn_1756712378527",
+      "source": {
+        "componentId": "embedder_1756712378526",
+        "output": "embeddings"
+      },
+      "target": {
+        "componentId": "retriever_1756712378526",
+        "input": "embeddings"
+      }
+    },
+    {
+      "id": "conn_1756712378527",
+      "source": {
+        "componentId": "retriever_1756712378526",
+        "output": "results"
+      },
+      "target": {
+        "componentId": "embedder_1756712378526",
+        "input": "documents"
+      }
+    }
+  ],
+  "_config": {},
+  "created": "2025-09-01T07:39:38.526Z",
+  "modified": "2025-09-01T07:39:38.527Z"
+}
