@@ -437,10 +437,18 @@ describe('Full Pipeline End-to-End Integration Tests', () => {
         const documentCount = Math.floor(Math.random() * 100) + 20; // 20-120 docs
         const chunkCount = Math.floor(documentCount * (Math.random() * 3 + 2)); // 2-5 chunks per doc
         
+        // Generate chunks array for embedding stage
+        const chunks = Array.from({ length: chunkCount }, (_, i) => ({
+          id: `chunk-${i}`,
+          content: `Document chunk ${i} content with meaningful text for processing`,
+          metadata: { documentId: `doc-${Math.floor(i / 3)}`, chunkIndex: i % 3 }
+        }));
+        
         return {
           success: true,
           documentsLoaded: documentCount,
           chunksCreated: chunkCount,
+          chunks: chunks,
           structurePreserved: config.preserveStructure || false,
           headingsExtracted: config.type === 'markdown' ? Math.floor(chunkCount * 0.1) : 0,
           throughput: documentCount / (processingTime / 1000)
@@ -451,8 +459,17 @@ describe('Full Pipeline End-to-End Integration Tests', () => {
         const processingTime = chunks.length * 10 + Math.random() * 1000;
         await new Promise(resolve => setTimeout(resolve, processingTime));
         
+        // Generate embeddings array for retrieval stage
+        const embeddings = chunks.map(chunk => ({
+          id: chunk.id,
+          vector: Array.from({ length: 384 }, () => Math.random()), // 384-dim embedding
+          content: chunk.content,
+          metadata: chunk.metadata
+        }));
+        
         return {
           embeddingsGenerated: chunks.length,
+          embeddings: embeddings,
           model: config.model,
           batchProcessing: config.batchSize ? true : false,
           parallelProcessing: config.parallel || false
