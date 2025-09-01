@@ -1,41 +1,63 @@
 name: Release
+
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
   id-token: write
+  packages: write
 
 concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: "20"
+
 jobs:
   release:
-    timeout-minutes: 25
+    name: Semantic Release
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
-          node-version: 20
-          cache: npm
+          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Install
-        run: npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+        shell: bash
 
       - name: Build
         run: npm run build --if-present
+        shell: bash
 
-      - name: semantic-release
+      - name: Test
+        run: npm test -- --ci --passWithNoTests
+        shell: bash
+
+      - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
+        shell: bash
