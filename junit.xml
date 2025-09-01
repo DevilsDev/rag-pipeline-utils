@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="22" failures="13" errors="0" time="0.895">
+  <testsuite name="__tests__\ai\advanced-ai-capabilities.test.js" errors="0" failures="13" skipped="0" timestamp="2025-09-01T06:11:29" time="0.799" tests="22">
+    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should create custom embedding training job" time="0.003">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should handle training job lifecycle" time="0.002">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should perform hyperparameter optimization" time="0.001">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should handle model deployment" time="0.103">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should initialize user profile" time="0.001">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should adapt retrieval based on feedback" time="0.002">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should perform reinforcement learning updates" time="0.001">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should generate personalized rankings" time="0.001">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process image content" time="0">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:333:48)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process audio content" time="0.001">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:351:48)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process video content" time="0.001">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:367:48)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should perform multi-modal search" time="0">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:395:35)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should generate content descriptions" time="0">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:421:51)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should find similar content" time="0.001">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:440:50)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should create federation" time="0.001">
+      <failure>TypeError: federatedLearning.createFederation is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:462:52)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should register participants" time="0">
+      <failure>TypeError: federatedLearning.createFederation is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:474:52)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should conduct federated learning round" time="0">
+      <failure>TypeError: federatedLearning.on is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:512:25)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should handle privacy preservation" time="0.001">
+      <failure>TypeError: federatedLearning.createFederation is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:553:52)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should provide federation statistics" time="0">
+      <failure>TypeError: federatedLearning.createFederation is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:584:52)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should handle participant eligibility validation" time="0.002">
+      <failure>TypeError: federatedLearning.createFederation is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:612:52)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Integration Tests" name="should integrate model training with adaptive retrieval" time="0.11">
+    </testcase>
+    <testcase classname="Advanced AI/ML Capabilities › Integration Tests" name="should integrate multi-modal processing with federated learning" time="0.001">
+      <failure>TypeError: multiModalProcessor.processContent is not a function
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:681:33)
+    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

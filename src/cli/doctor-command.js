@@ -1,15 +1,14 @@
 /**
-const fs = require('fs');
  * Doctor Command for RAG Pipeline Diagnostics
  * Scans for common issues and provides actionable solutions
  */
 
-const fs = require('fs/promises'); // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
-const { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency  } = require('../_config/enhanced-ragrc-schema.js'); // eslint-disable-line global-require
-const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js'); // eslint-disable-line global-require
-const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js'); // eslint-disable-line global-require
-// const { logger  } = require('../utils/logger.js'); // Reserved for future logging // eslint-disable-line global-require
+const fs = require('fs/promises'); // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const { validateEnhancedRagrcSchema, extractPluginDependencies, validateConfigConsistency  } = require('../_config/enhanced-ragrc-schema.js'); // eslint-disable-line global-require
+const { createVersionResolver  } = require('../core/plugin-marketplace/version-resolver.js'); // eslint-disable-line global-require
+const { DEFAULT_REGISTRY_URLS  } = require('../core/plugin-marketplace/plugin-registry-format.js'); // eslint-disable-line global-require
+// const { logger  } = require('../utils/logger.js'); // Reserved for future logging // eslint-disable-line global-require
 
 /**
  * Diagnostic categories
