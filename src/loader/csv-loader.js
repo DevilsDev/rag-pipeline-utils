@@ -1,40 +1,38 @@
 /**
-const fs = require('fs');
- * Version: 0.1.0
- * Path: /src/loader/csv-loader.js
- * Description: CSV document loader with row-wise chunking
- * Author: Ali Kahwaji
+ * CSV document loader with row-wise chunking
  */
 
-const fs = require('fs/promises'); // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
-const { parse  } = require('csv-parse/sync'); // eslint-disable-line global-require
+const fs = require("fs/promises");
+const path = require("path");
+const { parse } = require("csv-parse/sync");
 
 class CSVLoader {
   /**
    * Load and parse a CSV file into chunks
-   * @param {string} _filePath
+   * @param {string} filePath
    * @returns {Promise<Array<{ chunk(): string[] }>>}
    */
-  async load(_filePath) {
-    const absPath = path.resolve(_filePath);
-    const raw = await fs.readFile(absPath, 'utf-8');
-    const records = parse(raw, { columns: true });
+  async load(filePath) {
+    const absPath = path.resolve(filePath);
 
-    return [
-      {
-        chunk: () => records.map(r => Object.values(r).join(' '))
-      }
-    ];
+    try {
+      const raw = await fs.readFile(absPath, "utf8");
+      const src = raw.replace(/^\uFEFF/, ""); // Remove BOM
+      const normalizedSrc = src.replace(/\r\n|\r/g, "\n"); // Normalize line endings
+
+      const records = parse(normalizedSrc, { columns: true });
+
+      return [
+        {
+          chunk: () => records.map((r) => Object.values(r).join(" ")),
+        },
+      ];
+    } catch (error) {
+      throw new Error(`CSV parsing failed for ${filePath}: ${error.message}`);
+    }
   }
 }
 
-
-
-// Default export
-
-
-
 module.exports = {
-  CSVLoader
+  CSVLoader,
 };

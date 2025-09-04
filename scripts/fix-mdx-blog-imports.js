@@ -6,15 +6,16 @@ const path = require('path');
  * Author: Ali Kahwaji
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-const BLOG_DIR = path.resolve('docs-site', 'blog');
-const TARGET_IMPORT = 'import BlogImage from \'../src/components/BlogImage\'';
-const OLD_IMPORT_REGEX = /import\s+BlogImage\s+from\s+['"].+BlogImage[^'"]*['"];/g;
+const BLOG_DIR = path.resolve("docs-site", "blog");
+const TARGET_IMPORT = "import BlogImage from '../src/components/BlogImage'";
+const OLD_IMPORT_REGEX =
+  /import\s+BlogImage\s+from\s+['"].+BlogImage[^'"]*['"];/g;
 
 function fixImportInFile(filePath) {
-  let content = fs.readFileSync(filePath, 'utf-8');
+  let content = fs.readFileSync(filePath, "utf-8");
 
   // If already correct, skip
   if (content.includes(TARGET_IMPORT)) {
@@ -41,12 +42,14 @@ function walkDir(dir) {
     const stat = fs.statSync(fullPath);
     if (stat.isDirectory()) {
       walkDir(fullPath);
-    } else if (f.endsWith('.mdx')) {
+    } else if (f.endsWith(".mdx")) {
       fixImportInFile(fullPath);
     }
   }
 }
 
-console.log('🔍 Scanning MDX blog files...'); // eslint-disable-line no-console
+console.log("🔍 Scanning MDX blog files...");
+// eslint-disable-line no-console
 walkDir(BLOG_DIR);
-console.log('🎉 Import rewrite complete.'); // eslint-disable-line no-console
+console.log("🎉 Import rewrite complete.");
+// eslint-disable-line no-console

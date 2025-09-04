@@ -2,13 +2,13 @@ name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "docs/**"
       - "docs-site/**"
       - ".github/workflows/docs-build.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "docs/**"
       - "docs-site/**"
@@ -16,53 +16,41 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
-env:
-  NODE_VERSION: "20"
-
 jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
-
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
       - name: Setup Node.js
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 22
           cache: npm
-          cache-dependency-path: package-lock.json
 
-      - name: Install root dependencies
-        run: npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
-        shell: bash
+      - name: Install dependencies
+        run: CI=true npm ci --prefer-offline
 
-      - name: Build Docusaurus site
-        working-directory: docs-site
-        run: |
-          npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
-          npm run build
-        shell: bash
+      - name: Build documentation
+        run: npm run docs:build
 
       - name: Upload Pages artifact
-        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
-          path: docs-site/build
+          path: ./docs-site/build
 
   deploy:
     name: Deploy to GitHub Pages

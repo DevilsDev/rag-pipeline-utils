@@ -7,15 +7,15 @@
 
 // Jest is available globally in CommonJS mode;
 
-jest.unstable_mockModule('octokit', () => ({
+jest.unstable_mockModule("octokit", () => ({
   Octokit: jest.fn().mockImplementation(() => ({
     rest: {
       issues: {
         listLabelsForRepo: mockListLabelsForRepo,
-        createLabel: mockCreateLabel
-      }
-    }
-  }))
+        createLabel: mockCreateLabel,
+      },
+    },
+  })),
 }));
 
 // ✅ Shared mocks outside import context
@@ -26,7 +26,7 @@ let ensureRoadmapLabels;
 let roadmapLabels;
 
 beforeAll(async () => {
-  const imported = await import('../../scripts/ensure-roadmap-labels.js');
+  const imported = await import("../../scripts/ensure-roadmap-labels.js");
   ensureRoadmapLabels = imported.ensureRoadmapLabels;
   roadmapLabels = imported.roadmapLabels;
 });
@@ -36,29 +36,39 @@ beforeEach(() => {
   mockListLabelsForRepo.mockReset();
 });
 
-describe('ensureRoadmapLabels', () => {
-  it('creates all labels if none exist', async () => {
+describe("ensureRoadmapLabels", () => {
+  it("creates all labels if none exist", async () => {
     mockListLabelsForRepo.mockResolvedValue({ data: [] });
 
-    await ensureRoadmapLabels({ token: 'test-token', owner: 'ali', repo: 'rag-pipeline-utils' });
+    await ensureRoadmapLabels({
+      token: "test-token",
+      owner: "ali",
+      repo: "rag-pipeline-utils",
+    });
 
     expect(mockCreateLabel).toHaveBeenCalledTimes(roadmapLabels.length);
     for (const label of roadmapLabels) {
       expect(mockCreateLabel).toHaveBeenCalledWith({
-        owner: 'ali',
-        repo: 'rag-pipeline-utils',
-        ...label
+        owner: "ali",
+        repo: "rag-pipeline-utils",
+        ...label,
       });
     }
   });
 
-  it('skips already existing labels', async () => {
-    const existing = [{ name: 'priority: high' }, { name: 'group: docs' }];
+  it("skips already existing labels", async () => {
+    const existing = [{ name: "priority: high" }, { name: "group: docs" }];
     mockListLabelsForRepo.mockResolvedValue({ data: existing });
 
-    await ensureRoadmapLabels({ token: 'test-token', owner: 'ali', repo: 'rag-pipeline-utils' });
+    await ensureRoadmapLabels({
+      token: "test-token",
+      owner: "ali",
+      repo: "rag-pipeline-utils",
+    });
 
-    const expected = roadmapLabels.filter(l => !existing.some(e => e.name === l.name));
+    const expected = roadmapLabels.filter(
+      (l) => !existing.some((e) => e.name === l.name),
+    );
     expect(mockCreateLabel).toHaveBeenCalledTimes(expected.length);
   });
 });

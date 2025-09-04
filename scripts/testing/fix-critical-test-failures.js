@@ -5,8 +5,8 @@
  * Systematically addresses all test failures identified in CQG run
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 class CriticalTestFixer {
   constructor() {
@@ -18,37 +18,36 @@ class CriticalTestFixer {
    * Apply all critical fixes
    */
   async applyAllFixes() {
-    console.log('🔧 Starting Critical Test Failure Fixes...\n');
+    console.log("🔧 Starting Critical Test Failure Fixes...\n");
 
     try {
       // 1. Fix module resolution issues
       await this.fixModuleResolution();
-      
+
       // 2. Fix ESM/CJS syntax conflicts
       await this.fixESMCJSConflicts();
-      
+
       // 3. Fix Jest mock function usage
       await this.fixJestMockUsage();
-      
+
       // 4. Fix plugin contract validation
       await this.fixPluginContracts();
-      
+
       // 5. Fix AJV schema validation
       await this.fixSchemaValidation();
-      
+
       // 6. Fix performance test issues
       await this.fixPerformanceTests();
 
-      console.log('\n✅ All critical test fixes applied successfully!');
+      console.log("\n✅ All critical test fixes applied successfully!");
       console.log(`📊 Applied ${this.fixes.length} fixes`);
-      
+
       if (this.errors.length > 0) {
         console.log(`⚠️  ${this.errors.length} issues require manual review:`);
-        this.errors.forEach(error => console.log(`  - ${error}`));
+        this.errors.forEach((error) => console.log(`  - ${error}`));
       }
-
     } catch (error) {
-      console.error('❌ Critical error during fix process:', error.message);
+      console.error("❌ Critical error during fix process:", error.message);
       process.exit(1);
     }
   }
@@ -57,12 +56,12 @@ class CriticalTestFixer {
    * Fix module resolution issues
    */
   async fixModuleResolution() {
-    console.log('1. 🔍 Fixing Module Resolution Issues...');
+    console.log("1. 🔍 Fixing Module Resolution Issues...");
 
     // Fix missing pipeline-factory.js
-    const pipelineFactoryPath = 'src/core/pipeline-factory.js';
+    const pipelineFactoryPath = "src/core/pipeline-factory.js";
     if (!fs.existsSync(pipelineFactoryPath)) {
-      const createPipelinePath = 'src/core/create-pipeline.js';
+      const createPipelinePath = "src/core/create-pipeline.js";
       if (fs.existsSync(createPipelinePath)) {
         // Create alias/wrapper
         const wrapperContent = `/**
@@ -76,9 +75,11 @@ module.exports = {
   createRagPipeline
 };`;
         fs.writeFileSync(pipelineFactoryPath, wrapperContent);
-        this.fixes.push('Created pipeline-factory.js compatibility wrapper');
+        this.fixes.push("Created pipeline-factory.js compatibility wrapper");
       } else {
-        this.errors.push('Missing both pipeline-factory.js and create-pipeline.js');
+        this.errors.push(
+          "Missing both pipeline-factory.js and create-pipeline.js",
+        );
       }
     }
 
@@ -91,21 +92,18 @@ module.exports = {
    */
   async fixMockFiles() {
     const mockFiles = [
-      '__tests__/fixtures/src/mocks/openai-llm.js',
-      '__tests__/fixtures/src/mocks/reranker.js'
+      "__tests__/fixtures/src/mocks/openai-llm.js",
+      "__tests__/fixtures/src/mocks/reranker.js",
     ];
 
     for (const mockFile of mockFiles) {
       if (fs.existsSync(mockFile)) {
-        let content = fs.readFileSync(mockFile, 'utf8');
-        
+        let content = fs.readFileSync(mockFile, "utf8");
+
         // Convert ESM export to CommonJS
-        if (content.includes('export default class')) {
-          content = content.replace(
-            /export default class (\w+)/g,
-            'class $1'
-          );
-          
+        if (content.includes("export default class")) {
+          content = content.replace(/export default class (\w+)/g, "class $1");
+
           // Add CommonJS export at the end
           const className = content.match(/class (\w+)/)?.[1];
           if (className) {
@@ -122,22 +120,24 @@ module.exports = {
    * Fix ESM/CJS syntax conflicts
    */
   async fixESMCJSConflicts() {
-    console.log('2. 🔄 Fixing ESM/CJS Syntax Conflicts...');
+    console.log("2. 🔄 Fixing ESM/CJS Syntax Conflicts...");
 
     const conflictFiles = [
-      '__tests__/integration/cli/config-flow.test.js',
-      '__tests__/integration/config/load-config.test.js'
+      "__tests__/integration/cli/config-flow.test.js",
+      "__tests__/integration/config/load-config.test.js",
     ];
 
     for (const file of conflictFiles) {
       if (fs.existsSync(file)) {
-        let content = fs.readFileSync(file, 'utf8');
-        
+        let content = fs.readFileSync(file, "utf8");
+
         // Fix duplicate __filename declaration
-        if (content.includes('const __filename = fileURLToPath(import.meta.url);')) {
+        if (
+          content.includes("const __filename = fileURLToPath(import.meta.url);")
+        ) {
           content = content.replace(
             /const __filename = fileURLToPath\(import\.meta\.url\);/g,
-            '// const __filename = fileURLToPath(import.meta.url); // Fixed: duplicate declaration'
+            "// const __filename = fileURLToPath(import.meta.url); // Fixed: duplicate declaration",
           );
           fs.writeFileSync(file, content);
           this.fixes.push(`Fixed duplicate __filename in ${file}`);
@@ -150,12 +150,12 @@ module.exports = {
    * Fix Jest mock function usage
    */
   async fixJestMockUsage() {
-    console.log('3. 🎭 Fixing Jest Mock Function Usage...');
+    console.log("3. 🎭 Fixing Jest Mock Function Usage...");
 
-    const testFile = '__tests__/unit/cli/enhanced-cli.test.js';
+    const testFile = "__tests__/unit/cli/enhanced-cli.test.js";
     if (fs.existsSync(testFile)) {
-      let content = fs.readFileSync(testFile, 'utf8');
-      
+      let content = fs.readFileSync(testFile, "utf8");
+
       // Fix mock setup - ensure proper Jest mock creation
       const mockSetup = `
 // Mock setup
@@ -175,11 +175,11 @@ jest.mock('fs', () => mockFs);
       // Replace existing mock setup
       content = content.replace(
         /\/\/ Mock child_process[\s\S]*?jest\.mock\('fs'\);/,
-        mockSetup.trim()
+        mockSetup.trim(),
       );
 
       fs.writeFileSync(testFile, content);
-      this.fixes.push('Fixed Jest mock setup in enhanced-cli.test.js');
+      this.fixes.push("Fixed Jest mock setup in enhanced-cli.test.js");
     }
   }
 
@@ -187,12 +187,12 @@ jest.mock('fs', () => mockFs);
    * Fix plugin contract validation
    */
   async fixPluginContracts() {
-    console.log('4. 🔌 Fixing Plugin Contract Validation...');
+    console.log("4. 🔌 Fixing Plugin Contract Validation...");
 
-    const registryTest = '__tests__/unit/core/plugin-registry.test.js';
+    const registryTest = "__tests__/unit/core/plugin-registry.test.js";
     if (fs.existsSync(registryTest)) {
-      let content = fs.readFileSync(registryTest, 'utf8');
-      
+      let content = fs.readFileSync(registryTest, "utf8");
+
       // Fix plugin test objects to include required methods
       const fixes = [
         {
@@ -201,7 +201,7 @@ jest.mock('fs', () => mockFs);
             _type: 'loader', 
             name: 'test',
             load: jest.fn().mockResolvedValue([]) 
-          };`
+          };`,
         },
         {
           pattern: /const dupPlugin = \{ _type: 'embedder', name: 'dup' \};/,
@@ -210,28 +210,30 @@ jest.mock('fs', () => mockFs);
             name: 'dup',
             embed: jest.fn().mockResolvedValue([]),
             embedQuery: jest.fn().mockResolvedValue([])
-          };`
+          };`,
         },
         {
           pattern: /registry\.register\('llm', 'gpt-4', \{\}\);/,
           replacement: `registry.register('llm', 'gpt-4', { 
             generate: jest.fn().mockResolvedValue('response') 
-          });`
-        }
+          });`,
+        },
       ];
 
-      fixes.forEach(fix => {
+      fixes.forEach((fix) => {
         content = content.replace(fix.pattern, fix.replacement);
       });
 
       // Fix error message expectations
       content = content.replace(
         /\/Unknown plugin type\//g,
-        '/Unknown plugin _type/'
+        "/Unknown plugin _type/",
       );
 
       fs.writeFileSync(registryTest, content);
-      this.fixes.push('Fixed plugin contract validation in plugin-registry.test.js');
+      this.fixes.push(
+        "Fixed plugin contract validation in plugin-registry.test.js",
+      );
     }
   }
 
@@ -239,20 +241,20 @@ jest.mock('fs', () => mockFs);
    * Fix AJV schema validation
    */
   async fixSchemaValidation() {
-    console.log('5. 📋 Fixing AJV Schema Validation...');
+    console.log("5. 📋 Fixing AJV Schema Validation...");
 
-    const schemaFile = 'src/config/validate-schema.js';
+    const schemaFile = "src/config/validate-schema.js";
     if (fs.existsSync(schemaFile)) {
-      let content = fs.readFileSync(schemaFile, 'utf8');
-      
+      let content = fs.readFileSync(schemaFile, "utf8");
+
       // Fix AJV strict mode issues
       content = content.replace(
         /const ajv = new Ajv\(\{ allErrors: true \}\);/g,
-        'const ajv = new Ajv({ allErrors: true, strict: false });'
+        "const ajv = new Ajv({ allErrors: true, strict: false });",
       );
 
       fs.writeFileSync(schemaFile, content);
-      this.fixes.push('Fixed AJV strict mode in validate-schema.js');
+      this.fixes.push("Fixed AJV strict mode in validate-schema.js");
     }
   }
 
@@ -260,20 +262,20 @@ jest.mock('fs', () => mockFs);
    * Fix performance test issues
    */
   async fixPerformanceTests() {
-    console.log('6. ⚡ Fixing Performance Test Issues...');
+    console.log("6. ⚡ Fixing Performance Test Issues...");
 
-    const perfTest = '__tests__/unit/performance/parallel-processor.test.js';
+    const perfTest = "__tests__/unit/performance/parallel-processor.test.js";
     if (fs.existsSync(perfTest)) {
-      let content = fs.readFileSync(perfTest, 'utf8');
-      
+      let content = fs.readFileSync(perfTest, "utf8");
+
       // Fix console.warn template literal issue
       content = content.replace(
         /console\.warn\(`Warning: \$\{failedBatches\.length\} batches failed \(\$\{failedChunkCount\}\/\$\{totalChunks\} chunks\)\`\);/,
-        'console.warn("Warning: " + failedBatches.length + " batches failed (" + failedChunkCount + "/" + totalChunks + " chunks)");'
+        'console.warn("Warning: " + failedBatches.length + " batches failed (" + failedChunkCount + "/" + totalChunks + " chunks)");',
       );
 
       fs.writeFileSync(perfTest, content);
-      this.fixes.push('Fixed template literal in parallel-processor.test.js');
+      this.fixes.push("Fixed template literal in parallel-processor.test.js");
     }
   }
 }
@@ -281,8 +283,8 @@ jest.mock('fs', () => mockFs);
 // Run the fixer
 if (require.main === module) {
   const fixer = new CriticalTestFixer();
-  fixer.applyAllFixes().catch(error => {
-    console.error('❌ Fix script failed:', error);
+  fixer.applyAllFixes().catch((error) => {
+    console.error("❌ Fix script failed:", error);
     process.exit(1);
   });
 }

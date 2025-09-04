@@ -3,7 +3,7 @@
  * Addresses architectural anti-pattern: Hard-coded dependencies
  */
 
-const { logger } = require('../utils/logger');
+const { logger } = require("../utils/logger");
 
 class DependencyContainer {
   constructor() {
@@ -26,18 +26,18 @@ class DependencyContainer {
     }
 
     // Register interface mappings
-    interfaces.forEach(interfaceName => {
+    interfaces.forEach((interfaceName) => {
       if (!this.interfaces.has(interfaceName)) {
         this.interfaces.set(interfaceName, []);
       }
       this.interfaces.get(interfaceName).push(name);
     });
 
-    logger.debug('Service registered', {
+    logger.debug("Service registered", {
       service: name,
       singleton,
       factory,
-      interfaces
+      interfaces,
     });
 
     return this;
@@ -89,25 +89,30 @@ class DependencyContainer {
     }
 
     const implementations = this.interfaces.get(interfaceName);
-    return implementations.map(name => this.resolve(name));
+    return implementations.map((name) => this.resolve(name));
   }
 
   /**
    * Check if a service is registered
    */
   has(name) {
-    return this.services.has(name) || 
-           this.factories.has(name) || 
-           this.interfaces.has(name);
+    return (
+      this.services.has(name) ||
+      this.factories.has(name) ||
+      this.interfaces.has(name)
+    );
   }
 
   /**
    * Create an instance with dependency injection
    */
   _createInstance(implementation) {
-    if (typeof implementation === 'function') {
+    if (typeof implementation === "function") {
       // Check if it's a class constructor
-      if (implementation.prototype && implementation.prototype.constructor === implementation) {
+      if (
+        implementation.prototype &&
+        implementation.prototype.constructor === implementation
+      ) {
         return new implementation(this);
       }
       // It's a factory function
@@ -137,7 +142,7 @@ class DependencyContainer {
       singletons: this.singletons.size,
       factories: this.factories.size,
       interfaces: this.interfaces.size,
-      totalRegistrations: this.services.size + this.factories.size
+      totalRegistrations: this.services.size + this.factories.size,
     };
   }
 }
@@ -146,7 +151,7 @@ class DependencyContainer {
  * Decorator for automatic dependency injection
  */
 function injectable(dependencies = []) {
-  return function(target) {
+  return function (target) {
     target.$dependencies = dependencies;
     return target;
   };
@@ -194,24 +199,24 @@ class ContainerBuilder {
         implementation,
         singleton = false,
         factory = false,
-        interfaces = []
+        interfaces = [],
       } = serviceConfig;
 
       // Resolve implementation from string path
       let impl = implementation;
-      if (typeof implementation === 'string') {
+      if (typeof implementation === "string") {
         impl = require(implementation);
       }
 
       this.container.register(name, impl, {
         singleton,
         factory,
-        interfaces
+        interfaces,
       });
     });
 
-    logger.info('Container loaded from configuration', {
-      servicesCount: Object.keys(services).length
+    logger.info("Container loaded from configuration", {
+      servicesCount: Object.keys(services).length,
     });
 
     return this.container;
@@ -226,12 +231,12 @@ class ContainerBuilder {
 const defaultContainer = new DependencyContainer();
 
 // Register core services
-defaultContainer.register('logger', logger, { singleton: true });
+defaultContainer.register("logger", logger, { singleton: true });
 
 module.exports = {
   DependencyContainer,
   ServiceLocator,
   ContainerBuilder,
   injectable,
-  defaultContainer
+  defaultContainer,
 };

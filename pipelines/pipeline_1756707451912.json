@@ -17,19 +17,12 @@
         },
         "format": {
           "_type": "select",
-          "_options": [
-            "json",
-            "txt",
-            "pdf",
-            "docx"
-          ]
+          "_options": ["json", "txt", "pdf", "docx"]
         },
         "type": "loader"
       },
       "inputs": [],
-      "outputs": [
-        "documents"
-      ]
+      "outputs": ["documents"]
     }
   ],
   "connections": [],

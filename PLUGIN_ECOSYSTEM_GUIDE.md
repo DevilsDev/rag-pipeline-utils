@@ -1,4 +1,5 @@
 # 🔌 Advanced Plugin Ecosystem Guide
+
 **@DevilsDev/rag-pipeline-utils**  
 **Community-Driven Plugin Platform**
 
@@ -135,6 +136,7 @@ rag-pipeline hub install trusted-plugin --no-security-scan
 ### Certification Levels
 
 #### BASIC Certification
+
 - **Requirements**: 60+ score, automated checks only
 - **Validity**: 1 year
 - **Checks**: Code quality, security scan, performance, documentation, tests
@@ -144,6 +146,7 @@ rag-pipeline hub certify submit my-plugin --level BASIC
 ```
 
 #### VERIFIED Certification
+
 - **Requirements**: 80+ score, manual review required
 - **Validity**: 2 years
 - **Checks**: All BASIC checks + human code review, integration testing
@@ -153,6 +156,7 @@ rag-pipeline hub certify submit my-plugin --level VERIFIED
 ```
 
 #### ENTERPRISE Certification
+
 - **Requirements**: 95+ score, security audit required
 - **Validity**: 3 years
 - **Checks**: All VERIFIED checks + third-party security audit, compliance review
@@ -164,6 +168,7 @@ rag-pipeline hub certify submit my-plugin --level ENTERPRISE
 ### Certification Process
 
 1. **Automated Analysis**
+
    - Code quality metrics (ESLint, complexity analysis)
    - Security vulnerability scanning
    - Performance benchmarking
@@ -171,6 +176,7 @@ rag-pipeline hub certify submit my-plugin --level ENTERPRISE
    - Test coverage analysis
 
 2. **Manual Review** (VERIFIED/ENTERPRISE)
+
    - Senior developer code review
    - Architecture assessment
    - Security expert evaluation
@@ -285,6 +291,7 @@ rag-pipeline hub publisher apply
 ### Preparing Your Plugin
 
 1. **Plugin Structure**
+
 ```
 my-plugin/
 ├── package.json          # NPM package configuration
@@ -295,6 +302,7 @@ my-plugin/
 ```
 
 2. **Plugin Metadata** (`.ragplugin.json`)
+
 ```json
 {
   "type": "embedder",
@@ -302,10 +310,7 @@ my-plugin/
   "compatibility": {
     "ragPipeline": ">=2.0.0"
   },
-  "permissions": [
-    "network:external",
-    "filesystem:read"
-  ],
+  "permissions": ["network:external", "filesystem:read"],
   "dependencies": {
     "openai": "^4.0.0"
   }
@@ -357,22 +362,22 @@ rag-pipeline benchmark plugin ./my-embedder
 
 ```javascript
 // Example plugin test
-const { PluginTester } = require('@devilsdev/rag-pipeline-utils/testing');
+const { PluginTester } = require("@devilsdev/rag-pipeline-utils/testing");
 
-describe('My Embedder Plugin', () => {
+describe("My Embedder Plugin", () => {
   let tester;
-  
+
   beforeEach(() => {
-    tester = new PluginTester('embedder');
+    tester = new PluginTester("embedder");
   });
-  
-  test('should embed text correctly', async () => {
-    const result = await tester.testPlugin('./my-embedder', {
-      method: 'embed',
-      input: 'Hello world',
-      expected: { type: 'vector', dimensions: 1536 }
+
+  test("should embed text correctly", async () => {
+    const result = await tester.testPlugin("./my-embedder", {
+      method: "embed",
+      input: "Hello world",
+      expected: { type: "vector", dimensions: 1536 },
     });
-    
+
     expect(result.success).toBe(true);
   });
 });

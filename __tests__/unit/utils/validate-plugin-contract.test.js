@@ -1,24 +1,28 @@
-const { validatePluginContract } = require('../../../src/utils/validate-plugin-contract.js');
+const {
+  validatePluginContract,
+} = require("../../../src/utils/validate-plugin-contract.js");
 
-const dummyPath = 'mock-plugin.js';
+const dummyPath = "mock-plugin.js";
 
-describe('validatePluginContract', () => {
-  test('passes when plugin implements required methods', () => {
+describe("validatePluginContract", () => {
+  test("passes when plugin implements required methods", () => {
     const plugin = { load() {} };
-    expect(() => validatePluginContract('loader', plugin, dummyPath)).not.toThrow();
+    expect(() =>
+      validatePluginContract("loader", plugin, dummyPath),
+    ).not.toThrow();
   });
 
-  test('throws error when required methods are missing', () => {
+  test("throws error when required methods are missing", () => {
     const plugin = {};
-    expect(() => validatePluginContract('loader', plugin, dummyPath)).toThrow(
-      `[validatePluginContract] Plugin '${dummyPath}' is missing required methods for 'loader': load`
+    expect(() => validatePluginContract("loader", plugin, dummyPath)).toThrow(
+      `[validatePluginContract] Plugin '${dummyPath}' is missing required methods for 'loader': load`,
     );
   });
 
-  test('throws error for unknown plugin type', () => {
+  test("throws error for unknown plugin type", () => {
     const plugin = {};
-    expect(() => validatePluginContract('unknown', plugin, dummyPath)).toThrow(
-      `[validatePluginContract] Unknown plugin type: unknown`
+    expect(() => validatePluginContract("unknown", plugin, dummyPath)).toThrow(
+      `[validatePluginContract] Unknown plugin type: unknown`,
     );
   });
 });

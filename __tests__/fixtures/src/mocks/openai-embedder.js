@@ -4,7 +4,7 @@
  */
 export default class OpenAIEmbedder {
   embed(documents) {
-    return documents.map(doc => ({
+    return documents.map((doc) => ({
       id: doc.id,
       values: [0.1, 0.2, 0.3],
     }));

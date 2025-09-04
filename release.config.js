@@ -5,32 +5,33 @@
  */
 
 export default {
-  branches: ['main'],
-  repositoryUrl: 'https://github.com/DevilsDev/rag-pipeline-utils',
+  branches: ["main"],
+  repositoryUrl: "https://github.com/DevilsDev/rag-pipeline-utils",
 
   plugins: [
-    '@semantic-release/commit-analyzer',
-    '@semantic-release/release-notes-generator',
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
     [
-      '@semantic-release/changelog',
+      "@semantic-release/changelog",
       {
-        changelogFile: 'CHANGELOG.md',
-        changelogTitle: '# Changelog',
+        changelogFile: "CHANGELOG.md",
+        changelogTitle: "# Changelog",
       },
     ],
     [
-      '@semantic-release/npm',
+      "@semantic-release/npm",
       {
         npmPublish: true,
       },
     ],
     [
-      '@semantic-release/git',
+      "@semantic-release/git",
       {
-        assets: ['package.json', 'package-lock.json', 'CHANGELOG.md'],
-        message: 'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
+        assets: ["package.json", "package-lock.json", "CHANGELOG.md"],
+        message:
+          "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
     ],
-    '@semantic-release/github',
+    "@semantic-release/github",
   ],
 };

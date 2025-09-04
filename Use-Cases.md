@@ -4,7 +4,7 @@
 
 ---
 
-##  Use Case 1: Pluggable Local RAG Stack for Prototyping
+## Use Case 1: Pluggable Local RAG Stack for Prototyping
 
 **Problem:** Traditional RAG tools force tight vendor dependencies.
 
@@ -16,22 +16,23 @@ npm install @devilsdev/rag-pipeline-utils
 
 ```js
 // cli.js or app.js
-import { PluginRegistry } from './src/core/plugin-registry.js';
-import { loadRagConfig } from './src/config/load-config.js';
+import { PluginRegistry } from "./src/core/plugin-registry.js";
+import { loadRagConfig } from "./src/config/load-config.js";
 
-const config = loadRagConfig('.ragrc.json');
-const loader = PluginRegistry.getPlugin('loader', 'pdf');
-const docs = loader.load('./test.pdf');
+const config = loadRagConfig(".ragrc.json");
+const loader = PluginRegistry.getPlugin("loader", "pdf");
+const docs = loader.load("./test.pdf");
 ```
 
 **Benefits**
+
 - Local plugin mocks with expected method contracts
 - Reusable plugin templates (`pdf-loader.js`, `openai-embedder.js`)
 - Dev-first DX: debug, snapshot, iterate without cloud costs
 
 ---
 
-##  Use Case 2: Declarative CLI RAG Pipelines (CI-Ready)
+## Use Case 2: Declarative CLI RAG Pipelines (CI-Ready)
 
 **Problem:** Hardcoded pipeline steps can't be validated or changed by non-engineers.
 
@@ -54,6 +55,7 @@ node ./bin/cli.js query "What’s the goal of this architecture?"
 ```
 
 **Benefits**
+
 - Teams can standardize pipelines in source control
 - Tests fail fast if structure or mocks drift
 - Non-devs can operate pipelines via CLI
@@ -80,13 +82,14 @@ npm run ci
 ```
 
 **Benefits**
+
 - Every plugin is CI-verified for method presence
 - Shared contracts enforce required interfaces
 - Onboarding new devs? Just follow `pluginContracts.js`
 
 ---
 
-##  Use Case 4: Vendor-Neutral AI Data Pipelines
+## Use Case 4: Vendor-Neutral AI Data Pipelines
 
 **Problem:** Every RAG stack is locked to OpenAI + Pinecone + Langchain.
 
@@ -98,6 +101,7 @@ npm run ci
 ```
 
 **Benefits**
+
 - Run multiple RAG pipelines in parallel (A/B testing, evals)
 - Lower infra cost with offline/local plugin support
 - Integrate with tools outside Langchain ecosystem
@@ -109,11 +113,13 @@ npm run ci
 **Problem:** Complex plugin systems break silently.
 
 **Solution:** This framework has:
+
 - Plugin method contract enforcement
 - CLI test runner (`scripts/ci-runner.js`)
 - Auto repair tool (`scripts/repair-fixtures.js`)
 
 **DX Boost**
+
 - One-line plugin repairs
 - Validated schema structure
 - Aligned to real-world developer workflows

@@ -4,14 +4,14 @@
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs'); // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
-const { validateRagrcSchema } = require('./validate-schema.js'); // eslint-disable-line global-require
-const { logger } = require('../utils/logger.js'); // eslint-disable-line global-require
+const fs = require("fs"); // eslint-disable-line global-require
+const path = require("path"); // eslint-disable-line global-require
+const { validateRagrc } = require("./enhanced-ragrc-schema.js"); // eslint-disable-line global-require
+const { logger } = require("../utils/logger.js"); // eslint-disable-line global-require
 
 // Use CommonJS __dirname (already available in Node.js CommonJS modules)
 
-const CONFIG_FILENAME = '.ragrc.json';
+const CONFIG_FILENAME = ".ragrc.json";
 
 /**
  * Load and validate a RAG configuration file.
@@ -26,26 +26,29 @@ function loadRagConfig(cwd = process.cwd()) {
     throw new Error(`Config file not found: ${configPath}`);
   }
 
-  const raw = fs.readFileSync(configPath, 'utf-8');
+  const raw = fs.readFileSync(configPath, "utf-8");
   let config;
 
   try {
     config = JSON.parse(raw);
   } catch (err) {
-    logger.error('❌ Failed to parse JSON configuration.');
-    throw new Error('Invalid JSON in config file.');
+    logger.error("❌ Failed to parse JSON configuration.");
+    throw new Error("Invalid JSON in config file.");
   }
 
-  const { valid, errors } = validateRagrcSchema(config);
+  const { valid, errors, normalized } = validateRagrc(config);
 
   if (!valid) {
-    logger.error(`❌ Config validation failed:\n${JSON.stringify(errors, null, 2)}`);
-    throw new Error('Config validation failed');
+    logger.error(
+      `❌ Config validation failed:\n${JSON.stringify(errors, null, 2)}`,
+    );
+    throw new Error("Config validation failed");
   }
 
-  return config;
+  logger.info("✅ Configuration loaded and normalized successfully");
+  return normalized;
 }
 
 module.exports = {
-  loadRagConfig
+  loadRagConfig,
 };

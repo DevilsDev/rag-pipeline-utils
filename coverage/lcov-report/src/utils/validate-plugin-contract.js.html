@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>5/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -112,7 +112,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -122,29 +122,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
@@ -154,7 +154,7 @@
  * File: /src/utils/validate-plugin-contract.js
  */
 &nbsp;
-const { pluginContracts } = require('../core/plugin-contracts.js'); // eslint-disable-line global-require
+const { pluginContracts } = <span class="cstat-no" title="statement not covered" >require('../core/plugin-contracts.js');</span> // eslint-disable-line global-require
 &nbsp;
 /**
  * Validates that a plugin instance implements all required methods.
@@ -163,20 +163,20 @@ const { pluginContracts } = require('../core/plugin-contracts.js'); // eslint-di
  * @param {string} filePath - Path to plugin (used in error reporting)
  * @throws {Error} if any required method is missing or not a function
  */
-function validatePluginContract(type, instance, filePath) {
-  const contract = pluginContracts[type];
-  if (!contract) {
-    throw new Error(`[validatePluginContract] Unknown plugin type: ${type}`);
+function <span class="fstat-no" title="function not covered" >validatePluginContract(</span>type, instance, filePath) {
+  const contract = <span class="cstat-no" title="statement not covered" >pluginContracts[type];</span>
+<span class="cstat-no" title="statement not covered" >  if (!contract) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error(`[validatePluginContract] Unknown plugin type: ${type}`);</span>
   }
 &nbsp;
-  const expectedMethods = contract.requiredMethods || <span class="branch-1 cbranch-no" title="branch not covered" >pluginContracts[type];</span>
+  const expectedMethods = <span class="cstat-no" title="statement not covered" >contract.requiredMethods || pluginContracts[type];</span>
 &nbsp;
-  const missing = expectedMethods.filter(method =&gt;
-    typeof instance[method] !== 'function'
+  const missing = <span class="cstat-no" title="statement not covered" >expectedMethods.filter(<span class="fstat-no" title="function not covered" >me</span>thod =&gt;</span>
+<span class="cstat-no" title="statement not covered" >    typeof instance[method] !== 'function'</span>
   );
 &nbsp;
-  if (missing.length &gt; 0) {
-    throw new Error(
+<span class="cstat-no" title="statement not covered" >  if (missing.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error(</span>
       `[validatePluginContract] Plugin '${filePath}' is missing required methods for '${type}': ${missing.join(', ')}`
     );
   }
@@ -186,7 +186,7 @@ function validatePluginContract(type, instance, filePath) {
  * Optionally wraps plugin instance with a Proxy for method usage auditing (see enforcePluginProxy)
  */
 &nbsp;
-module.exports = {
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
   validatePluginContract
 };
 &nbsp;</pre></td></tr></table></pre>
@@ -196,7 +196,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-12T01:37:51.010Z
+                at 2025-09-02T08:53:15.596Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

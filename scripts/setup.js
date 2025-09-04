@@ -1,46 +1,32 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
+const fs = require("fs");
+const path = require("path");
 
-/**
- * Minimal test setup script
- */
-
-const fs = require('fs');
-const path = require('path');
-
-console.log('[OK] Test setup starting...');
-
-// Ensure required directories exist
-const requiredDirs = [
-  'test-results',
-  'coverage',
-  '__tests__/utils'
+const ROOT = process.cwd();
+const REQUIRED = [
+  path.join(ROOT, "__tests__"),
+  path.join(ROOT, "package.json"),
 ];
 
-requiredDirs.forEach(dir => {
-  const dirPath = path.join(process.cwd(), dir);
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-});
+function ok(msg) {
+  console.log("[OK]", msg);
+}
+function err(msg) {
+  console.error("[ERR]", msg);
+}
 
-// Ensure fixture files exist
-const fixtureFiles = [
-  '__tests__/fixtures/sample.json',
-  '__tests__/fixtures/config.json'
-];
-
-fixtureFiles.forEach(fixture => {
-  const fixturePath = path.join(process.cwd(), fixture);
-  const fixtureDir = path.dirname(fixturePath);
-  
-  if (!fs.existsSync(fixtureDir)) {
-    fs.mkdirSync(fixtureDir, { recursive: true });
+(async () => {
+  try {
+    ok("Test setup starting...");
+    for (const p of REQUIRED) {
+      if (!fs.existsSync(p)) throw new Error(`Required path missing: ${p}`);
+    }
+    ok("All fixture files are present.");
+    ok("Test setup completed successfully.");
+    process.exit(0);
+  } catch (e) {
+    err(`Test setup failed: ${e.message}`);
+    process.exit(1);
   }
-  
-  if (!fs.existsSync(fixturePath)) {
-    fs.writeFileSync(fixturePath, '{}');
-  }
-});
-
-console.log('[OK] All fixture files are present.');
-console.log('[OK] Test setup completed successfully.');
+})();

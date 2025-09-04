@@ -17,23 +17,24 @@ The plugin system follows SOLID principles with a registry-based architecture th
 ### **Core Plugin Types**
 
 ```javascript
-import { PluginRegistry } from '@DevilsDev/rag-pipeline-utils';
+import { PluginRegistry } from "@DevilsDev/rag-pipeline-utils";
 
 const registry = new PluginRegistry();
 
 // Register plugins by type
-registry.register('loader', 'my-custom-loader', new MyLoader());
-registry.register('embedder', 'my-embedder', new MyEmbedder());
-registry.register('retriever', 'my-retriever', new MyRetriever());
-registry.register('llm', 'my-llm', new MyLLM());
-registry.register('reranker', 'my-reranker', new MyReranker());
+registry.register("loader", "my-custom-loader", new MyLoader());
+registry.register("embedder", "my-embedder", new MyEmbedder());
+registry.register("retriever", "my-retriever", new MyRetriever());
+registry.register("llm", "my-llm", new MyLLM());
+registry.register("reranker", "my-reranker", new MyReranker());
 
 // Retrieve and use plugins
-const loader = registry.get('loader', 'my-custom-loader');
-const result = await loader.load('./document.pdf');
+const loader = registry.get("loader", "my-custom-loader");
+const result = await loader.load("./document.pdf");
 ```
 
 **Supported Plugin Types**:
+
 - **`loader`**: Document ingestion and parsing
 - **`embedder`**: Text-to-vector embedding generation
 - **`retriever`**: Vector similarity search and retrieval
@@ -51,7 +52,7 @@ interface LoaderPlugin {
   name: string;
   version: string;
   supportedFormats: string[];
-  
+
   load(filePath: string, options?: LoaderOptions): Promise<Document[]>;
   loadBatch(filePaths: string[], options?: LoaderOptions): Promise<Document[]>;
   validate(filePath: string): Promise<boolean>;
@@ -74,38 +75,41 @@ interface TextChunk {
 ```
 
 **Example Implementation**:
+
 ```javascript
-import { BaseLoader } from '@DevilsDev/rag-pipeline-utils';
-import fs from 'fs/promises';
-import path from 'path';
+import { BaseLoader } from "@DevilsDev/rag-pipeline-utils";
+import fs from "fs/promises";
+import path from "path";
 
 class CustomMarkdownLoader extends BaseLoader {
   constructor() {
     super();
-    this.name = 'custom-markdown';
-    this.version = '1.0.0';
-    this.supportedFormats = ['.md', '.markdown', '.txt'];
+    this.name = "custom-markdown";
+    this.version = "1.0.0";
+    this.supportedFormats = [".md", ".markdown", ".txt"];
   }
 
   async load(filePath, options = {}) {
-    const content = await fs.readFile(filePath, 'utf-8');
+    const content = await fs.readFile(filePath, "utf-8");
     const metadata = {
       filename: path.basename(filePath),
       size: content.length,
-      lastModified: (await fs.stat(filePath)).mtime
+      lastModified: (await fs.stat(filePath)).mtime,
     };
 
     const chunks = this.chunkText(content, {
       chunkSize: options.chunkSize || 1000,
-      overlap: options.overlap || 200
+      overlap: options.overlap || 200,
     });
 
-    return [{
-      id: this.generateId(filePath),
-      content,
-      metadata,
-      chunks
-    }];
+    return [
+      {
+        id: this.generateId(filePath),
+        content,
+        metadata,
+        chunks,
+      },
+    ];
   }
 
   async validate(filePath) {
@@ -117,7 +121,7 @@ class CustomMarkdownLoader extends BaseLoader {
     // Custom chunking logic
     const chunks = [];
     const sentences = text.split(/[.!?]+/);
-    let currentChunk = '';
+    let currentChunk = "";
     let chunkIndex = 0;
 
     for (const sentence of sentences) {
@@ -128,7 +132,7 @@ class CustomMarkdownLoader extends BaseLoader {
             content: currentChunk.trim(),
             startIndex: text.indexOf(currentChunk),
             endIndex: text.indexOf(currentChunk) + currentChunk.length,
-            metadata: { chunkIndex, wordCount: currentChunk.split(' ').length }
+            metadata: { chunkIndex, wordCount: currentChunk.split(" ").length },
           });
         }
         currentChunk = sentence;
@@ -143,7 +147,7 @@ class CustomMarkdownLoader extends BaseLoader {
         content: currentChunk.trim(),
         startIndex: text.lastIndexOf(currentChunk),
         endIndex: text.lastIndexOf(currentChunk) + currentChunk.length,
-        metadata: { chunkIndex, wordCount: currentChunk.split(' ').length }
+        metadata: { chunkIndex, wordCount: currentChunk.split(" ").length },
       });
     }
 
@@ -160,7 +164,7 @@ interface EmbedderPlugin {
   version: string;
   dimensions: number;
   maxTokens: number;
-  
+
   embed(text: string, options?: EmbedderOptions): Promise<number[]>;
   embedBatch(texts: string[], options?: EmbedderOptions): Promise<number[][]>;
   getTokenCount(text: string): number;
@@ -168,19 +172,20 @@ interface EmbedderPlugin {
 ```
 
 **Example Implementation**:
+
 ```javascript
-import { BaseEmbedder } from '@DevilsDev/rag-pipeline-utils';
-import OpenAI from 'openai';
+import { BaseEmbedder } from "@DevilsDev/rag-pipeline-utils";
+import OpenAI from "openai";
 
 class CustomOpenAIEmbedder extends BaseEmbedder {
   constructor(apiKey, options = {}) {
     super();
-    this.name = 'custom-openai';
-    this.version = '1.0.0';
+    this.name = "custom-openai";
+    this.version = "1.0.0";
     this.dimensions = 1536;
     this.maxTokens = 8191;
     this.client = new OpenAI({ apiKey });
-    this.model = options.model || 'text-embedding-ada-002';
+    this.model = options.model || "text-embedding-ada-002";
   }
 
   async embed(text, options = {}) {
@@ -188,9 +193,9 @@ class CustomOpenAIEmbedder extends BaseEmbedder {
       const response = await this.client.embeddings.create({
         model: this.model,
         input: text,
-        encoding_format: 'float'
+        encoding_format: "float",
       });
-      
+
       return response.data[0].embedding;
     } catch (error) {
       throw new Error(`Embedding failed: ${error.message}`);
@@ -200,18 +205,18 @@ class CustomOpenAIEmbedder extends BaseEmbedder {
   async embedBatch(texts, options = {}) {
     const batchSize = options.batchSize || 100;
     const results = [];
-    
+
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
       const response = await this.client.embeddings.create({
         model: this.model,
         input: batch,
-        encoding_format: 'float'
+        encoding_format: "float",
       });
-      
-      results.push(...response.data.map(item => item.embedding));
+
+      results.push(...response.data.map((item) => item.embedding));
     }
-    
+
     return results;
   }
 
@@ -228,8 +233,11 @@ class CustomOpenAIEmbedder extends BaseEmbedder {
 interface RetrieverPlugin {
   name: string;
   version: string;
-  
-  retrieve(query: string, options?: RetrievalOptions): Promise<RetrievalResult[]>;
+
+  retrieve(
+    query: string,
+    options?: RetrievalOptions,
+  ): Promise<RetrievalResult[]>;
   index(documents: Document[], options?: IndexOptions): Promise<void>;
   delete(documentIds: string[]): Promise<void>;
   getStats(): Promise<RetrievalStats>;
@@ -250,47 +258,51 @@ interface LLMPlugin {
   name: string;
   version: string;
   maxTokens: number;
-  
+
   generate(prompt: string, options?: GenerationOptions): Promise<string>;
-  generateStream(prompt: string, options?: GenerationOptions): AsyncIterableIterator<string>;
+  generateStream(
+    prompt: string,
+    options?: GenerationOptions,
+  ): AsyncIterableIterator<string>;
   getTokenCount(text: string): number;
 }
 ```
 
 **Example Implementation**:
+
 ```javascript
-import { BaseLLM } from '@DevilsDev/rag-pipeline-utils';
-import OpenAI from 'openai';
+import { BaseLLM } from "@DevilsDev/rag-pipeline-utils";
+import OpenAI from "openai";
 
 class CustomOpenAILLM extends BaseLLM {
   constructor(apiKey, options = {}) {
     super();
-    this.name = 'custom-openai-llm';
-    this.version = '1.0.0';
+    this.name = "custom-openai-llm";
+    this.version = "1.0.0";
     this.maxTokens = 4096;
     this.client = new OpenAI({ apiKey });
-    this.model = options.model || 'gpt-3.5-turbo';
+    this.model = options.model || "gpt-3.5-turbo";
   }
 
   async generate(prompt, options = {}) {
     const response = await this.client.chat.completions.create({
       model: this.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: options.maxTokens || 1000,
       temperature: options.temperature || 0.7,
-      top_p: options.topP || 1.0
+      top_p: options.topP || 1.0,
     });
-    
+
     return response.choices[0].message.content;
   }
 
-  async* generateStream(prompt, options = {}) {
+  async *generateStream(prompt, options = {}) {
     const stream = await this.client.chat.completions.create({
       model: this.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: options.maxTokens || 1000,
       temperature: options.temperature || 0.7,
-      stream: true
+      stream: true,
     });
 
     for await (const chunk of stream) {
@@ -315,25 +327,25 @@ class CustomOpenAILLM extends BaseLLM {
 ### **Dynamic Plugin Loading**
 
 ```javascript
-import { PluginManager } from '@DevilsDev/rag-pipeline-utils';
+import { PluginManager } from "@DevilsDev/rag-pipeline-utils";
 
 const pluginManager = new PluginManager();
 
 // Load plugin from file
-await pluginManager.loadPlugin('./plugins/my-custom-loader.js');
+await pluginManager.loadPlugin("./plugins/my-custom-loader.js");
 
 // Load plugin from npm package
-await pluginManager.loadPlugin('@company/rag-plugin-suite');
+await pluginManager.loadPlugin("@company/rag-plugin-suite");
 
 // Load plugin from URL
-await pluginManager.loadPlugin('https://github.com/user/plugin.git');
+await pluginManager.loadPlugin("https://github.com/user/plugin.git");
 
 // Register plugin instance directly
-pluginManager.register('loader', 'my-loader', new MyCustomLoader());
+pluginManager.register("loader", "my-loader", new MyCustomLoader());
 
 // List available plugins
 const plugins = pluginManager.listPlugins();
-console.log('Available plugins:', plugins);
+console.log("Available plugins:", plugins);
 ```
 
 ### **Plugin Metadata & Validation**
@@ -341,34 +353,34 @@ console.log('Available plugins:', plugins);
 ```javascript
 // Plugin metadata export
 export const metadata = {
-  name: 'custom-pdf-loader',
-  version: '2.1.0',
-  description: 'Advanced PDF loader with OCR support',
-  author: 'Your Name <email@example.com>',
-  license: 'MIT',
-  keywords: ['pdf', 'ocr', 'loader'],
+  name: "custom-pdf-loader",
+  version: "2.1.0",
+  description: "Advanced PDF loader with OCR support",
+  author: "Your Name <email@example.com>",
+  license: "MIT",
+  keywords: ["pdf", "ocr", "loader"],
   dependencies: {
-    'pdf-parse': '^1.1.1',
-    'tesseract.js': '^4.0.0'
+    "pdf-parse": "^1.1.1",
+    "tesseract.js": "^4.0.0",
   },
   config: {
-    ocrEnabled: { type: 'boolean', default: false },
-    language: { type: 'string', default: 'eng' },
-    quality: { type: 'number', min: 1, max: 5, default: 3 }
-  }
+    ocrEnabled: { type: "boolean", default: false },
+    language: { type: "string", default: "eng" },
+    quality: { type: "number", min: 1, max: 5, default: 3 },
+  },
 };
 
 // Plugin validation
-import { validatePlugin } from '@DevilsDev/rag-pipeline-utils';
+import { validatePlugin } from "@DevilsDev/rag-pipeline-utils";
 
 const validation = await validatePlugin(MyCustomLoader, {
   strictMode: true,
   checkDependencies: true,
-  validateContract: true
+  validateContract: true,
 });
 
 if (!validation.isValid) {
-  console.error('Plugin validation failed:', validation.errors);
+  console.error("Plugin validation failed:", validation.errors);
 }
 ```
 
@@ -464,28 +476,28 @@ rag-pipeline plugins publish ./my-plugin --registry https://my-registry.com
 
 ```javascript
 // Development environment
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = "development";
 const devConfig = {
   plugins: {
     llm: {
-      name: 'mock-llm', // Use mock for testing
-      config: { responses: ['Test response'] }
-    }
-  }
+      name: "mock-llm", // Use mock for testing
+      config: { responses: ["Test response"] },
+    },
+  },
 };
 
 // Production environment
-process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = "production";
 const prodConfig = {
   plugins: {
     llm: {
-      name: 'openai-gpt-4',
+      name: "openai-gpt-4",
       config: {
         temperature: 0.3, // Lower temperature for consistency
-        maxTokens: 1500
-      }
-    }
-  }
+        maxTokens: 1500,
+      },
+    },
+  },
 };
 ```
 
@@ -500,28 +512,28 @@ class RobustPlugin extends BaseLoader {
   async load(filePath, options = {}) {
     try {
       // Validate inputs
-      if (!filePath || typeof filePath !== 'string') {
-        throw new Error('Invalid file path provided');
+      if (!filePath || typeof filePath !== "string") {
+        throw new Error("Invalid file path provided");
       }
 
       // Check file existence
-      if (!await this.fileExists(filePath)) {
+      if (!(await this.fileExists(filePath))) {
         throw new Error(`File not found: ${filePath}`);
       }
 
       // Implement retry logic
       return await this.withRetry(() => this.processFile(filePath), {
         maxRetries: 3,
-        backoff: 'exponential'
+        backoff: "exponential",
       });
     } catch (error) {
       // Log error with context
-      this.logger.error('Load operation failed', {
+      this.logger.error("Load operation failed", {
         filePath,
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
-      
+
       // Re-throw with enhanced context
       throw new Error(`Failed to load ${filePath}: ${error.message}`);
     }
@@ -542,28 +554,28 @@ class OptimizedEmbedder extends BaseEmbedder {
 
   async embedBatch(texts, options = {}) {
     // Check cache first
-    const uncachedTexts = texts.filter(text => !this.cache.has(text));
-    
+    const uncachedTexts = texts.filter((text) => !this.cache.has(text));
+
     if (uncachedTexts.length === 0) {
-      return texts.map(text => this.cache.get(text));
+      return texts.map((text) => this.cache.get(text));
     }
 
     // Process in parallel batches
     const batches = this.createBatches(uncachedTexts, this.batchSize);
     const results = await Promise.allSettled(
-      batches.map(batch => this.processBatch(batch))
+      batches.map((batch) => this.processBatch(batch)),
     );
 
     // Cache results
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         result.value.forEach((embedding, i) => {
           this.cache.set(uncachedTexts[index * this.batchSize + i], embedding);
         });
       }
     });
 
-    return texts.map(text => this.cache.get(text));
+    return texts.map((text) => this.cache.get(text));
   }
 }
 ```
@@ -572,7 +584,7 @@ class OptimizedEmbedder extends BaseEmbedder {
 
 ```javascript
 // Plugin test suite
-import { PluginTester } from '@DevilsDev/rag-pipeline-utils';
+import { PluginTester } from "@DevilsDev/rag-pipeline-utils";
 
 const tester = new PluginTester(MyCustomLoader);
 
@@ -581,22 +593,22 @@ await tester.testContract();
 
 // Performance benchmarks
 const benchmarks = await tester.benchmark({
-  testData: './test-documents/',
+  testData: "./test-documents/",
   iterations: 100,
-  metrics: ['latency', 'throughput', 'memory']
+  metrics: ["latency", "throughput", "memory"],
 });
 
 // Integration tests
 await tester.testIntegration({
   pipeline: myRagPipeline,
-  testCases: './integration-tests.json'
+  testCases: "./integration-tests.json",
 });
 
 // Generate test report
 const report = tester.generateReport();
-console.log('Plugin test results:', report);
+console.log("Plugin test results:", report);
 ```
 
 ---
 
-*This comprehensive plugin development guide enables you to build production-ready extensions for @DevilsDev/rag-pipeline-utils. For usage examples, see the [Usage Guide](./Usage.md), or explore [CLI Reference](./CLI.md) for plugin management commands.*
+_This comprehensive plugin development guide enables you to build production-ready extensions for @DevilsDev/rag-pipeline-utils. For usage examples, see the [Usage Guide](./Usage.md), or explore [CLI Reference](./CLI.md) for plugin management commands._

@@ -11,7 +11,7 @@ global:
 app:
   name: rag-pipeline-utils
   version: "2.1.7"
-  
+
 # Image configuration
 image:
   registry: docker.io
@@ -28,15 +28,15 @@ deployment:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  
+
   # Pod configuration
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3001"
     prometheus.io/path: "/metrics"
-  
+
   podLabels: {}
-  
+
   # Security context
   securityContext:
     runAsNonRoot: true
@@ -45,7 +45,7 @@ deployment:
     fsGroup: 1001
     seccompProfile:
       type: RuntimeDefault
-  
+
   containerSecurityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
@@ -153,8 +153,8 @@ env:
 
 # Secrets configuration
 secrets:
-  openaiApiKey: ""  # Set this value or use external secret management
-  pineconeApiKey: ""  # Optional
+  openaiApiKey: "" # Set this value or use external secret management
+  pineconeApiKey: "" # Optional
   postgresUrl: ""
   jwtSecret: ""
 

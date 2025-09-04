@@ -3,38 +3,38 @@
  * Tests pipeline diagnostics, issue detection, and automatic fixes
  */
 
-const fs = require('fs/promises');
-const path = require('path');
+const fs = require("fs/promises");
+const path = require("path");
 // Mock the CLI modules to avoid ESM/CommonJS conflicts
-const runPipelineDoctor = jest.fn().mockResolvedValue({ 
-  status: 'healthy', 
-  issues: [], 
-  recommendations: [] 
+const runPipelineDoctor = jest.fn().mockResolvedValue({
+  status: "healthy",
+  issues: [],
+  recommendations: [],
 });
 
 const PipelineDoctor = jest.fn().mockImplementation(() => ({
-  diagnose: jest.fn().mockResolvedValue({ status: 'healthy' }),
+  diagnose: jest.fn().mockResolvedValue({ status: "healthy" }),
   getRecommendations: jest.fn().mockReturnValue([]),
-  generateReport: jest.fn().mockReturnValue('Test report')
+  generateReport: jest.fn().mockReturnValue("Test report"),
 }));
 
 // Mock dependencies
-jest.mock('fs/promises');
-jest.mock('path');
-jest.mock('../../../src/config/enhanced-ragrc-schema.js');
-jest.mock('../../../src/core/plugin-marketplace/version-resolver.js');
+jest.mock("fs/promises");
+jest.mock("path");
+jest.mock("../../../src/config/enhanced-ragrc-schema.js");
+jest.mock("../../../src/core/plugin-marketplace/version-resolver.js");
 
-describe('PipelineDoctor', () => {
+describe("PipelineDoctor", () => {
   let doctor;
   let mockFs;
 
   beforeEach(() => {
     doctor = new PipelineDoctor({
-      configPath: '.ragrc.json',
+      configPath: ".ragrc.json",
       verbose: false,
-      autoFix: false
+      autoFix: false,
     });
-    
+
     mockFs = fs;
     jest.clearAllMocks();
 
@@ -45,398 +45,417 @@ describe('PipelineDoctor', () => {
     mockFs.stat = jest.fn();
   });
 
-  describe('constructor', () => {
-    it('should initialize with default options', () => {
+  describe("constructor", () => {
+    it("should initialize with default options", () => {
       const defaultDoctor = new PipelineDoctor();
-      
+
       expect(defaultDoctor.options).toEqual({
-        configPath: '.ragrc.json',
+        configPath: ".ragrc.json",
         verbose: false,
         autoFix: false,
-        categories: ['all']
+        categories: ["all"],
       });
     });
 
-    it('should initialize with custom options', () => {
+    it("should initialize with custom options", () => {
       const customDoctor = new PipelineDoctor({
-        configPath: 'custom.json',
+        configPath: "custom.json",
         verbose: true,
         autoFix: true,
-        categories: ['config', 'plugins']
+        categories: ["config", "plugins"],
       });
 
       expect(customDoctor.options).toEqual({
-        configPath: 'custom.json',
+        configPath: "custom.json",
         verbose: true,
         autoFix: true,
-        categories: ['config', 'plugins']
+        categories: ["config", "plugins"],
       });
     });
   });
 
-  describe('checkConfiguration', () => {
-    it('should detect missing configuration file', async () => {
-      mockFs.access = jest.fn().mockRejectedValue(new Error('ENOENT'));
+  describe("checkConfiguration", () => {
+    it("should detect missing configuration file", async () => {
+      mockFs.access = jest.fn().mockRejectedValue(new Error("ENOENT"));
 
       const issues = await doctor.checkConfiguration();
 
       expect(issues).toBeDefined();
       expect(Array.isArray(issues)).toBe(true);
       expect(issues).toContainEqual({
-        category: 'configuration',
-        severity: 'error',
-        code: 'CONFIG_MISSING',
-        message: 'Configuration file not found: .ragrc.json',
+        category: "configuration",
+        severity: "error",
+        code: "CONFIG_MISSING",
+        message: "Configuration file not found: .ragrc.json",
         fix: 'Run "rag-pipeline init" to create a configuration file',
-        autoFixable: false
+        autoFixable: false,
       });
     });
 
-    it('should detect invalid JSON syntax', async () => {
+    it("should detect invalid JSON syntax", async () => {
       mockFs.access = jest.fn().mockResolvedValue();
-      mockFs.readFile = jest.fn().mockResolvedValue('{ invalid json }');
+      mockFs.readFile = jest.fn().mockResolvedValue("{ invalid json }");
 
       const issues = await doctor.checkConfiguration();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'configuration',
-        severity: 'error',
-        code: 'CONFIG_INVALID_JSON',
-        message: 'Configuration file contains invalid JSON syntax',
-        fix: 'Fix JSON syntax errors in .ragrc.json',
-        autoFixable: false
+        category: "configuration",
+        severity: "error",
+        code: "CONFIG_INVALID_JSON",
+        message: "Configuration file contains invalid JSON syntax",
+        fix: "Fix JSON syntax errors in .ragrc.json",
+        autoFixable: false,
       });
     });
 
-    it('should detect schema validation errors', async () => {
+    it("should detect schema validation errors", async () => {
       const invalidConfig = {
         plugins: {
-          loader: 'invalid-format'
-        }
+          loader: "invalid-format",
+        },
       };
 
       mockFs.access = jest.fn().mockResolvedValue();
-      mockFs.readFile = jest.fn().mockResolvedValue(JSON.stringify(invalidConfig));
+      mockFs.readFile = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(invalidConfig));
 
       // Mock schema validation
-      const { validateEnhancedRagrcSchema } = await import('../../../src/config/enhanced-ragrc-schema.js');
+      const { validateEnhancedRagrcSchema } = await import(
+        "../../../src/config/enhanced-ragrc-schema.js"
+      );
       validateEnhancedRagrcSchema.mockReturnValue({
         valid: false,
         errors: [
           {
-            instancePath: '/plugins/loader',
-            message: 'must be object'
-          }
-        ]
+            instancePath: "/plugins/loader",
+            message: "must be object",
+          },
+        ],
       });
 
       const issues = await doctor.checkConfiguration();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'configuration',
-        severity: 'error',
-        code: 'CONFIG_SCHEMA_ERROR',
-        message: 'Schema validation failed: /plugins/loader must be object',
-        fix: 'Fix configuration schema errors',
-        autoFixable: false
+        category: "configuration",
+        severity: "error",
+        code: "CONFIG_SCHEMA_ERROR",
+        message: "Schema validation failed: /plugins/loader must be object",
+        fix: "Fix configuration schema errors",
+        autoFixable: false,
       });
     });
 
-    it('should detect empty configuration', async () => {
+    it("should detect empty configuration", async () => {
       mockFs.access = jest.fn().mockResolvedValue();
-      mockFs.readFile = jest.fn().mockResolvedValue('{}');
+      mockFs.readFile = jest.fn().mockResolvedValue("{}");
 
       const issues = await doctor.checkConfiguration();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'configuration',
-        severity: 'warning',
-        code: 'CONFIG_EMPTY',
-        message: 'Configuration file is empty or missing required sections',
-        fix: 'Add plugin configurations and pipeline settings',
-        autoFixable: false
+        category: "configuration",
+        severity: "warning",
+        code: "CONFIG_EMPTY",
+        message: "Configuration file is empty or missing required sections",
+        fix: "Add plugin configurations and pipeline settings",
+        autoFixable: false,
       });
     });
   });
 
-  describe('checkPlugins', () => {
+  describe("checkPlugins", () => {
     beforeEach(() => {
       const validConfig = {
         plugins: {
           loader: {
-            'file-loader': '1.0.0',
-            'missing-loader': '2.0.0'
+            "file-loader": "1.0.0",
+            "missing-loader": "2.0.0",
           },
           embedder: {
-            'openai-embedder': 'latest'
-          }
-        }
+            "openai-embedder": "latest",
+          },
+        },
       };
 
       mockFs.access = jest.fn().mockResolvedValue();
-      mockFs.readFile = jest.fn().mockResolvedValue(JSON.stringify(validConfig));
+      mockFs.readFile = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(validConfig));
     });
 
-    it('should detect missing plugin files', async () => {
+    it("should detect missing plugin files", async () => {
       // Mock plugin file checks
-      mockFs.access = jest.fn()
+      mockFs.access = jest
+        .fn()
         .mockResolvedValueOnce() // config file exists
         .mockResolvedValueOnce() // file-loader exists
-        .mockRejectedValueOnce(new Error('ENOENT')) // missing-loader missing
+        .mockRejectedValueOnce(new Error("ENOENT")) // missing-loader missing
         .mockResolvedValueOnce(); // openai-embedder exists
 
       const issues = await doctor.checkPlugins();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'plugins',
-        severity: 'error',
-        code: 'PLUGIN_MISSING',
-        message: 'Plugin not found: missing-loader',
-        fix: 'Install plugin: npm install missing-loader',
-        autoFixable: true
+        category: "plugins",
+        severity: "error",
+        code: "PLUGIN_MISSING",
+        message: "Plugin not found: missing-loader",
+        fix: "Install plugin: npm install missing-loader",
+        autoFixable: true,
       });
     });
 
-    it('should detect version conflicts', async () => {
+    it("should detect version conflicts", async () => {
       // Mock version resolver
-      const { resolvePluginVersions } = await import('../../../src/core/plugin-marketplace/version-resolver.js');
+      const { resolvePluginVersions } = await import(
+        "../../../src/core/plugin-marketplace/version-resolver.js"
+      );
       resolvePluginVersions.mockResolvedValue({
         conflicts: [
           {
-            plugin: 'openai-embedder',
-            requested: 'latest',
-            resolved: '2.0.0',
-            conflict: 'Dependency conflict with openai-llm@1.0.0'
-          }
-        ]
+            plugin: "openai-embedder",
+            requested: "latest",
+            resolved: "2.0.0",
+            conflict: "Dependency conflict with openai-llm@1.0.0",
+          },
+        ],
       });
 
       const issues = await doctor.checkPlugins();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'plugins',
-        severity: 'warning',
-        code: 'PLUGIN_VERSION_CONFLICT',
-        message: 'Version conflict: openai-embedder - Dependency conflict with openai-llm@1.0.0',
-        fix: 'Update plugin versions to resolve conflicts',
-        autoFixable: false
+        category: "plugins",
+        severity: "warning",
+        code: "PLUGIN_VERSION_CONFLICT",
+        message:
+          "Version conflict: openai-embedder - Dependency conflict with openai-llm@1.0.0",
+        fix: "Update plugin versions to resolve conflicts",
+        autoFixable: false,
       });
     });
 
-    it('should detect outdated plugins', async () => {
+    it("should detect outdated plugins", async () => {
       // Mock registry check for latest versions
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          plugins: {
-            'file-loader': {
-              versions: {
-                'latest': '2.0.0',
-                '1.0.0': '1.0.0'
-              }
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            plugins: {
+              "file-loader": {
+                versions: {
+                  latest: "2.0.0",
+                  "1.0.0": "1.0.0",
+                },
+              },
+            },
+          }),
       });
 
       const issues = await doctor.checkPlugins();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'plugins',
-        severity: 'info',
-        code: 'PLUGIN_OUTDATED',
-        message: 'Plugin outdated: file-loader@1.0.0 (latest: 2.0.0)',
-        fix: 'Update to latest version: rag-pipeline plugin install file-loader@latest',
-        autoFixable: true
+        category: "plugins",
+        severity: "info",
+        code: "PLUGIN_OUTDATED",
+        message: "Plugin outdated: file-loader@1.0.0 (latest: 2.0.0)",
+        fix: "Update to latest version: rag-pipeline plugin install file-loader@latest",
+        autoFixable: true,
       });
     });
   });
 
-  describe('checkDependencies', () => {
-    it('should detect missing Node.js version', async () => {
+  describe("checkDependencies", () => {
+    it("should detect missing Node.js version", async () => {
       // Mock process.version
       const originalVersion = process.version;
-      Object.defineProperty(process, 'version', {
-        value: 'v16.0.0',
-        configurable: true
+      Object.defineProperty(process, "version", {
+        value: "v16.0.0",
+        configurable: true,
       });
 
       const issues = await doctor.checkDependencies();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'dependencies',
-        severity: 'error',
-        code: 'NODE_VERSION_INCOMPATIBLE',
-        message: 'Node.js version v16.0.0 is not supported (required: >=18.0.0)',
-        fix: 'Upgrade Node.js to version 18.0.0 or higher',
-        autoFixable: false
+        category: "dependencies",
+        severity: "error",
+        code: "NODE_VERSION_INCOMPATIBLE",
+        message:
+          "Node.js version v16.0.0 is not supported (required: >=18.0.0)",
+        fix: "Upgrade Node.js to version 18.0.0 or higher",
+        autoFixable: false,
       });
 
       // Restore original version
-      Object.defineProperty(process, 'version', {
+      Object.defineProperty(process, "version", {
         value: originalVersion,
-        configurable: true
+        configurable: true,
       });
     });
 
-    it('should detect missing package.json', async () => {
-      mockFs.access = jest.fn().mockRejectedValue(new Error('ENOENT'));
+    it("should detect missing package.json", async () => {
+      mockFs.access = jest.fn().mockRejectedValue(new Error("ENOENT"));
 
       const issues = await doctor.checkDependencies();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'dependencies',
-        severity: 'warning',
-        code: 'PACKAGE_JSON_MISSING',
-        message: 'package.json not found in current directory',
-        fix: 'Initialize npm project: npm init',
-        autoFixable: false
+        category: "dependencies",
+        severity: "warning",
+        code: "PACKAGE_JSON_MISSING",
+        message: "package.json not found in current directory",
+        fix: "Initialize npm project: npm init",
+        autoFixable: false,
       });
     });
 
-    it('should detect missing npm dependencies', async () => {
+    it("should detect missing npm dependencies", async () => {
       const packageJson = {
         dependencies: {
-          'commander': '^9.0.0',
-          'missing-package': '^1.0.0'
-        }
+          commander: "^9.0.0",
+          "missing-package": "^1.0.0",
+        },
       };
 
-      mockFs.access = jest.fn()
+      mockFs.access = jest
+        .fn()
         .mockResolvedValueOnce() // package.json exists
         .mockResolvedValueOnce() // commander exists
-        .mockRejectedValueOnce(new Error('ENOENT')); // missing-package missing
+        .mockRejectedValueOnce(new Error("ENOENT")); // missing-package missing
 
-      mockFs.readFile = jest.fn().mockResolvedValue(JSON.stringify(packageJson));
+      mockFs.readFile = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(packageJson));
 
       const issues = await doctor.checkDependencies();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'dependencies',
-        severity: 'error',
-        code: 'NPM_DEPENDENCY_MISSING',
-        message: 'NPM dependency missing: missing-package',
-        fix: 'Install missing dependencies: npm install',
-        autoFixable: true
+        category: "dependencies",
+        severity: "error",
+        code: "NPM_DEPENDENCY_MISSING",
+        message: "NPM dependency missing: missing-package",
+        fix: "Install missing dependencies: npm install",
+        autoFixable: true,
       });
     });
   });
 
-  describe('checkPerformance', () => {
-    it('should detect high memory usage', async () => {
+  describe("checkPerformance", () => {
+    it("should detect high memory usage", async () => {
       // Mock memory usage
       const originalMemoryUsage = process.memoryUsage;
       process.memoryUsage = jest.fn().mockReturnValue({
         heapUsed: 1024 * 1024 * 1024, // 1GB
-        heapTotal: 1024 * 1024 * 1024 * 2 // 2GB
+        heapTotal: 1024 * 1024 * 1024 * 2, // 2GB
       });
 
       const issues = await doctor.checkPerformance();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'performance',
-        severity: 'warning',
-        code: 'MEMORY_USAGE_HIGH',
-        message: 'High memory usage detected: 1024MB used',
-        fix: 'Consider reducing batch sizes or enabling streaming',
-        autoFixable: false
+        category: "performance",
+        severity: "warning",
+        code: "MEMORY_USAGE_HIGH",
+        message: "High memory usage detected: 1024MB used",
+        fix: "Consider reducing batch sizes or enabling streaming",
+        autoFixable: false,
       });
 
       // Restore original function
       process.memoryUsage = originalMemoryUsage;
     });
 
-    it('should detect large configuration files', async () => {
+    it("should detect large configuration files", async () => {
       mockFs.stat = jest.fn().mockResolvedValue({
-        size: 1024 * 1024 * 5 // 5MB
+        size: 1024 * 1024 * 5, // 5MB
       });
 
       const issues = await doctor.checkPerformance();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'performance',
-        severity: 'warning',
-        code: 'CONFIG_FILE_LARGE',
-        message: 'Configuration file is unusually large: 5.0MB',
-        fix: 'Consider splitting configuration or removing unused sections',
-        autoFixable: false
+        category: "performance",
+        severity: "warning",
+        code: "CONFIG_FILE_LARGE",
+        message: "Configuration file is unusually large: 5.0MB",
+        fix: "Consider splitting configuration or removing unused sections",
+        autoFixable: false,
       });
     });
   });
 
-  describe('checkSecurity', () => {
-    it('should detect hardcoded API keys', async () => {
+  describe("checkSecurity", () => {
+    it("should detect hardcoded API keys", async () => {
       const configWithApiKey = {
         plugins: {
           llm: {
-            'openai-llm': {
-              apiKey: 'sk-1234567890abcdef',
-              version: 'latest'
-            }
-          }
-        }
+            "openai-llm": {
+              apiKey: "sk-1234567890abcdef",
+              version: "latest",
+            },
+          },
+        },
       };
 
-      mockFs.readFile = jest.fn().mockResolvedValue(JSON.stringify(configWithApiKey));
+      mockFs.readFile = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(configWithApiKey));
 
       const issues = await doctor.checkSecurity();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'security',
-        severity: 'error',
-        code: 'HARDCODED_API_KEY',
-        message: 'Hardcoded API key detected in configuration',
-        fix: 'Move API keys to environment variables',
-        autoFixable: false
+        category: "security",
+        severity: "error",
+        code: "HARDCODED_API_KEY",
+        message: "Hardcoded API key detected in configuration",
+        fix: "Move API keys to environment variables",
+        autoFixable: false,
       });
     });
 
-    it('should detect insecure permissions', async () => {
+    it("should detect insecure permissions", async () => {
       mockFs.stat = jest.fn().mockResolvedValue({
-        mode: 0o777 // World writable
+        mode: 0o777, // World writable
       });
 
       const issues = await doctor.checkSecurity();
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'security',
-        severity: 'warning',
-        code: 'INSECURE_PERMISSIONS',
-        message: 'Configuration file has insecure permissions (777)',
-        fix: 'Set secure permissions: chmod 600 .ragrc.json',
-        autoFixable: true
+        category: "security",
+        severity: "warning",
+        code: "INSECURE_PERMISSIONS",
+        message: "Configuration file has insecure permissions (777)",
+        fix: "Set secure permissions: chmod 600 .ragrc.json",
+        autoFixable: true,
       });
     });
   });
 
-  describe('checkEnvironment', () => {
-    it('should detect missing environment variables', async () => {
+  describe("checkEnvironment", () => {
+    it("should detect missing environment variables", async () => {
       const configWithEnvVars = {
         plugins: {
           llm: {
-            'openai-llm': {
-              apiKey: '${OPENAI_API_KEY}',
-              version: 'latest'
-            }
-          }
-        }
+            "openai-llm": {
+              apiKey: "${OPENAI_API_KEY}",
+              version: "latest",
+            },
+          },
+        },
       };
 
-      mockFs.readFile = jest.fn().mockResolvedValue(JSON.stringify(configWithEnvVars));
-      
+      mockFs.readFile = jest
+        .fn()
+        .mockResolvedValue(JSON.stringify(configWithEnvVars));
+
       // Mock missing environment variable
       const originalEnv = process.env.OPENAI_API_KEY;
       delete process.env.OPENAI_API_KEY;
@@ -445,12 +464,12 @@ describe('PipelineDoctor', () => {
 
       expect(issues).toBeDefined();
       expect(issues).toContainEqual({
-        category: 'environment',
-        severity: 'error',
-        code: 'ENV_VAR_MISSING',
-        message: 'Required environment variable missing: OPENAI_API_KEY',
-        fix: 'Set environment variable: export OPENAI_API_KEY=your_key',
-        autoFixable: false
+        category: "environment",
+        severity: "error",
+        code: "ENV_VAR_MISSING",
+        message: "Required environment variable missing: OPENAI_API_KEY",
+        fix: "Set environment variable: export OPENAI_API_KEY=your_key",
+        autoFixable: false,
       });
 
       // Restore environment variable
@@ -459,102 +478,108 @@ describe('PipelineDoctor', () => {
       }
     });
 
-    it('should detect platform compatibility issues', async () => {
+    it("should detect platform compatibility issues", async () => {
       // Mock Windows platform
       const originalPlatform = process.platform;
-      Object.defineProperty(process, 'platform', {
-        value: 'win32',
-        configurable: true
+      Object.defineProperty(process, "platform", {
+        value: "win32",
+        configurable: true,
       });
 
       const issues = await doctor.checkEnvironment();
 
       expect(issues).toBeDefined();
       // Should not have platform issues for Windows
-      expect(issues.filter(issue => issue.code === 'PLATFORM_INCOMPATIBLE')).toHaveLength(0);
+      expect(
+        issues.filter((issue) => issue.code === "PLATFORM_INCOMPATIBLE"),
+      ).toHaveLength(0);
 
       // Restore original platform
-      Object.defineProperty(process, 'platform', {
+      Object.defineProperty(process, "platform", {
         value: originalPlatform,
-        configurable: true
+        configurable: true,
       });
     });
   });
 
-  describe('autoFix', () => {
-    it('should fix missing npm dependencies', async () => {
+  describe("autoFix", () => {
+    it("should fix missing npm dependencies", async () => {
       const issue = {
-        category: 'dependencies',
-        code: 'NPM_DEPENDENCY_MISSING',
-        fix: 'Install missing dependencies: npm install',
-        autoFixable: true
+        category: "dependencies",
+        code: "NPM_DEPENDENCY_MISSING",
+        fix: "Install missing dependencies: npm install",
+        autoFixable: true,
       };
 
-      const mockExec = jest.fn().mockResolvedValue({ stdout: 'Dependencies installed' });
+      const mockExec = jest
+        .fn()
+        .mockResolvedValue({ stdout: "Dependencies installed" });
       doctor.exec = mockExec;
 
       const result = await doctor.autoFix(issue);
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.message).toBe('Dependencies installed');
-      expect(mockExec).toHaveBeenCalledWith('npm install');
+      expect(result.message).toBe("Dependencies installed");
+      expect(mockExec).toHaveBeenCalledWith("npm install");
     });
 
-    it('should fix insecure file permissions', async () => {
+    it("should fix insecure file permissions", async () => {
       const issue = {
-        category: 'security',
-        code: 'INSECURE_PERMISSIONS',
-        fix: 'Set secure permissions: chmod 600 .ragrc.json',
-        autoFixable: true
+        category: "security",
+        code: "INSECURE_PERMISSIONS",
+        fix: "Set secure permissions: chmod 600 .ragrc.json",
+        autoFixable: true,
       };
 
-      const mockExec = jest.fn().mockResolvedValue({ stdout: 'Permissions updated' });
+      const mockExec = jest
+        .fn()
+        .mockResolvedValue({ stdout: "Permissions updated" });
       doctor.exec = mockExec;
 
       const result = await doctor.autoFix(issue);
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith('chmod 600 .ragrc.json');
+      expect(mockExec).toHaveBeenCalledWith("chmod 600 .ragrc.json");
     });
 
-    it('should handle non-auto-fixable issues', async () => {
+    it("should handle non-auto-fixable issues", async () => {
       const issue = {
-        category: 'configuration',
-        code: 'CONFIG_MISSING',
-        autoFixable: false
+        category: "configuration",
+        code: "CONFIG_MISSING",
+        autoFixable: false,
       };
 
       const result = await doctor.autoFix(issue);
 
       expect(result).toBeDefined();
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Issue is not auto-fixable');
+      expect(result.message).toBe("Issue is not auto-fixable");
     });
   });
 
-  describe('generateReport', () => {
-    it('should generate comprehensive diagnostic report', () => {
+  describe("generateReport", () => {
+    it("should generate comprehensive diagnostic report", () => {
       const issues = [
         {
-          category: 'configuration',
-          severity: 'error',
-          code: 'CONFIG_MISSING',
-          message: 'Configuration file not found'
+          category: "configuration",
+          severity: "error",
+          code: "CONFIG_MISSING",
+          message: "Configuration file not found",
         },
         {
-          category: 'plugins',
-          severity: 'warning',
-          code: 'PLUGIN_OUTDATED',
-          message: 'Plugin outdated'
+          category: "plugins",
+          severity: "warning",
+          code: "PLUGIN_OUTDATED",
+          message: "Plugin outdated",
         },
         {
-          category: 'performance',
-          severity: 'info',
-          code: 'MEMORY_USAGE_NORMAL',
-          message: 'Memory usage is normal'
-        }
+          category: "performance",
+          severity: "info",
+          code: "MEMORY_USAGE_NORMAL",
+          message: "Memory usage is normal",
+        },
       ];
 
       const report = doctor.generateReport(issues);
@@ -567,7 +592,7 @@ describe('PipelineDoctor', () => {
           errors: 1,
           warnings: 1,
           info: 1,
-          healthScore: expect.any(Number)
+          healthScore: expect.any(Number),
         },
         categories: {
           configuration: { issues: 1, errors: 1, warnings: 0, info: 0 },
@@ -575,18 +600,18 @@ describe('PipelineDoctor', () => {
           performance: { issues: 1, errors: 0, warnings: 0, info: 1 },
           dependencies: { issues: 0, errors: 0, warnings: 0, info: 0 },
           security: { issues: 0, errors: 0, warnings: 0, info: 0 },
-          environment: { issues: 0, errors: 0, warnings: 0, info: 0 }
+          environment: { issues: 0, errors: 0, warnings: 0, info: 0 },
         },
-        issues: issues
+        issues: issues,
       });
     });
 
-    it('should calculate health score correctly', () => {
+    it("should calculate health score correctly", () => {
       const issues = [
-        { severity: 'error' },
-        { severity: 'error' },
-        { severity: 'warning' },
-        { severity: 'info' }
+        { severity: "error" },
+        { severity: "error" },
+        { severity: "warning" },
+        { severity: "info" },
       ];
 
       const report = doctor.generateReport(issues);
@@ -598,8 +623,8 @@ describe('PipelineDoctor', () => {
     });
   });
 
-  describe('run', () => {
-    it('should run all diagnostic categories', async () => {
+  describe("run", () => {
+    it("should run all diagnostic categories", async () => {
       doctor.checkConfiguration = jest.fn().mockResolvedValue([]);
       doctor.checkPlugins = jest.fn().mockResolvedValue([]);
       doctor.checkDependencies = jest.fn().mockResolvedValue([]);
@@ -616,13 +641,13 @@ describe('PipelineDoctor', () => {
       expect(doctor.checkPerformance).toHaveBeenCalled();
       expect(doctor.checkSecurity).toHaveBeenCalled();
       expect(doctor.checkEnvironment).toHaveBeenCalled();
-      expect(report).toHaveProperty('summary');
-      expect(report).toHaveProperty('issues');
+      expect(report).toHaveProperty("summary");
+      expect(report).toHaveProperty("issues");
     });
 
-    it('should run only specified categories', async () => {
+    it("should run only specified categories", async () => {
       const categoryDoctor = new PipelineDoctor({
-        categories: ['configuration', 'plugins']
+        categories: ["configuration", "plugins"],
       });
 
       categoryDoctor.checkConfiguration = jest.fn().mockResolvedValue([]);
@@ -642,18 +667,20 @@ describe('PipelineDoctor', () => {
       expect(categoryDoctor.checkEnvironment).not.toHaveBeenCalled();
     });
 
-    it('should perform auto-fixes when enabled', async () => {
+    it("should perform auto-fixes when enabled", async () => {
       const autoFixDoctor = new PipelineDoctor({ autoFix: true });
-      
+
       const fixableIssue = {
-        category: 'dependencies',
-        code: 'NPM_DEPENDENCY_MISSING',
-        autoFixable: true
+        category: "dependencies",
+        code: "NPM_DEPENDENCY_MISSING",
+        autoFixable: true,
       };
 
       autoFixDoctor.checkConfiguration = jest.fn().mockResolvedValue([]);
       autoFixDoctor.checkPlugins = jest.fn().mockResolvedValue([]);
-      autoFixDoctor.checkDependencies = jest.fn().mockResolvedValue([fixableIssue]);
+      autoFixDoctor.checkDependencies = jest
+        .fn()
+        .mockResolvedValue([fixableIssue]);
       autoFixDoctor.checkPerformance = jest.fn().mockResolvedValue([]);
       autoFixDoctor.checkSecurity = jest.fn().mockResolvedValue([]);
       autoFixDoctor.checkEnvironment = jest.fn().mockResolvedValue([]);
@@ -666,22 +693,22 @@ describe('PipelineDoctor', () => {
   });
 });
 
-describe('runPipelineDoctor', () => {
-  it('should create and run doctor with options', async () => {
+describe("runPipelineDoctor", () => {
+  it("should create and run doctor with options", async () => {
     const mockRun = jest.fn().mockResolvedValue({
       summary: { totalIssues: 0 },
-      issues: []
+      issues: [],
     });
 
     // Mock the PipelineDoctor constructor
     const MockDoctor = jest.fn().mockImplementation(() => ({
-      run: mockRun
+      run: mockRun,
     }));
 
     const options = {
-      configPath: 'test.json',
+      configPath: "test.json",
       verbose: true,
-      autoFix: true
+      autoFix: true,
     };
 
     // Since we can't easily mock the import, we'll test the function behavior
@@ -689,7 +716,7 @@ describe('runPipelineDoctor', () => {
     const report = await doctor.run();
 
     expect(report).toBeDefined();
-    expect(report).toHaveProperty('summary');
-    expect(report).toHaveProperty('issues');
+    expect(report).toHaveProperty("summary");
+    expect(report).toHaveProperty("issues");
   });
 });

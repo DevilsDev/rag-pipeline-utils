@@ -14,13 +14,13 @@ const path = require('path');
  * - sync-roadmap-labels.js
  */
 
-import fs from 'fs';
-import path from 'path';
-import { Octokit } from 'octokit';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { setupCLI, dryRunWrapper } from './utils/cli.js';
-import { withRateLimit } from './utils/retry.js';
+import fs from "fs";
+import path from "path";
+import { Octokit } from "octokit";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { setupCLI, dryRunWrapper } from "./utils/cli.js";
+import { withRateLimit } from "./utils/retry.js";
 
 dotenv._config();
 
@@ -28,38 +28,45 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load configuration
-const configPath = path.resolve(__dirname, 'scripts._config.json');
-const _config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const configPath = path.resolve(__dirname, "scripts._config.json");
+const _config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
 // Setup CLI
-const { args, logger } = setupCLI('manage-labels.js', 'Manage GitHub repository labels', {
-  '--action': 'Action to perform: create, update, sync, or ensure (default: ensure)',
-  '--owner': 'GitHub repository owner (default: from _config)',
-  '--repo': 'GitHub repository name (default: from _config)',
-  '--labels-file': 'Path to labels JSON file (default: use _config)',
-  '--roadmap-only': 'Only manage roadmap-related labels'
-});
+const { args, logger } = setupCLI(
+  "manage-labels.js",
+  "Manage GitHub repository labels",
+  {
+    "--action":
+      "Action to perform: create, update, sync, or ensure (default: ensure)",
+    "--owner": "GitHub repository owner (default: from _config)",
+    "--repo": "GitHub repository name (default: from _config)",
+    "--labels-file": "Path to labels JSON file (default: use _config)",
+    "--roadmap-only": "Only manage roadmap-related labels",
+  },
+);
 
 // Environment validation
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO || `${_config.github.owner}/${_config.github.repo}`;
+const GITHUB_REPO =
+  process.env.GITHUB_REPO || `${_config.github.owner}/${_config.github.repo}`;
 
 if (!GITHUB_TOKEN) {
-  logger.error('GITHUB_TOKEN environment variable is required');
+  logger.error("GITHUB_TOKEN environment variable is required");
   process.exit(1);
 }
 
-const [owner, repo] = (args.repo && args.owner) 
-  ? [args.owner, args.repo]
-  : GITHUB_REPO.split('/');
+const [owner, repo] =
+  args.repo && args.owner ? [args.owner, args.repo] : GITHUB_REPO.split("/");
 
 if (!owner || !repo) {
-  logger.error('GitHub owner and repo must be specified via --owner/--repo or GITHUB_REPO env var');
+  logger.error(
+    "GitHub owner and repo must be specified via --owner/--repo or GITHUB_REPO env var",
+  );
   process.exit(1);
 }
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
-const action = args.action || 'ensure';
+const action = args.action || "ensure";
 
 /**
  * Get label definitions from configuration or file
@@ -72,7 +79,7 @@ function getLabelDefinitions() {
       logger.error(`Labels file not found: ${labelsPath}`);
       process.exit(1);
     }
-    return JSON.parse(fs.readFileSync(labelsPath, 'utf-8'));
+    return JSON.parse(fs.readFileSync(labelsPath, "utf-8"));
   }
 
   // Use roadmap labels from config
@@ -84,46 +91,46 @@ function getLabelDefinitions() {
   return {
     ..._config.roadmap.issueLabels,
     // Additional standard labels
-    'good first issue': {
-      name: 'good first issue',
-      color: '7057ff',
-      description: 'Good for newcomers'
+    "good first issue": {
+      name: "good first issue",
+      color: "7057ff",
+      description: "Good for newcomers",
     },
-    'help wanted': {
-      name: 'help wanted',
-      color: '008672',
-      description: 'Extra attention is needed'
+    "help wanted": {
+      name: "help wanted",
+      color: "008672",
+      description: "Extra attention is needed",
     },
-    'priority: high': {
-      name: 'priority: high',
-      color: 'd93f0b',
-      description: 'High priority issue'
+    "priority: high": {
+      name: "priority: high",
+      color: "d93f0b",
+      description: "High priority issue",
     },
-    'priority: medium': {
-      name: 'priority: medium',
-      color: 'fbca04',
-      description: 'Medium priority issue'
+    "priority: medium": {
+      name: "priority: medium",
+      color: "fbca04",
+      description: "Medium priority issue",
     },
-    'priority: low': {
-      name: 'priority: low',
-      color: '0e8a16',
-      description: 'Low priority issue'
+    "priority: low": {
+      name: "priority: low",
+      color: "0e8a16",
+      description: "Low priority issue",
     },
-    '_type: feature': {
-      name: '_type: feature',
-      color: 'a2eeef',
-      description: 'New feature or request'
+    "_type: feature": {
+      name: "_type: feature",
+      color: "a2eeef",
+      description: "New feature or request",
     },
-    '_type: bug': {
-      name: '_type: bug',
-      color: 'd73a49',
-      description: 'Something isn\'t working'
+    "_type: bug": {
+      name: "_type: bug",
+      color: "d73a49",
+      description: "Something isn't working",
     },
-    '_type: maintenance': {
-      name: '_type: maintenance',
-      color: 'fef2c0',
-      description: 'Maintenance and housekeeping'
-    }
+    "_type: maintenance": {
+      name: "_type: maintenance",
+      color: "fef2c0",
+      description: "Maintenance and housekeeping",
+    },
   };
 }
 
@@ -132,18 +139,22 @@ function getLabelDefinitions() {
  * @returns {Array} - Existing labels
  */
 async function fetchExistingLabels() {
-  return await withRateLimit(octokit, async () => {
-    logger.progress('Fetching existing labels...');
-    
-    const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
-      owner,
-      repo,
-      per_page: 100
-    });
+  return await withRateLimit(
+    octokit,
+    async () => {
+      logger.progress("Fetching existing labels...");
 
-    logger.debug(`Found ${labels.length} existing labels`);
-    return labels;
-  }, 'fetch existing labels');
+      const { data: labels } = await octokit.rest.issues.listLabelsForRepo({
+        owner,
+        repo,
+        per_page: 100,
+      });
+
+      logger.debug(`Found ${labels.length} existing labels`);
+      return labels;
+    },
+    "fetch existing labels",
+  );
 }
 
 /**
@@ -151,21 +162,25 @@ async function fetchExistingLabels() {
  * @param {Object} labelDef - Label definition
  */
 async function createLabel(labelDef) {
-  return await withRateLimit(octokit, async () => {
-    await dryRunWrapper(
-      args.dryRun,
-      `Create label: ${labelDef.name} (${labelDef.color})`,
-      async () => {
-        await octokit.rest.issues.createLabel({
-          owner,
-          repo,
-          name: labelDef.name,
-          color: labelDef.color.replace('#', ''),
-          description: labelDef.description || ''
-        });
-      }
-    );
-  }, `create label: ${labelDef.name}`);
+  return await withRateLimit(
+    octokit,
+    async () => {
+      await dryRunWrapper(
+        args.dryRun,
+        `Create label: ${labelDef.name} (${labelDef.color})`,
+        async () => {
+          await octokit.rest.issues.createLabel({
+            owner,
+            repo,
+            name: labelDef.name,
+            color: labelDef.color.replace("#", ""),
+            description: labelDef.description || "",
+          });
+        },
+      );
+    },
+    `create label: ${labelDef.name}`,
+  );
 }
 
 /**
@@ -174,22 +189,26 @@ async function createLabel(labelDef) {
  * @param {Object} labelDef - New label definition
  */
 async function updateLabel(_currentName, _labelDef) {
-  return await withRateLimit(octokit, async () => {
-    await dryRunWrapper(
-      args.dryRun,
-      `Update label: ${_currentName} → ${_labelDef.name} (${_labelDef.color})`,
-      async () => {
-        await octokit.rest.issues.updateLabel({
-          owner,
-          repo,
-          name: _currentName,
-          new_name: _labelDef.name,
-          color: _labelDef.color.replace('#', ''),
-          description: _labelDef.description || ''
-        });
-      }
-    );
-  }, `update label: ${_currentName}`);
+  return await withRateLimit(
+    octokit,
+    async () => {
+      await dryRunWrapper(
+        args.dryRun,
+        `Update label: ${_currentName} → ${_labelDef.name} (${_labelDef.color})`,
+        async () => {
+          await octokit.rest.issues.updateLabel({
+            owner,
+            repo,
+            name: _currentName,
+            new_name: _labelDef.name,
+            color: _labelDef.color.replace("#", ""),
+            description: _labelDef.description || "",
+          });
+        },
+      );
+    },
+    `update label: ${_currentName}`,
+  );
 }
 
 /**
@@ -197,19 +216,23 @@ async function updateLabel(_currentName, _labelDef) {
  * @param {string} labelName - Label name to delete
  */
 async function _deleteLabel(labelName) {
-  return await withRateLimit(octokit, async () => {
-    await dryRunWrapper(
-      args.dryRun,
-      `Delete label: ${labelName}`,
-      async () => {
-        await octokit.rest.issues.deleteLabel({
-          owner,
-          repo,
-          name: labelName
-        });
-      }
-    );
-  }, `delete label: ${labelName}`);
+  return await withRateLimit(
+    octokit,
+    async () => {
+      await dryRunWrapper(
+        args.dryRun,
+        `Delete label: ${labelName}`,
+        async () => {
+          await octokit.rest.issues.deleteLabel({
+            owner,
+            repo,
+            name: labelName,
+          });
+        },
+      );
+    },
+    `delete label: ${labelName}`,
+  );
 }
 
 /**
@@ -218,7 +241,9 @@ async function _deleteLabel(labelName) {
  * @param {Array} existingLabels - Existing labels
  */
 async function ensureLabels(_labelDefinitions, _existingLabels) {
-  const existingNames = new Set(_existingLabels.map(l => l.name.toLowerCase()));
+  const existingNames = new Set(
+    _existingLabels.map((l) => l.name.toLowerCase()),
+  );
   const toCreate = [];
 
   for (const [key, labelDef] of Object.entries(_labelDefinitions)) {
@@ -242,7 +267,9 @@ async function ensureLabels(_labelDefinitions, _existingLabels) {
  * @param {Array} existingLabels - Existing labels
  */
 async function syncLabels(_labelDefinitions, _existingLabels) {
-  const existingMap = new Map(_existingLabels.map(l => [l.name.toLowerCase(), l]));
+  const existingMap = new Map(
+    _existingLabels.map((l) => [l.name.toLowerCase(), l]),
+  );
   let created = 0;
   let updated = 0;
 
@@ -254,9 +281,9 @@ async function syncLabels(_labelDefinitions, _existingLabels) {
       created++;
     } else {
       // Check if update is needed
-      const needsUpdate = 
-        existing.color !== labelDef.color.replace('#', '') ||
-        existing.description !== (labelDef.description || '');
+      const needsUpdate =
+        existing.color !== labelDef.color.replace("#", "") ||
+        existing.description !== (labelDef.description || "");
 
       if (needsUpdate) {
         await updateLabel(existing.name, labelDef);
@@ -286,20 +313,22 @@ async function main() {
 
     let result;
     switch (action) {
-      case 'create':
+      case "create":
         // Only create missing labels
         result = await ensureLabels(labelDefinitions, existingLabels);
         logger.success(`✅ Created ${result.created} labels`);
         break;
 
-      case 'sync':
-      case 'update':
+      case "sync":
+      case "update":
         // Create missing and update existing
         result = await syncLabels(labelDefinitions, existingLabels);
-        logger.success(`✅ Created ${result.created} labels, updated ${result.updated} labels`);
+        logger.success(
+          `✅ Created ${result.created} labels, updated ${result.updated} labels`,
+        );
         break;
 
-      case 'ensure':
+      case "ensure":
       default:
         // Only create missing (safe default)
         result = await ensureLabels(labelDefinitions, existingLabels);
@@ -307,8 +336,7 @@ async function main() {
         break;
     }
 
-    logger.success('🏷️ Label management completed!');
-
+    logger.success("🏷️ Label management completed!");
   } catch (error) {
     logger.error(`Label management failed: ${error.message}`);
     if (args.verbose) {

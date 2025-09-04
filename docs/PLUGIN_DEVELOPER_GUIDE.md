@@ -33,15 +33,19 @@ The RAG Pipeline Utils system uses a plugin-based architecture that allows devel
 The plugin system is built around several key concepts:
 
 ### Plugin Registry
+
 The central registry manages all plugin instances and enforces contracts at registration time.
 
 ### Plugin Contracts
+
 Each plugin type has a defined contract specifying required and optional methods with their signatures.
 
 ### Runtime Validation
+
 Plugins are validated when registered to ensure they implement required methods.
 
 ### Configuration-Driven Loading
+
 Plugins are loaded dynamically based on `.ragrc.json` configuration.
 
 ## Getting Started
@@ -65,6 +69,7 @@ npx rag-pipeline init plugin embedder my-embedder --description "Custom embeddin
 ```
 
 This generates a complete plugin structure with:
+
 - Main implementation file
 - Test suite
 - Mock implementation
@@ -75,65 +80,81 @@ This generates a complete plugin structure with:
 ## Plugin Types
 
 ### 1. Loader Plugins
+
 **Purpose**: Load and parse documents from various sources
 
 **Required Methods**:
+
 - `load(filePath: string): Promise<Array<{chunk: () => string[]}>>`
 
 **Use Cases**:
+
 - PDF parsing
 - Web scraping
 - Database queries
 - API data fetching
 
 ### 2. Embedder Plugins
+
 **Purpose**: Convert text into vector embeddings
 
 **Required Methods**:
+
 - `embed(chunks: string[]): Promise<number[][]>`
 - `embedQuery(query: string): Promise<number[]>`
 
 **Use Cases**:
+
 - OpenAI embeddings
 - Hugging Face models
 - Custom embedding services
 - Local embedding models
 
 ### 3. Retriever Plugins
+
 **Purpose**: Store and retrieve vectors from vector databases
 
 **Required Methods**:
+
 - `store(vectors: number[][]): Promise<void>`
 - `retrieve(queryVector: number[]): Promise<string[]>`
 
 **Use Cases**:
+
 - Pinecone integration
 - Weaviate client
 - ChromaDB connector
 - In-memory vector store
 
 ### 4. LLM Plugins
+
 **Purpose**: Generate responses using language models
 
 **Required Methods**:
+
 - `generate(prompt: string, context: string[]): Promise<string>`
 
 **Optional Methods**:
+
 - `generateStream(prompt: string, context: string[]): AsyncIterable<string>`
 
 **Use Cases**:
+
 - OpenAI GPT models
 - Anthropic Claude
 - Local LLMs (Ollama)
 - Custom API endpoints
 
 ### 5. Reranker Plugins
+
 **Purpose**: Reorder retrieved documents by relevance
 
 **Required Methods**:
+
 - `rerank(query: string, documents: string[]): Promise<string[]>`
 
 **Use Cases**:
+
 - Cross-encoder models
 - LLM-based reranking
 - Custom scoring algorithms
@@ -154,29 +175,30 @@ npx rag-pipeline init plugin llm echo-llm --author "Your Name"
 // src/echo-llm.js
 export class EchoLLM {
   constructor(options = {}) {
-    this.prefix = options.prefix || '[ECHO]';
+    this.prefix = options.prefix || "[ECHO]";
     this.delay = options.delay || 100;
   }
 
   async generate(prompt, context) {
     // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, this.delay));
-    
-    const contextSummary = context.length > 0 
-      ? `Context: ${context.join(' | ')}` 
-      : 'No context provided';
-    
+    await new Promise((resolve) => setTimeout(resolve, this.delay));
+
+    const contextSummary =
+      context.length > 0
+        ? `Context: ${context.join(" | ")}`
+        : "No context provided";
+
     return `${this.prefix} ${contextSummary}. Query: "${prompt}"`;
   }
 
   // Optional: Implement streaming
-  async* generateStream(prompt, context) {
+  async *generateStream(prompt, context) {
     const response = await this.generate(prompt, context);
-    const words = response.split(' ');
-    
+    const words = response.split(" ");
+
     for (const word of words) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-      yield word + ' ';
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      yield word + " ";
     }
   }
 }
@@ -188,29 +210,29 @@ export default EchoLLM;
 
 ```javascript
 // __tests__/echo-llm.test.js
-import { EchoLLM } from '../src/echo-llm.js';
+import { EchoLLM } from "../src/echo-llm.js";
 
-describe('EchoLLM', () => {
+describe("EchoLLM", () => {
   let llm;
 
   beforeEach(() => {
-    llm = new EchoLLM({ prefix: '[TEST]', delay: 0 });
+    llm = new EchoLLM({ prefix: "[TEST]", delay: 0 });
   });
 
-  test('should generate response with context', async () => {
-    const result = await llm.generate('Hello', ['doc1', 'doc2']);
-    expect(result).toContain('[TEST]');
-    expect(result).toContain('Hello');
-    expect(result).toContain('doc1 | doc2');
+  test("should generate response with context", async () => {
+    const result = await llm.generate("Hello", ["doc1", "doc2"]);
+    expect(result).toContain("[TEST]");
+    expect(result).toContain("Hello");
+    expect(result).toContain("doc1 | doc2");
   });
 
-  test('should support streaming', async () => {
+  test("should support streaming", async () => {
     const tokens = [];
-    for await (const token of llm.generateStream('Hi', [])) {
+    for await (const token of llm.generateStream("Hi", [])) {
       tokens.push(token);
     }
     expect(tokens.length).toBeGreaterThan(0);
-    expect(tokens.join('')).toContain('Hi');
+    expect(tokens.join("")).toContain("Hi");
   });
 });
 ```
@@ -245,7 +267,7 @@ The system automatically validates plugins at registration time:
 
 ```javascript
 // This will throw an error if methods are missing
-registry.register('llm', 'my-llm', new MyLLM());
+registry.register("llm", "my-llm", new MyLLM());
 ```
 
 ### Method Signatures
@@ -274,7 +296,7 @@ async generate(prompt, context) {
     if (!prompt || typeof prompt !== 'string') {
       throw new Error('Invalid prompt: expected non-empty string');
     }
-    
+
     // Your implementation
     return result;
   } catch (error) {
@@ -290,13 +312,13 @@ async generate(prompt, context) {
 Test each method in isolation:
 
 ```javascript
-describe('MyPlugin', () => {
-  test('should handle valid input', async () => {
+describe("MyPlugin", () => {
+  test("should handle valid input", async () => {
     const result = await plugin.method(validInput);
     expect(result).toBeDefined();
   });
 
-  test('should reject invalid input', async () => {
+  test("should reject invalid input", async () => {
     await expect(plugin.method(null)).rejects.toThrow();
   });
 });
@@ -307,17 +329,17 @@ describe('MyPlugin', () => {
 Test with the pipeline:
 
 ```javascript
-import { createRagPipeline } from '@devilsdev/rag-pipeline-utils';
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 
-test('should work in pipeline', async () => {
+test("should work in pipeline", async () => {
   const pipeline = createRagPipeline({
-    loader: 'test-loader',
-    embedder: 'test-embedder',
-    retriever: 'test-retriever',
-    llm: 'my-plugin'
+    loader: "test-loader",
+    embedder: "test-embedder",
+    retriever: "test-retriever",
+    llm: "my-plugin",
   });
 
-  const result = await pipeline.query('test query');
+  const result = await pipeline.query("test query");
   expect(result).toBeDefined();
 });
 ```
@@ -327,11 +349,11 @@ test('should work in pipeline', async () => {
 Use mocks for external dependencies:
 
 ```javascript
-jest.mock('external-api');
+jest.mock("external-api");
 
-test('should handle API failures', async () => {
-  externalAPI.mockRejectedValue(new Error('API down'));
-  await expect(plugin.method('input')).rejects.toThrow();
+test("should handle API failures", async () => {
+  externalAPI.mockRejectedValue(new Error("API down"));
+  await expect(plugin.method("input")).rejects.toThrow();
 });
 ```
 
@@ -423,18 +445,18 @@ async someMethod(input) {
 ### 1. Enable Logging
 
 ```javascript
-import { logger } from '@devilsdev/rag-pipeline-utils/utils/logger.js';
+import { logger } from "@devilsdev/rag-pipeline-utils/utils/logger.js";
 
 export class MyPlugin {
   async method(input) {
-    logger.debug('MyPlugin.method called', { input });
-    
+    logger.debug("MyPlugin.method called", { input });
+
     try {
       const result = await this.process(input);
-      logger.info('MyPlugin.method completed', { resultLength: result.length });
+      logger.info("MyPlugin.method completed", { resultLength: result.length });
       return result;
     } catch (error) {
-      logger.error('MyPlugin.method failed', { error: error.message, input });
+      logger.error("MyPlugin.method failed", { error: error.message, input });
       throw error;
     }
   }
@@ -449,15 +471,15 @@ async method(input) {
   if (input === null || input === undefined) {
     throw new Error('Input cannot be null or undefined');
   }
-  
+
   if (typeof input !== 'string') {
     throw new Error(`Expected string input, got ${typeof input}`);
   }
-  
+
   if (input.trim().length === 0) {
     throw new Error('Input cannot be empty string');
   }
-  
+
   // Continue with processing
 }
 ```
@@ -467,14 +489,14 @@ async method(input) {
 ```javascript
 export class MyPlugin {
   constructor(options = {}) {
-    this.debug = options.debug || process.env.NODE_ENV === 'development';
+    this.debug = options.debug || process.env.NODE_ENV === "development";
   }
 
   async method(input) {
     if (this.debug) {
-      console.log('Debug: method called with', input);
+      console.log("Debug: method called with", input);
     }
-    
+
     // Implementation
   }
 }
@@ -491,10 +513,10 @@ export class MyPlugin {
     this.apiKey = options.apiKey || process.env.MY_API_KEY;
     this.timeout = options.timeout || 30000;
     this.retries = options.retries || 3;
-    
+
     // Validate required options
     if (!this.apiKey) {
-      throw new Error('API key is required');
+      throw new Error("API key is required");
     }
   }
 }
@@ -548,10 +570,10 @@ export class MyLLM {
     return response.text;
   }
 
-  async* generateStream(prompt, context) {
+  async *generateStream(prompt, context) {
     // Streaming implementation
     const stream = await this.api.streamComplete(prompt, context);
-    
+
     for await (const chunk of stream) {
       if (chunk.text) {
         yield chunk.text;
@@ -597,6 +619,7 @@ my-plugin/
 ### 3. Documentation
 
 Include comprehensive documentation:
+
 - Clear installation instructions
 - Usage examples
 - Configuration options
@@ -606,6 +629,7 @@ Include comprehensive documentation:
 ### 4. Testing
 
 Ensure comprehensive test coverage:
+
 - Unit tests for all methods
 - Integration tests with the pipeline
 - Error handling tests
@@ -613,9 +637,10 @@ Ensure comprehensive test coverage:
 
 ## Conclusion
 
-Creating plugins for RAG Pipeline Utils is straightforward when following these guidelines. The plugin system is designed to be flexible while maintaining consistency and reliability. 
+Creating plugins for RAG Pipeline Utils is straightforward when following these guidelines. The plugin system is designed to be flexible while maintaining consistency and reliability.
 
 For additional help:
+
 - Check the [examples directory](../examples/) for reference implementations
 - Join our [Discord community](https://discord.gg/rag-pipeline-utils)
 - Submit issues on [GitHub](https://github.com/DevilsDev/rag-pipeline-utils)

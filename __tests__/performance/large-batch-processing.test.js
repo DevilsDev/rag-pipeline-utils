@@ -1,4 +1,4 @@
-jest.setTimeout(120000);
+jest.setTimeout(60000);
 
 /**
  * Large Document Batch Performance Testing
@@ -6,18 +6,21 @@ jest.setTimeout(120000);
  */
 
 // Jest is available globally in CommonJS mode;
-const fs = require('fs');
-const path = require('path');
-const { performance  } = require('perf_hooks');
-const { TestDataGenerator, PerformanceHelper } = require('../utils/test-helpers.js');
+const fs = require("fs");
+const path = require("path");
+const { performance } = require("perf_hooks");
+const {
+  TestDataGenerator,
+  PerformanceHelper,
+} = require("../utils/test-helpers.js");
 
-describe('Large Document Batch Performance Tests', () => {
+describe("Large Document Batch Performance Tests", () => {
   let performanceMetrics = [];
   let csvOutput = [];
-  
+
   beforeAll(() => {
     // Ensure output directory exists
-    const outputDir = path.join(process.cwd(), 'performance-reports');
+    const outputDir = path.join(process.cwd(), "performance-reports");
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -28,89 +31,95 @@ describe('Large Document Batch Performance Tests', () => {
     await generatePerformanceReports();
   });
 
-  describe('Embedding Large Document Batches', () => {
+  describe("Embedding Large Document Batches", () => {
     const batchSizes = [100, 500, 1000, 5000, 10000];
-    
-    test.each(batchSizes)('should process %d documents efficiently', async (batchSize) => {
-      const benchmark = new PerformanceHelper(`retrieval-batch-${batchSize}`);
-      
-      // Generate test documents
-      const documents = TestDataGenerator.generateDocuments(batchSize, {
-        minLength: 100,
-        maxLength: 2000,
-        includeMetadata: true
-      });
 
-      const mockEmbedder = {
-        async embed(docs) {
-          const startTime = performance.now();
-          
-          // Simulate realistic embedding processing time
-          const processingTime = Math.max(50, docs.length * 0.5); // 0.5ms per doc minimum
-          await new Promise(resolve => setTimeout(resolve, processingTime));
-          
-          const embeddings = docs.map((doc, index) => ({
-            id: doc.id,
-            values: TestDataGenerator.generateVector(384),
-            metadata: { ...doc.metadata, embeddingIndex: index }
-          }));
+    test.each(batchSizes)(
+      "should process %d documents efficiently",
+      async (batchSize) => {
+        const benchmark = new PerformanceHelper(`retrieval-batch-${batchSize}`);
 
-          const endTime = performance.now();
-          const duration = endTime - startTime;
-          
-          return {
-            embeddings,
-            metrics: {
-              totalDocuments: docs.length,
-              processingTime: duration,
-              avgTimePerDoc: duration / docs.length,
-              throughput: (docs.length / duration) * 1000, // docs per second
-              memoryUsage: process.memoryUsage()
-            }
-          };
-        }
-      };
+        // Generate test documents
+        const documents = TestDataGenerator.generateDocuments(batchSize, {
+          minLength: 100,
+          maxLength: 2000,
+          includeMetadata: true,
+        });
 
-      // Execute embedding with performance tracking
-      benchmark.start();
-      const result = await mockEmbedder.embed(documents);
-      const metrics = benchmark.end();
+        const mockEmbedder = {
+          async embed(docs) {
+            const startTime = performance.now();
 
-      // Validate results
-      expect(result.embeddings).toHaveLength(batchSize);
-      expect(result.metrics.totalDocuments).toBe(batchSize);
-      
-      // Performance assertions
-      expect(result.metrics.avgTimePerDoc).toBeLessThan(10); // Less than 10ms per doc
-      expect(result.metrics.throughput).toBeGreaterThan(10); // More than 10 docs/sec
-      
-      // Store metrics for reporting
-      const performanceData = {
-        testName: `embedding-batch-${batchSize}`,
-        batchSize,
-        duration: metrics.duration,
-        avgTimePerDoc: result.metrics.avgTimePerDoc,
-        throughput: result.metrics.throughput,
-        memoryUsage: result.metrics.memoryUsage.heapUsed / 1024 / 1024, // MB
-        timestamp: new Date().toISOString()
-      };
-      
-      performanceMetrics.push(performanceData);
-      csvOutput.push([
-        batchSize,
-        metrics.duration.toFixed(2),
-        result.metrics.avgTimePerDoc.toFixed(2),
-        result.metrics.throughput.toFixed(2),
-        (result.metrics.memoryUsage.heapUsed / 1024 / 1024).toFixed(2)
-      ]);
+            // Simulate realistic embedding processing time
+            const processingTime = Math.max(50, docs.length * 0.5); // 0.5ms per doc minimum
+            await new Promise((resolve) => setTimeout(resolve, processingTime));
 
-      console.log(`📊 Batch ${batchSize}: ${metrics.duration.toFixed(2)}ms, ${result.metrics.throughput.toFixed(2)} docs/sec`);
-    }, 60000); // 60 second timeout for large batches
+            const embeddings = docs.map((doc, index) => ({
+              id: doc.id,
+              values: TestDataGenerator.generateVector(384),
+              metadata: { ...doc.metadata, embeddingIndex: index },
+            }));
 
-    it('should handle memory pressure gracefully', async () => {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+
+            return {
+              embeddings,
+              metrics: {
+                totalDocuments: docs.length,
+                processingTime: duration,
+                avgTimePerDoc: duration / docs.length,
+                throughput: (docs.length / duration) * 1000, // docs per second
+                memoryUsage: process.memoryUsage(),
+              },
+            };
+          },
+        };
+
+        // Execute embedding with performance tracking
+        benchmark.start();
+        const result = await mockEmbedder.embed(documents);
+        const metrics = benchmark.end();
+
+        // Validate results
+        expect(result.embeddings).toHaveLength(batchSize);
+        expect(result.metrics.totalDocuments).toBe(batchSize);
+
+        // Performance assertions
+        expect(result.metrics.avgTimePerDoc).toBeLessThan(10); // Less than 10ms per doc
+        expect(result.metrics.throughput).toBeGreaterThan(10); // More than 10 docs/sec
+
+        // Store metrics for reporting
+        const performanceData = {
+          testName: `embedding-batch-${batchSize}`,
+          batchSize,
+          duration: metrics.duration,
+          avgTimePerDoc: result.metrics.avgTimePerDoc,
+          throughput: result.metrics.throughput,
+          memoryUsage: result.metrics.memoryUsage.heapUsed / 1024 / 1024, // MB
+          timestamp: new Date().toISOString(),
+        };
+
+        performanceMetrics.push(performanceData);
+        csvOutput.push([
+          batchSize,
+          metrics.duration.toFixed(2),
+          result.metrics.avgTimePerDoc.toFixed(2),
+          result.metrics.throughput.toFixed(2),
+          (result.metrics.memoryUsage.heapUsed / 1024 / 1024).toFixed(2),
+        ]);
+
+        console.log(
+          `📊 Batch ${batchSize}: ${metrics.duration.toFixed(2)}ms, ${result.metrics.throughput.toFixed(2)} docs/sec`,
+        );
+      },
+      60000,
+    ); // 60 second timeout for large batches
+
+    it("should handle memory pressure gracefully", async () => {
       const largeDocuments = TestDataGenerator.generateDocuments(1000, {
         minLength: 5000,
-        maxLength: 10000 // Large documents
+        maxLength: 10000, // Large documents
       });
 
       const memoryAwareEmbedder = {
@@ -118,32 +127,33 @@ describe('Large Document Batch Performance Tests', () => {
           const startMemory = process.memoryUsage();
           const chunkSize = 100; // Process in chunks
           const results = [];
-          
+
           for (let i = 0; i < docs.length; i += chunkSize) {
             const chunk = docs.slice(i, i + chunkSize);
-            const chunkResults = chunk.map(doc => ({
+            const chunkResults = chunk.map((doc) => ({
               id: doc.id,
               values: TestDataGenerator.generateVector(384),
-              metadata: doc.metadata
+              metadata: doc.metadata,
             }));
-            
+
             results.push(...chunkResults);
-            
+
             // Force garbage collection if available
             if (global.gc) {
               global.gc();
             }
-            
+
             // Check memory usage
             const currentMemory = process.memoryUsage();
-            const memoryIncrease = currentMemory.heapUsed - startMemory.heapUsed;
-            
+            const memoryIncrease =
+              currentMemory.heapUsed - startMemory.heapUsed;
+
             // Assert memory doesn't grow excessively
             expect(memoryIncrease).toBeLessThan(500 * 1024 * 1024); // Less than 500MB increase
           }
-          
+
           return { embeddings: results, memoryManaged: true };
-        }
+        },
       };
 
       const result = await memoryAwareEmbedder.embed(largeDocuments);
@@ -152,151 +162,173 @@ describe('Large Document Batch Performance Tests', () => {
     });
   });
 
-  describe('Parallel Embedding Processing', () => {
-    it('should process multiple batches concurrently', async () => {
+  describe("Parallel Embedding Processing", () => {
+    it("should process multiple batches concurrently", async () => {
       const concurrentBatches = 5;
       const batchSize = 200;
-      
+
       const parallelEmbedder = {
         async embed(docs) {
           const processingTime = 100 + Math.random() * 100; // 100-200ms
-          await new Promise(resolve => setTimeout(resolve, processingTime));
-          
+          await new Promise((resolve) => setTimeout(resolve, processingTime));
+
           return {
-            embeddings: docs.map(doc => ({
+            embeddings: docs.map((doc) => ({
               id: doc.id,
               values: TestDataGenerator.generateVector(384),
-              metadata: doc.metadata
+              metadata: doc.metadata,
             })),
-            processingTime
+            processingTime,
           };
-        }
+        },
       };
 
-      const batches = Array.from({ length: concurrentBatches }, () => 
-        TestDataGenerator.generateDocuments(batchSize)
+      const batches = Array.from({ length: concurrentBatches }, () =>
+        TestDataGenerator.generateDocuments(batchSize),
       );
 
       const startTime = performance.now();
-      
+
       // Process all batches concurrently
       const results = await Promise.all(
-        batches.map(batch => parallelEmbedder.embed(batch))
+        batches.map((batch) => parallelEmbedder.embed(batch)),
       );
-      
+
       const endTime = performance.now();
       const totalDuration = endTime - startTime;
-      
+
       // Validate all batches processed
       expect(results).toHaveLength(concurrentBatches);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.embeddings).toHaveLength(batchSize);
       });
-      
+
       // Performance assertion - should be faster than sequential
-      const sequentialEstimate = results.reduce((sum, r) => sum + r.processingTime, 0);
+      const sequentialEstimate = results.reduce(
+        (sum, r) => sum + r.processingTime,
+        0,
+      );
       expect(totalDuration).toBeLessThan(sequentialEstimate * 0.8); // At least 20% faster
-      
-      console.log(`🚀 Parallel processing: ${totalDuration.toFixed(2)}ms vs ${sequentialEstimate.toFixed(2)}ms sequential`);
+
+      console.log(
+        `🚀 Parallel processing: ${totalDuration.toFixed(2)}ms vs ${sequentialEstimate.toFixed(2)}ms sequential`,
+      );
     });
   });
 
-  describe('Embedding Quality vs Performance Trade-offs', () => {
-    it('should maintain quality with optimized processing', async () => {
+  describe("Embedding Quality vs Performance Trade-offs", () => {
+    it("should maintain quality with optimized processing", async () => {
       const documents = TestDataGenerator.generateDocuments(1000);
-      
+
       const optimizedEmbedder = {
         async embed(docs, options = {}) {
-          const { quality = 'standard', batchSize = 100 } = options;
-          
+          const { quality = "standard", batchSize = 100 } = options;
+
           const qualityMultiplier = {
-            'fast': 0.5,
-            'standard': 1.0,
-            'high': 2.0
+            fast: 0.5,
+            standard: 1.0,
+            high: 2.0,
           }[quality];
-          
+
           const baseProcessingTime = docs.length * qualityMultiplier;
-          await new Promise(resolve => setTimeout(resolve, baseProcessingTime));
-          
+          await new Promise((resolve) =>
+            setTimeout(resolve, baseProcessingTime),
+          );
+
           return {
-            embeddings: docs.map(doc => ({
+            embeddings: docs.map((doc) => ({
               id: doc.id,
               values: TestDataGenerator.generateVector(384),
-              metadata: { ...doc.metadata, quality }
+              metadata: { ...doc.metadata, quality },
             })),
             quality,
-            processingTime: baseProcessingTime
+            processingTime: baseProcessingTime,
           };
-        }
+        },
       };
 
       // Test different quality settings
-      const qualityLevels = ['fast', 'standard', 'high'];
+      const qualityLevels = ["fast", "standard", "high"];
       const results = {};
-      
+
       for (const quality of qualityLevels) {
         const startTime = performance.now();
         const result = await optimizedEmbedder.embed(documents, { quality });
         const endTime = performance.now();
-        
+
         results[quality] = {
           duration: endTime - startTime,
           embeddings: result.embeddings.length,
-          quality: result.quality
+          quality: result.quality,
         };
       }
-      
+
       // Validate quality vs performance trade-off
       expect(results.fast.duration).toBeLessThan(results.standard.duration);
       expect(results.standard.duration).toBeLessThan(results.high.duration);
-      
+
       // All should produce same number of embeddings
-      Object.values(results).forEach(result => {
+      Object.values(results).forEach((result) => {
         expect(result.embeddings).toBe(1000);
       });
-      
-      console.log('📈 Quality vs Performance:', JSON.stringify(results, null, 2));
+
+      console.log(
+        "📈 Quality vs Performance:",
+        JSON.stringify(results, null, 2),
+      );
     });
   });
 
   async function generatePerformanceReports() {
-    const outputDir = path.join(process.cwd(), 'performance-reports');
-    
+    const outputDir = path.join(process.cwd(), "performance-reports");
+
     // Generate CSV report
-    const csvHeader = ['Batch Size', 'Duration (ms)', 'Avg Time/Doc (ms)', 'Throughput (docs/sec)', 'Memory (MB)'];
-    const csvContent = [csvHeader, ...csvOutput].map(row => row.join(',')).join('\n');
-    
+    const csvHeader = [
+      "Batch Size",
+      "Duration (ms)",
+      "Avg Time/Doc (ms)",
+      "Throughput (docs/sec)",
+      "Memory (MB)",
+    ];
+    const csvContent = [csvHeader, ...csvOutput]
+      .map((row) => row.join(","))
+      .join("\n");
+
     fs.writeFileSync(
-      path.join(outputDir, 'large-batch-performance.csv'),
-      csvContent
+      path.join(outputDir, "large-batch-performance.csv"),
+      csvContent,
     );
-    
+
     // Generate JSON report
     const jsonReport = {
-      testSuite: 'Large Document Batch Performance',
+      testSuite: "Large Document Batch Performance",
       timestamp: new Date().toISOString(),
       summary: {
         totalTests: performanceMetrics.length,
-        avgThroughput: performanceMetrics.reduce((sum, m) => sum + m.throughput, 0) / performanceMetrics.length,
-        maxThroughput: Math.max(...performanceMetrics.map(m => m.throughput)),
-        avgMemoryUsage: performanceMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) / performanceMetrics.length
+        avgThroughput:
+          performanceMetrics.reduce((sum, m) => sum + m.throughput, 0) /
+          performanceMetrics.length,
+        maxThroughput: Math.max(...performanceMetrics.map((m) => m.throughput)),
+        avgMemoryUsage:
+          performanceMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) /
+          performanceMetrics.length,
       },
-      metrics: performanceMetrics
+      metrics: performanceMetrics,
     };
-    
+
     fs.writeFileSync(
-      path.join(outputDir, 'large-batch-performance.json'),
-      JSON.stringify(jsonReport, null, 2)
+      path.join(outputDir, "large-batch-performance.json"),
+      JSON.stringify(jsonReport, null, 2),
     );
-    
+
     // Generate HTML report
     const htmlReport = generateHTMLReport(jsonReport);
     fs.writeFileSync(
-      path.join(outputDir, 'large-batch-performance.html'),
-      htmlReport
+      path.join(outputDir, "large-batch-performance.html"),
+      htmlReport,
     );
-    
-    console.log('📊 Performance reports generated in:', outputDir);
+
+    console.log("📊 Performance reports generated in:", outputDir);
   }
 
   function generateHTMLReport(data) {

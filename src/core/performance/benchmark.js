@@ -1,8 +1,9 @@
 /**
-const path = require('path');
  * Benchmark tooling for measuring RAG pipeline performance
  * Provides detailed timing and performance metrics for each stage
  */
+
+const path = require("path");
 
 /**
  * Performance timer utility
@@ -22,7 +23,7 @@ class PerformanceTimer {
     this.timers.set(name, {
       startTime: performance.now(),
       startMemory: process.memoryUsage(),
-      metadata
+      metadata,
     });
   }
 
@@ -39,7 +40,7 @@ class PerformanceTimer {
 
     const endTime = performance.now();
     const endMemory = process.memoryUsage();
-    
+
     const timing = {
       duration: endTime - timer.startTime,
       startTime: timer.startTime,
@@ -47,15 +48,15 @@ class PerformanceTimer {
       memoryDelta: {
         heapUsed: endMemory.heapUsed - timer.startMemory.heapUsed,
         heapTotal: endMemory.heapTotal - timer.startMemory.heapTotal,
-        external: endMemory.external - timer.startMemory.external
+        external: endMemory.external - timer.startMemory.external,
       },
       metadata: timer.metadata,
-      result
+      result,
     };
 
     this.results.set(name, timing);
     this.timers.delete(name);
-    
+
     return timing;
   }
 
@@ -89,15 +90,17 @@ class PerformanceTimer {
  * Pipeline benchmark runner
  */
 class PipelineBenchmark {
-  constructor(pipeline, _options = {}) {
+  constructor(pipeline, options = {}) {
     this.pipeline = pipeline;
     this.timer = new PerformanceTimer();
-    this._options = {
-      includeMemory: _options.includeMemory !== false,
-      includeGC: _options.includeGC !== false,
-      warmupRuns: _options.warmupRuns || 0,
-      iterations: _options.iterations || 1,
-      ..._options
+    this.options = {
+      includeMemory: options.includeMemory !== false,
+      includeGC: options.includeGC !== false,
+      warmupRuns: options.warmupRuns || 0,
+      iterations: options.iterations || 1,
+      concurrency: options.concurrency || 1,
+      timeout: options.timeout || 30000,
+      ...options,
     };
   }
 
@@ -108,22 +111,22 @@ class PipelineBenchmark {
    */
   async benchmarkIngest(docPath) {
     console.log(`🔬 Benchmarking ingest operation: ${docPath}`); // eslint-disable-line no-console
-    
+
     // Warmup runs
-    for (let i = 0; i < this._options.warmupRuns; i++) {
+    for (let i = 0; i < this.options.warmupRuns; i++) {
       console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`); // eslint-disable-line no-console
       await this.runIngestBenchmark(docPath, true);
     }
 
     // Actual benchmark runs
     const results = [];
-    for (let i = 0; i < this._options.iterations; i++) {
+    for (let i = 0; i < this.options.iterations; i++) {
       console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`); // eslint-disable-line no-console
       const result = await this.runIngestBenchmark(docPath, false);
       results.push(result);
     }
 
-    return this.aggregateResults('ingest', results);
+    return this.aggregateResults("ingest", results);
   }
 
   /**
@@ -134,49 +137,62 @@ class PipelineBenchmark {
    */
   async runIngestBenchmark(docPath, isWarmup = false) {
     this.timer.clear();
-    
+
     try {
       // Overall ingest timing
-      this.timer.start('ingest_total', { docPath, isWarmup });
+      this.timer.start("ingest_total", { docPath, isWarmup });
 
       // Stage 1: Document loading
-      this.timer.start('loader', { stage: 'load', docPath });
+      this.timer.start("loader", { stage: "load", docPath });
       const documents = await this.pipeline.loaderInstance.load(docPath);
-      const loadResult = this.timer.end('loader', { 
+      const loadResult = this.timer.end("loader", {
         documentCount: documents.length,
-        totalSize: documents.reduce((sum, doc) => sum + (doc.content?.length || 0), 0)
+        totalSize: documents.reduce(
+          (sum, doc) => sum + (doc.content?.length || 0),
+          0,
+        ),
       });
 
       // Stage 2: Chunking
-      this.timer.start('chunker', { stage: 'chunk', documentCount: documents.length });
-      const chunks = documents.flatMap(doc => doc.chunk());
-      const chunkResult = this.timer.end('chunker', { 
+      this.timer.start("chunker", {
+        stage: "chunk",
+        documentCount: documents.length,
+      });
+      const chunks = documents.flatMap((doc) => doc.chunk());
+      const chunkResult = this.timer.end("chunker", {
         chunkCount: chunks.length,
-        avgChunkSize: chunks.reduce((sum, chunk) => sum + chunk.length, 0) / chunks.length
+        avgChunkSize:
+          chunks.reduce((sum, chunk) => sum + chunk.length, 0) / chunks.length,
       });
 
       // Stage 3: Embedding
-      this.timer.start('embedder', { stage: 'embed', chunkCount: chunks.length });
+      this.timer.start("embedder", {
+        stage: "embed",
+        chunkCount: chunks.length,
+      });
       const vectors = await this.pipeline.embedderInstance.embed(chunks);
-      const embedResult = this.timer.end('embedder', { 
+      const embedResult = this.timer.end("embedder", {
         vectorCount: vectors.length,
         vectorDimension: vectors[0]?.length || 0,
-        throughput: chunks.length / (loadResult.duration / 1000) // chunks per second
+        throughput: chunks.length / (loadResult.duration / 1000), // chunks per second
       });
 
       // Stage 4: Storage
-      this.timer.start('retriever_store', { stage: 'store', vectorCount: vectors.length });
+      this.timer.start("retriever_store", {
+        stage: "store",
+        vectorCount: vectors.length,
+      });
       await this.pipeline.retrieverInstance.store(vectors);
-      const storeResult = this.timer.end('retriever_store', { 
-        vectorCount: vectors.length 
+      const storeResult = this.timer.end("retriever_store", {
+        vectorCount: vectors.length,
       });
 
       // End overall timing
-      const totalResult = this.timer.end('ingest_total', {
+      const totalResult = this.timer.end("ingest_total", {
         success: true,
         documentCount: documents.length,
         chunkCount: chunks.length,
-        vectorCount: vectors.length
+        vectorCount: vectors.length,
       });
 
       return {
@@ -185,20 +201,19 @@ class PipelineBenchmark {
           load: loadResult,
           chunk: chunkResult,
           embed: embedResult,
-          store: storeResult
+          store: storeResult,
         },
         total: totalResult,
         metadata: {
           docPath,
           isWarmup,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
-
     } catch (error) {
-      const totalResult = this.timer.end('ingest_total', { 
-        success: false, 
-        error: error.message 
+      const totalResult = this.timer.end("ingest_total", {
+        success: false,
+        error: error.message,
       });
 
       return {
@@ -209,8 +224,8 @@ class PipelineBenchmark {
         metadata: {
           docPath,
           isWarmup,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   }
@@ -221,23 +236,25 @@ class PipelineBenchmark {
    * @returns {Promise<object>} Benchmark results
    */
   async benchmarkQuery(prompt) {
-    console.log(`🔬 Benchmarking query operation: "${prompt.substring(0, 50)}..."`); // eslint-disable-line no-console
-    
+    console.log(
+      `🔬 Benchmarking query operation: "${prompt.substring(0, 50)}..."`,
+    ); // eslint-disable-line no-console
+
     // Warmup runs
-    for (let i = 0; i < this._options.warmupRuns; i++) {
+    for (let i = 0; i < this.options.warmupRuns; i++) {
       console.log(`  Warmup run ${i + 1}/${this.options.warmupRuns}`); // eslint-disable-line no-console
       await this.runQueryBenchmark(prompt, true);
     }
 
     // Actual benchmark runs
     const results = [];
-    for (let i = 0; i < this._options.iterations; i++) {
+    for (let i = 0; i < this.options.iterations; i++) {
       console.log(`  Benchmark run ${i + 1}/${this.options.iterations}`); // eslint-disable-line no-console
       const result = await this.runQueryBenchmark(prompt, false);
       results.push(result);
     }
 
-    return this.aggregateResults('query', results);
+    return this.aggregateResults("query", results);
   }
 
   /**
@@ -248,59 +265,79 @@ class PipelineBenchmark {
    */
   async runQueryBenchmark(prompt, isWarmup = false) {
     this.timer.clear();
-    
+
     try {
       // Overall query timing
-      this.timer.start('query_total', { prompt: prompt.substring(0, 100), isWarmup });
+      this.timer.start("query_total", {
+        prompt: prompt.substring(0, 100),
+        isWarmup,
+      });
 
       // Stage 1: Query embedding
-      this.timer.start('embedder_query', { stage: 'embed_query', promptLength: prompt.length });
-      const queryVector = await this.pipeline.embedderInstance.embedQuery(prompt);
-      const embedResult = this.timer.end('embedder_query', { 
-        vectorDimension: queryVector.length 
+      this.timer.start("embedder_query", {
+        stage: "embed_query",
+        promptLength: prompt.length,
+      });
+      const queryVector =
+        await this.pipeline.embedderInstance.embedQuery(prompt);
+      const embedResult = this.timer.end("embedder_query", {
+        vectorDimension: queryVector.length,
       });
 
       // Stage 2: Retrieval
-      this.timer.start('retriever_search', { stage: 'retrieve', vectorDimension: queryVector.length });
-      let retrieved = await this.pipeline.retrieverInstance.retrieve(queryVector);
-      const retrieveResult = this.timer.end('retriever_search', { 
-        retrievedCount: retrieved.length 
+      this.timer.start("retriever_search", {
+        stage: "retrieve",
+        vectorDimension: queryVector.length,
+      });
+      let retrieved =
+        await this.pipeline.retrieverInstance.retrieve(queryVector);
+      const retrieveResult = this.timer.end("retriever_search", {
+        retrievedCount: retrieved.length,
       });
 
       // Stage 3: Reranking (if enabled)
       let rerankResult = null;
       if (this.pipeline.rerankerInstance) {
-        this.timer.start('reranker', { stage: 'rerank', documentCount: retrieved.length });
-        retrieved = await this.pipeline.rerankerInstance.rerank(prompt, retrieved);
-        rerankResult = this.timer.end('reranker', { 
-          rerankedCount: retrieved.length 
+        this.timer.start("reranker", {
+          stage: "rerank",
+          documentCount: retrieved.length,
+        });
+        retrieved = await this.pipeline.rerankerInstance.rerank(
+          prompt,
+          retrieved,
+        );
+        rerankResult = this.timer.end("reranker", {
+          rerankedCount: retrieved.length,
         });
       }
 
       // Stage 4: LLM Generation
-      this.timer.start('llm_generate', { 
-        stage: 'generate', 
-        promptLength: prompt.length, 
-        contextCount: retrieved.length 
+      this.timer.start("llm_generate", {
+        stage: "generate",
+        promptLength: prompt.length,
+        contextCount: retrieved.length,
       });
-      const result = await this.pipeline.llmInstance.generate(prompt, retrieved);
-      const generateResult = this.timer.end('llm_generate', { 
+      const result = await this.pipeline.llmInstance.generate(
+        prompt,
+        retrieved,
+      );
+      const generateResult = this.timer.end("llm_generate", {
         responseLength: result.length,
-        estimatedTokens: Math.ceil(result.length / 4) // Rough token estimate
+        estimatedTokens: Math.ceil(result.length / 4), // Rough token estimate
       });
 
       // End overall timing
-      const totalResult = this.timer.end('query_total', {
+      const totalResult = this.timer.end("query_total", {
         success: true,
         promptLength: prompt.length,
         responseLength: result.length,
-        retrievedCount: retrieved.length
+        retrievedCount: retrieved.length,
       });
 
       const stages = {
         embed: embedResult,
         retrieve: retrieveResult,
-        generate: generateResult
+        generate: generateResult,
       };
 
       if (rerankResult) {
@@ -315,14 +352,13 @@ class PipelineBenchmark {
         metadata: {
           prompt: prompt.substring(0, 100),
           isWarmup,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
-
     } catch (error) {
-      const totalResult = this.timer.end('query_total', { 
-        success: false, 
-        error: error.message 
+      const totalResult = this.timer.end("query_total", {
+        success: false,
+        error: error.message,
       });
 
       return {
@@ -333,8 +369,8 @@ class PipelineBenchmark {
         metadata: {
           prompt: prompt.substring(0, 100),
           isWarmup,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   }
@@ -346,16 +382,16 @@ class PipelineBenchmark {
    * @returns {object} Aggregated results
    */
   aggregateResults(operation, results) {
-    const successful = results.filter(r => r.success);
-    const failed = results.filter(r => !r.success);
+    const successful = results.filter((r) => r.success);
+    const failed = results.filter((r) => !r.success);
 
     if (successful.length === 0) {
       return {
         operation,
         success: false,
-        error: 'All benchmark runs failed',
+        error: "All benchmark runs failed",
         failedRuns: failed.length,
-        totalRuns: results.length
+        totalRuns: results.length,
       };
     }
 
@@ -365,8 +401,8 @@ class PipelineBenchmark {
 
     for (const stageName of stageNames) {
       const stageDurations = successful
-        .map(r => r.stages[stageName]?.duration)
-        .filter(d => d !== undefined);
+        .map((r) => r.stages[stageName]?.duration)
+        .filter((d) => d !== undefined);
 
       if (stageDurations.length > 0) {
         stageStats[stageName] = this.calculateStats(stageDurations);
@@ -374,7 +410,7 @@ class PipelineBenchmark {
     }
 
     // Aggregate total timings
-    const totalDurations = successful.map(r => r.total.duration);
+    const totalDurations = successful.map((r) => r.total.duration);
     const totalStats = this.calculateStats(totalDurations);
 
     return {
@@ -383,18 +419,18 @@ class PipelineBenchmark {
       runs: {
         total: results.length,
         successful: successful.length,
-        failed: failed.length
+        failed: failed.length,
       },
       timing: {
         stages: stageStats,
-        total: totalStats
+        total: totalStats,
       },
       metadata: {
-        iterations: this._options.iterations,
-        warmupRuns: this._options.warmupRuns,
-        timestamp: new Date().toISOString()
+        iterations: this.options.iterations,
+        warmupRuns: this.options.warmupRuns,
+        timestamp: new Date().toISOString(),
       },
-      rawResults: successful
+      rawResults: successful,
     };
   }
 
@@ -409,7 +445,7 @@ class PipelineBenchmark {
     const sorted = [...values].sort((a, b) => a - b);
     const sum = values.reduce((a, b) => a + b, 0);
     const mean = sum / values.length;
-    
+
     return {
       min: Math.min(...values),
       max: Math.max(...values),
@@ -417,8 +453,11 @@ class PipelineBenchmark {
       median: sorted[Math.floor(sorted.length / 2)],
       p95: sorted[Math.floor(sorted.length * 0.95)],
       p99: sorted[Math.floor(sorted.length * 0.99)],
-      stdDev: Math.sqrt(values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length),
-      count: values.length
+      stdDev: Math.sqrt(
+        values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+          values.length,
+      ),
+      count: values.length,
     };
   }
 
@@ -433,16 +472,16 @@ class PipelineBenchmark {
     }
 
     let output = `\n📊 ${results.operation.toUpperCase()} BENCHMARK RESULTS\n`;
-    output += `${'='.repeat(50)}\n`;
+    output += `${"=".repeat(50)}\n`;
     output += `Runs: ${results.runs.successful}/${results.runs.total} successful\n`;
-    
+
     if (results.runs.failed > 0) {
       output += `⚠️  ${results.runs.failed} runs failed\n`;
     }
-    
-    output += '\n⏱️  STAGE TIMINGS (ms)\n';
-    output += `${'-'.repeat(30)}\n`;
-    
+
+    output += "\n⏱️  STAGE TIMINGS (ms)\n";
+    output += `${"-".repeat(30)}\n`;
+
     for (const [stage, stats] of Object.entries(results.timing.stages)) {
       output += `${stage.padEnd(15)} | `;
       output += `avg: ${stats.mean.toFixed(1).padStart(6)} | `;
@@ -450,19 +489,19 @@ class PipelineBenchmark {
       output += `max: ${stats.max.toFixed(1).padStart(6)} | `;
       output += `p95: ${stats.p95.toFixed(1).padStart(6)}\n`;
     }
-    
-    output += `${'-'.repeat(30)}\n`;
-    output += 'TOTAL          | ';
+
+    output += `${"-".repeat(30)}\n`;
+    output += "TOTAL          | ";
     output += `avg: ${results.timing.total.mean.toFixed(1).padStart(6)} | `;
     output += `min: ${results.timing.total.min.toFixed(1).padStart(6)} | `;
     output += `max: ${results.timing.total.max.toFixed(1).padStart(6)} | `;
     output += `p95: ${results.timing.total.p95.toFixed(1).padStart(6)}\n`;
-    
+
     return output;
   }
 }
 
 module.exports = {
   PipelineBenchmark,
-  PerformanceTimer
+  PerformanceTimer,
 };

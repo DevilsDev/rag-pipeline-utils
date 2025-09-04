@@ -1,46 +1,17 @@
+"use strict";
 module.exports = {
-  testEnvironment: 'node',
-  testTimeout: 60000,
-  maxWorkers: 1,
-  detectOpenHandles: false,
-  forceExit: true,
-  verbose: false,
-  silent: false,
-  collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'json', 'html'],
-  collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/**/*.test.js',
-    '!src/**/__tests__/**',
-    '!**/node_modules/**'
-  ],
-  testMatch: [
-    '**/__tests__/**/*.test.js',
-    '**/?(*.)+(spec|test).js'
-  ],
+  testEnvironment: "node",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  testMatch: ["**/__tests__/**/*.@(test|spec).js"],
   testPathIgnorePatterns: [
-    '/node_modules/',
-    '/coverage/',
-    '/dist/',
-    '/build/'
+    "/node_modules/",
+    "/__tests__/fixtures/",
+    "/__tests__/__temp__/",
+    "/__tests__/utils/",
+    "/__tests__/mocks/",
+    "/__tests__/e2e/_debug-open-handles.js",
   ],
-  moduleFileExtensions: ['js', 'json'],
-  transform: {},
-  setupFilesAfterEnv: [],
-  clearMocks: true,
-  resetMocks: true,
-  restoreMocks: true,
-  reporters: [
-    'default',
-    ['jest-junit', {
-      outputDirectory: '.',
-      outputName: 'junit.xml',
-      ancestorSeparator: ' › ',
-      uniqueOutputName: 'false',
-      suiteNameTemplate: '{filepath}',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}'
-    }]
-  ]
+  // transform ESM deps like inquirer to CJS so require() won't crash
+  transform: { "^.+\\.js$": "babel-jest" },
+  transformIgnorePatterns: ["node_modules/(?!(inquirer)/)"],
 };

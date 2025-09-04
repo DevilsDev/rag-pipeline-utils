@@ -6,9 +6,16 @@
 
 class OpenAIEmbedder {
   constructor(_options = {}) {
-    this.apiKey = _options.apiKey || 'mock-api-key';
-    this.model = _options.model || 'text-embedding-ada-002';
+    this.apiKey = _options.apiKey || "mock-api-key";
+    this.model = _options.model || "text-embedding-ada-002";
     this.dimensions = _options.dimensions || 1536;
+    this.options = _options;
+
+    // Configurable batch size from environment or options
+    this.batchSize =
+      parseInt(process.env.RAG_EMBEDDER_BATCH_SIZE) ||
+      _options.batchSize ||
+      100; // Default batch size for OpenAI API
   }
 
   /**
@@ -18,11 +25,43 @@ class OpenAIEmbedder {
    */
   async embed(chunks) {
     if (!Array.isArray(chunks)) {
-      throw new Error('embed() expects an array of strings');
+      throw new Error("embed() expects an array of strings");
     }
 
+    // Process in batches for better memory management and API rate limiting
+    const results = [];
+    for (let i = 0; i < chunks.length; i += this.batchSize) {
+      const batch = chunks.slice(i, i + this.batchSize);
+      const batchResults = await this._processBatch(batch);
+      results.push(...batchResults);
+
+      // Optional progress callback
+      if (this.options.onProgress) {
+        this.options.onProgress({
+          processed: Math.min(i + this.batchSize, chunks.length),
+          total: chunks.length,
+          stage: "embedding",
+        });
+      }
+
+      // Simulate API rate limiting delay
+      if (chunks.length > this.batchSize) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Process a batch of chunks
+   * @private
+   * @param {string[]} batch - Batch of text chunks
+   * @returns {Promise<number[][]>} Array of embedding vectors
+   */
+  async _processBatch(batch) {
     // Return mock embeddings - deterministic based on content for testing
-    return chunks.map(chunk => this.#generateMockEmbedding(chunk));
+    return batch.map((chunk) => this.#generateMockEmbedding(chunk));
   }
 
   /**
@@ -31,8 +70,8 @@ class OpenAIEmbedder {
    * @returns {Promise<number[]>} Embedding vector
    */
   async embedQuery(query) {
-    if (typeof query !== 'string') {
-      throw new Error('embedQuery() expects a string');
+    if (typeof query !== "string") {
+      throw new Error("embedQuery() expects a string");
     }
 
     return this.#generateMockEmbedding(query);
@@ -48,13 +87,13 @@ class OpenAIEmbedder {
     // Create deterministic "embedding" based on text content
     const hash = this.#simpleHash(text);
     const embedding = [];
-    
+
     for (let i = 0; i < this.dimensions; i++) {
       // Generate pseudo-random values based on hash and index
       const value = Math.sin(hash + i) * 0.5;
       embedding.push(value);
     }
-    
+
     return embedding;
   }
 
@@ -68,7 +107,7 @@ class OpenAIEmbedder {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash;
@@ -76,5 +115,5 @@ class OpenAIEmbedder {
 }
 
 module.exports = {
-  OpenAIEmbedder
+  OpenAIEmbedder,
 };

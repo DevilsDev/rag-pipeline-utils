@@ -11,6 +11,7 @@ This comprehensive troubleshooting guide helps you diagnose and resolve common i
 **Problem**: `npm install @DevilsDev/rag-pipeline-utils` fails with dependency errors.
 
 **Solutions**:
+
 ```bash
 # Clear npm cache
 npm cache clean --force
@@ -27,6 +28,7 @@ npm install @DevilsDev/rag-pipeline-utils --force
 ```
 
 **Common Dependency Conflicts**:
+
 - **OpenAI SDK version mismatch**: Ensure OpenAI SDK v4+ is installed
 - **Node.js version**: Requires Node.js 18+ for ES modules support
 - **Python dependencies**: Some embedders require Python 3.8+ for native modules
@@ -36,6 +38,7 @@ npm install @DevilsDev/rag-pipeline-utils --force
 **Problem**: `.ragrc.json` configuration not being loaded or invalid format.
 
 **Diagnostic Commands**:
+
 ```bash
 # Validate configuration
 rag-pipeline config validate
@@ -48,6 +51,7 @@ rag-pipeline config init --force
 ```
 
 **Common Configuration Errors**:
+
 ```json
 // ❌ Invalid: Missing required fields
 {
@@ -73,6 +77,7 @@ rag-pipeline config init --force
 **Problem**: API keys and environment variables not being recognized.
 
 **Debug Steps**:
+
 ```bash
 # Check environment variables
 echo $OPENAI_API_KEY
@@ -87,6 +92,7 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 ```
 
 **Environment Variable Precedence**:
+
 1. Command-line arguments (`--api-key`)
 2. Environment variables (`OPENAI_API_KEY`)
 3. Configuration file (`.ragrc.json`)
@@ -101,6 +107,7 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 **Problem**: Custom plugins not loading or throwing runtime errors.
 
 **Diagnostic Commands**:
+
 ```bash
 # List available plugins
 rag-pipeline plugins list
@@ -113,14 +120,16 @@ rag-pipeline plugins test ./my-plugin --test-data ./sample.json
 ```
 
 **Common Plugin Issues**:
+
 - **Missing exports**: Ensure plugin exports required methods
 - **Contract violations**: Plugin doesn't implement required interface
 - **Dependency conflicts**: Plugin dependencies conflict with core
 
 **Plugin Debugging**:
+
 ```javascript
 // Enable plugin debugging
-process.env.DEBUG = 'rag-pipeline:plugins';
+process.env.DEBUG = "rag-pipeline:plugins";
 
 // Add logging to plugin
 class MyPlugin {
@@ -143,6 +152,7 @@ class MyPlugin {
 **Problem**: External API calls failing (OpenAI, Pinecone, etc.).
 
 **OpenAI API Issues**:
+
 ```bash
 # Test API connectivity
 curl -H "Authorization: Bearer $OPENAI_API_KEY" \
@@ -153,6 +163,7 @@ rag-pipeline query "test" --verbose --llm openai-gpt-3.5-turbo
 ```
 
 **Pinecone API Issues**:
+
 ```bash
 # Test Pinecone connection
 curl -H "Api-Key: $PINECONE_API_KEY" \
@@ -163,6 +174,7 @@ rag-pipeline status --component retriever --detailed
 ```
 
 **Common API Error Codes**:
+
 - **401 Unauthorized**: Invalid API key
 - **429 Rate Limited**: Too many requests
 - **503 Service Unavailable**: API service down
@@ -177,6 +189,7 @@ rag-pipeline status --component retriever --detailed
 **Problem**: Embedding generation taking too long or timing out.
 
 **Performance Optimization**:
+
 ```javascript
 // Enable parallel processing
 const pipeline = createRagPipeline({
@@ -195,6 +208,7 @@ rag-pipeline benchmark --component embedder --queries 100
 ```
 
 **Batch Processing Strategy**:
+
 ```bash
 # Process large documents in chunks
 rag-pipeline ingest ./large-docs \
@@ -209,22 +223,24 @@ rag-pipeline ingest ./large-docs \
 **Problem**: High memory consumption or out-of-memory errors.
 
 **Memory Optimization**:
+
 ```javascript
 // Enable streaming for large documents
 const pipeline = createRagPipeline({
   streaming: true,
-  memoryLimit: '2GB',
+  memoryLimit: "2GB",
   chunkSize: 1000,
-  batchSize: 10
+  batchSize: 10,
 });
 
 // Monitor memory usage
-process.on('warning', (warning) => {
-  console.warn('Memory warning:', warning);
+process.on("warning", (warning) => {
+  console.warn("Memory warning:", warning);
 });
 ```
 
 **Memory Monitoring**:
+
 ```bash
 # Monitor memory during processing
 rag-pipeline ingest ./docs --memory-monitor --verbose
@@ -238,6 +254,7 @@ node --max-old-space-size=4096 rag-pipeline ingest ./large-dataset
 **Problem**: Slow retrieval or indexing performance.
 
 **Index Optimization**:
+
 ```bash
 # Rebuild index with optimized settings
 rag-pipeline rebuild --chunk-size 1500 --parallel 4
@@ -258,6 +275,7 @@ rag-pipeline optimize --component retriever
 **Problem**: Retrieved context not relevant to queries.
 
 **Debugging Steps**:
+
 ```bash
 # Test retrieval with debug output
 rag-pipeline query "your question" --debug --include-sources
@@ -267,6 +285,7 @@ rag-pipeline query "test query" --top-k 10 --min-score 0.7 --verbose
 ```
 
 **Retrieval Tuning**:
+
 ```json
 {
   "retriever": {
@@ -288,6 +307,7 @@ rag-pipeline query "test query" --top-k 10 --min-score 0.7 --verbose
 **Problem**: Generated responses are poor quality or inconsistent.
 
 **Response Quality Debugging**:
+
 ```bash
 # Test with different models
 rag-pipeline query "test" --llm openai-gpt-4
@@ -301,17 +321,18 @@ rag-pipeline query "test" \
 ```
 
 **Prompt Engineering**:
+
 ```javascript
 // Custom prompt template
 const pipeline = createRagPipeline({
   llm: {
-    name: 'openai-gpt-4',
+    name: "openai-gpt-4",
     config: {
       systemPrompt: `You are a helpful assistant. Use the provided context to answer questions accurately and concisely.`,
       temperature: 0.3,
-      maxTokens: 1500
-    }
-  }
+      maxTokens: 1500,
+    },
+  },
 });
 ```
 
@@ -324,6 +345,7 @@ const pipeline = createRagPipeline({
 **Problem**: Evaluation metrics returning NaN or unexpected values.
 
 **Metric Debugging**:
+
 ```bash
 # Test individual metrics
 rag-pipeline evaluate ./test-queries.json --metrics bleu --verbose
@@ -334,22 +356,23 @@ rag-pipeline validate-dataset ./test-queries.json
 ```
 
 **Data Format Validation**:
+
 ```javascript
 // Ensure proper test data format
 const testData = [
   {
-    "id": "test-001",
-    "prompt": "What is RAG?",
-    "groundTruth": "RAG stands for Retrieval-Augmented Generation...",
-    "category": "definition"
-  }
+    id: "test-001",
+    prompt: "What is RAG?",
+    groundTruth: "RAG stands for Retrieval-Augmented Generation...",
+    category: "definition",
+  },
 ];
 
 // Validate before evaluation
-import { validateDataset } from '@DevilsDev/rag-pipeline-utils';
+import { validateDataset } from "@DevilsDev/rag-pipeline-utils";
 const validation = await validateDataset(testData);
 if (!validation.isValid) {
-  console.error('Invalid test data:', validation.errors);
+  console.error("Invalid test data:", validation.errors);
 }
 ```
 
@@ -358,6 +381,7 @@ if (!validation.isValid) {
 **Problem**: Evaluation dashboard not loading or displaying data.
 
 **Dashboard Debugging**:
+
 ```bash
 # Start dashboard with debug logging
 DEBUG=rag-pipeline:dashboard rag-pipeline dashboard --port 3000
@@ -378,6 +402,7 @@ rag-pipeline dashboard --sample-data --port 3000
 **Problem**: `rag-pipeline` command not recognized.
 
 **Solutions**:
+
 ```bash
 # Global installation
 npm install -g @DevilsDev/rag-pipeline-utils
@@ -398,6 +423,7 @@ npm install -g @DevilsDev/rag-pipeline-utils
 **Problem**: Permission denied when running CLI commands.
 
 **Solutions**:
+
 ```bash
 # Fix npm permissions
 sudo chown -R $(whoami) ~/.npm
@@ -431,21 +457,21 @@ rag-pipeline query "test" --verbose > debug.log 2>&1
 ### **Custom Logging Configuration**
 
 ```javascript
-import { createLogger } from '@DevilsDev/rag-pipeline-utils';
+import { createLogger } from "@DevilsDev/rag-pipeline-utils";
 
 const logger = createLogger({
-  level: 'debug',
-  format: 'json',
+  level: "debug",
+  format: "json",
   transports: [
-    { type: 'console' },
-    { type: 'file', filename: 'rag-pipeline.log' }
-  ]
+    { type: "console" },
+    { type: "file", filename: "rag-pipeline.log" },
+  ],
 });
 
 // Use custom logger
 const pipeline = createRagPipeline({
   logger,
-  logLevel: 'debug'
+  logLevel: "debug",
 });
 ```
 
@@ -506,9 +532,10 @@ rag-pipeline status --all --detailed
 ### **Professional Support**
 
 For enterprise support and consulting:
+
 - **Email**: support@devilsdev.com
 - **Enterprise Portal**: [enterprise.rag-pipeline-utils.dev](https://enterprise.rag-pipeline-utils.dev)
 
 ---
 
-*This troubleshooting guide covers the most common issues encountered with @DevilsDev/rag-pipeline-utils. For additional help, consult the [FAQ](./FAQ.md) or reach out to our community support channels.*
+_This troubleshooting guide covers the most common issues encountered with @DevilsDev/rag-pipeline-utils. For additional help, consult the [FAQ](./FAQ.md) or reach out to our community support channels._

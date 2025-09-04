@@ -17,18 +17,11 @@
         },
         "format": {
           "_type": "select",
-          "_options": [
-            "json",
-            "txt",
-            "pdf",
-            "docx"
-          ]
+          "_options": ["json", "txt", "pdf", "docx"]
         }
       },
       "inputs": [],
-      "outputs": [
-        "documents"
-      ]
+      "outputs": ["documents"]
     },
     {
       "id": "embedder_1755305789337",
@@ -47,12 +40,8 @@
           "default": 1536
         }
       },
-      "inputs": [
-        "documents"
-      ],
-      "outputs": [
-        "embeddings"
-      ]
+      "inputs": ["documents"],
+      "outputs": ["embeddings"]
     },
     {
       "id": "retriever_1755305789337",
@@ -71,13 +60,8 @@
           "default": 0.7
         }
       },
-      "inputs": [
-        "embeddings",
-        "query"
-      ],
-      "outputs": [
-        "results"
-      ]
+      "inputs": ["embeddings", "query"],
+      "outputs": ["results"]
     }
   ],
   "connections": [

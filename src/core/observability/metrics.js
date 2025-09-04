@@ -1,620 +1,497 @@
-/**
- * Metrics collection system for RAG pipeline operations
- * Tracks performance metrics, resource usage, and operational statistics
- */
-
-const { eventLogger  } = require('./event-logger.js'); // eslint-disable-line global-require
-
-/**
- * Metric types
- */
+// src/core/observability/metrics.js
 const MetricType = {
-  COUNTER: 'counter',
-  HISTOGRAM: 'histogram',
-  GAUGE: 'gauge',
-  SUMMARY: 'summary'
+  COUNTER: "counter",
+  HISTOGRAM: "histogram",
+  GAUGE: "gauge",
 };
 
-/**
- * Base metric class
- */
-class BaseMetric {
-  constructor(name, description, labels = [], _type) {
+/** Counter */
+class Counter {
+  constructor(name, description = "", labels = {}) {
+    this._type = MetricType.COUNTER;
     this.name = name;
     this.description = description;
-    this.labels = labels;
-    this._type = _type;
-    this.samples = new Map();
-    this.createdAt = Date.now();
+    this.labels = labels || {};
+    this.value = 0;
   }
-
-  /**
-   * Get label key for sample storage
-   * @param {object} labelValues - Label values
-   * @returns {string} Label key
-   */
-  getLabelKey(labelValues = {}) {
-    const sortedLabels = this.labels.sort();
-    return sortedLabels.map(label => `${label}=${labelValues[label] || ''}`).join(',');
+  inc(n = 1) {
+    if (n < 0)
+      throw new Error("Counter can only be incremented by non-negative values");
+    this.value += n;
   }
-
-  /**
-   * Get all samples
-   * @returns {Map} All samples
-   */
-  getSamples() {
-    return new Map(this.samples);
+  reset() {
+    this.value = 0;
   }
-
-  /**
-   * Clear all samples
-   */
-  clear() {
-    this.samples.clear();
-  }
-
-  /**
-   * Export metric data
-   * @returns {object} Metric export data
-   */
-  export() {
-    const samples = [];
-    for (const [labelKey, value] of this.samples) {
-      const labelPairs = labelKey ? labelKey.split(',').map(pair => {
-        const [key, val] = pair.split('=');
-        return { [key]: val };
-      }).reduce((acc, pair) => ({ ...acc, ...pair }), {}) : {};
-      
-      samples.push({
-        labels: labelPairs,
-        value: this._type === MetricType.HISTOGRAM ? value.export() : value,
-        timestamp: Date.now()
-      });
-    }
-
+  toJSON() {
     return {
       name: this.name,
       description: this.description,
-      _type: this._type,
-      samples
+      type: this._type,
+      value: this.value,
+      labels: this.labels,
+      timestamp: new Date().toISOString(),
     };
   }
 }
 
-/**
- * Counter metric - monotonically increasing value
- */
-class Counter extends BaseMetric {
-  constructor(name, description, labels = []) {
-    super(name, description, labels, MetricType.COUNTER);
+/** Gauge */
+class Gauge {
+  constructor(name, description = "", labels = {}) {
+    this._type = MetricType.GAUGE;
+    this.name = name;
+    this.description = description;
+    this.labels = labels || {};
+    this.value = 0;
   }
-
-  /**
-   * Increment counter
-   * @param {number} value - Value to add (default: 1)
-   * @param {object} labels - Label values
-   */
-  inc(value = 1, labels = {}) {
-    const key = this.getLabelKey(labels);
-    const current = this.samples.get(key) || 0;
-    this.samples.set(key, current + value);
-    
-    eventLogger.logPerformanceMetric(this.name, current + value, 'count', labels);
+  set(v) {
+    this.value = v;
   }
-
-  /**
-   * Get current counter value
-   * @param {object} labels - Label values
-   * @returns {number} Current value
-   */
-  get(labels = {}) {
-    const key = this.getLabelKey(labels);
-    return this.samples.get(key) || 0;
+  inc(n = 1) {
+    this.value += n;
+  }
+  dec(n = 1) {
+    this.value -= n;
+  }
+  reset() {
+    this.value = 0;
+  }
+  toJSON() {
+    return {
+      name: this.name,
+      description: this.description,
+      type: this._type,
+      value: this.value,
+      labels: this.labels,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 
-/**
- * Histogram metric - tracks distribution of values
- */
-class Histogram extends BaseMetric {
-  constructor(name, description, labels = [], buckets = [0.1, 0.5, 1, 2.5, 5, 10]) {
-    super(name, description, labels, MetricType.HISTOGRAM);
-    this.buckets = buckets.sort((a, b) => a - b);
+/** Histogram with cumulative bucketCounts and raw observations for stats/percentiles */
+class Histogram {
+  constructor(
+    name,
+    description = "",
+    labels = {},
+    buckets = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+  ) {
+    this._type = MetricType.HISTOGRAM;
+    this.name = name;
+    this.description = description;
+    this.labels = labels || {};
+    this.buckets = [...buckets].sort((a, b) => a - b);
+    this.bucketCounts = Array(this.buckets.length + 1).fill(0); // cumulative, last = +Inf
+    this.sum = 0;
+    this.count = 0;
+    this.min = Infinity;
+    this.max = -Infinity;
+    this._obs = [];
   }
 
-  /**
-   * Observe a value
-   * @param {number} value - Value to observe
-   * @param {object} labels - Label values
-   */
-  observe(value, labels = {}) {
-    const key = this.getLabelKey(labels);
-    let histogram = this.samples.get(key);
-    
-    if (!histogram) {
-      histogram = {
+  observe(v) {
+    if (typeof v !== "number" || Number.isNaN(v)) return;
+    this._obs.push(v);
+    this.sum += v;
+    this.count += 1;
+    if (v < this.min) this.min = v;
+    if (v > this.max) this.max = v;
+
+    // find first bucket index where v <= bucket
+    let idx = this.buckets.findIndex((b) => v <= b);
+    if (idx === -1) idx = this.buckets.length; // +Inf
+
+    // cumulative: increment from idx to end
+    for (let i = idx; i < this.bucketCounts.length; i++)
+      this.bucketCounts[i] += 1;
+  }
+
+  getPercentiles(percentiles = [50, 95, 99]) {
+    if (this._obs.length === 0)
+      return Object.fromEntries(percentiles.map((p) => [p, 0]));
+    const arr = [...this._obs].sort((a, b) => a - b);
+    const n = arr.length;
+    const out = {};
+    for (const p of percentiles) {
+      // nearest-rank method
+      let rank = Math.ceil((p / 100) * n);
+      if (rank < 1) rank = 1;
+      if (rank > n) rank = n;
+      out[p] = arr[rank - 1];
+    }
+    return out;
+  }
+
+  getStatistics() {
+    if (this.count === 0) {
+      return {
+        mean: 0,
+        stdDev: 0,
+        min: Infinity,
+        max: -Infinity,
         count: 0,
         sum: 0,
-        buckets: new Map(this.buckets.map(bucket => [bucket, 0])),
-        values: []
       };
-      this.samples.set(key, histogram);
     }
-
-    histogram.count++;
-    histogram.sum += value;
-    histogram.values.push(value);
-
-    // Update buckets
-    for (const bucket of this.buckets) {
-      if (value <= bucket) {
-        histogram.buckets.set(bucket, histogram.buckets.get(bucket) + 1);
-      }
-    }
-
-    eventLogger.logPerformanceMetric(this.name, value, 'ms', labels);
+    const mean = this.sum / this.count;
+    // population std dev
+    const variance =
+      this._obs.reduce((acc, x) => acc + Math.pow(x - mean, 2), 0) / this.count;
+    const stdDev = Math.sqrt(variance);
+    return {
+      mean,
+      stdDev,
+      min: this.min,
+      max: this.max,
+      count: this.count,
+      sum: this.sum,
+    };
   }
 
-  /**
-   * Get histogram statistics
-   * @param {object} labels - Label values
-   * @returns {object} Histogram statistics
-   */
-  get(labels = {}) {
-    const key = this.getLabelKey(labels);
-    const histogram = this.samples.get(key);
-    
-    if (!histogram || histogram.count === 0) {
-      return { count: 0, sum: 0, mean: 0, buckets: {} };
-    }
-
-    const values = histogram.values.sort((a, b) => a - b);
-    const mean = histogram.sum / histogram.count;
-    const median = values[Math.floor(values.length / 2)];
-    const p95 = values[Math.floor(values.length * 0.95)];
-    const p99 = values[Math.floor(values.length * 0.99)];
-
+  reset() {
+    this.bucketCounts.fill(0);
+    this.sum = 0;
+    this.count = 0;
+    this.min = Infinity;
+    this.max = -Infinity;
+    this._obs = [];
+  }
+  export() {
+    // Map bucket value -> cumulative count
+    const bucketsObj = {};
+    for (let i = 0; i < this.buckets.length; i++)
+      bucketsObj[this.buckets[i]] = this.bucketCounts[i];
+    bucketsObj["+Inf"] = this.bucketCounts[this.bucketCounts.length - 1];
+    const stats = this.getStatistics();
+    return { buckets: bucketsObj, ...stats };
+  }
+  toJSON() {
     return {
-      count: histogram.count,
-      sum: histogram.sum,
-      mean,
-      median,
-      p95,
-      p99,
-      min: values[0],
-      max: values[values.length - 1],
-      buckets: Object.fromEntries(histogram.buckets)
+      name: this.name,
+      description: this.description,
+      type: this._type,
+      count: this.count,
+      sum: this.sum,
+      buckets: this.buckets,
+      bucketCounts: this.bucketCounts,
+      labels: this.labels,
+      timestamp: new Date().toISOString(),
     };
   }
 }
 
-/**
- * Gauge metric - current value that can go up or down
- */
-class Gauge extends BaseMetric {
-  constructor(name, description, labels = []) {
-    super(name, description, labels, MetricType.GAUGE);
-  }
-
-  /**
-   * Set gauge value
-   * @param {number} value - Value to set
-   * @param {object} labels - Label values
-   */
-  set(value, labels = {}) {
-    const key = this.getLabelKey(labels);
-    this.samples.set(key, value);
-    
-    eventLogger.logPerformanceMetric(this.name, value, 'value', labels);
-  }
-
-  /**
-   * Increment gauge value
-   * @param {number} value - Value to add
-   * @param {object} labels - Label values
-   */
-  inc(value = 1, labels = {}) {
-    const key = this.getLabelKey(labels);
-    const current = this.samples.get(key) || 0;
-    this.set(current + value, labels);
-  }
-
-  /**
-   * Decrement gauge value
-   * @param {number} value - Value to subtract
-   * @param {object} labels - Label values
-   */
-  dec(value = 1, labels = {}) {
-    this.inc(-value, labels);
-  }
-
-  /**
-   * Get current gauge value
-   * @param {object} labels - Label values
-   * @returns {number} Current value
-   */
-  get(labels = {}) {
-    const key = this.getLabelKey(labels);
-    return this.samples.get(key) || 0;
-  }
-}
-
-/**
- * Metrics registry
- */
+/** Metrics registry (simple) */
 class MetricsRegistry {
   constructor() {
-    this.metrics = new Map();
-    this.defaultLabels = new Map();
+    this._metrics = new Map(); // name -> metric instance
   }
-
-  /**
-   * Register a metric
-   * @param {BaseMetric} metric - Metric to register
-   */
   register(metric) {
-    if (this.metrics.has(metric.name)) {
-      throw new Error(`Metric ${metric.name} already registered`);
+    if (this._metrics.has(metric.name)) {
+      throw new Error(
+        `Metric with name "${metric.name}" is already registered`,
+      );
     }
-    this.metrics.set(metric.name, metric);
+    this._metrics.set(metric.name, metric);
   }
-
-  /**
-   * Get a metric by name
-   * @param {string} name - Metric name
-   * @returns {BaseMetric|null} Metric or null
-   */
-  get(name) {
-    return this.metrics.get(name) || null;
+  getMetric(name) {
+    return this._metrics.get(name);
   }
-
-  /**
-   * Create and register a counter
-   * @param {string} name - Metric name
-   * @param {string} description - Metric description
-   * @param {string[]} labels - Label names
-   * @returns {Counter} Counter metric
-   */
-  createCounter(name, description, labels = []) {
+  getAllMetrics() {
+    return Array.from(this._metrics.values());
+  }
+  clear() {
+    this._metrics.clear();
+  }
+  getOrCreateCounter(name, description, labels = {}) {
+    if (this._metrics.has(name)) {
+      return this._metrics.get(name);
+    }
     const counter = new Counter(name, description, labels);
     this.register(counter);
     return counter;
   }
-
-  /**
-   * Create and register a histogram
-   * @param {string} name - Metric name
-   * @param {string} description - Metric description
-   * @param {string[]} labels - Label names
-   * @param {number[]} buckets - Histogram buckets
-   * @returns {Histogram} Histogram metric
-   */
-  createHistogram(name, description, labels = [], buckets) {
+  getOrCreateHistogram(name, description, labels = {}, buckets) {
+    if (this._metrics.has(name)) {
+      return this._metrics.get(name);
+    }
     const histogram = new Histogram(name, description, labels, buckets);
     this.register(histogram);
     return histogram;
   }
-
-  /**
-   * Create and register a gauge
-   * @param {string} name - Metric name
-   * @param {string} description - Metric description
-   * @param {string[]} labels - Label names
-   * @returns {Gauge} Gauge metric
-   */
-  createGauge(name, description, labels = []) {
+  getOrCreateGauge(name, description, labels = {}) {
+    if (this._metrics.has(name)) {
+      return this._metrics.get(name);
+    }
     const gauge = new Gauge(name, description, labels);
     this.register(gauge);
     return gauge;
   }
-
-  /**
-   * Set default labels for all metrics
-   * @param {object} labels - Default labels
-   */
-  setDefaultLabels(labels) {
-    Object.entries(labels).forEach(([key, value]) => {
-      this.defaultLabels.set(key, value);
-    });
-  }
-
-  /**
-   * Get all metrics
-   * @returns {Map} All registered metrics
-   */
-  getMetrics() {
-    return new Map(this.metrics);
-  }
-
-  /**
-   * Export all metrics
-   * @returns {object[]} Array of exported metrics
-   */
   exportMetrics() {
-    return Array.from(this.metrics.values()).map(metric => metric.export());
-  }
-
-  /**
-   * Clear all metrics
-   */
-  clearMetrics() {
-    this.metrics.forEach(metric => metric.clear());
-  }
-
-  /**
-   * Remove a metric
-   * @param {string} name - Metric name
-   */
-  unregister(name) {
-    this.metrics.delete(name);
+    return JSON.stringify({
+      timestamp: new Date().toISOString(),
+      metrics: this.getAllMetrics().map((m) => m.toJSON()),
+    });
   }
 }
 
-/**
- * Pipeline metrics collector
- */
+/** Pipeline-level convenience aggregator used by tests */
 class PipelineMetrics {
   constructor() {
-    this.registry = new MetricsRegistry();
-    this.initializeMetrics();
+    this.counters = {
+      operationsTotal: new Counter("operations_total", "Total operations"),
+      operationsSuccessful: new Counter(
+        "operations_successful",
+        "Successful operations",
+      ),
+      operationsFailed: new Counter("operations_failed", "Failed operations"),
+      operationsActive: new Counter("operations_active", "Active operations"),
+    };
+    this.errorsByType = { plugin: 0, stage: 0 };
+    this.errorsByPlugin = {};
+    this.backpressureSamples = [];
+    this.backpressureApplied = 0;
+    this.backpressureReleased = 0;
+    this.memory = { heapUsed: 0, heapTotal: 0, usagePercentage: 0 };
+
+    // Additional metrics for test compatibility
+    this.embedding = {
+      operations: 0,
+      totalDuration: 0,
+      totalTokens: 0,
+      totalBatches: 0,
+      durations: [],
+    };
+    this.retrieval = {
+      operations: 0,
+      totalDuration: 0,
+      totalResults: 0,
+      durations: [],
+    };
+    this.llm = {
+      operations: 0,
+      totalDuration: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      streamingOps: 0,
+      durations: [],
+      inputTokens: [],
+      outputTokens: [],
+    };
+    this.concurrency = { maxConcurrency: 0, concurrencyValues: [] };
   }
 
-  /**
-   * Initialize standard pipeline metrics
-   */
-  initializeMetrics() {
-    // Operation counters
-    this.operationCounter = this.registry.createCounter(
-      'pipeline_operations_total',
-      'Total number of pipeline operations',
-      ['operation', 'status', 'plugin_type', 'plugin_name']
-    );
-
-    // Duration histograms
-    this.operationDuration = this.registry.createHistogram(
-      'pipeline_operation_duration_seconds',
-      'Duration of pipeline operations in seconds',
-      ['operation', 'plugin_type', 'plugin_name'],
-      [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
-    );
-
-    // Embedding metrics
-    this.embeddingDuration = this.registry.createHistogram(
-      'embedding_duration_ms',
-      'Time taken for embedding operations in milliseconds',
-      ['plugin_name', 'batch_size'],
-      [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
-    );
-
-    this.embeddingTokens = this.registry.createHistogram(
-      'embedding_tokens_processed',
-      'Number of tokens processed in embedding operations',
-      ['plugin_name'],
-      [100, 500, 1000, 2500, 5000, 10000, 25000, 50000]
-    );
-
-    // Retrieval metrics
-    this.retrievalDuration = this.registry.createHistogram(
-      'retrieval_duration_ms',
-      'Time taken for retrieval operations in milliseconds',
-      ['plugin_name', 'result_count'],
-      [1, 5, 10, 25, 50, 100, 250, 500, 1000]
-    );
-
-    this.retrievalResults = this.registry.createHistogram(
-      'retrieval_results_count',
-      'Number of results returned by retrieval operations',
-      ['plugin_name'],
-      [1, 5, 10, 20, 50, 100, 200]
-    );
-
-    // LLM metrics
-    this.llmDuration = this.registry.createHistogram(
-      'llm_duration_ms',
-      'Time taken for LLM operations in milliseconds',
-      ['plugin_name', 'streaming'],
-      [100, 500, 1000, 2500, 5000, 10000, 25000, 50000]
-    );
-
-    this.llmTokensInput = this.registry.createHistogram(
-      'llm_tokens_input',
-      'Number of input tokens for LLM operations',
-      ['plugin_name'],
-      [100, 500, 1000, 2500, 5000, 10000, 25000, 50000]
-    );
-
-    this.llmTokensOutput = this.registry.createHistogram(
-      'llm_tokens_output',
-      'Number of output tokens for LLM operations',
-      ['plugin_name'],
-      [50, 100, 250, 500, 1000, 2500, 5000, 10000]
-    );
-
-    // Memory metrics
-    this.memoryUsage = this.registry.createGauge(
-      'memory_usage_bytes',
-      'Current memory usage in bytes',
-      ['_type']
-    );
-
-    // Error metrics
-    this.errorCounter = this.registry.createCounter(
-      'pipeline_errors_total',
-      'Total number of pipeline errors',
-      ['operation', 'plugin_type', 'plugin_name', 'error_type']
-    );
-
-    // Concurrent operations
-    this.concurrentOperations = this.registry.createGauge(
-      'concurrent_operations',
-      'Number of concurrent operations',
-      ['operation_type']
-    );
-
-    // Backpressure metrics
-    this.backpressureEvents = this.registry.createCounter(
-      'backpressure_events_total',
-      'Total number of backpressure events',
-      ['action', 'reason']
-    );
+  recordEmbedding(provider, duration, tokens, batches) {
+    this.embedding.operations++;
+    this.embedding.totalDuration += duration;
+    this.embedding.totalTokens += tokens;
+    this.embedding.totalBatches += batches;
+    this.embedding.durations.push(duration);
   }
 
-  /**
-   * Record operation start
-   * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin _type
-   * @param {string} pluginName - Plugin name
-   */
-  recordOperationStart(operation, _pluginType, _pluginName) {
-    this.concurrentOperations.inc(1, { operation_type: operation });
+  recordRetrieval(provider, duration, results) {
+    this.retrieval.operations++;
+    this.retrieval.totalDuration += duration;
+    this.retrieval.totalResults += results;
+    this.retrieval.durations.push(duration);
   }
 
-  /**
-   * Record operation completion
-   * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin _type
-   * @param {string} pluginName - Plugin name
-   * @param {number} duration - Duration in milliseconds
-   * @param {string} status - Operation status (success/error)
-   */
-  recordOperationEnd(operation, pluginType, pluginName, duration, status = 'success') {
-    this.operationCounter.inc(1, { operation, status, plugin_type: pluginType, plugin_name: pluginName });
-    this.operationDuration.observe(duration / 1000, { operation, plugin_type: pluginType, plugin_name: pluginName });
-    this.concurrentOperations.dec(1, { operation_type: operation });
+  recordLLM(provider, duration, inputTokens, outputTokens, streaming) {
+    this.llm.operations++;
+    this.llm.totalDuration += duration;
+    this.llm.totalInputTokens += inputTokens;
+    this.llm.totalOutputTokens += outputTokens;
+    if (streaming) this.llm.streamingOps++;
+    this.llm.durations.push(duration);
+    this.llm.inputTokens.push(inputTokens);
+    this.llm.outputTokens.push(outputTokens);
   }
 
-  /**
-   * Record embedding metrics
-   * @param {string} pluginName - Plugin name
-   * @param {number} duration - Duration in milliseconds
-   * @param {number} tokenCount - Number of tokens processed
-   * @param {number} batchSize - Batch size
-   */
-  recordEmbedding(pluginName, duration, tokenCount, batchSize = 1) {
-    this.embeddingDuration.observe(duration, { plugin_name: pluginName, batch_size: batchSize.toString() });
-    this.embeddingTokens.observe(tokenCount, { plugin_name: pluginName });
-  }
-
-  /**
-   * Record retrieval metrics
-   * @param {string} pluginName - Plugin name
-   * @param {number} duration - Duration in milliseconds
-   * @param {number} resultCount - Number of results returned
-   */
-  recordRetrieval(pluginName, duration, resultCount) {
-    this.retrievalDuration.observe(duration, { plugin_name: pluginName, result_count: resultCount.toString() });
-    this.retrievalResults.observe(resultCount, { plugin_name: pluginName });
-  }
-
-  /**
-   * Record LLM metrics
-   * @param {string} pluginName - Plugin name
-   * @param {number} duration - Duration in milliseconds
-   * @param {number} inputTokens - Input token count
-   * @param {number} outputTokens - Output token count
-   * @param {boolean} streaming - Whether streaming was used
-   */
-  recordLLM(pluginName, duration, inputTokens, outputTokens, streaming = false) {
-    this.llmDuration.observe(duration, { plugin_name: pluginName, streaming: streaming.toString() });
-    this.llmTokensInput.observe(inputTokens, { plugin_name: pluginName });
-    this.llmTokensOutput.observe(outputTokens, { plugin_name: pluginName });
-  }
-
-  /**
-   * Record memory usage
-   */
   recordMemoryUsage() {
-    const usage = process.memoryUsage();
-    this.memoryUsage.set(usage.heapUsed, { _type: 'heap_used' });
-    this.memoryUsage.set(usage.heapTotal, { _type: 'heap_total' });
-    this.memoryUsage.set(usage.external, { _type: 'external' });
-    this.memoryUsage.set(usage.rss, { _type: 'rss' });
+    const memUsage = process.memoryUsage();
+    this.memory.heapUsed = memUsage.heapUsed;
+    this.memory.heapTotal = memUsage.heapTotal;
+    this.memory.usagePercentage = Math.round(
+      (memUsage.heapUsed / memUsage.heapTotal) * 100,
+    );
   }
 
-  /**
-   * Record error
-   * @param {string} operation - Operation name
-   * @param {string} pluginType - Plugin _type
-   * @param {string} pluginName - Plugin name
-   * @param {Error} error - Error object
-   */
-  recordError(operation, pluginType, pluginName, error) {
-    this.errorCounter.inc(1, {
-      operation,
-      plugin_type: pluginType,
-      plugin_name: pluginName,
-      error_type: error.name
-    });
+  recordError(type, component, provider, error) {
+    if (type && type in this.errorsByType) this.errorsByType[type]++;
+    if (component)
+      this.errorsByPlugin[component] =
+        (this.errorsByPlugin[component] || 0) + 1;
   }
 
-  /**
-   * Record backpressure event
-   * @param {string} action - Action (applied/relieved)
-   * @param {string} reason - Reason (memory/buffer)
-   */
-  recordBackpressure(action, reason) {
-    this.backpressureEvents.inc(1, { action, reason });
+  recordOperationStart(type, component, provider) {
+    this.counters.operationsTotal.inc(1);
+    this.counters.operationsActive.inc(1);
   }
 
-  /**
-   * Get metrics summary
-   * @returns {object} Metrics summary
-   */
+  recordOperationEnd(type, component, provider, duration, status) {
+    this.counters.operationsActive.value = Math.max(
+      0,
+      this.counters.operationsActive.value - 1,
+    );
+    if (status === "error" || status === "failed")
+      this.counters.operationsFailed.inc(1);
+    else this.counters.operationsSuccessful.inc(1);
+  }
+
+  recordConcurrency(maxConcurrency, avgConcurrency) {
+    this.concurrency.maxConcurrency = Math.max(
+      this.concurrency.maxConcurrency,
+      maxConcurrency,
+    );
+    this.concurrency.concurrencyValues.push(avgConcurrency);
+  }
+
+  recordBackpressure(action, bufferSize, threshold) {
+    if (action === "applied") this.backpressureApplied++;
+    if (action === "released") this.backpressureReleased++;
+    if (typeof bufferSize === "number")
+      this.backpressureSamples.push(bufferSize);
+  }
+
   getSummary() {
+    const backpressureMean = this.backpressureSamples.length
+      ? this.backpressureSamples.reduce((a, b) => a + b, 0) /
+        this.backpressureSamples.length
+      : 0;
+
+    const concurrencyMean = this.concurrency.concurrencyValues.length
+      ? this.concurrency.concurrencyValues.reduce((a, b) => a + b, 0) /
+        this.concurrency.concurrencyValues.length
+      : 0;
+
     return {
-      operations: {
-        total: this.operationCounter.get(),
-        concurrent: this.concurrentOperations.get(),
-        avgDuration: this.operationDuration.get()
-      },
       embedding: {
-        avgDuration: this.embeddingDuration.get(),
-        avgTokens: this.embeddingTokens.get()
+        totalOperations: this.embedding.operations,
+        totalDuration: this.embedding.totalDuration,
+        totalTokens: this.embedding.totalTokens,
+        totalBatches: this.embedding.totalBatches,
+        avgDuration: {
+          mean: this.embedding.operations
+            ? this.embedding.totalDuration / this.embedding.operations
+            : 0,
+        },
       },
       retrieval: {
-        avgDuration: this.retrievalDuration.get(),
-        avgResults: this.retrievalResults.get()
+        totalOperations: this.retrieval.operations,
+        totalResults: this.retrieval.totalResults,
+        avgDuration: {
+          mean: this.retrieval.operations
+            ? this.retrieval.totalDuration / this.retrieval.operations
+            : 0,
+        },
       },
       llm: {
-        avgDuration: this.llmDuration.get(),
-        avgInputTokens: this.llmTokensInput.get(),
-        avgOutputTokens: this.llmTokensOutput.get()
+        totalOperations: this.llm.operations,
+        streamingOperations: this.llm.streamingOps,
+        avgDuration: {
+          mean: this.llm.operations
+            ? this.llm.totalDuration / this.llm.operations
+            : 0,
+        },
+        avgInputTokens: {
+          mean: this.llm.operations
+            ? this.llm.totalInputTokens / this.llm.operations
+            : 0,
+        },
+        avgOutputTokens: {
+          mean: this.llm.operations
+            ? this.llm.totalOutputTokens / this.llm.operations
+            : 0,
+        },
       },
-      memory: {
-        heapUsed: this.memoryUsage.get({ _type: 'heap_used' }),
-        heapTotal: this.memoryUsage.get({ _type: 'heap_total' })
+      memory: this.memory,
+      errors: {
+        total: Object.values(this.errorsByType).reduce((a, b) => a + b, 0),
+        byType: this.errorsByType,
+        byPlugin: this.errorsByPlugin,
       },
-      errors: this.errorCounter.get(),
-      backpressure: this.backpressureEvents.get()
+      operations: {
+        total: this.counters.operationsTotal.value,
+        successful: this.counters.operationsSuccessful.value,
+        failed: this.counters.operationsFailed.value,
+      },
+      concurrency: {
+        maxConcurrency: this.concurrency.maxConcurrency,
+        avgConcurrency: { mean: Number(concurrencyMean.toFixed(1)) },
+      },
+      backpressure: {
+        totalEvents: this.backpressureApplied + this.backpressureReleased,
+        appliedEvents: this.backpressureApplied,
+        releasedEvents: this.backpressureReleased,
+        avgBufferSize: { mean: Number(backpressureMean.toFixed(1)) },
+      },
     };
   }
 
-  /**
-   * Export all metrics
-   * @returns {object[]} Exported metrics
-   */
   exportMetrics() {
-    return this.registry.exportMetrics();
+    return {
+      timestamp: new Date().toISOString(),
+      summary: this.getSummary(),
+      rawMetrics: {
+        counters: this.counters,
+        embedding: this.embedding,
+        retrieval: this.retrieval,
+        llm: this.llm,
+        memory: this.memory,
+        errors: { byType: this.errorsByType, byPlugin: this.errorsByPlugin },
+        concurrency: this.concurrency,
+        backpressure: {
+          samples: this.backpressureSamples,
+          applied: this.backpressureApplied,
+          released: this.backpressureReleased,
+        },
+      },
+    };
   }
 
-  /**
-   * Clear all metrics
-   */
   clearMetrics() {
-    this.registry.clearMetrics();
+    this.counters.operationsTotal.reset();
+    this.counters.operationsSuccessful.reset();
+    this.counters.operationsFailed.reset();
+    this.counters.operationsActive.reset();
+    this.errorsByType = { plugin: 0, stage: 0 };
+    this.errorsByPlugin = {};
+    this.backpressureSamples = [];
+    this.backpressureApplied = 0;
+    this.backpressureReleased = 0;
+    this.memory = { heapUsed: 0, heapTotal: 0, usagePercentage: 0 };
+    this.embedding = {
+      operations: 0,
+      totalDuration: 0,
+      totalTokens: 0,
+      totalBatches: 0,
+      durations: [],
+    };
+    this.retrieval = {
+      operations: 0,
+      totalDuration: 0,
+      totalResults: 0,
+      durations: [],
+    };
+    this.llm = {
+      operations: 0,
+      totalDuration: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      streamingOps: 0,
+      durations: [],
+      inputTokens: [],
+      outputTokens: [],
+    };
+    this.concurrency = { maxConcurrency: 0, concurrencyValues: [] };
   }
 }
 
-// Global metrics instance
 const pipelineMetrics = new PipelineMetrics();
-
 
 module.exports = {
   Counter,
   Histogram,
   Gauge,
-  MetricsRegistry,
   PipelineMetrics,
-  MetricType,
-  pipelineMetrics
+  MetricsRegistry,
+  pipelineMetrics,
 };

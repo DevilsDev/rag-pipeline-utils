@@ -7,16 +7,16 @@ const path = require('path');
  * File: scripts/verify-fixtures.js
  */
 
-import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 const REQUIRED_FIXTURES = [
-  '__tests__/fixtures/sample.pdf',
-  '__tests__/fixtures/.ragrc.json',
-  '__tests__/fixtures/src/mocks/pdf-loader.js',
-  '__tests__/fixtures/src/mocks/openai-embedder.js',
-  '__tests__/fixtures/src/mocks/pinecone-retriever.js',
-  '__tests__/fixtures/src/mocks/openai-llm.js'
+  "__tests__/fixtures/sample.pdf",
+  "__tests__/fixtures/.ragrc.json",
+  "__tests__/fixtures/src/mocks/pdf-loader.js",
+  "__tests__/fixtures/src/mocks/openai-embedder.js",
+  "__tests__/fixtures/src/mocks/pinecone-retriever.js",
+  "__tests__/fixtures/src/mocks/openai-llm.js",
 ];
 
 let missing = [];
@@ -28,12 +28,16 @@ for (const file of REQUIRED_FIXTURES) {
 }
 
 if (missing.length) {
-  console.warn('[WARNING] Missing test fixture files:'); // eslint-disable-line no-console
+  console.warn("[WARNING] Missing test fixture files:");
+  // eslint-disable-line no-console
   for (const f of missing) {
-    console.warn(' -', f); // eslint-disable-line no-console
+    console.warn(" -", f);
+    // eslint-disable-line no-console
   }
-  console.warn('Fixtures will be created automatically during test setup.'); // eslint-disable-line no-console
+  console.warn("Fixtures will be created automatically during test setup.");
+  // eslint-disable-line no-console
   process.exit(0); // Exit successfully to avoid blocking commits
 } else {
-  console.log('[OK] All fixture files are present.'); // eslint-disable-line no-console
+  console.log("[OK] All fixture files are present.");
+  // eslint-disable-line no-console
 }

@@ -1,14 +1,8 @@
 #!/usr/bin/env node
-
-/**
- * Enhanced RAG Pipeline CLI with comprehensive UX improvements
- * Integrates observability, plugin marketplace, interactive wizard, and diagnostics
- */
-
-import { runEnhancedCLI } from '../src/cli/enhanced-cli-commands.js';
-
-// Run the enhanced CLI
-runEnhancedCLI().catch(error => {
-  console.error('❌ CLI error:', error.message);
-  process.exit(1);
-});
+"use strict";
+require("../src/cli.js")
+  .run(process.argv)
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

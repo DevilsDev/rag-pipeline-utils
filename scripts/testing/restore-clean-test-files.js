@@ -5,10 +5,12 @@
  * Creates clean, working test files with proper assertions for Phase 1 completion
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-console.log('🔄 RESTORING CLEAN TEST FILES: Complete restoration for Phase 1 completion\n');
+console.log(
+  "🔄 RESTORING CLEAN TEST FILES: Complete restoration for Phase 1 completion\n",
+);
 
 class CleanTestFileRestorer {
   constructor() {
@@ -18,8 +20,10 @@ class CleanTestFileRestorer {
 
   // Restore all corrupted test files with clean templates
   restoreAllFiles() {
-    console.log('🚀 Restoring 8 corrupted test files with clean templates...\n');
-    
+    console.log(
+      "🚀 Restoring 8 corrupted test files with clean templates...\n",
+    );
+
     // Restore each file with appropriate clean template
     this.restoreEnhancedCliCommandsTest();
     this.restoreEnhancedCliTest();
@@ -33,7 +37,10 @@ class CleanTestFileRestorer {
 
   // Restore enhanced-cli-commands.test.js
   restoreEnhancedCliCommandsTest() {
-    const filePath = path.join(process.cwd(), '__tests__/unit/cli/enhanced-cli-commands.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/unit/cli/enhanced-cli-commands.test.js",
+    );
     const cleanContent = `/**
  * Enhanced CLI Commands Tests
  * Tests for enhanced CLI functionality and command processing
@@ -86,12 +93,19 @@ describe('Enhanced CLI Commands', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'enhanced-cli-commands.test.js');
+    this.writeCleanFile(
+      filePath,
+      cleanContent,
+      "enhanced-cli-commands.test.js",
+    );
   }
 
   // Restore enhanced-cli.test.js
   restoreEnhancedCliTest() {
-    const filePath = path.join(process.cwd(), '__tests__/unit/cli/enhanced-cli.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/unit/cli/enhanced-cli.test.js",
+    );
     const cleanContent = `/**
  * Enhanced CLI Tests
  * Tests for enhanced CLI interface and user experience
@@ -146,12 +160,15 @@ describe('Enhanced CLI', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'enhanced-cli.test.js');
+    this.writeCleanFile(filePath, cleanContent, "enhanced-cli.test.js");
   }
 
   // Restore interactive-wizard.test.js
   restoreInteractiveWizardTest() {
-    const filePath = path.join(process.cwd(), '__tests__/unit/cli/interactive-wizard.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/unit/cli/interactive-wizard.test.js",
+    );
     const cleanContent = `/**
  * Interactive Wizard Tests
  * Tests for interactive CLI wizard functionality
@@ -212,12 +229,15 @@ describe('Interactive Wizard', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'interactive-wizard.test.js');
+    this.writeCleanFile(filePath, cleanContent, "interactive-wizard.test.js");
   }
 
   // Restore dag-pipeline-performance.test.js
   restoreDagPipelinePerformanceTest() {
-    const filePath = path.join(process.cwd(), '__tests__/performance/dag-pipeline-performance.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/performance/dag-pipeline-performance.test.js",
+    );
     const cleanContent = `/**
  * DAG Pipeline Performance Tests
  * Tests for DAG pipeline execution performance and benchmarking
@@ -274,12 +294,19 @@ describe('DAG Pipeline Performance', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'dag-pipeline-performance.test.js');
+    this.writeCleanFile(
+      filePath,
+      cleanContent,
+      "dag-pipeline-performance.test.js",
+    );
   }
 
   // Restore pipeline-performance.test.js
   restorePipelinePerformanceTest() {
-    const filePath = path.join(process.cwd(), '__tests__/performance/pipeline-performance.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/performance/pipeline-performance.test.js",
+    );
     const cleanContent = `/**
  * Pipeline Performance Tests
  * Tests for general pipeline performance and optimization
@@ -336,12 +363,15 @@ describe('Pipeline Performance', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'pipeline-performance.test.js');
+    this.writeCleanFile(filePath, cleanContent, "pipeline-performance.test.js");
   }
 
   // Restore node-versions.test.js
   restoreNodeVersionsTest() {
-    const filePath = path.join(process.cwd(), '__tests__/compatibility/node-versions.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/compatibility/node-versions.test.js",
+    );
     const cleanContent = `/**
  * Node.js Version Compatibility Tests
  * Tests for Node.js version compatibility and feature support
@@ -397,12 +427,15 @@ describe('Node.js Version Compatibility', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'node-versions.test.js');
+    this.writeCleanFile(filePath, cleanContent, "node-versions.test.js");
   }
 
   // Restore plugin-contracts.test.js
   restorePluginContractsTest() {
-    const filePath = path.join(process.cwd(), '__tests__/unit/plugins/plugin-contracts.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/unit/plugins/plugin-contracts.test.js",
+    );
     const cleanContent = `/**
  * Plugin Contracts Tests
  * Tests for plugin contract validation and compliance
@@ -477,12 +510,15 @@ describe('Plugin Contracts', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'plugin-contracts.test.js');
+    this.writeCleanFile(filePath, cleanContent, "plugin-contracts.test.js");
   }
 
   // Restore secrets-and-validation.test.js
   restoreSecretsAndValidationTest() {
-    const filePath = path.join(process.cwd(), '__tests__/security/secrets-and-validation.test.js');
+    const filePath = path.join(
+      process.cwd(),
+      "__tests__/security/secrets-and-validation.test.js",
+    );
     const cleanContent = `/**
  * Secrets and Validation Tests
  * Tests for security validation and secrets management
@@ -535,7 +571,11 @@ describe('Secrets and Validation', () => {
 });
 `;
 
-    this.writeCleanFile(filePath, cleanContent, 'secrets-and-validation.test.js');
+    this.writeCleanFile(
+      filePath,
+      cleanContent,
+      "secrets-and-validation.test.js",
+    );
   }
 
   // Write clean file content
@@ -544,7 +584,7 @@ describe('Secrets and Validation', () => {
       fs.writeFileSync(filePath, content);
       this.restoredFiles.push({
         path: path.relative(process.cwd(), filePath),
-        fileName: fileName
+        fileName: fileName,
       });
       console.log(`✅ Restored ${fileName} with clean template`);
     } catch (error) {
@@ -559,16 +599,16 @@ describe('Secrets and Validation', () => {
       timestamp: new Date().toISOString(),
       summary: {
         totalFilesRestored: this.restoredFiles.length,
-        errors: this.errors.length
+        errors: this.errors.length,
       },
       restoredFiles: this.restoredFiles,
-      errors: this.errors
+      errors: this.errors,
     };
 
     // Save JSON report
     fs.writeFileSync(
-      path.join(process.cwd(), 'clean-test-restoration-report.json'),
-      JSON.stringify(report, null, 2)
+      path.join(process.cwd(), "clean-test-restoration-report.json"),
+      JSON.stringify(report, null, 2),
     );
 
     // Generate markdown report
@@ -579,19 +619,26 @@ describe('Secrets and Validation', () => {
 - **Errors**: ${report.summary.errors}
 
 ## Restored Files
-${this.restoredFiles.map(file => 
-  `- ✅ \`${file.fileName}\`: Clean template with proper assertions`
-).join('\n')}
+${this.restoredFiles
+  .map(
+    (file) =>
+      `- ✅ \`${file.fileName}\`: Clean template with proper assertions`,
+  )
+  .join("\n")}
 
-${this.errors.length > 0 ? `## Errors
-${this.errors.map(error => `- ❌ ${error}`).join('\n')}` : ''}
+${
+  this.errors.length > 0
+    ? `## Errors
+${this.errors.map((error) => `- ❌ ${error}`).join("\n")}`
+    : ""
+}
 
 Generated: ${report.timestamp}
 `;
 
     fs.writeFileSync(
-      path.join(process.cwd(), 'CLEAN_TEST_RESTORATION_REPORT.md'),
-      markdown
+      path.join(process.cwd(), "CLEAN_TEST_RESTORATION_REPORT.md"),
+      markdown,
     );
 
     return report;
@@ -599,19 +646,19 @@ Generated: ${report.timestamp}
 
   // Execute restoration
   async execute() {
-    console.log('🚀 Starting clean test file restoration...\n');
+    console.log("🚀 Starting clean test file restoration...\n");
 
     this.restoreAllFiles();
 
     const report = this.generateReport();
 
-    console.log('\n📊 Restoration Summary:');
+    console.log("\n📊 Restoration Summary:");
     console.log(`   Files Restored: ${report.summary.totalFilesRestored}`);
     console.log(`   Errors: ${report.summary.errors}`);
 
-    console.log('\n📋 Reports generated:');
-    console.log('   - clean-test-restoration-report.json');
-    console.log('   - CLEAN_TEST_RESTORATION_REPORT.md');
+    console.log("\n📋 Reports generated:");
+    console.log("   - clean-test-restoration-report.json");
+    console.log("   - CLEAN_TEST_RESTORATION_REPORT.md");
 
     return report;
   }
@@ -620,19 +667,22 @@ Generated: ${report.timestamp}
 // Execute if run directly
 if (require.main === module) {
   const restorer = new CleanTestFileRestorer();
-  restorer.execute()
-    .then(report => {
+  restorer
+    .execute()
+    .then((report) => {
       if (report.summary.totalFilesRestored > 0) {
-        console.log('\n✅ Clean test file restoration completed!');
-        console.log(`🔄 Restored ${report.summary.totalFilesRestored} files with clean templates`);
+        console.log("\n✅ Clean test file restoration completed!");
+        console.log(
+          `🔄 Restored ${report.summary.totalFilesRestored} files with clean templates`,
+        );
         process.exit(0);
       } else {
-        console.log('\n⚠️ No files were restored');
+        console.log("\n⚠️ No files were restored");
         process.exit(0);
       }
     })
-    .catch(error => {
-      console.error('\n❌ Restoration failed:', error.message);
+    .catch((error) => {
+      console.error("\n❌ Restoration failed:", error.message);
       process.exit(1);
     });
 }

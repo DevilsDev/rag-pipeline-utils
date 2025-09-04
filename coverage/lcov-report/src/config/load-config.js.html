@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">41.17% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/17</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">41.17% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/17</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
@@ -113,7 +113,21 @@
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
 <a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -121,27 +135,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -162,6 +160,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Version: 1.3.0
@@ -169,29 +171,26 @@
  * Author: Ali Kahwaji
  */
 &nbsp;
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { validateRagrcSchema } from './validate-schema.js';
-import { logger } from '../utils/logger.js';
+const fs = <span class="cstat-no" title="statement not covered" >require('fs');</span> // eslint-disable-line global-require
+const path = <span class="cstat-no" title="statement not covered" >require('path');</span> // eslint-disable-line global-require
+const { validateRagrcSchema } = <span class="cstat-no" title="statement not covered" >require('./validate-schema.js');</span> // eslint-disable-line global-require
+const { logger } = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span> // eslint-disable-line global-require
 &nbsp;
-const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(fileURLToPath(import.meta.url)); // Reserved for future use
-const __dirname = path.dirname(__filename);
+// Use CommonJS __dirname (already available in Node.js CommonJS modules)
 &nbsp;
-const CONFIG_FILENAME = '.ragrc.json';
+const CONFIG_FILENAME = <span class="cstat-no" title="statement not covered" >'.ragrc.json';</span>
 &nbsp;
 /**
  * Load and validate a RAG configuration file.
  * @param {string} [cwd=process.cwd()] - Directory to resolve the config from
  * @returns {object} Validated configuration object
  */
-export function loadRagConfig(cwd = <span class="branch-0 cbranch-no" title="branch not covered" >process.cwd())</span> {
-  const configPath = path.resolve(cwd, CONFIG_FILENAME);
+function <span class="fstat-no" title="function not covered" >loadRagConfig(</span>cwd = <span class="branch-0 cbranch-no" title="branch not covered" >process.cwd())</span> {
+  const configPath = <span class="cstat-no" title="statement not covered" >path.resolve(cwd, CONFIG_FILENAME);</span>
 &nbsp;
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (!fs.existsSync(configPath)) {
-    logger.error(`❌ Config file not found: ${configPath}`);
-    throw new Error(`Config file not found: ${configPath}`);
+<span class="cstat-no" title="statement not covered" >  if (!fs.existsSync(configPath)) {</span>
+<span class="cstat-no" title="statement not covered" >    logger.error(`❌ Config file not found: ${configPath}`);</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error(`Config file not found: ${configPath}`);</span>
   }
 &nbsp;
   const raw = <span class="cstat-no" title="statement not covered" >fs.readFileSync(configPath, 'utf-8');</span>
@@ -213,6 +212,10 @@ export function loadRagConfig(cwd = <span class="branch-0 cbranch-no" title="bra
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return config;</span>
 }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
+  loadRagConfig
+};
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -220,7 +223,7 @@ export function loadRagConfig(cwd = <span class="branch-0 cbranch-no" title="bra
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-06T09:15:32.381Z
+                at 2025-09-02T08:53:15.596Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

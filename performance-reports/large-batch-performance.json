@@ -1,0 +1,11 @@
+{
+  "testSuite": "Large Document Batch Performance",
+  "timestamp": "2025-09-04T03:59:20.408Z",
+  "summary": {
+    "totalTests": 0,
+    "avgThroughput": null,
+    "maxThroughput": null,
+    "avgMemoryUsage": null
+  },
+  "metrics": []
+}

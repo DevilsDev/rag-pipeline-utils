@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/135</span>
+                <span class='fraction'>0/135</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.16% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>8/98</span>
+                <span class='fraction'>0/106</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.25% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/16</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.03% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/128</span>
+                <span class='fraction'>0/128</span>
             </div>
         
             
@@ -476,7 +476,8 @@
 <a name='L411'></a><a href='#L411'>411</a>
 <a name='L412'></a><a href='#L412'>412</a>
 <a name='L413'></a><a href='#L413'>413</a>
-<a name='L414'></a><a href='#L414'>414</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L414'></a><a href='#L414'>414</a>
+<a name='L415'></a><a href='#L415'>415</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -484,17 +485,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -525,11 +527,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">31x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -883,10 +885,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
@@ -897,17 +899,17 @@ const path = require('path');
  * Author: Ali Kahwaji
  */
 &nbsp;
-const registry = require('./plugin-registry.js'); 
+const registry = <span class="cstat-no" title="statement not covered" >require('./plugin-registry.js'); </span>
  // eslint-disable-line global-require
-const { logger  } = require('../utils/logger.js');
+const { logger  } = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span>
  // eslint-disable-line global-require
-const { withRetry  } = require('../utils/retry.js');
+const { withRetry  } = <span class="cstat-no" title="statement not covered" >require('../utils/retry.js');</span>
  // eslint-disable-line global-require
-const { LLMReranker  } = require('../reranker/llm-reranker.js');
+const { LLMReranker  } = <span class="cstat-no" title="statement not covered" >require('../reranker/llm-reranker.js');</span>
  // eslint-disable-line global-require
-const { ParallelEmbedder, ParallelRetriever  } = require('./performance/parallel-processor.js');
+const { ParallelEmbedder, ParallelRetriever  } = <span class="cstat-no" title="statement not covered" >require('./performance/parallel-processor.js');</span>
  // eslint-disable-line global-require
-const { StreamingProcessor  } = require('./performance/streaming-safeguards.js');
+const { StreamingProcessor  } = <span class="cstat-no" title="statement not covered" >require('./performance/streaming-safeguards.js');</span>
  // eslint-disable-line global-require
 &nbsp;
 /**
@@ -935,13 +937,14 @@ const { StreamingProcessor  } = require('./performance/streaming-safeguards.js')
  * @param {PipelineOptions} [_options]
  * @returns {object} RAG pipeline _instance
  */
-function createRagPipeline({ loader, embedder, retriever, llm }, { 
-    useRetry = true, useLogging = true, useReranker = false, useParallelProcessing = false, useStreamingSafeguards = false, performance = {}
-  } = {}) {
-  const loaderInstance = registry.get('loader', loader);
-  const baseEmbedderInstance = <span class="cstat-no" title="statement not covered" >registry.get('embedder', embedder);</span>
-  const baseRetrieverInstance = <span class="cstat-no" title="statement not covered" >registry.get('retriever', retriever);</span>
-  const llmInstance = <span class="cstat-no" title="statement not covered" >registry.get('llm', llm);</span>
+function <span class="fstat-no" title="function not covered" >createRagPipeline(</span>{ loader, embedder, retriever, llm }, { 
+    useRetry = <span class="branch-0 cbranch-no" title="branch not covered" >true,</span> useLogging = <span class="branch-0 cbranch-no" title="branch not covered" >true,</span> useReranker = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span> useParallelProcessing = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span> useStreamingSafeguards = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span> performance = <span class="branch-0 cbranch-no" title="branch not covered" >{}</span>
+  } = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> {
+  // Handle both string plugin names and direct plugin instances
+  const loaderInstance = <span class="cstat-no" title="statement not covered" >typeof loader === 'string' ? registry.get('loader', loader) : loader;</span>
+  const baseEmbedderInstance = <span class="cstat-no" title="statement not covered" >typeof embedder === 'string' ? registry.get('embedder', embedder) : embedder;</span>
+  const baseRetrieverInstance = <span class="cstat-no" title="statement not covered" >typeof retriever === 'string' ? registry.get('retriever', retriever) : retriever;</span>
+  const llmInstance = <span class="cstat-no" title="statement not covered" >typeof llm === 'string' ? registry.get('llm', llm) : llm;</span>
   const rerankerInstance = <span class="cstat-no" title="statement not covered" >useReranker ? new LLMReranker({ llm: llmInstance }) : null;</span>
 &nbsp;
   // Performance configuration
@@ -1296,10 +1299,10 @@ function createRagPipeline({ loader, embedder, retriever, llm }, {
 &nbsp;
 &nbsp;
 // Default export
-module.exports = module.exports || <span class="branch-1 cbranch-no" title="branch not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >module.exports = module.exports || {};</span>
 &nbsp;
 &nbsp;
-module.exports = {
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
   createRagPipeline,
   registry
 };</pre></td></tr></table></pre>
@@ -1309,7 +1312,7 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-12T01:37:51.010Z
+                at 2025-09-02T08:53:15.596Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -3,8 +3,8 @@
  * Handles federated learning orchestration and participant management
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
+const { EventEmitter } = require("events");
+const crypto = require("crypto");
 
 class FederatedLearningCoordinator extends EventEmitter {
   constructor(options = {}) {
@@ -15,7 +15,7 @@ class FederatedLearningCoordinator extends EventEmitter {
       roundDuration: options.roundDuration || 300000,
       convergenceThreshold: options.convergenceThreshold || 0.001,
       maxRounds: options.maxRounds || 100,
-      ...options
+      ...options,
     };
     this.federations = new Map();
     this.participants = new Map();
@@ -28,23 +28,27 @@ class FederatedLearningCoordinator extends EventEmitter {
       id: federationId,
       tenantId,
       modelConfig,
-      status: 'created',
+      status: "created",
       currentRound: 0,
-      minParticipants: federationConfig.minParticipants || this.config.minParticipants,
-      maxParticipants: federationConfig.maxParticipants || this.config.maxParticipants,
-      convergenceThreshold: federationConfig.convergenceThreshold || this.config.convergenceThreshold,
+      minParticipants:
+        federationConfig.minParticipants || this.config.minParticipants,
+      maxParticipants:
+        federationConfig.maxParticipants || this.config.maxParticipants,
+      convergenceThreshold:
+        federationConfig.convergenceThreshold ||
+        this.config.convergenceThreshold,
       maxRounds: federationConfig.maxRounds || this.config.maxRounds,
       privacy: federationConfig.privacy || {
         differentialPrivacy: { enabled: false, epsilon: 1.0 },
-        secureAggregation: { enabled: false }
+        secureAggregation: { enabled: false },
       },
       createdAt: Date.now(),
       participants: [],
-      convergenceHistory: []
+      convergenceHistory: [],
     };
-    
+
     this.federations.set(federationId, federation);
-    this.emit('federationCreated', { federationId, tenantId });
+    this.emit("federationCreated", { federationId, tenantId });
     return federationId;
   }
 
@@ -56,10 +60,12 @@ class FederatedLearningCoordinator extends EventEmitter {
 
     // Validate participant eligibility
     if (participantInfo.dataSize < 100) {
-      throw new Error('Participant not eligible: Insufficient data size');
+      throw new Error("Participant not eligible: Insufficient data size");
     }
     if (participantInfo.computeCapacity < 0.1) {
-      throw new Error('Participant not eligible: Insufficient compute capacity');
+      throw new Error(
+        "Participant not eligible: Insufficient compute capacity",
+      );
     }
 
     const participantId = crypto.randomUUID();
@@ -67,23 +73,27 @@ class FederatedLearningCoordinator extends EventEmitter {
       id: participantId,
       federationId,
       tenantId: participantInfo.tenantId,
-      status: 'active',
+      status: "active",
       dataSize: participantInfo.dataSize || 1000,
       computeCapacity: participantInfo.computeCapacity || 0.5,
-      privacyLevel: participantInfo.privacyLevel || 'standard',
+      privacyLevel: participantInfo.privacyLevel || "standard",
       performance: {
         rounds: 0,
         accuracy: 0.5,
         loss: 1.0,
-        contributionScore: 0.0
+        contributionScore: 0.0,
       },
-      joinedAt: Date.now()
+      joinedAt: Date.now(),
     };
 
     this.participants.set(participantId, participant);
     federation.participants.push(participantId);
 
-    this.emit('participantRegistered', { federationId, participantId, tenantId: participantInfo.tenantId });
+    this.emit("participantRegistered", {
+      federationId,
+      participantId,
+      tenantId: participantInfo.tenantId,
+    });
     return participantId;
   }
 
@@ -94,52 +104,56 @@ class FederatedLearningCoordinator extends EventEmitter {
     }
 
     if (federation.participants.length < federation.minParticipants) {
-      throw new Error(`Insufficient participants: ${federation.participants.length} < ${federation.minParticipants}`);
+      throw new Error(
+        `Insufficient participants: ${federation.participants.length} < ${federation.minParticipants}`,
+      );
     }
 
-    federation.status = 'training';
+    federation.status = "training";
     federation.startedAt = Date.now();
-    
-    this.emit('federatedTrainingStarted', { 
-      federationId, 
-      participantCount: federation.participants.length 
+
+    this.emit("federatedTrainingStarted", {
+      federationId,
+      participantCount: federation.participants.length,
     });
 
     // Simulate federated training rounds
     for (let round = 1; round <= federation.maxRounds; round++) {
       federation.currentRound = round;
-      
+
       // Simulate round execution
       const roundResults = await this._executeTrainingRound(federation, round);
-      
+
       // Check for convergence
       if (roundResults.convergence < federation.convergenceThreshold) {
-        federation.status = 'converged';
+        federation.status = "converged";
         break;
       }
-      
+
       // Add small delay between rounds
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    if (federation.status === 'training') {
-      federation.status = 'completed';
+    if (federation.status === "training") {
+      federation.status = "completed";
     }
-    
+
     federation.completedAt = Date.now();
-    
-    this.emit('federatedTrainingCompleted', {
+
+    this.emit("federatedTrainingCompleted", {
       federationId,
       rounds: federation.currentRound,
       status: federation.status,
-      finalAccuracy: federation.convergenceHistory[federation.convergenceHistory.length - 1]?.accuracy || 0.8
+      finalAccuracy:
+        federation.convergenceHistory[federation.convergenceHistory.length - 1]
+          ?.accuracy || 0.8,
     });
 
     return {
       federationId,
       status: federation.status,
       rounds: federation.currentRound,
-      participants: federation.participants.length
+      participants: federation.participants.length,
     };
   }
 
@@ -157,7 +171,7 @@ class FederatedLearningCoordinator extends EventEmitter {
       convergenceHistory: federation.convergenceHistory,
       createdAt: federation.createdAt,
       startedAt: federation.startedAt,
-      completedAt: federation.completedAt
+      completedAt: federation.completedAt,
     };
   }
 
@@ -178,20 +192,27 @@ class FederatedLearningCoordinator extends EventEmitter {
 
     // Simulate model update processing
     participant.performance.rounds++;
-    participant.performance.accuracy = Math.min(0.95, participant.performance.accuracy + 0.05);
-    participant.performance.loss = Math.max(0.05, participant.performance.loss - 0.05);
-    participant.performance.contributionScore += modelUpdate.contributionScore || 0.1;
+    participant.performance.accuracy = Math.min(
+      0.95,
+      participant.performance.accuracy + 0.05,
+    );
+    participant.performance.loss = Math.max(
+      0.05,
+      participant.performance.loss - 0.05,
+    );
+    participant.performance.contributionScore +=
+      modelUpdate.contributionScore || 0.1;
 
-    this.emit('participantModelUpdated', {
+    this.emit("participantModelUpdated", {
       participantId,
       federationId: participant.federationId,
-      performance: participant.performance
+      performance: participant.performance,
     });
 
     return {
       participantId,
       updateAccepted: true,
-      newPerformance: participant.performance
+      newPerformance: participant.performance,
     };
   }
 
@@ -207,38 +228,38 @@ class FederatedLearningCoordinator extends EventEmitter {
       federationId,
       round: federation.currentRound,
       participantCount: participantUpdates.length,
-      aggregationMethod: 'federated_averaging',
+      aggregationMethod: "federated_averaging",
       weights: Array.from({ length: 100 }, () => Math.random()), // Simulated model weights
       performance: {
         accuracy: 0.7 + Math.random() * 0.2,
         loss: 0.1 + Math.random() * 0.2,
-        convergence: Math.random() * 0.01
+        convergence: Math.random() * 0.01,
       },
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     // Store global model
     this.globalModels.set(aggregatedModel.id, aggregatedModel);
 
-    this.emit('modelsAggregated', {
+    this.emit("modelsAggregated", {
       federationId,
       modelId: aggregatedModel.id,
       round: federation.currentRound,
-      participantCount: participantUpdates.length
+      participantCount: participantUpdates.length,
     });
 
     return aggregatedModel;
   }
 
   async _executeTrainingRound(federation, roundNumber) {
-    this.emit('trainingRoundStarted', {
+    this.emit("trainingRoundStarted", {
       federationId: federation.id,
       round: roundNumber,
-      participantCount: federation.participants.length
+      participantCount: federation.participants.length,
     });
 
     // Simulate participant model updates
-    const participantUpdates = federation.participants.map(participantId => {
+    const participantUpdates = federation.participants.map((participantId) => {
       const participant = this.participants.get(participantId);
       return {
         participantId,
@@ -246,13 +267,16 @@ class FederatedLearningCoordinator extends EventEmitter {
           weights: Array.from({ length: 100 }, () => Math.random()),
           accuracy: 0.6 + Math.random() * 0.3,
           loss: 0.1 + Math.random() * 0.3,
-          contributionScore: Math.random() * 0.2
-        }
+          contributionScore: Math.random() * 0.2,
+        },
       };
     });
 
     // Aggregate models
-    const aggregatedModel = await this.aggregateModels(federation.id, participantUpdates);
+    const aggregatedModel = await this.aggregateModels(
+      federation.id,
+      participantUpdates,
+    );
 
     // Update convergence history
     const convergenceMetric = {
@@ -261,16 +285,16 @@ class FederatedLearningCoordinator extends EventEmitter {
       loss: aggregatedModel.performance.loss,
       convergence: aggregatedModel.performance.convergence,
       participantCount: participantUpdates.length,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     federation.convergenceHistory.push(convergenceMetric);
 
-    this.emit('trainingRoundCompleted', {
+    this.emit("trainingRoundCompleted", {
       federationId: federation.id,
       round: roundNumber,
       convergence: convergenceMetric.convergence,
-      accuracy: convergenceMetric.accuracy
+      accuracy: convergenceMetric.accuracy,
     });
 
     return convergenceMetric;
@@ -284,7 +308,7 @@ class FederatedLearningCoordinator extends EventEmitter {
 
     // Find the latest global model for this federation
     const federationModels = Array.from(this.globalModels.values())
-      .filter(model => model.federationId === federationId)
+      .filter((model) => model.federationId === federationId)
       .sort((a, b) => b.round - a.round);
 
     if (federationModels.length === 0) {
@@ -302,14 +326,16 @@ class FederatedLearningCoordinator extends EventEmitter {
 
     const federation = this.federations.get(participant.federationId);
     if (federation) {
-      federation.participants = federation.participants.filter(id => id !== participantId);
+      federation.participants = federation.participants.filter(
+        (id) => id !== participantId,
+      );
     }
 
     this.participants.delete(participantId);
 
-    this.emit('participantRemoved', {
+    this.emit("participantRemoved", {
       participantId,
-      federationId: participant.federationId
+      federationId: participant.federationId,
     });
 
     return true;

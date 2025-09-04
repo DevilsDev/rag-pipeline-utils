@@ -6,14 +6,15 @@
  * Author: Ali Kahwaji
  */
 
-import { ensureRoadmapLabels } from './ensure-roadmap-labels.js';
-import { createRoadmapIssues } from './create-roadmap-issues.js';
+import { ensureRoadmapLabels } from "./ensure-roadmap-labels.js";
+import { createRoadmapIssues } from "./create-roadmap-issues.js";
 
-const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 const token = process.env.GITHUB_TOKEN;
 
 if (!token) {
-  console.error('❌ Missing GITHUB_TOKEN'); // eslint-disable-line no-console
+  console.error("❌ Missing GITHUB_TOKEN");
+  // eslint-disable-line no-console
   process.exit(1);
 }
 

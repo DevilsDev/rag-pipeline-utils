@@ -1,9 +1,9 @@
 // docs-site/src/pages/index.js
 
-import React from 'react';
-import Layout from '@theme/Layout';
-import HomepageHeader from '@site/src/components/HomepageHeader';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
+import React from "react";
+import Layout from "@theme/Layout";
+import HomepageHeader from "@site/src/components/HomepageHeader";
+import HomepageFeatures from "@site/src/components/HomepageFeatures";
 
 export default function Home() {
   return (

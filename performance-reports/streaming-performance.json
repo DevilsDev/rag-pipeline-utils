@@ -1,25 +1,6015 @@
 {
   "testSuite": "Streaming Token Output Load Tests",
-  "timestamp": "2025-09-01T07:40:58.351Z",
+  "timestamp": "2025-09-04T03:47:13.937Z",
   "summary": {
-    "totalTests": 1,
+    "totalTests": 0,
     "avgThroughput": null,
     "maxThroughput": null,
-    "avgLatency": null,
-    "maxLatency": null,
-    "minLatency": null
+    "avgLatency": 27.35001517036767,
+    "maxLatency": 60.13300000000163,
+    "minLatency": 0.1103000000002794
   },
-  "metrics": [
+  "metrics": [],
+  "latencyDetails": [
     {
-      "testName": "concurrent-streaming",
-      "concurrentStreams": 2,
-      "tokensPerStream": 500,
-      "totalDuration": 6662.733100000005,
-      "overallThroughput": 150.0885575020256,
-      "avgStreamDuration": 6636.885800000004,
-      "memoryUsage": 57.546630859375,
-      "timestamp": "2025-09-01T07:39:47.018Z"
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 1,
+      "latency": 3.2223999999998796,
+      "timestamp": 1585.4061
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 2,
+      "latency": 32.87749999999983,
+      "timestamp": 1618.4325
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 3,
+      "latency": 26.10940000000005,
+      "timestamp": 1644.6412
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 4,
+      "latency": 30.854100000000017,
+      "timestamp": 1675.5909
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 5,
+      "latency": 24.44979999999987,
+      "timestamp": 1700.1317
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 6,
+      "latency": 32.42910000000006,
+      "timestamp": 1732.6994
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 7,
+      "latency": 23.243199999999888,
+      "timestamp": 1756.0012
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 8,
+      "latency": 31.72440000000006,
+      "timestamp": 1787.8586
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 9,
+      "latency": 31.128600000000006,
+      "timestamp": 1819.0501
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 10,
+      "latency": 30.773799999999937,
+      "timestamp": 1849.916
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 11,
+      "latency": 23.261000000000195,
+      "timestamp": 1873.2786
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 12,
+      "latency": 30.7974999999999,
+      "timestamp": 1904.3479
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 13,
+      "latency": 31.629900000000134,
+      "timestamp": 1936.1645
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 14,
+      "latency": 30.458499999999958,
+      "timestamp": 1966.8017
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 15,
+      "latency": 22.739199999999983,
+      "timestamp": 1989.6322
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 16,
+      "latency": 30.30340000000001,
+      "timestamp": 2020.7031
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 17,
+      "latency": 34.3125,
+      "timestamp": 2055.1477
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 18,
+      "latency": 30.56309999999985,
+      "timestamp": 2085.8622
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 19,
+      "latency": 30.93080000000009,
+      "timestamp": 2117.1774
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 20,
+      "latency": 23.079199999999673,
+      "timestamp": 2140.3902
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 21,
+      "latency": 31.31770000000006,
+      "timestamp": 2171.8346
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 22,
+      "latency": 31.41969999999992,
+      "timestamp": 2203.3438
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 23,
+      "latency": 24.658300000000054,
+      "timestamp": 2228.0835
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 24,
+      "latency": 29.285599999999704,
+      "timestamp": 2257.4637
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 25,
+      "latency": 31.314100000000053,
+      "timestamp": 2288.8456
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 26,
+      "latency": 31.77370000000019,
+      "timestamp": 2320.6772
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 27,
+      "latency": 31.65819999999985,
+      "timestamp": 2352.4361
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 28,
+      "latency": 30.426200000000335,
+      "timestamp": 2382.9295
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 29,
+      "latency": 32.60690000000022,
+      "timestamp": 2415.6455
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 30,
+      "latency": 22.804799999999886,
+      "timestamp": 2438.553
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 31,
+      "latency": 31.264599999999973,
+      "timestamp": 2470.1555
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 32,
+      "latency": 31.797399999999925,
+      "timestamp": 2502.0483
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 33,
+      "latency": 32.183899999999994,
+      "timestamp": 2534.2934
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 34,
+      "latency": 21.715499999999793,
+      "timestamp": 2556.4701
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 35,
+      "latency": 31.29599999999982,
+      "timestamp": 2587.8698
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 36,
+      "latency": 32.02379999999994,
+      "timestamp": 2620.0421
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 37,
+      "latency": 31.960399999999936,
+      "timestamp": 2652.2476
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 38,
+      "latency": 30.421600000000126,
+      "timestamp": 2682.8249
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 39,
+      "latency": 24.010999999999967,
+      "timestamp": 2706.9455
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 40,
+      "latency": 31.846199999999953,
+      "timestamp": 2738.8761
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 41,
+      "latency": 32.391200000000026,
+      "timestamp": 2771.3442
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 42,
+      "latency": 31.600200000000314,
+      "timestamp": 2803.2004
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 43,
+      "latency": 30.104299999999967,
+      "timestamp": 2833.5013
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 44,
+      "latency": 24.540899999999965,
+      "timestamp": 2858.1204
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 45,
+      "latency": 32.3742000000002,
+      "timestamp": 2890.5592
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 46,
+      "latency": 28.56939999999986,
+      "timestamp": 2919.7484
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 47,
+      "latency": 30.959499999999935,
+      "timestamp": 2950.8138
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 48,
+      "latency": 32.81110000000035,
+      "timestamp": 2983.6869
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 49,
+      "latency": 31.890599999999722,
+      "timestamp": 3015.6494
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 50,
+      "latency": 24.452299999999923,
+      "timestamp": 3040.1655
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 51,
+      "latency": 30.391799999999876,
+      "timestamp": 3070.6213
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 52,
+      "latency": 31.756800000000112,
+      "timestamp": 3102.4421
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 53,
+      "latency": 31.479499999999916,
+      "timestamp": 3133.9901
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 54,
+      "latency": 22.753699999999753,
+      "timestamp": 3156.8201
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 55,
+      "latency": 33.76180000000022,
+      "timestamp": 3190.6473
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 56,
+      "latency": 30.364599999999882,
+      "timestamp": 3221.0687
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 57,
+      "latency": 31.421100000000024,
+      "timestamp": 3252.5667
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 58,
+      "latency": 32.2482,
+      "timestamp": 3284.9104
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 59,
+      "latency": 32.510499999999865,
+      "timestamp": 3317.5279
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 60,
+      "latency": 22.11329999999998,
+      "timestamp": 3339.7098
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 61,
+      "latency": 32.98960000000034,
+      "timestamp": 3372.7555
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 62,
+      "latency": 30.596199999999953,
+      "timestamp": 3403.7422
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 63,
+      "latency": 32.34790000000021,
+      "timestamp": 3436.1412
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 64,
+      "latency": 21.48279999999977,
+      "timestamp": 3457.6985
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 65,
+      "latency": 31.23829999999998,
+      "timestamp": 3488.9741
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 66,
+      "latency": 33.11909999999989,
+      "timestamp": 3522.1475
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 67,
+      "latency": 30.31359999999995,
+      "timestamp": 3552.6485
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 68,
+      "latency": 30.58120000000008,
+      "timestamp": 3583.2975
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 69,
+      "latency": 23.639900000000125,
+      "timestamp": 3607.0064
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 70,
+      "latency": 31.10689999999977,
+      "timestamp": 3638.8064
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 71,
+      "latency": 32.091799999999694,
+      "timestamp": 3670.9592
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 72,
+      "latency": 31.52410000000009,
+      "timestamp": 3702.5725
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 73,
+      "latency": 30.966499999999996,
+      "timestamp": 3733.6072
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 74,
+      "latency": 23.41760000000022,
+      "timestamp": 3757.0902
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 75,
+      "latency": 30.814899999999852,
+      "timestamp": 3787.9854
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 76,
+      "latency": 31.100400000000263,
+      "timestamp": 3819.1604
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 77,
+      "latency": 30.620300000000043,
+      "timestamp": 3849.8458
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 78,
+      "latency": 24.37390000000005,
+      "timestamp": 3874.3032
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 79,
+      "latency": 29.638500000000022,
+      "timestamp": 3904.2533
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 80,
+      "latency": 30.714300000000094,
+      "timestamp": 3935.0374
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 81,
+      "latency": 32.71690000000035,
+      "timestamp": 3967.9133
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 82,
+      "latency": 31.685899999999947,
+      "timestamp": 3999.6854
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 83,
+      "latency": 23.057999999999993,
+      "timestamp": 4022.8241
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 84,
+      "latency": 31.845800000000054,
+      "timestamp": 4054.7482
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 85,
+      "latency": 31.02679999999964,
+      "timestamp": 4085.8547
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 86,
+      "latency": 31.55079999999998,
+      "timestamp": 4117.4595
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 87,
+      "latency": 32.471300000000156,
+      "timestamp": 4150.0185
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 88,
+      "latency": 23.028000000000247,
+      "timestamp": 4173.1283
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 89,
+      "latency": 30.58889999999974,
+      "timestamp": 4203.9941
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 90,
+      "latency": 31.66910000000007,
+      "timestamp": 4235.784
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 91,
+      "latency": 31.555900000000292,
+      "timestamp": 4267.4188
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 92,
+      "latency": 24.63209999999981,
+      "timestamp": 4292.2964
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 93,
+      "latency": 24.904499999999643,
+      "timestamp": 4317.2935
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 94,
+      "latency": 30.543000000000575,
+      "timestamp": 4347.8989
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 95,
+      "latency": 26.258100000000013,
+      "timestamp": 4374.2238
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 96,
+      "latency": 32.00130000000081,
+      "timestamp": 4406.3046
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 97,
+      "latency": 25.29950000000008,
+      "timestamp": 4431.6499
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 98,
+      "latency": 32.215000000000146,
+      "timestamp": 4463.9525
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 99,
+      "latency": 24.961100000000442,
+      "timestamp": 4488.9726
+    },
+    {
+      "testName": "streaming-100-tokens",
+      "tokenIndex": 100,
+      "latency": 24.870200000000295,
+      "timestamp": 4514.3832
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 1,
+      "latency": 0.1875,
+      "timestamp": 4550.9918
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 2,
+      "latency": 30.204800000000432,
+      "timestamp": 4581.2402
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 3,
+      "latency": 32.528299999999945,
+      "timestamp": 4613.9068
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 4,
+      "latency": 23.33849999999984,
+      "timestamp": 4637.2975
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 5,
+      "latency": 32.90850000000046,
+      "timestamp": 4670.261
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 6,
+      "latency": 27.38590000000022,
+      "timestamp": 4697.6866
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 7,
+      "latency": 22.191499999999905,
+      "timestamp": 4719.9154
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 8,
+      "latency": 22.057299999999486,
+      "timestamp": 4742.0071
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 9,
+      "latency": 25.610899999999674,
+      "timestamp": 4767.6774
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 10,
+      "latency": 25.79739999999947,
+      "timestamp": 4793.526
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 11,
+      "latency": 23.533900000000358,
+      "timestamp": 4817.1027
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 12,
+      "latency": 31.212100000000646,
+      "timestamp": 4848.3706
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 13,
+      "latency": 32.52739999999994,
+      "timestamp": 4880.9762
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 14,
+      "latency": 24.11489999999958,
+      "timestamp": 4905.1825
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 15,
+      "latency": 30.730199999999968,
+      "timestamp": 4935.9928
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 16,
+      "latency": 20.182199999999284,
+      "timestamp": 4956.271
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 17,
+      "latency": 24.29489999999987,
+      "timestamp": 4980.6377
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 18,
+      "latency": 24.686899999999696,
+      "timestamp": 5005.4076
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 19,
+      "latency": 31.10899999999947,
+      "timestamp": 5036.5596
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 20,
+      "latency": 31.454999999999927,
+      "timestamp": 5068.1402
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 21,
+      "latency": 30.824999999999818,
+      "timestamp": 5099.0682
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 22,
+      "latency": 23.936999999999898,
+      "timestamp": 5123.0942
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 23,
+      "latency": 30.64890000000014,
+      "timestamp": 5153.8248
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 24,
+      "latency": 23.649499999999534,
+      "timestamp": 5177.5349
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 25,
+      "latency": 23.888600000000224,
+      "timestamp": 5201.5198
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 26,
+      "latency": 20.190700000000106,
+      "timestamp": 5221.8001
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 27,
+      "latency": 31.33519999999953,
+      "timestamp": 5253.1738
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 28,
+      "latency": 31.347099999999955,
+      "timestamp": 5284.6252
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 29,
+      "latency": 22.756499999999505,
+      "timestamp": 5307.4572
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 30,
+      "latency": 30.804299999999785,
+      "timestamp": 5338.5103
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 31,
+      "latency": 31.216200000000754,
+      "timestamp": 5369.8163
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 32,
+      "latency": 30.599500000000262,
+      "timestamp": 5400.4901
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 33,
+      "latency": 30.855799999999363,
+      "timestamp": 5431.3879
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 34,
+      "latency": 23.198300000000017,
+      "timestamp": 5454.6372
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 35,
+      "latency": 31.258100000000013,
+      "timestamp": 5485.9873
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 36,
+      "latency": 31.169600000000173,
+      "timestamp": 5517.2393
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 37,
+      "latency": 23.580400000000736,
+      "timestamp": 5540.9714
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 38,
+      "latency": 30.526700000000346,
+      "timestamp": 5571.5747
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 39,
+      "latency": 30.767700000000332,
+      "timestamp": 5602.4304
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 40,
+      "latency": 30.500100000000202,
+      "timestamp": 5633.0145
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 41,
+      "latency": 30.654700000000048,
+      "timestamp": 5663.7643
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 42,
+      "latency": 24.55249999999978,
+      "timestamp": 5688.3823
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 43,
+      "latency": 31.63500000000022,
+      "timestamp": 5720.0877
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 44,
+      "latency": 32.003999999999905,
+      "timestamp": 5752.1655
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 45,
+      "latency": 31.34859999999935,
+      "timestamp": 5783.5898
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 46,
+      "latency": 32.07120000000032,
+      "timestamp": 5815.7158
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 47,
+      "latency": 23.209600000000137,
+      "timestamp": 5838.9952
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 48,
+      "latency": 24.203599999999824,
+      "timestamp": 5863.2589
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 49,
+      "latency": 26.21259999999984,
+      "timestamp": 5889.5788
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 50,
+      "latency": 31.55040000000008,
+      "timestamp": 5921.1879
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 51,
+      "latency": 30.570699999999306,
+      "timestamp": 5951.8425
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 52,
+      "latency": 31.658699999999953,
+      "timestamp": 5983.5835
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 53,
+      "latency": 24.861900000000787,
+      "timestamp": 6008.5213
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 54,
+      "latency": 30.35869999999977,
+      "timestamp": 6038.943
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 55,
+      "latency": 31.27390000000014,
+      "timestamp": 6070.3903
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 56,
+      "latency": 32.56370000000061,
+      "timestamp": 6103.0262
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 57,
+      "latency": 30.47020000000066,
+      "timestamp": 6133.5465
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 58,
+      "latency": 22.852200000000266,
+      "timestamp": 6156.4597
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 59,
+      "latency": 32.07809999999972,
+      "timestamp": 6188.5931
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 60,
+      "latency": 31.016700000000128,
+      "timestamp": 6219.7032
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 61,
+      "latency": 31.54650000000038,
+      "timestamp": 6251.3351
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 62,
+      "latency": 31.11749999999938,
+      "timestamp": 6282.5871
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 63,
+      "latency": 23.42789999999968,
+      "timestamp": 6306.1623
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 64,
+      "latency": 31.598500000000058,
+      "timestamp": 6337.8581
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 65,
+      "latency": 32.32040000000052,
+      "timestamp": 6370.2641
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 66,
+      "latency": 30.611299999999574,
+      "timestamp": 6400.9617
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 67,
+      "latency": 32.921800000000076,
+      "timestamp": 6433.965
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 68,
+      "latency": 22.66569999999956,
+      "timestamp": 6456.6855
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 69,
+      "latency": 31.17699999999968,
+      "timestamp": 6487.9517
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 70,
+      "latency": 31.423999999999978,
+      "timestamp": 6519.4535
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 71,
+      "latency": 32.22159999999985,
+      "timestamp": 6551.7535
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 72,
+      "latency": 23.514099999999416,
+      "timestamp": 6575.4001
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 73,
+      "latency": 30.7483000000002,
+      "timestamp": 6606.2126
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 74,
+      "latency": 30.829200000000128,
+      "timestamp": 6637.1264
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 75,
+      "latency": 31.536000000000058,
+      "timestamp": 6668.7331
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 76,
+      "latency": 31.28269999999975,
+      "timestamp": 6700.0828
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 77,
+      "latency": 23.44750000000022,
+      "timestamp": 6723.6092
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 78,
+      "latency": 31.138099999999213,
+      "timestamp": 6754.815
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 79,
+      "latency": 31.981700000000274,
+      "timestamp": 6786.8941
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 80,
+      "latency": 31.29240000000027,
+      "timestamp": 6818.3066
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 81,
+      "latency": 25.460700000000543,
+      "timestamp": 6843.8388
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 82,
+      "latency": 29.38709999999992,
+      "timestamp": 6873.2954
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 83,
+      "latency": 31.880199999999604,
+      "timestamp": 6905.2345
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 84,
+      "latency": 30.753200000000106,
+      "timestamp": 6936.0622
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 85,
+      "latency": 31.12039999999979,
+      "timestamp": 6967.3159
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 86,
+      "latency": 32.123099999999795,
+      "timestamp": 6999.5171
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 87,
+      "latency": 23.35239999999976,
+      "timestamp": 7022.9554
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 88,
+      "latency": 30.125699999999597,
+      "timestamp": 7053.1469
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 89,
+      "latency": 30.481299999999464,
+      "timestamp": 7083.7242
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 90,
+      "latency": 32.11380000000008,
+      "timestamp": 7115.9144
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 91,
+      "latency": 22.843800000000556,
+      "timestamp": 7138.8688
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 92,
+      "latency": 32.04230000000007,
+      "timestamp": 7170.9792
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 93,
+      "latency": 31.440300000000207,
+      "timestamp": 7202.496
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 94,
+      "latency": 31.03980000000047,
+      "timestamp": 7233.5868
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 95,
+      "latency": 23.08219999999983,
+      "timestamp": 7256.7438
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 96,
+      "latency": 31.410799999999654,
+      "timestamp": 7288.2413
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 97,
+      "latency": 31.501000000000204,
+      "timestamp": 7319.8728
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 98,
+      "latency": 30.702000000000226,
+      "timestamp": 7350.6398
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 99,
+      "latency": 24.39049999999952,
+      "timestamp": 7375.0885
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 100,
+      "latency": 31.609699999999975,
+      "timestamp": 7406.7563
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 101,
+      "latency": 31.670900000000074,
+      "timestamp": 7438.483
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 102,
+      "latency": 31.788700000000063,
+      "timestamp": 7470.3217
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 103,
+      "latency": 35.238900000000285,
+      "timestamp": 7505.6085
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 104,
+      "latency": 28.25759999999991,
+      "timestamp": 7533.9478
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 105,
+      "latency": 26.431300000000192,
+      "timestamp": 7560.4685
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 106,
+      "latency": 29.40400000000045,
+      "timestamp": 7589.9263
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 107,
+      "latency": 31.988899999999376,
+      "timestamp": 7621.9971
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 108,
+      "latency": 31.926500000000487,
+      "timestamp": 7654.0118
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 109,
+      "latency": 30.826900000000023,
+      "timestamp": 7684.9389
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 110,
+      "latency": 30.941799999999603,
+      "timestamp": 7715.9577
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 111,
+      "latency": 33.536699999999655,
+      "timestamp": 7749.5472
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 112,
+      "latency": 21.021699999999328,
+      "timestamp": 7770.6221
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 113,
+      "latency": 36.013700000000426,
+      "timestamp": 7806.6723
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 114,
+      "latency": 31.29150000000027,
+      "timestamp": 7838.0256
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 115,
+      "latency": 32.10199999999986,
+      "timestamp": 7870.2795
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 116,
+      "latency": 31.248999999999796,
+      "timestamp": 7901.7917
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 117,
+      "latency": 30.220400000000154,
+      "timestamp": 7932.2127
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 118,
+      "latency": 23.81970000000001,
+      "timestamp": 7956.0945
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 119,
+      "latency": 31.154900000000453,
+      "timestamp": 7987.3103
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 120,
+      "latency": 31.49539999999979,
+      "timestamp": 8018.8728
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 121,
+      "latency": 31.59429999999975,
+      "timestamp": 8050.5441
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 122,
+      "latency": 23.09439999999995,
+      "timestamp": 8073.7161
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 123,
+      "latency": 31.20510000000013,
+      "timestamp": 8104.9985
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 124,
+      "latency": 31.44539999999961,
+      "timestamp": 8136.5189
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 125,
+      "latency": 30.490999999999985,
+      "timestamp": 8167.1343
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 126,
+      "latency": 24.344600000000355,
+      "timestamp": 8191.546
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 127,
+      "latency": 29.972199999999248,
+      "timestamp": 8221.5922
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 128,
+      "latency": 31.339099999999235,
+      "timestamp": 8252.9967
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 129,
+      "latency": 30.420500000000175,
+      "timestamp": 8283.4854
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 130,
+      "latency": 30.584199999999328,
+      "timestamp": 8314.1372
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 131,
+      "latency": 23.951200000001336,
+      "timestamp": 8338.1648
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 132,
+      "latency": 31.13220000000001,
+      "timestamp": 8369.3714
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 133,
+      "latency": 31.81129999999939,
+      "timestamp": 8401.2454
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 134,
+      "latency": 23.904099999999744,
+      "timestamp": 8425.2292
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 135,
+      "latency": 30.91150000000016,
+      "timestamp": 8456.1964
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 136,
+      "latency": 31.398699999999735,
+      "timestamp": 8487.6768
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 137,
+      "latency": 31.04989999999998,
+      "timestamp": 8518.7744
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 138,
+      "latency": 24.762100000001737,
+      "timestamp": 8543.6169
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 139,
+      "latency": 29.620600000000195,
+      "timestamp": 8573.2924
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 140,
+      "latency": 23.639500000001135,
+      "timestamp": 8597.0941
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 141,
+      "latency": 25.59389999999985,
+      "timestamp": 8622.7623
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 142,
+      "latency": 24.545000000000073,
+      "timestamp": 8647.3946
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 143,
+      "latency": 25.74029999999948,
+      "timestamp": 8673.2745
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 144,
+      "latency": 31.208599999999933,
+      "timestamp": 8704.5856
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 145,
+      "latency": 30.83719999999994,
+      "timestamp": 8735.4949
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 146,
+      "latency": 31.284700000000157,
+      "timestamp": 8766.8708
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 147,
+      "latency": 31.313099999999395,
+      "timestamp": 8798.2413
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 148,
+      "latency": 23.452300000000832,
+      "timestamp": 8821.7594
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 149,
+      "latency": 24.838700000000244,
+      "timestamp": 8846.6734
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 150,
+      "latency": 33.40570000000116,
+      "timestamp": 8880.1352
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 151,
+      "latency": 19.41859999999906,
+      "timestamp": 8899.6189
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 152,
+      "latency": 28.805899999999383,
+      "timestamp": 8928.4774
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 153,
+      "latency": 30.84569999999985,
+      "timestamp": 8959.3526
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 154,
+      "latency": 30.76089999999931,
+      "timestamp": 8990.1767
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 155,
+      "latency": 30.405300000000352,
+      "timestamp": 9020.6501
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 156,
+      "latency": 30.415399999999863,
+      "timestamp": 9051.1422
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 157,
+      "latency": 30.68419999999969,
+      "timestamp": 9081.9069
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 158,
+      "latency": 31.786400000000867,
+      "timestamp": 9113.7795
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 159,
+      "latency": 30.89600000000064,
+      "timestamp": 9144.7279
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 160,
+      "latency": 28.61999999999898,
+      "timestamp": 9173.4018
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 161,
+      "latency": 30.7463000000007,
+      "timestamp": 9204.2451
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 162,
+      "latency": 30.409699999998338,
+      "timestamp": 9234.7033
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 163,
+      "latency": 31.60030000000006,
+      "timestamp": 9266.3592
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 164,
+      "latency": 23.8112000000001,
+      "timestamp": 9290.2188
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 165,
+      "latency": 32.45520000000033,
+      "timestamp": 9322.7531
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 166,
+      "latency": 31.298099999999977,
+      "timestamp": 9354.213
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 167,
+      "latency": 31.688099999999395,
+      "timestamp": 9385.9399
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 168,
+      "latency": 31.61279999999897,
+      "timestamp": 9417.6197
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 169,
+      "latency": 31.820600000000923,
+      "timestamp": 9449.5089
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 170,
+      "latency": 23.27969999999914,
+      "timestamp": 9472.8249
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 171,
+      "latency": 31.891100000000733,
+      "timestamp": 9504.7837
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 172,
+      "latency": 19.781800000000658,
+      "timestamp": 9524.6052
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 173,
+      "latency": 21.60360000000037,
+      "timestamp": 9546.2774
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 174,
+      "latency": 21.595900000000256,
+      "timestamp": 9567.941
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 175,
+      "latency": 31.725800000000163,
+      "timestamp": 9599.8186
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 176,
+      "latency": 30.69460000000072,
+      "timestamp": 9630.7348
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 177,
+      "latency": 26.12920000000122,
+      "timestamp": 9656.9225
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 178,
+      "latency": 31.64099999999962,
+      "timestamp": 9688.6425
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 179,
+      "latency": 32.05709999999999,
+      "timestamp": 9720.7721
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 180,
+      "latency": 31.922700000000987,
+      "timestamp": 9752.7911
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 181,
+      "latency": 23.415799999998853,
+      "timestamp": 9776.4095
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 182,
+      "latency": 29.606800000001385,
+      "timestamp": 9806.0776
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 183,
+      "latency": 31.577900000000227,
+      "timestamp": 9837.725
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 184,
+      "latency": 31.4333000000006,
+      "timestamp": 9869.2374
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 185,
+      "latency": 31.450200000001132,
+      "timestamp": 9900.7669
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 186,
+      "latency": 31.74489999999969,
+      "timestamp": 9932.7412
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 187,
+      "latency": 32.79559999999947,
+      "timestamp": 9965.6027
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 188,
+      "latency": 23.539299999998548,
+      "timestamp": 9989.2136
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 189,
+      "latency": 31.29700000000048,
+      "timestamp": 10020.5802
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 190,
+      "latency": 31.675999999999476,
+      "timestamp": 10052.3262
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 191,
+      "latency": 23.983799999999974,
+      "timestamp": 10076.3844
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 192,
+      "latency": 29.57669999999962,
+      "timestamp": 10106.0401
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 193,
+      "latency": 31.560499999999593,
+      "timestamp": 10137.7707
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 194,
+      "latency": 32.093800000000556,
+      "timestamp": 10169.9248
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 195,
+      "latency": 31.572299999999814,
+      "timestamp": 10201.5372
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 196,
+      "latency": 31.790399999999863,
+      "timestamp": 10233.3743
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 197,
+      "latency": 23.977600000000166,
+      "timestamp": 10257.4188
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 198,
+      "latency": 31.841099999999642,
+      "timestamp": 10289.3776
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 199,
+      "latency": 31.122699999999895,
+      "timestamp": 10321.1534
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 200,
+      "latency": 31.78729999999996,
+      "timestamp": 10353.0273
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 201,
+      "latency": 23.59560000000056,
+      "timestamp": 10376.6848
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 202,
+      "latency": 29.676899999998568,
+      "timestamp": 10406.4551
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 203,
+      "latency": 33.08400000000074,
+      "timestamp": 10439.6144
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 204,
+      "latency": 31.1179000000011,
+      "timestamp": 10470.78
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 205,
+      "latency": 31.341699999999037,
+      "timestamp": 10502.1955
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 206,
+      "latency": 23.146500000000742,
+      "timestamp": 10525.4076
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 207,
+      "latency": 31.400399999998626,
+      "timestamp": 10556.8759
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 208,
+      "latency": 30.501900000001115,
+      "timestamp": 10587.4487
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 209,
+      "latency": 31.823300000000017,
+      "timestamp": 10619.368
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 210,
+      "latency": 23.400499999999738,
+      "timestamp": 10642.8378
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 211,
+      "latency": 30.49250000000029,
+      "timestamp": 10673.405
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 212,
+      "latency": 31.929299999999785,
+      "timestamp": 10705.4635
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 213,
+      "latency": 30.62840000000142,
+      "timestamp": 10736.1753
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 214,
+      "latency": 31.62250000000131,
+      "timestamp": 10767.8636
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 215,
+      "latency": 31.569900000000416,
+      "timestamp": 10799.4848
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 216,
+      "latency": 24.472599999999147,
+      "timestamp": 10824.0297
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 217,
+      "latency": 30.7562999999991,
+      "timestamp": 10854.8249
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 218,
+      "latency": 32.37960000000021,
+      "timestamp": 10887.2786
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 219,
+      "latency": 30.76759999999922,
+      "timestamp": 10918.1145
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 220,
+      "latency": 23.327400000000125,
+      "timestamp": 10941.5992
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 221,
+      "latency": 31.230900000000474,
+      "timestamp": 10972.933
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 222,
+      "latency": 31.352100000000064,
+      "timestamp": 11004.3596
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 223,
+      "latency": 32.089600000001155,
+      "timestamp": 11036.5202
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 224,
+      "latency": 31.696599999999307,
+      "timestamp": 11068.3296
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 225,
+      "latency": 30.779599999999846,
+      "timestamp": 11099.1872
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 226,
+      "latency": 24.325200000001132,
+      "timestamp": 11123.5879
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 227,
+      "latency": 31.57799999999952,
+      "timestamp": 11155.3596
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 228,
+      "latency": 31.147299999998722,
+      "timestamp": 11186.5783
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 229,
+      "latency": 31.49289999999928,
+      "timestamp": 11218.1443
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 230,
+      "latency": 32.60770000000048,
+      "timestamp": 11250.8174
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 231,
+      "latency": 20.977499999999054,
+      "timestamp": 11271.9764
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 232,
+      "latency": 31.947900000001027,
+      "timestamp": 11304.0058
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 233,
+      "latency": 31.466200000000754,
+      "timestamp": 11335.546
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 234,
+      "latency": 31.851599999999962,
+      "timestamp": 11367.4948
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 235,
+      "latency": 24.6791000000012,
+      "timestamp": 11392.234
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 236,
+      "latency": 30.159899999998743,
+      "timestamp": 11422.4391
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 237,
+      "latency": 31.748999999999796,
+      "timestamp": 11454.2695
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 238,
+      "latency": 32.05609999999979,
+      "timestamp": 11486.4463
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 239,
+      "latency": 30.824900000001435,
+      "timestamp": 11517.333
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 240,
+      "latency": 32.02859999999964,
+      "timestamp": 11549.42
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 241,
+      "latency": 24.016700000000128,
+      "timestamp": 11573.5511
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 242,
+      "latency": 31.51510000000053,
+      "timestamp": 11605.1538
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 243,
+      "latency": 31.275299999999334,
+      "timestamp": 11636.5275
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 244,
+      "latency": 30.838799999999537,
+      "timestamp": 11667.4997
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 245,
+      "latency": 31.694099999998798,
+      "timestamp": 11699.2573
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 246,
+      "latency": 25.03769999999895,
+      "timestamp": 11724.365
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 247,
+      "latency": 30.26209999999992,
+      "timestamp": 11754.6945
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 248,
+      "latency": 31.71309999999903,
+      "timestamp": 11786.5289
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 249,
+      "latency": 30.88680000000022,
+      "timestamp": 11817.6612
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 250,
+      "latency": 31.795099999999366,
+      "timestamp": 11849.5191
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 251,
+      "latency": 23.847200000000157,
+      "timestamp": 11873.4229
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 252,
+      "latency": 31.81209999999919,
+      "timestamp": 11905.3198
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 253,
+      "latency": 31.849600000001374,
+      "timestamp": 11937.9716
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 254,
+      "latency": 30.393700000000536,
+      "timestamp": 11968.4113
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 255,
+      "latency": 31.175900000000183,
+      "timestamp": 11999.6734
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 256,
+      "latency": 30.974299999999857,
+      "timestamp": 12030.7497
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 257,
+      "latency": 24.074800000000323,
+      "timestamp": 12054.8933
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 258,
+      "latency": 29.730900000000474,
+      "timestamp": 12084.662
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 259,
+      "latency": 31.342200000000958,
+      "timestamp": 12116.0822
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 260,
+      "latency": 22.426900000000387,
+      "timestamp": 12138.609
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 261,
+      "latency": 31.346199999999953,
+      "timestamp": 12169.9926
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 262,
+      "latency": 30.450299999998606,
+      "timestamp": 12200.5153
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 263,
+      "latency": 30.813999999998487,
+      "timestamp": 12231.3957
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 264,
+      "latency": 26.123900000000503,
+      "timestamp": 12257.6358
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 265,
+      "latency": 30.616799999999785,
+      "timestamp": 12288.2984
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 266,
+      "latency": 24.266200000000026,
+      "timestamp": 12312.6511
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 267,
+      "latency": 31.562200000000303,
+      "timestamp": 12344.2538
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 268,
+      "latency": 24.914700000001176,
+      "timestamp": 12369.2383
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 269,
+      "latency": 29.96179999999913,
+      "timestamp": 12399.2621
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 270,
+      "latency": 25.736799999998766,
+      "timestamp": 12425.0304
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 271,
+      "latency": 21.556500000000597,
+      "timestamp": 12446.6576
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 272,
+      "latency": 23.137800000000425,
+      "timestamp": 12469.8464
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 273,
+      "latency": 29.78349999999955,
+      "timestamp": 12499.7637
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 274,
+      "latency": 23.484599999999773,
+      "timestamp": 12523.3011
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 275,
+      "latency": 22.849599999999555,
+      "timestamp": 12546.2004
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 276,
+      "latency": 23.801299999999173,
+      "timestamp": 12570.0494
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 277,
+      "latency": 28.898400000000038,
+      "timestamp": 12598.9844
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 278,
+      "latency": 23.460900000000038,
+      "timestamp": 12622.4991
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 279,
+      "latency": 32.51889999999912,
+      "timestamp": 12655.0492
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 280,
+      "latency": 30.056400000001304,
+      "timestamp": 12685.1707
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 281,
+      "latency": 32.940599999999904,
+      "timestamp": 12718.188
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 282,
+      "latency": 30.556000000000495,
+      "timestamp": 12748.7983
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 283,
+      "latency": 24.332899999999427,
+      "timestamp": 12773.2462
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 284,
+      "latency": 30.618800000000192,
+      "timestamp": 12803.922
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 285,
+      "latency": 31.22309999999925,
+      "timestamp": 12835.2235
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 286,
+      "latency": 30.704499999999825,
+      "timestamp": 12866.0031
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 287,
+      "latency": 22.891500000001543,
+      "timestamp": 12888.9711
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 288,
+      "latency": 32.29780000000028,
+      "timestamp": 12921.3423
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 289,
+      "latency": 32.21640000000116,
+      "timestamp": 12953.6874
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 290,
+      "latency": 30.052099999998973,
+      "timestamp": 12983.8033
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 291,
+      "latency": 30.59439999999995,
+      "timestamp": 13014.4458
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 292,
+      "latency": 24.12670000000071,
+      "timestamp": 13038.6173
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 293,
+      "latency": 30.9987000000001,
+      "timestamp": 13069.6684
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 294,
+      "latency": 30.47910000000047,
+      "timestamp": 13100.1882
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 295,
+      "latency": 30.8132999999998,
+      "timestamp": 13131.0627
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 296,
+      "latency": 23.101300000000265,
+      "timestamp": 13154.199
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 297,
+      "latency": 30.840000000000146,
+      "timestamp": 13185.0841
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 298,
+      "latency": 32.35490000000027,
+      "timestamp": 13217.4899
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 299,
+      "latency": 30.20719999999892,
+      "timestamp": 13247.739
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 300,
+      "latency": 24.069400000000314,
+      "timestamp": 13271.8832
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 301,
+      "latency": 31.5049999999992,
+      "timestamp": 13303.4324
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 302,
+      "latency": 32.01169999999911,
+      "timestamp": 13335.5086
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 303,
+      "latency": 31.610000000000582,
+      "timestamp": 13367.2238
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 304,
+      "latency": 32.001500000000306,
+      "timestamp": 13399.2733
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 305,
+      "latency": 22.601399999999558,
+      "timestamp": 13421.9157
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 306,
+      "latency": 32.0515000000014,
+      "timestamp": 13454.0143
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 307,
+      "latency": 31.61070000000109,
+      "timestamp": 13485.6828
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 308,
+      "latency": 23.72439999999915,
+      "timestamp": 13509.4491
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 309,
+      "latency": 29.67450000000099,
+      "timestamp": 13539.197
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 310,
+      "latency": 31.583200000000943,
+      "timestamp": 13570.8489
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 311,
+      "latency": 31.531200000001263,
+      "timestamp": 13602.4413
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 312,
+      "latency": 30.964100000001054,
+      "timestamp": 13633.4765
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 313,
+      "latency": 32.21519999999873,
+      "timestamp": 13665.7501
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 314,
+      "latency": 23.671700000000783,
+      "timestamp": 13689.4765
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 315,
+      "latency": 31.168899999998757,
+      "timestamp": 13720.7074
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 316,
+      "latency": 31.498100000000704,
+      "timestamp": 13752.2792
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 317,
+      "latency": 31.208699999999226,
+      "timestamp": 13783.5515
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 318,
+      "latency": 31.99879999999939,
+      "timestamp": 13815.6178
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 319,
+      "latency": 23.582699999999022,
+      "timestamp": 13839.2562
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 320,
+      "latency": 31.2445000000007,
+      "timestamp": 13870.5813
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 321,
+      "latency": 31.734699999999066,
+      "timestamp": 13902.3882
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 322,
+      "latency": 31.340100000001257,
+      "timestamp": 13933.7862
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 323,
+      "latency": 32.617199999998775,
+      "timestamp": 13966.4787
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 324,
+      "latency": 21.24539999999979,
+      "timestamp": 13987.7826
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 325,
+      "latency": 31.58220000000074,
+      "timestamp": 14019.5059
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 326,
+      "latency": 31.124000000001615,
+      "timestamp": 14050.6897
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 327,
+      "latency": 31.179000000000087,
+      "timestamp": 14081.9178
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 328,
+      "latency": 24.258200000000215,
+      "timestamp": 14106.2436
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 329,
+      "latency": 32.05580000000009,
+      "timestamp": 14138.3692
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 330,
+      "latency": 31.265400000000227,
+      "timestamp": 14169.7116
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 331,
+      "latency": 31.503999999998996,
+      "timestamp": 14201.2817
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 332,
+      "latency": 32.330700000000434,
+      "timestamp": 14233.6789
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 333,
+      "latency": 22.81290000000081,
+      "timestamp": 14256.5573
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 334,
+      "latency": 31.994800000000396,
+      "timestamp": 14288.6175
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 335,
+      "latency": 32.21270000000004,
+      "timestamp": 14320.8945
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 336,
+      "latency": 31.730199999999968,
+      "timestamp": 14352.6947
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 337,
+      "latency": 31.059000000001106,
+      "timestamp": 14383.8163
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 338,
+      "latency": 22.641899999998714,
+      "timestamp": 14406.5171
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 339,
+      "latency": 31.435100000000602,
+      "timestamp": 14438.0017
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 340,
+      "latency": 31.695299999999406,
+      "timestamp": 14469.7833
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 341,
+      "latency": 31.762399999999616,
+      "timestamp": 14501.6112
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 342,
+      "latency": 32.29860000000008,
+      "timestamp": 14533.9658
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 343,
+      "latency": 31.54240000000027,
+      "timestamp": 14565.6195
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 344,
+      "latency": 23.70719999999892,
+      "timestamp": 14589.409
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 345,
+      "latency": 24.09599999999955,
+      "timestamp": 14613.5666
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 346,
+      "latency": 25.217399999999543,
+      "timestamp": 14638.8607
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 347,
+      "latency": 31.88010000000031,
+      "timestamp": 14670.8262
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 348,
+      "latency": 31.97060000000056,
+      "timestamp": 14702.8714
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 349,
+      "latency": 30.820400000000518,
+      "timestamp": 14733.7648
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 350,
+      "latency": 31.53989999999976,
+      "timestamp": 14765.389
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 351,
+      "latency": 23.30450000000019,
+      "timestamp": 14788.7846
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 352,
+      "latency": 31.608799999999974,
+      "timestamp": 14820.4479
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 353,
+      "latency": 31.027399999999034,
+      "timestamp": 14851.5358
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 354,
+      "latency": 30.786599999999453,
+      "timestamp": 14882.3949
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 355,
+      "latency": 22.936799999999494,
+      "timestamp": 14905.3975
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 356,
+      "latency": 31.04529999999977,
+      "timestamp": 14936.5149
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 357,
+      "latency": 31.437200000000303,
+      "timestamp": 14968.0004
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 358,
+      "latency": 30.976200000000972,
+      "timestamp": 14999.0316
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 359,
+      "latency": 23.10280000000057,
+      "timestamp": 15022.1988
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 360,
+      "latency": 31.793099999998958,
+      "timestamp": 15054.0338
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 361,
+      "latency": 31.189800000000105,
+      "timestamp": 15085.3056
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 362,
+      "latency": 31.432999999999083,
+      "timestamp": 15116.7923
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 363,
+      "latency": 30.76219999999921,
+      "timestamp": 15147.6214
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 364,
+      "latency": 24.138699999999517,
+      "timestamp": 15171.8336
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 365,
+      "latency": 31.466300000000047,
+      "timestamp": 15203.3419
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 366,
+      "latency": 21.199499999998807,
+      "timestamp": 15224.6125
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 367,
+      "latency": 31.378700000001118,
+      "timestamp": 15256.1296
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 368,
+      "latency": 30.209999999999127,
+      "timestamp": 15286.4136
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 369,
+      "latency": 31.87330000000111,
+      "timestamp": 15318.3554
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 370,
+      "latency": 31.016499999999724,
+      "timestamp": 15349.4304
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 371,
+      "latency": 31.40299999999843,
+      "timestamp": 15380.8967
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 372,
+      "latency": 25.9979000000003,
+      "timestamp": 15406.9738
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 373,
+      "latency": 23.938899999999194,
+      "timestamp": 15431.2503
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 374,
+      "latency": 23.653800000000047,
+      "timestamp": 15454.9809
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 375,
+      "latency": 23.960399999999936,
+      "timestamp": 15478.9731
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 376,
+      "latency": 30.707699999999022,
+      "timestamp": 15509.7557
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 377,
+      "latency": 24.6278999999995,
+      "timestamp": 15534.4722
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 378,
+      "latency": 28.63040000000001,
+      "timestamp": 15563.2763
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 379,
+      "latency": 24.951700000001438,
+      "timestamp": 15588.4976
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 380,
+      "latency": 31.571099999999205,
+      "timestamp": 15620.1222
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 381,
+      "latency": 30.252700000000914,
+      "timestamp": 15650.4411
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 382,
+      "latency": 23.679400000000896,
+      "timestamp": 15674.171
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 383,
+      "latency": 23.377399999999398,
+      "timestamp": 15697.5942
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 384,
+      "latency": 25.76379999999881,
+      "timestamp": 15723.4409
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 385,
+      "latency": 30.19759999999951,
+      "timestamp": 15753.9924
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 386,
+      "latency": 31.08379999999852,
+      "timestamp": 15785.1637
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 387,
+      "latency": 30.653400000001056,
+      "timestamp": 15815.8687
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 388,
+      "latency": 31.795000000000073,
+      "timestamp": 15847.708
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 389,
+      "latency": 31.47019999999975,
+      "timestamp": 15879.2423
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 390,
+      "latency": 30.56710000000021,
+      "timestamp": 15909.8855
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 391,
+      "latency": 31.098900000000867,
+      "timestamp": 15941.0373
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 392,
+      "latency": 30.85239999999976,
+      "timestamp": 15971.9683
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 393,
+      "latency": 31.101000000000568,
+      "timestamp": 16003.1149
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 394,
+      "latency": 30.312299999999595,
+      "timestamp": 16033.5049
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 395,
+      "latency": 31.166000000001077,
+      "timestamp": 16064.7443
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 396,
+      "latency": 31.210900000000038,
+      "timestamp": 16095.9945
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 397,
+      "latency": 30.764799999999013,
+      "timestamp": 16126.8192
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 398,
+      "latency": 28.466600000001563,
+      "timestamp": 16155.4595
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 399,
+      "latency": 31.13550000000032,
+      "timestamp": 16186.6563
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 400,
+      "latency": 31.015699999999924,
+      "timestamp": 16217.7211
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 401,
+      "latency": 31.553499999999985,
+      "timestamp": 16249.4009
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 402,
+      "latency": 24.038500000000568,
+      "timestamp": 16273.5272
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 403,
+      "latency": 31.694100000000617,
+      "timestamp": 16305.3138
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 404,
+      "latency": 31.415000000000873,
+      "timestamp": 16336.8032
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 405,
+      "latency": 31.204500000001644,
+      "timestamp": 16368.1056
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 406,
+      "latency": 31.3224999999984,
+      "timestamp": 16399.5087
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 407,
+      "latency": 31.385699999998906,
+      "timestamp": 16430.9683
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 408,
+      "latency": 25.789699999997538,
+      "timestamp": 16456.8206
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 409,
+      "latency": 31.19709999999759,
+      "timestamp": 16488.2633
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 410,
+      "latency": 32.72389999999723,
+      "timestamp": 16521.0565
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 411,
+      "latency": 30.79030000000057,
+      "timestamp": 16551.9144
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 412,
+      "latency": 31.74029999999766,
+      "timestamp": 16583.7234
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 413,
+      "latency": 31.591599999999744,
+      "timestamp": 16615.3944
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 414,
+      "latency": 31.000599999999395,
+      "timestamp": 16646.4752
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 415,
+      "latency": 32.63940000000002,
+      "timestamp": 16679.1712
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 416,
+      "latency": 31.945999999999913,
+      "timestamp": 16711.1964
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 417,
+      "latency": 30.491900000000896,
+      "timestamp": 16741.7428
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 418,
+      "latency": 31.524199999999837,
+      "timestamp": 16773.321
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 419,
+      "latency": 31.364000000001397,
+      "timestamp": 16804.7357
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 420,
+      "latency": 32.050900000002,
+      "timestamp": 16836.8408
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 421,
+      "latency": 30.959600000001956,
+      "timestamp": 16867.8868
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 422,
+      "latency": 30.95270000000164,
+      "timestamp": 16898.9123
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 423,
+      "latency": 31.149900000000343,
+      "timestamp": 16930.1305
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 424,
+      "latency": 31.35160000000178,
+      "timestamp": 16961.5361
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 425,
+      "latency": 31.978699999999662,
+      "timestamp": 16993.5541
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 426,
+      "latency": 31.174299999998766,
+      "timestamp": 17024.786
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 427,
+      "latency": 31.386999999998807,
+      "timestamp": 17056.2549
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 428,
+      "latency": 31.243099999999686,
+      "timestamp": 17087.5846
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 429,
+      "latency": 32.12319999999818,
+      "timestamp": 17119.7931
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 430,
+      "latency": 32.03830000000016,
+      "timestamp": 17151.9196
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 431,
+      "latency": 30.326600000000326,
+      "timestamp": 17182.391
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 432,
+      "latency": 31.003499999998894,
+      "timestamp": 17213.4699
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 433,
+      "latency": 31.4900000000016,
+      "timestamp": 17245.0381
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 434,
+      "latency": 31.153399999999237,
+      "timestamp": 17276.285
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 435,
+      "latency": 32.304700000000594,
+      "timestamp": 17308.6676
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 436,
+      "latency": 31.859999999996944,
+      "timestamp": 17340.6648
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 437,
+      "latency": 31.134500000000116,
+      "timestamp": 17371.886
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 438,
+      "latency": 31.807299999996758,
+      "timestamp": 17403.7433
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 439,
+      "latency": 31.590699999997014,
+      "timestamp": 17435.4413
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 440,
+      "latency": 32.03949999999895,
+      "timestamp": 17467.5522
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 441,
+      "latency": 31.657500000001164,
+      "timestamp": 17499.2867
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 442,
+      "latency": 32.0031999999992,
+      "timestamp": 17531.3606
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 443,
+      "latency": 31.66019999999844,
+      "timestamp": 17563.086
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 444,
+      "latency": 31.183100000002014,
+      "timestamp": 17594.3751
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 445,
+      "latency": 29.166199999999662,
+      "timestamp": 17623.6161
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 446,
+      "latency": 31.78620000000228,
+      "timestamp": 17655.4828
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 447,
+      "latency": 32.302599999999074,
+      "timestamp": 17687.858
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 448,
+      "latency": 34.31850000000122,
+      "timestamp": 17722.22
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 449,
+      "latency": 31.293000000001484,
+      "timestamp": 17753.5769
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 450,
+      "latency": 31.731599999999162,
+      "timestamp": 17785.4477
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 451,
+      "latency": 30.974500000000262,
+      "timestamp": 17816.4714
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 452,
+      "latency": 23.212800000001153,
+      "timestamp": 17839.7262
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 453,
+      "latency": 32.07459999999992,
+      "timestamp": 17871.8664
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 454,
+      "latency": 30.780399999999645,
+      "timestamp": 17902.7124
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 455,
+      "latency": 31.37279999999737,
+      "timestamp": 17934.1661
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 456,
+      "latency": 30.62710000000152,
+      "timestamp": 17964.8738
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 457,
+      "latency": 23.669600000001083,
+      "timestamp": 17988.5919
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 458,
+      "latency": 31.00090000000273,
+      "timestamp": 18019.6389
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 459,
+      "latency": 30.352100000000064,
+      "timestamp": 18050.0597
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 460,
+      "latency": 32.08230000000185,
+      "timestamp": 18082.2543
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 461,
+      "latency": 23.36199999999735,
+      "timestamp": 18105.6877
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 462,
+      "latency": 32.04249999999956,
+      "timestamp": 18137.7746
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 463,
+      "latency": 31.048499999997148,
+      "timestamp": 18168.8994
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 464,
+      "latency": 31.845699999998033,
+      "timestamp": 18200.8
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 465,
+      "latency": 23.84179999999833,
+      "timestamp": 18224.715
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 466,
+      "latency": 30.574400000001333,
+      "timestamp": 18255.3629
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 467,
+      "latency": 31.006499999999505,
+      "timestamp": 18286.4159
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 468,
+      "latency": 24.894599999999627,
+      "timestamp": 18311.399
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 469,
+      "latency": 25.128100000001723,
+      "timestamp": 18336.5927
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 470,
+      "latency": 21.014400000000023,
+      "timestamp": 18357.6709
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 471,
+      "latency": 24.668799999999464,
+      "timestamp": 18382.4983
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 472,
+      "latency": 23.42369999999937,
+      "timestamp": 18405.9689
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 473,
+      "latency": 29.975600000001577,
+      "timestamp": 18436.0046
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 474,
+      "latency": 23.832400000002963,
+      "timestamp": 18459.918
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 475,
+      "latency": 23.75340000000142,
+      "timestamp": 18483.7399
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 476,
+      "latency": 21.569799999997485,
+      "timestamp": 18505.3569
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 477,
+      "latency": 19.41270000000077,
+      "timestamp": 18524.8161
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 478,
+      "latency": 31.787899999999354,
+      "timestamp": 18556.6581
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 479,
+      "latency": 32.17320000000109,
+      "timestamp": 18588.9108
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 480,
+      "latency": 25.289199999999255,
+      "timestamp": 18614.2505
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 481,
+      "latency": 24.027600000001257,
+      "timestamp": 18638.3357
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 482,
+      "latency": 34.598400000002584,
+      "timestamp": 18673.0921
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 483,
+      "latency": 30.68449999999939,
+      "timestamp": 18703.9271
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 484,
+      "latency": 31.067199999997683,
+      "timestamp": 18735.0546
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 485,
+      "latency": 30.550200000001496,
+      "timestamp": 18765.6572
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 486,
+      "latency": 23.472900000000664,
+      "timestamp": 18789.1838
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 487,
+      "latency": 29.733500000002095,
+      "timestamp": 18819.0057
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 488,
+      "latency": 23.13039999999819,
+      "timestamp": 18842.2116
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 489,
+      "latency": 30.70289999999659,
+      "timestamp": 18872.9704
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 490,
+      "latency": 30.27390000000014,
+      "timestamp": 18903.3198
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 491,
+      "latency": 34.47270000000208,
+      "timestamp": 18937.8493
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 492,
+      "latency": 30.667900000000373,
+      "timestamp": 18968.6124
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 493,
+      "latency": 31.373899999998685,
+      "timestamp": 19000.0388
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 494,
+      "latency": 23.777399999999034,
+      "timestamp": 19023.8792
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 495,
+      "latency": 30.09860000000117,
+      "timestamp": 19054.0308
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 496,
+      "latency": 31.215100000001257,
+      "timestamp": 19085.3296
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 497,
+      "latency": 32.507800000003044,
+      "timestamp": 19117.9193
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 498,
+      "latency": 30.344099999998434,
+      "timestamp": 19148.3331
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 499,
+      "latency": 23.35609999999724,
+      "timestamp": 19171.742
+    },
+    {
+      "testName": "streaming-500-tokens",
+      "tokenIndex": 500,
+      "latency": 31.561499999999796,
+      "timestamp": 19203.3685
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 1,
+      "latency": 24.316999999999098,
+      "timestamp": 19234.5748
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 2,
+      "latency": 30.68670000000202,
+      "timestamp": 19265.3097
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 3,
+      "latency": 23.117999999998574,
+      "timestamp": 19288.4842
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 4,
+      "latency": 30.77400000000125,
+      "timestamp": 19319.4094
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 5,
+      "latency": 30.458400000003166,
+      "timestamp": 19349.9193
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 6,
+      "latency": 23.03940000000148,
+      "timestamp": 19373.0062
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 7,
+      "latency": 31.191200000001118,
+      "timestamp": 19404.2726
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 8,
+      "latency": 32.171800000000076,
+      "timestamp": 19436.4925
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 9,
+      "latency": 31.228000000002794,
+      "timestamp": 19467.7819
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 10,
+      "latency": 26.609200000002602,
+      "timestamp": 19494.4648
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 11,
+      "latency": 27.509900000000926,
+      "timestamp": 19522.0621
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 12,
+      "latency": 31.666799999999057,
+      "timestamp": 19553.8606
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 13,
+      "latency": 32.20799999999872,
+      "timestamp": 19586.144
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 14,
+      "latency": 31.333999999998923,
+      "timestamp": 19617.5519
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 15,
+      "latency": 31.531599999998434,
+      "timestamp": 19649.1534
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 16,
+      "latency": 24.57969999999841,
+      "timestamp": 19673.832
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 17,
+      "latency": 30.796900000001187,
+      "timestamp": 19704.6711
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 18,
+      "latency": 31.3153999999995,
+      "timestamp": 19736.0451
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 19,
+      "latency": 31.494699999999284,
+      "timestamp": 19767.5931
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 20,
+      "latency": 25.602199999997538,
+      "timestamp": 19793.2663
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 21,
+      "latency": 29.583300000002055,
+      "timestamp": 19822.9422
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 22,
+      "latency": 31.21140000000014,
+      "timestamp": 19854.2388
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 23,
+      "latency": 31.90599999999904,
+      "timestamp": 19886.2175
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 24,
+      "latency": 31.763999999999214,
+      "timestamp": 19918.0504
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 25,
+      "latency": 31.183399999998073,
+      "timestamp": 19949.3029
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 26,
+      "latency": 23.767299999999523,
+      "timestamp": 19973.3899
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 27,
+      "latency": 31.244599999998172,
+      "timestamp": 20004.6867
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 28,
+      "latency": 31.80029999999897,
+      "timestamp": 20036.5637
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 29,
+      "latency": 32.21929999999702,
+      "timestamp": 20068.8346
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 30,
+      "latency": 24.909299999999348,
+      "timestamp": 20093.8851
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 31,
+      "latency": 28.62169999999969,
+      "timestamp": 20122.5774
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 32,
+      "latency": 31.739799999999377,
+      "timestamp": 20154.3818
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 33,
+      "latency": 31.715900000002875,
+      "timestamp": 20186.1654
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 34,
+      "latency": 31.60610000000088,
+      "timestamp": 20217.8184
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 35,
+      "latency": 31.0015999999996,
+      "timestamp": 20248.9413
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 36,
+      "latency": 25.3025000000016,
+      "timestamp": 20274.2913
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 37,
+      "latency": 30.878499999998894,
+      "timestamp": 20305.2345
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 38,
+      "latency": 31.159599999999045,
+      "timestamp": 20336.5488
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 39,
+      "latency": 31.256900000000314,
+      "timestamp": 20367.8731
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 40,
+      "latency": 24.175599999998667,
+      "timestamp": 20392.0978
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 41,
+      "latency": 30.843799999998737,
+      "timestamp": 20423.0048
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 42,
+      "latency": 31.161199999998644,
+      "timestamp": 20454.2499
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 43,
+      "latency": 32.132799999999406,
+      "timestamp": 20486.4825
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 44,
+      "latency": 31.64089999999851,
+      "timestamp": 20518.1903
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 45,
+      "latency": 31.389800000000832,
+      "timestamp": 20549.6474
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 46,
+      "latency": 25.314699999998993,
+      "timestamp": 20575.0189
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 47,
+      "latency": 30.00210000000152,
+      "timestamp": 20605.0695
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 48,
+      "latency": 31.28139999999985,
+      "timestamp": 20636.4095
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 49,
+      "latency": 31.47190000000046,
+      "timestamp": 20667.946
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 50,
+      "latency": 27.02479999999923,
+      "timestamp": 20695.0403
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 51,
+      "latency": 26.633200000000215,
+      "timestamp": 20721.7514
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 52,
+      "latency": 31.63420000000042,
+      "timestamp": 20753.4457
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 53,
+      "latency": 30.85109999999986,
+      "timestamp": 20784.3958
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 54,
+      "latency": 31.209799999996903,
+      "timestamp": 20815.6592
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 55,
+      "latency": 24.23319999999876,
+      "timestamp": 20839.9558
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 56,
+      "latency": 31.863400000002002,
+      "timestamp": 20872.132
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 57,
+      "latency": 31.80199999999968,
+      "timestamp": 20903.9977
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 58,
+      "latency": 31.794099999999162,
+      "timestamp": 20935.8623
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 59,
+      "latency": 31.424800000000687,
+      "timestamp": 20967.3617
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 60,
+      "latency": 25.772100000001956,
+      "timestamp": 20993.1847
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 61,
+      "latency": 29.574899999999616,
+      "timestamp": 21022.8032
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 62,
+      "latency": 31.469900000000052,
+      "timestamp": 21054.3271
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 63,
+      "latency": 32.00279999999839,
+      "timestamp": 21086.44
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 64,
+      "latency": 31.366699999998673,
+      "timestamp": 21117.8726
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 65,
+      "latency": 24.29019999999946,
+      "timestamp": 21142.2359
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 66,
+      "latency": 30.59730000000127,
+      "timestamp": 21172.926
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 67,
+      "latency": 31.374299999999494,
+      "timestamp": 21204.3633
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 68,
+      "latency": 32.03909999999814,
+      "timestamp": 21236.4704
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 69,
+      "latency": 30.60399999999936,
+      "timestamp": 21267.2393
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 70,
+      "latency": 32.12450000000172,
+      "timestamp": 21299.4314
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 71,
+      "latency": 23.347499999999854,
+      "timestamp": 21322.8266
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 72,
+      "latency": 31.316100000000006,
+      "timestamp": 21354.2104
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 73,
+      "latency": 32.19830000000002,
+      "timestamp": 21386.4936
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 74,
+      "latency": 31.285900000002584,
+      "timestamp": 21417.8696
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 75,
+      "latency": 31.492200000000594,
+      "timestamp": 21449.4291
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 76,
+      "latency": 23.047699999999168,
+      "timestamp": 21472.53
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 77,
+      "latency": 31.633999999998196,
+      "timestamp": 21504.2103
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 78,
+      "latency": 31.96900000000096,
+      "timestamp": 21536.2503
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 79,
+      "latency": 31.796800000000076,
+      "timestamp": 21568.1185
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 80,
+      "latency": 23.746499999997468,
+      "timestamp": 21591.9132
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 81,
+      "latency": 30.91229999999996,
+      "timestamp": 21622.8998
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 82,
+      "latency": 25.836999999999534,
+      "timestamp": 21648.8145
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 83,
+      "latency": 23.488399999998364,
+      "timestamp": 21672.3955
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 84,
+      "latency": 31.759000000001834,
+      "timestamp": 21704.1964
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 85,
+      "latency": 31.26850000000195,
+      "timestamp": 21735.5165
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 86,
+      "latency": 31.523400000001857,
+      "timestamp": 21767.0934
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 87,
+      "latency": 30.5086999999985,
+      "timestamp": 21797.6577
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 88,
+      "latency": 22.580699999998615,
+      "timestamp": 21820.3151
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 89,
+      "latency": 31.838299999999435,
+      "timestamp": 21852.1843
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 90,
+      "latency": 31.091499999998632,
+      "timestamp": 21883.3508
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 91,
+      "latency": 22.80579999999827,
+      "timestamp": 21906.2271
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 92,
+      "latency": 31.940099999999802,
+      "timestamp": 21938.2398
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 93,
+      "latency": 22.800899999998364,
+      "timestamp": 21961.12
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 94,
+      "latency": 27.872200000001612,
+      "timestamp": 21989.0413
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 95,
+      "latency": 31.681800000002113,
+      "timestamp": 22020.8924
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 96,
+      "latency": 31.24790000000212,
+      "timestamp": 22052.1859
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 97,
+      "latency": 31.653999999998632,
+      "timestamp": 22083.91
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 98,
+      "latency": 30.975399999999354,
+      "timestamp": 22115.0194
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 99,
+      "latency": 23.08299999999872,
+      "timestamp": 22138.1767
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 100,
+      "latency": 30.597200000000157,
+      "timestamp": 22168.8348
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 101,
+      "latency": 30.99279999999999,
+      "timestamp": 22199.9001
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 102,
+      "latency": 32.035100000000966,
+      "timestamp": 22232.0043
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 103,
+      "latency": 24.06470000000263,
+      "timestamp": 22256.1202
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 104,
+      "latency": 31.5637999999999,
+      "timestamp": 22287.7574
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 105,
+      "latency": 31.529599999998027,
+      "timestamp": 22319.3546
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 106,
+      "latency": 31.676500000001397,
+      "timestamp": 22351.1021
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 107,
+      "latency": 32.20460000000094,
+      "timestamp": 22383.3764
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 108,
+      "latency": 31.083700000002864,
+      "timestamp": 22414.5289
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 109,
+      "latency": 24.6234000000004,
+      "timestamp": 22439.2228
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 110,
+      "latency": 30.996500000001106,
+      "timestamp": 22470.2925
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 111,
+      "latency": 23.588599999999133,
+      "timestamp": 22493.9408
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 112,
+      "latency": 28.73660000000018,
+      "timestamp": 22522.7108
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 113,
+      "latency": 31.102999999999156,
+      "timestamp": 22553.9413
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 114,
+      "latency": 31.683399999998073,
+      "timestamp": 22585.6831
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 115,
+      "latency": 31.918699999998353,
+      "timestamp": 22617.6498
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 116,
+      "latency": 31.52430000000095,
+      "timestamp": 22649.2412
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 117,
+      "latency": 23.705100000002858,
+      "timestamp": 22673.0008
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 118,
+      "latency": 31.680199999998877,
+      "timestamp": 22704.7561
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 119,
+      "latency": 31.90269999999873,
+      "timestamp": 22736.7241
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 120,
+      "latency": 31.061699999998382,
+      "timestamp": 22767.9169
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 121,
+      "latency": 25.818299999999,
+      "timestamp": 22793.7981
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 122,
+      "latency": 29.489199999999983,
+      "timestamp": 22823.3316
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 123,
+      "latency": 31.630300000000716,
+      "timestamp": 22855.1557
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 124,
+      "latency": 31.23910000000251,
+      "timestamp": 22886.4566
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 125,
+      "latency": 32.266200000001845,
+      "timestamp": 22918.9134
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 126,
+      "latency": 31.658400000000256,
+      "timestamp": 22950.6408
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 127,
+      "latency": 31.47739999999976,
+      "timestamp": 22982.1833
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 128,
+      "latency": 23.936099999998987,
+      "timestamp": 23006.1867
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 129,
+      "latency": 32.17349999999715,
+      "timestamp": 23038.4269
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 130,
+      "latency": 32.11739999999918,
+      "timestamp": 23070.6027
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 131,
+      "latency": 31.21889999999985,
+      "timestamp": 23101.8979
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 132,
+      "latency": 32.51009999999951,
+      "timestamp": 23134.4812
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 133,
+      "latency": 31.979999999999563,
+      "timestamp": 23166.5298
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 134,
+      "latency": 32.96959999999672,
+      "timestamp": 23199.6039
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 135,
+      "latency": 22.856299999999464,
+      "timestamp": 23222.5105
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 136,
+      "latency": 32.28359999999884,
+      "timestamp": 23254.842
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 137,
+      "latency": 31.773999999997613,
+      "timestamp": 23286.674
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 138,
+      "latency": 30.91769999999815,
+      "timestamp": 23317.6485
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 139,
+      "latency": 32.12620000000243,
+      "timestamp": 23349.8424
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 140,
+      "latency": 25.04160000000047,
+      "timestamp": 23374.9453
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 141,
+      "latency": 30.02679999999964,
+      "timestamp": 23405.0268
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 142,
+      "latency": 31.358400000000984,
+      "timestamp": 23436.4443
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 143,
+      "latency": 31.42450000000099,
+      "timestamp": 23467.9101
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 144,
+      "latency": 31.46310000000085,
+      "timestamp": 23499.4383
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 145,
+      "latency": 23.54439999999886,
+      "timestamp": 23523.0619
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 146,
+      "latency": 31.717799999998533,
+      "timestamp": 23554.8412
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 147,
+      "latency": 31.69090000000142,
+      "timestamp": 23586.5923
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 148,
+      "latency": 32.36829999999827,
+      "timestamp": 23619.027
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 149,
+      "latency": 31.62459999999919,
+      "timestamp": 23650.7175
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 150,
+      "latency": 31.614000000001397,
+      "timestamp": 23682.3977
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 151,
+      "latency": 23.897100000001956,
+      "timestamp": 23706.363
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 152,
+      "latency": 31.395700000000943,
+      "timestamp": 23737.8298
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 153,
+      "latency": 31.831199999996898,
+      "timestamp": 23769.7237
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 154,
+      "latency": 31.947399999997288,
+      "timestamp": 23801.7361
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 155,
+      "latency": 30.636599999997998,
+      "timestamp": 23832.4295
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 156,
+      "latency": 23.5666999999994,
+      "timestamp": 23856.0543
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 157,
+      "latency": 32.40569999999934,
+      "timestamp": 23888.5038
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 158,
+      "latency": 32.813099999999395,
+      "timestamp": 23921.3816
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 159,
+      "latency": 30.62800000000061,
+      "timestamp": 23952.0657
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 160,
+      "latency": 31.43800000000192,
+      "timestamp": 23983.5505
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 161,
+      "latency": 24.269899999999325,
+      "timestamp": 24007.8956
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 162,
+      "latency": 31.065499999996973,
+      "timestamp": 24039.0385
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 163,
+      "latency": 31.623300000002928,
+      "timestamp": 24070.7992
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 164,
+      "latency": 31.912199999998847,
+      "timestamp": 24102.7709
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 165,
+      "latency": 31.891100000000733,
+      "timestamp": 24134.7352
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 166,
+      "latency": 32.36709999999948,
+      "timestamp": 24167.1692
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 167,
+      "latency": 23.264200000001438,
+      "timestamp": 24190.4939
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 168,
+      "latency": 33.040399999998044,
+      "timestamp": 24223.5991
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 169,
+      "latency": 25.14890000000014,
+      "timestamp": 24248.8547
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 170,
+      "latency": 23.97109999999884,
+      "timestamp": 24272.8697
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 171,
+      "latency": 31.587800000001153,
+      "timestamp": 24304.5124
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 172,
+      "latency": 32.36599999999817,
+      "timestamp": 24336.9656
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 173,
+      "latency": 30.98660000000018,
+      "timestamp": 24368.0206
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 174,
+      "latency": 22.964199999998527,
+      "timestamp": 24391.0844
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 175,
+      "latency": 31.538799999998446,
+      "timestamp": 24422.6878
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 176,
+      "latency": 31.506999999997788,
+      "timestamp": 24454.2554
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 177,
+      "latency": 31.563900000001013,
+      "timestamp": 24485.8911
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 178,
+      "latency": 32.18970000000263,
+      "timestamp": 24518.1372
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 179,
+      "latency": 31.121800000000803,
+      "timestamp": 24549.3301
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 180,
+      "latency": 23.67239999999947,
+      "timestamp": 24573.0676
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 181,
+      "latency": 31.5554000000011,
+      "timestamp": 24604.6862
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 182,
+      "latency": 32.815200000000914,
+      "timestamp": 24637.5616
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 183,
+      "latency": 31.15950000000157,
+      "timestamp": 24668.7959
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 184,
+      "latency": 31.386099999999715,
+      "timestamp": 24700.2447
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 185,
+      "latency": 24.39549999999872,
+      "timestamp": 24724.7172
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 186,
+      "latency": 31.407200000001467,
+      "timestamp": 24756.1876
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 187,
+      "latency": 31.646200000002864,
+      "timestamp": 24787.8961
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 188,
+      "latency": 32.07930000000124,
+      "timestamp": 24820.0384
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 189,
+      "latency": 31.188099999999395,
+      "timestamp": 24851.3043
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 190,
+      "latency": 31.08480000000054,
+      "timestamp": 24882.4513
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 191,
+      "latency": 33.11590000000069,
+      "timestamp": 24915.6341
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 192,
+      "latency": 22.52860000000146,
+      "timestamp": 24938.2248
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 193,
+      "latency": 31.802499999997963,
+      "timestamp": 24970.0902
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 194,
+      "latency": 32.25830000000133,
+      "timestamp": 25002.4015
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 195,
+      "latency": 31.562200000000303,
+      "timestamp": 25034.0192
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 196,
+      "latency": 31.20730000000185,
+      "timestamp": 25065.2861
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 197,
+      "latency": 23.636200000000827,
+      "timestamp": 25088.981
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 198,
+      "latency": 31.510800000000017,
+      "timestamp": 25120.6609
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 199,
+      "latency": 30.86070000000109,
+      "timestamp": 25151.592
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 200,
+      "latency": 24.784700000000157,
+      "timestamp": 25176.452
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 201,
+      "latency": 23.536700000000565,
+      "timestamp": 25200.0358
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 202,
+      "latency": 23.61119999999937,
+      "timestamp": 25223.6963
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 203,
+      "latency": 30.522699999997712,
+      "timestamp": 25254.4583
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 204,
+      "latency": 32.38170000000173,
+      "timestamp": 25286.8987
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 205,
+      "latency": 31.58299999999872,
+      "timestamp": 25318.5501
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 206,
+      "latency": 30.886599999997998,
+      "timestamp": 25349.4872
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 207,
+      "latency": 24.425300000002608,
+      "timestamp": 25373.9838
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 208,
+      "latency": 31.08599999999933,
+      "timestamp": 25405.1112
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 209,
+      "latency": 32.33990000000267,
+      "timestamp": 25437.5211
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 210,
+      "latency": 31.45469999999841,
+      "timestamp": 25469.0402
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 211,
+      "latency": 24.131000000001222,
+      "timestamp": 25493.2393
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 212,
+      "latency": 29.7303000000029,
+      "timestamp": 25523.0214
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 213,
+      "latency": 31.841300000000047,
+      "timestamp": 25554.9307
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 214,
+      "latency": 31.468000000000757,
+      "timestamp": 25586.5104
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 215,
+      "latency": 31.522799999998824,
+      "timestamp": 25618.0975
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 216,
+      "latency": 29.731700000000274,
+      "timestamp": 25647.8955
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 217,
+      "latency": 20.27049999999872,
+      "timestamp": 25668.3603
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 218,
+      "latency": 22.517399999996996,
+      "timestamp": 25690.9498
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 219,
+      "latency": 32.02300000000105,
+      "timestamp": 25723.0194
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 220,
+      "latency": 31.65299999999843,
+      "timestamp": 25754.7421
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 221,
+      "latency": 31.267700000000332,
+      "timestamp": 25786.0857
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 222,
+      "latency": 21.14099999999962,
+      "timestamp": 25807.2775
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 223,
+      "latency": 30.3624000000018,
+      "timestamp": 25837.7026
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 224,
+      "latency": 31.715000000000146,
+      "timestamp": 25869.4883
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 225,
+      "latency": 31.481700000000274,
+      "timestamp": 25901.0909
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 226,
+      "latency": 23.11819999999716,
+      "timestamp": 25924.2839
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 227,
+      "latency": 24.058499999999185,
+      "timestamp": 25948.4798
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 228,
+      "latency": 30.52969999999914,
+      "timestamp": 25979.0497
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 229,
+      "latency": 31.584999999999127,
+      "timestamp": 26010.697
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 230,
+      "latency": 31.03139999999985,
+      "timestamp": 26041.883
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 231,
+      "latency": 31.132900000000518,
+      "timestamp": 26073.0537
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 232,
+      "latency": 23.66580000000249,
+      "timestamp": 26096.7841
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 233,
+      "latency": 32.098299999997835,
+      "timestamp": 26128.9296
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 234,
+      "latency": 32.53769999999713,
+      "timestamp": 26161.5287
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 235,
+      "latency": 31.903999999998632,
+      "timestamp": 26193.5009
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 236,
+      "latency": 32.17529999999897,
+      "timestamp": 26225.7654
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 237,
+      "latency": 23.2941000000028,
+      "timestamp": 26249.1271
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 238,
+      "latency": 31.69510000000082,
+      "timestamp": 26280.8678
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 239,
+      "latency": 32.0734999999986,
+      "timestamp": 26313.0771
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 240,
+      "latency": 30.745100000000093,
+      "timestamp": 26343.8896
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 241,
+      "latency": 32.532100000000355,
+      "timestamp": 26376.4919
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 242,
+      "latency": 24.390400000000227,
+      "timestamp": 26400.9527
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 243,
+      "latency": 29.525499999999738,
+      "timestamp": 26430.5123
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 244,
+      "latency": 31.229999999999563,
+      "timestamp": 26461.8499
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 245,
+      "latency": 32.04609999999957,
+      "timestamp": 26493.9487
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 246,
+      "latency": 31.176899999998568,
+      "timestamp": 26525.1767
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 247,
+      "latency": 23.766700000000128,
+      "timestamp": 26549.0062
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 248,
+      "latency": 30.656999999999243,
+      "timestamp": 26579.7082
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 249,
+      "latency": 31.104300000002695,
+      "timestamp": 26611.006
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 250,
+      "latency": 30.286599999999453,
+      "timestamp": 26641.3599
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 251,
+      "latency": 25.281199999997625,
+      "timestamp": 26666.8595
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 252,
+      "latency": 30.128499999998894,
+      "timestamp": 26697.0329
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 253,
+      "latency": 26.02440000000206,
+      "timestamp": 26723.1356
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 254,
+      "latency": 23.76090000000113,
+      "timestamp": 26746.9621
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 255,
+      "latency": 30.73819999999978,
+      "timestamp": 26777.7657
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 256,
+      "latency": 30.92399999999907,
+      "timestamp": 26808.7564
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 257,
+      "latency": 31.4359000000004,
+      "timestamp": 26840.4941
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 258,
+      "latency": 22.36869999999908,
+      "timestamp": 26862.9182
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 259,
+      "latency": 31.299299999998766,
+      "timestamp": 26894.2667
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 260,
+      "latency": 31.212500000001455,
+      "timestamp": 26925.5452
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 261,
+      "latency": 30.590799999998126,
+      "timestamp": 26956.2002
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 262,
+      "latency": 24.321500000001834,
+      "timestamp": 26980.5656
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 263,
+      "latency": 30.863000000001193,
+      "timestamp": 27011.4896
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 264,
+      "latency": 30.595100000002276,
+      "timestamp": 27042.1536
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 265,
+      "latency": 24.157899999998335,
+      "timestamp": 27066.3746
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 266,
+      "latency": 31.406800000000658,
+      "timestamp": 27097.8548
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 267,
+      "latency": 31.8137999999999,
+      "timestamp": 27129.7317
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 268,
+      "latency": 31.79979999999705,
+      "timestamp": 27161.5954
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 269,
+      "latency": 24.220900000000256,
+      "timestamp": 27185.8852
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 270,
+      "latency": 24.016199999998207,
+      "timestamp": 27209.9799
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 271,
+      "latency": 24.02139999999781,
+      "timestamp": 27234.0523
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 272,
+      "latency": 23.831600000001345,
+      "timestamp": 27257.952
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 273,
+      "latency": 24.23070000000007,
+      "timestamp": 27282.2456
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 274,
+      "latency": 25.4375,
+      "timestamp": 27307.7537
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 275,
+      "latency": 22.507399999998597,
+      "timestamp": 27330.3134
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 276,
+      "latency": 30.320499999997992,
+      "timestamp": 27360.6793
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 277,
+      "latency": 31.16189999999915,
+      "timestamp": 27391.966
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 278,
+      "latency": 33.02640000000247,
+      "timestamp": 27425.044
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 279,
+      "latency": 29.233299999999872,
+      "timestamp": 27454.3428
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 280,
+      "latency": 31.061299999997573,
+      "timestamp": 27485.4544
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 281,
+      "latency": 28.245999999999185,
+      "timestamp": 27513.7556
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 282,
+      "latency": 31.92740000000049,
+      "timestamp": 27545.7455
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 283,
+      "latency": 30.141199999998207,
+      "timestamp": 27575.9387
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 284,
+      "latency": 30.759399999999005,
+      "timestamp": 27606.8239
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 285,
+      "latency": 21.91739999999845,
+      "timestamp": 27628.7996
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 286,
+      "latency": 31.335500000001048,
+      "timestamp": 27660.1925
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 287,
+      "latency": 30.610899999999674,
+      "timestamp": 27690.9799
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 288,
+      "latency": 23.981700000000274,
+      "timestamp": 27715.0319
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 289,
+      "latency": 30.89719999999943,
+      "timestamp": 27746.0063
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 290,
+      "latency": 30.470400000001973,
+      "timestamp": 27776.6012
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 291,
+      "latency": 30.343000000000757,
+      "timestamp": 27806.9885
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 292,
+      "latency": 23.439800000000105,
+      "timestamp": 27830.486
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 293,
+      "latency": 31.3012000000017,
+      "timestamp": 27861.8375
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 294,
+      "latency": 31.31630000000223,
+      "timestamp": 27893.2531
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 295,
+      "latency": 31.164600000000064,
+      "timestamp": 27924.4722
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 296,
+      "latency": 24.132900000000518,
+      "timestamp": 27948.6693
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 297,
+      "latency": 30.074000000000524,
+      "timestamp": 27978.7869
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 298,
+      "latency": 31.491500000000087,
+      "timestamp": 28010.346
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 299,
+      "latency": 31.898799999999028,
+      "timestamp": 28042.3091
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 300,
+      "latency": 31.676900000002206,
+      "timestamp": 28074.0403
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 301,
+      "latency": 23.330700000002253,
+      "timestamp": 28097.4366
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 302,
+      "latency": 32.30129999999917,
+      "timestamp": 28129.7826
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 303,
+      "latency": 31.59349999999904,
+      "timestamp": 28161.4328
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 304,
+      "latency": 31.0750999999982,
+      "timestamp": 28192.5647
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 305,
+      "latency": 24.697400000000926,
+      "timestamp": 28217.3911
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 306,
+      "latency": 29.852599999998347,
+      "timestamp": 28247.3079
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 307,
+      "latency": 31.644599999999627,
+      "timestamp": 28279.1624
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 308,
+      "latency": 32.40309999999954,
+      "timestamp": 28311.626
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 309,
+      "latency": 31.965500000002066,
+      "timestamp": 28343.6483
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 310,
+      "latency": 31.72479999999996,
+      "timestamp": 28375.415
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 311,
+      "latency": 32.41059999999925,
+      "timestamp": 28407.8907
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 312,
+      "latency": 23.257300000001123,
+      "timestamp": 28431.213
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 313,
+      "latency": 32.20890000000145,
+      "timestamp": 28463.4774
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 314,
+      "latency": 31.43449999999939,
+      "timestamp": 28494.948
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 315,
+      "latency": 32.27590000000055,
+      "timestamp": 28527.2846
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 316,
+      "latency": 31.431799999998475,
+      "timestamp": 28558.8233
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 317,
+      "latency": 23.643599999999424,
+      "timestamp": 28582.5292
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 318,
+      "latency": 31.18449999999939,
+      "timestamp": 28613.7899
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 319,
+      "latency": 31.982299999999668,
+      "timestamp": 28645.8298
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 320,
+      "latency": 32.25369999999748,
+      "timestamp": 28678.1255
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 321,
+      "latency": 30.595400000001973,
+      "timestamp": 28708.8038
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 322,
+      "latency": 23.428799999997864,
+      "timestamp": 28732.2937
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 323,
+      "latency": 31.1846000000005,
+      "timestamp": 28763.5358
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 324,
+      "latency": 31.227599999998347,
+      "timestamp": 28794.8197
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 325,
+      "latency": 24.164600000000064,
+      "timestamp": 28819.039
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 326,
+      "latency": 28.580300000001444,
+      "timestamp": 28847.6837
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 327,
+      "latency": 31.223299999997835,
+      "timestamp": 28878.9698
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 328,
+      "latency": 32.41969999999856,
+      "timestamp": 28911.4578
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 329,
+      "latency": 31.860200000002806,
+      "timestamp": 28943.3663
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 330,
+      "latency": 31.32220000000234,
+      "timestamp": 28974.7396
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 331,
+      "latency": 22.59479999999894,
+      "timestamp": 28997.4277
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 332,
+      "latency": 32.36839999999938,
+      "timestamp": 29030.0353
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 333,
+      "latency": 30.868500000000495,
+      "timestamp": 29061.0914
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 334,
+      "latency": 32.23649999999907,
+      "timestamp": 29093.386
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 335,
+      "latency": 23.744399999999587,
+      "timestamp": 29117.1836
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 336,
+      "latency": 30.56630000000223,
+      "timestamp": 29147.8168
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 337,
+      "latency": 31.198099999997794,
+      "timestamp": 29179.0775
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 338,
+      "latency": 31.968700000001263,
+      "timestamp": 29211.1071
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 339,
+      "latency": 31.166599999996834,
+      "timestamp": 29242.3346
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 340,
+      "latency": 22.30870000000141,
+      "timestamp": 29264.7343
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 341,
+      "latency": 31.761500000000524,
+      "timestamp": 29296.549
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 342,
+      "latency": 32.20480000000316,
+      "timestamp": 29328.8071
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 343,
+      "latency": 31.547599999998056,
+      "timestamp": 29360.406
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 344,
+      "latency": 31.756399999998393,
+      "timestamp": 29392.2342
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 345,
+      "latency": 23.694100000000617,
+      "timestamp": 29415.9818
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 346,
+      "latency": 31.58729999999923,
+      "timestamp": 29447.6308
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 347,
+      "latency": 32.22889999999825,
+      "timestamp": 29479.9626
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 348,
+      "latency": 31.353900000001886,
+      "timestamp": 29511.3931
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 349,
+      "latency": 32.05459999999948,
+      "timestamp": 29543.514
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 350,
+      "latency": 31.23790000000008,
+      "timestamp": 29574.8447
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 351,
+      "latency": 24.776600000001054,
+      "timestamp": 29599.6721
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 352,
+      "latency": 31.320199999998295,
+      "timestamp": 29631.1178
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 353,
+      "latency": 23.843000000000757,
+      "timestamp": 29655.0112
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 354,
+      "latency": 34.32930000000124,
+      "timestamp": 29689.3911
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 355,
+      "latency": 25.453199999999924,
+      "timestamp": 29714.9311
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 356,
+      "latency": 31.603800000000774,
+      "timestamp": 29746.597
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 357,
+      "latency": 31.180599999999686,
+      "timestamp": 29777.8519
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 358,
+      "latency": 30.7374000000018,
+      "timestamp": 29808.6882
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 359,
+      "latency": 23.446499999998196,
+      "timestamp": 29832.1888
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 360,
+      "latency": 30.91120000000228,
+      "timestamp": 29863.1605
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 361,
+      "latency": 31.533299999999144,
+      "timestamp": 29894.7529
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 362,
+      "latency": 30.797999999998865,
+      "timestamp": 29925.6125
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 363,
+      "latency": 30.542599999997037,
+      "timestamp": 29956.2204
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 364,
+      "latency": 23.21469999999681,
+      "timestamp": 29979.4992
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 365,
+      "latency": 31.853699999999662,
+      "timestamp": 30011.4045
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 366,
+      "latency": 30.96650000000227,
+      "timestamp": 30042.437
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 367,
+      "latency": 30.486000000000786,
+      "timestamp": 30072.9952
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 368,
+      "latency": 23.864700000001903,
+      "timestamp": 30096.9156
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 369,
+      "latency": 31.6846000000005,
+      "timestamp": 30128.6536
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 370,
+      "latency": 31.302499999997963,
+      "timestamp": 30160.0176
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 371,
+      "latency": 30.390299999999115,
+      "timestamp": 30190.4706
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 372,
+      "latency": 22.879399999997986,
+      "timestamp": 30213.4171
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 373,
+      "latency": 30.615399999998772,
+      "timestamp": 30244.1279
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 374,
+      "latency": 31.321500000001834,
+      "timestamp": 30275.5259
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 375,
+      "latency": 20.25630000000092,
+      "timestamp": 30295.8819
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 376,
+      "latency": 28.302600000002712,
+      "timestamp": 30324.2511
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 377,
+      "latency": 24.27520000000004,
+      "timestamp": 30348.6369
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 378,
+      "latency": 23.047699999999168,
+      "timestamp": 30371.9443
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 379,
+      "latency": 31.559399999998277,
+      "timestamp": 30403.5504
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 380,
+      "latency": 32.16140000000087,
+      "timestamp": 30435.751
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 381,
+      "latency": 24.262699999999313,
+      "timestamp": 30460.0444
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 382,
+      "latency": 30.546599999997852,
+      "timestamp": 30490.6223
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 383,
+      "latency": 26.18119999999908,
+      "timestamp": 30516.895
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 384,
+      "latency": 30.59020000000237,
+      "timestamp": 30547.5171
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 385,
+      "latency": 30.76970000000074,
+      "timestamp": 30578.3551
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 386,
+      "latency": 30.683199999999488,
+      "timestamp": 30609.1096
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 387,
+      "latency": 23.561099999998987,
+      "timestamp": 30632.7444
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 388,
+      "latency": 23.5086999999985,
+      "timestamp": 30656.3007
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 389,
+      "latency": 23.06550000000061,
+      "timestamp": 30679.4277
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 390,
+      "latency": 33.9400999999998,
+      "timestamp": 30713.4389
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 391,
+      "latency": 33.30319999999847,
+      "timestamp": 30746.7934
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 392,
+      "latency": 31.094600000000355,
+      "timestamp": 30777.9625
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 393,
+      "latency": 31.595900000000256,
+      "timestamp": 30809.6315
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 394,
+      "latency": 30.49340000000302,
+      "timestamp": 30840.1775
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 395,
+      "latency": 23.18499999999767,
+      "timestamp": 30863.4119
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 396,
+      "latency": 31.386499999996886,
+      "timestamp": 30894.8611
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 397,
+      "latency": 30.224200000000565,
+      "timestamp": 30925.1522
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 398,
+      "latency": 23.112999999997555,
+      "timestamp": 30948.3143
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 399,
+      "latency": 31.01929999999993,
+      "timestamp": 30979.4061
+    },
+    {
+      "testName": "streaming-1000-tokens",
+      "tokenIndex": 400,
+      "latency": 30.758499999999913,
+      "timestamp": 31010.2269
     }
-  ],
-  "latencyDetails": []
+  ]
 }

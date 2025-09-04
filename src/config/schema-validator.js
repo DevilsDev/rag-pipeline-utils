@@ -3,23 +3,23 @@
  * Provides JSON Schema validation for all configuration files
  */
 
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
-const { logger } = require('../utils/logger');
+const Ajv = require("ajv");
+const addFormats = require("ajv-formats");
+const { logger } = require("../utils/logger");
 
 class ConfigSchemaValidator {
   constructor() {
-    this.ajv = new Ajv({ 
-      allErrors: true, 
+    this.ajv = new Ajv({
+      allErrors: true,
       verbose: true,
-      strict: false 
+      strict: false,
     });
     addFormats(this.ajv);
-    
+
     // Register custom formats
-    this.ajv.addFormat('semver', /^\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/);
-    this.ajv.addFormat('log-level', /^(trace|debug|info|warn|error|fatal)$/);
-    
+    this.ajv.addFormat("semver", /^\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/);
+    this.ajv.addFormat("log-level", /^(trace|debug|info|warn|error|fatal)$/);
+
     this.schemas = new Map();
     this._loadSchemas();
   }
@@ -27,145 +27,196 @@ class ConfigSchemaValidator {
   _loadSchemas() {
     // Core pipeline configuration schema
     const pipelineSchema = {
-      type: 'object',
+      type: "object",
       properties: {
-        version: { type: 'string', format: 'semver' },
-        name: { type: 'string', minLength: 1 },
-        description: { type: 'string' },
+        version: { type: "string", format: "semver" },
+        name: { type: "string", minLength: 1 },
+        description: { type: "string" },
         pipeline: {
-          type: 'object',
+          type: "object",
           properties: {
             steps: {
-              type: 'array',
+              type: "array",
               items: {
-                type: 'object',
+                type: "object",
                 properties: {
-                  name: { type: 'string', minLength: 1 },
-                  type: { 
-                    type: 'string', 
-                    enum: ['ingest', 'chunk', 'embed', 'store', 'query', 'evaluate'] 
+                  name: { type: "string", minLength: 1 },
+                  type: {
+                    type: "string",
+                    enum: [
+                      "ingest",
+                      "chunk",
+                      "embed",
+                      "store",
+                      "query",
+                      "evaluate",
+                    ],
                   },
-                  config: { type: 'object' },
-                  enabled: { type: 'boolean', default: true }
+                  config: { type: "object" },
+                  enabled: { type: "boolean", default: true },
                 },
-                required: ['name', 'type'],
-                additionalProperties: false
+                required: ["name", "type"],
+                additionalProperties: false,
               },
-              minItems: 1
+              minItems: 1,
             },
-            concurrency: { type: 'integer', minimum: 1, maximum: 100, default: 5 },
-            timeout: { type: 'integer', minimum: 1000, default: 30000 },
-            retries: { type: 'integer', minimum: 0, maximum: 10, default: 3 }
+            concurrency: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              default: 5,
+            },
+            timeout: { type: "integer", minimum: 1000, default: 30000 },
+            retries: { type: "integer", minimum: 0, maximum: 10, default: 3 },
           },
-          required: ['steps'],
-          additionalProperties: false
+          required: ["steps"],
+          additionalProperties: false,
         },
         logging: {
-          type: 'object',
+          type: "object",
           properties: {
-            level: { type: 'string', format: 'log-level', default: 'info' },
-            structured: { type: 'boolean', default: true },
-            correlationId: { type: 'boolean', default: true }
+            level: { type: "string", format: "log-level", default: "info" },
+            structured: { type: "boolean", default: true },
+            correlationId: { type: "boolean", default: true },
           },
-          additionalProperties: false
-        }
+          additionalProperties: false,
+        },
       },
-      required: ['version', 'name', 'pipeline'],
-      additionalProperties: false
+      required: ["version", "name", "pipeline"],
+      additionalProperties: false,
     };
 
     // AI/ML configuration schema
     const aiConfigSchema = {
-      type: 'object',
+      type: "object",
       properties: {
         embeddings: {
-          type: 'object',
+          type: "object",
           properties: {
-            provider: { 
-              type: 'string', 
-              enum: ['openai', 'azure', 'huggingface', 'local'] 
+            provider: {
+              type: "string",
+              enum: ["openai", "azure", "huggingface", "local"],
             },
-            model: { type: 'string', minLength: 1 },
-            dimensions: { type: 'integer', minimum: 1, maximum: 4096 },
-            batchSize: { type: 'integer', minimum: 1, maximum: 1000, default: 100 },
-            timeout: { type: 'integer', minimum: 1000, default: 30000 }
+            model: { type: "string", minLength: 1 },
+            dimensions: { type: "integer", minimum: 1, maximum: 4096 },
+            batchSize: {
+              type: "integer",
+              minimum: 1,
+              maximum: 1000,
+              default: 100,
+            },
+            timeout: { type: "integer", minimum: 1000, default: 30000 },
           },
-          required: ['provider', 'model'],
-          additionalProperties: false
+          required: ["provider", "model"],
+          additionalProperties: false,
         },
         training: {
-          type: 'object',
+          type: "object",
           properties: {
-            batchSize: { type: 'integer', minimum: 1, maximum: 1024, default: 32 },
-            learningRate: { type: 'number', minimum: 0.0001, maximum: 1, default: 0.001 },
-            epochs: { type: 'integer', minimum: 1, maximum: 1000, default: 10 },
-            validationSplit: { type: 'number', minimum: 0, maximum: 0.5, default: 0.2 }
+            batchSize: {
+              type: "integer",
+              minimum: 1,
+              maximum: 1024,
+              default: 32,
+            },
+            learningRate: {
+              type: "number",
+              minimum: 0.0001,
+              maximum: 1,
+              default: 0.001,
+            },
+            epochs: { type: "integer", minimum: 1, maximum: 1000, default: 10 },
+            validationSplit: {
+              type: "number",
+              minimum: 0,
+              maximum: 0.5,
+              default: 0.2,
+            },
           },
-          additionalProperties: false
+          additionalProperties: false,
         },
         federation: {
-          type: 'object',
+          type: "object",
           properties: {
-            minParticipants: { type: 'integer', minimum: 2, maximum: 1000, default: 2 },
-            maxParticipants: { type: 'integer', minimum: 2, maximum: 10000, default: 100 },
-            roundDuration: { type: 'integer', minimum: 60000, default: 300000 },
-            convergenceThreshold: { type: 'number', minimum: 0.0001, maximum: 1, default: 0.001 }
+            minParticipants: {
+              type: "integer",
+              minimum: 2,
+              maximum: 1000,
+              default: 2,
+            },
+            maxParticipants: {
+              type: "integer",
+              minimum: 2,
+              maximum: 10000,
+              default: 100,
+            },
+            roundDuration: { type: "integer", minimum: 60000, default: 300000 },
+            convergenceThreshold: {
+              type: "number",
+              minimum: 0.0001,
+              maximum: 1,
+              default: 0.001,
+            },
           },
-          additionalProperties: false
-        }
+          additionalProperties: false,
+        },
       },
-      additionalProperties: false
+      additionalProperties: false,
     };
 
     // Security configuration schema
     const securitySchema = {
-      type: 'object',
+      type: "object",
       properties: {
         authentication: {
-          type: 'object',
+          type: "object",
           properties: {
-            enabled: { type: 'boolean', default: true },
-            provider: { 
-              type: 'string', 
-              enum: ['jwt', 'oauth2', 'api-key', 'none'] 
+            enabled: { type: "boolean", default: true },
+            provider: {
+              type: "string",
+              enum: ["jwt", "oauth2", "api-key", "none"],
             },
-            tokenExpiry: { type: 'integer', minimum: 300, default: 3600 }
+            tokenExpiry: { type: "integer", minimum: 300, default: 3600 },
           },
-          required: ['enabled', 'provider'],
-          additionalProperties: false
+          required: ["enabled", "provider"],
+          additionalProperties: false,
         },
         encryption: {
-          type: 'object',
+          type: "object",
           properties: {
-            algorithm: { 
-              type: 'string', 
-              enum: ['aes-256-gcm', 'aes-256-cbc', 'chacha20-poly1305'] 
+            algorithm: {
+              type: "string",
+              enum: ["aes-256-gcm", "aes-256-cbc", "chacha20-poly1305"],
             },
-            keyRotation: { type: 'boolean', default: true },
-            keyRotationInterval: { type: 'integer', minimum: 86400, default: 2592000 }
+            keyRotation: { type: "boolean", default: true },
+            keyRotationInterval: {
+              type: "integer",
+              minimum: 86400,
+              default: 2592000,
+            },
           },
-          additionalProperties: false
+          additionalProperties: false,
         },
         audit: {
-          type: 'object',
+          type: "object",
           properties: {
-            enabled: { type: 'boolean', default: true },
-            retention: { type: 'integer', minimum: 86400, default: 7776000 },
+            enabled: { type: "boolean", default: true },
+            retention: { type: "integer", minimum: 86400, default: 7776000 },
             sensitiveFields: {
-              type: 'array',
-              items: { type: 'string' },
-              default: ['password', 'token', 'key', 'secret']
-            }
+              type: "array",
+              items: { type: "string" },
+              default: ["password", "token", "key", "secret"],
+            },
           },
-          additionalProperties: false
-        }
+          additionalProperties: false,
+        },
       },
-      additionalProperties: false
+      additionalProperties: false,
     };
 
-    this.schemas.set('pipeline', pipelineSchema);
-    this.schemas.set('ai', aiConfigSchema);
-    this.schemas.set('security', securitySchema);
+    this.schemas.set("pipeline", pipelineSchema);
+    this.schemas.set("ai", aiConfigSchema);
+    this.schemas.set("security", securitySchema);
   }
 
   validate(config, schemaName) {
@@ -178,51 +229,51 @@ class ConfigSchemaValidator {
     const valid = validate(config);
 
     if (!valid) {
-      const errors = validate.errors.map(error => ({
+      const errors = validate.errors.map((error) => ({
         path: error.instancePath || error.schemaPath,
         message: error.message,
         value: error.data,
-        allowedValues: error.schema?.enum
+        allowedValues: error.schema?.enum,
       }));
 
-      logger.error('Configuration validation failed', {
+      logger.error("Configuration validation failed", {
         schema: schemaName,
         errors,
-        config: this._sanitizeConfig(config)
+        config: this._sanitizeConfig(config),
       });
 
       return {
         valid: false,
-        errors
+        errors,
       };
     }
 
-    logger.info('Configuration validation passed', {
+    logger.info("Configuration validation passed", {
       schema: schemaName,
-      configKeys: Object.keys(config)
+      configKeys: Object.keys(config),
     });
 
     return {
       valid: true,
-      errors: []
+      errors: [],
     };
   }
 
   validatePipeline(config) {
-    return this.validate(config, 'pipeline');
+    return this.validate(config, "pipeline");
   }
 
   validateAI(config) {
-    return this.validate(config, 'ai');
+    return this.validate(config, "ai");
   }
 
   validateSecurity(config) {
-    return this.validate(config, 'security');
+    return this.validate(config, "security");
   }
 
   addSchema(name, schema) {
     this.schemas.set(name, schema);
-    logger.info('Custom schema registered', { schemaName: name });
+    logger.info("Custom schema registered", { schemaName: name });
   }
 
   getSchema(name) {
@@ -235,14 +286,16 @@ class ConfigSchemaValidator {
 
   _sanitizeConfig(config) {
     // Remove sensitive fields from logs
-    const sensitiveFields = ['password', 'token', 'key', 'secret', 'apiKey'];
+    const sensitiveFields = ["password", "token", "key", "secret", "apiKey"];
     const sanitized = JSON.parse(JSON.stringify(config));
-    
+
     const sanitizeObject = (obj) => {
       for (const [key, value] of Object.entries(obj)) {
-        if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
-          obj[key] = '[REDACTED]';
-        } else if (typeof value === 'object' && value !== null) {
+        if (
+          sensitiveFields.some((field) => key.toLowerCase().includes(field))
+        ) {
+          obj[key] = "[REDACTED]";
+        } else if (typeof value === "object" && value !== null) {
           sanitizeObject(value);
         }
       }
@@ -258,5 +311,5 @@ const validator = new ConfigSchemaValidator();
 
 module.exports = {
   ConfigSchemaValidator,
-  validator
+  validator,
 };

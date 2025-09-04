@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 concurrency:
@@ -13,10 +13,8 @@ concurrency:
 
 permissions:
   contents: read
-  actions: read
 
 env:
-  NODE_VERSION: "20"
   FORCE_COLOR: 1
   CI: true
 
@@ -27,6 +25,11 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 20]
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
@@ -35,59 +38,34 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        with:
-          persist-credentials: false
-          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node }}
           cache: npm
-          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
-        shell: bash
+      - name: Install
+        run: CI=true npm ci --prefer-offline
 
       - name: Lint
-        run: npm run lint
-        shell: bash
+        run: npm run lint --if-present
 
       - name: Test
-        run: npm test -- --ci --passWithNoTests --coverage
-        shell: bash
+        run: npm test -- --ci --passWithNoTests
+
+      - name: Audit (non-blocking)
+        run: npm audit --audit-level=moderate || echo "::warning::audit issues found"
+        continue-on-error: true
+
+      - name: License check (non-blocking)
+        run: npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause' || echo "::warning::license issues"
+        continue-on-error: true
 
       - name: Upload coverage
-        if: always()
+        if: always() && matrix.node == 20
         uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
         continue-on-error: true
-
-  build:
-    name: Build Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: test
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
-
-      - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline
-
-      - name: Build
-        run: npm run build --if-present

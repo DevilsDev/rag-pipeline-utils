@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="22" failures="13" errors="0" time="0.895">
-  <testsuite name="__tests__\ai\advanced-ai-capabilities.test.js" errors="0" failures="13" skipped="0" timestamp="2025-09-01T06:11:29" time="0.799" tests="22">
-    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should create custom embedding training job" time="0.003">
+<testsuites name="jest tests" tests="63" failures="8" errors="0" time="2.628">
+  <testsuite name="__tests__\unit\dag\error-handling.test.js" errors="0" failures="5" skipped="0" timestamp="2025-09-04T02:41:40" time="2.42" tests="25">
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should detect simple cycles" time="0.023">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should handle training job lifecycle" time="0.002">
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should detect complex cycles" time="0.019">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should perform hyperparameter optimization" time="0.001">
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should allow valid DAG structures" time="0.03">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Model Training Orchestrator" name="should handle model deployment" time="0.103">
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should detect self-loops" time="0.028">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should initialize user profile" time="0.001">
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should handle disconnected components" time="0.03">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should adapt retrieval based on feedback" time="0.002">
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should perform reinforcement learning updates" time="0.001">
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Adaptive Retrieval Engine" name="should generate personalized rankings" time="0.001">
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process image content" time="0">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:333:48)
+    <testcase classname="DAG Error Handling and Cycle Detection › cycle detection" name="should provide detailed cycle information" time="0.032">
+      <failure>Error: expect(received).toEqual(expected) // deep equality
+
+Expected: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;A&quot;]
+Received: undefined
+    at Object.toEqual (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\error-handling.test.js:114:29)
     at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
     at new Promise (&lt;anonymous&gt;)
     at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
@@ -34,9 +31,56 @@
     at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
     at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process audio content" time="0.001">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:351:48)
+    <testcase classname="DAG Error Handling and Cycle Detection › error propagation" name="should propagate errors through DAG execution" time="0.034">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › error propagation" name="should handle partial execution failures" time="0.092">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › error propagation" name="should collect and report multiple errors" time="0.059">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: &quot;First error&quot;
+Received: &quot;Node error1 execution failed: First error&quot;
+    at Object.toBe (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\error-handling.test.js:160:41)</failure>
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › error propagation" name="should handle async error propagation" time="0.07">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › error propagation" name="should provide error context and stack traces" time="0.028">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: &quot;context&quot;
+Received: undefined
+    at Object.toBe (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\error-handling.test.js:190:30)</failure>
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › invalid topology handling" name="should reject DAGs with no nodes" time="0.033">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › invalid topology handling" name="should handle orphaned nodes" time="0.029">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › invalid topology handling" name="should validate node dependencies" time="0.023">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › invalid topology handling" name="should handle duplicate node IDs" time="0.028">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › invalid topology handling" name="should validate node execution order" time="0.03">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › resource management" name="should handle memory cleanup on errors" time="0.028">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › resource management" name="should handle concurrent execution limits" time="0.939">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › resource management" name="should handle timeout scenarios" time="0.296">
+      <failure>Error: Execution timeout
+    at C:\Users\alika\workspace\rag-pipeline-utils\src\dag\dag-engine.js:175:22
+    at callTimer (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\@sinonjs\fake-timers\src\fake-timers-src.js:744:24)
+    at doTickInner (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\@sinonjs\fake-timers\src\fake-timers-src.js:1312:29)
+    at doTick (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\@sinonjs\fake-timers\src\fake-timers-src.js:1393:20)
+    at Object.tick (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\@sinonjs\fake-timers\src\fake-timers-src.js:1401:20)
+    at doIntervalTick (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\@sinonjs\fake-timers\src\fake-timers-src.js:966:15)
+    at listOnTimeout (node:internal/timers:594:17)
+    at processTimers (node:internal/timers:529:7)</failure>
+      <failure>Error: expect(received).rejects.toThrow()
+
+Received promise resolved instead of rejected
+Resolved to value: &quot;completed&quot;
+    at expect (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\expect\build\index.js:113:15)
+    at Object.expect (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\error-handling.test.js:307:13)
     at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
     at new Promise (&lt;anonymous&gt;)
     at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
@@ -51,9 +95,99 @@
     at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
     at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should process video content" time="0.001">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:367:48)
+    <testcase classname="DAG Error Handling and Cycle Detection › recovery mechanisms" name="should support retry on node failure" time="0.023">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › recovery mechanisms" name="should support graceful degradation" time="0.033">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: false
+Received: true
+    at Object.toBe (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\error-handling.test.js:345:38)</failure>
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › recovery mechanisms" name="should support checkpoint and resume" time="0.031">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › validation edge cases" name="should handle very large DAGs" time="0.032">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › validation edge cases" name="should handle complex branching patterns" time="0.031">
+    </testcase>
+    <testcase classname="DAG Error Handling and Cycle Detection › validation edge cases" name="should handle nodes with no inputs or outputs" time="0.03">
+    </testcase>
+  </testsuite>
+  <testsuite name="__tests__\unit\dag\dag-engine.test.js" errors="0" failures="3" skipped="0" timestamp="2025-09-04T02:41:43" time="0.131" tests="38">
+    <testcase classname="DAGNode › constructor" name="should create a node with id and run function" time="0.001">
+    </testcase>
+    <testcase classname="DAG › constructor" name="should create empty DAG" time="0.001">
+    </testcase>
+    <testcase classname="DAG › addNode" name="should add node to DAG" time="0">
+    </testcase>
+    <testcase classname="DAG › addNode" name="should allow multiple nodes" time="0.001">
+    </testcase>
+    <testcase classname="DAG › connect" name="should connect two nodes" time="0">
+    </testcase>
+    <testcase classname="DAG › connect" name="should allow multiple connections" time="0.001">
+    </testcase>
+    <testcase classname="DAG › connect" name="should throw error for invalid source node" time="0.015">
+    </testcase>
+    <testcase classname="DAG › connect" name="should throw error for invalid target node" time="0.001">
+    </testcase>
+    <testcase classname="DAG › connect" name="should throw error for both invalid nodes" time="0">
+    </testcase>
+    <testcase classname="DAG › validate" name="should throw error for empty DAG" time="0.001">
+    </testcase>
+    <testcase classname="DAG › validate" name="should validate simple linear DAG" time="0">
+    </testcase>
+    <testcase classname="DAG › validate" name="should validate DAG with multiple source nodes" time="0.001">
+    </testcase>
+    <testcase classname="DAG › validate" name="should throw error for DAG with no source nodes (all nodes have inputs)" time="0">
+    </testcase>
+    <testcase classname="DAG › validate" name="should detect simple cycle" time="0.001">
+    </testcase>
+    <testcase classname="DAG › validate" name="should detect complex cycle" time="0">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should sort single node" time="0.001">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should sort linear chain correctly" time="0.004">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should sort diamond DAG correctly" time="0">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should detect self-loop" time="0.001">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should detect two-node cycle" time="0.001">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should detect three-node cycle" time="0">
+    </testcase>
+    <testcase classname="DAG › topoSort" name="should provide detailed cycle path information" time="0">
+    </testcase>
+    <testcase classname="DAG › execute" name="should execute single node with seed input" time="0">
+    </testcase>
+    <testcase classname="DAG › execute" name="should execute linear chain passing results" time="0.001">
+    </testcase>
+    <testcase classname="DAG › execute" name="should handle diamond DAG with multiple inputs" time="0.001">
+    </testcase>
+    <testcase classname="DAG › execute" name="should handle multiple sink nodes" time="0">
+    </testcase>
+    <testcase classname="DAG › execute" name="should throw error for empty DAG" time="0.001">
+    </testcase>
+    <testcase classname="DAG › execute" name="should throw error for cyclic DAG" time="0">
+    </testcase>
+    <testcase classname="DAG › execute" name="should handle node execution failure with dependents" time="0.009">
+      <failure>Error: expect(received).rejects.toThrow(expected)
+
+Expected substring: &quot;Node B execution failed: B failed. This affects downstream nodes: C&quot;
+Received message:   &quot;DAG execution failed: B failed&quot;
+
+      299 |           : results; // keeps previous API return shape when options set
+      300 |       }
+    &gt; 301 |       const wrappedError = new Error(`DAG execution failed: ${error.message}`);
+          |                            ^
+      302 |       if (error.errors) wrappedError.errors = error.errors;
+      303 |       if (error.nodeId) wrappedError.nodeId = error.nodeId;
+      304 |       if (error.timestamp) wrappedError.timestamp = error.timestamp;
+
+      at DAG.execute (src/dag/dag-engine.js:301:28)
+      at Object.&lt;anonymous&gt; (__tests__/unit/dag/dag-engine.test.js:343:7)
+    at Object.toThrow (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\expect\build\index.js:218:22)
+    at Object.toThrow (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\dag-engine.test.js:343:49)
     at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
     at new Promise (&lt;anonymous&gt;)
     at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
@@ -68,9 +202,29 @@
     at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
     at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should perform multi-modal search" time="0">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:395:35)
+    <testcase classname="DAG › execute" name="should continue execution when non-critical node fails" time="0.001">
+      <failure>Error: DAG execution failed: Node C execution failed: C failed
+    at DAG.execute (C:\Users\alika\workspace\rag-pipeline-utils\src\dag\dag-engine.js:301:28)
+    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\dag-engine.test.js:358:22)</failure>
+    </testcase>
+    <testcase classname="DAG › execute" name="should handle input node failure propagation" time="0.003">
+      <failure>Error: expect(received).rejects.toThrow(expected)
+
+Expected substring: &quot;Node A execution failed: A failed. This affects downstream nodes: B&quot;
+Received message:   &quot;DAG execution failed: A failed&quot;
+
+      299 |           : results; // keeps previous API return shape when options set
+      300 |       }
+    &gt; 301 |       const wrappedError = new Error(`DAG execution failed: ${error.message}`);
+          |                            ^
+      302 |       if (error.errors) wrappedError.errors = error.errors;
+      303 |       if (error.nodeId) wrappedError.nodeId = error.nodeId;
+      304 |       if (error.timestamp) wrappedError.timestamp = error.timestamp;
+
+      at DAG.execute (src/dag/dag-engine.js:301:28)
+      at Object.&lt;anonymous&gt; (__tests__/unit/dag/dag-engine.test.js:374:7)
+    at Object.toThrow (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\expect\build\index.js:218:22)
+    at Object.toThrow (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\unit\dag\dag-engine.test.js:374:49)
     at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
     at new Promise (&lt;anonymous&gt;)
     at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
@@ -85,160 +239,19 @@
     at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
     at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should generate content descriptions" time="0">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:421:51)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › execute" name="should throw error when no sink nodes exist" time="0">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Multi-Modal Processor" name="should find similar content" time="0.001">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:440:50)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › execute" name="should handle async node execution" time="0.001">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should create federation" time="0.001">
-      <failure>TypeError: federatedLearning.createFederation is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:462:52)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › execute" name="should maintain execution order in complex DAG" time="0">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should register participants" time="0">
-      <failure>TypeError: federatedLearning.createFederation is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:474:52)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › error handling edge cases" name="should handle node with undefined run function" time="0">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should conduct federated learning round" time="0">
-      <failure>TypeError: federatedLearning.on is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:512:25)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › error handling edge cases" name="should handle node returning undefined" time="0.001">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should handle privacy preservation" time="0.001">
-      <failure>TypeError: federatedLearning.createFederation is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:553:52)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › error handling edge cases" name="should handle very large DAG without stack overflow" time="0.001">
     </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should provide federation statistics" time="0">
-      <failure>TypeError: federatedLearning.createFederation is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:584:52)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Federated Learning Coordinator" name="should handle participant eligibility validation" time="0.002">
-      <failure>TypeError: federatedLearning.createFederation is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:612:52)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Integration Tests" name="should integrate model training with adaptive retrieval" time="0.11">
-    </testcase>
-    <testcase classname="Advanced AI/ML Capabilities › Integration Tests" name="should integrate multi-modal processing with federated learning" time="0.001">
-      <failure>TypeError: multiModalProcessor.processContent is not a function
-    at Object.&lt;anonymous&gt; (C:\Users\alika\workspace\rag-pipeline-utils\__tests__\ai\advanced-ai-capabilities.test.js:681:33)
-    at Promise.then.completed (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:298:28)
-    at new Promise (&lt;anonymous&gt;)
-    at callAsyncCircusFn (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\utils.js:231:10)
-    at _callCircusTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:316:40)
-    at _runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:252:3)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:126:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at _runTestsForDescribeBlock (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:121:9)
-    at run (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\run.js:71:3)
-    at runAndTransformResultsToJestFormat (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
-    at jestAdapter (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
-    at runTestInternal (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:367:16)
-    at runTest (C:\Users\alika\workspace\rag-pipeline-utils\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    <testcase classname="DAG › error handling edge cases" name="should provide meaningful error messages for complex cycles" time="0.002">
     </testcase>
   </testsuite>
 </testsuites>

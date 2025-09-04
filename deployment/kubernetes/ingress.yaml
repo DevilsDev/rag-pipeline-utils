@@ -25,45 +25,45 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
 spec:
   tls:
-  - hosts:
-    - rag-pipeline.yourdomain.com
-    - api.rag-pipeline.yourdomain.com
-    secretName: rag-pipeline-tls
+    - hosts:
+        - rag-pipeline.yourdomain.com
+        - api.rag-pipeline.yourdomain.com
+      secretName: rag-pipeline-tls
   rules:
-  - host: rag-pipeline.yourdomain.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rag-pipeline-service
-            port:
-              number: 80
-      - path: /health
-        pathType: Exact
-        backend:
-          service:
-            name: rag-pipeline-service
-            port:
-              number: 3001
-      - path: /metrics
-        pathType: Exact
-        backend:
-          service:
-            name: rag-pipeline-service
-            port:
-              number: 3001
-  - host: api.rag-pipeline.yourdomain.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rag-pipeline-service
-            port:
-              number: 80
+    - host: rag-pipeline.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-pipeline-service
+                port:
+                  number: 80
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: rag-pipeline-service
+                port:
+                  number: 3001
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: rag-pipeline-service
+                port:
+                  number: 3001
+    - host: api.rag-pipeline.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-pipeline-service
+                port:
+                  number: 80
 
 ---
 # Service Account for RAG Pipeline Utils
@@ -96,12 +96,12 @@ metadata:
     app.kubernetes.io/part-of: rag-pipeline-utils
     app.kubernetes.io/managed-by: kubectl
 rules:
-- apiGroups: [""]
-  resources: ["configmaps", "secrets"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
 
 ---
 # RoleBinding for RAG Pipeline Utils
@@ -118,9 +118,9 @@ metadata:
     app.kubernetes.io/part-of: rag-pipeline-utils
     app.kubernetes.io/managed-by: kubectl
 subjects:
-- kind: ServiceAccount
-  name: rag-pipeline-service-account
-  namespace: rag-pipeline
+  - kind: ServiceAccount
+    name: rag-pipeline-service-account
+    namespace: rag-pipeline
 roleRef:
   kind: Role
   name: rag-pipeline-role

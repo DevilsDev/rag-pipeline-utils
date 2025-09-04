@@ -3,7 +3,12 @@
  * Prevents memory overload during large document processing
  */
 
-const { logger } = require('../../utils/logger.js');
+const { logger } = require("../../utils/logger.js");
+
+// Use performance.now() for monotonic timing, fallback to perf_hooks for older Node
+const { performance } = globalThis.performance
+  ? globalThis
+  : require("node:perf_hooks");
 
 /**
  * Memory monitor for tracking heap usage
@@ -16,12 +21,17 @@ class MemoryMonitor {
   }
 
   getCurrentUsage() {
-    const usage = process.memoryUsage();
+    const usage =
+      typeof process.memoryUsage === "function" ? process.memoryUsage() : null;
+    const heapUsed = usage?.heapUsed ?? 0;
+    const heapTotal = usage?.heapTotal ?? Math.max(1, heapUsed);
     return {
-      heapUsed: usage.heapUsed,
-      heapTotal: usage.heapTotal,
-      external: usage.external,
-      rss: usage.rss
+      heapUsed,
+      heapTotal,
+      external: usage?.external ?? 0,
+      rss: usage?.rss ?? 0,
+      heapUsedMB: Math.round(heapUsed / 1024 / 1024),
+      heapTotalMB: Math.round(heapTotal / 1024 / 1024),
     };
   }
 
@@ -41,14 +51,18 @@ class MemoryMonitor {
   getMemoryReport() {
     const usage = this.getCurrentUsage();
     const ratio = this.getUsageRatio();
-    
+
     return {
-      heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
-      heapTotalMB: Math.round(usage.heapTotal / 1024 / 1024),
+      heapUsedMB: usage.heapUsedMB,
+      heapTotalMB: usage.heapTotalMB,
       maxMemoryMB: Math.round(this.maxMemoryBytes / 1024 / 1024),
       usagePercentage: Math.round(ratio * 100),
-      status: ratio > this.criticalThreshold ? 'critical' : 
-              ratio > this.warningThreshold ? 'warning' : 'normal'
+      status:
+        ratio > this.criticalThreshold
+          ? "critical"
+          : ratio > this.warningThreshold
+            ? "warning"
+            : "normal",
     };
   }
 }
@@ -63,7 +77,7 @@ class BackpressureController {
     this.pauseThreshold = _options.pauseThreshold || 0.85;
     this.resumeThreshold = _options.resumeThreshold || 0.7;
     this.checkInterval = _options.checkInterval || 1000; // ms
-    
+
     this.isPaused = false;
     this.buffer = [];
     this.waitingResolvers = [];
@@ -76,7 +90,7 @@ class BackpressureController {
   shouldApplyBackpressure() {
     const memoryRatio = this.memoryMonitor.getUsageRatio();
     const bufferFull = this.buffer.length >= this.maxBufferSize;
-    
+
     return memoryRatio > this.pauseThreshold || bufferFull;
   }
 
@@ -91,7 +105,9 @@ class BackpressureController {
 
     this.isPaused = true;
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    console.warn(`⚠️  Applying backpressure - Memory: ${memoryReport.usagePercentage}%, Buffer: ${this.buffer.length}/${this.maxBufferSize}`); // eslint-disable-line no-console
+    console.warn(
+      `⚠️  Applying backpressure - Memory: ${memoryReport.usagePercentage}%, Buffer: ${this.buffer.length}/${this.maxBufferSize}`,
+    ); // eslint-disable-line no-console
 
     return new Promise((resolve) => {
       this.waitingResolvers.push(resolve);
@@ -108,11 +124,16 @@ class BackpressureController {
     this.reliefCheckInterval = setInterval(() => {
       const memoryRatio = this.memoryMonitor.getUsageRatio();
       const bufferOk = this.buffer.length < this.maxBufferSize * 0.5;
-      
+
       if (memoryRatio < this.resumeThreshold && bufferOk) {
         this.relieveBackpressure();
       }
     }, this.checkInterval);
+
+    // Don't keep process alive for relief checks
+    if (typeof this.reliefCheckInterval.unref === "function") {
+      this.reliefCheckInterval.unref();
+    }
   }
 
   /**
@@ -122,8 +143,8 @@ class BackpressureController {
     if (!this.isPaused) return;
 
     this.isPaused = false;
-    console.log('✅ Backpressure relieved - resuming processing'); // eslint-disable-line no-console
-    
+    console.log("✅ Backpressure relieved - resuming processing"); // eslint-disable-line no-console
+
     // Clear interval
     if (this.reliefCheckInterval) {
       clearInterval(this.reliefCheckInterval);
@@ -132,7 +153,7 @@ class BackpressureController {
 
     // Resolve all waiting promises
     const resolvers = this.waitingResolvers.splice(0);
-    resolvers.forEach(resolve => resolve());
+    resolvers.forEach((resolve) => resolve());
   }
 
   /**
@@ -159,13 +180,13 @@ class BackpressureController {
    */
   getStatus() {
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    
+
     return {
       isPaused: this.isPaused,
       bufferSize: this.buffer.length,
       maxBufferSize: this.maxBufferSize,
       memory: memoryReport,
-      shouldApplyBackpressure: this.shouldApplyBackpressure()
+      shouldApplyBackpressure: this.shouldApplyBackpressure(),
     };
   }
 }
@@ -187,7 +208,7 @@ class StreamingProcessor {
    * @param {object} pipeline - Pipeline _instance
    * @returns {AsyncGenerator} Stream of processed chunks
    */
-  async* processDocumentStream(docPath, pipeline) {
+  async *processDocumentStream(docPath, pipeline) {
     let totalTokens = 0;
     let chunkCount = 0;
     let processedCount = 0;
@@ -197,11 +218,14 @@ class StreamingProcessor {
     try {
       // First, count total chunks for progress tracking
       const allChunks = [];
-      for await (const documentChunk of this.loadInChunks(docPath, pipeline.loaderInstance)) {
+      for await (const documentChunk of this.loadInChunks(
+        docPath,
+        pipeline.loaderInstance,
+      )) {
         allChunks.push(documentChunk);
       }
       totalChunks = allChunks.length;
-      
+
       for (const documentChunk of allChunks) {
         // Check memory and apply backpressure if needed
         await this.backpressureController.waitForRelief();
@@ -212,20 +236,27 @@ class StreamingProcessor {
 
         // Check token limits
         if (totalTokens > this.tokenLimit) {
-          const error = new Error(`Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`);
-          error.code = 'TOKEN_LIMIT_EXCEEDED';
+          const error = new Error(
+            `Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`,
+          );
+          error.code = "TOKEN_LIMIT_EXCEEDED";
           throw error;
         }
 
         // Process chunk
         const processed = await this.processChunk(documentChunk, pipeline);
         chunkCount++;
-        
+
         // Warn if approaching token limit (check after incrementing chunkCount)
-        if (totalTokens > this.tokenLimit * this.tokenWarningThreshold && chunkCount % 10 === 0) {
-          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`); // eslint-disable-line no-console
+        if (
+          totalTokens > this.tokenLimit * this.tokenWarningThreshold &&
+          chunkCount % 10 === 0
+        ) {
+          console.warn(
+            `⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`,
+          ); // eslint-disable-line no-console
         }
-        
+
         if (processed.processed) {
           processedCount++;
         } else {
@@ -234,7 +265,7 @@ class StreamingProcessor {
 
         // Add to buffer and yield
         await this.backpressureController.addToBuffer(processed);
-        
+
         // Yield processed chunks from buffer with progress information
         const bufferedItems = this.backpressureController.removeFromBuffer(1);
         for (const item of bufferedItems) {
@@ -243,8 +274,8 @@ class StreamingProcessor {
             progress: {
               processed: processedCount,
               failed: failedCount,
-              total: totalChunks
-            }
+              total: totalChunks,
+            },
           };
         }
 
@@ -255,21 +286,24 @@ class StreamingProcessor {
       }
 
       // Yield any remaining buffered items
-      const remainingItems = this.backpressureController.removeFromBuffer(this.backpressureController.buffer.length);
+      const remainingItems = this.backpressureController.removeFromBuffer(
+        this.backpressureController.buffer.length,
+      );
       for (const item of remainingItems) {
         yield item;
       }
 
-      console.log(`✅ Streaming processing complete: ${chunkCount} chunks, ${Math.round(totalTokens)} tokens`); // eslint-disable-line no-console
-      
+      console.log(
+        `✅ Streaming processing complete: ${chunkCount} chunks, ${Math.round(totalTokens)} tokens`,
+      ); // eslint-disable-line no-console
     } catch (error) {
       const status = this.backpressureController.getStatus();
-      logger.error('❌ Streaming processing failed:', {
+      logger.error("❌ Streaming processing failed:", {
         error: error.message,
         totalTokens: Math.round(totalTokens),
         chunkCount,
         memoryStatus: status.memory,
-        bufferSize: status.bufferSize
+        bufferSize: status.bufferSize,
       });
       throw error;
     }
@@ -281,12 +315,12 @@ class StreamingProcessor {
    * @param {object} loader - Loader _instance
    * @returns {AsyncGenerator} Stream of document chunks
    */
-  async* loadInChunks(docPath, loader) {
+  async *loadInChunks(docPath, loader) {
     const documents = await loader.load(docPath);
-    
+
     for (const doc of documents) {
       const chunks = doc.chunk();
-      
+
       // Yield chunks in batches to control memory
       for (let i = 0; i < chunks.length; i += this.chunkSize) {
         const batch = chunks.slice(i, i + this.chunkSize);
@@ -304,31 +338,35 @@ class StreamingProcessor {
    * @returns {Promise<object>} Processed chunk
    */
   async processChunk(chunk, pipeline) {
-    const startTime = Date.now();
-    
+    const start = performance.now();
+
     try {
       // Embed the chunk
       const vector = await pipeline.embedderInstance.embed([chunk]);
-      
+
       // Store in retriever
       await pipeline.retrieverInstance.store(vector);
-      
-      const duration = Date.now() - startTime;
-      
+
+      const end = performance.now();
+      const duration = Math.max(1, Math.round(end - start)); // clamp to minimum 1ms
+
       return {
         chunk,
         vector: vector[0],
         processed: true,
         duration,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
+      const end = performance.now();
+      const duration = Math.max(1, Math.round(end - start)); // clamp to minimum 1ms
+
       return {
         chunk,
         processed: false,
         error: error.message,
-        duration: Date.now() - startTime,
-        timestamp: new Date().toISOString()
+        duration,
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -339,20 +377,17 @@ class StreamingProcessor {
    */
   getStats() {
     const status = this.backpressureController.getStatus();
-    
+
     return {
       backpressure: status,
       tokenLimit: this.tokenLimit,
-      chunkSize: this.chunkSize
+      chunkSize: this.chunkSize,
     };
   }
 }
 
-
-
-
 module.exports = {
   BackpressureController,
   StreamingProcessor,
-  MemoryMonitor
+  MemoryMonitor,
 };
