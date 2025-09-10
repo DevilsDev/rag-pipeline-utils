@@ -89,21 +89,17 @@ class MultiModalProcessor extends EventEmitter {
       processed: true,
     };
 
-    this.contentStore
-      .get(tenantId)
-      .push({
-        id: processingId,
-        content,
-        result: response,
-        modality: modalityType,
-      });
-    this.embeddings
-      .get(tenantId)
-      .push({
-        id: processingId,
-        embedding: result.embedding,
-        modality: modalityType,
-      });
+    this.contentStore.get(tenantId).push({
+      id: processingId,
+      content,
+      result: response,
+      modality: modalityType,
+    });
+    this.embeddings.get(tenantId).push({
+      id: processingId,
+      embedding: result.embedding,
+      modality: modalityType,
+    });
 
     this.emit("processingCompleted", {
       processingId,

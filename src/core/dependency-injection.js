@@ -3,7 +3,7 @@
  * Addresses architectural anti-pattern: Hard-coded dependencies
  */
 
-const { logger } = require("../utils/logger");
+const { logger } = require('../utils/logger');
 
 class DependencyContainer {
   constructor() {
@@ -33,7 +33,7 @@ class DependencyContainer {
       this.interfaces.get(interfaceName).push(name);
     });
 
-    logger.debug("Service registered", {
+    logger.debug('Service registered', {
       service: name,
       singleton,
       factory,
@@ -107,7 +107,7 @@ class DependencyContainer {
    * Create an instance with dependency injection
    */
   _createInstance(implementation) {
-    if (typeof implementation === "function") {
+    if (typeof implementation === 'function') {
       // Check if it's a class constructor
       if (
         implementation.prototype &&
@@ -204,7 +204,7 @@ class ContainerBuilder {
 
       // Resolve implementation from string path
       let impl = implementation;
-      if (typeof implementation === "string") {
+      if (typeof implementation === 'string') {
         impl = require(implementation);
       }
 
@@ -215,7 +215,7 @@ class ContainerBuilder {
       });
     });
 
-    logger.info("Container loaded from configuration", {
+    logger.info('Container loaded from configuration', {
       servicesCount: Object.keys(services).length,
     });
 
@@ -231,7 +231,7 @@ class ContainerBuilder {
 const defaultContainer = new DependencyContainer();
 
 // Register core services
-defaultContainer.register("logger", logger, { singleton: true });
+defaultContainer.register('logger', logger, { singleton: true });
 
 module.exports = {
   DependencyContainer,

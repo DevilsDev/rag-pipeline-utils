@@ -1,13 +1,13 @@
 // src/core/observability/metrics.js
 const MetricType = {
-  COUNTER: "counter",
-  HISTOGRAM: "histogram",
-  GAUGE: "gauge",
+  COUNTER: 'counter',
+  HISTOGRAM: 'histogram',
+  GAUGE: 'gauge',
 };
 
 /** Counter */
 class Counter {
-  constructor(name, description = "", labels = {}) {
+  constructor(name, description = '', labels = {}) {
     this._type = MetricType.COUNTER;
     this.name = name;
     this.description = description;
@@ -16,7 +16,7 @@ class Counter {
   }
   inc(n = 1) {
     if (n < 0)
-      throw new Error("Counter can only be incremented by non-negative values");
+      throw new Error('Counter can only be incremented by non-negative values');
     this.value += n;
   }
   reset() {
@@ -36,7 +36,7 @@ class Counter {
 
 /** Gauge */
 class Gauge {
-  constructor(name, description = "", labels = {}) {
+  constructor(name, description = '', labels = {}) {
     this._type = MetricType.GAUGE;
     this.name = name;
     this.description = description;
@@ -71,7 +71,7 @@ class Gauge {
 class Histogram {
   constructor(
     name,
-    description = "",
+    description = '',
     labels = {},
     buckets = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
   ) {
@@ -89,7 +89,7 @@ class Histogram {
   }
 
   observe(v) {
-    if (typeof v !== "number" || Number.isNaN(v)) return;
+    if (typeof v !== 'number' || Number.isNaN(v)) return;
     this._obs.push(v);
     this.sum += v;
     this.count += 1;
@@ -160,7 +160,7 @@ class Histogram {
     const bucketsObj = {};
     for (let i = 0; i < this.buckets.length; i++)
       bucketsObj[this.buckets[i]] = this.bucketCounts[i];
-    bucketsObj["+Inf"] = this.bucketCounts[this.bucketCounts.length - 1];
+    bucketsObj['+Inf'] = this.bucketCounts[this.bucketCounts.length - 1];
     const stats = this.getStatistics();
     return { buckets: bucketsObj, ...stats };
   }
@@ -237,13 +237,13 @@ class MetricsRegistry {
 class PipelineMetrics {
   constructor() {
     this.counters = {
-      operationsTotal: new Counter("operations_total", "Total operations"),
+      operationsTotal: new Counter('operations_total', 'Total operations'),
       operationsSuccessful: new Counter(
-        "operations_successful",
-        "Successful operations",
+        'operations_successful',
+        'Successful operations',
       ),
-      operationsFailed: new Counter("operations_failed", "Failed operations"),
-      operationsActive: new Counter("operations_active", "Active operations"),
+      operationsFailed: new Counter('operations_failed', 'Failed operations'),
+      operationsActive: new Counter('operations_active', 'Active operations'),
     };
     this.errorsByType = { plugin: 0, stage: 0 };
     this.errorsByPlugin = {};
@@ -331,7 +331,7 @@ class PipelineMetrics {
       0,
       this.counters.operationsActive.value - 1,
     );
-    if (status === "error" || status === "failed")
+    if (status === 'error' || status === 'failed')
       this.counters.operationsFailed.inc(1);
     else this.counters.operationsSuccessful.inc(1);
   }
@@ -345,9 +345,9 @@ class PipelineMetrics {
   }
 
   recordBackpressure(action, bufferSize, threshold) {
-    if (action === "applied") this.backpressureApplied++;
-    if (action === "released") this.backpressureReleased++;
-    if (typeof bufferSize === "number")
+    if (action === 'applied') this.backpressureApplied++;
+    if (action === 'released') this.backpressureReleased++;
+    if (typeof bufferSize === 'number')
       this.backpressureSamples.push(bufferSize);
   }
 

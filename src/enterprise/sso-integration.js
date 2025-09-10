@@ -3,13 +3,13 @@
  * SAML 2.0, OAuth2, Active Directory, and identity provider support
  */
 
-const _fs = require("_fs").promises;
+const _fs = require('_fs').promises;
 // eslint-disable-line global-require
-const _path = require("_path");
+const _path = require('_path');
 // eslint-disable-line global-require
-const crypto = require("crypto");
+const crypto = require('crypto');
 // eslint-disable-line global-require
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 
 class SSOManager extends EventEmitter {
@@ -20,7 +20,7 @@ class SSOManager extends EventEmitter {
       providers: {
         saml: {
           enabled: false,
-          entityId: _options.entityId || "rag-pipeline-utils",
+          entityId: _options.entityId || 'rag-pipeline-utils',
           ssoUrl: _options.ssoUrl,
           sloUrl: _options.sloUrl,
           certificate: _options.certificate,
@@ -33,7 +33,7 @@ class SSOManager extends EventEmitter {
           authorizationUrl: _options.authorizationUrl,
           tokenUrl: _options.tokenUrl,
           userInfoUrl: _options.userInfoUrl,
-          scopes: ["openid", "profile", "email"],
+          scopes: ['openid', 'profile', 'email'],
         },
         activeDirectory: {
           enabled: false,
@@ -57,7 +57,7 @@ class SSOManager extends EventEmitter {
         maxConcurrentSessions: _options.maxConcurrentSessions || 5,
       },
       security: {
-        jwtSecret: _options.jwtSecret || crypto.randomBytes(64).toString("hex"),
+        jwtSecret: _options.jwtSecret || crypto.randomBytes(64).toString('hex'),
         encryptionKey: _options.encryptionKey || crypto.randomBytes(32),
         tokenExpiry: _options.tokenExpiry || 3600, // 1 hour
         refreshTokenExpiry: _options.refreshTokenExpiry || 7 * 24 * 3600, // 7 days
@@ -77,25 +77,25 @@ class SSOManager extends EventEmitter {
    */
   async _initializeProviders() {
     if (this._config.providers.saml.enabled) {
-      this.providers.set("saml", new SAMLProvider(this._config.providers.saml));
+      this.providers.set('saml', new SAMLProvider(this._config.providers.saml));
     }
 
     if (this._config.providers.oauth2.enabled) {
       this.providers.set(
-        "oauth2",
+        'oauth2',
         new OAuth2Provider(this._config.providers.oauth2),
       );
     }
 
     if (this._config.providers.activeDirectory.enabled) {
       this.providers.set(
-        "ad",
+        'ad',
         new ActiveDirectoryProvider(this._config.providers.activeDirectory),
       );
     }
 
     if (this._config.providers.oidc.enabled) {
-      this.providers.set("oidc", new OIDCProvider(this._config.providers.oidc));
+      this.providers.set('oidc', new OIDCProvider(this._config.providers.oidc));
     }
   }
 
@@ -123,7 +123,7 @@ class SSOManager extends EventEmitter {
 
     const authUrl = await ssoProvider.getAuthorizationUrl(state, _redirectUrl);
 
-    this.emit("login_initiated", { tenantId, provider, state });
+    this.emit('login_initiated', { tenantId, provider, state });
 
     return {
       authUrl,
@@ -143,12 +143,12 @@ class SSOManager extends EventEmitter {
 
     const loginRequest = this.sessions.get(_callbackData.state);
     if (!loginRequest) {
-      throw new Error("Invalid or expired login request");
+      throw new Error('Invalid or expired login request');
     }
 
     if (loginRequest.expiresAt < Date.now()) {
       this.sessions.delete(_callbackData.state);
-      throw new Error("Login request expired");
+      throw new Error('Login request expired');
     }
 
     // Exchange authorization code for tokens
@@ -168,7 +168,7 @@ class SSOManager extends EventEmitter {
     // Clean up login request
     this.sessions.delete(_callbackData.state);
 
-    this.emit("login_completed", {
+    this.emit('login_completed', {
       tenantId: loginRequest.tenantId,
       provider,
       userId: userInfo.id,
@@ -200,9 +200,9 @@ class SSOManager extends EventEmitter {
         (a, b) => a.createdAt - b.createdAt,
       )[0];
       this.sessions.delete(oldestSession.id);
-      this.emit("session_evicted", {
+      this.emit('session_evicted', {
         sessionId: oldestSession.id,
-        reason: "concurrent_limit",
+        reason: 'concurrent_limit',
       });
     }
 
@@ -255,11 +255,11 @@ class SSOManager extends EventEmitter {
   async validateSession(sessionId, tenantId) {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      throw new Error("Session not found");
+      throw new Error('Session not found');
     }
 
     if (session.tenantId !== tenantId) {
-      throw new Error("Session tenant mismatch");
+      throw new Error('Session tenant mismatch');
     }
 
     const now = Date.now();
@@ -267,8 +267,8 @@ class SSOManager extends EventEmitter {
     // Check if session expired
     if (session.metadata.expiresAt < now) {
       this.sessions.delete(sessionId);
-      this.emit("session_expired", { sessionId, tenantId });
-      throw new Error("Session expired");
+      this.emit('session_expired', { sessionId, tenantId });
+      throw new Error('Session expired');
     }
 
     // Check if session needs renewal
@@ -288,15 +288,15 @@ class SSOManager extends EventEmitter {
    * Renew session tokens
    */
   async _renewSession(session) {
-    const provider = this.providers.get(session.provider);
-    if (!provider) {
+    const _provider = this.providers.get(session.provider);
+    if (!_provider) {
       throw new Error(`Provider ${session.provider} not available`);
     }
 
     try {
       // Refresh external tokens if needed
       if (session.tokens.externalTokens.refreshToken) {
-        const newTokens = await provider.refreshTokens(
+        const newTokens = await _provider.refreshTokens(
           session.tokens.externalTokens.refreshToken,
         );
         session.tokens.externalTokens = newTokens;
@@ -314,12 +314,12 @@ class SSOManager extends EventEmitter {
 
       session.metadata.expiresAt = now + this._config.session.timeout;
 
-      this.emit("session_renewed", {
+      this.emit('session_renewed', {
         sessionId: session.id,
         tenantId: session.tenantId,
       });
     } catch (error) {
-      this.emit("session_renewal_failed", {
+      this.emit('session_renewal_failed', {
         sessionId: session.id,
         tenantId: session.tenantId,
         error: error.message,
@@ -334,7 +334,7 @@ class SSOManager extends EventEmitter {
   async logout(sessionId, tenantId, _options = {}) {
     const session = this.sessions.get(sessionId);
     if (!session || session.tenantId !== tenantId) {
-      return { success: false, reason: "session_not_found" };
+      return { success: false, reason: 'session_not_found' };
     }
 
     // Perform SSO logout if supported
@@ -344,7 +344,7 @@ class SSOManager extends EventEmitter {
         try {
           await provider.logout(session.tokens.externalTokens._accessToken);
         } catch (error) {
-          this.emit("sso_logout_failed", {
+          this.emit('sso_logout_failed', {
             sessionId,
             tenantId,
             provider: session.provider,
@@ -357,7 +357,7 @@ class SSOManager extends EventEmitter {
     // Remove session
     this.sessions.delete(sessionId);
 
-    this.emit("logout_completed", {
+    this.emit('logout_completed', {
       sessionId,
       tenantId,
       userId: session.userId,
@@ -407,11 +407,11 @@ class SSOManager extends EventEmitter {
 
     for (const [sessionId] of userSessions) {
       this.sessions.delete(sessionId);
-      this.emit("session_revoked", {
+      this.emit('session_revoked', {
         sessionId,
         tenantId,
         userId,
-        reason: "admin_revoke",
+        reason: 'admin_revoke',
       });
     }
 
@@ -424,15 +424,15 @@ class SSOManager extends EventEmitter {
   _generateJWT(payload) {
     // Simple JWT implementation - in production, use a proper JWT library
     const header = Buffer.from(
-      JSON.stringify({ alg: "HS256", typ: "JWT" }),
-    ).toString("base64url");
+      JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+    ).toString('base64url');
     const payloadStr = Buffer.from(JSON.stringify(payload)).toString(
-      "base64url",
+      'base64url',
     );
     const signature = crypto
-      .createHmac("sha256", this._config.security.jwtSecret)
+      .createHmac('sha256', this._config.security.jwtSecret)
       .update(`${header}.${payloadStr}`)
-      .digest("base64url");
+      .digest('base64url');
 
     return `${header}.${payloadStr}.${signature}`;
   }
@@ -441,7 +441,7 @@ class SSOManager extends EventEmitter {
    * Generate refresh token
    */
   _generateRefreshToken() {
-    return crypto.randomBytes(32).toString("hex");
+    return crypto.randomBytes(32).toString('hex');
   }
 
   /**
@@ -455,7 +455,7 @@ class SSOManager extends EventEmitter {
       if (session.metadata.expiresAt < now) {
         expiredSessions.push(sessionId);
         this.sessions.delete(sessionId);
-        this.emit("session_expired", { sessionId, tenantId: session.tenantId });
+        this.emit('session_expired', { sessionId, tenantId: session.tenantId });
       }
     }
 
@@ -505,18 +505,18 @@ class SAMLProvider {
     // Mock SAML request - in production, use proper SAML library
     return Buffer.from(
       `<samlp:AuthnRequest ID="${state}"></samlp:AuthnRequest>`,
-    ).toString("base64");
+    ).toString('base64');
   }
 
   _validateSAMLResponse(_response) {
     // Mock SAML _response validation
     return {
       sessionIndex: crypto.randomUUID(),
-      nameID: "user@example.com",
+      nameID: 'user@example.com',
       attributes: {
-        email: "user@example.com",
-        displayName: "Test User",
-        roles: ["user"],
+        email: 'user@example.com',
+        displayName: 'Test User',
+        roles: ['user'],
       },
       notOnOrAfter: Date.now() + 8 * 60 * 60 * 1000,
     };
@@ -530,10 +530,10 @@ class OAuth2Provider {
 
   async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
-      response_type: "code",
+      response_type: 'code',
       client_id: this._config.clientId,
       redirect_uri: _redirectUrl,
-      scope: this._config.scopes.join(" "),
+      scope: this._config.scopes.join(' '),
       state,
     });
 
@@ -543,8 +543,8 @@ class OAuth2Provider {
   async exchangeCodeForTokens(_callbackData) {
     // Mock OAuth2 token exchange
     return {
-      _accessToken: crypto.randomBytes(32).toString("hex"),
-      refreshToken: crypto.randomBytes(32).toString("hex"),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
+      refreshToken: crypto.randomBytes(32).toString('hex'),
       expiresAt: Date.now() + 3600 * 1000,
     };
   }
@@ -553,16 +553,16 @@ class OAuth2Provider {
     // Mock user info retrieval
     return {
       id: crypto.randomUUID(),
-      email: "user@example.com",
-      name: "OAuth User",
-      roles: ["user"],
+      email: 'user@example.com',
+      name: 'OAuth User',
+      roles: ['user'],
     };
   }
 
   async refreshTokens(refreshToken) {
     // Mock token refresh
     return {
-      _accessToken: crypto.randomBytes(32).toString("hex"),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: refreshToken,
       expiresAt: Date.now() + 3600 * 1000,
     };
@@ -577,8 +577,8 @@ class ActiveDirectoryProvider {
   async getAuthorizationUrl(state, _redirectUrl) {
     // AD FS OAuth2 flow
     const params = new URLSearchParams({
-      response_type: "code",
-      client_id: "rag-pipeline-utils",
+      response_type: 'code',
+      client_id: 'rag-pipeline-utils',
       resource: this._config.url,
       redirect_uri: _redirectUrl,
       state,
@@ -590,8 +590,8 @@ class ActiveDirectoryProvider {
   async exchangeCodeForTokens(_callbackData) {
     // Mock AD token exchange
     return {
-      _accessToken: crypto.randomBytes(32).toString("hex"),
-      refreshToken: crypto.randomBytes(32).toString("hex"),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
+      refreshToken: crypto.randomBytes(32).toString('hex'),
       expiresAt: Date.now() + 3600 * 1000,
     };
   }
@@ -600,10 +600,10 @@ class ActiveDirectoryProvider {
     // Mock AD user lookup
     return {
       id: crypto.randomUUID(),
-      email: "user@corp.com",
-      name: "AD User",
-      roles: ["user"],
-      groups: ["Domain Users"],
+      email: 'user@corp.com',
+      name: 'AD User',
+      roles: ['user'],
+      groups: ['Domain Users'],
     };
   }
 }
@@ -615,10 +615,10 @@ class OIDCProvider {
 
   async getAuthorizationUrl(state, _redirectUrl) {
     const params = new URLSearchParams({
-      response_type: "code",
+      response_type: 'code',
       client_id: this._config.clientId,
       redirect_uri: _redirectUrl,
-      scope: "openid profile email",
+      scope: 'openid profile email',
       state,
     });
 
@@ -628,8 +628,8 @@ class OIDCProvider {
   async exchangeCodeForTokens(_callbackData) {
     // Mock OIDC token exchange
     return {
-      _accessToken: crypto.randomBytes(32).toString("hex"),
-      refreshToken: crypto.randomBytes(32).toString("hex"),
+      _accessToken: crypto.randomBytes(32).toString('hex'),
+      refreshToken: crypto.randomBytes(32).toString('hex'),
       idToken: this._generateMockIdToken(),
       expiresAt: Date.now() + 3600 * 1000,
     };
@@ -639,15 +639,15 @@ class OIDCProvider {
     // Mock OIDC userinfo
     return {
       id: crypto.randomUUID(),
-      email: "user@oidc.com",
-      name: "OIDC User",
-      roles: ["user"],
+      email: 'user@oidc.com',
+      name: 'OIDC User',
+      roles: ['user'],
     };
   }
 
   _generateMockIdToken() {
     // Mock ID token
-    return "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.mock.token";
+    return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.mock.token';
   }
 }
 

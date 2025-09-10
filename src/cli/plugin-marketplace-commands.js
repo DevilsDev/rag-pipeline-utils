@@ -4,31 +4,31 @@ const fs = require('fs');
  * Provides commands for plugin discovery, installation, publishing, and management
  */
 
-const { Command } = require("commander");
+const { Command } = require('commander');
 // eslint-disable-line global-require
-const fs = require("fs/promises");
+const fs = require('fs/promises');
 // eslint-disable-line global-require
-const path = require("path");
+const path = require('path');
 // eslint-disable-line global-require
 const {
   PluginPublisher,
   PublishingUtils,
-} = require("../core/plugin-marketplace/plugin-publisher.js");
+} = require('../core/plugin-marketplace/plugin-publisher.js');
 // eslint-disable-line global-require
 const {
   createVersionResolver,
-} = require("../core/plugin-marketplace/version-resolver.js");
+} = require('../core/plugin-marketplace/version-resolver.js');
 // eslint-disable-line global-require
 const {
   MetadataUtils,
-} = require("../core/plugin-marketplace/plugin-metadata.js");
+} = require('../core/plugin-marketplace/plugin-metadata.js');
 // eslint-disable-line global-require
 const {
   DEFAULT_REGISTRY_URLS,
-} = require("../core/plugin-marketplace/plugin-registry-format.js");
+} = require('../core/plugin-marketplace/plugin-registry-format.js');
 // eslint-disable-line global-require
 // REGISTRY_SCHEMA and LOCAL_REGISTRY_FILE unused - reserved for future use
-const { logger } = require("../utils/logger.js");
+const { logger } = require('../utils/logger.js');
 // eslint-disable-line global-require
 
 /**
@@ -36,25 +36,25 @@ const { logger } = require("../utils/logger.js");
  */
 function createPluginMarketplaceCommands() {
   const _metadata = {};
-  const pluginCmd = new Command("plugin");
-  pluginCmd.description("Plugin marketplace commands");
+  const pluginCmd = new Command('plugin');
+  pluginCmd.description('Plugin marketplace commands');
 
   // Plugin search command
   pluginCmd
-    .command("search")
-    .description("Search for plugins in the marketplace")
-    .argument("[query]", "Search query")
+    .command('search')
+    .description('Search for plugins in the marketplace')
+    .argument('[query]', 'Search query')
     .option(
-      "--_type <_type>",
-      "Filter by plugin _type (loader, embedder, retriever, llm, reranker)",
+      '--_type <_type>',
+      'Filter by plugin _type (loader, embedder, retriever, llm, reranker)',
     )
-    .option("--tag <tag>", "Filter by tag")
-    .option("--author <author>", "Filter by author")
-    .option("--limit <number>", "Limit number of results", "20")
-    .option("--registry <url>", "Custom registry URL")
+    .option('--tag <tag>', 'Filter by tag')
+    .option('--author <author>', 'Filter by author')
+    .option('--limit <number>', 'Limit number of results', '20')
+    .option('--registry <url>', 'Custom registry URL')
     .action(async (query, _options) => {
       try {
-        console.log("🔍 Searching plugins...");
+        console.log('🔍 Searching plugins...');
         // eslint-disable-line no-console
 
         const _registryUrl = _options.registry || DEFAULT_REGISTRY_URLS[0];
@@ -63,7 +63,7 @@ function createPluginMarketplaceCommands() {
         const results = searchPlugins(registry, query, _options);
 
         if (results.length === 0) {
-          console.log("No plugins found matching your criteria.");
+          console.log('No plugins found matching your criteria.');
           // eslint-disable-line no-console
           return;
         }
@@ -81,7 +81,7 @@ function createPluginMarketplaceCommands() {
           console.log(`   Type: ${plugin.metadata._type}`);
           // eslint-disable-line no-console
           if (plugin.metadata.keywords.length > 0) {
-            console.log(`   Keywords: ${plugin.metadata.keywords.join(", ")}`);
+            console.log(`   Keywords: ${plugin.metadata.keywords.join(', ')}`);
             // eslint-disable-line no-console
           }
           if (plugin.downloads?.total) {
@@ -90,22 +90,22 @@ function createPluginMarketplaceCommands() {
             );
             // eslint-disable-line no-console
           }
-          console.log("");
+          console.log('');
           // eslint-disable-line no-console
         });
       } catch (error) {
-        logger.error("❌ Plugin search failed:", error.message);
+        logger.error('❌ Plugin search failed:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin info command
   pluginCmd
-    .command("info")
-    .description("Show detailed information about a plugin")
-    .argument("<name>", "Plugin name")
-    .option("--version <version>", "Specific version to show info for")
-    .option("--registry <url>", "Custom registry URL")
+    .command('info')
+    .description('Show detailed information about a plugin')
+    .argument('<name>', 'Plugin name')
+    .option('--version <version>', 'Specific version to show info for')
+    .option('--registry <url>', 'Custom registry URL')
     .action(async (name, _options) => {
       try {
         const _registryUrl = _options.registry || DEFAULT_REGISTRY_URLS[0];
@@ -137,7 +137,7 @@ function createPluginMarketplaceCommands() {
         // eslint-disable-line no-console
         console.log(`Type: ${plugin.metadata._type}`);
         // eslint-disable-line no-console
-        console.log(`License: ${plugin.metadata.license || "Not specified"}`);
+        console.log(`License: ${plugin.metadata.license || 'Not specified'}`);
         // eslint-disable-line no-console
 
         if (plugin.metadata.homepage) {
@@ -151,14 +151,14 @@ function createPluginMarketplaceCommands() {
         }
 
         if (plugin.metadata.keywords.length > 0) {
-          console.log(`Keywords: ${plugin.metadata.keywords.join(", ")}`);
+          console.log(`Keywords: ${plugin.metadata.keywords.join(', ')}`);
           // eslint-disable-line no-console
         }
 
-        console.log("\nVersions available:");
+        console.log('\nVersions available:');
         // eslint-disable-line no-console
         const versions = Object.keys(plugin.versions).sort((a, b) => {
-          const semver = require("semver");
+          const semver = require('semver');
           // eslint-disable-line global-require
           return semver.rcompare(a, b);
         });
@@ -169,13 +169,13 @@ function createPluginMarketplaceCommands() {
           const isAlpha = v === plugin.alpha;
 
           let tags = [];
-          if (isLatest) tags.push("latest");
-          if (isBeta) tags.push("beta");
-          if (isAlpha) tags.push("alpha");
+          if (isLatest) tags.push('latest');
+          if (isBeta) tags.push('beta');
+          if (isAlpha) tags.push('alpha');
 
-          const tagStr = tags.length > 0 ? ` (${tags.join(", ")})` : "";
+          const tagStr = tags.length > 0 ? ` (${tags.join(', ')})` : '';
           console.log(
-            `  ${v}${tagStr} - ${plugin.versions[v].publishedAt.split("T")[0]}`,
+            `  ${v}${tagStr} - ${plugin.versions[v].publishedAt.split('T')[0]}`,
           );
           // eslint-disable-line no-console
         });
@@ -186,32 +186,32 @@ function createPluginMarketplaceCommands() {
         }
 
         if (plugin.downloads) {
-          console.log("\nDownloads:");
+          console.log('\nDownloads:');
           // eslint-disable-line no-console
           console.log(
-            `  Total: ${plugin.downloads.total?.toLocaleString() || "N/A"}`,
+            `  Total: ${plugin.downloads.total?.toLocaleString() || 'N/A'}`,
           );
           // eslint-disable-line no-console
           console.log(
-            `  Monthly: ${plugin.downloads.monthly?.toLocaleString() || "N/A"}`,
+            `  Monthly: ${plugin.downloads.monthly?.toLocaleString() || 'N/A'}`,
           );
           // eslint-disable-line no-console
         }
       } catch (error) {
-        logger.error("❌ Failed to get plugin info:", error.message);
+        logger.error('❌ Failed to get plugin info:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin install command
   pluginCmd
-    .command("install")
-    .description("Install a plugin from the marketplace")
-    .argument("<name>", "Plugin name")
-    .option("--version <version>", "Specific version to install", "latest")
-    .option("--registry <url>", "Custom registry URL")
-    .option("--save", "Add to .ragrc.json configuration")
-    .option("--dev", "Install as development dependency")
+    .command('install')
+    .description('Install a plugin from the marketplace')
+    .argument('<name>', 'Plugin name')
+    .option('--version <version>', 'Specific version to install', 'latest')
+    .option('--registry <url>', 'Custom registry URL')
+    .option('--save', 'Add to .ragrc.json configuration')
+    .option('--dev', 'Install as development dependency')
     .action(async (name, _options) => {
       try {
         console.log(`📦 Installing plugin '${name}'...`);
@@ -239,7 +239,7 @@ function createPluginMarketplaceCommands() {
 
         if (_options.save) {
           await addToRagrcConfig(name, resolution.version, _options.dev);
-          console.log("💾 Added to .ragrc.json");
+          console.log('💾 Added to .ragrc.json');
           // eslint-disable-line no-console
         }
 
@@ -248,20 +248,20 @@ function createPluginMarketplaceCommands() {
         );
         // eslint-disable-line no-console
       } catch (error) {
-        logger.error("❌ Plugin installation failed:", error.message);
+        logger.error('❌ Plugin installation failed:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin publish command
   pluginCmd
-    .command("publish")
-    .description("Publish a plugin to the marketplace")
-    .argument("[path]", "Plugin directory path", ".")
-    .option("--registry-url <url>", "Registry URL")
-    .option("--auth-token <token>", "Authentication token")
-    .option("--dry-run", "Perform a dry run without actually publishing")
-    .option("--output-dir <dir>", "Output directory for package")
+    .command('publish')
+    .description('Publish a plugin to the marketplace')
+    .argument('[path]', 'Plugin directory path', '.')
+    .option('--registry-url <url>', 'Registry URL')
+    .option('--auth-token <token>', 'Authentication token')
+    .option('--dry-run', 'Perform a dry run without actually publishing')
+    .option('--output-dir <dir>', 'Output directory for package')
     .action(async (pluginPath, _options) => {
       try {
         const publisher = new PluginPublisher({
@@ -276,7 +276,7 @@ function createPluginMarketplaceCommands() {
 
         if (result.success) {
           if (result.dryRun) {
-            console.log("\n🧪 Dry run completed successfully!");
+            console.log('\n🧪 Dry run completed successfully!');
             // eslint-disable-line no-console
             console.log(
               `Plugin: ${result.metadata.name}@${result.metadata.version}`,
@@ -289,7 +289,7 @@ function createPluginMarketplaceCommands() {
             console.log(`Files: ${result.packageInfo.files.length}`);
             // eslint-disable-line no-console
           } else {
-            console.log("\n🎉 Plugin published successfully!");
+            console.log('\n🎉 Plugin published successfully!');
             // eslint-disable-line no-console
             console.log(`Download URL: ${result.publishResult.downloadUrl}`);
             // eslint-disable-line no-console
@@ -300,60 +300,60 @@ function createPluginMarketplaceCommands() {
           process.exit(1);
         }
       } catch (error) {
-        logger.error("❌ Plugin publishing failed:", error.message);
+        logger.error('❌ Plugin publishing failed:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin validate command
   pluginCmd
-    .command("validate")
-    .description("Validate a plugin for marketplace publishing")
-    .argument("[path]", "Plugin directory path", ".")
+    .command('validate')
+    .description('Validate a plugin for marketplace publishing')
+    .argument('[path]', 'Plugin directory path', '.')
     .action(async (pluginPath) => {
       try {
-        console.log("🔍 Validating plugin...");
+        console.log('🔍 Validating plugin...');
         // eslint-disable-line no-console
 
         const { ready, issues } =
           await PublishingUtils.validateForPublishing(pluginPath);
 
         if (ready) {
-          console.log("✅ Plugin is ready for publishing!");
+          console.log('✅ Plugin is ready for publishing!');
           // eslint-disable-line no-console
 
           // Show publishing checklist
           const checklist = PublishingUtils.generatePublishingChecklist({});
-          console.log("\n📋 Publishing checklist:");
+          console.log('\n📋 Publishing checklist:');
           // eslint-disable-line no-console
           checklist.forEach((item) => console.log(`  ${item}`));
           // eslint-disable-line no-console
         } else {
-          console.log("❌ Plugin validation failed:");
+          console.log('❌ Plugin validation failed:');
           // eslint-disable-line no-console
           issues.forEach((issue) => console.log(`  • ${issue}`));
           // eslint-disable-line no-console
           process.exit(1);
         }
       } catch (error) {
-        logger.error("❌ Plugin validation failed:", error.message);
+        logger.error('❌ Plugin validation failed:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin init command
   pluginCmd
-    .command("init")
-    .description("Initialize a new plugin project")
-    .argument("<name>", "Plugin name")
+    .command('init')
+    .description('Initialize a new plugin project')
+    .argument('<name>', 'Plugin name')
     .option(
-      "--_type <_type>",
-      "Plugin _type (loader, embedder, retriever, llm, reranker)",
-      "loader",
+      '--_type <_type>',
+      'Plugin _type (loader, embedder, retriever, llm, reranker)',
+      'loader',
     )
-    .option("--author <author>", "Plugin author")
-    .option("--license <license>", "Plugin license", "MIT")
-    .option("--template <template>", "Template to use", "basic")
+    .option('--author <author>', 'Plugin author')
+    .option('--license <license>', 'Plugin license', 'MIT')
+    .option('--template <template>', 'Template to use', 'basic')
     .action(async (name, _options) => {
       try {
         console.log(`🚀 Initializing plugin '${name}'...`);
@@ -385,25 +385,25 @@ function createPluginMarketplaceCommands() {
           name,
           version: metadata.version,
           description: metadata.description,
-          main: "index.js",
-          _type: "module",
+          main: 'index.js',
+          _type: 'module',
           keywords: metadata.keywords,
           author: metadata.author,
           license: metadata.license,
           engines: metadata.engines,
           dependencies: {},
           devDependencies: {
-            jest: "^29.0.0",
+            jest: '^29.0.0',
           },
           scripts: {
-            test: "jest",
-            lint: "eslint .",
-            prepare: "npm test",
+            test: 'jest',
+            lint: 'eslint .',
+            prepare: 'npm test',
           },
         };
 
         await fs.writeFile(
-          path.join(pluginDir, "package.json"),
+          path.join(pluginDir, 'package.json'),
           JSON.stringify(packageJson, null, 2),
         );
 
@@ -413,18 +413,18 @@ function createPluginMarketplaceCommands() {
           name,
           metadata,
         );
-        await fs.writeFile(path.join(pluginDir, "index.js"), pluginCode);
+        await fs.writeFile(path.join(pluginDir, 'index.js'), pluginCode);
 
         // Create README.md
         const readme = generateReadmeTemplate(name, _options._type, metadata);
-        await fs.writeFile(path.join(pluginDir, "README.md"), readme);
+        await fs.writeFile(path.join(pluginDir, 'README.md'), readme);
 
         // Create LICENSE file
         const license = generateLicenseTemplate(
           _options.license,
           metadata.author,
         );
-        await fs.writeFile(path.join(pluginDir, "LICENSE"), license);
+        await fs.writeFile(path.join(pluginDir, 'LICENSE'), license);
 
         // Create test file
         const testCode = generateTestTemplate(_options._type, name);
@@ -432,46 +432,46 @@ function createPluginMarketplaceCommands() {
 
         console.log(`✅ Plugin '${name}' initialized successfully!`);
         // eslint-disable-line no-console
-        console.log("\nNext steps:");
+        console.log('\nNext steps:');
         // eslint-disable-line no-console
         console.log(`  cd ${name}`);
         // eslint-disable-line no-console
-        console.log("  npm install");
+        console.log('  npm install');
         // eslint-disable-line no-console
-        console.log("  npm test");
+        console.log('  npm test');
         // eslint-disable-line no-console
-        console.log("  rag-pipeline plugin validate");
+        console.log('  rag-pipeline plugin validate');
         // eslint-disable-line no-console
       } catch (error) {
-        logger.error("❌ Plugin initialization failed:", error.message);
+        logger.error('❌ Plugin initialization failed:', error.message);
         process.exit(1);
       }
     });
 
   // Plugin list command
   pluginCmd
-    .command("list")
-    .description("List installed plugins")
-    .option("--_type <_type>", "Filter by plugin _type")
-    .option("--registry <url>", "Custom registry URL")
+    .command('list')
+    .description('List installed plugins')
+    .option('--_type <_type>', 'Filter by plugin _type')
+    .option('--registry <url>', 'Custom registry URL')
     .action(async (_options) => {
       try {
         // Read local .ragrc.json to see configured plugins
-        const configPath = path.join(process.cwd(), ".ragrc.json");
+        const configPath = path.join(process.cwd(), '.ragrc.json');
 
         try {
-          const configContent = await fs.readFile(configPath, "utf-8");
+          const configContent = await fs.readFile(configPath, 'utf-8');
           const _config = JSON.parse(configContent);
 
-          console.log("📦 Configured plugins:\n");
+          console.log('📦 Configured plugins:\n');
           // eslint-disable-line no-console
 
           const pluginTypes = [
-            "loader",
-            "embedder",
-            "retriever",
-            "llm",
-            "reranker",
+            'loader',
+            'embedder',
+            'retriever',
+            'llm',
+            'reranker',
           ];
 
           for (const _type of pluginTypes) {
@@ -484,22 +484,22 @@ function createPluginMarketplaceCommands() {
               // eslint-disable-line no-console
               for (const [name, spec] of Object.entries(plugins)) {
                 const version =
-                  typeof spec === "object"
-                    ? spec.version || "latest"
-                    : "latest";
+                  typeof spec === 'object'
+                    ? spec.version || 'latest'
+                    : 'latest';
                 console.log(`  ${name}@${version}`);
                 // eslint-disable-line no-console
               }
-              console.log("");
+              console.log('');
               // eslint-disable-line no-console
             }
           }
         } catch (error) {
-          console.log("No .ragrc.json found in current directory.");
+          console.log('No .ragrc.json found in current directory.');
           // eslint-disable-line no-console
         }
       } catch (error) {
-        logger.error("❌ Failed to list plugins:", error.message);
+        logger.error('❌ Failed to list plugins:', error.message);
         process.exit(1);
       }
     });
@@ -516,7 +516,7 @@ async function fetchRegistry(_registryUrl) {
   // In a real implementation, this would make an HTTP request
   // For now, return a mock registry
   return {
-    version: "1.0.0",
+    version: '1.0.0',
     plugins: {},
     updatedAt: new Date().toISOString(),
   };
@@ -538,7 +538,7 @@ function searchPlugins(_registry, _query, _options) {
     // Query matching
     if (_query) {
       const searchText =
-        `${name} ${plugin.metadata.description} ${plugin.metadata.keywords.join(" ")}`.toLowerCase();
+        `${name} ${plugin.metadata.description} ${plugin.metadata.keywords.join(' ')}`.toLowerCase();
       matches = matches && searchText.includes(_query.toLowerCase());
     }
 
@@ -589,18 +589,18 @@ function searchPlugins(_registry, _query, _options) {
  * @returns {Promise<void>}
  */
 async function addToRagrcConfig(_name, _version, _dev = false) {
-  const configPath = path.join(process.cwd(), ".ragrc.json");
+  const configPath = path.join(process.cwd(), '.ragrc.json');
 
   let _config = {};
   try {
-    const configContent = await fs.readFile(configPath, "utf-8");
+    const configContent = await fs.readFile(configPath, 'utf-8');
     _config = JSON.parse(configContent);
   } catch (error) {
     // File doesn't exist, create new config
   }
 
   // Determine plugin type (would need to be detected from registry)
-  const pluginType = "loader"; // Placeholder
+  const pluginType = 'loader'; // Placeholder
 
   if (!_config.plugins) {
     _config.plugins = {};
@@ -613,7 +613,7 @@ async function addToRagrcConfig(_name, _version, _dev = false) {
   _config.plugins[pluginType][_name] = {
     name: _name,
     version: _version,
-    source: "registry",
+    source: 'registry',
   };
 
   await fs.writeFile(configPath, JSON.stringify(_config, null, 2));
@@ -628,9 +628,9 @@ async function addToRagrcConfig(_name, _version, _dev = false) {
  */
 function generatePluginTemplate(_type, _name, _metadata) {
   const className = name
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
+    .join('');
 
   return `/**
  * ${metadata.description}
@@ -653,41 +653,41 @@ class ${className} {
 
   /**
    * ${
-     _type === "loader"
-       ? "Load documents from source"
-       : _type === "embedder"
-         ? "Generate embeddings for text chunks"
-         : _type === "retriever"
-           ? "Retrieve relevant documents"
-           : _type === "llm"
-             ? "Generate text using language model"
-             : "Rerank search results"
+     _type === 'loader'
+       ? 'Load documents from source'
+       : _type === 'embedder'
+         ? 'Generate embeddings for text chunks'
+         : _type === 'retriever'
+           ? 'Retrieve relevant documents'
+           : _type === 'llm'
+             ? 'Generate text using language model'
+             : 'Rerank search results'
    }
    * @param {any} input - Input data
    * @returns {Promise<any>} Processed output
    */
   async ${
-    _type === "loader"
-      ? "load"
-      : _type === "embedder"
-        ? "embed"
-        : _type === "retriever"
-          ? "retrieve"
-          : _type === "llm"
-            ? "generate"
-            : "rerank"
+    _type === 'loader'
+      ? 'load'
+      : _type === 'embedder'
+        ? 'embed'
+        : _type === 'retriever'
+          ? 'retrieve'
+          : _type === 'llm'
+            ? 'generate'
+            : 'rerank'
   }(input) {
     // TODO: Implement ${_type} logic
     throw new Error('${className}.${
-      _type === "loader"
-        ? "load"
-        : _type === "embedder"
-          ? "embed"
-          : _type === "retriever"
-            ? "retrieve"
-            : _type === "llm"
-              ? "generate"
-              : "rerank"
+      _type === 'loader'
+        ? 'load'
+        : _type === 'embedder'
+          ? 'embed'
+          : _type === 'retriever'
+            ? 'retrieve'
+            : _type === 'llm'
+              ? 'generate'
+              : 'rerank'
     } not implemented');
   }
 }
@@ -718,28 +718,28 @@ rag-pipeline plugin install ${name}
 
 \`\`\`javascript
 import { ${name
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("")} } from '${name}';
+    .join('')} } from '${name}';
 
 const ${_type} = new ${name
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("")}({
+    .join('')}({
   // Configuration options
 });
 
 // Use the ${_type}
 const result = await ${_type}.${
-    _type === "loader"
-      ? "load"
-      : _type === "embedder"
-        ? "embed"
-        : _type === "retriever"
-          ? "retrieve"
-          : _type === "llm"
-            ? "generate"
-            : "rerank"
+    _type === 'loader'
+      ? 'load'
+      : _type === 'embedder'
+        ? 'embed'
+        : _type === 'retriever'
+          ? 'retrieve'
+          : _type === 'llm'
+            ? 'generate'
+            : 'rerank'
   }(input);
 \`\`\`
 
@@ -762,7 +762,7 @@ ${metadata.license}
  * @returns {string} License content
  */
 function generateLicenseTemplate(_license, _author) {
-  if (_license === "MIT") {
+  if (_license === 'MIT') {
     return `MIT License
 
 Copyright (c) ${new Date().getFullYear()} ${_author}
@@ -801,9 +801,9 @@ All rights reserved.
  */
 function generateTestTemplate(_type, _name) {
   const className = _name
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
+    .join('');
 
   return `/**
  * Tests for ${_name} plugin
@@ -832,28 +832,28 @@ describe('${className}', () => {
   });
 
   describe('${
-    _type === "loader"
-      ? "load"
-      : _type === "embedder"
-        ? "embed"
-        : _type === "retriever"
-          ? "retrieve"
-          : _type === "llm"
-            ? "generate"
-            : "rerank"
+    _type === 'loader'
+      ? 'load'
+      : _type === 'embedder'
+        ? 'embed'
+        : _type === 'retriever'
+          ? 'retrieve'
+          : _type === 'llm'
+            ? 'generate'
+            : 'rerank'
   }', () => {
     it('should be implemented', async () => {
       // TODO: Add actual tests once method is implemented
       await expect(${_type}.${
-        _type === "loader"
-          ? "load"
-          : _type === "embedder"
-            ? "embed"
-            : _type === "retriever"
-              ? "retrieve"
-              : _type === "llm"
-                ? "generate"
-                : "rerank"
+        _type === 'loader'
+          ? 'load'
+          : _type === 'embedder'
+            ? 'embed'
+            : _type === 'retriever'
+              ? 'retrieve'
+              : _type === 'llm'
+                ? 'generate'
+                : 'rerank'
       }('test input'))
         .rejects.toThrow('not implemented');
     });

@@ -5,13 +5,13 @@
  * Author: Ali Kahwaji
  */
 
-const { logger } = require("./logger.js");
+const { logger } = require('./logger.js');
 
 // Keep a default sleeper that tests can override via options
 const defaultSleep = (ms) =>
   new Promise((res) => {
     const t = setTimeout(res, ms);
-    if (typeof t.unref === "function") t.unref();
+    if (typeof t.unref === 'function') t.unref();
   });
 
 /**
@@ -40,16 +40,17 @@ async function retry(fn, opts = {}) {
   const testNoopSleep = () => Promise.resolve();
   const sleep =
     injectedSleep ??
-    (process.env.NODE_ENV === "test"
+    (process.env.NODE_ENV === 'test'
       ? testNoopSleep
       : (ms) =>
           new Promise((r) => {
             const t = setTimeout(r, ms);
-            if (typeof t.unref === "function") t.unref();
+            if (typeof t.unref === 'function') t.unref();
           }));
 
   let attempt = 0; // 0-based attempt index
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       return await fn(attempt);
@@ -62,7 +63,7 @@ async function retry(fn, opts = {}) {
         ? Math.round(backoff * (0.5 + Math.random())) // 50%..150%
         : backoff;
 
-      if (typeof onDelay === "function") {
+      if (typeof onDelay === 'function') {
         onDelay(delay, attempt, err);
       }
 
@@ -77,7 +78,7 @@ async function retry(fn, opts = {}) {
 // Legacy wrapper for backward compatibility
 async function withRetry(
   _fn,
-  { retries = 3, initialDelay = 300, label = "operation" } = {},
+  { retries = 3, initialDelay = 300, label = 'operation' } = {},
 ) {
   return retry(_fn, {
     retries,

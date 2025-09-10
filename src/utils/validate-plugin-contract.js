@@ -5,7 +5,7 @@
  * File: /src/utils/validate-plugin-contract.js
  */
 
-const { pluginContracts } = require("../core/plugin-contracts.js"); // eslint-disable-line global-require
+const { pluginContracts } = require('../core/plugin-contracts.js'); // eslint-disable-line global-require
 
 /**
  * Validates that a plugin instance implements all required methods.
@@ -23,12 +23,12 @@ function validatePluginContract(type, instance, filePath) {
   const expectedMethods = contract.requiredMethods || pluginContracts[type];
 
   const missing = expectedMethods.filter(
-    (method) => typeof instance[method] !== "function",
+    (method) => typeof instance[method] !== 'function',
   );
 
   if (missing.length > 0) {
     throw new Error(
-      `[validatePluginContract] Plugin '${filePath}' is missing required methods for '${type}': ${missing.join(", ")}`,
+      `[validatePluginContract] Plugin '${filePath}' is missing required methods for '${type}': ${missing.join(', ')}`,
     );
   }
 }

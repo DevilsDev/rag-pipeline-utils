@@ -53,7 +53,7 @@ class ParallelEmbedder {
    */
   async embedBatch(chunks) {
     if (!Array.isArray(chunks) || chunks.length === 0) {
-      throw new Error("Invalid chunks provided. Expected non-empty array.");
+      throw new Error('Invalid chunks provided. Expected non-empty array.');
     }
 
     const batches = this.createBatches(chunks, this.batchSize);
@@ -80,7 +80,7 @@ class ParallelEmbedder {
     const failedBatches = [];
 
     batchResults.forEach((result, index) => {
-      if (result.status === "fulfilled") {
+      if (result.status === 'fulfilled') {
         successfulResults.push(result.value);
       } else {
         failedBatches.push({
@@ -217,7 +217,7 @@ class ParallelRetriever {
 
     // Process and sort results
     const successfulResults = results
-      .filter((result) => result.status === "fulfilled")
+      .filter((result) => result.status === 'fulfilled')
       .map((result) => result.value)
       .sort((a, b) => a.index - b.index)
       .map((item) => item.result);

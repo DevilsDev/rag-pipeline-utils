@@ -3,29 +3,29 @@
  * Public registry with ratings, reviews, downloads, and discovery
  */
 
-const fs = require("fs").promises; // eslint-disable-line global-require
-const path = require("path"); // eslint-disable-line global-require
-const crypto = require("crypto"); // eslint-disable-line global-require
-const { EventEmitter } = require("events"); // eslint-disable-line global-require
+const fs = require('fs').promises; // eslint-disable-line global-require
+const path = require('path'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
 
 function pickFetch(pref) {
   // Prefer a provided fetch if it is a function; otherwise fall back to globalThis.fetch if available.
-  if (typeof pref === "function") return pref;
-  if (typeof globalThis.fetch === "function") return globalThis.fetch;
+  if (typeof pref === 'function') return pref;
+  if (typeof globalThis.fetch === 'function') return globalThis.fetch;
   return null;
 }
 
 async function parseJsonSafe(res) {
   // Handle both mocked and real fetch responses:
   // some tests use only res.json(); others only res.text(); accommodate both.
-  if (res && typeof res.json === "function") {
+  if (res && typeof res.json === 'function') {
     try {
       return await res.json();
     } catch (_) {
       /* fall back */
     }
   }
-  if (res && typeof res.text === "function") {
+  if (res && typeof res.text === 'function') {
     const t = await res.text();
     if (!t) return {};
     try {
@@ -35,7 +35,7 @@ async function parseJsonSafe(res) {
     }
   }
   // If tests returned a plain object (already "parsed"):
-  if (res && typeof res === "object" && !("ok" in res)) {
+  if (res && typeof res === 'object' && !('ok' in res)) {
     return res;
   }
   return {};
@@ -46,11 +46,11 @@ class PluginHub extends EventEmitter {
     super();
 
     this._config = {
-      registryUrl: _options.registryUrl || "https://registry.rag-pipeline.dev",
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
       localCacheDir:
-        _options.localCacheDir || path.join(process.cwd(), ".rag-cache"),
+        _options.localCacheDir || path.join(process.cwd(), '.rag-cache'),
       apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
-      userAgent: _options.userAgent || "rag-pipeline-utils/2.1.8",
+      userAgent: _options.userAgent || 'rag-pipeline-utils/2.1.8',
       timeout: _options.timeout || 30000,
       maxRetries: _options.maxRetries || 3,
       fetch: _options.fetch, // optional injected fetch for tests
@@ -76,13 +76,13 @@ class PluginHub extends EventEmitter {
       verified: _options.verified,
       limit: _options.limit || 20,
       offset: _options.offset || 0,
-      sortBy: _options.sortBy || "relevance", // relevance, downloads, rating, updated
+      sortBy: _options.sortBy || 'relevance', // relevance, downloads, rating, updated
     };
 
     try {
       const response = await this._makeRequest(
-        "GET",
-        "/plugins/search",
+        'GET',
+        '/plugins/search',
         searchParams,
       );
 
@@ -101,7 +101,7 @@ class PluginHub extends EventEmitter {
         facets: response.facets || {},
       };
     } catch (error) {
-      this.emit("error", { type: "search_failed", query, error });
+      this.emit('error', { type: 'search_failed', query, error });
       throw new Error(`Plugin search failed: ${error.message}`);
     }
   }
@@ -122,7 +122,7 @@ class PluginHub extends EventEmitter {
     }
 
     try {
-      const response = await this._makeRequest("GET", `/plugins/${pluginId}`);
+      const response = await this._makeRequest('GET', `/plugins/${pluginId}`);
       const pluginInfo = this._normalizePluginInfo(response);
 
       // Cache the result
@@ -136,7 +136,7 @@ class PluginHub extends EventEmitter {
 
       return pluginInfo;
     } catch (error) {
-      this.emit("error", { type: "plugin_info_failed", pluginId, error });
+      this.emit('error', { type: 'plugin_info_failed', pluginId, error });
       throw new Error(`Failed to get plugin info: ${error.message}`);
     }
   }
@@ -144,12 +144,12 @@ class PluginHub extends EventEmitter {
   /**
    * Install plugin from the hub
    */
-  async installPlugin(pluginId, version = "latest", _options = {}) {
+  async installPlugin(pluginId, version = 'latest', _options = {}) {
     const installId = crypto.randomUUID();
     const startedAt = Date.now();
 
     try {
-      this.emit("install_start", { pluginId, version, installId });
+      this.emit('install_start', { pluginId, version, installId });
 
       // Get plugin info and verify
       const pluginInfo = await this.getPluginInfo(pluginId);
@@ -162,24 +162,24 @@ class PluginHub extends EventEmitter {
 
       // Security scan in sandbox
       if (_options.securityScan !== false) {
-        this.emit("install_progress", { installId, stage: "security_scan" });
+        this.emit('install_progress', { installId, stage: 'security_scan' });
         await this.sandbox.scanPlugin(pluginInfo);
       }
 
       // Download plugin
-      this.emit("install_progress", { installId, stage: "downloading" });
+      this.emit('install_progress', { installId, stage: 'downloading' });
       const downloadUrl = await this._getDownloadUrl(pluginId, version);
       const pluginData = await this._downloadPlugin(downloadUrl);
 
       // Verify integrity
-      this.emit("install_progress", { installId, stage: "verifying" });
+      this.emit('install_progress', { installId, stage: 'verifying' });
       await this._verifyPluginIntegrity(pluginData, pluginInfo.checksums);
 
       // Install in sandbox first
-      this.emit("install_progress", { installId, stage: "sandbox_install" });
+      this.emit('install_progress', { installId, stage: 'sandbox_install' });
       const sandboxResult = await this.sandbox.installPlugin(pluginData, {
         timeout: _options.sandboxTimeout || 30000,
-        memoryLimit: _options.memoryLimit || "512MB",
+        memoryLimit: _options.memoryLimit || '512MB',
         networkAccess: _options.networkAccess || false,
       });
 
@@ -188,7 +188,7 @@ class PluginHub extends EventEmitter {
       }
 
       // Install to main system
-      this.emit("install_progress", { installId, stage: "installing" });
+      this.emit('install_progress', { installId, stage: 'installing' });
       const installPath = await this._installPluginToSystem(
         pluginData,
         pluginInfo,
@@ -200,7 +200,7 @@ class PluginHub extends EventEmitter {
         installTime: Date.now() - startedAt,
       });
 
-      this.emit("install_complete", {
+      this.emit('install_complete', {
         pluginId,
         version,
         installId,
@@ -221,7 +221,7 @@ class PluginHub extends EventEmitter {
         error: error.message,
       });
 
-      this.emit("install_error", { pluginId, version, installId, error });
+      this.emit('install_error', { pluginId, version, installId, error });
       throw error;
     }
   }
@@ -233,33 +233,33 @@ class PluginHub extends EventEmitter {
     const publishId = crypto.randomUUID();
 
     try {
-      this.emit("publish_start", { pluginPath, publishId });
+      this.emit('publish_start', { pluginPath, publishId });
 
       // Validate plugin structure
-      this.emit("publish_progress", { publishId, stage: "validation" });
+      this.emit('publish_progress', { publishId, stage: 'validation' });
       const pluginInfo = await this._validatePluginForPublish(pluginPath);
 
       // Security scan
-      this.emit("publish_progress", { publishId, stage: "security_scan" });
+      this.emit('publish_progress', { publishId, stage: 'security_scan' });
       const securityReport = await this.sandbox.scanPlugin(pluginInfo);
-      if (securityReport.risk === "high") {
+      if (securityReport.risk === 'high') {
         throw new Error(
-          `Plugin failed security scan: ${securityReport.issues.join(", ")}`,
+          `Plugin failed security scan: ${securityReport.issues.join(', ')}`,
         );
       }
 
       // Package plugin
-      this.emit("publish_progress", { publishId, stage: "packaging" });
+      this.emit('publish_progress', { publishId, stage: 'packaging' });
       const packageData = await this._packagePlugin(pluginPath, pluginInfo);
 
       // Upload to registry
-      this.emit("publish_progress", { publishId, stage: "uploading" });
+      this.emit('publish_progress', { publishId, stage: 'uploading' });
       const response = await this._uploadPlugin(packageData, {
         ..._options,
         securityReport,
       });
 
-      this.emit("publish_complete", {
+      this.emit('publish_complete', {
         publishId,
         pluginId: response.pluginId,
         version: response.version,
@@ -268,7 +268,7 @@ class PluginHub extends EventEmitter {
 
       return response;
     } catch (error) {
-      this.emit("publish_error", { pluginPath, publishId, error });
+      this.emit('publish_error', { pluginPath, publishId, error });
       throw error;
     }
   }
@@ -278,12 +278,12 @@ class PluginHub extends EventEmitter {
    */
   async ratePlugin(pluginId, rating, review = null) {
     if (rating < 1 || rating > 5) {
-      throw new Error("Rating must be between 1 and 5");
+      throw new Error('Rating must be between 1 and 5');
     }
 
     try {
       const response = await this._makeRequest(
-        "POST",
+        'POST',
         `/plugins/${pluginId}/reviews`,
         {
           rating,
@@ -295,7 +295,7 @@ class PluginHub extends EventEmitter {
       this.analytics.trackReview(pluginId, rating);
       return response;
     } catch (error) {
-      this.emit("error", { type: "review_failed", pluginId, error });
+      this.emit('error', { type: 'review_failed', pluginId, error });
       throw new Error(`Failed to submit review: ${error.message}`);
     }
   }
@@ -306,12 +306,12 @@ class PluginHub extends EventEmitter {
   async getPluginReviews(pluginId, _options = {}) {
     try {
       const response = await this._makeRequest(
-        "GET",
+        'GET',
         `/plugins/${pluginId}/reviews`,
         {
           limit: _options.limit || 10,
           offset: _options.offset || 0,
-          sortBy: _options.sortBy || "helpful",
+          sortBy: _options.sortBy || 'helpful',
         },
       );
 
@@ -326,8 +326,8 @@ class PluginHub extends EventEmitter {
    */
   async getTrendingPlugins(_options = {}) {
     try {
-      const response = await this._makeRequest("GET", "/plugins/trending", {
-        period: _options.period || "week", // day, week, month
+      const response = await this._makeRequest('GET', '/plugins/trending', {
+        period: _options.period || 'week', // day, week, month
         category: _options.category,
         limit: _options.limit || 20,
       });
@@ -345,7 +345,7 @@ class PluginHub extends EventEmitter {
    */
   async getInstalledPlugins() {
     try {
-      const pluginsDir = path.join(this._config.localCacheDir, "plugins");
+      const pluginsDir = path.join(this._config.localCacheDir, 'plugins');
       const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
 
       const installed = [];
@@ -355,12 +355,12 @@ class PluginHub extends EventEmitter {
           const metadataPath = path.join(
             pluginsDir,
             entry.name,
-            "metadata.json",
+            'metadata.json',
           );
 
           try {
             const metadata = JSON.parse(
-              await fs.readFile(metadataPath, "utf8"),
+              await fs.readFile(metadataPath, 'utf8'),
             );
             installed.push({
               ...metadata,
@@ -385,11 +385,11 @@ class PluginHub extends EventEmitter {
   // ------------------------------
   async _makeRequest(method, endpoint, params = {}) {
     const doFetch = pickFetch(this._config.fetch);
-    if (!doFetch) throw new Error("fetch is not available in this environment");
+    if (!doFetch) throw new Error('fetch is not available in this environment');
 
     const url = new URL(endpoint, this._config.registryUrl);
 
-    if (method === "GET" && Object.keys(params).length > 0) {
+    if (method === 'GET' && Object.keys(params).length > 0) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           url.searchParams.append(key, String(value));
@@ -398,29 +398,29 @@ class PluginHub extends EventEmitter {
     }
 
     const headers = {
-      "User-Agent": this._config.userAgent,
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      'User-Agent': this._config.userAgent,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     };
     if (this._config.apiKey)
       headers.Authorization = `Bearer ${this._config.apiKey}`;
 
     const options = { method, headers };
 
-    if (method !== "GET" && Object.keys(params).length > 0) {
+    if (method !== 'GET' && Object.keys(params).length > 0) {
       options.body = JSON.stringify(params);
     }
 
     let lastError;
     for (let attempt = 0; attempt < this._config.maxRetries; attempt++) {
       const controller =
-        typeof AbortController !== "undefined" ? new AbortController() : null;
+        typeof AbortController !== 'undefined' ? new AbortController() : null;
       const t = this._config.timeout || 0;
       let timeoutId = null;
       if (controller && t > 0) {
         timeoutId = setTimeout(() => controller.abort(), t);
         // In Node/Jest, this prevents timers from keeping the process alive
-        if (typeof timeoutId?.unref === "function") timeoutId.unref();
+        if (typeof timeoutId?.unref === 'function') timeoutId.unref();
       }
 
       try {
@@ -429,8 +429,8 @@ class PluginHub extends EventEmitter {
           signal: controller ? controller.signal : undefined,
         });
 
-        if (!res || !("ok" in res)) {
-          throw new Error("Invalid fetch response");
+        if (!res || !('ok' in res)) {
+          throw new Error('Invalid fetch response');
         }
 
         if (!res.ok) {
@@ -493,7 +493,7 @@ class PluginHub extends EventEmitter {
 
   async _getDownloadUrl(pluginId, version) {
     const response = await this._makeRequest(
-      "GET",
+      'GET',
       `/plugins/${pluginId}/download`,
       { version },
     );
@@ -502,47 +502,47 @@ class PluginHub extends EventEmitter {
 
   async _downloadPlugin(url) {
     const doFetch = pickFetch(this._config.fetch);
-    if (!doFetch) throw new Error("fetch is not available in this environment");
+    if (!doFetch) throw new Error('fetch is not available in this environment');
 
     const res = await doFetch(url);
     if (!res || !res.ok)
       throw new Error(
-        `Download failed: ${res ? res.statusText : "no response"}`,
+        `Download failed: ${res ? res.statusText : 'no response'}`,
       );
 
-    if (typeof res.arrayBuffer === "function") {
+    if (typeof res.arrayBuffer === 'function') {
       const ab = await res.arrayBuffer();
       return Buffer.from(ab);
     }
 
-    if (typeof res.buffer === "function") {
+    if (typeof res.buffer === 'function') {
       return await res.buffer();
     }
 
     // Very mocked case: tests might hand back a plain Buffer-like in res.body
     if (res.body) return Buffer.from(res.body);
 
-    throw new Error("Unsupported response body for download");
+    throw new Error('Unsupported response body for download');
   }
 
   async _verifyPluginIntegrity(data, checksums) {
     if (!checksums || !checksums.sha256) {
-      throw new Error("No checksums available for verification");
+      throw new Error('No checksums available for verification');
     }
 
-    const hash = crypto.createHash("sha256");
+    const hash = crypto.createHash('sha256');
     hash.update(Buffer.isBuffer(data) ? data : Buffer.from(data));
-    const calculatedHash = hash.digest("hex");
+    const calculatedHash = hash.digest('hex');
 
     if (calculatedHash !== checksums.sha256) {
-      throw new Error("Plugin integrity verification failed");
+      throw new Error('Plugin integrity verification failed');
     }
   }
 
   async _installPluginToSystem(pluginData, pluginInfo) {
     const installDir = path.join(
       this._config.localCacheDir,
-      "plugins",
+      'plugins',
       pluginInfo.id,
     );
 
@@ -550,7 +550,7 @@ class PluginHub extends EventEmitter {
     await fs.mkdir(installDir, { recursive: true });
 
     // Simulated install: write metadata only
-    const metadataPath = path.join(installDir, "metadata.json");
+    const metadataPath = path.join(installDir, 'metadata.json');
     await fs.writeFile(
       metadataPath,
       JSON.stringify(
@@ -570,11 +570,11 @@ class PluginHub extends EventEmitter {
 
   async _validatePluginForPublish(pluginPath) {
     // Validate plugin structure and metadata
-    const packageJsonPath = path.join(pluginPath, "package.json");
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+    const packageJsonPath = path.join(pluginPath, 'package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
 
     // Required fields validation
-    const required = ["name", "version", "description", "main"];
+    const required = ['name', 'version', 'description', 'main'];
     for (const field of required) {
       if (!packageJson[field]) {
         throw new Error(`Missing required field: ${field}`);
@@ -583,7 +583,7 @@ class PluginHub extends EventEmitter {
 
     // Plugin-specific validation
     if (!packageJson.ragPlugin) {
-      throw new Error("Missing ragPlugin configuration in package.json");
+      throw new Error('Missing ragPlugin configuration in package.json');
     }
 
     return {
@@ -601,7 +601,7 @@ class PluginHub extends EventEmitter {
   }
 
   async _uploadPlugin(packageData, _options) {
-    return await this._makeRequest("POST", "/plugins/publish", {
+    return await this._makeRequest('POST', '/plugins/publish', {
       ...packageData,
       ..._options,
     });
@@ -611,11 +611,11 @@ class PluginHub extends EventEmitter {
     try {
       const metadataPath = path.join(
         this._config.localCacheDir,
-        "plugins",
+        'plugins',
         pluginId,
-        "metadata.json",
+        'metadata.json',
       );
-      const metadata = JSON.parse(await fs.readFile(metadataPath, "utf8"));
+      const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf8'));
       return metadata.version;
     } catch {
       return null;
@@ -631,23 +631,23 @@ class PluginAnalytics {
     this.events = [];
 
     // In tests, avoid background timers that outlive the suite
-    if (process.env.NODE_ENV !== "test") {
+    if (process.env.NODE_ENV !== 'test') {
       this.flushInterval = setInterval(() => this._flush(), 60000); // Flush every minute
-      if (typeof this.flushInterval?.unref === "function")
+      if (typeof this.flushInterval?.unref === 'function')
         this.flushInterval.unref();
     }
   }
 
   trackSearch(query, resultCount) {
-    this._track("search", { query, resultCount, timestamp: Date.now() });
+    this._track('search', { query, resultCount, timestamp: Date.now() });
   }
 
   trackPluginView(pluginId) {
-    this._track("plugin_view", { pluginId, timestamp: Date.now() });
+    this._track('plugin_view', { pluginId, timestamp: Date.now() });
   }
 
   trackInstallation(pluginId, version, result) {
-    this._track("installation", {
+    this._track('installation', {
       pluginId,
       version,
       success: !!result.success,
@@ -658,12 +658,12 @@ class PluginAnalytics {
   }
 
   trackReview(pluginId, rating) {
-    this._track("review", { pluginId, rating, timestamp: Date.now() });
+    this._track('review', { pluginId, rating, timestamp: Date.now() });
   }
 
   async getLastUsed(pluginId) {
     const usageEvents = this.events.filter(
-      (e) => e.type === "plugin_usage" && e.data.pluginId === pluginId,
+      (e) => e.type === 'plugin_usage' && e.data.pluginId === pluginId,
     );
     if (usageEvents.length === 0) return null;
     return Math.max(...usageEvents.map((e) => e.timestamp));
@@ -696,21 +696,21 @@ class PluginAnalytics {
 
     try {
       await doFetch(
-        `${this._config.registryUrl.replace(/\/+$/, "")}/analytics`,
+        `${this._config.registryUrl.replace(/\/+$/, '')}/analytics`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            "User-Agent": this._config.userAgent,
+            'Content-Type': 'application/json',
+            'User-Agent': this._config.userAgent,
           },
           body: JSON.stringify({ events: eventsToFlush }),
         },
       );
     } catch (error) {
       // Silence warnings during tests to avoid "Cannot log after tests are done"
-      if (process.env.NODE_ENV !== "test") {
+      if (process.env.NODE_ENV !== 'test') {
         // eslint-disable-next-line no-console
-        console.warn("Analytics flush failed:", error.message);
+        console.warn('Analytics flush failed:', error.message);
       }
     }
   }
@@ -751,7 +751,7 @@ class PluginSandbox {
     }
 
     return {
-      risk: risks.length > 0 ? "high" : warnings.length > 0 ? "medium" : "low",
+      risk: risks.length > 0 ? 'high' : warnings.length > 0 ? 'medium' : 'low',
       issues: [...risks, ...warnings],
       recommendations: this._generateRecommendations(risks, warnings),
     };
@@ -779,16 +779,16 @@ class PluginSandbox {
   }
 
   _isSuspiciousDependency(dep) {
-    const suspicious = ["eval", "vm2", "child_process", "fs-extra", "shelljs"];
+    const suspicious = ['eval', 'vm2', 'child_process', 'fs-extra', 'shelljs'];
     return suspicious.some((s) => String(dep).includes(s));
   }
 
   _isHighRiskPermission(permission) {
     const highRisk = [
-      "filesystem:write",
-      "network:external",
-      "process:spawn",
-      "system:admin",
+      'filesystem:write',
+      'network:external',
+      'process:spawn',
+      'system:admin',
     ];
     return highRisk.includes(permission);
   }
@@ -796,11 +796,11 @@ class PluginSandbox {
   _generateRecommendations(risks, warnings) {
     const recommendations = [];
     if (risks.length > 0) {
-      recommendations.push("Review plugin source code before installation");
-      recommendations.push("Install in restricted environment");
+      recommendations.push('Review plugin source code before installation');
+      recommendations.push('Install in restricted environment');
     }
     if (warnings.length > 0) {
-      recommendations.push("Monitor plugin behavior after installation");
+      recommendations.push('Monitor plugin behavior after installation');
     }
     return recommendations;
   }
@@ -808,7 +808,7 @@ class PluginSandbox {
   async _runInSandbox(_sandboxId, fn, _options) {
     const timeout = Math.max(1, Number(_options?.timeout || 30000));
     const timerPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Sandbox timeout")), timeout),
+      setTimeout(() => reject(new Error('Sandbox timeout')), timeout),
     );
     return Promise.race([fn(), timerPromise]);
   }

@@ -448,7 +448,7 @@ class IntegrationTemplates {
   /**
    * Generate integration code from template
    */
-  generateIntegration(templateId, _config = {}) {
+  generateIntegration(templateId, userConfig = {}) {
     const template = this.templates.get(templateId);
     if (!template) {
       throw new Error(`Template ${templateId} not found`);
@@ -456,8 +456,8 @@ class IntegrationTemplates {
 
     // Validate required config
     const missingRequired = [];
-    Object.entries(template._config).forEach(([key, configDef]) => {
-      if (configDef.required && !_config[key]) {
+    Object.entries(template.config).forEach(([key, configDef]) => {
+      if (configDef.required && !userConfig[key]) {
         missingRequired.push(key);
       }
     });
@@ -470,15 +470,15 @@ class IntegrationTemplates {
 
     // Merge with defaults
     const finalConfig = {};
-    Object.entries(template._config).forEach(([key, configDef]) => {
+    Object.entries(template.config).forEach(([key, configDef]) => {
       finalConfig[key] =
-        _config[key] !== undefined ? _config[key] : configDef.default;
+        userConfig[key] !== undefined ? userConfig[key] : configDef.default;
     });
 
     return {
       name: template.name,
-      _type: template._type,
-      _config: finalConfig,
+      type: template.type,
+      config: finalConfig,
       dependencies: template.dependencies || [],
       usage: template.usage,
       setupInstructions: this.generateSetupInstructions(template, finalConfig),
@@ -558,7 +558,7 @@ class IntegrationTemplates {
 
     templates.forEach((template) => {
       categories[template.category] = (categories[template.category] || 0) + 1;
-      types[template._type] = (types[template._type] || 0) + 1;
+      types[template.type] = (types[template.type] || 0) + 1;
     });
 
     return {
@@ -568,6 +568,98 @@ class IntegrationTemplates {
       totalCategories: this.categories.size,
     };
   }
+
+  /**
+   * Get template statistics (alias for tests)
+   */
+  getTemplateStats() {
+    return this.getStatistics();
+  }
 }
 
+// Create a singleton instance for module-level exports
+const defaultInstance = new IntegrationTemplates();
+
+// Module-level _config object with templates
+const _config = {
+  llm: {
+    "openai-gpt4": {
+      name: "OpenAI GPT-4",
+      category: "llm-providers",
+      description: "OpenAI GPT-4 language model integration",
+      type: "llm",
+      config: {
+        apiKey: {
+          _type: "string",
+          required: true,
+          secret: true,
+          description: "OpenAI API key",
+        },
+        model: { _type: "string", default: "gpt-4", description: "Model name" },
+        temperature: {
+          _type: "number",
+          default: 0.7,
+          description: "Sampling temperature",
+        },
+        maxTokens: {
+          _type: "number",
+          default: 1000,
+          description: "Maximum tokens to generate",
+        },
+      },
+      dependencies: ["openai"],
+      usage: "Generate responses using OpenAI GPT-4",
+    },
+  },
+  loader: {
+    confluence: {
+      name: "Atlassian Confluence",
+      category: "data-sources",
+      description: "Connect to Confluence spaces and pages",
+      type: "loader",
+      config: {
+        baseUrl: {
+          _type: "string",
+          required: true,
+          description: "Confluence base URL",
+        },
+        username: {
+          _type: "string",
+          required: true,
+          description: "Username or email",
+        },
+        apiToken: {
+          _type: "string",
+          required: true,
+          secret: true,
+          description: "API token",
+        },
+      },
+      dependencies: ["axios"],
+      usage: "Load documents from Confluence spaces and pages",
+    },
+  },
+};
+
+// Module-level functions
+function generateIntegration(templateKey, userConfig = {}) {
+  return defaultInstance.generateIntegration(templateKey, userConfig);
+}
+
+function getTemplateStats() {
+  return defaultInstance.getTemplateStats();
+}
+
+function addTemplate(key, def) {
+  return defaultInstance.addTemplate(key, def);
+}
+
+// Export both class and module-level API
 module.exports = IntegrationTemplates;
+module.exports._config = _config;
+module.exports.generateIntegration = generateIntegration;
+module.exports.getTemplateStats = getTemplateStats;
+module.exports.addTemplate = addTemplate;
+
+// CJS+ESM interop pattern
+module.exports.default = module.exports;

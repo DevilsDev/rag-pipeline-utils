@@ -1,10 +1,10 @@
 // src/ci/workflow-analyzer.js
 const TRUSTED = new Set([
-  "actions/checkout",
-  "actions/setup-node",
-  "step-security/harden-runner",
-  "codecov/codecov-action",
-  "ossf/scorecard-action",
+  'actions/checkout',
+  'actions/setup-node',
+  'step-security/harden-runner',
+  'codecov/codecov-action',
+  'ossf/scorecard-action',
 ]);
 
 function isPinned(ref) {
@@ -22,8 +22,8 @@ function analyzeWorkflows(workflows) {
   for (const wf of workflows) {
     // permissions (treat release.yml as allowed-write for tagging)
     if (
-      wf.file !== "release.yml" &&
-      wf.permission === "excessive_write_access"
+      wf.file !== 'release.yml' &&
+      wf.permission === 'excessive_write_access'
     ) {
       // ignore to satisfy test expecting 0
       // (adjust here if you truly want to fail these)
@@ -31,7 +31,7 @@ function analyzeWorkflows(workflows) {
 
     for (const step of wf.steps || []) {
       const ref = `${step.uses}`;
-      const name = ref.split("@")[0];
+      const name = ref.split('@')[0];
       if (!isPinned(ref))
         unpinnedActions.push({ file: wf.file, job: wf.job, action: ref });
       if (!TRUSTED.has(name)) {

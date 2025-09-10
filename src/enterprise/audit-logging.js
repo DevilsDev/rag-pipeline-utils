@@ -3,13 +3,13 @@
  * Compliance-grade activity tracking with immutable logs
  */
 
-const fs = require("fs").promises;
+const fs = require('fs').promises;
 // eslint-disable-line global-require
-const path = require("path");
+const path = require('path');
 // eslint-disable-line global-require
-const crypto = require("crypto");
+const crypto = require('crypto');
 // eslint-disable-line global-require
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 
 class AuditLogger extends EventEmitter {
@@ -19,14 +19,14 @@ class AuditLogger extends EventEmitter {
     this._config = {
       logDir:
         _options.logDir ||
-        path.join(process.cwd(), ".rag-enterprise", "audit-logs"),
+        path.join(process.cwd(), '.rag-enterprise', 'audit-logs'),
       retention: {
         days: _options.retentionDays || 2555, // 7 years default for compliance
         maxSizeMB: _options.maxLogSizeMB || 1000,
         compressionEnabled: _options.compressionEnabled !== false,
       },
       compliance: {
-        standards: _options.standards || ["SOC2", "GDPR", "HIPAA", "PCI-DSS"],
+        standards: _options.standards || ['SOC2', 'GDPR', 'HIPAA', 'PCI-DSS'],
         immutable: _options.immutable !== false,
         encryption: _options.encryption !== false,
         digitalSigning: _options.digitalSigning !== false,
@@ -38,15 +38,15 @@ class AuditLogger extends EventEmitter {
         webhookUrl: _options.webhookUrl,
       },
       categories: {
-        authentication: { level: "HIGH", retention: 2555 },
-        authorization: { level: "HIGH", retention: 2555 },
-        dataAccess: { level: "MEDIUM", retention: 1825 }, // 5 years
-        dataModification: { level: "HIGH", retention: 2555 },
-        systemChanges: { level: "HIGH", retention: 2555 },
-        userActivity: { level: "LOW", retention: 365 },
-        apiAccess: { level: "MEDIUM", retention: 1095 }, // 3 years
-        pluginActivity: { level: "MEDIUM", retention: 1095 },
-        complianceEvents: { level: "CRITICAL", retention: 3650 }, // 10 years
+        authentication: { level: 'HIGH', retention: 2555 },
+        authorization: { level: 'HIGH', retention: 2555 },
+        dataAccess: { level: 'MEDIUM', retention: 1825 }, // 5 years
+        dataModification: { level: 'HIGH', retention: 2555 },
+        systemChanges: { level: 'HIGH', retention: 2555 },
+        userActivity: { level: 'LOW', retention: 365 },
+        apiAccess: { level: 'MEDIUM', retention: 1095 }, // 3 years
+        pluginActivity: { level: 'MEDIUM', retention: 1095 },
+        complianceEvents: { level: 'CRITICAL', retention: 3650 }, // 10 years
       },
       ..._options,
     };
@@ -66,13 +66,13 @@ class AuditLogger extends EventEmitter {
   async _initializeAuditSystem() {
     // Create audit log directories
     await fs.mkdir(this._config.logDir, { recursive: true });
-    await fs.mkdir(path.join(this._config.logDir, "daily"), {
+    await fs.mkdir(path.join(this._config.logDir, 'daily'), {
       recursive: true,
     });
-    await fs.mkdir(path.join(this._config.logDir, "archived"), {
+    await fs.mkdir(path.join(this._config.logDir, 'archived'), {
       recursive: true,
     });
-    await fs.mkdir(path.join(this._config.logDir, "integrity"), {
+    await fs.mkdir(path.join(this._config.logDir, 'integrity'), {
       recursive: true,
     });
 
@@ -81,13 +81,13 @@ class AuditLogger extends EventEmitter {
       this.flushTimer = setInterval(() => {
         this._flushLogs();
       }, this._config.realtime.flushInterval);
-      if (typeof this.flushTimer.unref === "function") this.flushTimer.unref();
+      if (typeof this.flushTimer.unref === 'function') this.flushTimer.unref();
     }
 
     // Initialize integrity chain
     await this._initializeIntegrityChain();
 
-    this.emit("audit_system_initialized");
+    this.emit('audit_system_initialized');
   }
 
   /**
@@ -95,7 +95,7 @@ class AuditLogger extends EventEmitter {
    */
   async logAuthentication(event) {
     const auditEvent = {
-      _category: "authentication",
+      _category: 'authentication',
       action: event._action, // login, logout, login_failed, password_change, mfa_enabled
       tenantId: event._tenantId,
       userId: event._userId,
@@ -115,7 +115,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "authentication",
+          'authentication',
           event._action,
           event.result,
         ),
@@ -130,7 +130,7 @@ class AuditLogger extends EventEmitter {
    */
   async logAuthorization(event) {
     const auditEvent = {
-      _category: "authorization",
+      _category: 'authorization',
       action: event._action, // access_granted, access_denied, permission_changed
       tenantId: event._tenantId,
       userId: event._userId,
@@ -152,7 +152,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "authorization",
+          'authorization',
           event._action,
           event.result,
         ),
@@ -167,7 +167,7 @@ class AuditLogger extends EventEmitter {
    */
   async logDataAccess(event) {
     const auditEvent = {
-      _category: "dataAccess",
+      _category: 'dataAccess',
       action: event._action, // read, query, export, download
       tenantId: event._tenantId,
       userId: event._userId,
@@ -190,7 +190,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "dataAccess",
+          'dataAccess',
           event._action,
           event.result,
         ),
@@ -205,7 +205,7 @@ class AuditLogger extends EventEmitter {
    */
   async logDataModification(event) {
     const auditEvent = {
-      _category: "dataModification",
+      _category: 'dataModification',
       action: event._action, // create, update, delete, purge
       tenantId: event._tenantId,
       userId: event._userId,
@@ -229,7 +229,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "dataModification",
+          'dataModification',
           event._action,
           event.result,
         ),
@@ -244,7 +244,7 @@ class AuditLogger extends EventEmitter {
    */
   async logSystemChanges(event) {
     const auditEvent = {
-      _category: "systemChanges",
+      _category: 'systemChanges',
       action: event._action, // config_change, user_management, role_change, integration_change
       tenantId: event._tenantId,
       userId: event._userId,
@@ -265,7 +265,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "systemChanges",
+          'systemChanges',
           event._action,
           event.result,
         ),
@@ -280,7 +280,7 @@ class AuditLogger extends EventEmitter {
    */
   async logAPIAccess(event) {
     const auditEvent = {
-      _category: "apiAccess",
+      _category: 'apiAccess',
       action: event._action, // api_call, rate_limit_hit, api_key_used
       tenantId: event._tenantId,
       userId: event._userId,
@@ -306,7 +306,7 @@ class AuditLogger extends EventEmitter {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
         _severity: this._calculateSeverity(
-          "apiAccess",
+          'apiAccess',
           event._action,
           event.result,
         ),
@@ -321,7 +321,7 @@ class AuditLogger extends EventEmitter {
    */
   async logComplianceEvent(event) {
     const auditEvent = {
-      _category: "complianceEvents",
+      _category: 'complianceEvents',
       action: event._action, // data_retention, privacy_request, breach_detected, audit_requested
       tenantId: event._tenantId,
       compliance: {
@@ -341,7 +341,7 @@ class AuditLogger extends EventEmitter {
       metadata: {
         timestamp: new Date().toISOString(),
         correlationId: event._correlationId || crypto.randomUUID(),
-        _severity: "CRITICAL",
+        _severity: 'CRITICAL',
       },
     };
 
@@ -372,7 +372,7 @@ class AuditLogger extends EventEmitter {
     this.logBuffer.push(auditEvent);
 
     // Immediate flush for critical events
-    if (auditEvent.metadata._severity === "CRITICAL") {
+    if (auditEvent.metadata._severity === 'CRITICAL') {
       await this._flushLogs();
     }
 
@@ -381,7 +381,7 @@ class AuditLogger extends EventEmitter {
       await this._flushLogs();
     }
 
-    this.emit("audit_logged", {
+    this.emit('audit_logged', {
       _category: auditEvent._category,
       _action: auditEvent._action,
       _severity: auditEvent.metadata._severity,
@@ -400,17 +400,17 @@ class AuditLogger extends EventEmitter {
     const logsToFlush = [...this.logBuffer];
     this.logBuffer = [];
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     const logFile = path.join(
       this._config.logDir,
-      "daily",
+      'daily',
       `audit-${today}.jsonl`,
     );
 
     try {
       // Write logs in JSONL format
       const logLines =
-        logsToFlush.map((log) => JSON.stringify(log)).join("\n") + "\n";
+        logsToFlush.map((log) => JSON.stringify(log)).join('\n') + '\n';
       await fs.appendFile(logFile, logLines);
 
       // Update integrity chain
@@ -421,11 +421,11 @@ class AuditLogger extends EventEmitter {
         await this._sendToWebhook(logsToFlush);
       }
 
-      this.emit("logs_flushed", { count: logsToFlush.length, file: logFile });
+      this.emit('logs_flushed', { count: logsToFlush.length, file: logFile });
     } catch (error) {
       // Re-add logs to buffer on failure
       this.logBuffer.unshift(...logsToFlush);
-      this.emit("flush_failed", {
+      this.emit('flush_failed', {
         error: error.message,
         count: logsToFlush.length,
       });
@@ -533,13 +533,13 @@ class AuditLogger extends EventEmitter {
 
     // Analyze logs for compliance
     for (const log of logs.results) {
-      report.summary[log._category + "Events"]++;
+      report.summary[log._category + 'Events']++;
 
-      if (log.metadata._severity === "CRITICAL") {
+      if (log.metadata._severity === 'CRITICAL') {
         report.summary.criticalEvents++;
       }
 
-      if (log.result === "failure" || log.result === "blocked") {
+      if (log.result === 'failure' || log.result === 'blocked') {
         report.summary.failedEvents++;
       }
 
@@ -569,11 +569,11 @@ class AuditLogger extends EventEmitter {
 
     const integrityFile = path.join(
       this._config.logDir,
-      "integrity",
-      "chain.json",
+      'integrity',
+      'chain.json',
     );
     const _integrityChain = JSON.parse(
-      await fs.readFile(integrityFile, "utf8"),
+      await fs.readFile(integrityFile, 'utf8'),
     );
 
     const verification = {
@@ -616,7 +616,7 @@ class AuditLogger extends EventEmitter {
         if (log.signature && !(await this._verifySignature(log))) {
           verification.tamperedLogs.push({
             _correlationId: log.metadata._correlationId,
-            reason: "invalid_signature",
+            reason: 'invalid_signature',
             file: file,
           });
           verification.verified = false;
@@ -638,28 +638,28 @@ class AuditLogger extends EventEmitter {
     };
 
     return crypto
-      .createHash("sha256")
+      .createHash('sha256')
       .update(JSON.stringify(data))
-      .digest("hex");
+      .digest('hex');
   }
 
   async _encryptSensitiveFields(auditEvent) {
-    const sensitiveFields = ["details", "data", "request"];
+    const sensitiveFields = ['details', 'data', 'request'];
 
     for (const field of sensitiveFields) {
       if (auditEvent[field]) {
-        const cipher = crypto.createCipher("aes-256-gcm", this.encryptionKey);
+        const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
         let encrypted = cipher.update(
           JSON.stringify(auditEvent[field]),
-          "utf8",
-          "hex",
+          'utf8',
+          'hex',
         );
-        encrypted += cipher.final("hex");
+        encrypted += cipher.final('hex');
 
         auditEvent[field] = {
           encrypted: true,
           data: encrypted,
-          authTag: cipher.getAuthTag().toString("hex"),
+          authTag: cipher.getAuthTag().toString('hex'),
         };
       }
     }
@@ -668,23 +668,23 @@ class AuditLogger extends EventEmitter {
   }
 
   async _decryptAuditEvent(auditEvent) {
-    const sensitiveFields = ["details", "data", "request"];
+    const sensitiveFields = ['details', 'data', 'request'];
 
     for (const field of sensitiveFields) {
       if (auditEvent[field] && auditEvent[field].encrypted) {
         try {
           const decipher = crypto.createDecipher(
-            "aes-256-gcm",
+            'aes-256-gcm',
             this.encryptionKey,
           );
-          decipher.setAuthTag(Buffer.from(auditEvent[field].authTag, "hex"));
+          decipher.setAuthTag(Buffer.from(auditEvent[field].authTag, 'hex'));
 
           let decrypted = decipher.update(
             auditEvent[field].data,
-            "hex",
-            "utf8",
+            'hex',
+            'utf8',
           );
-          decrypted += decipher.final("utf8");
+          decrypted += decipher.final('utf8');
 
           auditEvent[field] = JSON.parse(decrypted);
         } catch (error) {
@@ -699,64 +699,64 @@ class AuditLogger extends EventEmitter {
   _calculateSeverity(_category, _action, result) {
     const severityMatrix = {
       authentication: {
-        login_failed: result === "blocked" ? "HIGH" : "MEDIUM",
-        login: "LOW",
-        logout: "LOW",
-        password_change: "MEDIUM",
-        mfa_enabled: "MEDIUM",
+        login_failed: result === 'blocked' ? 'HIGH' : 'MEDIUM',
+        login: 'LOW',
+        logout: 'LOW',
+        password_change: 'MEDIUM',
+        mfa_enabled: 'MEDIUM',
       },
       authorization: {
-        access_denied: "HIGH",
-        access_granted: "LOW",
-        permission_changed: "HIGH",
+        access_denied: 'HIGH',
+        access_granted: 'LOW',
+        permission_changed: 'HIGH',
       },
       dataAccess: {
-        read: "LOW",
-        export: "MEDIUM",
-        query: "LOW",
+        read: 'LOW',
+        export: 'MEDIUM',
+        query: 'LOW',
       },
       dataModification: {
-        delete: "HIGH",
-        purge: "CRITICAL",
-        create: "LOW",
-        update: "MEDIUM",
+        delete: 'HIGH',
+        purge: 'CRITICAL',
+        create: 'LOW',
+        update: 'MEDIUM',
       },
       systemChanges: {
-        config_change: "HIGH",
-        user_management: "HIGH",
-        role_change: "HIGH",
+        config_change: 'HIGH',
+        user_management: 'HIGH',
+        role_change: 'HIGH',
       },
     };
 
-    return severityMatrix[_category]?.[_action] || "MEDIUM";
+    return severityMatrix[_category]?.[_action] || 'MEDIUM';
   }
 
   _sanitizeQuery(query) {
     // Remove sensitive data from queries
-    return query.replace(/password|token|key|secret/gi, "[REDACTED]");
+    return query.replace(/password|token|key|secret/gi, '[REDACTED]');
   }
 
   _sanitizeValue(value) {
     if (
-      typeof value === "string" &&
-      (value.includes("password") ||
-        value.includes("token") ||
-        value.includes("key"))
+      typeof value === 'string' &&
+      (value.includes('password') ||
+        value.includes('token') ||
+        value.includes('key'))
     ) {
-      return "[REDACTED]";
+      return '[REDACTED]';
     }
     return value;
   }
 
   _sanitizeParameters(params) {
     const sanitized = { ...params };
-    const sensitiveKeys = ["password", "token", "key", "secret", "credential"];
+    const sensitiveKeys = ['password', 'token', 'key', 'secret', 'credential'];
 
     for (const key of Object.keys(sanitized)) {
       if (
         sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))
       ) {
-        sanitized[key] = "[REDACTED]";
+        sanitized[key] = '[REDACTED]';
       }
     }
 
@@ -765,9 +765,9 @@ class AuditLogger extends EventEmitter {
 
   _hashApiKey(apiKey) {
     return crypto
-      .createHash("sha256")
+      .createHash('sha256')
       .update(apiKey)
-      .digest("hex")
+      .digest('hex')
       .substring(0, 16);
   }
 
@@ -782,8 +782,8 @@ class AuditLogger extends EventEmitter {
   async _initializeIntegrityChain() {
     const integrityFile = path.join(
       this._config.logDir,
-      "integrity",
-      "chain.json",
+      'integrity',
+      'chain.json',
     );
 
     try {
@@ -792,7 +792,7 @@ class AuditLogger extends EventEmitter {
       // Create initial integrity chain
       const initialChain = {
         created: new Date().toISOString(),
-        lastHash: crypto.createHash("sha256").update("genesis").digest("hex"),
+        lastHash: crypto.createHash('sha256').update('genesis').digest('hex'),
         sequence: 0,
       };
 
@@ -803,10 +803,10 @@ class AuditLogger extends EventEmitter {
   async _updateIntegrityChain(logs) {
     const integrityFile = path.join(
       this._config.logDir,
-      "integrity",
-      "chain.json",
+      'integrity',
+      'chain.json',
     );
-    const chain = JSON.parse(await fs.readFile(integrityFile, "utf8"));
+    const chain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
 
     for (const log of logs) {
       const blockData = {
@@ -817,9 +817,9 @@ class AuditLogger extends EventEmitter {
       };
 
       chain.lastHash = crypto
-        .createHash("sha256")
+        .createHash('sha256')
         .update(JSON.stringify(blockData))
-        .digest("hex");
+        .digest('hex');
       chain.sequence = log.sequence;
     }
 
@@ -830,9 +830,9 @@ class AuditLogger extends EventEmitter {
   async _signAuditEvent(auditEvent) {
     const data = JSON.stringify(auditEvent);
     return crypto
-      .createHmac("sha256", this.signingKey)
+      .createHmac('sha256', this.signingKey)
       .update(data)
-      .digest("hex");
+      .digest('hex');
   }
 
   async _verifySignature(auditEvent) {
@@ -846,9 +846,9 @@ class AuditLogger extends EventEmitter {
     const currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split("T")[0];
+      const dateStr = currentDate.toISOString().split('T')[0];
       const filename = `audit-${dateStr}.jsonl`;
-      const filepath = path.join(this._config.logDir, "daily", filename);
+      const filepath = path.join(this._config.logDir, 'daily', filename);
 
       try {
         await fs.access(filepath);
@@ -864,10 +864,10 @@ class AuditLogger extends EventEmitter {
   }
 
   async _readLogFile(filepath) {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await fs.readFile(filepath, 'utf8');
     return content
       .trim()
-      .split("\n")
+      .split('\n')
       .map((line) => JSON.parse(line));
   }
 
@@ -895,17 +895,17 @@ class AuditLogger extends EventEmitter {
     // Mock compliance checking - would integrate with actual compliance frameworks
     const requirements = {
       GDPR: [
-        "data_processing_lawfulness",
-        "consent_management",
-        "data_subject_rights",
+        'data_processing_lawfulness',
+        'consent_management',
+        'data_subject_rights',
       ],
-      HIPAA: ["access_controls", "audit_logs", "data_encryption"],
-      SOC2: ["access_controls", "system_monitoring", "incident_response"],
-      "PCI-DSS": ["access_controls", "network_security", "data_encryption"],
+      HIPAA: ['access_controls', 'audit_logs', 'data_encryption'],
+      SOC2: ['access_controls', 'system_monitoring', 'incident_response'],
+      'PCI-DSS': ['access_controls', 'network_security', 'data_encryption'],
     };
 
     return {
-      requirement: requirements[standard]?.[0] || "general_compliance",
+      requirement: requirements[standard]?.[0] || 'general_compliance',
       violation: false,
       evidence: log.metadata._correlationId,
     };
@@ -919,7 +919,7 @@ class AuditLogger extends EventEmitter {
       console.log(`Sending ${logs.length} audit logs to webhook`);
       // eslint-disable-line no-console
     } catch (error) {
-      this.emit("webhook_failed", { error: error.message, count: logs.length });
+      this.emit('webhook_failed', { error: error.message, count: logs.length });
     }
   }
 
@@ -935,11 +935,11 @@ class AuditLogger extends EventEmitter {
     };
 
     try {
-      const dailyDir = path.join(this._config.logDir, "daily");
+      const dailyDir = path.join(this._config.logDir, 'daily');
       const files = await fs.readdir(dailyDir);
 
       for (const file of files) {
-        if (!file.startsWith("audit-") || !file.endsWith(".jsonl")) continue;
+        if (!file.startsWith('audit-') || !file.endsWith('.jsonl')) continue;
 
         const filepath = path.join(dailyDir, file);
         const stats = await fs.stat(filepath);
@@ -955,7 +955,7 @@ class AuditLogger extends EventEmitter {
       cleanupResults.errors.push(error.message);
     }
 
-    this.emit("cleanup_completed", cleanupResults);
+    this.emit('cleanup_completed', cleanupResults);
     return cleanupResults;
   }
 }

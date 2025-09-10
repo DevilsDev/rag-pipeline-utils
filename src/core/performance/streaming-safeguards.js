@@ -3,12 +3,12 @@
  * Prevents memory overload during large document processing
  */
 
-const { logger } = require("../../utils/logger.js");
+const { logger } = require('../../utils/logger.js');
 
 // Use performance.now() for monotonic timing, fallback to perf_hooks for older Node
 const { performance } = globalThis.performance
   ? globalThis
-  : require("node:perf_hooks");
+  : require('node:perf_hooks');
 
 /**
  * Memory monitor for tracking heap usage
@@ -22,7 +22,7 @@ class MemoryMonitor {
 
   getCurrentUsage() {
     const usage =
-      typeof process.memoryUsage === "function" ? process.memoryUsage() : null;
+      typeof process.memoryUsage === 'function' ? process.memoryUsage() : null;
     const heapUsed = usage?.heapUsed ?? 0;
     const heapTotal = usage?.heapTotal ?? Math.max(1, heapUsed);
     return {
@@ -59,10 +59,10 @@ class MemoryMonitor {
       usagePercentage: Math.round(ratio * 100),
       status:
         ratio > this.criticalThreshold
-          ? "critical"
+          ? 'critical'
           : ratio > this.warningThreshold
-            ? "warning"
-            : "normal",
+            ? 'warning'
+            : 'normal',
     };
   }
 }
@@ -131,7 +131,7 @@ class BackpressureController {
     }, this.checkInterval);
 
     // Don't keep process alive for relief checks
-    if (typeof this.reliefCheckInterval.unref === "function") {
+    if (typeof this.reliefCheckInterval.unref === 'function') {
       this.reliefCheckInterval.unref();
     }
   }
@@ -143,7 +143,7 @@ class BackpressureController {
     if (!this.isPaused) return;
 
     this.isPaused = false;
-    console.log("✅ Backpressure relieved - resuming processing"); // eslint-disable-line no-console
+    console.log('✅ Backpressure relieved - resuming processing'); // eslint-disable-line no-console
 
     // Clear interval
     if (this.reliefCheckInterval) {
@@ -239,7 +239,7 @@ class StreamingProcessor {
           const error = new Error(
             `Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`,
           );
-          error.code = "TOKEN_LIMIT_EXCEEDED";
+          error.code = 'TOKEN_LIMIT_EXCEEDED';
           throw error;
         }
 
@@ -298,7 +298,7 @@ class StreamingProcessor {
       ); // eslint-disable-line no-console
     } catch (error) {
       const status = this.backpressureController.getStatus();
-      logger.error("❌ Streaming processing failed:", {
+      logger.error('❌ Streaming processing failed:', {
         error: error.message,
         totalTokens: Math.round(totalTokens),
         chunkCount,
@@ -386,8 +386,222 @@ class StreamingProcessor {
   }
 }
 
+/**
+ * Helper utilities for streaming operations
+ */
+class StreamingHelpers {
+  /**
+   * Create a streaming processor with default configuration
+   * @param {object} options - Configuration options
+   * @returns {StreamingProcessor} Configured streaming processor
+   */
+  static createProcessor(options = {}) {
+    return new StreamingProcessor({
+      chunkSize: options.chunkSize || 1000,
+      maxMemoryMB: options.maxMemoryMB || 512,
+      tokenLimit: options.tokenLimit || 100000,
+      tokenWarningThreshold: options.tokenWarningThreshold || 0.8,
+      pauseThreshold: options.pauseThreshold || 0.85,
+      resumeThreshold: options.resumeThreshold || 0.7,
+      checkInterval: options.checkInterval || 1000,
+      ...options,
+    });
+  }
+
+  /**
+   * Create a memory monitor with default configuration
+   * @param {number} maxMemoryMB - Maximum memory in MB
+   * @returns {MemoryMonitor} Configured memory monitor
+   */
+  static createMemoryMonitor(maxMemoryMB = 512) {
+    return new MemoryMonitor(maxMemoryMB);
+  }
+
+  /**
+   * Create a backpressure controller with default configuration
+   * @param {object} options - Configuration options
+   * @returns {BackpressureController} Configured backpressure controller
+   */
+  static createBackpressureController(options = {}) {
+    return new BackpressureController({
+      maxBufferSize: options.maxBufferSize || 100,
+      maxMemoryMB: options.maxMemoryMB || 512,
+      pauseThreshold: options.pauseThreshold || 0.85,
+      resumeThreshold: options.resumeThreshold || 0.7,
+      checkInterval: options.checkInterval || 1000,
+      ...options,
+    });
+  }
+
+  /**
+   * Estimate token count from text
+   * @param {string} text - Input text
+   * @returns {number} Estimated token count
+   */
+  static estimateTokens(text) {
+    if (typeof text !== 'string') return 0;
+    // Rough approximation: 1 token ≈ 4 characters
+    return Math.ceil(text.length / 4);
+  }
+
+  /**
+   * Check if memory usage is within safe limits
+   * @param {number} maxMemoryMB - Maximum allowed memory in MB
+   * @returns {object} Memory status report
+   */
+  static checkMemoryStatus(maxMemoryMB = 512) {
+    const monitor = new MemoryMonitor(maxMemoryMB);
+    const usage = monitor.getCurrentUsage();
+    const ratio = monitor.getUsageRatio();
+
+    return {
+      ...usage,
+      ratio,
+      isWarning: monitor.isWarningLevel(),
+      isCritical: monitor.isCriticalLevel(),
+      status: ratio > 0.9 ? 'critical' : ratio > 0.8 ? 'warning' : 'normal',
+    };
+  }
+
+  /**
+   * Create a streaming configuration for different use cases
+   * @param {string} profile - Configuration profile ('light', 'standard', 'heavy')
+   * @returns {object} Configuration object
+   */
+  static getStreamingProfile(profile = 'standard') {
+    const profiles = {
+      light: {
+        chunkSize: 500,
+        maxMemoryMB: 256,
+        tokenLimit: 50000,
+        maxBufferSize: 50,
+        pauseThreshold: 0.8,
+        resumeThreshold: 0.6,
+      },
+      standard: {
+        chunkSize: 1000,
+        maxMemoryMB: 512,
+        tokenLimit: 100000,
+        maxBufferSize: 100,
+        pauseThreshold: 0.85,
+        resumeThreshold: 0.7,
+      },
+      heavy: {
+        chunkSize: 2000,
+        maxMemoryMB: 1024,
+        tokenLimit: 200000,
+        maxBufferSize: 200,
+        pauseThreshold: 0.9,
+        resumeThreshold: 0.75,
+      },
+    };
+
+    return profiles[profile] || profiles.standard;
+  }
+
+  /**
+   * Wrap an async iterator with memory monitoring
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {object} options - Monitoring options
+   * @returns {AsyncGenerator} Monitored async generator
+   */
+  static async *withMemoryMonitoring(iterator, options = {}) {
+    const monitor = new MemoryMonitor(options.maxMemoryMB || 512);
+    let itemCount = 0;
+
+    try {
+      for await (const item of iterator) {
+        itemCount++;
+
+        // Check memory every N items
+        if (itemCount % (options.checkInterval || 10) === 0) {
+          const report = monitor.getMemoryReport();
+
+          if (monitor.isCriticalLevel()) {
+            throw new Error(
+              `Critical memory usage: ${report.usagePercentage}% (${report.heapUsedMB}MB)`,
+            );
+          }
+
+          if (monitor.isWarningLevel() && options.onWarning) {
+            options.onWarning(report);
+          }
+        }
+
+        yield {
+          ...item,
+          memoryStatus:
+            itemCount % (options.reportInterval || 100) === 0
+              ? monitor.getMemoryReport()
+              : undefined,
+        };
+      }
+    } catch (error) {
+      const finalReport = monitor.getMemoryReport();
+      logger.error('Memory monitoring error:', {
+        error: error.message,
+        itemsProcessed: itemCount,
+        finalMemoryStatus: finalReport,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create a throttled async iterator
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {number} delayMs - Delay between items in milliseconds
+   * @returns {AsyncGenerator} Throttled async generator
+   */
+  static async *throttle(iterator, delayMs = 100) {
+    for await (const item of iterator) {
+      yield item;
+
+      // Add delay between items
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  /**
+   * Batch items from an async iterator
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {number} batchSize - Number of items per batch
+   * @returns {AsyncGenerator} Batched async generator
+   */
+  static async *batch(iterator, batchSize = 10) {
+    let batch = [];
+
+    for await (const item of iterator) {
+      batch.push(item);
+
+      if (batch.length >= batchSize) {
+        yield batch;
+        batch = [];
+      }
+    }
+
+    // Yield remaining items
+    if (batch.length > 0) {
+      yield batch;
+    }
+  }
+}
+
 module.exports = {
   BackpressureController,
   StreamingProcessor,
   MemoryMonitor,
+  StreamingHelpers,
+  // Convenience exports
+  createProcessor: StreamingHelpers.createProcessor,
+  createMemoryMonitor: StreamingHelpers.createMemoryMonitor,
+  createBackpressureController: StreamingHelpers.createBackpressureController,
+  estimateTokens: StreamingHelpers.estimateTokens,
+  checkMemoryStatus: StreamingHelpers.checkMemoryStatus,
+  getStreamingProfile: StreamingHelpers.getStreamingProfile,
+  withMemoryMonitoring: StreamingHelpers.withMemoryMonitoring,
+  throttle: StreamingHelpers.throttle,
+  batch: StreamingHelpers.batch,
 };

@@ -5,18 +5,10 @@
 
 const fs = require("fs/promises");
 const path = require("path");
-// Mock the CLI modules to avoid ESM/CommonJS conflicts
-const runPipelineDoctor = jest.fn().mockResolvedValue({
-  status: "healthy",
-  issues: [],
-  recommendations: [],
-});
-
-const PipelineDoctor = jest.fn().mockImplementation(() => ({
-  diagnose: jest.fn().mockResolvedValue({ status: "healthy" }),
-  getRecommendations: jest.fn().mockReturnValue([]),
-  generateReport: jest.fn().mockReturnValue("Test report"),
-}));
+const {
+  PipelineDoctor,
+  runPipelineDoctor,
+} = require("../../../src/cli/doctor-command.js");
 
 // Mock dependencies
 jest.mock("fs/promises");

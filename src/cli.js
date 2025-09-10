@@ -1,11 +1,11 @@
-const { Command } = require("commander");
-const pkg = require("../package.json");
+const { Command } = require('commander');
+const pkg = require('../package.json');
 
 function buildProgram() {
   const program = new Command();
   program
-    .name("enhanced-rag")
-    .description("Plugin-based RAG pipeline utilities")
+    .name('enhanced-rag')
+    .description('Plugin-based RAG pipeline utilities')
     .version(pkg.version)
     .showHelpAfterError();
 

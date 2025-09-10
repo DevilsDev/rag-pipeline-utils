@@ -4,11 +4,11 @@ const path = require('path');
  * Integrates event logging, tracing, and metrics collection
  */
 
-const { eventLogger, EventTypes, EventSeverity } = require("./event-logger.js");
+const { eventLogger, EventTypes, EventSeverity } = require('./event-logger.js');
 // eslint-disable-line global-require
-const { pipelineTracer } = require("./tracing.js");
+const { pipelineTracer } = require('./tracing.js');
 // eslint-disable-line global-require
-const { pipelineMetrics } = require("./metrics.js");
+const { pipelineMetrics } = require('./metrics.js');
 // eslint-disable-line global-require
 
 /**
@@ -68,7 +68,7 @@ class InstrumentedPipeline {
 
     // Metrics
     if (this._options.enableMetrics) {
-      pipelineMetrics.recordOperationStart("plugin", pluginType, pluginName);
+      pipelineMetrics.recordOperationStart('plugin', pluginType, pluginName);
     }
 
     try {
@@ -98,11 +98,11 @@ class InstrumentedPipeline {
       // Metrics
       if (this._options.enableMetrics) {
         pipelineMetrics.recordOperationEnd(
-          "plugin",
+          'plugin',
           pluginType,
           pluginName,
           duration,
-          "success",
+          'success',
         );
         this.recordPluginSpecificMetrics(
           pluginType,
@@ -125,13 +125,13 @@ class InstrumentedPipeline {
       // Metrics
       if (this._options.enableMetrics) {
         pipelineMetrics.recordOperationEnd(
-          "plugin",
+          'plugin',
           pluginType,
           pluginName,
           duration,
-          "error",
+          'error',
         );
-        pipelineMetrics.recordError("plugin", pluginType, pluginName, error);
+        pipelineMetrics.recordError('plugin', pluginType, pluginName, error);
       }
 
       throw error;
@@ -148,7 +148,7 @@ class InstrumentedPipeline {
    */
   recordPluginSpecificMetrics(pluginType, pluginName, duration, input, result) {
     switch (pluginType) {
-      case "embedder": {
+      case 'embedder': {
         const tokenCount = this.estimateTokenCount(input);
         const batchSize = Array.isArray(input) ? input.length : 1;
         pipelineMetrics.recordEmbedding(
@@ -160,13 +160,13 @@ class InstrumentedPipeline {
         break;
       }
 
-      case "retriever": {
+      case 'retriever': {
         const resultCount = Array.isArray(result) ? result.length : 1;
         pipelineMetrics.recordRetrieval(pluginName, duration, resultCount);
         break;
       }
 
-      case "llm": {
+      case 'llm': {
         const inputTokens = this.estimateTokenCount(input);
         const outputTokens = this.estimateTokenCount(result);
         const streaming = this.isStreamingResult(result);
@@ -188,11 +188,11 @@ class InstrumentedPipeline {
    * @returns {number} Estimated token count
    */
   estimateTokenCount(text) {
-    if (typeof text === "string") {
+    if (typeof text === 'string') {
       return Math.ceil(text.length / 4); // Rough approximation
     } else if (Array.isArray(text)) {
       return text.reduce((sum, item) => sum + this.estimateTokenCount(item), 0);
-    } else if (text && typeof text === "object") {
+    } else if (text && typeof text === 'object') {
       return this.estimateTokenCount(JSON.stringify(text));
     }
     return 0;
@@ -204,7 +204,7 @@ class InstrumentedPipeline {
    * @returns {boolean} True if streaming result
    */
   isStreamingResult(result) {
-    return result && typeof result === "object" && result.streaming === true;
+    return result && typeof result === 'object' && result.streaming === true;
   }
 
   /**
@@ -214,7 +214,7 @@ class InstrumentedPipeline {
    */
   async ingest(docPath) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart("ingest", { docPath });
+      eventLogger.logStageStart('ingest', { docPath });
     }
 
     const startTime = Date.now();
@@ -224,7 +224,7 @@ class InstrumentedPipeline {
 
       if (this._options.enableTracing) {
         result = await pipelineTracer.traceStage(
-          "ingest",
+          'ingest',
           async () => {
             return await this.pipeline.ingest(docPath);
           },
@@ -237,7 +237,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd("ingest", duration, { docPath, success: true });
+        eventLogger.logStageEnd('ingest', duration, { docPath, success: true });
       }
 
       return result;
@@ -248,7 +248,7 @@ class InstrumentedPipeline {
         eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
-          { stage: "ingest", duration, docPath, error: error.message },
+          { stage: 'ingest', duration, docPath, error: error.message },
           `Ingest stage failed: ${error.message}`,
         );
       }
@@ -264,7 +264,7 @@ class InstrumentedPipeline {
    */
   async query(prompt) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart("query", { prompt: prompt.substring(0, 100) });
+      eventLogger.logStageStart('query', { prompt: prompt.substring(0, 100) });
     }
 
     const startTime = Date.now();
@@ -274,7 +274,7 @@ class InstrumentedPipeline {
 
       if (this._options.enableTracing) {
         result = await pipelineTracer.traceStage(
-          "query",
+          'query',
           async () => {
             return await this.pipeline.query(prompt);
           },
@@ -287,7 +287,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd("query", duration, {
+        eventLogger.logStageEnd('query', duration, {
           promptLength: prompt.length,
           responseLength: result.length,
           success: true,
@@ -303,7 +303,7 @@ class InstrumentedPipeline {
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
-            stage: "query",
+            stage: 'query',
             duration,
             promptLength: prompt.length,
             error: error.message,
@@ -323,7 +323,7 @@ class InstrumentedPipeline {
    */
   async *queryStream(prompt) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart("query_stream", {
+      eventLogger.logStageStart('query_stream', {
         prompt: prompt.substring(0, 100),
       });
     }
@@ -333,10 +333,10 @@ class InstrumentedPipeline {
 
     try {
       if (this._options.enableTracing) {
-        const span = pipelineTracer.startSpan("pipeline.query_stream");
+        const span = pipelineTracer.startSpan('pipeline.query_stream');
         span.setAttributes({
-          "pipeline.stage": "query_stream",
-          "query.prompt_length": prompt.length,
+          'pipeline.stage': 'query_stream',
+          'query.prompt_length': prompt.length,
         });
 
         try {
@@ -346,8 +346,8 @@ class InstrumentedPipeline {
           }
 
           span.setAttributes({
-            "query.tokens_generated": tokenCount,
-            "query.success": true,
+            'query.tokens_generated': tokenCount,
+            'query.success': true,
           });
         } finally {
           span.end();
@@ -362,7 +362,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd("query_stream", duration, {
+        eventLogger.logStageEnd('query_stream', duration, {
           promptLength: prompt.length,
           tokensGenerated: tokenCount,
           success: true,
@@ -376,7 +376,7 @@ class InstrumentedPipeline {
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
-            stage: "query_stream",
+            stage: 'query_stream',
             duration,
             promptLength: prompt.length,
             tokensGenerated: tokenCount,
@@ -397,11 +397,11 @@ class InstrumentedPipeline {
    */
   async *ingestStream(docPath) {
     if (!this.pipeline.ingestStream) {
-      throw new Error("Pipeline does not support streaming ingest");
+      throw new Error('Pipeline does not support streaming ingest');
     }
 
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart("ingest_stream", { docPath });
+      eventLogger.logStageStart('ingest_stream', { docPath });
     }
 
     const startTime = Date.now();
@@ -410,9 +410,9 @@ class InstrumentedPipeline {
 
     try {
       for await (const update of this.pipeline.ingestStream(docPath)) {
-        if (update._type === "chunk_processed") {
+        if (update._type === 'chunk_processed') {
           chunksProcessed++;
-        } else if (update._type === "chunk_failed") {
+        } else if (update._type === 'chunk_failed') {
           chunksFailed++;
         }
 
@@ -422,7 +422,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd("ingest_stream", duration, {
+        eventLogger.logStageEnd('ingest_stream', duration, {
           docPath,
           chunksProcessed,
           chunksFailed,
@@ -437,7 +437,7 @@ class InstrumentedPipeline {
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
-            stage: "ingest_stream",
+            stage: 'ingest_stream',
             duration,
             docPath,
             chunksProcessed,

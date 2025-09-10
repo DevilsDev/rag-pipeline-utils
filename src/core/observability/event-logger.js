@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
 const EventTypes = {
-  PLUGIN_START: "plugin.start",
-  PLUGIN_END: "plugin.end",
-  PLUGIN_ERROR: "plugin.error",
-  STAGE_START: "stage.start",
+  PLUGIN_START: 'plugin.start',
+  PLUGIN_END: 'plugin.end',
+  PLUGIN_ERROR: 'plugin.error',
+  STAGE_START: 'stage.start',
 };
 
-const EventSeverity = { DEBUG: "debug", INFO: "info", ERROR: "error" };
+const EventSeverity = { DEBUG: 'debug', INFO: 'info', ERROR: 'error' };
 
 class PipelineEventLogger {
   constructor() {
@@ -25,11 +25,11 @@ class PipelineEventLogger {
   }
 
   getInputSize(v) {
-    if (Array.isArray(v)) return { type: "array", length: v.length };
-    if (typeof v === "string") return { type: "string", length: v.length };
-    if (v === null) return { type: "object" }; // align with tests
-    if (typeof v === "object")
-      return { type: "object", keys: Object.keys(v).length };
+    if (Array.isArray(v)) return { type: 'array', length: v.length };
+    if (typeof v === 'string') return { type: 'string', length: v.length };
+    if (v === null) return { type: 'object' }; // align with tests
+    if (typeof v === 'object')
+      return { type: 'object', keys: Object.keys(v).length };
     return { type: typeof v };
   }
   getResultSize(v) {
@@ -44,7 +44,7 @@ class PipelineEventLogger {
       eventType: EventTypes.PLUGIN_START,
       message: `Starting ${pluginType} plugin: ${pluginName}`,
       metadata: {
-        stage: "start",
+        stage: 'start',
         pluginType,
         pluginName,
         inputSize: this.getInputSize(input),
@@ -61,11 +61,11 @@ class PipelineEventLogger {
     pluginName,
     duration,
     result,
-    status = "success",
+    status = 'success',
     context = {},
   }) {
     const md = {
-      stage: "end",
+      stage: 'end',
       pluginType,
       pluginName,
       duration,
@@ -98,11 +98,11 @@ class PipelineEventLogger {
       eventType: EventTypes.PLUGIN_ERROR,
       message: `Failed ${pluginType} plugin: ${pluginName} - ${error?.message}`,
       metadata: {
-        stage: "error",
+        stage: 'error',
         pluginType,
         pluginName,
         duration,
-        status: "error",
+        status: 'error',
         error: error
           ? { name: error.name, message: error.message, code: error.code }
           : undefined,
@@ -132,9 +132,9 @@ class PipelineEventLogger {
 
   logMemoryWarning({ memoryUsage, threshold = 512 }) {
     const usedBytes =
-      typeof memoryUsage?.heapUsed === "number"
+      typeof memoryUsage?.heapUsed === 'number'
         ? memoryUsage.heapUsed
-        : typeof memoryUsage?.rss === "number"
+        : typeof memoryUsage?.rss === 'number'
           ? memoryUsage.rss
           : 0;
     const usedMB = usedBytes / (1024 * 1024);
@@ -142,10 +142,10 @@ class PipelineEventLogger {
 
     this._events.push({
       timestamp: this.nowISO(),
-      severity: EventSeverity.WARN || "warn",
+      severity: EventSeverity.WARN || 'warn',
       sessionId: this._sessionId || this.startSession(),
-      eventType: "memory.warning",
-      message: "High memory usage",
+      eventType: 'memory.warning',
+      message: 'High memory usage',
       metadata: { memoryUsage, threshold, usagePercentage },
     });
   }
@@ -174,7 +174,7 @@ class PipelineEventLogger {
       );
 
     list.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    if (typeof limit === "number") list = list.slice(-limit);
+    if (typeof limit === 'number') list = list.slice(-limit);
 
     return list;
   }

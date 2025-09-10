@@ -1,66 +1,76 @@
-"use strict";
-const TYPES = new Set([
-  "loader",
-  "embedder",
-  "retriever",
-  "llm",
-  "reranker",
-  "evaluator",
-  "other",
-]);
+'use strict';
+
 class PluginRegistry {
   constructor() {
-    this.map = new Map();
-    // Seed test plugins
-    if (process.env.NODE_ENV === "test") {
-      this.map.set(
-        "loader",
-        new Map([
-          ["test-loader", { load: async () => [{ id: "d1", text: "hello" }] }],
-        ]),
-      );
-      this.map.set(
-        "embedder",
-        new Map([
-          [
-            "openai",
-            { embed: async (texts) => texts.map(() => [0.1, 0.2, 0.3]) },
-          ],
-        ]),
-      );
-      this.map.set(
-        "retriever",
-        new Map([["mock", { retrieve: async () => [] }]]),
-      );
-      this.map.set(
-        "reranker",
-        new Map([
-          [
-            "mock",
-            { rerank: async (_q, docs) => (Array.isArray(docs) ? docs : []) },
-          ],
-        ]),
-      );
-      this.map.set(
-        "llm",
-        new Map([["mock", { generate: async (_p) => "ok" }]]),
-      );
+    this._plugins = new Map();
+    this._validTypes = new Set([
+      'loader',
+      'embedder',
+      'retriever',
+      'reranker',
+      'llm',
+      'evaluator',
+    ]);
+  }
+
+  register(category, name, impl) {
+    if (!category || typeof category !== 'string') {
+      throw new Error('Category must be a non-empty string');
     }
+    if (!name || typeof name !== 'string') {
+      throw new Error('Name must be a non-empty string');
+    }
+    if (impl == null) {
+      throw new Error('Implementation cannot be null or undefined');
+    }
+    if (!this._validTypes.has(category)) {
+      throw new Error(`Unknown plugin type: ${category}`);
+    }
+
+    const key = `${category}:${name}`;
+    this._plugins.set(key, impl);
+    return this;
   }
-  register(type, name, instance) {
-    if (!TYPES.has(type)) throw new Error(`Unknown plugin type: ${type}`);
-    if (!name) throw new Error("Plugin name required");
-    if (!this.map.has(type)) this.map.set(type, new Map());
-    this.map.get(type).set(name, instance);
+
+  get(category, name) {
+    const key = `${category}:${name}`;
+    const impl = this._plugins.get(key);
+    if (impl === undefined) {
+      throw new Error(`Plugin not found: ${category}/${name}`);
+    }
+    return impl;
   }
-  get(type, name) {
-    if (!this.map.has(type) || !this.map.get(type).has(name))
-      throw new Error(`Plugin not found: ${type}/${name}`);
-    return this.map.get(type).get(name);
+
+  resolve(category, name) {
+    return this.get(category, name);
   }
-  list(type) {
-    if (!TYPES.has(type)) throw new Error(`Unknown plugin type: ${type}`);
-    return Array.from(this.map.get(type)?.keys() || []);
+
+  list(category) {
+    if (!this._validTypes.has(category)) {
+      throw new Error(`Unknown plugin type: ${category}`);
+    }
+
+    const names = [];
+    const prefix = `${category}:`;
+
+    for (const key of this._plugins.keys()) {
+      if (key.startsWith(prefix)) {
+        names.push(key.substring(prefix.length));
+      }
+    }
+
+    return names;
+  }
+
+  clear() {
+    this._plugins.clear();
   }
 }
-module.exports = { PluginRegistry, TYPES };
+
+// Create singleton instance
+const registry = new PluginRegistry();
+
+// CJS+ESM interop pattern
+module.exports = registry;
+module.exports.PluginRegistry = PluginRegistry;
+module.exports.default = module.exports;

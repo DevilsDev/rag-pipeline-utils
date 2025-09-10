@@ -24,8 +24,8 @@ class DAGNode {
    * @param {DAGNode} node - Target node to connect to
    */
   addOutput(node) {
-    if (!node || typeof node !== "object" || !node.inputs) {
-      throw new Error("Invalid output node");
+    if (!node || typeof node !== 'object' || !node.inputs) {
+      throw new Error('Invalid output node');
     }
     // Allow self-loops during construction - they will be detected during validation
     if (!this.outputs.includes(node)) {
@@ -107,7 +107,7 @@ class DAG {
     // Handle different parameter patterns
     let seed, execOptions;
     if (
-      typeof seedOrOptions === "object" &&
+      typeof seedOrOptions === 'object' &&
       seedOrOptions !== null &&
       (seedOrOptions.retryFailedNodes ||
         seedOrOptions.gracefulDegradation ||
@@ -171,14 +171,14 @@ class DAG {
       const timeoutPromise = timeout
         ? new Promise((_, reject) => {
             timeoutId = setTimeout(() => {
-              reject(new Error("Execution timeout"));
+              reject(new Error('Execution timeout'));
             }, timeout);
           })
         : null;
 
       const checkTimeout = () => {
         if (timeout && Date.now() - startTime > timeout) {
-          throw new Error("Execution timeout");
+          throw new Error('Execution timeout');
         }
       };
 
@@ -245,7 +245,7 @@ class DAG {
             onProgress({
               completed: completedNodes,
               total: totalNodes,
-              stage: "execution",
+              stage: 'execution',
               currentNode: node.id,
             });
           }
@@ -268,7 +268,7 @@ class DAG {
             return { nodeId, message: originalMessage };
           },
         );
-        const aggregatedError = new Error("Multiple execution errors");
+        const aggregatedError = new Error('Multiple execution errors');
         aggregatedError.errors = errorList;
         throw aggregatedError;
       } else if (errors.size === 1 && !gracefulDegradation) {
@@ -289,7 +289,7 @@ class DAG {
       // Legacy behavior: return result from sink nodes
       const sinkNodes = order.filter((node) => node.outputs.length === 0);
       if (sinkNodes.length === 0) {
-        throw new Error("DAG has no sink nodes - no final output available");
+        throw new Error('DAG has no sink nodes - no final output available');
       }
 
       if (sinkNodes.length === 1) {
@@ -304,7 +304,7 @@ class DAG {
       // If caller requested graceful degradation, do not bubble a single non-critical failure.
       if (execOptions?.gracefulDegradation && (!errors || errors.size <= 1)) {
         // Return partial state; tests expect continuation.
-        return typeof retryFailedNodes === "boolean" ||
+        return typeof retryFailedNodes === 'boolean' ||
           requiredNodes.length > 0 ||
           checkpointId
           ? results
@@ -315,7 +315,7 @@ class DAG {
         throw error; // keep context for tests
       }
       const wrappedError = new Error(`DAG execution failed: ${error.message}`);
-      ["errors", "nodeId", "timestamp", "cycle"].forEach((k) => {
+      ['errors', 'nodeId', 'timestamp', 'cycle'].forEach((k) => {
         if (error && error[k] !== undefined) wrappedError[k] = error[k];
       });
       throw wrappedError;
@@ -345,7 +345,7 @@ class DAG {
             onProgress({
               completed: completedNodes,
               total: totalNodes,
-              stage: "execution",
+              stage: 'execution',
               currentNode: node.id,
             });
           }
@@ -359,7 +359,7 @@ class DAG {
               onProgress({
                 completed: completedNodes,
                 total: totalNodes,
-                stage: "execution",
+                stage: 'execution',
                 currentNode: node.id,
               });
             }
@@ -400,7 +400,7 @@ class DAG {
           const restNodes = cyclePath.slice(1, -1).reverse();
           cyclePath = [startNode, ...restNodes, startNode];
         }
-        cyclePath = cyclePath.join(" -> ");
+        cyclePath = cyclePath.join(' -> ');
         const error = new Error(`Cycle detected involving node: ${cyclePath}`);
         error.cycle = cyclePath; // used by validate() to pretty-print
         throw error;
@@ -414,7 +414,7 @@ class DAG {
       try {
         node.inputs.forEach((input) => visit(input, newPath));
       } catch (error) {
-        if (error.message.includes("Cycle detected")) {
+        if (error.message.includes('Cycle detected')) {
           throw error; // Preserve original message and cycle property
         }
         throw error;
@@ -430,7 +430,7 @@ class DAG {
         visit(node);
       }
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         throw error;
       }
       throw new Error(`DAG topological sort failed: ${error.message}`);
@@ -475,11 +475,11 @@ class DAG {
       // Execute the node with per-node timeout
       let result;
       const nodeExecution = async () => {
-        if (typeof node.run === "function") {
+        if (typeof node.run === 'function') {
           return await node.run(input);
-        } else if (typeof node.execute === "function") {
+        } else if (typeof node.execute === 'function') {
           return await node.execute(input);
-        } else if (typeof node.handler === "function") {
+        } else if (typeof node.handler === 'function') {
           return await node.handler(input);
         } else {
           // Tests expect failure if node has no implementation
@@ -519,7 +519,7 @@ class DAG {
       let errorMsg;
 
       if (downstreamNodes.length > 0) {
-        const downstreamIds = downstreamNodes.map((n) => n.id).join(", ");
+        const downstreamIds = downstreamNodes.map((n) => n.id).join(', ');
         errorMsg = `Node ${node.id} execution failed: ${error.message}. This affects downstream nodes: ${downstreamIds}`;
       } else {
         errorMsg = `Node ${node.id} execution failed: ${error.message}`;
@@ -544,8 +544,8 @@ class DAG {
       // For critical failures, don't wrap the error if it's already descriptive
       if (
         error.message &&
-        !error.message.includes("Node") &&
-        !error.message.includes("execution failed")
+        !error.message.includes('Node') &&
+        !error.message.includes('execution failed')
       ) {
         // Preserve original error without wrapping
         errors.set(node.id, error.message);
@@ -569,23 +569,23 @@ class DAG {
    */
   validate() {
     if (this.nodes.size === 0) {
-      throw new Error("DAG is empty - no nodes to execute");
+      throw new Error('DAG is empty - no nodes to execute');
     }
 
     // Check for cycles by attempting topological sort
     try {
       this.topoSort();
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         // Prefer the structured path we set in topoSort via error.cycle
         const raw =
           error.cycle ||
           error.message.replace(
             /^.*Cycle detected(?: involving node[s]?:)?\s*/i,
-            "",
+            '',
           );
         let nodes = raw
-          .split("->")
+          .split('->')
           .map((s) => s.trim())
           .filter(Boolean);
 
@@ -599,7 +599,7 @@ class DAG {
         const pretty =
           nodes.length === 2
             ? `${nodes[0]} -> ${nodes[1]}`
-            : nodes.join(" -> ");
+            : nodes.join(' -> ');
 
         throw new Error(
           `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
@@ -613,7 +613,7 @@ class DAG {
       (node) => node.inputs.length === 0,
     );
     if (sourceNodes.length === 0) {
-      throw new Error("DAG has no source nodes - execution cannot begin");
+      throw new Error('DAG has no source nodes - execution cannot begin');
     }
 
     return true;
@@ -722,11 +722,11 @@ class DAG {
 
         // Execute the node
         const output =
-          typeof node.run === "function"
+          typeof node.run === 'function'
             ? await node.run(input)
-            : typeof node.execute === "function"
+            : typeof node.execute === 'function'
               ? await node.execute(input)
-              : typeof node.handler === "function"
+              : typeof node.handler === 'function'
                 ? await node.handler(input)
                 : (() => {
                     throw new Error(`Node ${node.id} has no run function`);
@@ -762,13 +762,13 @@ class DAG {
 
     // Check for empty DAG
     if (this.nodes.size === 0) {
-      throw new Error("DAG cannot be empty");
+      throw new Error('DAG cannot be empty');
     }
 
     // Check for self-loops
     for (const node of this.nodes.values()) {
       if (node.outputs.includes(node)) {
-        throw new Error("Self-loop detected");
+        throw new Error('Self-loop detected');
       }
     }
 
@@ -776,8 +776,8 @@ class DAG {
     try {
       this.topoSort();
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
-        throw new Error("Cycle detected in DAG");
+      if (error.message.includes('Cycle detected')) {
+        throw new Error('Cycle detected in DAG');
       }
       throw error;
     }

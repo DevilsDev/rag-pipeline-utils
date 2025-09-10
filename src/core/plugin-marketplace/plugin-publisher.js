@@ -4,23 +4,23 @@ const fs = require('fs');
  * Handles plugin packaging, validation, and publishing to registries
  */
 
-const fs = require("fs/promises");
+const fs = require('fs/promises');
 // eslint-disable-line global-require
-const path = require("path");
+const path = require('path');
 // eslint-disable-line global-require
-const crypto = require("crypto");
+const crypto = require('crypto');
 // eslint-disable-line global-require
 const {
   metadataExtractor,
   metadataValidator,
-} = require("./plugin-metadata.js");
+} = require('./plugin-metadata.js');
 // eslint-disable-line global-require
 const {
   validatePluginRegistry,
   createEmptyRegistry,
-} = require("./plugin-registry-format.js");
+} = require('./plugin-registry-format.js');
 // eslint-disable-line global-require
-const { VersionUtils } = require("./version-resolver.js");
+const { VersionUtils } = require('./version-resolver.js');
 // eslint-disable-line global-require
 
 /**
@@ -29,7 +29,7 @@ const { VersionUtils } = require("./version-resolver.js");
 class PluginPublisher {
   constructor(_options = {}) {
     this._options = {
-      registryUrl: _options.registryUrl || "https://registry.rag-pipeline.dev",
+      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
       authToken: _options.authToken,
       timeout: _options.timeout || 30000,
       dryRun: _options.dryRun || false,
@@ -48,20 +48,20 @@ class PluginPublisher {
 
     try {
       // Step 1: Validate plugin structure
-      console.log("📋 Validating plugin structure..."); // eslint-disable-line no-console
+      console.log('📋 Validating plugin structure...'); // eslint-disable-line no-console
       const validation = await this.validatePluginStructure(pluginPath);
       if (!validation.valid) {
         throw new Error(
-          `Plugin validation failed: ${validation.errors.join(", ")}`,
+          `Plugin validation failed: ${validation.errors.join(', ')}`,
         );
       }
 
       // Step 2: Extract and validate metadata
-      console.log("🔍 Extracting plugin metadata..."); // eslint-disable-line no-console
+      console.log('🔍 Extracting plugin metadata...'); // eslint-disable-line no-console
       const metadata = await this.extractPluginMetadata(pluginPath);
 
       // Step 3: Package plugin
-      console.log("📦 Packaging plugin..."); // eslint-disable-line no-console
+      console.log('📦 Packaging plugin...'); // eslint-disable-line no-console
       const packageInfo = await this.packagePlugin(
         pluginPath,
         metadata,
@@ -70,7 +70,7 @@ class PluginPublisher {
 
       // Step 4: Upload to registry (unless dry run)
       if (this._options.dryRun) {
-        console.log("🧪 Dry run - skipping actual upload"); // eslint-disable-line no-console
+        console.log('🧪 Dry run - skipping actual upload'); // eslint-disable-line no-console
         return {
           success: true,
           dryRun: true,
@@ -80,7 +80,7 @@ class PluginPublisher {
         };
       }
 
-      console.log("🚀 Publishing to registry..."); // eslint-disable-line no-console
+      console.log('🚀 Publishing to registry...'); // eslint-disable-line no-console
       const publishResult = await this.uploadToRegistry(
         packageInfo,
         metadata,
@@ -119,7 +119,7 @@ class PluginPublisher {
     try {
       const stats = await fs.stat(pluginPath);
       if (!stats.isDirectory()) {
-        errors.push("Plugin path must be a directory");
+        errors.push('Plugin path must be a directory');
         return { valid: false, errors };
       }
     } catch (error) {
@@ -128,7 +128,7 @@ class PluginPublisher {
     }
 
     // Check for required files
-    const requiredFiles = ["index.js", "package.json"];
+    const requiredFiles = ['index.js', 'package.json'];
     for (const file of requiredFiles) {
       const _filePath = path.join(pluginPath, file);
       try {
@@ -139,7 +139,7 @@ class PluginPublisher {
     }
 
     // Check for recommended files
-    const recommendedFiles = ["README.md", "LICENSE"];
+    const recommendedFiles = ['README.md', 'LICENSE'];
     for (const file of recommendedFiles) {
       const _filePath = path.join(pluginPath, file);
       try {
@@ -151,21 +151,21 @@ class PluginPublisher {
 
     // Validate package.json structure
     try {
-      const packageJsonPath = path.join(pluginPath, "package.json");
+      const packageJsonPath = path.join(pluginPath, 'package.json');
       const packageJson = JSON.parse(
-        await fs.readFile(packageJsonPath, "utf-8"),
+        await fs.readFile(packageJsonPath, 'utf-8'),
       );
 
       if (!packageJson.name) {
-        errors.push("package.json missing name field");
+        errors.push('package.json missing name field');
       }
 
       if (!packageJson.version) {
-        errors.push("package.json missing version field");
+        errors.push('package.json missing version field');
       }
 
       if (!packageJson.main && !packageJson.exports) {
-        errors.push("package.json missing main or exports field");
+        errors.push('package.json missing main or exports field');
       }
     } catch (error) {
       errors.push(`Invalid package.json: ${error.message}`);
@@ -181,29 +181,29 @@ class PluginPublisher {
    */
   async extractPluginMetadata(pluginPath) {
     // Load plugin module
-    const pluginIndexPath = path.join(pluginPath, "index.js");
+    const pluginIndexPath = path.join(pluginPath, 'index.js');
     const pluginModule = await import(pluginIndexPath);
 
     // Load package.json for additional metadata
-    const packageJsonPath = path.join(pluginPath, "package.json");
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
+    const packageJsonPath = path.join(pluginPath, 'package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
 
     // Determine plugin type from package.json or metadata
     let pluginType = null;
     if (packageJson.keywords) {
       const typeKeywords = [
-        "loader",
-        "embedder",
-        "retriever",
-        "llm",
-        "reranker",
+        'loader',
+        'embedder',
+        'retriever',
+        'llm',
+        'reranker',
       ];
       pluginType = packageJson.keywords.find((k) => typeKeywords.includes(k));
     }
 
     if (!pluginType) {
       throw new Error(
-        "Cannot determine plugin _type. Add plugin _type to package.json keywords or metadata.",
+        'Cannot determine plugin _type. Add plugin _type to package.json keywords or metadata.',
       );
     }
 
@@ -247,7 +247,7 @@ class PluginPublisher {
 
     // Show warnings
     if (validation.warnings.length > 0) {
-      console.warn("⚠️  Metadata warnings:"); // eslint-disable-line no-console
+      console.warn('⚠️  Metadata warnings:'); // eslint-disable-line no-console
       validation.warnings.forEach((warning) => console.warn(`   ${warning}`)); // eslint-disable-line no-console
     }
 
@@ -293,20 +293,20 @@ class PluginPublisher {
   async collectPackageFiles(pluginPath, _options) {
     const files = [];
     const excludePatterns = _options.exclude || [
-      "node_modules",
-      ".git",
-      ".DS_Store",
-      "*.log",
-      "coverage",
-      ".nyc_output",
-      "test",
-      "tests",
-      "__tests__",
-      "*.test.js",
-      "*.spec.js",
+      'node_modules',
+      '.git',
+      '.DS_Store',
+      '*.log',
+      'coverage',
+      '.nyc_output',
+      'test',
+      'tests',
+      '__tests__',
+      '*.test.js',
+      '*.spec.js',
     ];
 
-    const collectDir = async (dir, relativePath = "") => {
+    const collectDir = async (dir, relativePath = '') => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
 
       for (const entry of entries) {
@@ -316,8 +316,8 @@ class PluginPublisher {
         // Check exclude patterns
         if (
           excludePatterns.some((pattern) => {
-            if (pattern.includes("*")) {
-              return relPath.match(new RegExp(pattern.replace("*", ".*")));
+            if (pattern.includes('*')) {
+              return relPath.match(new RegExp(pattern.replace('*', '.*')));
             }
             return relPath.includes(pattern);
           })
@@ -357,7 +357,7 @@ class PluginPublisher {
    * @returns {Promise<string>} SHA-256 hash
    */
   async calculateIntegrity(files) {
-    const hash = crypto.createHash("sha256");
+    const hash = crypto.createHash('sha256');
 
     // Sort files by path for consistent hashing
     const sortedFiles = files.sort((a, b) =>
@@ -370,7 +370,7 @@ class PluginPublisher {
       hash.update(content);
     }
 
-    return `sha256-${hash.digest("base64")}`;
+    return `sha256-${hash.digest('base64')}`;
   }
 
   /**
@@ -409,7 +409,7 @@ class PluginPublisher {
     let registry;
 
     try {
-      const registryContent = await fs.readFile(registryPath, "utf-8");
+      const registryContent = await fs.readFile(registryPath, 'utf-8');
       registry = JSON.parse(registryContent);
     } catch (error) {
       // Create new registry if file doesn't exist
@@ -454,7 +454,7 @@ class PluginPublisher {
     const validation = validatePluginRegistry(registry);
     if (!validation.valid) {
       throw new Error(
-        `Registry validation failed: ${validation.errors.map((e) => e.message).join(", ")}`,
+        `Registry validation failed: ${validation.errors.map((e) => e.message).join(', ')}`,
       );
     }
 
@@ -522,18 +522,18 @@ jobs:
    */
   generatePublishingChecklist(_metadata) {
     return [
-      "📋 Plugin metadata is complete and valid",
-      "🧪 All tests are passing",
-      "📚 Documentation is up to date",
-      "🔖 Version number follows semantic versioning",
-      "📄 LICENSE file is present",
-      "📖 README.md includes usage examples",
-      "🏷️  Keywords are relevant and descriptive",
-      "🔗 Repository URL is accessible",
-      "🏠 Homepage URL is valid (if provided)",
-      "📦 Package size is reasonable (< 10MB recommended)",
-      "🔒 No sensitive information in code",
-      "✅ Plugin works with latest rag-pipeline-utils version",
+      '📋 Plugin metadata is complete and valid',
+      '🧪 All tests are passing',
+      '📚 Documentation is up to date',
+      '🔖 Version number follows semantic versioning',
+      '📄 LICENSE file is present',
+      '📖 README.md includes usage examples',
+      '🏷️  Keywords are relevant and descriptive',
+      '🔗 Repository URL is accessible',
+      '🏠 Homepage URL is valid (if provided)',
+      '📦 Package size is reasonable (< 10MB recommended)',
+      '🔒 No sensitive information in code',
+      '✅ Plugin works with latest rag-pipeline-utils version',
     ];
   },
 

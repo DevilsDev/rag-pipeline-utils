@@ -60,7 +60,7 @@
 - **DEPLOYMENT_GUIDE.md:82** - Database URL (medium)
 - **docker-compose.yml:114** - Password (low)
 - **docker-compose.yml:26** - Database URL (medium)
-- ****tests**\security\plugin-isolation.test.js:204** - Password (low)
+- \***\*tests**\security\plugin-isolation.test.js:204\*\* - Password (low)
 
 ## Security Files Compliance
 

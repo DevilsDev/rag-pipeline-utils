@@ -1,111 +1,82 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Large Batch Performance Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      .metric {
-        display: inline-block;
-        margin: 10px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      .chart-container {
-        width: 800px;
-        height: 400px;
-        margin: 20px 0;
-      }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .metric { display: inline-block; margin: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .chart-container { width: 800px; height: 400px; margin: 20px 0; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <h1>📊 Large Document Batch Performance Report</h1>
-    <p>Generated: 2025-09-04T03:59:20.408Z</p>
-
+    <p>Generated: 2025-09-04T06:31:37.767Z</p>
+    
     <div class="summary">
-      <div class="metric">
-        <h3>Avg Throughput</h3>
-        <p>NaN docs/sec</p>
-      </div>
-      <div class="metric">
-        <h3>Max Throughput</h3>
-        <p>-Infinity docs/sec</p>
-      </div>
-      <div class="metric">
-        <h3>Avg Memory Usage</h3>
-        <p>NaN MB</p>
-      </div>
+        <div class="metric">
+            <h3>Avg Throughput</h3>
+            <p>NaN docs/sec</p>
+        </div>
+        <div class="metric">
+            <h3>Max Throughput</h3>
+            <p>-Infinity docs/sec</p>
+        </div>
+        <div class="metric">
+            <h3>Avg Memory Usage</h3>
+            <p>NaN MB</p>
+        </div>
     </div>
-
+    
     <div class="chart-container">
-      <canvas id="throughputChart"></canvas>
+        <canvas id="throughputChart"></canvas>
     </div>
-
+    
     <div class="chart-container">
-      <canvas id="memoryChart"></canvas>
+        <canvas id="memoryChart"></canvas>
     </div>
-
+    
     <script>
-      const data = {
-        testSuite: "Large Document Batch Performance",
-        timestamp: "2025-09-04T03:59:20.408Z",
-        summary: {
-          totalTests: 0,
-          avgThroughput: null,
-          maxThroughput: null,
-          avgMemoryUsage: null,
-        },
-        metrics: [],
-      };
-
-      // Throughput Chart
-      new Chart(document.getElementById("throughputChart"), {
-        type: "line",
-        data: {
-          labels: data.metrics.map((m) => m.batchSize),
-          datasets: [
-            {
-              label: "Throughput (docs/sec)",
-              data: data.metrics.map((m) => m.throughput),
-              borderColor: "rgb(75, 192, 192)",
-              tension: 0.1,
+        const data = {"testSuite":"Large Document Batch Performance","timestamp":"2025-09-04T06:31:37.767Z","summary":{"totalTests":0,"avgThroughput":null,"maxThroughput":null,"avgMemoryUsage":null},"metrics":[]};
+        
+        // Throughput Chart
+        new Chart(document.getElementById('throughputChart'), {
+            type: 'line',
+            data: {
+                labels: data.metrics.map(m => m.batchSize),
+                datasets: [{
+                    label: 'Throughput (docs/sec)',
+                    data: data.metrics.map(m => m.throughput),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: "Throughput vs Batch Size" },
-          },
-        },
-      });
-
-      // Memory Chart
-      new Chart(document.getElementById("memoryChart"), {
-        type: "bar",
-        data: {
-          labels: data.metrics.map((m) => m.batchSize),
-          datasets: [
-            {
-              label: "Memory Usage (MB)",
-              data: data.metrics.map((m) => m.memoryUsage),
-              backgroundColor: "rgba(255, 99, 132, 0.2)",
-              borderColor: "rgba(255, 99, 132, 1)",
-              borderWidth: 1,
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Throughput vs Batch Size' } }
+            }
+        });
+        
+        // Memory Chart
+        new Chart(document.getElementById('memoryChart'), {
+            type: 'bar',
+            data: {
+                labels: data.metrics.map(m => m.batchSize),
+                datasets: [{
+                    label: 'Memory Usage (MB)',
+                    data: data.metrics.map(m => m.memoryUsage),
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            title: { display: true, text: "Memory Usage vs Batch Size" },
-          },
-        },
-      });
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Memory Usage vs Batch Size' } }
+            }
+        });
     </script>
-  </body>
+</body>
 </html>
+    

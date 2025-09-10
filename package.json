@@ -23,8 +23,9 @@
     "prepare": "npm run build",
     "guard:cjs": "node scripts/guard-cjs.js",
     "pretest": "npm run guard:cjs && node scripts/setup.js",
-    "test": "jest --runInBand --experimental-vm-modules",
-    "test:ci": "jest --experimental-vm-modules --coverage",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --config jest.config.js",
+    "test:ci": "jest --coverage",
+    "test:open-handles": "jest --detectOpenHandles --runInBand",
     "posttest": "node scripts/generate-test-reports.js",
     "format": "prettier --write \"src/**/*.{js,json}\"",
     "test:watch": "jest --watch",
@@ -105,13 +106,8 @@
     "access": "public"
   },
   "lint-staged": {
-    "src/**/*.{js,ts,jsx,tsx}": [
-      "eslint --fix --quiet --no-warn-ignored"
-    ],
-    "bin/**/*.js": [
-      "eslint --fix --quiet --no-warn-ignored"
-    ],
-    "*": "prettier --write"
+    "src/**/*.{js,ts,jsx,tsx}": "eslint --fix",
+    "**/*.{js,ts,jsx,tsx,json,md,mdx,yml,yaml,css,scss,html}": "prettier --write --ignore-unknown"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
@@ -129,7 +125,7 @@
     "babel-jest": "^29.7.0",
     "codecov": "^3.8.2",
     "conventional-changelog-conventionalcommits": "^8.0.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "7.0.3",
     "esbuild": "^0.25.2",
     "eslint": "^8.57.1",
     "eslint-plugin-storybook": "^0.12.0",

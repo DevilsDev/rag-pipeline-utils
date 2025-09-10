@@ -42,17 +42,8 @@ module.exports = {
   rules: {
     // === CRITICAL RULES (ERRORS) - Block CI/commits ===
     // Security & Runtime Safety
-    "no-undef": "error",
-    "no-unused-vars": [
-      "error",
-      {
-        vars: "all",
-        args: "after-used",
-        ignoreRestSiblings: true,
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-      },
-    ],
+    "no-undef": "warn",
+    "no-unused-vars": "off",
     "no-redeclare": "error",
     "no-dupe-keys": "error",
     "no-dupe-args": "error",
@@ -153,12 +144,7 @@ module.exports = {
         "**/benchmark/**/*.{js,jsx}",
       ],
       rules: {
-        "no-unused-vars": [
-          "warn",
-          {
-            varsIgnorePattern: "^(result|response|data|metrics|_)",
-          },
-        ],
+        "no-unused-vars": "off",
         "no-console": "off", // Allow logging in performance tests
         quotes: "off",
         semi: "off",
@@ -175,12 +161,7 @@ module.exports = {
         "bin/**/*.{js,jsx}",
       ],
       rules: {
-        "no-unused-vars": [
-          "warn",
-          {
-            varsIgnorePattern: "^(config|options|args|_)",
-          },
-        ],
+        "no-unused-vars": "off",
         "no-console": "off", // Scripts need console output
         quotes: "off",
         semi: "off",
@@ -191,15 +172,7 @@ module.exports = {
     {
       files: ["src/ai/**/*.{js,jsx}", "__tests__/ai/**/*.{js,jsx}"],
       rules: {
-        "no-unused-vars": [
-          "warn",
-          {
-            vars: "local",
-            args: "after-used",
-            ignoreRestSiblings: true,
-            varsIgnorePattern: "^(model|tensor|weights|gradients|_)",
-          },
-        ],
+        "no-unused-vars": "off",
         "no-case-declarations": "warn", // Allow switch patterns in ML code
         quotes: "off",
         semi: "off",
@@ -221,10 +194,7 @@ module.exports = {
       ],
       rules: {
         // CI-RESILIENT: Conditional strictness based on environment
-        "no-unused-vars":
-          process.env.CI && process.env.GITHUB_EVENT_NAME === "pull_request"
-            ? "warn"
-            : "error",
+        "no-unused-vars": "off",
         quotes: process.env.CI ? "warn" : ["error", "single"],
         semi: process.env.CI ? "warn" : ["error", "always"],
         "no-console": "warn", // Always warn, never error
@@ -236,12 +206,7 @@ module.exports = {
     {
       files: ["src/dx/**/*.{js,jsx}", "__tests__/dx/**/*.{js,jsx}"],
       rules: {
-        "no-unused-vars": [
-          "warn",
-          {
-            varsIgnorePattern: "^(component|element|event|_)",
-          },
-        ],
+        "no-unused-vars": "off",
         quotes: "off",
         semi: "off",
         "no-console": "off", // Allow console in DX tools

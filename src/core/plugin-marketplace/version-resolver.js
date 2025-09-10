@@ -31,7 +31,7 @@ function resolvePluginVersions(config) {
     // Check for version conflicts (same plugin with different versions)
     if (seenPlugins.has(pluginName)) {
       const existingVersion = seenPlugins.get(pluginName);
-      const currentVersion = pluginConfig.version || "latest";
+      const currentVersion = pluginConfig.version || 'latest';
 
       if (existingVersion !== currentVersion) {
         conflicts.push({
@@ -41,15 +41,15 @@ function resolvePluginVersions(config) {
         });
       }
     } else {
-      seenPlugins.set(pluginName, pluginConfig.version || "latest");
+      seenPlugins.set(pluginName, pluginConfig.version || 'latest');
     }
 
     // Check for outdated plugins (simple heuristic)
-    if (pluginConfig.version && pluginConfig.version.startsWith("1.0.")) {
+    if (pluginConfig.version && pluginConfig.version.startsWith('1.0.')) {
       outdated.push({
         plugin: pluginName,
         currentVersion: pluginConfig.version,
-        latestVersion: "2.0.0",
+        latestVersion: '2.0.0',
         message: `Plugin ${pluginName}@${pluginConfig.version} is outdated, latest is 2.0.0`,
       });
     }

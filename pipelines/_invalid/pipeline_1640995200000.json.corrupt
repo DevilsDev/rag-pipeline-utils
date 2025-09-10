@@ -1,0 +1,37 @@
+{
+  "id": "pipeline_1640995200000",
+  "name": "Template Pipeline",
+  "description": "",
+  "components": [
+    {
+      "id": "llm_1640995200000",
+      "type": "llm",
+      "position": {
+        "x": 200,
+        "y": 100
+      },
+      "config": {
+        "model": "gpt-4",
+        "temperature": 0.7,
+        "maxTokens": {
+          "type": "number",
+          "default": 1000
+        }
+      },
+      "inputs": [
+        "results",
+        "query"
+      ],
+      "outputs": [
+        "response"
+      ]
+    }
+  ],
+  "connections": [],
+  "config": {},
+  "created": "2025-09-04T04:00:15.769Z",
+  "modified": "2025-09-04T04:00:15.769Z"
+}ig": {},
+  "created": "2025-09-04T04:00:15.769Z",
+  "modified": "2025-09-04T04:00:15.769Z"
+}

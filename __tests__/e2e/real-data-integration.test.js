@@ -687,17 +687,14 @@ describe("End-to-End Real Data Integration", () => {
 
   describe("sandbox environment testing", () => {
     it("should enforce sandbox security constraints", async () => {
+      const { run } = require("../../src/security/plugin-sandbox");
+
       const sandboxedPipeline = {
         config: sandboxConfig,
 
         async validateOperation(operation) {
           if (!this.config.enableSandbox) {
             return true;
-          }
-
-          // Check timeout
-          if (operation.duration > this.config.sandboxTimeout) {
-            throw new Error("Operation timeout exceeded");
           }
 
           // Check data size
@@ -714,29 +711,30 @@ describe("End-to-End Real Data Integration", () => {
         },
 
         async run(operation) {
-          const startTime = Date.now();
-
           try {
+            // Pre-validate operation constraints
             await this.validateOperation({
               ...operation,
-              duration: 0,
               dataSize: JSON.stringify(operation).length,
             });
 
-            // Simulate operation
-            await new Promise((resolve) =>
-              setTimeout(resolve, operation.delay || 100),
+            // Use plugin sandbox run function with timeout
+            const result = await run(
+              async () => {
+                // Simulate operation
+                await new Promise((resolve) =>
+                  setTimeout(resolve, operation.delay || 100),
+                );
+                return { duration: operation.delay || 100 };
+              },
+              { timeoutMs: this.config.sandboxTimeout },
             );
 
-            const duration = Date.now() - startTime;
+            if (!result.success) {
+              return { success: false, error: result.error };
+            }
 
-            await this.validateOperation({
-              ...operation,
-              duration,
-              dataSize: JSON.stringify(operation).length,
-            });
-
-            return { success: true, duration };
+            return { success: true, duration: result.result.duration };
           } catch (error) {
             return { success: false, error: error.message };
           }

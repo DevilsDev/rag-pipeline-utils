@@ -4,19 +4,19 @@ const path = require('path');
  * Command-line interface for community plugin hub operations
  */
 
-const { Command } = require("commander");
+const { Command } = require('commander');
 // eslint-disable-line global-require
-const chalk = require("chalk");
+const chalk = require('chalk');
 // eslint-disable-line global-require
-const ora = require("ora");
+const ora = require('ora');
 // eslint-disable-line global-require
-const inquirer = require("inquirer");
+const inquirer = require('inquirer');
 // eslint-disable-line global-require
-const Table = require("cli-table3");
+const Table = require('cli-table3');
 // eslint-disable-line global-require
-const { PluginHub } = require("../../ecosystem/plugin-hub");
+const { PluginHub } = require('../../ecosystem/plugin-hub');
 // eslint-disable-line global-require
-const { PluginCertification } = require("../../ecosystem/plugin-certification");
+const { PluginCertification } = require('../../ecosystem/plugin-certification');
 // eslint-disable-line global-require
 
 class PluginHubCLI {
@@ -28,7 +28,7 @@ class PluginHubCLI {
 
   setupEventListeners() {
     // Hub events
-    this.hub.on("install_start", (data) => {
+    this.hub.on('install_start', (data) => {
       console.log(
         chalk.blue(
           `🚀 Starting installation of ${data.pluginId}@${data.version}`,
@@ -36,20 +36,20 @@ class PluginHubCLI {
       ); // eslint-disable-line no-console
     });
 
-    this.hub.on("install_progress", (data) => {
+    this.hub.on('install_progress', (data) => {
       const stages = {
-        security_scan: "🔍 Running security scan...",
-        downloading: "⬇️  Downloading plugin...",
-        verifying: "✅ Verifying integrity...",
-        sandbox_install: "🏗️  Installing in sandbox...",
-        installing: "📦 Installing to system...",
+        security_scan: '🔍 Running security scan...',
+        downloading: '⬇️  Downloading plugin...',
+        verifying: '✅ Verifying integrity...',
+        sandbox_install: '🏗️  Installing in sandbox...',
+        installing: '📦 Installing to system...',
       };
       console.log(
         chalk.yellow(stages[data.stage] || `Processing ${data.stage}...`),
       ); // eslint-disable-line no-console
     }); // eslint-disable-line no-console
 
-    this.hub.on("install_complete", (data) => {
+    this.hub.on('install_complete', (data) => {
       console.log(
         chalk.green(
           `✅ Successfully installed ${data.pluginId}@${data.version}`,
@@ -58,13 +58,13 @@ class PluginHubCLI {
     });
 
     // eslint-disable-line no-console
-    this.hub.on("install_error", (data) => {
+    this.hub.on('install_error', (data) => {
       console.error(chalk.red(`❌ Installation failed: ${data.error.message}`)); // eslint-disable-line no-console
     });
 
     // Certification events
     // eslint-disable-line no-console
-    this.certification.on("certification_start", (data) => {
+    this.certification.on('certification_start', (data) => {
       console.log(
         chalk.blue(
           `🏆 Starting ${data.level} certification for ${data.pluginId}`,
@@ -72,12 +72,12 @@ class PluginHubCLI {
       ); // eslint-disable-line no-console
     });
 
-    this.certification.on("certification_progress", (data) => {
+    this.certification.on('certification_progress', (data) => {
       const stages = {
         // eslint-disable-line no-console
-        automated_checks: "🤖 Running automated checks...",
-        manual_review: "👥 Submitting for manual review...",
-        security_audit: "🔒 Performing security audit...",
+        automated_checks: '🤖 Running automated checks...',
+        manual_review: '👥 Submitting for manual review...',
+        security_audit: '🔒 Performing security audit...',
       };
       console.log(
         chalk.yellow(stages[data.stage] || `Processing ${data.stage}...`),
@@ -86,23 +86,23 @@ class PluginHubCLI {
   }
 
   createCommands() {
-    const program = new Command("hub"); // eslint-disable-line no-console
-    program.description("Community plugin hub operations");
+    const program = new Command('hub'); // eslint-disable-line no-console
+    program.description('Community plugin hub operations');
 
     // Search command
     program
-      .command("search <query>")
-      .description("Search plugins in the community hub")
-      .option("-c, --category <category>", "Filter by category")
-      .option("-t, --tags <tags>", "Filter by tags (comma-separated)")
-      .option("-a, --author <author>", "Filter by author")
-      .option("-r, --min-rating <rating>", "Minimum rating (1-5)", parseFloat)
-      .option("--verified", "Show only verified plugins")
-      .option("-l, --limit <limit>", "Number of results", parseInt, 20)
+      .command('search <query>')
+      .description('Search plugins in the community hub')
+      .option('-c, --category <category>', 'Filter by category')
+      .option('-t, --tags <tags>', 'Filter by tags (comma-separated)')
+      .option('-a, --author <author>', 'Filter by author')
+      .option('-r, --min-rating <rating>', 'Minimum rating (1-5)', parseFloat)
+      .option('--verified', 'Show only verified plugins')
+      .option('-l, --limit <limit>', 'Number of results', parseInt, 20)
       .option(
-        "--sort <sort>",
-        "Sort by: relevance, downloads, rating, updated",
-        "relevance",
+        '--sort <sort>',
+        'Sort by: relevance, downloads, rating, updated',
+        'relevance',
       )
       .action(async (query, _options) => {
         await this.searchPlugins(query, _options);
@@ -110,14 +110,14 @@ class PluginHubCLI {
 
     // Install command
     program
-      .command("install <plugin>")
-      .description("Install a plugin from the hub")
-      .option("-v, --version <version>", "Plugin version", "latest")
-      .option("--no-security-scan", "Skip security scan")
-      .option("--require-certified", "Only install certified plugins")
+      .command('install <plugin>')
+      .description('Install a plugin from the hub')
+      .option('-v, --version <version>', 'Plugin version', 'latest')
+      .option('--no-security-scan', 'Skip security scan')
+      .option('--require-certified', 'Only install certified plugins')
       .option(
-        "--sandbox-timeout <timeout>",
-        "Sandbox timeout in ms",
+        '--sandbox-timeout <timeout>',
+        'Sandbox timeout in ms',
         parseInt,
         30000,
       )
@@ -127,108 +127,108 @@ class PluginHubCLI {
 
     // Info command
     program
-      .command("info <plugin>")
-      .description("Get detailed information about a plugin")
+      .command('info <plugin>')
+      .description('Get detailed information about a plugin')
       .action(async (plugin) => {
         await this.getPluginInfo(plugin);
       });
 
     // List installed command
     program
-      .command("list")
-      .alias("ls")
-      .description("List installed plugins")
-      .option("--format <format>", "Output format: table, json", "table")
+      .command('list')
+      .alias('ls')
+      .description('List installed plugins')
+      .option('--format <format>', 'Output format: table, json', 'table')
       .action(async (_options) => {
         await this.listInstalledPlugins(_options);
       });
 
     // Publish command
     program
-      .command("publish [path]")
-      .description("Publish a plugin to the hub")
-      .option("--dry-run", "Validate without publishing")
-      .option("--tag <tag>", "Release tag")
+      .command('publish [path]')
+      .description('Publish a plugin to the hub')
+      .option('--dry-run', 'Validate without publishing')
+      .option('--tag <tag>', 'Release tag')
       .action(async (pluginPath, _options) => {
         await this.publishPlugin(pluginPath || process.cwd(), _options);
       });
 
     // Rate command
     program
-      .command("rate <plugin> <rating>")
-      .description("Rate a plugin (1-5 stars)")
-      .option("-r, --review <review>", "Written review")
+      .command('rate <plugin> <rating>')
+      .description('Rate a plugin (1-5 stars)')
+      .option('-r, --review <review>', 'Written review')
       .action(async (plugin, rating, _options) => {
         await this.ratePlugin(plugin, parseInt(rating), _options);
       });
 
     // Reviews command
     program
-      .command("reviews <plugin>")
-      .description("View plugin reviews")
-      .option("-l, --limit <limit>", "Number of reviews", parseInt, 10)
-      .option("--sort <sort>", "Sort by: helpful, recent, rating", "helpful")
+      .command('reviews <plugin>')
+      .description('View plugin reviews')
+      .option('-l, --limit <limit>', 'Number of reviews', parseInt, 10)
+      .option('--sort <sort>', 'Sort by: helpful, recent, rating', 'helpful')
       .action(async (plugin, _options) => {
         await this.getPluginReviews(plugin, _options);
       });
 
     // Trending command
     program
-      .command("trending")
-      .description("Show trending plugins")
-      .option("-p, --period <period>", "Time period: day, week, month", "week")
-      .option("-c, --category <category>", "Filter by category")
-      .option("-l, --limit <limit>", "Number of results", parseInt, 20)
+      .command('trending')
+      .description('Show trending plugins')
+      .option('-p, --period <period>', 'Time period: day, week, month', 'week')
+      .option('-c, --category <category>', 'Filter by category')
+      .option('-l, --limit <limit>', 'Number of results', parseInt, 20)
       .action(async (_options) => {
         await this.getTrendingPlugins(_options);
       });
 
     // Certification commands
     const certifyCmd = program
-      .command("certify")
-      .description("Plugin certification operations");
+      .command('certify')
+      .description('Plugin certification operations');
 
     certifyCmd
-      .command("submit <plugin>")
-      .description("Submit plugin for certification")
+      .command('submit <plugin>')
+      .description('Submit plugin for certification')
       .option(
-        "-l, --level <level>",
-        "Certification level: BASIC, VERIFIED, ENTERPRISE",
-        "BASIC",
+        '-l, --level <level>',
+        'Certification level: BASIC, VERIFIED, ENTERPRISE',
+        'BASIC',
       )
       .action(async (plugin, _options) => {
         await this.submitForCertification(plugin, _options);
       });
 
     certifyCmd
-      .command("verify <plugin> <certificationId>")
-      .description("Verify plugin certification")
+      .command('verify <plugin> <certificationId>')
+      .description('Verify plugin certification')
       .action(async (plugin, certificationId) => {
         await this.verifyCertification(plugin, certificationId);
       });
 
     certifyCmd
-      .command("requirements [level]")
-      .description("Show certification requirements")
+      .command('requirements [level]')
+      .description('Show certification requirements')
       .action(async (level) => {
         await this.showCertificationRequirements(level);
       });
 
     // Publisher commands
     const publisherCmd = program
-      .command("publisher")
-      .description("Publisher verification operations");
+      .command('publisher')
+      .description('Publisher verification operations');
 
     publisherCmd
-      .command("status [publisherId]")
-      .description("Check publisher verification status")
+      .command('status [publisherId]')
+      .description('Check publisher verification status')
       .action(async (publisherId) => {
         await this.getPublisherStatus(publisherId);
       });
 
     publisherCmd
-      .command("apply")
-      .description("Apply for publisher verification")
+      .command('apply')
+      .description('Apply for publisher verification')
       .action(async () => {
         await this.applyForPublisherVerification();
       });
@@ -237,12 +237,12 @@ class PluginHubCLI {
   }
 
   async searchPlugins(query, _options) {
-    const spinner = ora("Searching plugins...").start();
+    const spinner = ora('Searching plugins...').start();
 
     try {
       const searchOptions = {
         category: _options.category,
-        tags: _options.tags ? _options.tags.split(",") : undefined,
+        tags: _options.tags ? _options.tags.split(',') : undefined,
         author: _options.author,
         minRating: _options.minRating,
         verified: _options.verified,
@@ -254,7 +254,7 @@ class PluginHubCLI {
       spinner.stop();
 
       if (results.results.length === 0) {
-        console.log(chalk.yellow("No plugins found matching your criteria.")); // eslint-disable-line no-console
+        console.log(chalk.yellow('No plugins found matching your criteria.')); // eslint-disable-line no-console
         return;
       }
 
@@ -263,12 +263,12 @@ class PluginHubCLI {
       const table = new Table({
         // eslint-disable-line no-console
         head: [
-          "Name",
-          "Version",
-          "Author",
-          "Rating",
-          "Downloads",
-          "Description",
+          'Name',
+          'Version',
+          'Author',
+          'Rating',
+          'Downloads',
+          'Description',
         ],
         colWidths: [20, 10, 15, 8, 10, 40],
       });
@@ -276,9 +276,9 @@ class PluginHubCLI {
       for (const plugin of results.results) {
         // eslint-disable-line no-console
         const rating =
-          "★".repeat(Math.floor(plugin.rating)) +
-          "☆".repeat(5 - Math.floor(plugin.rating));
-        const certified = plugin.certified ? chalk.green("✓") : "";
+          '★'.repeat(Math.floor(plugin.rating)) +
+          '☆'.repeat(5 - Math.floor(plugin.rating));
+        const certified = plugin.certified ? chalk.green('✓') : '';
 
         table.push([
           `${plugin.name} ${certified}`,
@@ -287,7 +287,7 @@ class PluginHubCLI {
           `${rating} (${plugin.reviewCount})`,
           plugin.downloadCount.toLocaleString(),
           plugin.description.substring(0, 35) +
-            (plugin.description.length > 35 ? "..." : ""),
+            (plugin.description.length > 35 ? '...' : ''),
         ]);
       }
 
@@ -322,13 +322,13 @@ class PluginHubCLI {
         installOptions,
       );
 
-      console.log(chalk.green("\n✅ Installation completed successfully!")); // eslint-disable-line no-console
+      console.log(chalk.green('\n✅ Installation completed successfully!')); // eslint-disable-line no-console
       console.log(chalk.blue(`Plugin: ${result.pluginInfo.name}`)); // eslint-disable-line no-console
       console.log(chalk.blue(`Version: ${result.version}`)); // eslint-disable-line no-console
       console.log(chalk.blue(`Install Path: ${result.installPath}`)); // eslint-disable-line no-console
 
       if (result.pluginInfo.certified) {
-        console.log(chalk.green("🏆 This plugin is certified!")); // eslint-disable-line no-console
+        console.log(chalk.green('🏆 This plugin is certified!')); // eslint-disable-line no-console
       }
     } catch (error) {
       console.error(chalk.red(`Installation failed: ${error.message}`)); // eslint-disable-line no-console
@@ -339,7 +339,7 @@ class PluginHubCLI {
 
   async getPluginInfo(plugin) {
     // eslint-disable-line no-console
-    const spinner = ora("Fetching plugin information...").start();
+    const spinner = ora('Fetching plugin information...').start();
 
     // eslint-disable-line no-console
     try {
@@ -354,46 +354,46 @@ class PluginHubCLI {
       const details = new Table({
         // eslint-disable-line no-console
         chars: {
-          top: "",
-          "top-mid": "",
-          "top-left": "",
-          "top-right": "",
-          bottom: "",
-          "bottom-mid": "",
-          "bottom-left": "",
-          "bottom-right": "",
-          left: "",
-          "left-mid": "",
-          mid: "",
-          "mid-mid": "",
-          right: "",
-          "right-mid": "",
-          middle: " ",
+          top: '',
+          'top-mid': '',
+          'top-left': '',
+          'top-right': '',
+          bottom: '',
+          'bottom-mid': '',
+          'bottom-left': '',
+          'bottom-right': '',
+          left: '',
+          'left-mid': '',
+          mid: '',
+          'mid-mid': '',
+          right: '',
+          'right-mid': '',
+          middle: ' ',
         },
-        style: { "padding-left": 0, "padding-right": 0 },
+        style: { 'padding-left': 0, 'padding-right': 0 },
       });
 
       const rating =
-        "★".repeat(Math.floor(info.rating)) +
-        "☆".repeat(5 - Math.floor(info.rating));
+        '★'.repeat(Math.floor(info.rating)) +
+        '☆'.repeat(5 - Math.floor(info.rating));
 
       details.push(
-        ["Author:", info.author],
-        ["Category:", info.category],
-        ["Rating:", `${rating} (${info.reviewCount} reviews)`],
+        ['Author:', info.author],
+        ['Category:', info.category],
+        ['Rating:', `${rating} (${info.reviewCount} reviews)`],
         // eslint-disable-line no-console
-        ["Downloads:", info.downloadCount.toLocaleString()],
-        ["License:", info.license],
+        ['Downloads:', info.downloadCount.toLocaleString()],
+        ['License:', info.license],
         // eslint-disable-line no-console
-        ["Last Updated:", new Date(info.lastUpdated).toLocaleDateString()],
+        ['Last Updated:', new Date(info.lastUpdated).toLocaleDateString()],
         [
-          "Certified:",
-          info.certified ? chalk.green("Yes ✓") : chalk.gray("No"),
+          'Certified:',
+          info.certified ? chalk.green('Yes ✓') : chalk.gray('No'),
         ],
         // eslint-disable-line no-console
         [
-          "Verified Publisher:",
-          info.verifiedPublisher ? chalk.green("Yes ✓") : chalk.gray("No"),
+          'Verified Publisher:',
+          info.verifiedPublisher ? chalk.green('Yes ✓') : chalk.gray('No'),
         ],
       );
 
@@ -401,18 +401,18 @@ class PluginHubCLI {
 
       if (info.tags && info.tags.length > 0) {
         console.log(
-          chalk.blue("\nTags:"),
-          info.tags.map((tag) => chalk.cyan(`#${tag}`)).join(" "),
+          chalk.blue('\nTags:'),
+          info.tags.map((tag) => chalk.cyan(`#${tag}`)).join(' '),
         ); // eslint-disable-line no-console
       }
 
       if (info.homepage) {
-        console.log(chalk.blue("\nHomepage:"), chalk.underline(info.homepage)); // eslint-disable-line no-console
+        console.log(chalk.blue('\nHomepage:'), chalk.underline(info.homepage)); // eslint-disable-line no-console
       }
 
       if (info.repository) {
         console.log(
-          chalk.blue("Repository:"),
+          chalk.blue('Repository:'),
           chalk.underline(info.repository),
         ); // eslint-disable-line no-console
       }
@@ -425,7 +425,7 @@ class PluginHubCLI {
 
   // eslint-disable-line no-console
   async listInstalledPlugins(_options) {
-    const spinner = ora("Loading installed plugins...").start();
+    const spinner = ora('Loading installed plugins...').start();
 
     try {
       // eslint-disable-line no-console
@@ -433,11 +433,11 @@ class PluginHubCLI {
       spinner.stop();
 
       if (installed.length === 0) {
-        console.log(chalk.yellow("No plugins installed.")); // eslint-disable-line no-console
+        console.log(chalk.yellow('No plugins installed.')); // eslint-disable-line no-console
         return;
       }
 
-      if (_options.format === "json") {
+      if (_options.format === 'json') {
         console.log(JSON.stringify(installed, null, 2)); // eslint-disable-line no-console
         return;
       }
@@ -446,18 +446,18 @@ class PluginHubCLI {
 
       const table = new Table({
         // eslint-disable-line no-console
-        head: ["Name", "Version", "Type", "Last Used", "Status"],
+        head: ['Name', 'Version', 'Type', 'Last Used', 'Status'],
         colWidths: [25, 12, 15, 15, 10],
       });
 
       for (const plugin of installed) {
         const lastUsed = plugin.lastUsed
           ? new Date(plugin.lastUsed).toLocaleDateString()
-          : chalk.gray("Never");
+          : chalk.gray('Never');
 
         const status = plugin.certified
-          ? chalk.green("Certified")
-          : chalk.gray("Standard");
+          ? chalk.green('Certified')
+          : chalk.gray('Standard');
 
         table.push([
           // eslint-disable-line no-console
@@ -481,7 +481,7 @@ class PluginHubCLI {
   async publishPlugin(pluginPath, _options) {
     if (_options.dryRun) {
       console.log(
-        chalk.blue("🔍 Dry run mode - validating plugin without publishing\n"),
+        chalk.blue('🔍 Dry run mode - validating plugin without publishing\n'),
       ); // eslint-disable-line no-console
     }
 
@@ -489,13 +489,13 @@ class PluginHubCLI {
       if (!_options.dryRun) {
         const result = await this.hub.publishPlugin(pluginPath, _options);
 
-        console.log(chalk.green("\n🎉 Plugin published successfully!")); // eslint-disable-line no-console
+        console.log(chalk.green('\n🎉 Plugin published successfully!')); // eslint-disable-line no-console
         console.log(chalk.blue(`Plugin ID: ${result.pluginId}`)); // eslint-disable-line no-console
         console.log(chalk.blue(`Version: ${result.version}`)); // eslint-disable-line no-console
         console.log(chalk.blue(`URL: ${result.url}`)); // eslint-disable-line no-console
       } else {
         console.log(
-          chalk.green("✅ Plugin validation passed - ready for publishing!"),
+          chalk.green('✅ Plugin validation passed - ready for publishing!'),
         ); // eslint-disable-line no-console
       }
     } catch (error) {
@@ -507,18 +507,18 @@ class PluginHubCLI {
   async ratePlugin(plugin, rating, _options) {
     if (rating < 1 || rating > 5) {
       // eslint-disable-line no-console
-      console.error(chalk.red("Rating must be between 1 and 5")); // eslint-disable-line no-console
+      console.error(chalk.red('Rating must be between 1 and 5')); // eslint-disable-line no-console
       process.exit(1);
     }
 
     try {
       await this.hub.ratePlugin(plugin, rating, _options.review);
 
-      const stars = "★".repeat(rating) + "☆".repeat(5 - rating); // eslint-disable-line no-console
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating); // eslint-disable-line no-console
       console.log(chalk.green(`✅ Rated ${plugin}: ${stars}`)); // eslint-disable-line no-console
 
       if (_options.review) {
-        console.log(chalk.blue("Review submitted successfully!")); // eslint-disable-line no-console
+        console.log(chalk.blue('Review submitted successfully!')); // eslint-disable-line no-console
       }
     } catch (error) {
       console.error(chalk.red(`Rating failed: ${error.message}`)); // eslint-disable-line no-console
@@ -529,21 +529,21 @@ class PluginHubCLI {
 
   // eslint-disable-line no-console
   async getPluginReviews(plugin, _options) {
-    const spinner = ora("Loading reviews...").start(); // eslint-disable-line no-console
+    const spinner = ora('Loading reviews...').start(); // eslint-disable-line no-console
 
     try {
       const reviews = await this.hub.getPluginReviews(plugin, _options); // eslint-disable-line no-console
       spinner.stop();
 
       if (reviews.reviews.length === 0) {
-        console.log(chalk.yellow("No reviews found for this plugin.")); // eslint-disable-line no-console
+        console.log(chalk.yellow('No reviews found for this plugin.')); // eslint-disable-line no-console
         return; // eslint-disable-line no-console
       }
 
       console.log(chalk.green(`Reviews for ${plugin}:\n`)); // eslint-disable-line no-console
 
       for (const review of reviews.reviews) {
-        const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
         const date = new Date(review.createdAt).toLocaleDateString();
 
         // eslint-disable-line no-console
@@ -578,7 +578,7 @@ class PluginHubCLI {
   }
 
   async getTrendingPlugins(_options) {
-    const spinner = ora("Loading trending plugins...").start();
+    const spinner = ora('Loading trending plugins...').start();
 
     try {
       const trending = await this.hub.getTrendingPlugins(_options);
@@ -587,15 +587,15 @@ class PluginHubCLI {
       console.log(chalk.green(`🔥 Trending plugins (${_options.period}):\n`)); // eslint-disable-line no-console
 
       const table = new Table({
-        head: ["Rank", "Name", "Author", "Category", "Growth", "Rating"],
+        head: ['Rank', 'Name', 'Author', 'Category', 'Growth', 'Rating'],
         colWidths: [6, 20, 15, 15, 10, 10],
       }); // eslint-disable-line no-console
 
       trending.forEach((plugin, index) => {
         const rating =
-          "★".repeat(Math.floor(plugin.rating)) +
-          "☆".repeat(5 - Math.floor(plugin.rating));
-        const certified = plugin.certified ? chalk.green("✓") : "";
+          '★'.repeat(Math.floor(plugin.rating)) +
+          '☆'.repeat(5 - Math.floor(plugin.rating));
+        const certified = plugin.certified ? chalk.green('✓') : '';
 
         table.push([
           `#${index + 1}`,
@@ -627,11 +627,11 @@ class PluginHubCLI {
         options.level,
       );
 
-      console.log(chalk.green("\n🏆 Certification submitted successfully!")); // eslint-disable-line no-console
+      console.log(chalk.green('\n🏆 Certification submitted successfully!')); // eslint-disable-line no-console
       console.log(chalk.blue(`Certification ID: ${result.id}`)); // eslint-disable-line no-console
       console.log(chalk.blue(`Level: ${result.level}`)); // eslint-disable-line no-console
       console.log(chalk.blue(`Score: ${result.score}/100`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Status: ${result.status || "Pending"}`)); // eslint-disable-line no-console
+      console.log(chalk.blue(`Status: ${result.status || 'Pending'}`)); // eslint-disable-line no-console
 
       if (result.estimatedCompletion) {
         console.log(
@@ -648,7 +648,7 @@ class PluginHubCLI {
 
   // eslint-disable-line no-console
   async verifyCertification(plugin, certificationId) {
-    const spinner = ora("Verifying certification...").start();
+    const spinner = ora('Verifying certification...').start();
 
     try {
       const verification = await this.certification.verifyCertification(
@@ -658,7 +658,7 @@ class PluginHubCLI {
       spinner.stop();
 
       if (verification.valid) {
-        console.log(chalk.green("✅ Certification is valid!")); // eslint-disable-line no-console
+        console.log(chalk.green('✅ Certification is valid!')); // eslint-disable-line no-console
         console.log(chalk.blue(`Plugin: ${plugin}`)); // eslint-disable-line no-console
         console.log(chalk.blue(`Level: ${verification.certification.level}`)); // eslint-disable-line no-console
         console.log(
@@ -667,7 +667,7 @@ class PluginHubCLI {
           ),
         ); // eslint-disable-line no-console
       } else {
-        console.log(chalk.red("❌ Certification is invalid or expired")); // eslint-disable-line no-console
+        console.log(chalk.red('❌ Certification is invalid or expired')); // eslint-disable-line no-console
       }
     } catch (error) {
       spinner.stop();
@@ -678,7 +678,7 @@ class PluginHubCLI {
   // eslint-disable-line no-console
 
   async showCertificationRequirements(level) {
-    const levels = level ? [level] : ["BASIC", "VERIFIED", "ENTERPRISE"];
+    const levels = level ? [level] : ['BASIC', 'VERIFIED', 'ENTERPRISE'];
 
     for (const certLevel of levels) {
       // eslint-disable-line no-console
@@ -694,14 +694,14 @@ class PluginHubCLI {
         chalk.blue.bold(`\n${certLevel} Certification Requirements:\n`),
       ); // eslint-disable-line no-console
 
-      console.log(chalk.green("Automated Checks:")); // eslint-disable-line no-console
+      console.log(chalk.green('Automated Checks:')); // eslint-disable-line no-console
       requirements.automated.forEach((check) => {
         console.log(chalk.gray(`  • ${check}`)); // eslint-disable-line no-console
       });
 
       // eslint-disable-line no-console
       if (requirements.manual.length > 0) {
-        console.log(chalk.yellow("\nManual Review:")); // eslint-disable-line no-console
+        console.log(chalk.yellow('\nManual Review:')); // eslint-disable-line no-console
         requirements.manual.forEach((review) => {
           console.log(chalk.gray(`  • ${review}`)); // eslint-disable-line no-console
         });
@@ -709,7 +709,7 @@ class PluginHubCLI {
 
       if (requirements.audit.length > 0) {
         // eslint-disable-line no-console
-        console.log(chalk.red("\nSecurity Audit:")); // eslint-disable-line no-console
+        console.log(chalk.red('\nSecurity Audit:')); // eslint-disable-line no-console
         requirements.audit.forEach((audit) => {
           console.log(chalk.gray(`  • ${audit}`)); // eslint-disable-line no-console
         });
@@ -724,58 +724,58 @@ class PluginHubCLI {
   }
 
   async getPublisherStatus(publisherId) {
-    const spinner = ora("Checking publisher status...").start();
+    const spinner = ora('Checking publisher status...').start();
 
     try {
       const status = await this.certification.getPublisherStatus(
-        publisherId || "me",
+        publisherId || 'me',
       );
       spinner.stop();
 
-      console.log(chalk.blue.bold("\nPublisher Status:\n")); // eslint-disable-line no-console
+      console.log(chalk.blue.bold('\nPublisher Status:\n')); // eslint-disable-line no-console
 
       const table = new Table({
         // eslint-disable-line no-console
         chars: {
-          top: "",
-          "top-mid": "",
-          "top-left": "",
-          "top-right": "",
-          bottom: "",
-          "bottom-mid": "",
-          "bottom-left": "",
-          "bottom-right": "",
+          top: '',
+          'top-mid': '',
+          'top-left': '',
+          'top-right': '',
+          bottom: '',
+          'bottom-mid': '',
+          'bottom-left': '',
+          'bottom-right': '',
           // eslint-disable-line no-console
-          left: "",
-          "left-mid": "",
-          mid: "",
-          "mid-mid": "",
-          right: "",
-          "right-mid": "",
-          middle: " ",
+          left: '',
+          'left-mid': '',
+          mid: '',
+          'mid-mid': '',
+          right: '',
+          'right-mid': '',
+          middle: ' ',
         },
         // eslint-disable-line no-console
-        style: { "padding-left": 0, "padding-right": 0 },
+        style: { 'padding-left': 0, 'padding-right': 0 },
       });
 
       // eslint-disable-line no-console
       table.push(
         [
-          "Verified:",
-          status.verified ? chalk.green("Yes ✓") : chalk.gray("No"),
+          'Verified:',
+          status.verified ? chalk.green('Yes ✓') : chalk.gray('No'),
         ],
-        ["Level:", status.level || chalk.gray("None")],
-        ["Certified Plugins:", status.certifiedPlugins.toString()],
-        ["Reputation:", status.reputation.toString()],
-        ["Member Since:", new Date(status.joinedAt).toLocaleDateString()],
+        ['Level:', status.level || chalk.gray('None')],
+        ['Certified Plugins:', status.certifiedPlugins.toString()],
+        ['Reputation:', status.reputation.toString()],
+        ['Member Since:', new Date(status.joinedAt).toLocaleDateString()],
         // eslint-disable-line no-console
-        ["Last Activity:", new Date(status.lastActivity).toLocaleDateString()],
+        ['Last Activity:', new Date(status.lastActivity).toLocaleDateString()],
       );
 
       console.log(table.toString()); // eslint-disable-line no-console
 
       if (status.badges && status.badges.length > 0) {
-        console.log(chalk.blue("\nBadges:"), status.badges.join(", ")); // eslint-disable-line no-console
+        console.log(chalk.blue('\nBadges:'), status.badges.join(', ')); // eslint-disable-line no-console
       }
     } catch (error) {
       spinner.stop();
@@ -787,52 +787,52 @@ class PluginHubCLI {
   }
 
   async applyForPublisherVerification() {
-    console.log(chalk.blue("📝 Publisher Verification Application\n")); // eslint-disable-line no-console
+    console.log(chalk.blue('📝 Publisher Verification Application\n')); // eslint-disable-line no-console
 
     const answers = await inquirer.prompt([
       {
         // eslint-disable-line no-console
-        _type: "input",
-        name: "name",
-        message: "Full name:",
+        _type: 'input',
+        name: 'name',
+        message: 'Full name:',
         // eslint-disable-line no-console
         validate: (input) => input.length > 0,
       },
       {
-        _type: "input",
-        name: "email",
+        _type: 'input',
+        name: 'email',
         // eslint-disable-line no-console
-        message: "Email address:",
+        message: 'Email address:',
         validate: (input) => /\S+@\S+\.\S+/.test(input),
       },
       // eslint-disable-line no-console
       {
-        _type: "input",
-        name: "organization",
-        message: "Organization (optional):",
+        _type: 'input',
+        name: 'organization',
+        message: 'Organization (optional):',
       },
       {
         // eslint-disable-line no-console
-        _type: "input",
-        name: "website",
-        message: "Website/Portfolio:",
+        _type: 'input',
+        name: 'website',
+        message: 'Website/Portfolio:',
         // eslint-disable-line no-console
       },
       {
-        _type: "input",
-        name: "github",
-        message: "GitHub profile:",
+        _type: 'input',
+        name: 'github',
+        message: 'GitHub profile:',
         // eslint-disable-line no-console
       },
       {
         // eslint-disable-line no-console
-        _type: "editor",
-        name: "motivation",
-        message: "Why do you want to become a verified publisher?",
+        _type: 'editor',
+        name: 'motivation',
+        message: 'Why do you want to become a verified publisher?',
       },
     ]);
 
-    const spinner = ora("Submitting application...").start();
+    const spinner = ora('Submitting application...').start();
 
     try {
       const result =
@@ -840,7 +840,7 @@ class PluginHubCLI {
       spinner.stop();
 
       // eslint-disable-line no-console
-      console.log(chalk.green("\n✅ Application submitted successfully!")); // eslint-disable-line no-console
+      console.log(chalk.green('\n✅ Application submitted successfully!')); // eslint-disable-line no-console
       console.log(chalk.blue(`Application ID: ${result.applicationId}`)); // eslint-disable-line no-console
       console.log(chalk.blue(`Status: ${result.status}`)); // eslint-disable-line no-console
       console.log(

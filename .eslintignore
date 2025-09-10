@@ -1,28 +1,37 @@
 node_modules/
 coverage/
 dist/
-__tests__/
-**/__tests__/
-__mocks__/
-**/__mocks__/
-__fixtures__/
-**/__fixtures__/
-__temp__/
-scripts/
-test-*.js
-*.test.js
-*.spec.js
-jest.setup.js
 
-# Temporary exclusions to unblock commit (clean up later)
-src/core/observability/
-src/core/performance/
-src/dag/
-src/observability/
-src/plugins/sample-embedder.js
-src/plugins/sample-llm.js
-src/utils/retry.js
-test-ai-modules-quick.js
-test-jest-hanging.js
-test-registry-fix.js
-validate-fixes.js
+# test data & helper directories (not actual tests)
+__tests__/fixtures/
+__tests__/mocks/
+__tests__/utils/
+__tests__/__temp__/
+
+# misc generated / local scripts
+*.coverage.*
+*.tmp
+*.log
+
+# (optional) temporarily exclude large subsystems; re-enable incrementally
+# src/dag/**
+# src/observability/**
+# scripts/
+
+coverage/**
+dist/**
+docs-site/.docusaurus/**
+docs-site/build/
+pipelines/**
+test-results-current.json
+ci-reports/**
+performance-reports/**
+profiling-reports/**
+e2e-reports/**
+comprehensive-security-reports/**
+security-reports/**
+.artifacts/
+__tests__/fixtures/**
+**/-backup.js
+**/.backup.js
+**/*.bak
