@@ -386,7 +386,6 @@ function createPluginMarketplaceCommands() {
           version: metadata.version,
           description: metadata.description,
           main: 'index.js',
-          _type: 'module',
           keywords: metadata.keywords,
           author: metadata.author,
           license: metadata.license,
@@ -717,10 +716,10 @@ rag-pipeline plugin install ${name}
 ## Usage
 
 \`\`\`javascript
-import { ${name
+const { ${name
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('')} } from '${name}';
+    .join('')} } = require('${name}');
 
 const ${_type} = new ${name
     .split('-')
@@ -809,7 +808,7 @@ function generateTestTemplate(_type, _name) {
  * Tests for ${_name} plugin
  */
 
-import { ${className} } from './index.js';
+const { ${className} } = require('./index.js');
 
 describe('${className}', () => {
   let ${_type};

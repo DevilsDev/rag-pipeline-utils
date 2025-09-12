@@ -920,10 +920,20 @@ const createBasicConfig = async (outputPath) => {
   return await cli.createBasicConfig(outputPath);
 };
 
+const enhancedCliCommands = {
+  init,
+  ingest,
+  query,
+  handleError,
+  validateArgs,
+  showHelp,
+};
+
 module.exports = {
   EnhancedCLI,
   enhancedCLI,
   runEnhancedCLI,
+  enhancedCliCommands,
   init,
   ingest,
   query,

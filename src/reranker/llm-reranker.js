@@ -1,11 +1,41 @@
-'use strict';
+"use strict";
 
 class LLMReranker {
-  rerank(query, docs, opts = {}) {
+  constructor(options = {}) {
+    this.llm = options.llm;
+  }
+
+  async rerank(query, docs, opts = {}) {
     if (!Array.isArray(docs)) {
       return [];
     }
 
+    // If no LLM provided, fall back to simple overlap scoring
+    if (!this.llm) {
+      return this._fallbackRerank(query, docs);
+    }
+
+    try {
+      // Use LLM to get reranking order
+      const response = await this.llm.generate(query, docs, opts);
+      const rankingOrder = JSON.parse(response);
+
+      // Apply the ranking order
+      const reranked = [];
+      for (const index of rankingOrder) {
+        if (index >= 0 && index < docs.length) {
+          reranked.push(docs[index]);
+        }
+      }
+
+      return reranked;
+    } catch (error) {
+      // Fall back to simple overlap scoring on LLM error
+      return this._fallbackRerank(query, docs);
+    }
+  }
+
+  _fallbackRerank(query, docs) {
     // Simple bag-of-words overlap scoring
     const queryTokens = query
       .toLowerCase()
@@ -13,7 +43,7 @@ class LLMReranker {
       .filter((t) => t.length > 0);
 
     const scored = docs.map((doc, originalIndex) => {
-      const text = doc.text || doc.content || '';
+      const text = doc.text || doc.content || "";
       const docTokens = text
         .toLowerCase()
         .split(/\s+/)

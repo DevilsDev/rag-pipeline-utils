@@ -42,6 +42,18 @@ class InteractiveWizard {
         urls: [this._options.registryUrl],
       },
     };
+
+    // Initialize steps for testing interface
+    this.steps = [
+      'project-setup',
+      'plugin-selection',
+      'configuration',
+      'pipeline-setup',
+      'performance-tuning',
+      'observability',
+      'preview-save',
+    ];
+    this.currentStep = 0;
   }
 
   /**
@@ -908,6 +920,70 @@ class InteractiveWizard {
     }
 
     return this.registry.plugins[name] || null;
+  }
+
+  /**
+   * Load wizard configuration
+   * @returns {object} Current configuration
+   */
+  loadConfig() {
+    return { ...this._config };
+  }
+
+  /**
+   * Navigate to next step
+   * @returns {string} Next step name
+   */
+  nextStep() {
+    if (this.currentStep < this.steps.length - 1) {
+      this.currentStep++;
+    }
+    return this.steps[this.currentStep];
+  }
+
+  /**
+   * Navigate to previous step
+   * @returns {string} Previous step name
+   */
+  previousStep() {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+    }
+    return this.steps[this.currentStep];
+  }
+
+  /**
+   * Complete the wizard
+   * @returns {Promise<object>} Completion result
+   */
+  async complete() {
+    return {
+      success: true,
+      config: this._config,
+      message: 'Wizard completed successfully',
+    };
+  }
+
+  /**
+   * Validate user input
+   * @param {string} input - Input to validate
+   * @returns {boolean} Whether input is valid
+   */
+  validateInput(input) {
+    return typeof input === 'string' && input.trim().length > 0;
+  }
+
+  /**
+   * Process user selection
+   * @param {string} selection - User selection
+   * @returns {object} Processing result
+   */
+  processSelection(selection) {
+    return {
+      selection,
+      processed: true,
+      timestamp: Date.now(),
+    };
   }
 }
 

@@ -1,26 +1,32 @@
 /**
- * AI/ML Module Index - Refactored to use extracted bounded contexts
- * Provides unified interface to decomposed AI components
+ * AI/ML Module Index - Decomposed Architecture
+ * Provides unified interface to 4 separate AI modules as required by CLAUDE.md
+ *
+ * Decomposed modules:
+ * - orchestrator.js - ModelTrainingOrchestrator
+ * - retrieval-engine.js - AdaptiveRetrievalEngine
+ * - multimodal.js - MultiModalProcessor
+ * - federation.js - FederatedLearningCoordinator
  */
 
-const modelTraining = require("./model-training");
-const adaptiveRetrieval = require("./adaptive-retrieval");
-const multiModalProcessor = require("./multimodal-processing");
-const federatedLearning = require("./federated-learning");
+const orchestrator = require("./orchestrator");
+const retrievalEngine = require("./retrieval-engine");
+const multimodal = require("./multimodal");
+const federation = require("./federation");
 
-// Export the singleton objects directly
+// Export the decomposed modules
 module.exports = {
-  // Direct singleton exports (what tests expect)
-  ModelTrainingOrchestrator: modelTraining,
-  AdaptiveRetrieval: adaptiveRetrieval,
-  MultiModalProcessor: multiModalProcessor,
-  FederatedLearningCoordinator: federatedLearning,
+  // Primary exports with new decomposed architecture
+  ModelTrainingOrchestrator: orchestrator,
+  AdaptiveRetrievalEngine: retrievalEngine,
+  MultiModalProcessor: multimodal,
+  FederatedLearningCoordinator: federation,
 
   // Legacy names for backward compatibility
-  modelTrainer: modelTraining,
-  adaptiveRetrieval: adaptiveRetrieval,
-  multiModalProcessor: multiModalProcessor,
-  federatedLearning: federatedLearning,
+  modelTrainer: orchestrator,
+  adaptiveRetrieval: retrievalEngine,
+  multiModalProcessor: multimodal,
+  federatedLearning: federation,
 };
 
 // CJS+ESM interop pattern

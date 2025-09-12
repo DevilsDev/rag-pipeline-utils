@@ -129,13 +129,43 @@ class RealtimeDebugger extends EventEmitter {
    * Execute pipeline step with debugging
    */
   async executeStep(sessionId, componentId, input, context = {}) {
+    const session = this._validateSession(sessionId);
+    const step = this._initializeStep(componentId, input, context);
+
+    session.steps.push(step);
+    session.currentStep = step.id;
+
+    this._notifyStepStarted(sessionId, step);
+    await this._handleBreakpoints(sessionId, step, componentId, input, context);
+
+    try {
+      const output = await this._executeStepLogic(
+        componentId,
+        input,
+        context,
+        step,
+      );
+      this._completeStep(step, output);
+      this._notifyStepCompleted(sessionId, step);
+      return output;
+    } catch (error) {
+      this._handleStepError(step, error);
+      this._notifyStepError(sessionId, step, error);
+      throw error;
+    }
+  }
+
+  _validateSession(sessionId) {
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new Error(`Debug session ${sessionId} not found`);
     }
+    return session;
+  }
 
+  _initializeStep(componentId, input, context) {
     const stepId = `step_${Date.now()}`;
-    const step = {
+    return {
       id: stepId,
       componentId,
       input: this.cloneData(input),
@@ -151,78 +181,76 @@ class RealtimeDebugger extends EventEmitter {
         cpuUsage: process.cpuUsage(),
       },
     };
+  }
 
-    session.steps.push(step);
-    session.currentStep = stepId;
-
-    this.emit("stepStarted", { sessionId, stepId, step });
+  _notifyStepStarted(sessionId, step) {
+    this.emit("stepStarted", { sessionId, stepId: step.id, step });
     this.broadcastToClients("stepStarted", {
       sessionId,
       step: this.serializeStep(step),
     });
+  }
 
-    // Check for breakpoints
+  async _handleBreakpoints(sessionId, step, componentId, input, context) {
     const shouldBreak = await this.checkBreakpoints(
       sessionId,
       componentId,
       input,
       context,
     );
+
     if (shouldBreak) {
+      const session = this.sessions.get(sessionId);
       session.isPaused = true;
-      this.emit("breakpointHit", { sessionId, stepId, componentId });
+
+      this.emit("breakpointHit", { sessionId, stepId: step.id, componentId });
       this.broadcastToClients("breakpointHit", {
         sessionId,
-        stepId,
+        stepId: step.id,
         componentId,
       });
 
-      // Wait for user to continue
       await this.waitForContinue(sessionId);
     }
+  }
 
-    try {
-      // Execute the actual component logic
-      const output = await this.executeComponent(
-        componentId,
-        input,
-        context,
-        step,
-      );
+  async _executeStepLogic(componentId, input, context, step) {
+    return await this.executeComponent(componentId, input, context, step);
+  }
 
-      step.output = this.cloneData(output);
-      step.endTime = Date.now();
-      step.performance.duration = step.endTime - step.startTime;
-      step.performance.cpuUsageEnd = process.cpuUsage(
-        step.performance.cpuUsage,
-      );
-      step.performance.memoryUsageEnd = process.memoryUsage();
+  _completeStep(step, output) {
+    step.output = this.cloneData(output);
+    step.endTime = Date.now();
+    step.performance.duration = step.endTime - step.startTime;
+    step.performance.cpuUsageEnd = process.cpuUsage(step.performance.cpuUsage);
+    step.performance.memoryUsageEnd = process.memoryUsage();
+  }
 
-      this.emit("stepCompleted", { sessionId, stepId, step });
-      this.broadcastToClients("stepCompleted", {
-        sessionId,
-        step: this.serializeStep(step),
-      });
+  _notifyStepCompleted(sessionId, step) {
+    this.emit("stepCompleted", { sessionId, stepId: step.id, step });
+    this.broadcastToClients("stepCompleted", {
+      sessionId,
+      step: this.serializeStep(step),
+    });
+  }
 
-      return output;
-    } catch (error) {
-      step.error = {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      };
-      step.endTime = Date.now();
-      step.performance.duration = step.endTime - step.startTime;
+  _handleStepError(step, error) {
+    step.error = {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    };
+    step.endTime = Date.now();
+    step.performance.duration = step.endTime - step.startTime;
+  }
 
-      this.emit("stepError", { sessionId, stepId, step, error });
-      this.broadcastToClients("stepError", {
-        sessionId,
-        step: this.serializeStep(step),
-        error: step.error,
-      });
-
-      throw error;
-    }
+  _notifyStepError(sessionId, step, error) {
+    this.emit("stepError", { sessionId, stepId: step.id, step, error });
+    this.broadcastToClients("stepError", {
+      sessionId,
+      step: this.serializeStep(step),
+      error: step.error,
+    });
   }
 
   /**

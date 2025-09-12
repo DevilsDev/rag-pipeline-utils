@@ -95,286 +95,707 @@ class DAG {
   }
 
   /**
-   * Executes DAG from source nodes to sinks using topological order
-   * @param {any|Object} seedOrOptions - Initial input to the graph or execution options
-   * @param {Object} _options - Execution options (when seed is separate)
-   * @returns {Promise<Map|any>} - Results Map or final output from sink(s)
+   * Parse and normalize execute parameters
+   * @param {any} seedOrOptions - Seed data or options object
+   * @param {Object} _options - Additional options (if first param is seed)
+   * @returns {Object} - Normalized {seed, options} object
    */
-  async execute(seedOrOptions, _options = {}) {
-    // Must be a Map (tests call errors.set and check size)
-    const errors = new Map();
-
-    // Handle different parameter patterns
-    let seed, execOptions;
+  _parseExecuteParams(seedOrOptions, _options = {}) {
+    // Handle parameter overloading
+    let seed, options;
     if (
+      seedOrOptions &&
       typeof seedOrOptions === 'object' &&
-      seedOrOptions !== null &&
-      (seedOrOptions.retryFailedNodes ||
-        seedOrOptions.gracefulDegradation ||
-        seedOrOptions.maxRetries ||
-        seedOrOptions.requiredNodes ||
-        seedOrOptions.checkpointId)
+      !Array.isArray(seedOrOptions) &&
+      ('concurrency' in seedOrOptions ||
+        'timeout' in seedOrOptions ||
+        'continueOnError' in seedOrOptions ||
+        'enableCheckpoints' in seedOrOptions ||
+        'checkpointId' in seedOrOptions ||
+        'requiredNodes' in seedOrOptions ||
+        'returnFormat' in seedOrOptions ||
+        'retryFailedNodes' in seedOrOptions ||
+        'maxRetries' in seedOrOptions ||
+        'gracefulDegradation' in seedOrOptions)
     ) {
-      // First parameter is options object
-      execOptions = seedOrOptions;
-      seed = execOptions.seed || null;
+      // First parameter is options
+      options = seedOrOptions;
+      seed = options.seed;
     } else {
       // First parameter is seed
       seed = seedOrOptions;
-      execOptions = _options;
+      options = _options;
     }
 
+    // Extract options with defaults
+    const normalizedOptions = {
+      concurrency: parseInt(process.env.RAG_MAX_CONCURRENCY, 10) || null,
+      timeout: null,
+      continueOnError: false,
+      gracefulDegradation: false,
+      enableCheckpoints: false,
+      checkpointId: null,
+      requiredNodes: [],
+      returnFormat: 'auto',
+      retryFailedNodes: false,
+      maxRetries: 3,
+      ...options,
+    };
+
+    return { seed, options: normalizedOptions };
+  }
+
+  /**
+   * Execute all nodes in topological order with concurrency control
+   * @param {Array} order - Topologically sorted nodes
+   * @param {Object} context - Execution context
+   * @returns {Promise<void>}
+   */
+  async _runAllNodes(order, context) {
     const {
-      retryFailedNodes = false,
-      maxRetries = 3,
-      gracefulDegradation = false,
-      continueOnError = false,
-      requiredNodes = [],
-      checkpointId = null,
-      resumeFromCheckpoint = false,
-      timeout = null,
-      maxConcurrency = parseInt(process.env.RAG_MAX_CONCURRENCY) || null,
-      enableCheckpoints = false,
-      externalCheckpointData = null,
-      onProgress = null,
-    } = execOptions;
+      concurrency,
+      results,
+      errors,
+      fwd,
+      continueOnError,
+      requiredIds,
+      seed,
+      gracefulDegradation,
+      requiredNodes,
+      retryFailedNodes,
+      maxRetries,
+    } = context;
 
-    try {
-      // Validate DAG before execution
-      this.validate();
+    const semaphore = concurrency ? new Array(concurrency).fill(null) : null;
+    let semaphoreIndex = 0;
 
-      // Initialize execution state
-      const results = new Map();
-      const _errors = new Map(); // reserved if needed by extensions
-      const retryCount = new Map();
-
-      // Handle external checkpoint data if provided
-      if (externalCheckpointData && externalCheckpointData instanceof Map) {
-        for (const [nodeId, result] of externalCheckpointData) {
-          results.set(nodeId, result);
+    const executeWithSemaphore = async (node) => {
+      if (semaphore) {
+        // Wait for available slot
+        while (semaphore[semaphoreIndex % semaphore.length] !== null) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
         }
-      }
+        const slotIndex = semaphoreIndex % semaphore.length;
+        semaphoreIndex++;
 
-      // Handle checkpoint resume
-      if (resumeFromCheckpoint && checkpointId) {
-        const checkpoint = this.loadCheckpoint(checkpointId);
-        if (checkpoint) {
-          for (const [nodeId, result] of checkpoint.results) {
-            results.set(nodeId, result);
-          }
-        }
-      }
-
-      // Set up timeout if specified
-      const startTime = Date.now();
-      let timeoutId = null;
-      const timeoutPromise = timeout
-        ? new Promise((_, reject) => {
-            timeoutId = setTimeout(() => {
-              reject(new Error('Execution timeout'));
-            }, timeout);
-          })
-        : null;
-
-      const checkTimeout = () => {
-        if (timeout && Date.now() - startTime > timeout) {
-          throw new Error('Execution timeout');
-        }
-      };
-
-      // Get topological order for execution
-      const order = this.topoSort();
-
-      // Sort by priority if nodes have priority set
-      order.sort((a, b) => (b.priority || 0) - (a.priority || 0));
-
-      // Progress tracking
-      let completedNodes = 0;
-      const totalNodes = order.length;
-
-      // Execute nodes with concurrency control if specified
-      if (maxConcurrency && maxConcurrency > 1) {
-        await this.executeConcurrent(order, {
-          maxConcurrency,
-          seed,
-          results,
-          errors,
-          retryCount,
-          retryFailedNodes,
-          maxRetries,
-          gracefulDegradation,
-          requiredNodes,
-          checkpointId,
-          timeoutPromise,
-          checkTimeout,
-          enableCheckpoints,
-          onProgress,
-          completedNodes,
-          totalNodes,
-        });
-      } else {
-        // Sequential execution
-        for (const node of order) {
-          checkTimeout();
-
-          // Skip if already completed (from checkpoint)
-          if (results.has(node.id)) {
-            completedNodes++;
-            continue;
-          }
-
-          await this.executeNode(node, {
-            seed,
+        try {
+          const result = await this.executeNode(node, {
             results,
             errors,
-            retryCount,
+            fwd,
+            continueOnError,
+            requiredIds,
+            seed,
+            gracefulDegradation,
+            requiredNodes,
             retryFailedNodes,
             maxRetries,
-            gracefulDegradation,
-            continueOnError,
-            requiredNodes,
-            checkpointId,
-            timeoutPromise,
-            enableCheckpoints,
           });
-
-          completedNodes++;
-
-          // Report progress
-          if (onProgress) {
-            onProgress({
-              completed: completedNodes,
-              total: totalNodes,
-              stage: 'execution',
-              currentNode: node.id,
-            });
+          // Only set result if it's not undefined (failed optional nodes return undefined)
+          if (result !== undefined) {
+            results.set(node.id, result);
           }
+        } finally {
+          semaphore[slotIndex] = null;
+        }
+      } else {
+        const result = await this.executeNode(node, {
+          results,
+          errors,
+          fwd,
+          continueOnError,
+          requiredIds,
+          seed,
+          gracefulDegradation,
+          requiredNodes,
+          retryFailedNodes,
+          maxRetries,
+        });
+        // Only set result if it's not the special failed-optional-node symbol
+        if (
+          typeof result !== 'symbol' ||
+          result.description !== 'failed-optional-node'
+        ) {
+          results.set(node.id, result);
         }
       }
+    };
 
-      // Clean up timeout if it was set
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      // Aggregate/throw errors according to expectations
-      if (errors.size > 1) {
-        const errorList = Array.from(errors.entries()).map(
-          ([nodeId, errorMsg]) => {
-            const match = errorMsg.match(
-              /Node .+ execution failed after \d+ attempts: (.+)/,
-            );
-            const originalMessage = match ? match[1] : errorMsg;
-            return { nodeId, message: originalMessage };
-          },
-        );
-        const aggregatedError = new Error('Multiple execution errors');
-        aggregatedError.errors = errorList;
-        throw aggregatedError;
-      } else if (errors.size === 1 && !gracefulDegradation) {
-        const [_nodeId, errorMsg] = Array.from(errors.entries())[0];
-        throw new Error(errorMsg);
-      }
-
-      // Return results as Map for advanced features, or single result for simple cases
-      if (
-        retryFailedNodes ||
-        gracefulDegradation ||
-        checkpointId ||
-        requiredNodes.length > 0
-      ) {
-        return results;
-      }
-
-      // Legacy behavior: return result from sink nodes
-      const sinkNodes = order.filter((node) => node.outputs.length === 0);
-      if (sinkNodes.length === 0) {
-        throw new Error('DAG has no sink nodes - no final output available');
-      }
-
-      if (sinkNodes.length === 1) {
-        return results.get(sinkNodes[0].id);
-      }
-
-      // Multiple sinks - return all results
-      return Object.fromEntries(
-        sinkNodes.map((node) => [node.id, results.get(node.id)]),
-      );
-    } catch (error) {
-      // If caller requested graceful degradation, do not bubble a single non-critical failure.
-      if (execOptions?.gracefulDegradation && (!errors || errors.size <= 1)) {
-        // Return partial state; tests expect continuation.
-        return typeof retryFailedNodes === 'boolean' ||
-          requiredNodes.length > 0 ||
-          checkpointId
-          ? results
-          : results; // keeps previous API return shape when options set
-      }
-
-      if (error && (error.errors || error.cycle || error.isAggregated)) {
-        throw error; // keep context for tests
-      }
-      const wrappedError = new Error(`DAG execution failed: ${error.message}`);
-      ['errors', 'nodeId', 'timestamp', 'cycle'].forEach((k) => {
-        if (error && error[k] !== undefined) wrappedError[k] = error[k];
+    // Execute nodes respecting dependencies
+    for (const node of order) {
+      // Check if all dependencies are satisfied
+      const canExecute = this._canExecuteNode(node, {
+        results,
+        errors,
+        gracefulDegradation,
+        requiredNodes,
       });
-      throw wrappedError;
+
+      if (canExecute) {
+        await executeWithSemaphore(node);
+      }
     }
   }
 
   /**
-   * Enhanced concurrent executor with progress tracking
-   * @param {DAGNode[]} order
-   * @param {Object} ctx
+   * Check if a node can be executed based on dependency satisfaction
+   * @param {DAGNode} node - Node to check
+   * @param {Object} context - Execution context
+   * @returns {boolean}
    */
-  async executeConcurrent(order, ctx) {
-    const { maxConcurrency, checkTimeout, onProgress, totalNodes } = ctx;
-    const queue = [...order];
-    const running = new Set();
-    let completedNodes = ctx.completedNodes || 0;
+  _canExecuteNode(node, context) {
+    const { results, errors, gracefulDegradation, requiredNodes } = context;
 
-    const launchNext = () => {
-      while (running.size < maxConcurrency && queue.length) {
-        const node = queue.shift();
-        checkTimeout && checkTimeout();
+    return node.inputs.every((dep) => {
+      // If dependency has result or error, it's satisfied
+      if (results.has(dep.id) || errors.has(dep.id)) {
+        return true;
+      }
+      // If graceful degradation is enabled and dependency is not required, it's satisfied
+      if (
+        gracefulDegradation &&
+        requiredNodes &&
+        !requiredNodes.includes(dep.id)
+      ) {
+        return true;
+      }
+      return false;
+    });
+  }
 
-        // Skip if already completed (from checkpoint)
-        if (ctx.results.has(node.id)) {
-          completedNodes++;
-          if (onProgress) {
-            onProgress({
-              completed: completedNodes,
-              total: totalNodes,
-              stage: 'execution',
-              currentNode: node.id,
-            });
-          }
-          continue;
+  /**
+   * Initialize execution state and validate DAG
+   * @returns {Object} - Execution state object
+   */
+  _initializeExecutionState() {
+    this.validate();
+
+    // Initialize execution state
+    const results = new Map();
+    const errors = new Map();
+    const order = this.topoSort();
+    const { fwd, rev } = this._buildAdjacency();
+    const requiredIds = this._getRequiredIds(fwd, rev);
+
+    return { results, errors, order, fwd, rev, requiredIds };
+  }
+
+  /**
+   * Handle execution errors with appropriate wrapping
+   * @param {Error} error - Error to handle
+   * @throws {Error} - Appropriately wrapped error
+   */
+  _handleExecutionError(error) {
+    // Error policy: wrap everything in try/catch
+    // If caught error is a node error (message starts with "Node " OR error.nodeId) → rethrow unchanged
+    if (error.message.startsWith('Node ') || error.nodeId) {
+      throw error;
+    }
+
+    // If caught error is validation or aggregate → wrap once
+    if (
+      error.cycle ||
+      /^DAG validation failed/.test(error.message) ||
+      error.errors
+    ) {
+      const wrappedError = new Error(`DAG execution failed: ${error.message}`);
+      if (error.cycle) wrappedError.cycle = error.cycle;
+      if (error.errors) wrappedError.errors = error.errors;
+      if (error.nodeId) wrappedError.nodeId = error.nodeId;
+      if (error.timestamp) wrappedError.timestamp = error.timestamp;
+      throw wrappedError;
+    }
+
+    // Do NOT wrap timeout errors or 'no sink nodes' errors
+    if (
+      error.message === 'Execution timeout' ||
+      error.message === 'DAG has no sink nodes - no final output available'
+    ) {
+      throw error;
+    }
+
+    // Otherwise wrap with 'DAG execution failed: ...'
+    const wrappedError = new Error(`DAG execution failed: ${error.message}`);
+    if (error.errors) wrappedError.errors = error.errors;
+    if (error.nodeId) wrappedError.nodeId = error.nodeId;
+    if (error.timestamp) wrappedError.timestamp = error.timestamp;
+    if (error.cycle) wrappedError.cycle = error.cycle;
+    throw wrappedError;
+  }
+
+  /**
+   * Execute function with optional timeout
+   * @param {Function} runFn - Function to execute
+   * @param {number} timeout - Timeout in milliseconds
+   * @returns {Promise<void>}
+   */
+  async _executeWithTimeout(runFn, timeout) {
+    if (timeout && timeout > 0) {
+      await Promise.race([
+        runFn(),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Execution timeout')), timeout);
+        }),
+      ]);
+    } else {
+      await runFn();
+    }
+  }
+
+  /**
+   * Process execution results and handle checkpointing
+   * @param {Map} results - Node execution results
+   * @param {Map} errors - Node execution errors
+   * @param {Map} fwd - Forward adjacency map
+   * @param {Object} options - Processing options
+   * @returns {any} - Processed results
+   */
+  _processResults(results, errors, fwd, options) {
+    const {
+      gracefulDegradation,
+      retryFailedNodes,
+      enableCheckpoints,
+      checkpointId,
+    } = options;
+
+    // Check for multiple errors first
+    if (errors.size >= 2) {
+      const agg = new Error('Multiple execution errors');
+      agg.errors = [...errors.values()].map((x) => x.cause || x);
+      throw agg;
+    }
+
+    // Determine sink nodes and successful sinks
+    const sinkIds = this._getSinkIds(fwd);
+
+    if (sinkIds.length === 0) {
+      // Check for single error first before generic "no sink nodes"
+      if (errors.size === 1) {
+        throw [...errors.values()][0];
+      }
+      throw new Error('DAG has no sink nodes - no final output available');
+    }
+
+    const successfulSinks = sinkIds.filter((id) => results.has(id));
+
+    if (successfulSinks.length === 0) {
+      // Check for single error first before generic "no sink nodes"
+      if (errors.size === 1) {
+        throw [...errors.values()][0];
+      }
+      throw new Error('DAG has no sink nodes - no final output available');
+    }
+
+    // Save checkpoint if enabled
+    if (enableCheckpoints && checkpointId) {
+      this.saveCheckpoint(checkpointId, { results, errors });
+    }
+
+    // For graceful degradation or retry scenarios, always return object with Map-like methods
+    if (gracefulDegradation || retryFailedNodes || successfulSinks.length > 1) {
+      // Multiple successful sinks OR graceful degradation - return POJO with sink keys enumerable and non-enumerable helpers
+      const sinkEntries = successfulSinks.map((id) => [id, results.get(id)]);
+      const obj = Object.fromEntries(sinkEntries);
+
+      // Attach non-enumerable helpers backed by ALL results
+      Object.defineProperty(obj, '__allResults', {
+        value: new Map(results),
+        enumerable: false,
+      });
+      Object.defineProperty(obj, 'get', {
+        value: (k) => obj.__allResults.get(k),
+        enumerable: false,
+      });
+      Object.defineProperty(obj, 'has', {
+        value: (k) => obj.__allResults.has(k),
+        enumerable: false,
+      });
+
+      return obj;
+    } else if (successfulSinks.length === 1) {
+      // Single successful sink without graceful degradation - return its value directly
+      return results.get(successfulSinks[0]);
+    }
+  }
+
+  /**
+   * Executes the DAG with optional seed data and configuration
+   * @param {any} seedOrOptions - Seed data or options object
+   * @param {Object} _options - Additional options (if first param is seed)
+   * @returns {Promise<any>} - Execution results
+   */
+  async execute(seedOrOptions, _options = {}) {
+    const { seed, options } = this._parseExecuteParams(seedOrOptions, _options);
+    const {
+      concurrency,
+      timeout,
+      continueOnError,
+      gracefulDegradation,
+      enableCheckpoints,
+      checkpointId,
+      requiredNodes,
+      returnFormat,
+      retryFailedNodes,
+      maxRetries,
+    } = options;
+
+    try {
+      const executionState = this._initializeExecutionState();
+
+      const { results, errors, order, fwd, requiredIds } = executionState;
+
+      // Execute nodes with optional timeout
+      await this._executeWithTimeout(
+        () =>
+          this._runAllNodes(order, {
+            concurrency,
+            results,
+            errors,
+            fwd,
+            continueOnError,
+            requiredIds,
+            seed,
+            gracefulDegradation,
+            requiredNodes,
+            retryFailedNodes,
+            maxRetries,
+          }),
+        timeout,
+      );
+
+      return this._processResults(results, errors, fwd, {
+        gracefulDegradation,
+        retryFailedNodes,
+        enableCheckpoints,
+        checkpointId,
+      });
+    } catch (error) {
+      this._handleExecutionError(error);
+    }
+  }
+
+  /**
+   * Helper for running with optional global timeout
+   * @param {Function} runFn - Function to run
+   * @param {number} timeout - Timeout in milliseconds
+   * @returns {Promise} - Promise that resolves/rejects with timeout handling
+   */
+  async _runWithOptionalGlobalTimeout(runFn, timeout) {
+    const run = Promise.resolve().then(runFn);
+    if (!timeout || timeout <= 0) return run;
+    return Promise.race([
+      run,
+      new Promise((_, reject) => {
+        const t = setTimeout(
+          () => reject(new Error('Execution timeout')),
+          timeout,
+        );
+        run.finally(() => clearTimeout(t));
+      }),
+    ]);
+  }
+
+  /**
+   * Build adjacency lists for the DAG
+   * @returns {Object} - Object with fwd and rev adjacency maps
+   */
+  _buildAdjacency() {
+    const fwd = new Map(); // node -> Set of children
+    const rev = new Map(); // node -> Set of parents
+
+    // Initialize adjacency lists for all nodes
+    for (const node of this.nodes.values()) {
+      fwd.set(node.id, new Set());
+      rev.set(node.id, new Set());
+    }
+
+    // Populate adjacency lists based on node connections
+    for (const node of this.nodes.values()) {
+      for (const output of node.outputs) {
+        fwd.get(node.id).add(output.id);
+        // Only add reverse edge if the output node exists in the DAG
+        if (rev.has(output.id)) {
+          rev.get(output.id).add(node.id);
         }
+      }
+    }
 
-        const p = this.executeNode(node, ctx)
-          .then((result) => {
-            completedNodes++;
-            if (onProgress) {
-              onProgress({
-                completed: completedNodes,
-                total: totalNodes,
-                stage: 'execution',
-                currentNode: node.id,
-              });
-            }
-            return result;
-          })
-          .finally(() => running.delete(p));
-        running.add(p);
+    return { fwd, rev };
+  }
+
+  /**
+   * Get sink node IDs (nodes with no outgoing edges)
+   * @param {Map} fwd - Forward adjacency map
+   * @returns {Array} - Array of sink node IDs
+   */
+  _getSinkIds(fwd) {
+    const sinkIds = [];
+    for (const [nodeId, children] of fwd) {
+      if (children.size === 0) {
+        sinkIds.push(nodeId);
+      }
+    }
+    return sinkIds;
+  }
+
+  /**
+   * Get required node IDs (all sinks + all their ancestors)
+   * @param {Map} fwd - Forward adjacency map
+   * @param {Map} rev - Reverse adjacency map
+   * @returns {Set} - Set of required node IDs
+   */
+  _getRequiredIds(fwd, rev) {
+    const sinkIds = this._getSinkIds(fwd);
+    const required = new Set();
+    const visited = new Set();
+
+    const addAncestors = (nodeId) => {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+      required.add(nodeId);
+
+      const parents = rev.get(nodeId) || new Set();
+      for (const parentId of parents) {
+        addAncestors(parentId);
       }
     };
 
-    launchNext();
-    while (running.size) {
-      await Promise.race(Array.from(running));
-      launchNext();
+    for (const sinkId of sinkIds) {
+      addAncestors(sinkId);
     }
+
+    return required;
+  }
+
+  /**
+   * Build adjacency list for the DAG (legacy method for compatibility)
+   * @returns {Map} - Adjacency list mapping node IDs to arrays of dependent node IDs
+   */
+  buildAdjacencyList() {
+    const { fwd } = this._buildAdjacency();
+    const adjacency = new Map();
+
+    for (const [nodeId, children] of fwd) {
+      adjacency.set(nodeId, Array.from(children));
+    }
+
+    return adjacency;
+  }
+
+  /**
+   * Validates the DAG structure
+   * @returns {boolean} - True if valid
+   * @throws {Error} - If validation fails
+   */
+  validate() {
+    if (this.nodes.size === 0) {
+      throw new Error('DAG is empty - no nodes to execute');
+    }
+
+    // Check for cycles using topological sort
+    try {
+      this.topoSort();
+    } catch (error) {
+      if (error.message.includes('Cycle detected')) {
+        // Extract cycle information from error message or use error.cycle if available
+        let nodes = error.cycle;
+        if (!nodes && error.message.includes('involving node:')) {
+          // Parse cycle from message if cycle array not available
+          const match = error.message.match(/involving node: (.+)/);
+          if (match) {
+            nodes = match[1].split(' -> ');
+          }
+        }
+        if (!nodes) {
+          nodes = ['unknown'];
+        }
+
+        const pretty = nodes.join(' -> ');
+        const err = new Error(
+          `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
+        );
+        err.cycle = nodes;
+        throw err;
+      }
+      throw new Error(`DAG validation failed: ${error.message}`);
+    }
+
+    // Check for orphaned nodes (nodes with no path to any sink)
+    const { fwd } = this._buildAdjacency();
+    const sinkIds = this._getSinkIds(fwd);
+    if (sinkIds.length === 0) {
+      throw new Error('DAG has no sink nodes - no final output available');
+    }
+
+    return true;
+  }
+
+  /**
+   * Execute a single node with input data
+   * @param {DAGNode} node - Node to execute
+   * @param {Object} context - Execution context
+   * @returns {Promise<any>} Node execution result
+   */
+  async executeNode(node, context) {
+    const {
+      results,
+      errors,
+      fwd,
+      continueOnError,
+      requiredIds,
+      seed,
+      gracefulDegradation,
+      requiredNodes,
+    } = context;
+
+    // Handle undefined node.run function
+    if (typeof node.run !== 'function') {
+      throw new Error(`Node ${node.id} has no run function`);
+    }
+
+    // Determine criticality - default is critical unless explicitly marked optional
+    // OR if gracefulDegradation is enabled and node is not in requiredNodes
+    // OR if there are multiple sink nodes (individual sink failures should be non-critical)
+    const sinkIds = this._getSinkIds(fwd);
+    const isMultipleSinks = sinkIds.length > 1;
+    const isSinkNode = sinkIds.includes(node.id);
+
+    const isNonCritical =
+      node?.optional === true ||
+      node?.isOptional === true ||
+      node?.critical === false ||
+      (gracefulDegradation &&
+        requiredNodes &&
+        !requiredNodes.includes(node.id)) ||
+      (isMultipleSinks && isSinkNode); // Sink nodes are non-critical when there are multiple sinks
+
+    // Prepare input based on dependencies
+    let input;
+    if (node.inputs.length === 0) {
+      input = seed;
+    } else if (node.inputs.length === 1) {
+      input = results.get(node.inputs[0].id);
+    } else {
+      input = node.inputs.map((inputNode) => {
+        // For graceful degradation, return undefined for failed optional dependencies
+        if (
+          !results.has(inputNode.id) &&
+          gracefulDegradation &&
+          requiredNodes &&
+          !requiredNodes.includes(inputNode.id)
+        ) {
+          return undefined;
+        }
+        return results.get(inputNode.id);
+      });
+    }
+
+    // Retry logic - use global options if available, otherwise node-specific
+    const { retryFailedNodes, maxRetries: globalMaxRetries } = context;
+    const nodeMaxRetries = retryFailedNodes
+      ? Math.max(0, globalMaxRetries ?? 3)
+      : Math.max(0, node?.retry?.retries ?? 0);
+    const delayMs = Math.max(0, node?.retry?.delayMs ?? 0);
+    let attempt = 0;
+    let keepRetrying = true;
+
+    while (keepRetrying) {
+      try {
+        // Execute the node
+        const output = await node.run(input);
+        if (errors.has(node.id)) errors.delete(node.id);
+        return output;
+      } catch (e) {
+        attempt += 1;
+        if (attempt <= nodeMaxRetries) {
+          if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
+          continue; // no error recorded yet
+        }
+        keepRetrying = false;
+        // FINAL failure path
+        const deps = [...(fwd.get(node.id) || [])];
+        const suffix = deps.length
+          ? `. This affects downstream nodes: ${deps.join(', ')}`
+          : '';
+        const nodeErr = new Error(
+          `Node ${node.id} execution failed: ${e.message}${suffix}`,
+        );
+        nodeErr.nodeId = node.id;
+        nodeErr.timestamp = Date.now();
+        nodeErr.cause = e;
+
+        // Handle non-critical failures with warnings and no result nullification
+        if (isNonCritical || (continueOnError && !requiredIds.has(node.id))) {
+          console.warn(`Non-critical node failure: ${nodeErr.message}`);
+          errors.set(node.id, nodeErr);
+          // Don't set result for failed optional nodes - return special symbol so they don't appear in results
+          return Symbol('failed-optional-node');
+        }
+        errors.set(node.id, nodeErr);
+        throw nodeErr;
+      }
+    }
+  }
+
+  /**
+   * Validate topology with advanced options
+   * @param {Object} _options - Validation options
+   * @returns {Array} - Array of warnings (empty if no issues)
+   */
+  validateTopology(_options = {}) {
+    const { strict = true } = _options;
+    const warnings = [];
+
+    // Check for empty DAG
+    if (this.nodes.size === 0) {
+      throw new Error('DAG cannot be empty');
+    }
+
+    // Check for self-loops
+    for (const node of this.nodes.values()) {
+      if (node.outputs.includes(node)) {
+        throw new Error('Self-loop detected');
+      }
+    }
+
+    // Check for cycles by attempting topological sort
+    try {
+      this.topoSort();
+    } catch (error) {
+      if (error.message.includes('Cycle detected')) {
+        // Extract cycle information from error message or use error.cycle if available
+        let nodes = error.cycle;
+        if (!nodes && error.message.includes('involving node:')) {
+          // Parse cycle from message if cycle array not available
+          const match = error.message.match(/involving node: (.+)/);
+          if (match) {
+            nodes = match[1].split(' -> ');
+          }
+        }
+        if (!nodes) {
+          nodes = ['unknown'];
+        }
+
+        const err = new Error('Cycle detected in DAG');
+        err.cycle = nodes;
+        throw err;
+      }
+      throw error;
+    }
+
+    // Check for isolated nodes
+    for (const node of this.nodes.values()) {
+      if (node.inputs.length === 0 && node.outputs.length === 0) {
+        const message = `Orphaned node detected: ${node.id}`;
+        if (strict) {
+          throw new Error(message);
+        } else {
+          warnings.push(message);
+        }
+      }
+    }
+
+    return warnings;
   }
 
   /**
@@ -400,9 +821,11 @@ class DAG {
           const restNodes = cyclePath.slice(1, -1).reverse();
           cyclePath = [startNode, ...restNodes, startNode];
         }
-        cyclePath = cyclePath.join(' -> ');
-        const error = new Error(`Cycle detected involving node: ${cyclePath}`);
-        error.cycle = cyclePath; // used by validate() to pretty-print
+        const cyclePathString = cyclePath.join(' -> ');
+        const error = new Error(
+          `Cycle detected involving node: ${cyclePathString}`,
+        );
+        error.cycle = cyclePath; // Array format for test assertions
         throw error;
       }
 
@@ -440,183 +863,77 @@ class DAG {
   }
 
   /**
-   * Execute a single node with input data
-   * @param {DAGNode} node - Node to execute
-   * @param {Object} context - Execution context
-   * @returns {Promise<any>} Node execution result
+   * Resume execution from checkpoint data
+   * @param {Object} checkpointData - Checkpoint data to resume from
+   * @returns {Promise<Map>} - Results Map from resumed execution
    */
-  async executeNode(node, context) {
-    const {
-      seed,
-      results,
-      errors,
-      retryCount,
-      retryFailedNodes,
-      maxRetries,
-      gracefulDegradation,
-      continueOnError,
-      requiredNodes,
-    } = context;
+  async resume(checkpointData = {}) {
+    const { completed = [], results: priorResults = {} } = checkpointData;
 
-    try {
-      // Prepare input from dependencies (shape expected by tests):
-      // - 0 parents: seed
-      // - 1 parent : value
-      // - >1       : array of parent results (in inputs order)
-      let input;
-      if (node.inputs.length === 0) {
-        input = seed;
-      } else if (node.inputs.length === 1) {
-        input = results.get(node.inputs[0].id);
-      } else {
-        input = node.inputs.map((inp) => results.get(inp.id));
+    // Start with prior results as they were
+    const results = new Map(Object.entries(priorResults));
+
+    // Validate topology first
+    this.validateTopology();
+
+    // Get topological order and adjacency
+    const order = this.topoSort();
+    const { fwd } = this._buildAdjacency();
+
+    // Execute remaining nodes
+    for (const node of order) {
+      if (completed.includes(node.id)) {
+        continue; // Skip already completed nodes
       }
 
-      // Execute the node with per-node timeout
-      let result;
-      const nodeExecution = async () => {
-        if (typeof node.run === 'function') {
-          return await node.run(input);
-        } else if (typeof node.execute === 'function') {
-          return await node.execute(input);
-        } else if (typeof node.handler === 'function') {
-          return await node.handler(input);
-        } else {
-          // Tests expect failure if node has no implementation
+      try {
+        // Handle undefined node.run function
+        if (typeof node.run !== 'function') {
           throw new Error(`Node ${node.id} has no run function`);
         }
-      };
 
-      // Apply per-node timeout if configured
-      if (node.timeout && node.timeout > 0) {
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(
-              new Error(
-                `Node ${node.id} execution timeout after ${node.timeout}ms`,
-              ),
-            );
-          }, node.timeout);
-        });
-
-        result = await Promise.race([nodeExecution(), timeoutPromise]);
-      } else {
-        result = await nodeExecution();
-      }
-
-      results.set(node.id, result);
-      return result;
-    } catch (error) {
-      const currentRetries = retryCount.get(node.id) || 0;
-
-      if (retryFailedNodes && currentRetries < maxRetries) {
-        retryCount.set(node.id, currentRetries + 1);
-        return this.executeNode(node, context);
-      }
-
-      // Check for downstream dependencies
-      const downstreamNodes = this.getDownstreamNodes(node);
-      let errorMsg;
-
-      if (downstreamNodes.length > 0) {
-        const downstreamIds = downstreamNodes.map((n) => n.id).join(', ');
-        errorMsg = `Node ${node.id} execution failed: ${error.message}. This affects downstream nodes: ${downstreamIds}`;
-      } else {
-        errorMsg = `Node ${node.id} execution failed: ${error.message}`;
-      }
-
-      // Auto-enable graceful degradation for non-critical nodes (no downstream dependencies)
-      const isNonCritical =
-        downstreamNodes.length === 0 && !requiredNodes.includes(node.id);
-
-      if (
-        continueOnError ||
-        (gracefulDegradation && !requiredNodes.includes(node.id)) ||
-        isNonCritical
-      ) {
-        // For non-critical nodes or when continueOnError is enabled, log warning and continue
-        console.warn(`Non-critical node failure: ${errorMsg}`);
-        errors.set(node.id, errorMsg);
-        results.set(node.id, null);
-        return null;
-      }
-
-      // For critical failures, don't wrap the error if it's already descriptive
-      if (
-        error.message &&
-        !error.message.includes('Node') &&
-        !error.message.includes('execution failed')
-      ) {
-        // Preserve original error without wrapping
-        errors.set(node.id, error.message);
-        throw error;
-      }
-
-      // Preserve error context properties for wrapped failures
-      const nodeError = new Error(errorMsg);
-      if (error.nodeId) nodeError.nodeId = error.nodeId;
-      if (error.timestamp) nodeError.timestamp = error.timestamp;
-      if (error.stack) nodeError.stack = error.stack;
-
-      errors.set(node.id, errorMsg);
-      throw nodeError;
-    }
-  }
-
-  /**
-   * Validates the DAG structure
-   * @throws {Error} If DAG is invalid
-   */
-  validate() {
-    if (this.nodes.size === 0) {
-      throw new Error('DAG is empty - no nodes to execute');
-    }
-
-    // Check for cycles by attempting topological sort
-    try {
-      this.topoSort();
-    } catch (error) {
-      if (error.message.includes('Cycle detected')) {
-        // Prefer the structured path we set in topoSort via error.cycle
-        const raw =
-          error.cycle ||
-          error.message.replace(
-            /^.*Cycle detected(?: involving node[s]?:)?\s*/i,
-            '',
-          );
-        let nodes = raw
-          .split('->')
-          .map((s) => s.trim())
-          .filter(Boolean);
-
-        // Trim trailing duplicate if present (A -> B -> A)
-        if (nodes.length > 1 && nodes[0] === nodes[nodes.length - 1]) {
-          nodes = nodes.slice(0, -1);
+        // Prepare input based on dependencies
+        let input;
+        if (node.inputs.length === 0) {
+          input = null; // No seed in resume
+        } else if (node.inputs.length === 1) {
+          input = results.get(node.inputs[0].id);
+        } else {
+          input = node.inputs.map((inputNode) => results.get(inputNode.id));
         }
 
-        // Simple cycle expectation (exactly two nodes): "A -> B"
-        // Complex cycle: keep full chain (e.g., "branch1 -> merge -> feedback")
-        const pretty =
-          nodes.length === 2
-            ? `${nodes[0]} -> ${nodes[1]}`
-            : nodes.join(' -> ');
+        // Retry logic
+        const maxRetries = Math.max(0, node?.retry?.retries ?? 0);
+        const delayMs = Math.max(0, node?.retry?.delayMs ?? 0);
+        let attempt = 0;
+        let keepRetrying = true;
 
-        throw new Error(
-          `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
-        );
+        while (keepRetrying) {
+          try {
+            // Execute the node
+            const output = await node.run(input);
+            results.set(node.id, output);
+            keepRetrying = false;
+          } catch (e) {
+            attempt += 1;
+            if (attempt <= maxRetries) {
+              if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
+              continue; // no error recorded yet
+            }
+            // FINAL failure path - warn EXACT string and keep going
+            // eslint-disable-next-line no-console
+            console.warn(`Node ${node.id} failed during resume: ${e.message}`);
+            keepRetrying = false; // Don't throw, just continue
+          }
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn(`Node ${node.id} failed during resume: ${error.message}`);
+        continue;
       }
-      throw new Error(`DAG validation failed: ${error.message}`);
     }
 
-    // Check for orphaned nodes (nodes with no path to execution)
-    const sourceNodes = Array.from(this.nodes.values()).filter(
-      (node) => node.inputs.length === 0,
-    );
-    if (sourceNodes.length === 0) {
-      throw new Error('DAG has no source nodes - execution cannot begin');
-    }
-
-    return true;
+    return results;
   }
 
   /**
@@ -648,16 +965,6 @@ class DAG {
   }
 
   /**
-   * Clear execution checkpoint
-   * @param {string} checkpointId - Unique checkpoint identifier
-   */
-  clearCheckpoint(checkpointId) {
-    if (this.checkpoints) {
-      this.checkpoints.delete(checkpointId);
-    }
-  }
-
-  /**
    * List all available checkpoints
    * @returns {Array} - Array of checkpoint IDs with metadata
    */
@@ -674,127 +981,13 @@ class DAG {
   }
 
   /**
-   * Resume execution from checkpoint data
-   * @param {Object|Map} checkpointData - Checkpoint data to resume from
-   * @param {any} seed - Optional seed data for resumed execution
-   * @returns {Promise<Map>} - Results Map from resumed execution
+   * Clear execution checkpoint
+   * @param {string} checkpointId - Unique checkpoint identifier
    */
-  async resume(checkpointData, seed = null) {
-    // Validate topology first
-    this.validateTopology();
-
-    // Get topological order
-    const order = this.topoSort();
-
-    // Initialize results map
-    const results = new Map();
-    const _errors = new Map();
-
-    // Determine completed nodes from provided checkpoint data
-    const completedNodeIds =
-      checkpointData instanceof Map
-        ? Array.from(checkpointData.keys())
-        : Object.keys(checkpointData || {});
-
-    // Execute all nodes in topological order
-    for (const node of order) {
-      try {
-        // Check if all dependencies are satisfied
-        const dependencies = node.inputs.map((input) => input.id);
-        const unsatisfiedDeps = dependencies.filter(
-          (depId) => !results.has(depId),
-        );
-
-        if (unsatisfiedDeps.length > 0) {
-          // Skip nodes with unsatisfied dependencies (likely failed nodes)
-          continue;
-        }
-
-        // Prepare input from dependencies
-        let input;
-        if (dependencies.length === 0) {
-          input = seed || {};
-        } else if (dependencies.length === 1) {
-          input = results.get(dependencies[0]);
-        } else {
-          input = dependencies.map((depId) => results.get(depId));
-        }
-
-        // Execute the node
-        const output =
-          typeof node.run === 'function'
-            ? await node.run(input)
-            : typeof node.execute === 'function'
-              ? await node.execute(input)
-              : typeof node.handler === 'function'
-                ? await node.handler(input)
-                : (() => {
-                    throw new Error(`Node ${node.id} has no run function`);
-                  })();
-
-        results.set(node.id, output);
-      } catch (error) {
-        // Skip failed nodes if they weren't in the checkpoint
-        if (!completedNodeIds.includes(node.id)) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Node ${node.id} failed during resume: ${error.message}`,
-          );
-          continue;
-        } else {
-          // If a previously successful node now fails, that's an error
-          throw error;
-        }
-      }
+  clearCheckpoint(checkpointId) {
+    if (this.checkpoints) {
+      this.checkpoints.delete(checkpointId);
     }
-
-    return results;
-  }
-
-  /**
-   * Validate topology with advanced options
-   * @param {Object} _options - Validation options
-   * @returns {Array} - Array of warnings (empty if no issues)
-   */
-  validateTopology(_options = {}) {
-    const { strict = true } = _options;
-    const warnings = [];
-
-    // Check for empty DAG
-    if (this.nodes.size === 0) {
-      throw new Error('DAG cannot be empty');
-    }
-
-    // Check for self-loops
-    for (const node of this.nodes.values()) {
-      if (node.outputs.includes(node)) {
-        throw new Error('Self-loop detected');
-      }
-    }
-
-    // Check for cycles by attempting topological sort
-    try {
-      this.topoSort();
-    } catch (error) {
-      if (error.message.includes('Cycle detected')) {
-        throw new Error('Cycle detected in DAG');
-      }
-      throw error;
-    }
-
-    // Check for isolated nodes
-    for (const node of this.nodes.values()) {
-      if (node.inputs.length === 0 && node.outputs.length === 0) {
-        const message = `Orphaned node detected: ${node.id}`;
-        if (strict) {
-          throw new Error(message);
-        } else {
-          warnings.push(message);
-        }
-      }
-    }
-
-    return warnings;
   }
 
   /**
@@ -822,7 +1015,5 @@ class DAG {
 }
 
 // Export classes
-module.exports = {
-  DAGNode,
-  DAG,
-};
+module.exports = { DAG, DAGNode };
+module.exports.default = module.exports;

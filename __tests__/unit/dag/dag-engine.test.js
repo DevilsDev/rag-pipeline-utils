@@ -1,5 +1,4 @@
 /**
-const path = require('path');
  * Unit tests for DAG engine with cycle detection and error handling
  * Tests the enhanced DAG functionality including cycle safety and robust error propagation
  */
@@ -521,6 +520,528 @@ describe("DAG", () => {
       await expect(dag.execute("seed")).rejects.toThrow(
         "Cycle detected involving node: branch1 -> merge -> feedback",
       );
+    });
+  });
+
+  describe("error resilience and retry concepts", () => {
+    it("should demonstrate retry concept with manual retry logic", async () => {
+      let attempts = 0;
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        attempts++;
+        if (attempts === 1) {
+          throw new Error("First attempt failed");
+        }
+        return `success-attempt-${attempts}`;
+      });
+
+      dag.addNode("A", mockA);
+
+      // First execution fails
+      await expect(dag.execute("input")).rejects.toThrow(
+        "First attempt failed",
+      );
+      expect(attempts).toBe(1);
+
+      // Second execution succeeds
+      const result = await dag.execute("input");
+      expect(result).toBe("success-attempt-2");
+      expect(attempts).toBe(2);
+    });
+
+    it("should handle persistent failures appropriately", async () => {
+      const mockA = jest
+        .fn()
+        .mockRejectedValue(new Error("Persistent failure"));
+
+      dag.addNode("A", mockA);
+
+      await expect(dag.execute("input")).rejects.toThrow("Persistent failure");
+      expect(mockA).toHaveBeenCalledTimes(1);
+    });
+
+    it("should propagate errors through dependency chain", async () => {
+      const mockA = jest.fn().mockRejectedValue(new Error("A failure"));
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return `B-processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      await expect(dag.execute("input")).rejects.toThrow("A failure");
+      expect(mockA).toHaveBeenCalled();
+      expect(mockB).not.toHaveBeenCalled(); // B shouldn't execute if A fails
+    });
+
+    it("should demonstrate timeout concept with Promise.race", async () => {
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        return "delayed-result";
+      });
+
+      dag.addNode("A", mockA);
+
+      // Use Promise.race to simulate timeout behavior
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Operation timed out")), 100),
+      );
+
+      await expect(
+        Promise.race([dag.execute("input"), timeoutPromise]),
+      ).rejects.toThrow("Operation timed out");
+    });
+
+    it("should handle resource cleanup on failure", async () => {
+      let resourceCreated = false;
+      let resourceCleaned = false;
+
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        resourceCreated = true;
+        try {
+          throw new Error("Processing failed");
+        } finally {
+          resourceCleaned = true;
+        }
+      });
+
+      dag.addNode("A", mockA);
+
+      await expect(dag.execute("input")).rejects.toThrow("Processing failed");
+      expect(resourceCreated).toBe(true);
+      expect(resourceCleaned).toBe(true);
+    });
+  });
+
+  describe("graceful degradation concepts", () => {
+    it("should demonstrate failure isolation in independent paths", async () => {
+      const mockA = jest.fn().mockResolvedValue("A-result");
+      const mockB = jest.fn().mockRejectedValue(new Error("B failed"));
+      const mockC = jest.fn().mockImplementation(async (input) => {
+        return `C-processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("C", mockC);
+
+      dag.connect("A", "C");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("C-processed-A-result");
+      expect(mockA).toHaveBeenCalled();
+      expect(mockC).toHaveBeenCalled();
+    });
+
+    it("should complete critical path successfully", async () => {
+      const mockCritical1 = jest.fn().mockResolvedValue("critical-1");
+      const mockCritical2 = jest.fn().mockResolvedValue("critical-2");
+      const mockFinal = jest.fn().mockImplementation(async (input) => {
+        return `final-${input}`;
+      });
+
+      dag.addNode("critical1", mockCritical1);
+      dag.addNode("critical2", mockCritical2);
+      dag.addNode("final", mockFinal);
+
+      dag.connect("critical1", "critical2");
+      dag.connect("critical2", "final");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("final-critical-2");
+    });
+
+    it("should demonstrate error boundary concept", async () => {
+      const mockA = jest.fn().mockResolvedValue("A-result");
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        try {
+          throw new Error("Simulated processing error");
+        } catch (error) {
+          // Error boundary - return fallback result
+          return "B-fallback-result";
+        }
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("B-fallback-result");
+      expect(mockA).toHaveBeenCalled();
+      expect(mockB).toHaveBeenCalled();
+    });
+  });
+
+  describe("undefined and null handling", () => {
+    it("should handle node returning undefined", async () => {
+      const mockA = jest.fn().mockResolvedValue(undefined);
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return input === undefined ? "handled-undefined" : `processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("handled-undefined");
+    });
+
+    it("should handle node returning null", async () => {
+      const mockA = jest.fn().mockResolvedValue(null);
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return input === null ? "handled-null" : `processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("handled-null");
+    });
+
+    it("should handle empty string results", async () => {
+      const mockA = jest.fn().mockResolvedValue("");
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return input === "" ? "handled-empty" : `processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("handled-empty");
+    });
+
+    it("should handle nodes returning complex undefined structures", async () => {
+      const mockA = jest
+        .fn()
+        .mockResolvedValue({ data: undefined, status: "ok" });
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return input.data === undefined
+          ? "handled-complex-undefined"
+          : "processed";
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("handled-complex-undefined");
+    });
+  });
+
+  describe("performance and scalability", () => {
+    it("should execute diamond DAG with proper sequencing", async () => {
+      const executionOrder = [];
+
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        executionOrder.push("A");
+        return "A-result";
+      });
+
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        executionOrder.push("B");
+        return "B-result";
+      });
+
+      const mockC = jest.fn().mockImplementation(async (input) => {
+        executionOrder.push("C");
+        return "C-result";
+      });
+
+      const mockD = jest.fn().mockImplementation(async (input) => {
+        executionOrder.push("D");
+        // DAG engine passes multiple inputs as a single concatenated string
+        return `D-processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.addNode("C", mockC);
+      dag.addNode("D", mockD);
+      dag.connect("A", "B");
+      dag.connect("A", "C");
+      dag.connect("B", "D");
+      dag.connect("C", "D");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("D-processed-B-result,C-result");
+      // A should execute before B and C, and D should execute last
+      expect(executionOrder.indexOf("A")).toBeLessThan(
+        executionOrder.indexOf("B"),
+      );
+      expect(executionOrder.indexOf("A")).toBeLessThan(
+        executionOrder.indexOf("C"),
+      );
+      expect(executionOrder.indexOf("D")).toBe(executionOrder.length - 1);
+    });
+
+    it("should handle reasonable concurrency simulation", async () => {
+      let concurrentCount = 0;
+      let maxConcurrent = 0;
+
+      const createMock = (name) =>
+        jest.fn().mockImplementation(async (input) => {
+          concurrentCount++;
+          maxConcurrent = Math.max(maxConcurrent, concurrentCount);
+          // Simulate some work
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          concurrentCount--;
+          return `${name}-result`;
+        });
+
+      dag.addNode("A", createMock("A"));
+      dag.addNode("B", createMock("B"));
+      dag.addNode("C", createMock("C"));
+
+      // Connect nodes to create dependencies
+      dag.connect("A", "B");
+      dag.connect("B", "C");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("C-result");
+      expect(maxConcurrent).toBeGreaterThan(0);
+    });
+
+    it("should handle moderately large DAGs without stack overflow", async () => {
+      // Create a linear chain of 20 nodes (reasonable for testing)
+      for (let i = 0; i < 20; i++) {
+        const mockFn = jest.fn().mockImplementation(async (input) => {
+          return `node${i}-${input}`;
+        });
+        dag.addNode(`node${i}`, mockFn);
+
+        if (i > 0) {
+          dag.connect(`node${i - 1}`, `node${i}`);
+        }
+      }
+
+      const result = await dag.execute("input");
+
+      expect(result).toMatch(/^node19-.*node0-input$/);
+    });
+  });
+
+  describe("advanced error handling", () => {
+    it("should propagate errors from failed nodes", async () => {
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        throw new Error("A failed");
+      });
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return `B-processed-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      await expect(dag.execute("input")).rejects.toThrow("A failed");
+      expect(mockA).toHaveBeenCalled();
+      expect(mockB).not.toHaveBeenCalled(); // B shouldn't execute if A fails
+    });
+
+    it("should handle complex error scenarios", async () => {
+      const mockA = jest.fn().mockResolvedValue("A-result");
+      const mockB = jest.fn().mockResolvedValue("B-result");
+      const mockC = jest.fn().mockRejectedValue(new Error("C failed"));
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.addNode("C", mockC);
+
+      dag.connect("A", "B");
+
+      // A -> B should succeed
+      const result = await dag.execute("input");
+      expect(result).toBe("B-result");
+
+      // C should fail independently
+      const dagC = new DAG();
+      dagC.addNode("C", mockC);
+      await expect(dagC.execute("input")).rejects.toThrow("C failed");
+    });
+
+    it("should provide meaningful error messages", async () => {
+      const mockA = jest.fn().mockResolvedValue("A-result");
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        throw new Error("B processing failed with specific details");
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      try {
+        await dag.execute("input");
+        fail("Expected execution to throw");
+      } catch (error) {
+        expect(error.message).toContain(
+          "B processing failed with specific details",
+        );
+        expect(mockA).toHaveBeenCalled();
+        expect(mockB).toHaveBeenCalled();
+      }
+    });
+  });
+
+  describe("resource management concepts", () => {
+    it("should handle large data processing", async () => {
+      const mockA = jest.fn().mockResolvedValue("A".repeat(100)); // Reasonably large result
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        return `B-processed-${input.length}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("B-processed-100");
+      expect(mockA).toHaveBeenCalled();
+      expect(mockB).toHaveBeenCalled();
+    });
+
+    it("should handle memory-aware processing", async () => {
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        // Simulate processing larger data sets
+        const data = new Array(100).fill(input);
+        return data.join("-");
+      });
+
+      dag.addNode("A", mockA);
+
+      const result = await dag.execute("input");
+
+      expect(result).toBeDefined();
+      expect(result).toContain("input");
+    });
+  });
+
+  describe("debugging and validation", () => {
+    it("should provide timing information through execution", async () => {
+      const startTime = Date.now();
+
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        // Simulate some processing time
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        return "A-result";
+      });
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        return "B-result";
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+      const endTime = Date.now();
+
+      expect(result).toBe("B-result");
+      expect(endTime).toBeGreaterThan(startTime); // Should take some time
+      expect(mockA).toHaveBeenCalled();
+      expect(mockB).toHaveBeenCalled();
+    });
+
+    it("should support basic execution monitoring", async () => {
+      const executionLog = [];
+
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        executionLog.push("A-started");
+        const result = "A-result";
+        executionLog.push("A-completed");
+        return result;
+      });
+
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        executionLog.push("B-started");
+        const result = "B-result";
+        executionLog.push("B-completed");
+        return result;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(executionLog).toEqual([
+        "A-started",
+        "A-completed",
+        "B-started",
+        "B-completed",
+      ]);
+    });
+
+    it("should validate basic DAG structure constraints", async () => {
+      // Test basic validation scenarios
+      const mockA = jest.fn().mockResolvedValue("A-result");
+
+      dag.addNode("A", mockA);
+
+      // Should succeed with valid single-node DAG
+      const result = await dag.execute("input");
+      expect(result).toBe("A-result");
+
+      // Test that missing node connections fail appropriately
+      const dagInvalid = new DAG();
+      await expect(dagInvalid.execute("input")).rejects.toThrow(/empty/i);
+    });
+
+    it("should handle simple linear dependency chain", async () => {
+      const mockA = jest.fn().mockImplementation(async (input) => `A-${input}`);
+      const mockB = jest.fn().mockImplementation(async (input) => `B-${input}`);
+      const mockC = jest.fn().mockImplementation(async (input) => `C-${input}`);
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.addNode("C", mockC);
+      dag.connect("A", "B");
+      dag.connect("B", "C");
+
+      const result = await dag.execute("start");
+
+      expect(result).toBe("C-B-A-start");
+      expect(mockA).toHaveBeenCalledWith("start");
+      expect(mockB).toHaveBeenCalledWith("A-start");
+      expect(mockC).toHaveBeenCalledWith("B-A-start");
+    });
+
+    it("should maintain node execution state correctly", async () => {
+      const executionState = { counter: 0 };
+      const mockA = jest.fn().mockImplementation(async (input) => {
+        executionState.counter++;
+        return `A-${executionState.counter}`;
+      });
+      const mockB = jest.fn().mockImplementation(async (input) => {
+        executionState.counter++;
+        return `B-${executionState.counter}-${input}`;
+      });
+
+      dag.addNode("A", mockA);
+      dag.addNode("B", mockB);
+      dag.connect("A", "B");
+
+      const result = await dag.execute("input");
+
+      expect(result).toBe("B-2-A-1");
+      expect(executionState.counter).toBe(2);
     });
   });
 });

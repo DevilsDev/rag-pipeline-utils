@@ -172,7 +172,36 @@ class PerformanceProfiler extends EventEmitter {
       throw new Error("No active profiling session");
     }
 
-    const componentProfile = {
+    const componentProfile = this._createComponentProfile(
+      componentId,
+      componentType,
+    );
+    const execution = this._createExecution(input);
+
+    componentProfile.executions.push(execution);
+
+    try {
+      const result = await this._executeWithTiming(executionFunc, execution);
+      this._updateSuccessMetrics(componentProfile, execution);
+      this._emitProfiledEvent(componentId, execution.id, execution, null, true);
+      return result;
+    } catch (error) {
+      this._handleExecutionError(componentProfile, execution, error);
+      this._emitProfiledEvent(
+        componentId,
+        execution.id,
+        execution,
+        error.message,
+        false,
+      );
+      throw error;
+    } finally {
+      this.currentProfile.components.set(componentId, componentProfile);
+    }
+  }
+
+  _createComponentProfile(componentId, componentType) {
+    return {
       id: componentId,
       _type: componentType,
       executions: [],
@@ -185,10 +214,11 @@ class PerformanceProfiler extends EventEmitter {
       memoryPeak: 0,
       cpuUsage: { user: 0, system: 0 },
     };
+  }
 
-    const executionId = `exec_${Date.now()}`;
-    const execution = {
-      id: executionId,
+  _createExecution(input) {
+    return {
+      id: `exec_${Date.now()}`,
       startTime: Date.now(),
       startMemory: process.memoryUsage(),
       startCpu: process.cpuUsage(),
@@ -201,85 +231,94 @@ class PerformanceProfiler extends EventEmitter {
       networkCalls: [],
       customMetrics: new Map(),
     };
+  }
 
-    componentProfile.executions.push(execution);
+  async _executeWithTiming(executionFunc, execution) {
+    const startHrTime = process.hrtime.bigint();
+    const result = await executionFunc();
+    const endHrTime = process.hrtime.bigint();
 
-    try {
-      // Execute the component function
-      const startHrTime = process.hrtime.bigint();
-      const result = await executionFunc();
-      const endHrTime = process.hrtime.bigint();
+    execution.duration = Number(endHrTime - startHrTime) / 1000000; // Convert to ms
+    execution.endTime = Date.now();
+    execution.endMemory = process.memoryUsage();
+    execution.endCpu = process.cpuUsage(execution.startCpu);
+    execution.output = this.serializeOutput(result);
 
-      // Calculate metrics
-      execution.duration = Number(endHrTime - startHrTime) / 1000000; // Convert to ms
-      execution.endTime = Date.now();
-      execution.endMemory = process.memoryUsage();
-      execution.endCpu = process.cpuUsage(execution.startCpu);
-      execution.output = this.serializeOutput(result);
+    return result;
+  }
 
-      // Update component profile
-      componentProfile.totalDuration += execution.duration;
-      componentProfile.successCount++;
-      componentProfile.minDuration = Math.min(
-        componentProfile.minDuration,
-        execution.duration,
-      );
-      componentProfile.maxDuration = Math.max(
-        componentProfile.maxDuration,
-        execution.duration,
-      );
-      componentProfile.averageDuration =
-        componentProfile.totalDuration /
-        (componentProfile.successCount + componentProfile.errorCount);
+  _updateSuccessMetrics(componentProfile, execution) {
+    componentProfile.totalDuration += execution.duration;
+    componentProfile.successCount++;
+    componentProfile.minDuration = Math.min(
+      componentProfile.minDuration,
+      execution.duration,
+    );
+    componentProfile.maxDuration = Math.max(
+      componentProfile.maxDuration,
+      execution.duration,
+    );
 
-      // Memory metrics
+    this._updateAverageDuration(componentProfile);
+    this._updateMemoryMetrics(componentProfile, execution);
+    this._updateCpuMetrics(componentProfile, execution);
+  }
+
+  _updateAverageDuration(componentProfile) {
+    const totalExecutions =
+      componentProfile.successCount + componentProfile.errorCount;
+    componentProfile.averageDuration =
+      componentProfile.totalDuration / totalExecutions;
+  }
+
+  _updateMemoryMetrics(componentProfile, execution) {
+    componentProfile.memoryPeak = Math.max(
+      componentProfile.memoryPeak,
+      execution.endMemory.heapUsed,
+    );
+  }
+
+  _updateCpuMetrics(componentProfile, execution) {
+    componentProfile.cpuUsage.user += execution.endCpu.user;
+    componentProfile.cpuUsage.system += execution.endCpu.system;
+  }
+
+  _handleExecutionError(componentProfile, execution, error) {
+    execution.error = {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    };
+    execution.endTime = Date.now();
+    execution.duration = execution.endTime - execution.startTime;
+
+    componentProfile.errorCount++;
+    this._updateAverageDuration(componentProfile);
+  }
+
+  _emitProfiledEvent(
+    componentId,
+    executionId,
+    execution,
+    errorMessage,
+    success,
+  ) {
+    const eventData = {
+      componentId,
+      executionId,
+      duration: execution.duration,
+      success,
+    };
+
+    if (success) {
       const memoryDelta =
         execution.endMemory.heapUsed - execution.startMemory.heapUsed;
-      componentProfile.memoryPeak = Math.max(
-        componentProfile.memoryPeak,
-        execution.endMemory.heapUsed,
-      );
-
-      // CPU metrics
-      componentProfile.cpuUsage.user += execution.endCpu.user;
-      componentProfile.cpuUsage.system += execution.endCpu.system;
-
-      this.emit("componentProfiled", {
-        componentId,
-        executionId,
-        duration: execution.duration,
-        memoryDelta,
-        success: true,
-      });
-
-      return result;
-    } catch (error) {
-      execution.error = {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      };
-      execution.endTime = Date.now();
-      execution.duration = execution.endTime - execution.startTime;
-
-      componentProfile.errorCount++;
-      componentProfile.averageDuration =
-        componentProfile.totalDuration /
-        (componentProfile.successCount + componentProfile.errorCount);
-
-      this.emit("componentProfiled", {
-        componentId,
-        executionId,
-        duration: execution.duration,
-        error: error.message,
-        success: false,
-      });
-
-      throw error;
-    } finally {
-      // Store component profile
-      this.currentProfile.components.set(componentId, componentProfile);
+      eventData.memoryDelta = memoryDelta;
+    } else {
+      eventData.error = errorMessage;
     }
+
+    this.emit("componentProfiled", eventData);
   }
 
   /**

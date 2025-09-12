@@ -163,12 +163,22 @@ describe("External API Mocking", () => {
 
   describe("NetworkSimulator", () => {
     test("should simulate network latency", async () => {
+      // Use real timers for this test since we need actual delays
+      jest.useRealTimers();
+
       const start = Date.now();
       await NetworkSimulator.simulateLatency(100, 200);
       const elapsed = Date.now() - start;
 
       expect(elapsed).toBeGreaterThanOrEqual(100);
       expect(elapsed).toBeLessThan(300); // Allow some buffer
+
+      // Restore fake timers
+      jest.useFakeTimers({
+        advanceTimers: true,
+        doNotFake: ["nextTick", "setImmediate"],
+        legacyFakeTimers: false,
+      });
     });
 
     test("should simulate network failures", () => {
