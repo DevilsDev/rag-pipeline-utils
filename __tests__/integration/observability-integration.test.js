@@ -90,6 +90,44 @@ describe("Observability Integration", () => {
       pipelineTracer.clearCompletedSpans();
     if (pipelineMetrics.clearMetrics) pipelineMetrics.clearMetrics();
 
+    // Reset all mocks to ensure clean state
+    jest.clearAllMocks();
+    mockLoader.load.mockImplementation(async (___filePath) => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      return [
+        { content: "test content chunk 1", metadata: { source: "test" } },
+        { content: "test content chunk 2", metadata: { source: "test" } },
+        { content: "test content chunk 3", metadata: { source: "test" } },
+      ];
+    });
+    mockEmbedder.embed.mockImplementation(async (chunks) => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      if (Array.isArray(chunks)) {
+        return chunks.map((chunk, ___i) => ({
+          chunk,
+          vector: new Array(768).fill(0).map(() => Math.random()),
+        }));
+      } else {
+        return new Array(768).fill(0).map(() => Math.random());
+      }
+    });
+    mockRetriever.store.mockResolvedValue(undefined);
+    mockRetriever.retrieve.mockImplementation(async (___query) => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      return [
+        { chunk: "relevant chunk 1", score: 0.9 },
+        { chunk: "relevant chunk 2", score: 0.8 },
+      ];
+    });
+    mockLLM.generate.mockImplementation(async (prompt) => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const promptText =
+        typeof prompt === "string"
+          ? prompt
+          : prompt?.text || prompt?.prompt || String(prompt);
+      return `Generated response for: ${promptText.substring(0, 50)}...`;
+    });
+
     // Create fresh plugin registry
     registry = new PluginRegistry();
     registry.register("loader", "test-loader", mockLoader);
@@ -499,14 +537,61 @@ describe("Observability with Parallel Processing", () => {
 
     // Create a mock base pipeline for parallel processing test
     const basePipeline = {
+      _instrumentedPipeline: null, // Will be set by the instrumented pipeline
+
       async ingest(docPath) {
-        await mockLoader.load(docPath);
+        // Use instrumented plugin calls if available
+        if (this._instrumentedPipeline) {
+          const chunks = await this._instrumentedPipeline.instrumentPlugin(
+            "loader",
+            "test-loader",
+            mockLoader.load,
+            docPath,
+          );
+          const embeddings = await this._instrumentedPipeline.instrumentPlugin(
+            "embedder",
+            "test-embedder",
+            mockEmbedder.embed,
+            chunks,
+          );
+          await this._instrumentedPipeline.instrumentPlugin(
+            "retriever",
+            "test-retriever",
+            mockRetriever.store,
+            embeddings,
+          );
+        } else {
+          await mockLoader.load(docPath);
+        }
         return { success: true, documentsIngested: 3 };
       },
 
       async query(prompt) {
-        const response = await mockLLM.generate(prompt);
-        return response;
+        // Use instrumented plugin calls if available
+        if (this._instrumentedPipeline) {
+          const embeddings = await this._instrumentedPipeline.instrumentPlugin(
+            "embedder",
+            "test-embedder",
+            mockEmbedder.embed,
+            [prompt],
+          );
+          const results = await this._instrumentedPipeline.instrumentPlugin(
+            "retriever",
+            "test-retriever",
+            mockRetriever.retrieve,
+            prompt,
+          );
+          const response = await this._instrumentedPipeline.instrumentPlugin(
+            "llm",
+            "test-llm",
+            mockLLM.generate,
+            prompt,
+          );
+          return response;
+        } else {
+          const response = await mockLLM.generate(prompt);
+          return response;
+        }
       },
 
       getConfig() {
@@ -524,7 +609,7 @@ describe("Observability with Parallel Processing", () => {
     };
 
     instrumentedPipeline = createInstrumentedPipeline(basePipeline, {
-      enableTracing: false, // Disable tracing to avoid test environment issues
+      enableTracing: true, // Enable tracing for parallel processing tests
       enableMetrics: true,
       enableEventLogging: true,
     });

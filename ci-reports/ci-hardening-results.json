@@ -1,6 +1,6 @@
 {
   "testSuite": "CI/CD Pipeline Hardening Tests",
-  "timestamp": "2025-09-21T21:23:22.155Z",
+  "timestamp": "2025-09-21T21:43:03.919Z",
   "summary": {
     "totalTests": 1,
     "highSeverityIssues": 0,
@@ -13,7 +13,7 @@
       "workflowsScanned": 4,
       "securityIssues": 0,
       "severity": "LOW",
-      "timestamp": "2025-09-21T21:23:22.155Z"
+      "timestamp": "2025-09-21T21:43:03.919Z"
     }
   ]
 }
