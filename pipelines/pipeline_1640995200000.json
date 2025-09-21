@@ -1,37 +1,38 @@
 {
   "id": "pipeline_1640995200000",
-  "name": "Template Pipeline",
-  "description": "",
+  "name": "Test Pipeline",
+  "description": "Test description",
   "components": [
     {
-      "id": "llm_1640995200000",
-      "type": "llm",
+      "id": "loader_1640995200000",
+      "type": "loader",
       "position": {
-        "x": 200,
+        "x": 100,
         "y": 100
       },
       "config": {
-        "model": "gpt-4",
-        "temperature": 0.7,
-        "maxTokens": {
-          "type": "number",
-          "default": 1000
+        "source": {
+          "type": "string",
+          "required": true
+        },
+        "format": {
+          "type": "select",
+          "options": [
+            "json",
+            "txt",
+            "pdf",
+            "docx"
+          ]
         }
       },
-      "inputs": [
-        "results",
-        "query"
-      ],
+      "inputs": [],
       "outputs": [
-        "response"
+        "documents"
       ]
     }
   ],
   "connections": [],
   "config": {},
-  "created": "2025-09-21T20:34:24.975Z",
-  "modified": "2025-09-21T20:34:24.975Z"
-}ig": {},
-  "created": "2025-09-21T20:34:24.975Z",
-  "modified": "2025-09-21T20:34:24.975Z"
+  "created": "2025-09-21T21:23:25.520Z",
+  "modified": "2025-09-21T21:23:25.520Z"
 }

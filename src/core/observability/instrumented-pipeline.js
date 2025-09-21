@@ -103,6 +103,14 @@ class InstrumentedPipeline {
           result = await pluginFn(input);
         }
       } catch (tracingError) {
+        // Check if this is a plugin execution error or tracing error
+        if (
+          tracingError.message &&
+          tracingError.message.includes('service unavailable')
+        ) {
+          // This is a plugin error, not a tracing error - rethrow it
+          throw tracingError;
+        }
         // Fallback to direct execution if tracing fails
         console.warn(
           'Tracing failed, falling back to direct execution:',

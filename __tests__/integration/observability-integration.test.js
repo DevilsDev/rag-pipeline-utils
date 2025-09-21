@@ -33,10 +33,15 @@ const mockEmbedder = {
   embed: jest.fn().mockImplementation(async (chunks) => {
     // Simulate embedding delay
     await new Promise((resolve) => setTimeout(resolve, 50));
-    return chunks.map((chunk, ___i) => ({
-      chunk,
-      vector: new Array(768).fill(0).map(() => Math.random()),
-    }));
+    if (Array.isArray(chunks)) {
+      return chunks.map((chunk, ___i) => ({
+        chunk,
+        vector: new Array(768).fill(0).map(() => Math.random()),
+      }));
+    } else {
+      // Handle single string input (for query embedding)
+      return new Array(768).fill(0).map(() => Math.random());
+    }
   }),
 };
 
@@ -66,7 +71,11 @@ const mockLLM = {
   generate: jest.fn().mockImplementation(async (prompt) => {
     // Simulate LLM delay
     await new Promise((resolve) => setTimeout(resolve, 100));
-    return `Generated response for: ${prompt.substring(0, 50)}...`;
+    const promptText =
+      typeof prompt === "string"
+        ? prompt
+        : prompt?.text || prompt?.prompt || String(prompt);
+    return `Generated response for: ${promptText.substring(0, 50)}...`;
   }),
 };
 
@@ -177,7 +186,7 @@ describe("Observability Integration", () => {
 
     // Create instrumented pipeline
     instrumentedPipeline = createInstrumentedPipeline(basePipeline, {
-      enableTracing: false, // Disable tracing to avoid test environment issues
+      enableTracing: true, // Enable tracing for observability tests
       enableMetrics: true,
       enableEventLogging: true,
       verboseLogging: true,

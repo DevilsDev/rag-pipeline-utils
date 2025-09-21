@@ -78,6 +78,12 @@ describe("End-to-End Real Data Integration", () => {
 
       // Create file loader mock that reads real files
       const fileLoader = {
+        metadata: {
+          name: "fileLoader",
+          type: "loader",
+          version: "1.0.0",
+          description: "Mock file loader for testing",
+        },
         async load(filePath) {
           // Handle case where pipeline calls load() without arguments
           if (!filePath) {
@@ -101,6 +107,12 @@ describe("End-to-End Real Data Integration", () => {
 
       // Create embedder that processes real content
       const contentEmbedder = {
+        metadata: {
+          name: "contentEmbedder",
+          type: "embedder",
+          version: "1.0.0",
+          description: "Mock content embedder for testing",
+        },
         async embed(documents) {
           // Handle case where pipeline calls embed with query string instead of documents array
           if (typeof documents === "string") {
@@ -148,6 +160,12 @@ describe("End-to-End Real Data Integration", () => {
 
       // Create vector store that persists data
       const vectorStore = {
+        metadata: {
+          name: "vectorStore",
+          type: "retriever",
+          version: "1.0.0",
+          description: "Mock vector store for testing",
+        },
         data: new Map(),
 
         async store(vectors) {
@@ -211,6 +229,12 @@ describe("End-to-End Real Data Integration", () => {
 
       // Create LLM that generates contextual responses
       const contextualLLM = {
+        metadata: {
+          name: "contextualLLM",
+          type: "llm",
+          version: "1.0.0",
+          description: "Mock contextual LLM for testing",
+        },
         async generate(prompt, options = {}) {
           const _context = "test context";
           const _prompt = "test prompt";

@@ -488,7 +488,7 @@ class PerformanceProfiler extends EventEmitter {
 
     slowComponents.forEach((comp) => {
       bottlenecks.push({
-        _type: "slow_component",
+        type: "slow_component",
         severity: "high",
         component: comp.id,
         description: `Component ${comp.id} is ${(comp.averageDuration / avgDuration).toFixed(1)}x slower than average`,
@@ -506,7 +506,7 @@ class PerformanceProfiler extends EventEmitter {
       if (memoryTrend > 0.1) {
         // Growing trend
         bottlenecks.push({
-          _type: "memory_leak",
+          type: "memory_leak",
           severity: "medium",
           description:
             "Potential memory leak detected - heap usage is consistently growing",
@@ -527,7 +527,7 @@ class PerformanceProfiler extends EventEmitter {
       const errorRate =
         (comp.errorCount / (comp.successCount + comp.errorCount)) * 100;
       bottlenecks.push({
-        _type: "high_error_rate",
+        type: "high_error_rate",
         severity: "high",
         component: comp.id,
         description: `Component ${comp.id} has high error rate: ${errorRate.toFixed(1)}%`,
@@ -546,7 +546,7 @@ class PerformanceProfiler extends EventEmitter {
     if (avgEventLoopLag > 10) {
       // More than 10ms average lag
       bottlenecks.push({
-        _type: "event_loop_lag",
+        type: "event_loop_lag",
         severity: "medium",
         description: `High event loop lag detected: ${avgEventLoopLag.toFixed(1)}ms average`,
         metric: "event_loop_lag",
@@ -569,7 +569,7 @@ class PerformanceProfiler extends EventEmitter {
     const bottlenecks = this.identifyBottlenecks(profile);
 
     bottlenecks.forEach((bottleneck) => {
-      switch (bottleneck._type) {
+      switch (bottleneck.type) {
         case "slow_component":
           recommendations.push({
             priority: "high",
@@ -871,7 +871,7 @@ class PerformanceProfiler extends EventEmitter {
           .map(
             (b) => `
             <div class="bottleneck ${b.severity}">
-                <strong>${b._type.replace(/_/g, " ").toUpperCase()}</strong>: ${b.description}
+                <strong>${b.type.replace(/_/g, " ").toUpperCase()}</strong>: ${b.description}
             </div>
         `,
           )
