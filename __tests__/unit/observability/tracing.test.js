@@ -149,8 +149,18 @@ describe("Span", () => {
     });
 
     it("should return current duration for active span", () => {
+      // Use real timers for this test to ensure proper time measurement
+      jest.useRealTimers();
+
       const duration = span.getDuration();
       expect(duration).toBeGreaterThanOrEqual(0);
+
+      // Restore fake timers for other tests
+      jest.useFakeTimers({
+        advanceTimers: true,
+        doNotFake: ["nextTick", "setImmediate"],
+        legacyFakeTimers: false,
+      });
     });
   });
 

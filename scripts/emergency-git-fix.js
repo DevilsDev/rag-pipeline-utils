@@ -1,18 +1,13 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * Emergency Git Recovery Script
  * Temporarily disables blocking hooks and validations to restore Git operations
  * Run this if you're unable to commit or push due to CI/hook issues
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
+const fs = require("fs");
+const path = require("path");
 const __dirname = path.dirname(__filename);
 
 console.log("🚨 Emergency Git Recovery Mode");

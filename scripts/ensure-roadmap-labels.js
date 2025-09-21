@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-import { Octokit } from "octokit";
+// Octokit will be imported dynamically as it's an ES module
 
 /**
  * Label definitions for roadmap tracking.
@@ -75,6 +75,7 @@ const roadmapLabels = [
  * @param {string} params.repo  - Repository name
  */
 async function ensureRoadmapLabels({ token, owner, repo }) {
+  const { Octokit } = await import("octokit");
   const octokit = new Octokit({ auth: token });
 
   const { data: existingLabels } = await octokit.rest.issues.listLabelsForRepo({
@@ -92,7 +93,7 @@ async function ensureRoadmapLabels({ token, owner, repo }) {
 }
 
 // CLI support
-if (process.argv[1] === new URL(import.meta.url).pathname) {
+if (require.main === module) {
   const [owner, repo] = process.env.GITHUB_REPOSITORY?.split("/") || [];
   const token = process.env.GITHUB_TOKEN;
 

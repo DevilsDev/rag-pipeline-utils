@@ -9,7 +9,7 @@ const { PluginRegistry } = require("../../src/core/plugin-registry");
 
 describe("Contract Schema Validation", () => {
   let registry;
-  const contractsDir = path.join(__dirname, "../../src/contracts");
+  const contractsDir = path.join(__dirname, "../../contracts");
   const pluginsDir = path.join(__dirname, "../../src/plugins");
 
   beforeEach(() => {
@@ -451,8 +451,10 @@ function generateContractDocumentation(contracts) {
 
       for (const method of contract.methods) {
         doc += `#### ${method.name}\n\n`;
-        doc += `**Parameters:** ${method.parameters.join(", ")}\n\n`;
-        doc += `**Returns:** ${method.returns}\n\n`;
+        doc += "### Parameters\n\n";
+        doc += `${method.parameters.join(", ")}\n\n`;
+        doc += "### Returns\n\n";
+        doc += `${method.returns}\n\n`;
       }
     }
   }

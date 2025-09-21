@@ -933,15 +933,15 @@ describe("DAG", () => {
 
   describe("debugging and validation", () => {
     it("should provide timing information through execution", async () => {
-      const startTime = Date.now();
+      const startTime = performance.now();
 
       const mockA = jest.fn().mockImplementation(async (input) => {
         // Simulate some processing time
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         return "A-result";
       });
       const mockB = jest.fn().mockImplementation(async (input) => {
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         return "B-result";
       });
 
@@ -950,10 +950,10 @@ describe("DAG", () => {
       dag.connect("A", "B");
 
       const result = await dag.execute("input");
-      const endTime = Date.now();
+      const endTime = performance.now();
 
       expect(result).toBe("B-result");
-      expect(endTime).toBeGreaterThan(startTime); // Should take some time
+      expect(endTime).toBeGreaterThan(startTime + 15); // Should take at least 15ms
       expect(mockA).toHaveBeenCalled();
       expect(mockB).toHaveBeenCalled();
     });

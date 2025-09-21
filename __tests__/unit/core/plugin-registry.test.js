@@ -15,15 +15,39 @@ describe("PluginRegistry", () => {
   });
 
   test("registers and retrieves a plugin successfully", () => {
-    const mockPlugin = { name: "test-loader" };
+    const mockPlugin = {
+      name: "test-loader",
+      metadata: {
+        name: "test-loader",
+        version: "1.0.0",
+        type: "loader",
+      },
+      load: () => {},
+    };
     registry.register("loader", "test", mockPlugin);
     const result = registry.get("loader", "test");
     expect(result).toBe(mockPlugin);
   });
 
   test("overwrites existing plugin under the same name", () => {
-    const firstPlugin = { name: "first" };
-    const secondPlugin = { name: "second" };
+    const firstPlugin = {
+      name: "first",
+      metadata: {
+        name: "first",
+        version: "1.0.0",
+        type: "embedder",
+      },
+      embed: () => {},
+    };
+    const secondPlugin = {
+      name: "second",
+      metadata: {
+        name: "second",
+        version: "1.0.0",
+        type: "embedder",
+      },
+      embed: () => {},
+    };
     registry.register("embedder", "dup", firstPlugin);
     registry.register("embedder", "dup", secondPlugin);
     const result = registry.get("embedder", "dup");
@@ -44,9 +68,21 @@ describe("PluginRegistry", () => {
 
   test("lists all registered plugin names for a type", () => {
     registry.register("llm", "gpt-4", {
+      metadata: {
+        name: "gpt-4",
+        version: "1.0.0",
+        type: "llm",
+      },
       generate: jest.fn().mockResolvedValue("response"),
     });
-    registry.register("llm", "gpt-3.5", {});
+    registry.register("llm", "gpt-3.5", {
+      metadata: {
+        name: "gpt-3.5",
+        version: "1.0.0",
+        type: "llm",
+      },
+      generate: jest.fn().mockResolvedValue("response"),
+    });
     const list = registry.list("llm");
     expect(list).toContain("gpt-4");
     expect(list).toContain("gpt-3.5");

@@ -1,11 +1,66 @@
 {
   "testSuite": "Concurrent Pipeline Simulation Tests",
-  "timestamp": "2025-09-12T09:13:35.096Z",
+  "timestamp": "2025-09-21T20:33:55.387Z",
   "summary": {
-    "totalTests": 0,
-    "avgThroughput": null,
-    "maxThroughput": null,
+    "totalTests": 4,
+    "avgThroughput": 53333.333333333336,
+    "maxThroughput": 101000,
     "avgEfficiency": null
   },
-  "metrics": []
+  "metrics": [
+    {
+      "testName": "concurrent-users-5",
+      "userCount": 5,
+      "totalQueries": 19,
+      "avgResponseTime": 243.6706157894805,
+      "queriesPerSecond": 19000,
+      "errorRate": 0,
+      "memoryPeak": 50,
+      "cpuUtilization": 0.4660609567901235,
+      "resourceEfficiency": null,
+      "timestamp": "2025-09-21T20:33:56.207Z"
+    },
+    {
+      "testName": "concurrent-users-10",
+      "userCount": 10,
+      "totalQueries": 40,
+      "avgResponseTime": 281.60551249999554,
+      "queriesPerSecond": 40000,
+      "errorRate": 0,
+      "memoryPeak": 50,
+      "cpuUtilization": 0.6452520576131687,
+      "resourceEfficiency": null,
+      "timestamp": "2025-09-21T20:33:56.607Z"
+    },
+    {
+      "testName": "concurrent-users-25",
+      "userCount": 25,
+      "totalQueries": 101,
+      "avgResponseTime": 276.12624158416094,
+      "queriesPerSecond": 101000,
+      "errorRate": 0,
+      "memoryPeak": 50,
+      "cpuUtilization": 0.6920151748971193,
+      "resourceEfficiency": null,
+      "timestamp": "2025-09-21T20:33:56.707Z"
+    },
+    {
+      "testName": "mixed-workload-patterns",
+      "totalQueries": 100,
+      "patternDistribution": {
+        "streaming": 13,
+        "simple": 34,
+        "analytical": 31,
+        "complex": 22
+      },
+      "avgResponseByPattern": {
+        "streaming": 252.46156153846263,
+        "simple": 330.0962617647122,
+        "analytical": 407.5800451612881,
+        "complex": 631.7857272727309
+      },
+      "resourceUtilization": 0.5783058984910837,
+      "timestamp": "2025-09-21T20:33:55.747Z"
+    }
+  ]
 }

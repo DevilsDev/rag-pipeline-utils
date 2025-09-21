@@ -3,10 +3,8 @@
  * PII detection, data lineage, retention policies, and privacy controls
  */
 
-const _fs = require('_fs').promises;
-// eslint-disable-line global-require
-const _path = require('_path');
-// eslint-disable-line global-require
+const fs = require('fs').promises;
+const path = require('path');
 const crypto = require('crypto');
 // eslint-disable-line global-require
 const { EventEmitter } = require('events');

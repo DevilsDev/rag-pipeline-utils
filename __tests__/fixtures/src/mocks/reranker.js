@@ -27,12 +27,19 @@ class MockReranker {
     } = options;
     await new Promise((r) => setTimeout(r, 15));
     return docs
-      .map((d, i) => ({
-        text: (d && d.text) || d,
-        score: d?.score ?? i + 1,
-        originalIndex: i,
-      }))
-      .sort((a, b) => b.score - a.score)
+      .map((doc, i) => {
+        const relevanceScore = Math.max(0.1, this._calculateQueryRelevance(query, doc)); // Minimum score of 0.1
+        return {
+          ...doc, // Keep original document properties
+          text: (doc && doc.text) || doc.content || doc,
+          relevanceScore,
+          score: relevanceScore, // Keep for backward compatibility
+          originalIndex: i,
+          rerankedBy: model, // Add model identifier
+        };
+      })
+      .filter(doc => doc.relevanceScore >= threshold)
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .slice(0, topK);
   }
 

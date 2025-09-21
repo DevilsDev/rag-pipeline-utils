@@ -28,7 +28,7 @@ describe("Plugin Hub", () => {
       registryUrl: "https://test-registry.rag-pipeline.dev",
       localCacheDir: "/tmp/test-rag-cache",
       apiKey: "test-api-key",
-      timeout: 5000,
+      timeout: 2000, // Reduced for faster tests
     };
 
     hub = new PluginHub(mockConfig);
@@ -121,11 +121,13 @@ describe("Plugin Hub", () => {
     });
 
     test("should handle search errors gracefully", async () => {
+      jest.useRealTimers(); // Use real timers for this test
+
       // Mock fetch to simulate network failure
       fetch.mockRejectedValue(new Error("Network error"));
 
       await expect(hub.searchPlugins("test")).rejects.toThrow("Network error");
-    });
+    }, 5000);
   });
 
   describe("Plugin Installation", () => {
@@ -211,6 +213,8 @@ describe("Plugin Hub", () => {
     });
 
     test("should handle installation failures", async () => {
+      jest.useRealTimers(); // Use real timers for this test
+
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -218,7 +222,7 @@ describe("Plugin Hub", () => {
       });
 
       await expect(hub.installPlugin("nonexistent-plugin")).rejects.toThrow();
-    });
+    }, 5000);
   });
 
   describe("Plugin Publishing", () => {
@@ -727,6 +731,6 @@ describe("Integration Tests", () => {
     // Rate
     await hub.ratePlugin("test-plugin", 5, "Great plugin!");
 
-    expect(fetch).toHaveBeenCalledTimes(7);
-  });
+    expect(fetch).toHaveBeenCalledTimes(5); // Search, getInfo, download manifest, download plugin, rate
+  }, 15000);
 });

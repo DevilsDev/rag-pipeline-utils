@@ -56,4 +56,5 @@ async function createPipeline({
 // CJS+ESM interop pattern
 module.exports = createPipeline;
 module.exports.createPipeline = createPipeline;
+module.exports.createRagPipeline = createPipeline; // Alias for backward compatibility
 module.exports.default = module.exports;

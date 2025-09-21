@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 class LLMReranker {
   constructor(options = {}) {
@@ -43,7 +43,7 @@ class LLMReranker {
       .filter((t) => t.length > 0);
 
     const scored = docs.map((doc, originalIndex) => {
-      const text = doc.text || doc.content || "";
+      const text = doc.text || doc.content || '';
       const docTokens = text
         .toLowerCase()
         .split(/\s+/)

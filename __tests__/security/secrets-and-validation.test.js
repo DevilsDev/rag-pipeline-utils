@@ -202,6 +202,42 @@ describe("Security Scanning and Validation Tests", () => {
             if (value.includes("../") || value.includes("..\\")) {
               errors.push(`Path traversal detected in field: ${key}`);
             }
+
+            // Check for command injection
+            if (
+              value.includes("; cat ") ||
+              value.includes("& cat ") ||
+              value.includes("| cat ")
+            ) {
+              errors.push(`Command injection detected in field: ${key}`);
+            }
+
+            // Check for LDAP injection
+            if (
+              value.includes(")(|") ||
+              value.includes(")(") ||
+              value.includes("*)")
+            ) {
+              errors.push(`LDAP injection detected in field: ${key}`);
+            }
+
+            // Check for NoSQL injection
+            if (
+              value.includes("$ne") ||
+              value.includes("{'$") ||
+              value.includes('{"$')
+            ) {
+              errors.push(`NoSQL injection detected in field: ${key}`);
+            }
+
+            // Check for template injection
+            if (
+              value.includes("{{") ||
+              value.includes("<%") ||
+              value.includes("${")
+            ) {
+              errors.push(`Template injection detected in field: ${key}`);
+            }
           }
         }
 

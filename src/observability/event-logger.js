@@ -74,14 +74,18 @@ class PipelineEventLogger {
     }
   }
 
-  logPluginStart(pluginType, pluginName, input, context = {}) {
-    const inputSize = Array.isArray(input)
+  getInputSize(input) {
+    return Array.isArray(input)
       ? { type: 'array', length: input.length }
       : typeof input === 'string'
         ? { type: 'string', length: input.length }
         : typeof input === 'object' && input !== null
           ? { type: 'object', keys: Object.keys(input).length }
           : { type: typeof input };
+  }
+
+  logPluginStart(pluginType, pluginName, input, context = {}) {
+    const inputSize = this.getInputSize(input);
     this.logEvent(
       EventTypes.PLUGIN_START,
       EventSeverity.DEBUG,
@@ -170,6 +174,7 @@ class PipelineEventLogger {
       {
         stage,
         duration,
+        status: 'success', // Default status for completed stages
         ...metadata,
         pid: process.pid,
         platform: process.platform,
@@ -183,7 +188,12 @@ class PipelineEventLogger {
     this.logEvent(
       EventTypes.PERFORMANCE_METRIC,
       EventSeverity.DEBUG,
-      { name, value, unit, ...extra },
+      {
+        metric: name,
+        value,
+        unit,
+        tags: extra, // Store extra as tags object
+      },
       `Perf ${name}: ${value}${unit}`,
     );
   }
@@ -208,8 +218,8 @@ class PipelineEventLogger {
         : EventTypes.BACKPRESSURE_APPLIED;
     this.logEvent(
       eventType,
-      EventSeverity.DEBUG,
-      { ...status },
+      EventSeverity.WARN,
+      { action, ...status },
       `Backpressure ${action}`,
     );
   }
@@ -255,11 +265,37 @@ class PipelineEventLogger {
 
   getSessionStats() {
     const total = this.eventHistory.length;
-    const byType = this.eventHistory.reduce((acc, e) => {
+    const eventTypes = this.eventHistory.reduce((acc, e) => {
       acc[e.eventType] = (acc[e.eventType] || 0) + 1;
       return acc;
     }, {});
-    return { sessionId: this.sessionId, totalEvents: total, byType };
+
+    const severityLevels = this.eventHistory.reduce((acc, e) => {
+      acc[e.severity] = (acc[e.severity] || 0) + 1;
+      return acc;
+    }, {});
+
+    const pluginTypes = this.eventHistory.reduce((acc, e) => {
+      if (e.metadata && e.metadata.pluginType) {
+        acc[e.metadata.pluginType] = (acc[e.metadata.pluginType] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    const timestamps = this.eventHistory.map((e) => new Date(e.timestamp));
+    const sessionStartTime = timestamps.length ? Math.min(...timestamps) : null;
+    const lastEventTime = timestamps.length ? Math.max(...timestamps) : null;
+
+    return {
+      sessionId: this.sessionId,
+      totalEvents: total,
+      byType: eventTypes, // Keep for backward compatibility
+      eventTypes,
+      severityLevels,
+      pluginTypes,
+      sessionStartTime,
+      lastEventTime,
+    };
   }
 }
 

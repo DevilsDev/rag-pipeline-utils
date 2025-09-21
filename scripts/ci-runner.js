@@ -1,21 +1,18 @@
 #!/usr/bin/env node
 
 /**
-const path = require('path');
  * CI Pipeline Runner
  * Version: 2.0.0
  * Description: Orchestrates linting, mock validation, and testing with enhanced logging and dry-run support
  * Author: Ali Kahwaji
  */
 
-import path from "path";
-import { fileURLToPath } from "url";
-import { setupCLI, dryRunWrapper } from "./utils/cli.js";
-import { withRetry } from "./utils/retry.js";
-import { sh } from "./lib/sh.js";
+const path = require("path");
+const { setupCLI, dryRunWrapper } = require("./utils/cli.js");
+const { withRetry } = require("./utils/retry.js");
+const { sh } = require("./lib/sh.js");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __filename and __dirname are available as globals in CommonJS
 const ROOT = path.resolve(__dirname, "..");
 
 // Setup CLI

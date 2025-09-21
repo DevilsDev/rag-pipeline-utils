@@ -396,8 +396,8 @@ describe("PipelineBenchmark", () => {
 
       expect(aggregated.success).toBe(false);
       expect(aggregated.error).toBe("All benchmark runs failed");
-      expect(aggregated.failedRuns).toBe(2);
-      expect(aggregated.totalRuns).toBe(2);
+      expect(aggregated.runs.failed).toBe(2);
+      expect(aggregated.runs.total).toBe(2);
     });
 
     it("should handle mixed success/failure runs", () => {

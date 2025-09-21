@@ -5,6 +5,7 @@ const EventTypes = {
   PLUGIN_END: 'plugin.end',
   PLUGIN_ERROR: 'plugin.error',
   STAGE_START: 'stage.start',
+  STAGE_ERROR: 'stage.error',
 };
 
 const EventSeverity = { DEBUG: 'debug', INFO: 'info', ERROR: 'error' };
@@ -17,6 +18,7 @@ class PipelineEventLogger {
 
   startSession() {
     this._sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    this._sessionStartTime = new Date().toISOString();
     return this._sessionId;
   }
 
@@ -186,6 +188,53 @@ class PipelineEventLogger {
       eventCount: filtered.length,
       events: filtered,
     });
+  }
+
+  logEvent(eventType, severity, metadata = {}, message) {
+    this._events.push({
+      timestamp: this.nowISO(),
+      eventType,
+      sessionId: this._sessionId || this.startSession(),
+      severity,
+      message: message || `Event: ${eventType}`,
+      metadata,
+    });
+    return this;
+  }
+
+  clearHistory() {
+    this._events = [];
+    return this;
+  }
+
+  logStageEnd(stage, duration, metadata = {}) {
+    this._events.push({
+      timestamp: this.nowISO(),
+      eventType: 'stage.end',
+      sessionId: this._sessionId || this.startSession(),
+      severity: 'info',
+      message: `Stage ${stage} completed in ${duration}ms`,
+      metadata: {
+        stage,
+        duration,
+        type: 'stage_lifecycle',
+        ...metadata,
+      },
+    });
+    return this;
+  }
+
+  get sessionId() {
+    return this._sessionId || this.startSession();
+  }
+
+  getSessionStats() {
+    return {
+      sessionId: this.sessionId,
+      totalEvents: this._events.length,
+      startTime: this._sessionStartTime || new Date().toISOString(),
+      eventTypes: [...new Set(this._events.map((e) => e.eventType))],
+    };
   }
 }
 

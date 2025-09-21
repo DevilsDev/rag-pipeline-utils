@@ -1,18 +1,14 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.1.0
  * Description: Ensures CHANGELOG.md contains the current version and auto-corrects format if needed.
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { execSync } from "child_process";
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __filename and __dirname are available as global variables in CommonJS
 
 const pkg = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../package.json")),

@@ -63,24 +63,28 @@ module.exports.createRagPipeline = function createRagPipeline({
         });
       }
 
+      if (stream) {
+        // Use streaming generate if available
+        if (llmI.generateStream) {
+          const streamResult = llmI.generateStream(query, results, options);
+          return streamResult;
+        } else if (llmI.generate) {
+          // Fallback: simulate streaming from regular generate
+          const answer = (await llmI.generate(query, results, options)) ?? '';
+          async function* gen() {
+            const chunks = String(answer || '').length
+              ? [String(answer)]
+              : [''];
+            for (const c of chunks) yield { token: c, done: false };
+            yield { token: '', done: true };
+          }
+          return gen();
+        }
+      }
+
       const answer = (await llmI.generate?.(query, results, options)) ?? '';
       // tiny delay so durations > 0 in timing tests
       await new Promise((r) => setTimeout(r, 5));
-
-      if (stream) {
-        async function* gen() {
-          const chunks = String(answer || '').length ? [String(answer)] : [''];
-          for (const c of chunks) yield { token: c, done: false };
-          yield { token: '', done: true };
-        }
-        const iterator = gen();
-        return Object.assign(iterator, {
-          next: (...a) => iterator.next(...a),
-          [Symbol.asyncIterator]() {
-            return this;
-          },
-        });
-      }
       return { success: true, query, results };
     })();
 

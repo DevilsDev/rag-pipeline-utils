@@ -12,20 +12,20 @@
 </head>
 <body>
     <h1>📊 Large Document Batch Performance Report</h1>
-    <p>Generated: 2025-09-12T09:13:21.542Z</p>
+    <p>Generated: 2025-09-21T20:33:40.333Z</p>
     
     <div class="summary">
         <div class="metric">
             <h3>Avg Throughput</h3>
-            <p>NaN docs/sec</p>
+            <p>1322.39 docs/sec</p>
         </div>
         <div class="metric">
             <h3>Max Throughput</h3>
-            <p>-Infinity docs/sec</p>
+            <p>1715.37 docs/sec</p>
         </div>
         <div class="metric">
             <h3>Avg Memory Usage</h3>
-            <p>NaN MB</p>
+            <p>50.00 MB</p>
         </div>
     </div>
     
@@ -38,7 +38,7 @@
     </div>
     
     <script>
-        const data = {"testSuite":"Large Document Batch Performance","timestamp":"2025-09-12T09:13:21.542Z","summary":{"totalTests":0,"avgThroughput":null,"maxThroughput":null,"avgMemoryUsage":null},"metrics":[]};
+        const data = {"testSuite":"Large Document Batch Performance","timestamp":"2025-09-21T20:33:40.333Z","summary":{"totalTests":3,"avgThroughput":1322.3907703844118,"maxThroughput":1715.3659047010879,"avgMemoryUsage":50},"metrics":[{"testName":"embedding-batch-100","batchSize":100,"avgTimePerDoc":0.5829660000000149,"throughput":1715.3659047010879,"memoryUsage":50,"timestamp":"2025-09-21T20:33:40.393Z"},{"testName":"embedding-batch-500","batchSize":500,"avgTimePerDoc":0.9136506000000518,"throughput":1094.5103084263758,"memoryUsage":50,"timestamp":"2025-09-21T20:33:40.593Z"},{"testName":"embedding-batch-1000","batchSize":1000,"avgTimePerDoc":0.8640830999999889,"throughput":1157.296098025772,"memoryUsage":50,"timestamp":"2025-09-21T20:33:40.833Z"}]};
         
         // Throughput Chart
         new Chart(document.getElementById('throughputChart'), {

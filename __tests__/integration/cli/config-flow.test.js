@@ -101,7 +101,7 @@ describe("CLI integration with .ragrc.json config fallback", () => {
       cwd: TEMP_TEST_DIR,
       encoding: "utf-8",
     });
-    expect(result).toMatch(/Ingestion complete/);
+    expect(result).toMatch(/Document ingested successfully!/);
   });
 
   test("executes CLI query using config fallback", () => {
@@ -112,6 +112,6 @@ describe("CLI integration with .ragrc.json config fallback", () => {
         encoding: "utf-8",
       },
     );
-    expect(result).toMatch(/Answer:/);
+    expect(result).toMatch(/Response:/);
   });
 });

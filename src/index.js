@@ -4,7 +4,7 @@
  */
 
 // Core pipeline functionality
-const { createPipeline } = require('./core/create-pipeline');
+const { createRagPipeline } = require('./core/create-pipeline');
 
 // Configuration utilities
 const { loadConfig } = require('./config/load-config');
@@ -18,15 +18,16 @@ const pluginRegistry = require('./core/plugin-registry');
 const logger = require('./utils/logger');
 
 // AI/ML capabilities
-const { MultiModalProcessor } = require('./ai/multimodal-processing');
-const { AdaptiveRetrievalEngine } = require('./ai/adaptive-retrieval');
+const MultiModalProcessor = require('./ai/multimodal');
+const AdaptiveRetrievalEngine = require('./ai/retrieval-engine');
 
 // DAG engine for complex workflows
 const { DAGEngine } = require('./dag/dag-engine');
 
 // Performance and observability
-const { PerformanceMonitor } = require('./core/performance/monitor');
-const { ObservabilityCollector } = require('./observability/collector');
+const ParallelProcessor = require('./core/performance/parallel-processor');
+const eventLogger = require('./core/observability/event-logger');
+const metrics = require('./core/observability/metrics');
 
 // Enterprise features
 const { AuditLogger } = require('./enterprise/audit-logging');
@@ -34,7 +35,8 @@ const { DataGovernance } = require('./enterprise/data-governance');
 
 module.exports = {
   // Core API
-  createPipeline,
+  createRagPipeline,
+  createPipeline: createRagPipeline, // Alias for backward compatibility
 
   // Configuration
   loadConfig,
@@ -54,9 +56,10 @@ module.exports = {
   // Workflow engine
   DAGEngine,
 
-  // Observability
-  PerformanceMonitor,
-  ObservabilityCollector,
+  // Performance & Observability
+  ParallelProcessor,
+  eventLogger,
+  metrics,
 
   // Enterprise
   AuditLogger,

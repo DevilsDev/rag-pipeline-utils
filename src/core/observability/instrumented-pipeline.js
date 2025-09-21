@@ -4,7 +4,11 @@ const path = require('path');
  * Integrates event logging, tracing, and metrics collection
  */
 
-const { eventLogger, EventTypes, EventSeverity } = require('./event-logger.js');
+const {
+  PipelineEventLogger,
+  EventTypes,
+  EventSeverity,
+} = require('./event-logger.js');
 // eslint-disable-line global-require
 const { pipelineTracer } = require('./tracing.js');
 // eslint-disable-line global-require
@@ -18,12 +22,24 @@ class InstrumentedPipeline {
   constructor(pipeline, _options = {}) {
     this.pipeline = pipeline;
     this._options = {
-      enableTracing: _options.enableTracing !== false,
+      enableTracing: _options.hasOwnProperty('enableTracing')
+        ? _options.enableTracing
+        : true,
       enableMetrics: _options.enableMetrics !== false,
       enableEventLogging: _options.enableEventLogging !== false,
       verboseLogging: _options.verboseLogging || false,
-      ..._options,
     };
+
+    // Create event logger instance
+    this.eventLogger = new PipelineEventLogger();
+    if (this._options.enableEventLogging) {
+      this.eventLogger.startSession();
+    }
+
+    // Set reference in base pipeline for plugin instrumentation
+    if (pipeline._instrumentedPipeline !== undefined) {
+      pipeline._instrumentedPipeline = this;
+    }
 
     // Start memory monitoring
     if (this._options.enableMetrics) {
@@ -63,7 +79,7 @@ class InstrumentedPipeline {
 
     // Event logging
     if (this._options.enableEventLogging) {
-      eventLogger.logPluginStart(pluginType, pluginName, input);
+      this.eventLogger.logPluginStart({ pluginType, pluginName, input });
     }
 
     // Metrics
@@ -74,24 +90,37 @@ class InstrumentedPipeline {
     try {
       let result;
 
-      // Tracing
-      if (this._options.enableTracing) {
-        result = await pipelineTracer.tracePlugin(
-          pluginType,
-          pluginName,
-          pluginFn,
-          input,
+      // Execute plugin with or without tracing
+      try {
+        if (this._options.enableTracing) {
+          result = await pipelineTracer.tracePlugin(
+            pluginType,
+            pluginName,
+            pluginFn,
+            input,
+          );
+        } else {
+          result = await pluginFn(input);
+        }
+      } catch (tracingError) {
+        // Fallback to direct execution if tracing fails
+        console.warn(
+          'Tracing failed, falling back to direct execution:',
+          tracingError.message,
         );
-      } else {
         result = await pluginFn(input);
       }
 
-      const duration = Date.now() - startTime;
+      const duration = Math.max(Date.now() - startTime, 1); // Ensure non-zero duration
 
       // Event logging
       if (this._options.enableEventLogging) {
-        eventLogger.logPluginEnd(pluginType, pluginName, duration, {
-          success: true,
+        this.eventLogger.logPluginEnd({
+          pluginType,
+          pluginName,
+          duration,
+          result,
+          status: 'success',
         });
       }
 
@@ -119,7 +148,12 @@ class InstrumentedPipeline {
 
       // Event logging
       if (this._options.enableEventLogging) {
-        eventLogger.logPluginError(pluginType, pluginName, error, duration);
+        this.eventLogger.logPluginError({
+          pluginType,
+          pluginName,
+          duration,
+          error,
+        });
       }
 
       // Metrics
@@ -214,7 +248,7 @@ class InstrumentedPipeline {
    */
   async ingest(docPath) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart('ingest', { docPath });
+      this.eventLogger.logStageStart('ingest');
     }
 
     const startTime = Date.now();
@@ -237,7 +271,10 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd('ingest', duration, { docPath, success: true });
+        this.eventLogger.logStageEnd('ingest', duration, {
+          docPath,
+          success: true,
+        });
       }
 
       return result;
@@ -245,7 +282,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logEvent(
+        this.eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           { stage: 'ingest', duration, docPath, error: error.message },
@@ -264,7 +301,7 @@ class InstrumentedPipeline {
    */
   async query(prompt) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart('query', { prompt: prompt.substring(0, 100) });
+      this.eventLogger.logStageStart('query');
     }
 
     const startTime = Date.now();
@@ -287,9 +324,10 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd('query', duration, {
+        this.eventLogger.logStageEnd('query', duration, {
           promptLength: prompt.length,
-          responseLength: result.length,
+          responseLength:
+            typeof result === 'string' ? result.length : result?.length || 0,
           success: true,
         });
       }
@@ -299,7 +337,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logEvent(
+        this.eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
@@ -323,9 +361,7 @@ class InstrumentedPipeline {
    */
   async *queryStream(prompt) {
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart('query_stream', {
-        prompt: prompt.substring(0, 100),
-      });
+      this.eventLogger.logStageStart('query_stream');
     }
 
     const startTime = Date.now();
@@ -362,7 +398,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd('query_stream', duration, {
+        this.eventLogger.logStageEnd('query_stream', duration, {
           promptLength: prompt.length,
           tokensGenerated: tokenCount,
           success: true,
@@ -372,7 +408,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logEvent(
+        this.eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
@@ -401,7 +437,7 @@ class InstrumentedPipeline {
     }
 
     if (this._options.enableEventLogging) {
-      eventLogger.logStageStart('ingest_stream', { docPath });
+      this.eventLogger.logStageStart('ingest_stream');
     }
 
     const startTime = Date.now();
@@ -422,7 +458,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logStageEnd('ingest_stream', duration, {
+        this.eventLogger.logStageEnd('ingest_stream', duration, {
           docPath,
           chunksProcessed,
           chunksFailed,
@@ -433,7 +469,7 @@ class InstrumentedPipeline {
       const duration = Date.now() - startTime;
 
       if (this._options.enableEventLogging) {
-        eventLogger.logEvent(
+        this.eventLogger.logEvent(
           EventTypes.STAGE_ERROR,
           EventSeverity.ERROR,
           {
@@ -459,7 +495,7 @@ class InstrumentedPipeline {
   getObservabilityStats() {
     const stats = {
       enabled: this._options,
-      session: eventLogger.getSessionStats(),
+      session: this.eventLogger.getSessionStats(),
     };
 
     if (this._options.enableMetrics) {
@@ -481,11 +517,13 @@ class InstrumentedPipeline {
   exportObservabilityData(_options = {}) {
     const data = {
       timestamp: new Date().toISOString(),
-      sessionId: eventLogger.sessionId,
+      sessionId: this.eventLogger.sessionId,
     };
 
     if (this._options.enableEventLogging && _options.includeEvents !== false) {
-      data.events = eventLogger.getEventHistory(_options.eventFilters || {});
+      data.events = this.eventLogger.getEventHistory(
+        _options.eventFilters || {},
+      );
     }
 
     if (this._options.enableMetrics && _options.includeMetrics !== false) {
@@ -504,7 +542,7 @@ class InstrumentedPipeline {
    */
   clearObservabilityData() {
     if (this._options.enableEventLogging) {
-      eventLogger.clearHistory();
+      this.eventLogger.clearHistory();
     }
 
     if (this._options.enableMetrics) {
@@ -534,7 +572,7 @@ class InstrumentedPipeline {
       ...baseConfig,
       observability: {
         enabled: this._options,
-        sessionId: eventLogger.sessionId,
+        sessionId: this.eventLogger.sessionId,
         capabilities: {
           eventLogging: this._options.enableEventLogging,
           tracing: this._options.enableTracing,

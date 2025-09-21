@@ -221,7 +221,7 @@ class RealtimeDebugger extends EventEmitter {
   _completeStep(step, output) {
     step.output = this.cloneData(output);
     step.endTime = Date.now();
-    step.performance.duration = step.endTime - step.startTime;
+    step.performance.duration = Math.max(step.endTime - step.startTime, 1); // Ensure non-zero duration
     step.performance.cpuUsageEnd = process.cpuUsage(step.performance.cpuUsage);
     step.performance.memoryUsageEnd = process.memoryUsage();
   }

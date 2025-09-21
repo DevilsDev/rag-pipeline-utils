@@ -214,7 +214,9 @@ class TestDataGenerator {
   /**
    * Generate realistic test documents
    */
-  static generateDocuments(count = 10) {
+  static generateDocuments(count = 10, options = {}) {
+    const { minLength = 50, maxLength = 500, includeMetadata = true } = options;
+
     const topics = [
       "AI",
       "machine learning",
@@ -226,17 +228,39 @@ class TestDataGenerator {
 
     for (let i = 0; i < count; i++) {
       const topic = topics[i % topics.length];
-      documents.push({
+      const targetLength =
+        Math.floor(Math.random() * (maxLength - minLength)) + minLength;
+
+      // Generate content of desired length
+      let content = `This is a document about ${topic}. It contains relevant information for testing purposes. Document ${i} has unique content that can be used for retrieval and reranking tests.`;
+
+      // Pad content to reach target length
+      while (content.length < targetLength) {
+        content += ` Additional content about ${topic} with more details and information for testing purposes.`;
+      }
+      content = content.substring(0, targetLength);
+
+      const document = {
         id: `doc-${i}`,
-        content: `This is a document about ${topic}. It contains relevant information for testing purposes. Document ${i} has unique content that can be used for retrieval and reranking tests.`,
-        metadata: {
+        content,
+      };
+
+      if (includeMetadata) {
+        document.metadata = {
           topic,
-          length: "medium",
+          length:
+            targetLength < 200
+              ? "short"
+              : targetLength < 1000
+                ? "medium"
+                : "long",
           created: new Date(
             Date.now() - Math.random() * 86400000,
           ).toISOString(),
-        },
-      });
+        };
+      }
+
+      documents.push(document);
     }
 
     return documents;
@@ -258,6 +282,13 @@ class TestDataGenerator {
       values: Array.from({ length: dimensions }, () => Math.random() - 0.5),
       metadata: { index: i, type: "test" },
     }));
+  }
+
+  /**
+   * Generate a single test vector for embedding tests
+   */
+  static generateVector(dimensions = 1536) {
+    return Array.from({ length: dimensions }, () => Math.random() - 0.5);
   }
 
   /**

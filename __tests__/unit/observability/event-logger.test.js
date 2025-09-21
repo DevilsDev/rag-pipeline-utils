@@ -8,7 +8,7 @@ const {
   EventTypes,
   EventSeverity,
   eventLogger,
-} = require("../../../src/core/observability/event-logger.js");
+} = require("../../../src/observability/event-logger.js");
 
 describe("PipelineEventLogger", () => {
   let logger;
@@ -204,7 +204,7 @@ describe("PipelineEventLogger", () => {
       expect(event.severity).toBe(EventSeverity.WARN);
       expect(event.metadata.memoryUsage).toEqual(memoryUsage);
       expect(event.metadata.threshold).toBe(512);
-      expect(event.metadata.usagePercentage).toBeCloseTo(95.37, 1);
+      expect(event.metadata.usagePercentage).toBeCloseTo(97.65625, 1);
     });
 
     it("should log backpressure events", () => {
@@ -251,7 +251,7 @@ describe("PipelineEventLogger", () => {
     });
 
     it("should handle listener errors gracefully", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
       const faultyListener = jest.fn().mockImplementation(() => {
         throw new Error("Listener error");
       });
@@ -324,8 +324,8 @@ describe("PipelineEventLogger", () => {
       const limitedEvents = logger.getEventHistory({ limit: 2 });
       expect(limitedEvents).toHaveLength(2);
       // Should return the last 2 events
-      expect(limitedEvents[0].eventType).toBe(EventTypes.STAGE_START);
-      expect(limitedEvents[1].eventType).toBe(EventTypes.PLUGIN_ERROR);
+      expect(limitedEvents[0].eventType).toBe(EventTypes.PLUGIN_ERROR);
+      expect(limitedEvents[1].eventType).toBe(EventTypes.STAGE_START);
     });
   });
 

@@ -390,8 +390,10 @@ class PipelineBenchmark {
         operation,
         success: false,
         error: 'All benchmark runs failed',
-        failedRuns: failed.length,
-        totalRuns: results.length,
+        runs: {
+          failed: failed.length,
+          total: results.length,
+        },
       };
     }
 
