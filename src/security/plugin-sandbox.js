@@ -1,12 +1,19 @@
 /**
- * Plugin Security Sandbox
+ * @fileoverview Plugin sandboxing system for secure execution of third-party plugins.
+ * Implements VM-based isolation with resource limits, permission controls, and audit trails.
  *
- * Enterprise-grade plugin isolation and security controls.
- * Provides sandboxed execution environment with comprehensive security measures.
+ * @author DevilsDev Team
+ * @since 2.1.0
+ * @version 2.1.0
  */
 
-const vm = require('vm');
+const { VM } = require('vm2');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { EventEmitter } = require('events');
+const logger = require('../utils/structured-logger');
+const PluginSignatureVerifier = require('./plugin-signature-verifier');
 
 /**
  * Input sanitizer for security validation
@@ -104,66 +111,129 @@ function sanitizeOutput(obj) {
 }
 
 /**
- * Enhanced Plugin Sandbox with comprehensive security controls
+ * Secure plugin sandbox for executing third-party plugins with strict isolation.
+ *
+ * Features:
+ * - VM-based execution isolation
+ * - Resource limits (memory, CPU time, I/O)
+ * - Permission-based access control
+ * - Audit logging for security compliance
+ * - Plugin signature verification
+ * - Fail-closed security model
+ *
+ * @class PluginSandbox
+ * @extends EventEmitter
  */
 class PluginSandbox extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    this.options = {
-      memoryLimit: options.memoryLimit || 100 * 1024 * 1024, // 100MB
-      timeoutMs: options.timeoutMs || 30000, // 30 seconds
-      enableNetworking: options.enableNetworking || false,
-      enableFileSystem: options.enableFileSystem || false,
-      rateLimit: {
-        max: 100,
-        windowMs: 60000, // 1 minute
-        ...options.rateLimit,
+    this.config = {
+      // VM Configuration
+      timeout: options.timeout || 30000, // 30 seconds max execution
+      memoryLimit: options.memoryLimit || 128 * 1024 * 1024, // 128MB
+
+      // Security Configuration
+      allowEval: false, // Never allow eval in sandbox
+      allowWasm: false, // Block WebAssembly
+      allowAsync: options.allowAsync || true,
+
+      // Permission System
+      permissions: {
+        filesystem: options.permissions?.filesystem || 'none', // none, read, write
+        network: options.permissions?.network || 'none', // none, limited, full
+        process: options.permissions?.process || 'none', // none, limited
+        crypto: options.permissions?.crypto || 'limited', // none, limited, full
+        ...options.permissions,
       },
+
+      // Resource Limits
+      maxFileSize: options.maxFileSize || 10 * 1024 * 1024, // 10MB
+      maxNetworkRequests: options.maxNetworkRequests || 10,
+      maxCpuTime: options.maxCpuTime || 5000, // 5 seconds CPU time
+
+      // Audit Configuration
+      auditEnabled: options.auditEnabled !== false,
+      logLevel: options.logLevel || 'info',
+
       ...options,
     };
 
-    this.rateLimitStore = new Map();
-    this.activeExecutions = new Set();
+    this.signatureVerifier = new PluginSignatureVerifier();
+    this.activeSandboxes = new Map();
+    this.executionMetrics = new Map();
   }
 
   /**
-   * Execute plugin in secure sandbox
+   * Execute a plugin within the secure sandbox environment.
+   *
+   * @param {Object} plugin - Plugin configuration and code
+   * @param {Object} context - Execution context and input data
+   * @param {Object} options - Override options for this execution
+   * @returns {Promise<any>} Plugin execution result
+   * @throws {SecurityError} On security policy violations
+   * @throws {ResourceError} On resource limit exceeded
+   * @throws {ValidationError} On plugin validation failure
    */
-  async run(plugin, prompt, options = {}) {
-    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  async execute(plugin, context = {}, options = {}) {
+    const executionId = crypto.randomUUID();
+    const startTime = Date.now();
 
-    try {
-      this.activeExecutions.add(executionId);
-
-      // Rate limiting
-      this._enforceRateLimit(options.rateLimit);
-
-      // Input validation and sanitization
-      const sanitizedPrompt = InputSanitizer.sanitizeInput(prompt);
-      InputSanitizer.validateInput(sanitizedPrompt);
-
-      // Plugin validation
-      this._validatePlugin(plugin);
-
-      // Create isolated execution context
-      const result = await this._executeInSandbox(
-        plugin,
-        sanitizedPrompt,
+    return logger.withCorrelation(executionId, async () => {
+      this.auditLog('sandbox.execution.start', {
         executionId,
-      );
+        pluginId: plugin.id,
+        permissions: this.config.permissions,
+        resourceLimits: {
+          timeout: this.config.timeout,
+          memoryLimit: this.config.memoryLimit,
+          maxCpuTime: this.config.maxCpuTime,
+        },
+      });
 
-      // Output sanitization
-      const sanitizedResult = this._sanitizeResult(result);
+      try {
+        // 1. Validate and verify plugin
+        await this.validatePlugin(plugin);
 
-      this.emit('executionCompleted', { executionId, success: true });
-      return sanitizedResult;
-    } catch (error) {
-      this.emit('executionFailed', { executionId, error: error.message });
-      throw error;
-    } finally {
-      this.activeExecutions.delete(executionId);
-    }
+        // 2. Create isolated execution environment
+        const sandbox = this.createSandbox(plugin, context, executionId);
+
+        // 3. Execute with monitoring
+        const result = await this.executeInSandbox(
+          sandbox,
+          plugin,
+          context,
+          options,
+        );
+
+        // 4. Record success metrics
+        this.recordMetrics(executionId, startTime, 'success', result);
+
+        this.auditLog('sandbox.execution.success', {
+          executionId,
+          pluginId: plugin.id,
+          duration: Date.now() - startTime,
+          resultSize: JSON.stringify(result).length,
+        });
+
+        return result;
+      } catch (error) {
+        this.recordMetrics(executionId, startTime, 'error', null, error);
+
+        this.auditLog('sandbox.execution.error', {
+          executionId,
+          pluginId: plugin.id,
+          error: error.message,
+          errorType: error.constructor.name,
+          duration: Date.now() - startTime,
+        });
+
+        // Clean up any resources
+        this.cleanupSandbox(executionId);
+
+        throw error;
+      }
+    });
   }
 
   /**
@@ -233,12 +303,13 @@ class PluginSandbox extends EventEmitter {
       try {
         // Create restricted sandbox environment
         const sandbox = this._createSandboxContext(executionId);
-        const ctx = vm.createContext(sandbox, {
-          name: `plugin-sandbox-${executionId}`,
-          codeGeneration: {
-            strings: false, // Disable eval and Function constructor
-            wasm: false, // Disable WebAssembly
-          },
+        const { VM } = require('vm2');
+        const ctx = new VM({
+          timeout: this.options.timeoutMs,
+          sandbox: sandbox,
+          eval: false,
+          wasm: false,
+          fixAsync: true,
         });
 
         // Wrapper function with security controls
@@ -271,8 +342,8 @@ class PluginSandbox extends EventEmitter {
         sandbox.prompt = prompt;
         sandbox.memoryLimit = this.options.memoryLimit;
 
-        // Execute in sandbox
-        const executorFunction = vm.runInContext(wrapperCode, ctx);
+        // Execute in sandbox using VM2
+        const executorFunction = ctx.run(wrapperCode);
 
         executorFunction()
           .then((result) => {
