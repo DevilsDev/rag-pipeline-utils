@@ -1,5 +1,5 @@
 Test Name,Users/Queries,Duration (ms),Queries/sec,Avg Response (ms),Error Rate,Memory Peak (MB),Efficiency
-concurrent-users-5,5,N/A,19000.00,235.82,0.00%,50.00,NaN
-concurrent-users-10,10,N/A,40000.00,252.90,0.00%,50.00,NaN
-concurrent-users-25,25,N/A,101000.00,255.39,0.00%,50.00,NaN
+concurrent-users-5,5,N/A,19000.00,215.19,0.00%,50.00,NaN
+concurrent-users-10,10,N/A,40000.00,246.85,0.00%,50.00,NaN
+concurrent-users-25,25,N/A,101000.00,245.66,0.00%,50.00,NaN
 mixed-workload-patterns,100,N/A,N/A,N/A,NaN%,N/A,N/A

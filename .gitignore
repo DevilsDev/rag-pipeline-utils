@@ -190,6 +190,10 @@ config.local.json
 security-audit-report.json
 vulnerability-report.json
 
+# Generated SBOM files (generated in CI)
+*.spdx
+*.spdx.json
+
 # Backup files
 *.bak
 *.backup

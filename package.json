@@ -76,7 +76,9 @@
     "test:unit": "jest __tests__/unit",
     "test:integration": "jest __tests__/integration",
     "test:simple": "jest --maxWorkers=1 --no-coverage",
-    "verify:pack": "node scripts/verify-npm-pack.js"
+    "verify:pack": "node scripts/verify-npm-pack.js",
+    "verify": "npm run lint && npm run typecheck --if-present && npm test",
+    "sbom": "node scripts/generate-sbom.js"
   },
   "repository": {
     "type": "git",

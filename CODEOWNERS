@@ -1,50 +1,72 @@
-# CODEOWNERS - Code Review Governance
-# This file defines who must review changes to specific parts of the codebase
+# CODEOWNERS - Enterprise Security & Quality Governance
+# Enterprise-grade security and quality gates for RAG Pipeline Utils
+# Each line is a file pattern followed by one or more owners requiring approval.
 # See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Global fallback - requires tech lead approval for any unspecified files
-* @tech-lead
+# Global ownership (fallback) - Platform Engineering oversight
+* @DevilsDev/platform-engineers
 
-# Core architecture - requires senior developer approval
-src/core/ @tech-lead @senior-dev
-src/ai/ @ml-engineer @tech-lead
+# Core architecture requires senior security review
+/src/core/ @DevilsDev/senior-engineers @DevilsDev/security-team
+/src/dag/ @DevilsDev/senior-engineers
+/src/core/observability/ @DevilsDev/sre-team @DevilsDev/senior-engineers
 
-# CLI and user-facing interfaces
-bin/ @tech-lead @ux-engineer
-src/cli/ @tech-lead @senior-dev
+# Security-critical components - MANDATORY security team approval
+/src/enterprise/auth/ @DevilsDev/security-team @DevilsDev/compliance-team
+/src/enterprise/audit/ @DevilsDev/security-team @DevilsDev/compliance-team
+/src/cli/commands/doctor.js @DevilsDev/security-team
+/scripts/ @DevilsDev/security-team @DevilsDev/devops-team
 
-# Configuration and infrastructure
-src/config/ @devops @tech-lead
-deployment/ @devops @sre
-docker-compose.yml @devops @sre
-Dockerfile @devops @sre
+# Plugin ecosystem security - Sandboxing and contract validation
+/src/plugins/ @DevilsDev/plugin-team @DevilsDev/security-team
+/src/ecosystem/ @DevilsDev/plugin-team @DevilsDev/security-team
+/src/utils/plugin-scaffolder.js @DevilsDev/security-team
+/src/utils/validate-plugin-contract.js @DevilsDev/security-team
 
-# Security-sensitive files - requires security team approval
-.github/workflows/ @devops @security
-.secrets @security @tech-lead
-package.json @security @tech-lead
-package-lock.json @security @tech-lead
+# AI/ML components - Specialized review required
+/src/ai/ @DevilsDev/ai-team @DevilsDev/senior-engineers
+/src/ai/orchestrator/ @DevilsDev/ai-team @DevilsDev/security-team
 
-# Enterprise and multi-tenant features
-src/enterprise/ @tech-lead @security @senior-dev
+# CLI and user interfaces - UX and security review
+/src/cli/ @DevilsDev/ux-team @DevilsDev/security-team
+/bin/ @DevilsDev/security-team @DevilsDev/devops-team
 
-# Testing infrastructure
-__tests__/ @qa-lead @senior-dev
-jest.config.js @qa-lead @tech-lead
-jest.setup.js @qa-lead @tech-lead
+# Infrastructure and CI/CD - DevOps and security oversight
+/.github/ @DevilsDev/devops-team @DevilsDev/security-team
+/.github/workflows/ @DevilsDev/devops-team @DevilsDev/security-team
+/scripts/ci-runner.js @DevilsDev/devops-team @DevilsDev/security-team
 
-# Documentation - requires technical writer approval
-docs/ @tech-writer @product
-README.md @tech-lead @tech-writer
-*.md @tech-writer
+# Configuration and environment - Security-sensitive
+/src/config/ @DevilsDev/devops-team @DevilsDev/security-team
+/jest.config.js @DevilsDev/qa-team @DevilsDev/security-team
+/.eslintrc.js @DevilsDev/qa-team
+/.nvmrc @DevilsDev/devops-team
 
-# Release and versioning
-CHANGELOG.md @release-manager @tech-lead
-release.config.js @release-manager @devops
+# Documentation - Technical writing and accuracy
+/docs/ @DevilsDev/docs-team @DevilsDev/platform-engineers
+/README.md @DevilsDev/docs-team @DevilsDev/platform-engineers
+/CLAUDE.md @DevilsDev/platform-engineers @DevilsDev/senior-engineers
+/*.md @DevilsDev/docs-team
 
-# Scripts and automation
-scripts/ @devops @tech-lead
+# Security-sensitive package management
+/package.json @DevilsDev/security-team @DevilsDev/senior-engineers
+/package-lock.json @DevilsDev/security-team
+/npm-shrinkwrap.json @DevilsDev/security-team
 
-# Plugin ecosystem
-src/plugins/ @plugin-maintainer @tech-lead
-plugin.config.json @plugin-maintainer @tech-lead
+# Test infrastructure - QA and security validation
+/__tests__/security/ @DevilsDev/security-team @DevilsDev/qa-team
+/__tests__/performance/ @DevilsDev/performance-team @DevilsDev/qa-team
+/__tests__/ @DevilsDev/qa-team
+
+# Release management - Release engineering oversight
+/release.config.js @DevilsDev/release-team @DevilsDev/security-team
+/CHANGELOG.md @DevilsDev/release-team @DevilsDev/docs-team
+
+# Enterprise governance and compliance
+/CODEOWNERS @DevilsDev/platform-engineers @DevilsDev/security-team
+/SECURITY.md @DevilsDev/security-team @DevilsDev/compliance-team
+/LICENSE @DevilsDev/legal-team @DevilsDev/platform-engineers
+
+# Performance-critical components
+/src/core/performance/ @DevilsDev/performance-team @DevilsDev/senior-engineers
+/src/utils/retry.js @DevilsDev/reliability-team
