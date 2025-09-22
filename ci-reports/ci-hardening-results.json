@@ -1,19 +1,11 @@
 {
   "testSuite": "CI/CD Pipeline Hardening Tests",
-  "timestamp": "2025-09-21T21:43:03.919Z",
+  "timestamp": "2025-09-22T21:25:23.185Z",
   "summary": {
-    "totalTests": 1,
+    "totalTests": 0,
     "highSeverityIssues": 0,
     "mediumSeverityIssues": 0,
-    "lowSeverityIssues": 1
+    "lowSeverityIssues": 0
   },
-  "results": [
-    {
-      "testName": "workflow-security",
-      "workflowsScanned": 4,
-      "securityIssues": 0,
-      "severity": "LOW",
-      "timestamp": "2025-09-21T21:43:03.919Z"
-    }
-  ]
+  "results": []
 }

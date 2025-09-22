@@ -231,7 +231,7 @@ class MultiModalProcessor extends EventEmitter {
 
     // Add modality-specific descriptions
     switch (modality) {
-      case "text":
+      case "text": {
         const textContent =
           typeof content === "string"
             ? content
@@ -239,6 +239,7 @@ class MultiModalProcessor extends EventEmitter {
         const wordCount = textContent.split(" ").length;
         descriptions.text = `Text content containing ${wordCount} words with semantic meaning and contextual relevance.`;
         break;
+      }
       case "image":
         descriptions.image =
           "Visual content depicting scenes, objects, and visual elements with rich spatial and semantic information.";
