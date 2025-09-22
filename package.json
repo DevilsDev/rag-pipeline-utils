@@ -89,7 +89,13 @@
     "test:simple": "jest --maxWorkers=1 --no-coverage",
     "verify:pack": "node scripts/verify-npm-pack.js",
     "verify": "npm run lint && npm run typecheck --if-present && npm test",
-    "sbom": "node scripts/generate-sbom.js"
+    "sbom": "node scripts/generate-sbom.js",
+    "observability:setup": "node scripts/setup-observability.js",
+    "observability:start": "cd observability && ./scripts/start.sh",
+    "observability:stop": "cd observability && ./scripts/stop.sh",
+    "telemetry:init": "node -e \"require('./src/observability/telemetry').initializeTelemetry()\"",
+    "security:monitor": "node -e \"require('./src/observability/security-monitor').initializeSecurityMonitoring()\"",
+    "audit:compliance": "node -e \"require('./src/observability/audit-logger').initializeAuditLogging()\""
   },
   "repository": {
     "type": "git",
@@ -154,7 +160,18 @@
     "rimraf": "^6.0.1",
     "semantic-release": "^21.1.2",
     "ts-jest": "^29.3.2",
-    "why-is-node-running": "^3.2.2"
+    "why-is-node-running": "^3.2.2",
+    "vm2": "^3.9.19",
+    "@opentelemetry/auto-instrumentations-node": "^0.40.0",
+    "@opentelemetry/exporter-jaeger": "^1.17.0",
+    "@opentelemetry/exporter-prometheus": "^0.44.0",
+    "@opentelemetry/sdk-node": "^0.44.0",
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/resources": "^1.17.0",
+    "@opentelemetry/semantic-conventions": "^1.17.0",
+    "@opentelemetry/sdk-metrics": "^1.17.0",
+    "@opentelemetry/sdk-trace-base": "^1.17.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.44.0"
   },
   "dependencies": {
     "@octokit/rest": "^21.1.1",
