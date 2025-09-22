@@ -7,6 +7,7 @@
 
 # Core architecture - requires senior developer approval
 src/core/ @tech-lead @senior-dev
+src/dag/ @tech-lead @senior-dev
 src/ai/ @ml-engineer @tech-lead
 
 # CLI and user-facing interfaces
@@ -24,6 +25,10 @@ Dockerfile @devops @sre
 .secrets @security @tech-lead
 package.json @security @tech-lead
 package-lock.json @security @tech-lead
+src/security/ @security @tech-lead
+src/utils/safe-evaluator.js @security @tech-lead
+src/cli/commands/doctor-command.js @security @devops
+src/auth/ @security @tech-lead
 
 # Enterprise and multi-tenant features
 src/enterprise/ @tech-lead @security @senior-dev
