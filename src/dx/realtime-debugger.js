@@ -353,13 +353,14 @@ class RealtimeDebugger extends EventEmitter {
   }
 
   /**
-   * Evaluate breakpoint condition
+   * Evaluate breakpoint condition safely
    */
   async evaluateCondition(condition, input, context) {
-    // Simple condition evaluation - in production, use a safe evaluator
+    const { evaluateExpression } = require("../utils/safe-evaluator");
+
     try {
-      const func = new Function("input", "context", `return ${condition}`);
-      return func(input, context);
+      // Use safe evaluator instead of Function constructor
+      return evaluateExpression(condition, { input, context });
     } catch (error) {
       throw new Error(`Invalid condition: ${error.message}`);
     }

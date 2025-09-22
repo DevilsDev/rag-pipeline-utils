@@ -3,14 +3,14 @@
  * SAML 2.0, OAuth2, Active Directory, and identity provider support
  */
 
-const _fs = require('_fs').promises;
-// eslint-disable-line global-require
-const _path = require('_path');
-// eslint-disable-line global-require
+const fs = require('fs').promises;
+const path = require('path');
 const crypto = require('crypto');
-// eslint-disable-line global-require
 const { EventEmitter } = require('events');
-// eslint-disable-line global-require
+
+// Production guard - prevent mock usage in production
+const isProduction = process.env.NODE_ENV === 'production';
+const allowMocks = process.env.ALLOW_SSO_MOCKS === 'true' && !isProduction;
 
 class SSOManager extends EventEmitter {
   constructor(_options = {}) {
@@ -502,6 +502,12 @@ class SAMLProvider {
   }
 
   _buildSAMLRequest(state) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'SAML mock provider cannot be used in production. Configure real SAML integration.',
+      );
+    }
+
     // Mock SAML request - in production, use proper SAML library
     return Buffer.from(
       `<samlp:AuthnRequest ID="${state}"></samlp:AuthnRequest>`,
@@ -509,6 +515,12 @@ class SAMLProvider {
   }
 
   _validateSAMLResponse(_response) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'SAML mock provider cannot be used in production. Configure real SAML integration.',
+      );
+    }
+
     // Mock SAML _response validation
     return {
       sessionIndex: crypto.randomUUID(),
@@ -541,6 +553,12 @@ class OAuth2Provider {
   }
 
   async exchangeCodeForTokens(_callbackData) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OAuth2 mock provider cannot be used in production. Configure real OAuth2 integration.',
+      );
+    }
+
     // Mock OAuth2 token exchange
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
@@ -550,6 +568,12 @@ class OAuth2Provider {
   }
 
   async getUserInfo(_accessToken) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OAuth2 mock provider cannot be used in production. Configure real OAuth2 integration.',
+      );
+    }
+
     // Mock user info retrieval
     return {
       id: crypto.randomUUID(),
@@ -560,6 +584,12 @@ class OAuth2Provider {
   }
 
   async refreshTokens(refreshToken) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OAuth2 mock provider cannot be used in production. Configure real OAuth2 integration.',
+      );
+    }
+
     // Mock token refresh
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
@@ -588,6 +618,12 @@ class ActiveDirectoryProvider {
   }
 
   async exchangeCodeForTokens(_callbackData) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'Active Directory mock provider cannot be used in production. Configure real AD integration.',
+      );
+    }
+
     // Mock AD token exchange
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
@@ -597,6 +633,12 @@ class ActiveDirectoryProvider {
   }
 
   async getUserInfo(_accessToken) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'Active Directory mock provider cannot be used in production. Configure real AD integration.',
+      );
+    }
+
     // Mock AD user lookup
     return {
       id: crypto.randomUUID(),
@@ -626,6 +668,12 @@ class OIDCProvider {
   }
 
   async exchangeCodeForTokens(_callbackData) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OIDC mock provider cannot be used in production. Configure real OIDC integration.',
+      );
+    }
+
     // Mock OIDC token exchange
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
@@ -636,6 +684,12 @@ class OIDCProvider {
   }
 
   async getUserInfo(_accessToken) {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OIDC mock provider cannot be used in production. Configure real OIDC integration.',
+      );
+    }
+
     // Mock OIDC userinfo
     return {
       id: crypto.randomUUID(),
@@ -646,6 +700,12 @@ class OIDCProvider {
   }
 
   _generateMockIdToken() {
+    if (isProduction && !allowMocks) {
+      throw new Error(
+        'OIDC mock provider cannot be used in production. Configure real OIDC integration.',
+      );
+    }
+
     // Mock ID token
     return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.mock.token';
   }

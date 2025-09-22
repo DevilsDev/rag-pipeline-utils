@@ -400,15 +400,45 @@ class PipelineDoctor {
   }
 
   /**
-   * Execute a command (mockable for testing)
+   * Execute a command securely using child_process.execFile
    * @param {string} command - Command to execute
+   * @param {Array<string>} args - Command arguments
    * @returns {Promise<object>} Execution result
    */
-  async exec(command) {
-    const { exec } = require('child_process');
+  async execSafe(command, args = []) {
+    const { execFile } = require('child_process');
     const { promisify } = require('util');
-    const execAsync = promisify(exec);
-    return await execAsync(command);
+    const execFileAsync = promisify(execFile);
+
+    // ALLOWLIST of safe commands
+    const ALLOWED_COMMANDS = {
+      npm: ['install', 'audit', 'ls'],
+      chmod: ['600', '644', '755'],
+      node: ['--version'],
+    };
+
+    if (!ALLOWED_COMMANDS[command]) {
+      throw new Error(`Command not allowed: ${command}`);
+    }
+
+    // Validate arguments against allowlist
+    const allowedArgs = ALLOWED_COMMANDS[command];
+    for (const arg of args) {
+      if (
+        !allowedArgs.some(
+          (allowed) => arg.startsWith(allowed) || allowed === arg,
+        )
+      ) {
+        throw new Error(`Command argument not allowed: ${arg}`);
+      }
+    }
+
+    // Execute with validated command and arguments
+    return await execFileAsync(command, args, {
+      shell: false,
+      timeout: 30000, // 30 second timeout
+      maxBuffer: 1024 * 1024, // 1MB max output
+    });
   }
 
   /**
@@ -426,7 +456,7 @@ class PipelineDoctor {
 
     try {
       if (issue.code === 'NPM_DEPENDENCY_MISSING') {
-        const result = await this.exec('npm install');
+        const result = await this.execSafe('npm', ['install']);
         return {
           success: true,
           message: result.stdout || 'Dependencies installed',
@@ -434,7 +464,13 @@ class PipelineDoctor {
       }
 
       if (issue.code === 'INSECURE_PERMISSIONS') {
-        await this.exec(`chmod 600 ${this.options.configPath}`);
+        // Validate config path is safe (no path traversal)
+        const configPath = path.resolve(this.options.configPath);
+        if (!configPath.startsWith(process.cwd())) {
+          throw new Error('Invalid config path: outside current directory');
+        }
+
+        await this.execSafe('chmod', ['600', configPath]);
         return {
           success: true,
           message: 'Permissions updated',
