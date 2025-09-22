@@ -353,16 +353,86 @@ class RealtimeDebugger extends EventEmitter {
   }
 
   /**
-   * Evaluate breakpoint condition
+   * Evaluate breakpoint condition safely
    */
   async evaluateCondition(condition, input, context) {
-    // Simple condition evaluation - in production, use a safe evaluator
     try {
-      const func = new Function("input", "context", `return ${condition}`);
-      return func(input, context);
+      const {
+        evaluateExpression,
+      } = require("../utils/safe-expression-evaluator.js");
+
+      // Create safe context with limited access
+      const safeContext = {
+        input: this._createSafeObject(input),
+        context: this._createSafeObject(context),
+      };
+
+      return evaluateExpression(condition, safeContext, {
+        enabled: process.env.NODE_ENV !== "production",
+        maxExpression: 100,
+        maxDepth: 3,
+      });
     } catch (error) {
       throw new Error(`Invalid condition: ${error.message}`);
     }
+  }
+
+  /**
+   * Create safe object for evaluation context
+   * @param {any} obj - Object to make safe
+   * @returns {object} Safe object with limited properties
+   */
+  _createSafeObject(obj) {
+    if (obj === null || obj === undefined) {
+      return {};
+    }
+
+    if (typeof obj !== "object") {
+      return { value: obj };
+    }
+
+    if (Array.isArray(obj)) {
+      return {
+        length: obj.length,
+        first: obj[0],
+        last: obj[obj.length - 1],
+      };
+    }
+
+    // Create safe copy of object properties
+    const safeObj = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof key === "string" && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+        if (
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+        ) {
+          safeObj[key] = value;
+        } else if (Array.isArray(value)) {
+          safeObj[key] = { length: value.length };
+        } else if (value && typeof value === "object") {
+          // Only include safe nested properties (1 level deep)
+          safeObj[key] = {};
+          for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            if (
+              typeof nestedKey === "string" &&
+              /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(nestedKey)
+            ) {
+              if (
+                typeof nestedValue === "string" ||
+                typeof nestedValue === "number" ||
+                typeof nestedValue === "boolean"
+              ) {
+                safeObj[key][nestedKey] = nestedValue;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return safeObj;
   }
 
   /**

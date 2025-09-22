@@ -3,10 +3,8 @@
  * SAML 2.0, OAuth2, Active Directory, and identity provider support
  */
 
-const _fs = require('_fs').promises;
-// eslint-disable-line global-require
-const _path = require('_path');
-// eslint-disable-line global-require
+const fs = require('fs').promises;
+const path = require('path');
 const crypto = require('crypto');
 // eslint-disable-line global-require
 const { EventEmitter } = require('events');
@@ -502,24 +500,53 @@ class SAMLProvider {
   }
 
   _buildSAMLRequest(state) {
-    // Mock SAML request - in production, use proper SAML library
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Production SAML implementation required - please configure SAML library',
+      );
+    }
+
+    // Development only - remove in production
     return Buffer.from(
-      `<samlp:AuthnRequest ID="${state}"></samlp:AuthnRequest>`,
+      `<samlp:AuthnRequest ID="${state}" Version="2.0" IssueInstant="${new Date().toISOString()}" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+        <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">${this._config.entityId}</saml:Issuer>
+        <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress" AllowCreate="true"/>
+      </samlp:AuthnRequest>`,
     ).toString('base64');
   }
 
-  _validateSAMLResponse(_response) {
-    // Mock SAML _response validation
-    return {
-      sessionIndex: crypto.randomUUID(),
-      nameID: 'user@example.com',
-      attributes: {
-        email: 'user@example.com',
-        displayName: 'Test User',
-        roles: ['user'],
-      },
-      notOnOrAfter: Date.now() + 8 * 60 * 60 * 1000,
-    };
+  _validateSAMLResponse(response) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Production SAML validation required - please configure SAML library',
+      );
+    }
+
+    if (!response) {
+      throw new Error('SAML response is required');
+    }
+
+    // Development only - implement proper SAML validation in production
+    try {
+      const decodedResponse = Buffer.from(response, 'base64').toString('utf8');
+
+      if (!decodedResponse.includes('samlp:Response')) {
+        throw new Error('Invalid SAML response format');
+      }
+
+      return {
+        sessionIndex: crypto.randomUUID(),
+        nameID: 'dev-user@example.com',
+        attributes: {
+          email: 'dev-user@example.com',
+          displayName: 'Development User',
+          roles: ['user', 'dev'],
+        },
+        notOnOrAfter: Date.now() + 8 * 60 * 60 * 1000,
+      };
+    } catch (error) {
+      throw new Error(`SAML response validation failed: ${error.message}`);
+    }
   }
 }
 
@@ -540,8 +567,49 @@ class OAuth2Provider {
     return `${this._config.authorizationUrl}?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(_callbackData) {
-    // Mock OAuth2 token exchange
+  async exchangeCodeForTokens(callbackData) {
+    if (process.env.NODE_ENV === 'production') {
+      // Production implementation using real OAuth2 flow
+      const tokenRequest = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${this._config.clientId}:${this._config.clientSecret}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: callbackData.code,
+          redirect_uri: callbackData.redirect_uri,
+        }),
+      };
+
+      try {
+        const response = await fetch(this._config.tokenUrl, tokenRequest);
+
+        if (!response.ok) {
+          throw new Error(
+            `Token exchange failed: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const tokenData = await response.json();
+
+        return {
+          _accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+          tokenType: tokenData.token_type || 'Bearer',
+        };
+      } catch (error) {
+        throw new Error(`OAuth2 token exchange failed: ${error.message}`);
+      }
+    }
+
+    // Development only
+    if (!callbackData.code) {
+      throw new Error('Authorization code is required');
+    }
+
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
@@ -549,18 +617,79 @@ class OAuth2Provider {
     };
   }
 
-  async getUserInfo(_accessToken) {
-    // Mock user info retrieval
+  async getUserInfo(accessToken) {
+    if (process.env.NODE_ENV === 'production') {
+      // Production implementation
+      try {
+        const userResponse = await fetch(this._config.userInfoUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (!userResponse.ok) {
+          throw new Error(`User info request failed: ${userResponse.status}`);
+        }
+
+        const userData = await userResponse.json();
+
+        return {
+          id: userData.id || userData.sub,
+          email: userData.email,
+          name: userData.name || userData.display_name,
+          roles: userData.roles || [],
+          attributes: userData,
+        };
+      } catch (error) {
+        throw new Error(`Failed to get user info: ${error.message}`);
+      }
+    }
+
+    // Development only
     return {
-      id: crypto.randomUUID(),
-      email: 'user@example.com',
-      name: 'OAuth User',
-      roles: ['user'],
+      id: 'dev-' + crypto.randomUUID(),
+      email: 'dev-oauth-user@example.com',
+      name: 'Development OAuth User',
+      roles: ['user', 'dev'],
     };
   }
 
   async refreshTokens(refreshToken) {
-    // Mock token refresh
+    if (process.env.NODE_ENV === 'production') {
+      // Production token refresh
+      const refreshRequest = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${this._config.clientId}:${this._config.clientSecret}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+        }),
+      };
+
+      try {
+        const response = await fetch(this._config.tokenUrl, refreshRequest);
+
+        if (!response.ok) {
+          throw new Error(`Token refresh failed: ${response.status}`);
+        }
+
+        const tokenData = await response.json();
+
+        return {
+          _accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token || refreshToken,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+        };
+      } catch (error) {
+        throw new Error(`Token refresh failed: ${error.message}`);
+      }
+    }
+
+    // Development only
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: refreshToken,
@@ -587,8 +716,18 @@ class ActiveDirectoryProvider {
     return `${this._config.url}/oauth2/authorize?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(_callbackData) {
-    // Mock AD token exchange
+  async exchangeCodeForTokens(callbackData) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Production Active Directory integration required - please configure AD FS or Azure AD',
+      );
+    }
+
+    // Development only
+    if (!callbackData.code) {
+      throw new Error('Authorization code is required');
+    }
+
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
@@ -596,14 +735,20 @@ class ActiveDirectoryProvider {
     };
   }
 
-  async getUserInfo(_accessToken) {
-    // Mock AD user lookup
+  async getUserInfo(accessToken) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Production Active Directory user lookup required - please configure AD integration',
+      );
+    }
+
+    // Development only
     return {
-      id: crypto.randomUUID(),
-      email: 'user@corp.com',
-      name: 'AD User',
-      roles: ['user'],
-      groups: ['Domain Users'],
+      id: 'dev-' + crypto.randomUUID(),
+      email: 'dev-user@corp.com',
+      name: 'Development AD User',
+      roles: ['user', 'dev'],
+      groups: ['Domain Users', 'Developers'],
     };
   }
 }
@@ -625,8 +770,50 @@ class OIDCProvider {
     return `${this._config.issuer}/auth?${params.toString()}`;
   }
 
-  async exchangeCodeForTokens(_callbackData) {
-    // Mock OIDC token exchange
+  async exchangeCodeForTokens(callbackData) {
+    if (process.env.NODE_ENV === 'production') {
+      // Production OIDC implementation
+      const tokenRequest = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${this._config.clientId}:${this._config.clientSecret}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: callbackData.code,
+          redirect_uri: callbackData.redirect_uri,
+        }),
+      };
+
+      try {
+        const response = await fetch(
+          `${this._config.issuer}/token`,
+          tokenRequest,
+        );
+
+        if (!response.ok) {
+          throw new Error(`OIDC token exchange failed: ${response.status}`);
+        }
+
+        const tokenData = await response.json();
+
+        return {
+          _accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token,
+          idToken: tokenData.id_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+        };
+      } catch (error) {
+        throw new Error(`OIDC token exchange failed: ${error.message}`);
+      }
+    }
+
+    // Development only
+    if (!callbackData.code) {
+      throw new Error('Authorization code is required');
+    }
+
     return {
       _accessToken: crypto.randomBytes(32).toString('hex'),
       refreshToken: crypto.randomBytes(32).toString('hex'),
@@ -635,19 +822,73 @@ class OIDCProvider {
     };
   }
 
-  async getUserInfo(_accessToken) {
-    // Mock OIDC userinfo
+  async getUserInfo(accessToken) {
+    if (process.env.NODE_ENV === 'production') {
+      // Production OIDC userinfo
+      try {
+        const userResponse = await fetch(`${this._config.issuer}/userinfo`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (!userResponse.ok) {
+          throw new Error(
+            `OIDC userinfo request failed: ${userResponse.status}`,
+          );
+        }
+
+        const userData = await userResponse.json();
+
+        return {
+          id: userData.sub,
+          email: userData.email,
+          name: userData.name || userData.preferred_username,
+          roles: userData.roles || [],
+          groups: userData.groups || [],
+          attributes: userData,
+        };
+      } catch (error) {
+        throw new Error(`OIDC getUserInfo failed: ${error.message}`);
+      }
+    }
+
+    // Development only
     return {
-      id: crypto.randomUUID(),
-      email: 'user@oidc.com',
-      name: 'OIDC User',
-      roles: ['user'],
+      id: 'dev-' + crypto.randomUUID(),
+      email: 'dev-user@oidc.com',
+      name: 'Development OIDC User',
+      roles: ['user', 'dev'],
     };
   }
 
   _generateMockIdToken() {
-    // Mock ID token
-    return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.mock.token';
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Mock ID token generation not allowed in production');
+    }
+
+    // Development only - basic JWT structure
+    const header = Buffer.from(
+      JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+    ).toString('base64url');
+    const payload = Buffer.from(
+      JSON.stringify({
+        sub: 'dev-user-' + crypto.randomUUID(),
+        iss: this._config.issuer || 'dev-issuer',
+        aud: this._config.clientId,
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        iat: Math.floor(Date.now() / 1000),
+        email: 'dev-user@oidc.com',
+        name: 'Development OIDC User',
+      }),
+    ).toString('base64url');
+    const signature = crypto
+      .createHmac('sha256', 'dev-secret')
+      .update(`${header}.${payload}`)
+      .digest('base64url');
+
+    return `${header}.${payload}.${signature}`;
   }
 }
 

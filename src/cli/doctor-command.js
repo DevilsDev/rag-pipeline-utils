@@ -400,15 +400,40 @@ class PipelineDoctor {
   }
 
   /**
-   * Execute a command (mockable for testing)
+   * Execute a command safely using execFile with args array (mockable for testing)
    * @param {string} command - Command to execute
+   * @param {Array<string>} args - Command arguments
+   * @param {object} options - Execution options
    * @returns {Promise<object>} Execution result
    */
-  async exec(command) {
-    const { exec } = require('child_process');
+  async execSafe(command, args = [], options = {}) {
+    const { execFile } = require('child_process');
     const { promisify } = require('util');
-    const execAsync = promisify(exec);
-    return await execAsync(command);
+    const execFileAsync = promisify(execFile);
+
+    // Validate command is in allowlist
+    const ALLOWED_COMMANDS = ['npm', 'chmod', 'node'];
+    if (!ALLOWED_COMMANDS.includes(command)) {
+      throw new Error(`Command not allowed: ${command}`);
+    }
+
+    // Sanitize arguments
+    const sanitizedArgs = args.map((arg) => {
+      if (typeof arg !== 'string') {
+        throw new Error('All arguments must be strings');
+      }
+      // Remove shell metacharacters
+      return arg.replace(/[;&|`$(){}[\]<>"'\\]/g, '');
+    });
+
+    const execOptions = {
+      shell: false, // Never use shell to prevent injection
+      timeout: options.timeout || 30000,
+      env: { ...process.env, PATH: process.env.PATH }, // Controlled environment
+      ...options,
+    };
+
+    return await execFileAsync(command, sanitizedArgs, execOptions);
   }
 
   /**
@@ -426,7 +451,12 @@ class PipelineDoctor {
 
     try {
       if (issue.code === 'NPM_DEPENDENCY_MISSING') {
-        const result = await this.exec('npm install');
+        // Use execSafe with validated command and args
+        const result = await this.execSafe('npm', [
+          'install',
+          '--no-fund',
+          '--no-audit',
+        ]);
         return {
           success: true,
           message: result.stdout || 'Dependencies installed',
@@ -434,7 +464,15 @@ class PipelineDoctor {
       }
 
       if (issue.code === 'INSECURE_PERMISSIONS') {
-        await this.exec(`chmod 600 ${this.options.configPath}`);
+        // Validate config path is within project directory
+        const configPath = path.resolve(this.options.configPath);
+        const projectDir = path.resolve('.');
+        if (!configPath.startsWith(projectDir)) {
+          throw new Error('Config path outside project directory');
+        }
+
+        // Use execSafe with validated command and args
+        await this.execSafe('chmod', ['600', configPath]);
         return {
           success: true,
           message: 'Permissions updated',
