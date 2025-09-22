@@ -2,9 +2,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  createPluginVerifier,
+} = require('../security/plugin-signature-verifier.js');
 
 class PluginRegistry {
-  constructor() {
+  constructor(options = {}) {
     this._plugins = new Map();
     this._validTypes = new Set([
       'loader',
@@ -15,6 +18,11 @@ class PluginRegistry {
       'evaluator',
     ]);
     this._contracts = new Map();
+    this._signatureVerifier = createPluginVerifier({
+      enabled: options.verifySignatures !== false,
+      failClosed: options.failClosed !== false,
+      trustedKeysPath: options.trustedKeysPath,
+    });
     this._loadContracts();
   }
 
@@ -103,7 +111,7 @@ class PluginRegistry {
     return methods;
   }
 
-  register(category, name, impl) {
+  async register(category, name, impl, manifest = null) {
     if (!category || typeof category !== 'string') {
       throw new Error('Category must be a non-empty string');
     }
@@ -117,12 +125,88 @@ class PluginRegistry {
       throw new Error(`Unknown plugin type: ${category}`);
     }
 
+    // Verify plugin signature if manifest provided
+    if (manifest) {
+      await this._verifyPluginSignature(manifest, name);
+    }
+
     // Validate plugin against contract
     this._validatePluginContract(category, impl);
 
     const key = `${category}:${name}`;
     this._plugins.set(key, impl);
     return this;
+  }
+
+  /**
+   * Verify plugin signature
+   * @param {object} manifest - Plugin manifest
+   * @param {string} pluginName - Plugin name
+   */
+  async _verifyPluginSignature(manifest, pluginName) {
+    try {
+      // Extract signature information from manifest
+      if (!manifest.signature || !manifest.signerId) {
+        throw new Error(
+          `Plugin ${pluginName} missing required signature or signerId`,
+        );
+      }
+
+      const verificationResult =
+        await this._signatureVerifier.verifyPluginSignature(
+          manifest,
+          manifest.signature,
+          manifest.signerId,
+        );
+
+      if (!verificationResult.verified) {
+        throw new Error(
+          `Plugin ${pluginName} signature verification failed: ${verificationResult.error}`,
+        );
+      }
+
+      // Emit audit entry for successful verification
+      this._emitAuditEntry('plugin_verified', {
+        pluginName,
+        signerId: manifest.signerId,
+        version: manifest.version,
+        verified: true,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      // Emit audit entry for failed verification
+      this._emitAuditEntry('plugin_verification_failed', {
+        pluginName,
+        signerId: manifest.signerId || 'unknown',
+        version: manifest.version || 'unknown',
+        verified: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Emit audit entry
+   * @param {string} action - Audit action
+   * @param {object} details - Audit details
+   */
+  _emitAuditEntry(action, details) {
+    const auditEntry = {
+      timestamp: new Date().toISOString(),
+      action,
+      component: 'plugin_registry',
+      ...details,
+    };
+
+    // In production, this should go to a secure audit log
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[AUDIT]', JSON.stringify(auditEntry)); // eslint-disable-line no-console
+    } else {
+      console.log('[AUDIT]', auditEntry); // eslint-disable-line no-console
+    }
   }
 
   get(category, name) {
@@ -160,8 +244,11 @@ class PluginRegistry {
   }
 }
 
-// Create singleton instance
-const registry = new PluginRegistry();
+// Create singleton instance with default security settings
+const registry = new PluginRegistry({
+  verifySignatures: process.env.NODE_ENV === 'production',
+  failClosed: process.env.NODE_ENV === 'production',
+});
 
 // CJS+ESM interop pattern
 module.exports = registry;
