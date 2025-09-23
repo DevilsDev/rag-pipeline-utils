@@ -54,8 +54,8 @@ describe("PluginRegistry", () => {
     expect(result).toBe(secondPlugin);
   });
 
-  test("throws error for unknown plugin type on registration", () => {
-    expect(() => registry.register("unknown-type", "x", {})).toThrow(
+  test("throws error for unknown plugin type on registration", async () => {
+    await expect(registry.register("unknown-type", "x", {})).rejects.toThrow(
       /Unknown plugin type/,
     );
   });

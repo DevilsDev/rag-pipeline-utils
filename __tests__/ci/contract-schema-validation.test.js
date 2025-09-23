@@ -161,7 +161,7 @@ describe("Contract Schema Validation", () => {
   });
 
   describe("Plugin Registry Contract Enforcement", () => {
-    test("should enforce contracts during plugin registration", () => {
+    test("should enforce contracts during plugin registration", async () => {
       const mockPlugin = {
         metadata: {
           name: "test-loader",
@@ -172,9 +172,9 @@ describe("Contract Schema Validation", () => {
       };
 
       // Should register successfully with valid contract
-      expect(() => {
-        registry.register("loader", "test-loader", mockPlugin);
-      }).not.toThrow();
+      await expect(
+        registry.register("loader", "test-loader", mockPlugin),
+      ).resolves.not.toThrow();
 
       // Should reject plugin missing required methods
       const invalidPlugin = {
@@ -186,12 +186,12 @@ describe("Contract Schema Validation", () => {
         // Missing 'load' method
       };
 
-      expect(() => {
-        registry.register("loader", "invalid-loader", invalidPlugin);
-      }).toThrow();
+      await expect(
+        registry.register("loader", "invalid-loader", invalidPlugin),
+      ).rejects.toThrow();
     });
 
-    test("should validate plugin method signatures", () => {
+    test("should validate plugin method signatures", async () => {
       const pluginWithInvalidSignature = {
         metadata: {
           name: "invalid-embedder",
@@ -201,13 +201,13 @@ describe("Contract Schema Validation", () => {
         embed: "not a function", // Invalid - should be function
       };
 
-      expect(() => {
+      await expect(
         registry.register(
           "embedder",
           "invalid-embedder",
           pluginWithInvalidSignature,
-        );
-      }).toThrow();
+        ),
+      ).rejects.toThrow();
     });
   });
 

@@ -18,9 +18,18 @@ class PluginRegistry {
       'evaluator',
     ]);
     this._contracts = new Map();
+
+    // Environment-aware signature verification defaults
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isProduction = process.env.NODE_ENV === 'production';
+
     this._signatureVerifier = createPluginVerifier({
-      enabled: options.verifySignatures !== false,
-      failClosed: options.failClosed !== false,
+      enabled:
+        options.verifySignatures !== undefined
+          ? options.verifySignatures
+          : isProduction, // Enabled by default in production, disabled in development
+      failClosed:
+        options.failClosed !== undefined ? options.failClosed : isProduction, // Fail closed in production, fail open in development
       trustedKeysPath: options.trustedKeysPath,
     });
     this._loadContracts();

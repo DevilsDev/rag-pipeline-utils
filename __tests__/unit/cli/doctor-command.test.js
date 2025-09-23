@@ -12,7 +12,10 @@ const {
 
 // Mock dependencies
 jest.mock("fs/promises");
-jest.mock("path");
+jest.mock("path", () => ({
+  join: jest.fn((...args) => args.join("/")),
+  resolve: jest.fn((p) => p || "/test/path"),
+}));
 jest.mock("../../../src/config/enhanced-ragrc-schema.js");
 jest.mock("../../../src/core/plugin-marketplace/version-resolver.js");
 
@@ -34,6 +37,11 @@ describe("PipelineDoctor", () => {
     mockFs.readFile = jest.fn();
     mockFs.writeFile = jest.fn();
     mockFs.access = jest.fn();
+
+    // Ensure path mock is working correctly
+    const pathMock = require("path");
+    pathMock.resolve = jest.fn((p) => p || "/test/path");
+    pathMock.join = jest.fn((...args) => args.join("/"));
     mockFs.stat = jest.fn();
   });
 
@@ -503,17 +511,21 @@ describe("PipelineDoctor", () => {
         autoFixable: true,
       };
 
-      const mockExec = jest
+      const mockExecSafe = jest
         .fn()
         .mockResolvedValue({ stdout: "Dependencies installed" });
-      doctor.exec = mockExec;
+      doctor.execSafe = mockExecSafe;
 
       const result = await doctor.autoFix(issue);
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.message).toBe("Dependencies installed");
-      expect(mockExec).toHaveBeenCalledWith("npm install");
+      expect(mockExecSafe).toHaveBeenCalledWith("npm", [
+        "install",
+        "--no-fund",
+        "--no-audit",
+      ]);
     });
 
     it("should fix insecure file permissions", async () => {
@@ -524,16 +536,24 @@ describe("PipelineDoctor", () => {
         autoFixable: true,
       };
 
-      const mockExec = jest
+      // Ensure path mock is correctly set up for this test
+      const pathMock = require("path");
+      pathMock.resolve = jest.fn((p) => (p ? `/test/${p}` : "/test/path"));
+      pathMock.join = jest.fn((...args) => args.join("/"));
+
+      const mockExecSafe = jest
         .fn()
         .mockResolvedValue({ stdout: "Permissions updated" });
-      doctor.exec = mockExec;
+      doctor.execSafe = mockExecSafe;
 
       const result = await doctor.autoFix(issue);
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(mockExec).toHaveBeenCalledWith("chmod 600 .ragrc.json");
+      expect(mockExecSafe).toHaveBeenCalledWith("chmod", [
+        "600",
+        expect.stringContaining(".ragrc.json"),
+      ]);
     });
 
     it("should handle non-auto-fixable issues", async () => {

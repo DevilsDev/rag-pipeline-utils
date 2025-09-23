@@ -27,6 +27,7 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --config jest.config.js",
     "test:ci": "jest --coverage",
     "test:open-handles": "jest --detectOpenHandles --runInBand",
+    "test:report": "node scripts/test-reporter.js",
     "posttest": "node scripts/generate-test-reports.js",
     "format": "prettier --write \"src/**/*.{js,json}\"",
     "test:watch": "jest --watch",

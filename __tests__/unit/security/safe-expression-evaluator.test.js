@@ -158,7 +158,7 @@ describe("SafeExpressionEvaluator", () => {
 
       expect(() => {
         evaluator.evaluate("obj.constructor", context);
-      }).toBe(undefined); // allowed property name but not accessible
+      }).toThrow("Invalid property name"); // dangerous property
     });
 
     test("should enforce recursion depth limits", () => {

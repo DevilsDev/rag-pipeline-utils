@@ -301,7 +301,14 @@ describe("StructuredLogger", () => {
 
   describe("Default logger", () => {
     test("should provide working default logger", () => {
-      defaultLogger.info("Default logger test");
+      // Create a test logger with JSON format to ensure consistent output
+      const jsonLogger = createLogger({
+        serviceName: "rag-pipeline-utils",
+        environment: "test",
+        outputFormat: "json",
+      });
+
+      jsonLogger.info("Default logger test");
 
       expect(mockConsole.log).toHaveBeenCalled();
       const logEntry = JSON.parse(mockConsole.log.mock.calls[0][0]);

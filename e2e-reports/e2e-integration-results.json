@@ -1,29 +1,29 @@
 {
   "testSuite": "Full Pipeline End-to-End Integration Tests",
-  "timestamp": "2025-09-22T21:04:11.421Z",
+  "timestamp": "2025-09-23T08:51:04.492Z",
   "summary": {
     "totalTests": 1,
-    "avgDuration": 4730.5455999999995,
+    "avgDuration": 4748.618699999992,
     "avgQuality": 0.8624718507087334,
     "successRate": 1
   },
   "results": [
     {
       "testName": "json-document-collection",
-      "totalDuration": 4730.5455999999995,
+      "totalDuration": 4748.618699999992,
       "documentsProcessed": 50,
       "chunksCreated": 100,
       "embeddingsGenerated": 100,
       "retrievalAccuracy": 0.8850154320987654,
       "responseQuality": 0.8624718507087334,
       "stageBreakdown": {
-        "loading": 562.0329999999999,
-        "embedding": 1694.2091,
-        "retrieval": 371.98820000000023,
-        "generation": 1337.7875999999997,
-        "evaluation": 587.1387999999997
+        "loading": 562.2514000000083,
+        "embedding": 1697.1475999999966,
+        "retrieval": 370.70389999999315,
+        "generation": 1345.0439999999944,
+        "evaluation": 592.1067000000039
       },
-      "timestamp": "2025-09-22T21:03:52.411Z"
+      "timestamp": "2025-09-23T08:50:45.597Z"
     }
   ]
 }

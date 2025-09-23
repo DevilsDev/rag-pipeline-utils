@@ -7,15 +7,15 @@
  * @since 2.1.8
  */
 
-const PRODUCTION_ENABLED = process.env.NODE_ENV !== 'production';
-
 /**
  * Safe expression evaluator for debugging conditions
  * Only allows simple property access, comparisons, and basic operations
  */
 class SafeExpressionEvaluator {
   constructor(options = {}) {
-    this.enabled = options.enabled !== false && PRODUCTION_ENABLED;
+    // Dynamic production check
+    const productionEnabled = process.env.NODE_ENV !== 'production';
+    this.enabled = options.enabled !== false && productionEnabled;
     this.maxDepth = options.maxDepth || 5;
     this.maxExpression = options.maxExpression || 200;
 
@@ -41,6 +41,20 @@ class SafeExpressionEvaluator {
 
     // Allowed property access patterns
     this.allowedPropertyPattern = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+
+    // Dangerous identifiers that should never be accessible
+    this.blockedIdentifiers = new Set([
+      'globalThis',
+      'global',
+      'process',
+      'require',
+      'module',
+      'console',
+      'eval',
+      'Function',
+      'window',
+      'document',
+    ]);
   }
 
   /**
@@ -425,6 +439,10 @@ class SafeExpressionEvaluator {
         return node.value;
 
       case 'Identifier':
+        // Block dangerous identifiers
+        if (this.blockedIdentifiers.has(node.name)) {
+          return undefined;
+        }
         if (!Object.prototype.hasOwnProperty.call(context, node.name)) {
           return undefined;
         }
@@ -436,13 +454,32 @@ class SafeExpressionEvaluator {
           return undefined;
         }
 
-        // Only allow simple property access on plain objects
-        if (typeof object !== 'object' || Array.isArray(object)) {
+        // Allow specific properties on arrays
+        if (Array.isArray(object)) {
+          if (node.property === 'length') {
+            return object.length;
+          }
+          if (node.property === 'first') {
+            return object[0];
+          }
+          if (node.property === 'last') {
+            return object[object.length - 1];
+          }
+          // Block other array access
           return undefined;
         }
 
-        // Validate property name
-        if (!this.allowedPropertyPattern.test(node.property)) {
+        // Only allow simple property access on plain objects
+        if (typeof object !== 'object') {
+          return undefined;
+        }
+
+        // Validate property name - block dangerous properties
+        if (
+          !this.allowedPropertyPattern.test(node.property) ||
+          node.property.startsWith('__') ||
+          ['constructor', 'prototype', '__proto__'].includes(node.property)
+        ) {
           throw new Error('Invalid property name');
         }
 

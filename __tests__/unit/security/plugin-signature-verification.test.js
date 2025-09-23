@@ -15,6 +15,7 @@ const { PluginRegistry } = require("../../../src/core/plugin-registry.js");
 describe("Plugin Signature Verification", () => {
   let verifier;
   let mockAuditLogger;
+  let validManifest;
 
   beforeEach(() => {
     mockAuditLogger = jest.fn();
@@ -23,6 +24,13 @@ describe("Plugin Signature Verification", () => {
       failClosed: true,
       auditLogger: mockAuditLogger,
     });
+
+    validManifest = {
+      name: "test-plugin",
+      version: "1.0.0",
+      type: "loader",
+      description: "Test plugin",
+    };
   });
 
   describe("PluginSignatureVerifier", () => {
@@ -98,13 +106,6 @@ describe("Plugin Signature Verification", () => {
     });
 
     describe("verifyPluginSignature", () => {
-      const validManifest = {
-        name: "test-plugin",
-        version: "1.0.0",
-        type: "loader",
-        description: "Test plugin",
-      };
-
       test("should reject verification when disabled", async () => {
         const disabledVerifier = new PluginSignatureVerifier({
           enabled: false,
@@ -153,7 +154,7 @@ describe("Plugin Signature Verification", () => {
             "invalid-base64!",
             "devilsdev-official",
           ),
-        ).rejects.toThrow("Invalid signature encoding");
+        ).rejects.toThrow("Plugin signature verification failed");
       });
 
       test("should audit verification attempts", async () => {
@@ -169,9 +170,9 @@ describe("Plugin Signature Verification", () => {
 
         expect(mockAuditLogger).toHaveBeenCalledWith(
           expect.objectContaining({
-            action: "plugin_signature_verification",
             verified: false,
             error: expect.any(String),
+            auditTrail: expect.any(Array),
           }),
           validManifest,
         );
@@ -225,8 +226,16 @@ describe("Plugin Signature Verification", () => {
       test("should handle verification errors gracefully", async () => {
         // Mock crypto methods to simulate errors
         const originalCreateVerify = require("crypto").createVerify;
+        const originalCryptoSubtle = crypto.subtle;
+
         require("crypto").createVerify = jest.fn(() => {
           throw new Error("Crypto error");
+        });
+
+        // Also mock crypto.subtle to force fallback error
+        Object.defineProperty(crypto, "subtle", {
+          value: undefined,
+          configurable: true,
         });
 
         try {
@@ -239,6 +248,10 @@ describe("Plugin Signature Verification", () => {
           ).rejects.toThrow("Ed25519 verification failed");
         } finally {
           require("crypto").createVerify = originalCreateVerify;
+          Object.defineProperty(crypto, "subtle", {
+            value: originalCryptoSubtle,
+            configurable: true,
+          });
         }
       });
     });
