@@ -412,7 +412,7 @@ class PipelineDoctor {
     const execFileAsync = promisify(execFile);
 
     // Validate command is in allowlist
-    const ALLOWED_COMMANDS = ['npm', 'chmod', 'node'];
+    const ALLOWED_COMMANDS = ['npm', 'chmod', 'node', 'icacls'];
     if (!ALLOWED_COMMANDS.includes(command)) {
       throw new Error(`Command not allowed: ${command}`);
     }
@@ -471,8 +471,31 @@ class PipelineDoctor {
           throw new Error('Config path outside project directory');
         }
 
-        // Use execSafe with validated command and args
-        await this.execSafe('chmod', ['600', configPath]);
+        // Check if running on Windows
+        if (process.platform === 'win32') {
+          // On Windows, attempt to use icacls or fall back to fs.chmod
+          try {
+            await this.execSafe('icacls', [
+              configPath,
+              '/inheritance:r',
+              '/grant',
+              `${require('os').userInfo().username}:F`,
+            ]);
+          } catch (icaclsError) {
+            // Fall back to fs.chmod if icacls fails
+            try {
+              await fs.chmod(configPath, 0o600);
+            } catch (chmodError) {
+              throw new Error(
+                `Failed to update permissions: ${chmodError.message}`,
+              );
+            }
+          }
+        } else {
+          // Use chmod on Unix-like systems
+          await this.execSafe('chmod', ['600', configPath]);
+        }
+
         return {
           success: true,
           message: 'Permissions updated',

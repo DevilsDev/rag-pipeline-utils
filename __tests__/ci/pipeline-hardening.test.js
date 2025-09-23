@@ -263,10 +263,21 @@ describe("CI/CD Pipeline Hardening Tests", () => {
           if (workflow.permissions) {
             const permissions = workflow.permissions;
 
-            // Check for excessive permissions
-            if (
-              permissions === "write-all" ||
-              permissions.contents === "write"
+            // Check for excessive permissions - allow contents: write for documentation workflows
+            const isDocumentationWorkflow =
+              workflowFile.includes("docs") ||
+              workflowFile.includes("documentation") ||
+              JSON.stringify(workflow).includes("deploy-pages") ||
+              JSON.stringify(workflow).includes("configure-pages");
+
+            if (permissions === "write-all") {
+              workflowSecurity.excessivePermissions.push({
+                file: workflowFile,
+                permission: "excessive_write_all_access",
+              });
+            } else if (
+              permissions.contents === "write" &&
+              !isDocumentationWorkflow
             ) {
               workflowSecurity.excessivePermissions.push({
                 file: workflowFile,
@@ -473,7 +484,7 @@ describe("CI/CD Pipeline Hardening Tests", () => {
           const hasMatrix = workflowStr.includes("matrix:");
           if (
             (hasMultipleJobs || hasMatrix) &&
-            !workflowStr.includes("if:") &&
+            !workflowStr.includes('"if"') &&
             !workflowStr.includes("condition")
           ) {
             resourceValidation.efficiency.conditionalExecution = false;

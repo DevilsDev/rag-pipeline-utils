@@ -228,10 +228,18 @@ describe("Command Injection Prevention", () => {
 
       const result = await doctor.autoFix(issue);
 
-      expect(mockExecSafe).toHaveBeenCalledWith("chmod", [
-        "600",
-        expect.stringMatching(/\.ragrc\.json$/),
-      ]);
+      // Expect different commands based on platform
+      if (process.platform === "win32") {
+        expect(mockExecSafe).toHaveBeenCalledWith(
+          "icacls",
+          expect.arrayContaining([expect.stringMatching(/\.ragrc\.json$/)]),
+        );
+      } else {
+        expect(mockExecSafe).toHaveBeenCalledWith("chmod", [
+          "600",
+          expect.stringMatching(/\.ragrc\.json$/),
+        ]);
+      }
       expect(result.success).toBe(true);
       expect(result.message).toBe("Permissions updated");
     });

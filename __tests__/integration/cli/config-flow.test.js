@@ -41,7 +41,14 @@ const FIXTURE_CONFIG_OBJECT = {
 
 describe("CLI integration with .ragrc.json config fallback", () => {
   beforeAll(() => {
-    rmSync(TEMP_TEST_DIR, { recursive: true, force: true });
+    try {
+      rmSync(TEMP_TEST_DIR, { recursive: true, force: true });
+    } catch (error) {
+      // If cleanup fails, continue - the directory might not exist
+      if (error.code !== "ENOENT") {
+        console.warn(`Initial cleanup failed: ${error.message}`);
+      }
+    }
     mkdirSync(join(TEMP_TEST_DIR, "src/mocks"), { recursive: true });
 
     // Assert existence
@@ -84,8 +91,31 @@ describe("CLI integration with .ragrc.json config fallback", () => {
     console.debug("[SETUP] Contents:", readdirSync(TEMP_TEST_DIR));
   });
 
-  afterAll(() => {
-    rmSync(TEMP_TEST_DIR, { recursive: true, force: true });
+  afterAll(async () => {
+    // Add a delay to allow file handles to be released on Windows
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      rmSync(TEMP_TEST_DIR, { recursive: true, force: true });
+    } catch (error) {
+      // On Windows, files might still be locked. Try again after a longer delay
+      if (error.code === "EBUSY" || error.code === "EPERM") {
+        console.warn(
+          `File deletion failed, retrying after delay: ${error.message}`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          rmSync(TEMP_TEST_DIR, { recursive: true, force: true });
+        } catch (retryError) {
+          console.error(
+            `Could not delete temp directory: ${retryError.message}`,
+          );
+          // Don't fail the test if cleanup fails
+        }
+      } else {
+        throw error;
+      }
+    }
   });
 
   test("validates plugin sections contain resolvable names", () => {

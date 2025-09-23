@@ -7,30 +7,30 @@
  * @version 2.1.1
  */
 
-const ivm = require("isolated-vm");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
-const { EventEmitter } = require("events");
-const logger = require("../utils/structured-logger");
-const PluginSignatureVerifier = require("./plugin-signature-verifier");
+const ivm = require('isolated-vm');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { EventEmitter } = require('events');
+const logger = require('../utils/structured-logger');
+const PluginSignatureVerifier = require('./plugin-signature-verifier');
 
 /**
  * Input sanitizer for security validation
  */
 class InputSanitizer {
   static sanitizeInput(input) {
-    if (typeof input !== "string") {
-      throw new Error("Input must be a string");
+    if (typeof input !== 'string') {
+      throw new Error('Input must be a string');
     }
 
     // Remove potential script injections
     const sanitized = input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      .replace(/javascript:/gi, "")
-      .replace(/on\w+\s*=/gi, "")
-      .replace(/eval\s*\(/gi, "")
-      .replace(/Function\s*\(/gi, "");
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .replace(/eval\s*\(/gi, '')
+      .replace(/Function\s*\(/gi, '');
 
     return sanitized;
   }
@@ -40,11 +40,11 @@ class InputSanitizer {
     const allowedChars = /^[a-zA-Z0-9\s.,?!;:\-_'"()[\]{}@#$%^&*+=|\\/<>~`]*$/;
 
     if (input.length > maxLength) {
-      throw new Error("Input exceeds maximum length");
+      throw new Error('Input exceeds maximum length');
     }
 
     if (!allowedChars.test(input)) {
-      throw new Error("Input contains invalid characters");
+      throw new Error('Input contains invalid characters');
     }
 
     return true;
@@ -56,8 +56,8 @@ class InputSanitizer {
  */
 class OutputSanitizer {
   static sanitizeOutput(output) {
-    if (typeof output !== "object" || !output) {
-      return { error: "Invalid output format" };
+    if (typeof output !== 'object' || !output) {
+      return { error: 'Invalid output format' };
     }
 
     const sanitized = { ...output };
@@ -78,16 +78,16 @@ class OutputSanitizer {
 
   static sanitizeText(text) {
     return text
-      .replace(/sk-[a-zA-Z0-9]+/g, "[REDACTED]")
+      .replace(/sk-[a-zA-Z0-9]+/g, '[REDACTED]')
       .replace(
         /\b(?:api[_-]?key|password|token|secret)\s*[:=]\s*\S+/gi,
-        "[REDACTED]",
+        '[REDACTED]',
       )
       .replace(
         /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-        "[EMAIL_REDACTED]",
+        '[EMAIL_REDACTED]',
       )
-      .replace(/\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/g, "[CARD_REDACTED]");
+      .replace(/\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/g, '[CARD_REDACTED]');
   }
 }
 
@@ -98,13 +98,13 @@ function sanitizeOutput(obj) {
   const clone = JSON.parse(JSON.stringify(obj));
   const redact = (s) =>
     String(s)
-      .replace(/sk-[A-Za-z0-9_-]{10,}/g, "[REDACTED]")
-      .replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, "[EMAIL_REDACTED]")
-      .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[REDACTED]");
-  if (typeof clone === "string") return redact(clone);
-  if (clone && typeof clone === "object") {
+      .replace(/sk-[A-Za-z0-9_-]{10,}/g, '[REDACTED]')
+      .replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, '[EMAIL_REDACTED]')
+      .replace(/\b(?:\d[ -]*?){13,16}\b/g, '[REDACTED]');
+  if (typeof clone === 'string') return redact(clone);
+  if (clone && typeof clone === 'object') {
     for (const k of Object.keys(clone)) {
-      if (typeof clone[k] === "string") clone[k] = redact(clone[k]);
+      if (typeof clone[k] === 'string') clone[k] = redact(clone[k]);
     }
   }
   return clone;
@@ -140,10 +140,10 @@ class PluginSandbox extends EventEmitter {
 
       // Permission System
       permissions: {
-        filesystem: options.permissions?.filesystem || "none", // none, read, write
-        network: options.permissions?.network || "none", // none, limited, full
-        process: options.permissions?.process || "none", // none, limited
-        crypto: options.permissions?.crypto || "limited", // none, limited, full
+        filesystem: options.permissions?.filesystem || 'none', // none, read, write
+        network: options.permissions?.network || 'none', // none, limited, full
+        process: options.permissions?.process || 'none', // none, limited
+        crypto: options.permissions?.crypto || 'limited', // none, limited, full
         ...options.permissions,
       },
 
@@ -154,7 +154,7 @@ class PluginSandbox extends EventEmitter {
 
       // Audit Configuration
       auditEnabled: options.auditEnabled !== false,
-      logLevel: options.logLevel || "info",
+      logLevel: options.logLevel || 'info',
 
       ...options,
     };
@@ -180,7 +180,7 @@ class PluginSandbox extends EventEmitter {
     const startTime = Date.now();
 
     return logger.withCorrelation(executionId, async () => {
-      this.auditLog("sandbox.execution.start", {
+      this.auditLog('sandbox.execution.start', {
         executionId,
         pluginId: plugin.id,
         permissions: this.config.permissions,
@@ -207,9 +207,9 @@ class PluginSandbox extends EventEmitter {
         );
 
         // 4. Record success metrics
-        this.recordMetrics(executionId, startTime, "success", result);
+        this.recordMetrics(executionId, startTime, 'success', result);
 
-        this.auditLog("sandbox.execution.success", {
+        this.auditLog('sandbox.execution.success', {
           executionId,
           pluginId: plugin.id,
           duration: Date.now() - startTime,
@@ -218,9 +218,9 @@ class PluginSandbox extends EventEmitter {
 
         return result;
       } catch (error) {
-        this.recordMetrics(executionId, startTime, "error", null, error);
+        this.recordMetrics(executionId, startTime, 'error', null, error);
 
-        this.auditLog("sandbox.execution.error", {
+        this.auditLog('sandbox.execution.error', {
           executionId,
           pluginId: plugin.id,
           error: error.message,
@@ -241,7 +241,7 @@ class PluginSandbox extends EventEmitter {
    */
   _enforceRateLimit(customRateLimit = {}) {
     const rateLimit = { ...this.options.rateLimit, ...customRateLimit };
-    const key = rateLimit.key || "default";
+    const key = rateLimit.key || 'default';
     const now = Date.now();
 
     const entry = this.rateLimitStore.get(key) || {
@@ -268,16 +268,16 @@ class PluginSandbox extends EventEmitter {
    * Validate plugin structure and security
    */
   _validatePlugin(plugin) {
-    if (!plugin || typeof plugin !== "object") {
-      throw new Error("Invalid plugin: must be an object");
+    if (!plugin || typeof plugin !== 'object') {
+      throw new Error('Invalid plugin: must be an object');
     }
 
-    if (typeof plugin.generate !== "function") {
-      throw new Error("Invalid plugin: generate method is required");
+    if (typeof plugin.generate !== 'function') {
+      throw new Error('Invalid plugin: generate method is required');
     }
 
     // Check for suspicious properties
-    const suspiciousProps = ["__proto__", "constructor", "prototype"];
+    const suspiciousProps = ['__proto__', 'constructor', 'prototype'];
     for (const prop of suspiciousProps) {
       if (plugin.hasOwnProperty(prop)) {
         throw new Error(
@@ -305,12 +305,12 @@ class PluginSandbox extends EventEmitter {
 
       // Set up global environment
       const jail = context.global;
-      await jail.set("global", jail.derefInto());
+      await jail.set('global', jail.derefInto());
 
       // Create secure execution environment
       const secureGlobals = this._createSecureGlobals(executionId);
       for (const [key, value] of Object.entries(secureGlobals)) {
-        if (typeof value === "function") {
+        if (typeof value === 'function') {
           await jail.set(key, new ivm.Reference(value));
         } else {
           await jail.set(key, value);
@@ -319,11 +319,11 @@ class PluginSandbox extends EventEmitter {
 
       // Inject plugin and prompt safely
       await jail.set(
-        "pluginCode",
+        'pluginCode',
         new ivm.ExternalCopy(plugin.generate.toString()).copyInto(),
       );
-      await jail.set("promptData", new ivm.ExternalCopy(prompt).copyInto());
-      await jail.set("memoryLimit", this.options.memoryLimit);
+      await jail.set('promptData', new ivm.ExternalCopy(prompt).copyInto());
+      await jail.set('memoryLimit', this.options.memoryLimit);
 
       // Create wrapper function for secure execution
       const wrapperCode = `
@@ -377,7 +377,7 @@ class PluginSandbox extends EventEmitter {
 
       // Limited timing functions
       setTimeout: (fn, delay) => {
-        if (delay > 5000) throw new Error("Timeout delay too long");
+        if (delay > 5000) throw new Error('Timeout delay too long');
         return setTimeout(fn, delay);
       },
       clearTimeout,
@@ -407,7 +407,7 @@ class PluginSandbox extends EventEmitter {
 
       // Limited timing functions
       setTimeout: (fn, delay) => {
-        if (delay > 5000) throw new Error("Timeout delay too long");
+        if (delay > 5000) throw new Error('Timeout delay too long');
         return setTimeout(fn, delay);
       },
       clearTimeout,
@@ -424,7 +424,7 @@ class PluginSandbox extends EventEmitter {
       Buffer: {
         from: Buffer.from.bind(Buffer),
         alloc: (size) => {
-          if (size > 1024 * 1024) throw new Error("Buffer size too large");
+          if (size > 1024 * 1024) throw new Error('Buffer size too large');
           return Buffer.alloc(size);
         },
       },
@@ -436,27 +436,27 @@ class PluginSandbox extends EventEmitter {
 
       // Block dangerous globals
       require: () => {
-        throw new Error("require() is not allowed in sandbox");
+        throw new Error('require() is not allowed in sandbox');
       },
       import: () => {
-        throw new Error("import() is not allowed in sandbox");
+        throw new Error('import() is not allowed in sandbox');
       },
       eval: () => {
-        throw new Error("eval() is not allowed in sandbox");
+        throw new Error('eval() is not allowed in sandbox');
       },
       Function: () => {
-        throw new Error("Function() constructor is not allowed in sandbox");
+        throw new Error('Function() constructor is not allowed in sandbox');
       },
 
       // Network restrictions
       fetch: this.options.enableNetworking
         ? fetch
         : () => {
-            throw new Error("Network access is not allowed in sandbox");
+            throw new Error('Network access is not allowed in sandbox');
           },
 
       // File system restrictions
-      fs: this.options.enableFileSystem ? require("fs") : undefined,
+      fs: this.options.enableFileSystem ? require('fs') : undefined,
 
       // Global object restrictions
       global: undefined,
@@ -476,19 +476,19 @@ class PluginSandbox extends EventEmitter {
   _sanitizeResult(result) {
     try {
       // Use enhanced output sanitizer
-      if (typeof result === "object" && result !== null) {
+      if (typeof result === 'object' && result !== null) {
         return OutputSanitizer.sanitizeOutput(result);
       }
 
       // For string results, use text sanitization
-      if (typeof result === "string") {
+      if (typeof result === 'string') {
         return OutputSanitizer.sanitizeText(result);
       }
 
       // For primitive types, return as-is but ensure no sensitive data
       return sanitizeOutput(result);
     } catch (error) {
-      return { error: "Result sanitization failed", message: error.message };
+      return { error: 'Result sanitization failed', message: error.message };
     }
   }
 
@@ -537,20 +537,20 @@ async function run(fn, { timeoutMs = 5000, signal } = {}) {
 
     // Handle abort signal
     if (signal && signal.aborted) {
-      return resolveOnce({ success: false, error: "aborted" });
+      return resolveOnce({ success: false, error: 'aborted' });
     }
 
     let abortListener;
     if (signal) {
       abortListener = () => {
-        resolveOnce({ success: false, error: "aborted" });
+        resolveOnce({ success: false, error: 'aborted' });
       };
-      signal.addEventListener("abort", abortListener);
+      signal.addEventListener('abort', abortListener);
     }
 
     // Set up timeout
     const timeoutId = setTimeout(() => {
-      resolveOnce({ success: false, error: "timeout" });
+      resolveOnce({ success: false, error: 'timeout' });
     }, timeoutMs);
 
     // Execute function
@@ -559,14 +559,14 @@ async function run(fn, { timeoutMs = 5000, signal } = {}) {
       .then((result) => {
         clearTimeout(timeoutId);
         if (signal && abortListener) {
-          signal.removeEventListener("abort", abortListener);
+          signal.removeEventListener('abort', abortListener);
         }
         resolveOnce({ success: true, result });
       })
       .catch((error) => {
         clearTimeout(timeoutId);
         if (signal && abortListener) {
-          signal.removeEventListener("abort", abortListener);
+          signal.removeEventListener('abort', abortListener);
         }
         const errorMessage = String(error.message || error);
         resolveOnce({ success: false, error: errorMessage });
