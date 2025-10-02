@@ -4,7 +4,8 @@
       "Bash(npm test:*)",
       "Bash(tree:*)",
       "Bash(npm audit:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(npx rag-pipeline:*)"
     ],
     "deny": [],
     "ask": []

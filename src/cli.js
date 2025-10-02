@@ -4,8 +4,8 @@ const pkg = require('../package.json');
 
 function buildProgram() {
   const enhancedCLI = new EnhancedCLI();
-  // Keep the program name consistent with tests
-  enhancedCLI.program.name('enhanced-rag');
+  // Keep the program name consistent with package.json bin command
+  enhancedCLI.program.name('rag-pipeline');
   return enhancedCLI.program;
 }
 
