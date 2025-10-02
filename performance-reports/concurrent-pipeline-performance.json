@@ -1,6 +1,6 @@
 {
   "testSuite": "Concurrent Pipeline Simulation Tests",
-  "timestamp": "2025-09-23T22:33:06.137Z",
+  "timestamp": "2025-10-02T08:27:15.294Z",
   "summary": {
     "totalTests": 4,
     "avgThroughput": 53333.333333333336,
@@ -12,37 +12,37 @@
       "testName": "concurrent-users-5",
       "userCount": 5,
       "totalQueries": 19,
-      "avgResponseTime": 228.91320000000078,
+      "avgResponseTime": 234.2213052631598,
       "queriesPerSecond": 19000,
       "errorRate": 0,
       "memoryPeak": 50,
       "cpuUtilization": 0.4660609567901235,
       "resourceEfficiency": null,
-      "timestamp": "2025-09-23T22:33:06.957Z"
+      "timestamp": "2025-10-02T08:27:16.114Z"
     },
     {
       "testName": "concurrent-users-10",
       "userCount": 10,
       "totalQueries": 40,
-      "avgResponseTime": 271.17826000000133,
+      "avgResponseTime": 243.4392300000014,
       "queriesPerSecond": 40000,
       "errorRate": 0,
       "memoryPeak": 50,
       "cpuUtilization": 0.6452520576131687,
       "resourceEfficiency": null,
-      "timestamp": "2025-09-23T22:33:07.357Z"
+      "timestamp": "2025-10-02T08:27:16.514Z"
     },
     {
       "testName": "concurrent-users-25",
       "userCount": 25,
       "totalQueries": 101,
-      "avgResponseTime": 276.1710900990108,
+      "avgResponseTime": 238.91313861386325,
       "queriesPerSecond": 101000,
       "errorRate": 0,
       "memoryPeak": 50,
       "cpuUtilization": 0.6920151748971193,
       "resourceEfficiency": null,
-      "timestamp": "2025-09-23T22:33:07.457Z"
+      "timestamp": "2025-10-02T08:27:16.614Z"
     },
     {
       "testName": "mixed-workload-patterns",
@@ -54,13 +54,13 @@
         "complex": 22
       },
       "avgResponseByPattern": {
-        "streaming": 297.4778384615403,
-        "simple": 368.4307117647045,
-        "analytical": 442.4612709677425,
-        "complex": 669.8873909090921
+        "streaming": 233.05710769231575,
+        "simple": 305.8390735294088,
+        "analytical": 380.797206451615,
+        "complex": 584.1827409090951
       },
       "resourceUtilization": 0.5783058984910837,
-      "timestamp": "2025-09-23T22:33:06.497Z"
+      "timestamp": "2025-10-02T08:27:15.654Z"
     }
   ]
 }
