@@ -1,5 +1,5 @@
 Test Name,Token Count,Duration (ms),Avg Latency (ms),Max Latency (ms),Tokens/sec,Memory (MB)
-streaming-100-tokens,100,0.00,26.09,35.67,100000.00,50.00
-streaming-500-tokens,500,0.00,27.09,39.24,500000.00,50.00
-streaming-1000-tokens,1000,0.00,26.97,49.89,1000000.00,50.00
-concurrent-streaming,100,2678.40,N/A,N/A,74.67,50.00
+streaming-100-tokens,100,0.00,27.02,37.08,100000.00,50.00
+streaming-500-tokens,500,0.00,26.94,39.05,500000.00,50.00
+streaming-1000-tokens,1000,0.00,27.43,62.32,1000000.00,50.00
+concurrent-streaming,100,2759.89,N/A,N/A,72.47,50.00

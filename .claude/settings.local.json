@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "allow": ["Bash(npm test:*)", "Bash(tree:*)", "Bash(npm audit:*)"],
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(tree:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm install)"
+    ],
     "deny": [],
     "ask": []
   }
