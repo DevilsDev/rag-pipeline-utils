@@ -11,7 +11,8 @@
       "Bash(find:*)",
       "Bash(npm run lint:*)",
       "Bash(node:*)",
-      "Bash(npm run lint:fix:*)"
+      "Bash(npm run lint:fix:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
