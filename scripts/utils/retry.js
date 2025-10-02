@@ -12,7 +12,9 @@ module.exports = async function retry(
       if (onRetry)
         try {
           onRetry({ attempt: i + 1, err });
-        } catch {}
+        } catch (retryError) {
+          // Ignore retry callback errors
+        }
       await new Promise((r) => setTimeout(r, delayMs));
     }
   }

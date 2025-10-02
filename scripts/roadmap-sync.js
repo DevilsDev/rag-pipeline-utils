@@ -1,26 +1,20 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * Roadmap Sync Script
  * Version: 2.0.0
  * Description: Syncs roadmap items from PROJECT_ROADMAP.md to GitHub Issues with labels and assignees
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import { Octokit } from "octokit";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import { setupCLI, dryRunWrapper, _validateArgs } from "./utils/cli.js";
-import { withRateLimit } from "./utils/retry.js";
+const fs = require("fs");
+const path = require("path");
+const { Octokit } = require("octokit");
+const dotenv = require("dotenv");
+const { setupCLI, dryRunWrapper, _validateArgs } = require("./utils/cli.js");
+const { withRateLimit } = require("./utils/retry.js");
 
-dotenv._config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 // Load configuration
 const configPath = path.resolve(__dirname, "scripts._config.json");
@@ -297,6 +291,6 @@ async function main() {
 }
 
 // Execute if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   main();
 }

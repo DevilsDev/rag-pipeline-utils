@@ -4,7 +4,7 @@
  * Author: Ali Kahwaji
  */
 
-export default {
+const config = {
   branches: ["main"],
   repositoryUrl: "https://github.com/DevilsDev/rag-pipeline-utils",
 
@@ -35,3 +35,6 @@ export default {
     "@semantic-release/github",
   ],
 };
+
+module.exports = config;
+module.exports.default = config;

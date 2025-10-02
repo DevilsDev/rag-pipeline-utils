@@ -5,7 +5,13 @@
       "Bash(tree:*)",
       "Bash(npm audit:*)",
       "Bash(npm install)",
-      "Bash(npx rag-pipeline:*)"
+      "Bash(npx rag-pipeline:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint)",
+      "Bash(find:*)",
+      "Bash(npm run lint:*)",
+      "Bash(node:*)",
+      "Bash(npm run lint:fix:*)"
     ],
     "deny": [],
     "ask": []

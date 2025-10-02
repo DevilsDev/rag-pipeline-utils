@@ -58,9 +58,11 @@ const runDynamicModule = async (label, modulePath) => {
     return await withRetry(
       async () => {
         logger.progress(`Validating: ${label}`);
-        const mod = await import(resolveScript(modulePath));
+        const mod = require(resolveScript(modulePath));
         if (typeof mod.default === "function") {
           await mod.default();
+        } else if (typeof mod === "function") {
+          await mod();
         }
         logger.success(`${label} passed`);
       },
@@ -132,6 +134,6 @@ async function main() {
 }
 
 // Execute if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   main();
 }

@@ -1,22 +1,16 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * Comprehensive Script Test Suite
  * Version: 1.0.0
  * Description: Tests all refactored scripts to validate functionality and safety
  * Author: Ali Kahwaji
  */
 
-import { execSync } from "child_process";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { createLogger } from "./utils/logger.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+const { createLogger } = require("./utils/logger.js");
 
 const logger = createLogger("test-all-scripts");
 
@@ -131,15 +125,15 @@ async function testUtilities() {
     try {
       const utilPath = path.resolve(__dirname, util);
       if (fs.existsSync(utilPath)) {
-        // Test import
-        await import(utilPath);
-        logger.success(`✅ ${util} - Import successful`);
+        // Test require
+        require(utilPath);
+        logger.success(`✅ ${util} - Require successful`);
         passed++;
       } else {
         logger.error(`❌ ${util} - File not found`);
       }
     } catch (error) {
-      logger.error(`❌ ${util} - Import failed: ${error.message}`);
+      logger.error(`❌ ${util} - Require failed: ${error.message}`);
     }
   }
 
@@ -281,7 +275,7 @@ async function main() {
 }
 
 // Execute if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   main().catch((error) => {
     logger.error(`Test suite failed: ${error.message}`);
     process.exit(1);

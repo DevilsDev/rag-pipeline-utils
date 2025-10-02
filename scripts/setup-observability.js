@@ -636,10 +636,10 @@ echo "Checking service health..."
 services=(prometheus grafana jaeger otel-collector)
 
 for service in "\${services[@]}"; do
-    if docker-compose ps \$service | grep -q "Up"; then
-        echo "✓ \$service is running"
+    if docker-compose ps $service | grep -q "Up"; then
+        echo "✓ $service is running"
     else
-        echo "✗ \$service failed to start"
+        echo "✗ $service failed to start"
     fi
 done
 

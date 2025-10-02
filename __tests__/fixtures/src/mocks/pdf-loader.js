@@ -2,7 +2,7 @@
  * Mock PDF Loader Plugin
  * Implements: loader.load(filePath)
  */
-export default class PdfLoader {
+class PdfLoader {
   /**
    * Loads a file and returns mock document chunks.
    * @param {string} filePath
@@ -15,3 +15,6 @@ export default class PdfLoader {
     ];
   }
 }
+
+module.exports = PdfLoader;
+module.exports.default = PdfLoader;

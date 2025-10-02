@@ -1,15 +1,13 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.1.0
  * Description: Syncs GitHub labels based on roadmap-labels.yml; updates existing, creates missing.
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import yaml from "js-yaml";
-import { Octokit } from "@octokit/rest";
+const fs = require("fs");
+const path = require("path");
+const yaml = require("js-yaml");
+const { Octokit } = require("@octokit/rest");
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY;

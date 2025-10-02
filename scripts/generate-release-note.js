@@ -1,23 +1,17 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * Release Note Generator
  * Version: 3.0.0
  * Description: Generates changelog section and blog markdown from a GitHub tag
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { setupCLI, dryRunWrapper, _validateArgs } from "./utils/cli.js";
-import { withRetry } from "./utils/retry.js";
-import { sh } from "./lib/sh.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require("fs");
+const path = require("path");
+const { setupCLI, dryRunWrapper, _validateArgs } = require("./utils/cli.js");
+const { withRetry } = require("./utils/retry.js");
+const { sh } = require("./lib/sh.js");
 
 // Load configuration
 const configPath = path.resolve(__dirname, "scripts._config.json");
@@ -266,6 +260,6 @@ async function main() {
 }
 
 // Execute if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   main();
 }

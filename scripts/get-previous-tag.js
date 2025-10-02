@@ -6,7 +6,7 @@
  * Author: Ali Kahwaji
  */
 
-import { sh } from "./lib/sh.js";
+const { sh } = require("./lib/sh.js");
 
 const currentTag = process.argv[2];
 

@@ -3,8 +3,8 @@
  * Cross-platform, secure, and CI-safe command execution
  */
 
-import { spawnSync } from "child_process";
-import path from "path";
+const { spawnSync } = require("child_process");
+const path = require("path");
 
 /**
  * Execute a command safely using spawnSync with proper argv handling
@@ -100,4 +100,4 @@ function commandExists(command) {
   return result.success;
 }
 
-export { sh, node, npm, commandExists };
+module.exports = { sh, node, npm, commandExists };

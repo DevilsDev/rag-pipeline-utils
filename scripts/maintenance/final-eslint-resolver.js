@@ -83,7 +83,7 @@ class FinalESLintResolver {
         fixes: [
           { from: /\bpipeline\b(?!\s*[=:])/g, to: "_pipeline" },
           { from: /\b_options\b/g, to: "options" },
-          { from: /\boptions\b(?=\s*[,\)])/g, to: "_options" },
+          { from: /\boptions\b(?=\s*[,)])/g, to: "_options" },
         ],
       },
       {

@@ -1,13 +1,11 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.0.0
  * Description: Auto-repairs mock plugin fixtures for integration tests
  * Author: Ali Kahwaji
  */
 
-import { mkdirSync, copyFileSync, existsSync } from "fs";
-import { resolve, join } from "path";
+const { mkdirSync, copyFileSync, existsSync } = require("fs");
+const { resolve, join } = require("path");
 
 const MOCKS = [
   "pdf-loader.js",

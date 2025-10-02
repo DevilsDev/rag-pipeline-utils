@@ -1,14 +1,15 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.0.0
  * Description: Script to verify presence of all expected fixture plugins before running integration tests.
  * Author: Ali Kahwaji
  * File: scripts/verify-fixtures.js
  */
 
-import { existsSync } from "fs";
-import { resolve } from "path";
+const fs = require("fs");
+const path = require("path");
+
+const { existsSync } = fs;
+const { resolve } = path;
 
 const REQUIRED_FIXTURES = [
   "__tests__/fixtures/sample.pdf",

@@ -126,7 +126,7 @@ const BATCH_5_FIXES = [
 
         // Ensure proper error propagation in validation
         dagEngine = dagEngine.replace(
-          /throw new Error\(`DAG validation failed: \${error\.message}\`\);/g,
+          /throw new Error\(`DAG validation failed: \${error\.message}`\);/g,
           `if (error.message.includes('Cycle detected involving node:')) {
             throw new Error(\`DAG validation failed: \${error.message}\`);
           }
@@ -199,7 +199,7 @@ const BATCH_5_FIXES = [
             );
 
             content = content.replace(
-              /throw new Error\(`Validation failed: \${ajv\.errorsText\(\)}\`\);/g,
+              /throw new Error\(`Validation failed: \${ajv\.errorsText\(\)}`\);/g,
               `throw new Error(\`Validation failed: \${ajv.errorsText()}\`);
                 }
               } catch (validationError) {

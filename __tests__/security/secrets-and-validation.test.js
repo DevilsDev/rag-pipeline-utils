@@ -80,7 +80,7 @@ describe("Security Scanning and Validation Tests", () => {
       const testCases = ["../../../etc/passwd", "..\\..\\windows\\system32"];
 
       for (const legitPath of legitimatePaths) {
-        expect(legitPath).toMatch(/^\.\/[a-zA-Z0-9\/\-_.]+$/);
+        expect(legitPath).toMatch(/^\.\/[a-zA-Z0-9/\-_.]+$/);
       }
 
       for (const maliciousPath of testCases) {

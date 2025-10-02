@@ -3,6 +3,8 @@
  * Provides configurable concurrency with thread safety and graceful error handling
  */
 
+const { logger } = require("../../utils/structured-logger.js");
+
 /**
  * Semaphore for controlling concurrent operations
  */
@@ -53,7 +55,7 @@ class ParallelEmbedder {
    */
   async embedBatch(chunks) {
     if (!Array.isArray(chunks) || chunks.length === 0) {
-      throw new Error('Invalid chunks provided. Expected non-empty array.');
+      throw new Error("Invalid chunks provided. Expected non-empty array.");
     }
 
     const batches = this.createBatches(chunks, this.batchSize);
@@ -80,7 +82,7 @@ class ParallelEmbedder {
     const failedBatches = [];
 
     batchResults.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         successfulResults.push(result.value);
       } else {
         failedBatches.push({
@@ -102,9 +104,11 @@ class ParallelEmbedder {
         0,
       );
 
-      console.warn(
-        `Warning: ${failedBatches.length} batches failed (${failedChunkCount}/${totalChunks} chunks)`,
-      ); // eslint-disable-line no-console
+      logger.warn("Batches failed during parallel embedding", {
+        failedBatches: failedBatches.length,
+        failedChunks: failedChunkCount,
+        totalChunks,
+      });
 
       // If too many batches failed, throw error
       if (failedChunkCount > totalChunks * 0.5) {
@@ -143,9 +147,12 @@ class ParallelEmbedder {
         lastError = error;
 
         if (attempt < this.retryAttempts) {
-          console.warn(
-            `Batch ${batchIndex} attempt ${attempt + 1} failed, retrying in ${this.retryDelay}ms: ${error.message}`,
-          ); // eslint-disable-line no-console
+          logger.warn("Batch attempt failed, retrying", {
+            batchIndex,
+            attempt: attempt + 1,
+            retryDelay: this.retryDelay,
+            error: error.message,
+          });
           await this.delay(this.retryDelay * (attempt + 1)); // Exponential backoff
         }
       }
@@ -217,7 +224,7 @@ class ParallelRetriever {
 
     // Process and sort results
     const successfulResults = results
-      .filter((result) => result.status === 'fulfilled')
+      .filter((result) => result.status === "fulfilled")
       .map((result) => result.value)
       .sort((a, b) => a.index - b.index)
       .map((item) => item.result);

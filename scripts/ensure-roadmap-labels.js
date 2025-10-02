@@ -113,4 +113,4 @@ if (require.main === module) {
     });
 }
 
-export { ensureRoadmapLabels, roadmapLabels };
+module.exports = { ensureRoadmapLabels, roadmapLabels };

@@ -1,13 +1,12 @@
 /**
-const fs = require('fs');
  * Version: 2.0.0
  * Description: Auto-label roadmap issues and clean up outdated items
  * Author: Ali Kahwaji
  */
 
-import { Octokit } from "octokit";
-import fs from "fs/promises";
-import "dotenv/_config";
+const { Octokit } = require("octokit");
+const fs = require("fs/promises");
+require("dotenv/config");
 
 const repo = process.env.GITHUB_REPO;
 const token = process.env.GITHUB_TOKEN;

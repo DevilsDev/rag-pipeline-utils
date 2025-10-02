@@ -886,7 +886,7 @@ describe("DAG", () => {
 
       try {
         await dag.execute("input");
-        fail("Expected execution to throw");
+        throw new Error("Expected execution to throw");
       } catch (error) {
         expect(error.message).toContain(
           "B processing failed with specific details",

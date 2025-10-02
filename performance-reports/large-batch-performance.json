@@ -1,36 +1,36 @@
 {
   "testSuite": "Large Document Batch Performance",
-  "timestamp": "2025-10-02T08:40:15.113Z",
+  "timestamp": "2025-10-02T09:48:38.487Z",
   "summary": {
     "totalTests": 3,
-    "avgThroughput": 1308.7321832621026,
-    "maxThroughput": 1509.4020654655976,
+    "avgThroughput": 1322.9379790191815,
+    "maxThroughput": 1491.1552128553733,
     "avgMemoryUsage": 50
   },
   "metrics": [
     {
       "testName": "embedding-batch-100",
       "batchSize": 100,
-      "avgTimePerDoc": 0.6625140000000829,
-      "throughput": 1509.4020654655976,
+      "avgTimePerDoc": 0.6706209999998101,
+      "throughput": 1491.1552128553733,
       "memoryUsage": 50,
-      "timestamp": "2025-10-02T08:40:15.173Z"
+      "timestamp": "2025-10-02T09:48:38.547Z"
     },
     {
       "testName": "embedding-batch-500",
       "batchSize": 500,
-      "avgTimePerDoc": 0.8204433999999892,
-      "throughput": 1218.8531225920194,
+      "avgTimePerDoc": 0.8115195999999997,
+      "throughput": 1232.256127886499,
       "memoryUsage": 50,
-      "timestamp": "2025-10-02T08:40:15.373Z"
+      "timestamp": "2025-10-02T09:48:38.747Z"
     },
     {
       "testName": "embedding-batch-1000",
       "batchSize": 1000,
-      "avgTimePerDoc": 0.8347654000000039,
-      "throughput": 1197.941361728691,
+      "avgTimePerDoc": 0.8029532000000181,
+      "throughput": 1245.4025963156726,
       "memoryUsage": 50,
-      "timestamp": "2025-10-02T08:40:15.613Z"
+      "timestamp": "2025-10-02T09:48:38.987Z"
     }
   ]
 }

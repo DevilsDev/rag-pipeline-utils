@@ -1,21 +1,15 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * Git Hook Restoration Script
  * Version: 2.0.0
  * Description: Restores normal Git hooks after emergency recovery mode
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { setupCLI, _dryRunWrapper } from "./utils/cli.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require("fs");
+const path = require("path");
+const { setupCLI, _dryRunWrapper } = require("./utils/cli.js");
 
 // Load configuration
 const configPath = path.resolve(__dirname, "scripts._config.json");

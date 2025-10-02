@@ -270,7 +270,7 @@ jest.mock('fs', () => mockFs);
 
       // Fix console.warn template literal issue
       content = content.replace(
-        /console\.warn\(`Warning: \$\{failedBatches\.length\} batches failed \(\$\{failedChunkCount\}\/\$\{totalChunks\} chunks\)\`\);/,
+        /console\.warn\(`Warning: \$\{failedBatches\.length\} batches failed \(\$\{failedChunkCount\}\/\$\{totalChunks\} chunks\)`\);/,
         'console.warn("Warning: " + failedBatches.length + " batches failed (" + failedChunkCount + "/" + totalChunks + " chunks)");',
       );
 

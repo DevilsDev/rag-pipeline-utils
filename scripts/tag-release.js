@@ -1,15 +1,13 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 2.0.0
  * Description: Tags release, updates changelog, optionally opens blog preview
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
-import { execSync } from "child_process";
-import readline from "readline";
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
+const readline = require("readline");
 
 const VERSION = process.argv[2];
 const PREVIEW = process.argv.includes("--preview");

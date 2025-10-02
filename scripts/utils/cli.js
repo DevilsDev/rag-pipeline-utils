@@ -5,6 +5,7 @@
  */
 
 const loggerModule = require("./logger.js");
+const logger = loggerModule;
 
 /**
  * Parse command line arguments

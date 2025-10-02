@@ -2,7 +2,7 @@
  * Mock OpenAI Embedder Plugin
  * Implements: embedder.embed(docs), embedder.embedQuery(query)
  */
-export default class OpenAIEmbedder {
+class OpenAIEmbedder {
   embed(documents) {
     return documents.map((doc) => ({
       id: doc.id,
@@ -14,3 +14,6 @@ export default class OpenAIEmbedder {
     return [0.1, 0.2, 0.3];
   }
 }
+
+module.exports = OpenAIEmbedder;
+module.exports.default = OpenAIEmbedder;

@@ -1,12 +1,11 @@
 /**
-const fs = require('fs');
  * Version: 1.1.0
  * Description: Closes GitHub issues marked as ✅ Done in the PROJECT_ROADMAP.md
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import { Octokit } from "octokit";
+const fs = require("fs");
+const { Octokit } = require("octokit");
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = "DevilsDev";

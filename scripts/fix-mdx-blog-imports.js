@@ -1,13 +1,11 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.0.0
  * Description: Rewrites blog .mdx files to use SSR-safe BlogImage.jsx import
  * Author: Ali Kahwaji
  */
 
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 const BLOG_DIR = path.resolve("docs-site", "blog");
 const TARGET_IMPORT = "import BlogImage from '../src/components/BlogImage'";

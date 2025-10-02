@@ -1,12 +1,11 @@
 /**
-const fs = require('fs');
  * Version: 2.2.0
  * Description: Create GitHub issues from roadmap file
  * Author: Ali Kahwaji
  */
 
-import { Octokit } from "octokit";
-import { readFileSync } from "fs";
+const { Octokit } = require("octokit");
+const { readFileSync } = require("fs");
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO =
@@ -50,8 +49,13 @@ async function createRoadmapIssues() {
   }
 }
 
-createRoadmapIssues().catch((err) => {
-  console.error("❌ Error creating roadmap issues:", err);
-  // eslint-disable-line no-console
-  process.exit(1);
-});
+// Execute if run directly
+if (require.main === module) {
+  createRoadmapIssues().catch((err) => {
+    console.error("❌ Error creating roadmap issues:", err);
+    // eslint-disable-line no-console
+    process.exit(1);
+  });
+}
+
+module.exports = { createRoadmapIssues };

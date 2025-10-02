@@ -1,31 +1,25 @@
 #!/usr/bin/env node
 
 /**
-const fs = require('fs');
-const path = require('path');
  * GitHub Label Management Script
  * Version: 2.0.0
  * Description: Consolidated script for creating, updating, and syncing GitHub repository labels
  * Author: Ali Kahwaji
- * 
+ *
  * Consolidates functionality from:
  * - ensure-roadmap-labels.js
  * - sync-labels.js
  * - sync-roadmap-labels.js
  */
 
-import fs from "fs";
-import path from "path";
-import { Octokit } from "octokit";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import { setupCLI, dryRunWrapper } from "./utils/cli.js";
-import { withRateLimit } from "./utils/retry.js";
+const fs = require("fs");
+const path = require("path");
+const { Octokit } = require("octokit");
+const dotenv = require("dotenv");
+const { setupCLI, dryRunWrapper } = require("./utils/cli.js");
+const { withRateLimit } = require("./utils/retry.js");
 
-dotenv._config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 // Load configuration
 const configPath = path.resolve(__dirname, "scripts._config.json");
@@ -347,6 +341,6 @@ async function main() {
 }
 
 // Execute if run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   main();
 }
