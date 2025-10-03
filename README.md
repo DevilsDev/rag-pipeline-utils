@@ -2,96 +2,260 @@
 
 [![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions)
 [![npm version](https://badge.fury.io/js/%40devilsdev%2Frag-pipeline-utils.svg)](https://badge.fury.io/js/%40devilsdev%2Frag-pipeline-utils)
-[![Enterprise Ready](https://img.shields.io/badge/Enterprise-Ready-green.svg)](https://github.com/DevilsDev/rag-pipeline-utils)
 [![Node.js Version](https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/npm/l/@devilsdev/rag-pipeline-utils.svg)](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
 [![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
 
-> Enterprise-grade RAG Pipeline toolkit for Node.js — Build production-ready Retrieval-Augmented Generation systems with modular plugins, streaming support, and comprehensive observability.
-
-## Overview
-
-`@devilsdev/rag-pipeline-utils` is a modular toolkit for building scalable RAG (Retrieval-Augmented Generation) pipelines in Node.js. Designed for enterprise applications, it provides a plugin-based architecture with built-in streaming, performance optimization, observability, and comprehensive testing utilities.
-
-## Key Features
-
-### Plugin Architecture
-
-- **Modular Components**: Swap loaders, embedders, retrievers, LLMs, and rerankers without code changes
-- **Contract Validation**: Runtime and CI verification of plugin interfaces
-- **Plugin Marketplace**: Discover and publish community plugins
-- **Hot-swappable**: Change components via configuration without restarts
-
-### Performance and Scalability
-
-- **Streaming Support**: Real-time token streaming for LLM responses
-- **Parallel Processing**: Concurrent embedding and retrieval operations
-- **Memory Safeguards**: Automatic backpressure and memory management
-- **Benchmarking Tools**: Built-in performance measurement and optimization
-
-### Enterprise Observability
-
-- **Structured Logging**: Comprehensive event tracking and debugging
-- **Metrics Collection**: Performance counters, histograms, and gauges
-- **Distributed Tracing**: OpenTelemetry-compatible request tracing
-- **Health Monitoring**: Built-in diagnostics and system health checks
-
-### Developer Experience
-
-- **CLI Tools**: Full-featured command-line interface
-- **Interactive Wizard**: Guided pipeline setup and configuration
-- **Plugin Scaffolding**: Generate new plugins with best practices
-- **Comprehensive Testing**: Unit, integration, and contract testing utilities
-
-### Production Ready
-
-- **Schema Validation**: Strict configuration validation with JSON Schema
-- **Error Handling**: Robust error recovery and reporting
-- **Type Safety**: Full TypeScript support and JSDoc annotations
-- **CI/CD Integration**: GitHub Actions workflows and automated testing
-
-### Enterprise Security
-
-- **Zero Critical Vulnerabilities**: 98 to 17 vulnerabilities eliminated (83% reduction)
-- **Automated Security Monitoring**: GitHub Dependabot with weekly vulnerability scans
-- **CI/CD Security Integration**: Build failure on critical vulnerabilities
-- **Compliance Ready**: OWASP, NIST, and CIS security standards
-- **Dependency Validation**: Automated license and security compliance checking
-- **Security Audit Tools**: Built-in `npm run security:audit` and reporting
+Enterprise-grade toolkit for building Retrieval-Augmented Generation (RAG) pipelines in Node.js with modular plugin architecture, streaming support, and observability.
 
 ## Installation
-
-### Prerequisites
-
-- **Node.js** 18.0.0 or higher
-- **npm** or **yarn** package manager
-
-### Install via npm
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-### Install globally for CLI usage
-
-```bash
-npm install -g @devilsdev/rag-pipeline-utils
-```
+**Requirements:** Node.js >= 18.0.0
 
 ## Quick Start
 
-### 1. Initialize a new RAG pipeline
+### Basic Pipeline
 
-```bash
-rag-pipeline init
+```javascript
+const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+
+// Initialize pipeline with plugins
+const pipeline = createRagPipeline({
+  loader: new PDFLoader(),
+  embedder: new OpenAIEmbedder({
+    apiKey: process.env.OPENAI_API_KEY,
+    model: "text-embedding-ada-002",
+  }),
+  retriever: new ChromaRetriever({
+    url: "http://localhost:8000",
+    collection: "documents",
+  }),
+  llm: new OpenAILLM({
+    apiKey: process.env.OPENAI_API_KEY,
+    model: "gpt-4",
+  }),
+});
+
+// Ingest documents
+await pipeline.ingest("./documents/whitepaper.pdf");
+
+// Query
+const result = await pipeline.query("What is the main conclusion?");
+console.log(result.answer);
 ```
 
-This launches an interactive wizard to configure your pipeline with preferred plugins.
+### Streaming Responses
 
-### 2. Configure your pipeline
+```javascript
+// Stream tokens in real-time
+const stream = await pipeline.query("Explain the methodology", {
+  stream: true,
+});
 
-Create a `.ragrc.json` configuration file:
+for await (const chunk of stream) {
+  process.stdout.write(chunk);
+}
+```
+
+### Batch Processing
+
+```javascript
+// Process multiple documents concurrently
+const results = await pipeline.ingestBatch(
+  ["./docs/paper1.pdf", "./docs/paper2.pdf", "./docs/paper3.pdf"],
+  {
+    parallel: true,
+    maxConcurrency: 5,
+  },
+);
+```
+
+## Core API
+
+### createRagPipeline(config)
+
+Creates a pipeline instance with the specified plugins.
+
+**Parameters:**
+
+- `config.loader` - Document loader plugin
+- `config.embedder` - Text embedding plugin
+- `config.retriever` - Vector storage and retrieval plugin
+- `config.llm` - Language model plugin
+- `config.reranker` (optional) - Result reranking plugin
+
+**Returns:** Pipeline instance
+
+### Pipeline Methods
+
+#### `pipeline.ingest(filePath, options)`
+
+Ingest a document into the pipeline.
+
+```javascript
+await pipeline.ingest("./document.pdf", {
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  metadata: { source: "research", year: 2024 },
+});
+```
+
+#### `pipeline.query(question, options)`
+
+Query the pipeline.
+
+```javascript
+const result = await pipeline.query("What is RAG?", {
+  topK: 5,
+  similarityThreshold: 0.7,
+  stream: false,
+});
+```
+
+**Result structure:**
+
+```javascript
+{
+  answer: string,
+  sources: Array<{
+    content: string,
+    metadata: object,
+    score: number
+  }>,
+  metrics: {
+    retrievalTime: number,
+    generationTime: number,
+    totalTime: number
+  }
+}
+```
+
+#### `pipeline.ingestBatch(files, options)`
+
+Batch ingest multiple documents.
+
+```javascript
+await pipeline.ingestBatch(["file1.pdf", "file2.pdf"], {
+  parallel: true,
+  maxConcurrency: 3,
+});
+```
+
+## Plugin System
+
+### Plugin Contracts
+
+All plugins implement standardized interfaces for interoperability.
+
+#### Loader Plugin
+
+```javascript
+class CustomLoader {
+  async load(filePath) {
+    // Return array of document chunks
+    return [{ content: string, metadata: object }];
+  }
+}
+```
+
+#### Embedder Plugin
+
+```javascript
+class CustomEmbedder {
+  async embed(texts) {
+    // Return array of vectors
+    return [[0.1, 0.2, ...], [0.3, 0.4, ...]];
+  }
+
+  async embedQuery(query) {
+    // Return single vector
+    return [0.5, 0.6, ...];
+  }
+
+  getDimensions() {
+    return 1536; // Vector dimensions
+  }
+}
+```
+
+#### Retriever Plugin
+
+```javascript
+class CustomRetriever {
+  async store(vectors, metadata) {
+    // Store vectors with metadata
+  }
+
+  async retrieve(queryVector, options = {}) {
+    const { topK = 5, threshold = 0.7 } = options;
+    // Return similar documents
+    return [{ content: string, metadata: object, score: number }];
+  }
+}
+```
+
+#### LLM Plugin
+
+```javascript
+class CustomLLM {
+  async generate(prompt, options = {}) {
+    // Return generated text
+    return { text: string, usage: object };
+  }
+
+  async stream(prompt, options = {}) {
+    // Return async iterable
+    async function* generate() {
+      yield chunk1;
+      yield chunk2;
+    }
+    return generate();
+  }
+}
+```
+
+#### Reranker Plugin (Optional)
+
+```javascript
+class CustomReranker {
+  async rerank(query, documents, options = {}) {
+    // Return reranked documents
+    return documents.map((doc) => ({
+      ...doc,
+      score: newScore,
+    }));
+  }
+}
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# OpenAI
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4
+
+# Pinecone
+PINECONE_API_KEY=...
+PINECONE_ENVIRONMENT=us-east-1
+
+# ChromaDB
+CHROMA_URL=http://localhost:8000
+
+# Performance
+RAG_MAX_CONCURRENCY=5
+RAG_BATCH_SIZE=10
+```
+
+### Configuration File
+
+Create `.ragrc.json`:
 
 ```json
 {
@@ -116,366 +280,381 @@ Create a `.ragrc.json` configuration file:
   },
   "performance": {
     "maxConcurrency": 5,
-    "enableStreaming": true,
-    "enableObservability": true
+    "enableStreaming": true
   }
 }
 ```
 
-### 3. Programmatic Usage
+Load configuration:
 
 ```javascript
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+const { loadConfig } = require("@devilsdev/rag-pipeline-utils");
+const config = await loadConfig(".ragrc.json");
+```
 
-// Create pipeline instance
+## Advanced Usage
+
+### Custom Pipeline Components
+
+```javascript
+const {
+  createRagPipeline,
+  pluginRegistry,
+} = require("@devilsdev/rag-pipeline-utils");
+
+// Register custom plugin
+pluginRegistry.register("my-embedder", MyCustomEmbedder);
+
+// Use in pipeline
 const pipeline = createRagPipeline({
   loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY }),
+  embedder: pluginRegistry.get("my-embedder"),
   retriever: new ChromaRetriever({ url: "http://localhost:8000" }),
   llm: new OpenAILLM({ model: "gpt-4" }),
 });
+```
 
-// Ingest documents
-await pipeline.ingest("./documents/paper.pdf");
+### DAG Workflows
 
-// Query with streaming
-const stream = await pipeline.query("What is RAG architecture?", {
-  stream: true,
+Build complex multi-step pipelines using the DAG engine:
+
+```javascript
+const { DAGEngine } = require("@devilsdev/rag-pipeline-utils");
+
+const dag = new DAGEngine({
+  nodes: [
+    {
+      id: "load",
+      type: "loader",
+      config: { source: "./docs" },
+    },
+    {
+      id: "embed",
+      type: "embedder",
+      dependencies: ["load"],
+      config: { model: "text-embedding-ada-002" },
+    },
+    {
+      id: "store",
+      type: "retriever",
+      dependencies: ["embed"],
+      config: { collection: "documents" },
+    },
+  ],
 });
-for await (const chunk of stream) {
-  process.stdout.write(chunk);
+
+await dag.execute();
+```
+
+### Observability
+
+Enable monitoring and tracing:
+
+```javascript
+const { eventLogger, metrics } = require("@devilsdev/rag-pipeline-utils");
+
+// Configure logging
+eventLogger.configure({
+  level: "info",
+  format: "json",
+});
+
+// Access metrics
+const pipelineMetrics = metrics.getMetrics();
+console.log(pipelineMetrics.queries.total);
+console.log(pipelineMetrics.queries.avgLatency);
+```
+
+### Error Handling
+
+```javascript
+try {
+  const result = await pipeline.query("What is AI?");
+} catch (error) {
+  if (error.code === "RETRIEVAL_ERROR") {
+    console.error("Vector search failed:", error.message);
+  } else if (error.code === "LLM_ERROR") {
+    console.error("Generation failed:", error.message);
+  }
 }
 ```
 
 ## CLI Usage
 
-### Document Ingestion
+The package includes a CLI for common operations:
 
 ```bash
-# Ingest documents with automatic plugin detection
-rag-pipeline ingest ./docs --loader pdf --embedder openai --retriever chroma
+# Initialize configuration
+npx rag-pipeline init
 
-# Ingest with streaming and performance monitoring
-rag-pipeline ingest ./docs --stream --benchmark --trace
+# Ingest documents
+npx rag-pipeline ingest ./docs --loader pdf
 
-# Batch ingest multiple document types
-rag-pipeline ingest ./docs/**/*.{pdf,md,txt} --parallel --batch-size 10
-```
+# Query interactively
+npx rag-pipeline query "Your question here"
 
-### Querying
-
-```bash
-# Basic query
-rag-pipeline query "What is vector search?" --llm openai
-
-# Streaming query with real-time responses
-rag-pipeline query "Explain RAG architecture" --llm openai --stream
-
-# Query with custom retrieval parameters
-rag-pipeline query "How does embedding work?" --top-k 5 --similarity-threshold 0.8
-```
-
-### Advanced Workflows
-
-```bash
-# Run complex DAG pipelines
-rag-pipeline dag run ./examples/academic-rag.yaml
-
-# Interactive pipeline builder
-rag-pipeline wizard
-
-# System diagnostics and health check
-rag-pipeline doctor
-
-# Plugin management
-rag-pipeline plugin list
-rag-pipeline plugin install @community/custom-embedder
-rag-pipeline plugin scaffold my-custom-loader
-```
-
-## Plugin Architecture
-
-### Plugin Contracts
-
-Each plugin type implements a standardized interface with runtime validation:
-
-| Plugin Type   | Required Methods                          | Optional Methods                    | Description                          |
-| ------------- | ----------------------------------------- | ----------------------------------- | ------------------------------------ |
-| **Loader**    | `load(filePath)`                          | `validate()`, `getMetadata()`       | Document ingestion and parsing       |
-| **Embedder**  | `embed(texts)`, `embedQuery(query)`       | `getDimensions()`, `getBatchSize()` | Text vectorization                   |
-| **Retriever** | `store(vectors)`, `retrieve(queryVector)` | `delete()`, `update()`              | Vector storage and similarity search |
-| **LLM**       | `generate(prompt)`, `stream(prompt)`      | `getTokenCount()`, `getModels()`    | Language model inference             |
-| **Reranker**  | `rerank(query, documents)`                | `getScore()`                        | Result relevance optimization        |
-
-### Plugin Development
-
-```javascript
-// Example: Custom embedder plugin
-export class MyCustomEmbedder {
-  constructor(options = {}) {
-    this.apiKey = options.apiKey;
-    this.model = options.model || "text-embedding-ada-002";
-  }
-
-  async embed(texts) {
-    // Implementation for batch embedding
-    return vectors;
-  }
-
-  async embedQuery(query) {
-    // Implementation for single query embedding
-    return vector;
-  }
-
-  // Plugin metadata (required)
-  static metadata = {
-    name: "my-custom-embedder",
-    version: "1.0.0",
-    type: "embedder",
-    description: "Custom embedding implementation",
-  };
-}
-```
-
-## Architecture Overview
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   CLI Interface │────│  Pipeline Engine │────│ Plugin Registry │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                ┌───────────────┼───────────────┐
-                │               │               │
-        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼─────┐
-        │ Observability│ │Performance  │ │   DAG     │
-        │   System     │ │ Optimizer   │ │  Engine   │
-        └──────────────┘ └─────────────┘ └───────────┘
-                │               │               │
-        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼─────┐
-        │   Logging    │ │  Streaming  │ │Workflow   │
-        │   Tracing    │ │  Parallel   │ │Execution  │
-        │   Metrics    │ │  Memory     │ │Validation │
-        └──────────────┘ └─────────────┘ └───────────┘
-```
-
-## Project Structure
-
-```
-@devilsdev/rag-pipeline-utils/
-├── bin/
-│   └── cli.js                 # CLI entry point
-├── src/
-│   ├── cli/                   # Command-line interface
-│   │   ├── enhanced-cli-commands.js
-│   │   ├── interactive-wizard.js
-│   │   ├── doctor-command.js
-│   │   └── plugin-marketplace-commands.js
-│   ├── core/                  # Core pipeline engine
-│   │   ├── create-pipeline.js
-│   │   ├── plugin-registry.js
-│   │   ├── plugin-contracts.js
-│   │   ├── observability/     # Monitoring & logging
-│   │   ├── performance/       # Optimization tools
-│   │   └── plugin-marketplace/
-│   ├── config/                # Configuration management
-│   │   ├── load-config.js
-│   │   └── enhanced-ragrc-schema.js
-│   ├── dag/                   # DAG workflow engine
-│   │   └── dag-engine.js
-│   ├── utils/                 # Utility functions
-│   │   ├── logger.js
-│   │   ├── retry.js
-│   │   └── plugin-scaffolder.js
-│   └── mocks/                 # Development mocks
-├── __tests__/                 # Test suites
-│   ├── unit/
-│   ├── integration/
-│   └── fixtures/
-├── docs/                      # Documentation
-├── examples/                  # Usage examples
-├── scripts/                   # Build & maintenance
-├── .ragrc.schema.json        # Configuration schema
-├── package.json
-└── README.md
-```
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-4
-
-# Vector Database Configuration
-PINECONE_API_KEY=your_pinecone_key
-PINECONE_ENVIRONMENT=us-west1-gcp
-
-# Performance Settings
-RAG_MAX_CONCURRENCY=5
-RAG_BATCH_SIZE=10
-RAG_ENABLE_STREAMING=true
-```
-
-### Advanced Configuration
-
-```json
-{
-  "pipeline": {
-    "loader": "pdf",
-    "embedder": "openai",
-    "retriever": "chroma",
-    "llm": "openai",
-    "reranker": "cross-encoder"
-  },
-  "performance": {
-    "maxConcurrency": 5,
-    "batchSize": 10,
-    "enableStreaming": true,
-    "enableObservability": true,
-    "maxMemoryMB": 512,
-    "tokenLimit": 100000
-  },
-  "observability": {
-    "enableLogging": true,
-    "enableTracing": true,
-    "enableMetrics": true,
-    "logLevel": "info",
-    "exportFormat": "json"
-  },
-  "plugins": {
-    "marketplace": {
-      "registryUrl": "https://registry.rag-pipeline.dev",
-      "autoUpdate": false,
-      "allowPrerelease": false
-    }
-  }
-}
+# Run health check
+npx rag-pipeline doctor
 ```
 
 ## Use Cases
 
-### Enterprise Document Processing
+### Document Q&A Systems
 
-- **Legal Document Analysis**: Process contracts, agreements, and legal documents
-- **Technical Documentation**: Index API docs, manuals, and knowledge bases
-- **Research Papers**: Academic literature search and analysis
-- **Customer Support**: FAQ automation and ticket resolution
+Build question-answering systems over proprietary documents:
 
-### Development Workflows
+```javascript
+const pipeline = createRagPipeline({
+  /* config */
+});
 
-- **Code Documentation**: Generate and maintain code documentation
-- **API Integration**: Semantic search across API documentation
-- **Knowledge Management**: Team knowledge base and onboarding
-- **Content Generation**: Automated content creation and editing
+// Ingest company documentation
+await pipeline.ingestBatch([
+  "./docs/handbook.pdf",
+  "./docs/policies.pdf",
+  "./docs/procedures.pdf",
+]);
 
-### Industry Applications
+// Answer questions
+const answer = await pipeline.query("What is the vacation policy?");
+```
 
-- **Healthcare**: Medical literature search and clinical decision support
-- **Finance**: Financial document analysis and compliance
-- **Education**: Personalized learning and content recommendation
-- **E-commerce**: Product search and recommendation systems
+### Semantic Search
+
+Implement semantic search over large document collections:
+
+```javascript
+const results = await pipeline.query("machine learning papers", {
+  topK: 10,
+  similarityThreshold: 0.75,
+  returnSources: true,
+});
+
+results.sources.forEach((source) => {
+  console.log(`${source.metadata.title} (score: ${source.score})`);
+});
+```
+
+### Knowledge Base Integration
+
+Integrate with existing knowledge bases:
+
+```javascript
+// Custom retriever for your database
+class PostgresRetriever {
+  constructor(connectionString) {
+    this.db = new PostgresClient(connectionString);
+  }
+
+  async store(vectors, metadata) {
+    await this.db.query(
+      "INSERT INTO embeddings (vector, metadata) VALUES ($1, $2)",
+      [vectors, metadata],
+    );
+  }
+
+  async retrieve(queryVector, options) {
+    const results = await this.db.query(
+      "SELECT * FROM embeddings ORDER BY vector <-> $1 LIMIT $2",
+      [queryVector, options.topK],
+    );
+    return results.rows;
+  }
+}
+
+const pipeline = createRagPipeline({
+  loader: new PDFLoader(),
+  embedder: new OpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY }),
+  retriever: new PostgresRetriever("postgresql://localhost/kb"),
+  llm: new OpenAILLM({ model: "gpt-4" }),
+});
+```
+
+### Multi-Source Aggregation
+
+Combine data from multiple sources:
+
+```javascript
+const sources = [
+  { type: "pdf", path: "./research/*.pdf" },
+  { type: "markdown", path: "./docs/*.md" },
+  { type: "api", url: "https://api.example.com/docs" },
+];
+
+for (const source of sources) {
+  const loader = getLoaderForType(source.type);
+  await pipeline.ingest(source.path || source.url, {
+    loader,
+    metadata: { source: source.type },
+  });
+}
+```
+
+## Performance Optimization
+
+### Chunking Strategies
+
+```javascript
+await pipeline.ingest("./large-document.pdf", {
+  chunkSize: 1000, // Characters per chunk
+  chunkOverlap: 200, // Overlap between chunks
+  chunkStrategy: "sentence", // 'sentence' | 'paragraph' | 'fixed'
+});
+```
+
+### Concurrent Processing
+
+```javascript
+await pipeline.ingestBatch(files, {
+  parallel: true,
+  maxConcurrency: 5, // Parallel operations
+  batchSize: 10, // Embeddings per batch
+});
+```
+
+### Caching
+
+```javascript
+const pipeline = createRagPipeline({
+  loader: new PDFLoader(),
+  embedder: new OpenAIEmbedder({
+    apiKey: process.env.OPENAI_API_KEY,
+    cache: true, // Cache embeddings
+    cacheTTL: 3600, // Cache lifetime in seconds
+  }),
+  retriever: new ChromaRetriever({ url: "http://localhost:8000" }),
+  llm: new OpenAILLM({ model: "gpt-4" }),
+});
+```
+
+## TypeScript Support
+
+Full TypeScript definitions included:
+
+```typescript
+import {
+  createRagPipeline,
+  Pipeline,
+  LoaderPlugin,
+  EmbedderPlugin,
+  RetrieverPlugin,
+  LLMPlugin,
+} from "@devilsdev/rag-pipeline-utils";
+
+const pipeline: Pipeline = createRagPipeline({
+  loader: new PDFLoader(),
+  embedder: new OpenAIEmbedder({ apiKey: string }),
+  retriever: new ChromaRetriever({ url: string }),
+  llm: new OpenAILLM({ model: string }),
+});
+
+interface QueryResult {
+  answer: string;
+  sources: Source[];
+  metrics: Metrics;
+}
+
+const result: QueryResult = await pipeline.query("question");
+```
 
 ## API Reference
 
-### Core API
+### Exported Modules
 
 ```javascript
 const {
+  // Core
   createRagPipeline,
   loadConfig,
+
+  // Plugin System
   pluginRegistry,
+
+  // Workflow Engine
   DAGEngine,
+
+  // Observability
   eventLogger,
   metrics,
+
+  // Utilities
+  logger,
 } = require("@devilsdev/rag-pipeline-utils");
 ```
 
-For complete API documentation, see [API Documentation](https://devilsdev.github.io/rag-pipeline-utils/api).
+### Plugin Registry API
 
-## Testing
+```javascript
+// Register plugin
+pluginRegistry.register("name", PluginClass);
+
+// Get plugin
+const Plugin = pluginRegistry.get("name");
+
+// List plugins
+const plugins = pluginRegistry.list();
+
+// Check if plugin exists
+const exists = pluginRegistry.has("name");
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Error: Module not found**
 
 ```bash
-# Run all tests
-npm test
-
-# Run unit tests
-npm run test:unit
-
-# Run integration tests
-npm run test:integration
-
-# Run with coverage
-npm run test:coverage
-
-# Run specific test file
-npm test -- __tests__/unit/dag/dag-engine.test.js
+npm install --save @devilsdev/rag-pipeline-utils
 ```
+
+**Error: Invalid API key**
+
+```javascript
+// Ensure environment variables are set
+require("dotenv").config();
+const embedder = new OpenAIEmbedder({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+```
+
+**Error: Connection refused (ChromaDB)**
+
+```bash
+# Start ChromaDB server
+docker run -p 8000:8000 chromadb/chroma
+```
+
+### Debug Mode
+
+Enable verbose logging:
+
+```javascript
+const { logger } = require("@devilsdev/rag-pipeline-utils");
+
+logger.setLevel("debug");
+```
+
+## Examples
+
+See the [examples directory](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) for complete working examples:
+
+- Basic RAG pipeline
+- Streaming responses
+- Custom plugins
+- DAG workflows
+- Multi-source ingestion
 
 ## Contributing
 
-We welcome contributions from the community. Here is how you can help:
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/DevilsDev/rag-pipeline-utils.git
-cd rag-pipeline-utils
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Run linting
-npm run lint
-
-# Build the project
-npm run build
-```
-
-### Contribution Guidelines
-
-- **Plugin Development**: Create new plugins following our [Plugin Developer Guide](./docs/PLUGIN_DEVELOPER_GUIDE.md)
-- **Bug Reports**: Use GitHub Issues with detailed reproduction steps
-- **Feature Requests**: Discuss new features in GitHub Discussions
-- **Documentation**: Help improve docs and examples
-- **Testing**: Add tests for new features and bug fixes
-
-### Community Resources
-
-- [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) - Questions and community chat
-- [GitHub Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues) - Bug reports and feature requests
-- [Documentation](https://devilsdev.github.io/rag-pipeline-utils/) - Comprehensive guides and API docs
-- [Plugin Marketplace](https://registry.rag-pipeline.dev) - Community plugins and extensions
-
-## Versioning
-
-We use [Semantic Versioning](https://semver.org/) for version management. For available versions, see the [tags on this repository](https://github.com/DevilsDev/rag-pipeline-utils/tags).
+Contributions welcome. Please read the [contribution guidelines](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md) and [plugin developer guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/PLUGIN_DEVELOPER_GUIDE.md).
 
 ## License
 
-This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+GPL-3.0 - See [LICENSE](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE) for details.
 
 ## Support
 
-For commercial support, enterprise licensing, or custom development:
-
-- Email: support@devilsdev.com
 - Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 - Issues: https://github.com/DevilsDev/rag-pipeline-utils/issues
-
-## Acknowledgments
-
-- Built by [Ali Kahwaji](https://github.com/alikahwaji) and the DevilsDev team
-- Inspired by the open-source AI/ML community
-- Special thanks to all [contributors](https://github.com/DevilsDev/rag-pipeline-utils/graphs/contributors)
-
----
-
-**Production-ready RAG pipelines for enterprise applications.**
-
-[Get Started](#installation) • [Documentation](https://devilsdev.github.io/rag-pipeline-utils/) • [Community](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
+- Discussions: https://github.com/DevilsDev/rag-pipeline-utils/discussions
