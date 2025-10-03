@@ -35,12 +35,16 @@ fs.writeFileSync(cjsPath, fixedSourceCode);
 
 // Create ESM build by converting require/module.exports to import/export
 // and adding .js extensions for ESM compatibility
+// Use CJS interop pattern for proper ESM compatibility
 let esmCode = sourceCode
-  // Convert destructured require to named imports with .js extension
+  // Convert destructured require to CJS interop pattern
   .replace(
     /const\s+{\s*([^}]+)\s*}\s*=\s*require\(['"]\.\/([^'"]+)['"]\);/g,
     (match, names, modulePath) => {
-      return `import { ${names} } from '../src/${modulePath}.js';`;
+      // Generate unique module name from path
+      const moduleName =
+        modulePath.split("/").pop().replace(/-/g, "") + "Module";
+      return `import ${moduleName} from '../src/${modulePath}.js';\nconst { ${names} } = ${moduleName};`;
     },
   )
   // Convert default require to default import with .js extension
