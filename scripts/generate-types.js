@@ -12,12 +12,16 @@ const typeDefinitions = `/**
  * @module @devilsdev/rag-pipeline-utils
  */
 
+// =============================================================================
+// Core Configuration Types
+// =============================================================================
+
 export interface RagPipelineConfig {
-  loader?: string;
-  embedder?: string;
-  retriever?: string;
-  llm?: string;
-  reranker?: string;
+  loader?: string | LoaderPlugin;
+  embedder?: string | EmbedderPlugin;
+  retriever?: string | RetrieverPlugin;
+  llm?: string | LLMPlugin;
+  reranker?: string | RerankerPlugin;
   [key: string]: any;
 }
 
@@ -31,6 +35,115 @@ export interface PipelineExecuteOptions {
   documents?: string[];
   [key: string]: any;
 }
+
+// =============================================================================
+// Document and Search Types
+// =============================================================================
+
+export interface Document {
+  id: string;
+  content: string;
+  metadata?: Record<string, any>;
+  embedding?: number[];
+}
+
+export interface SearchResult {
+  id: string;
+  score: number;
+  document?: Document;
+  metadata?: Record<string, any>;
+}
+
+export interface RetrieveOptions {
+  topK?: number;
+  minScore?: number;
+  includeMetadata?: boolean;
+  filter?: Record<string, any>;
+}
+
+export interface LLMResponse {
+  text: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  metadata?: Record<string, any>;
+}
+
+// =============================================================================
+// Plugin Contract Interfaces
+// =============================================================================
+
+/**
+ * Loader plugin interface for loading documents from various sources
+ */
+export interface LoaderPlugin {
+  /**
+   * Load documents from a source
+   * @param source - Path or identifier of the source
+   * @param options - Optional loading parameters
+   * @returns Promise resolving to array of documents
+   */
+  load(source: string, options?: any): Promise<Document[]>;
+}
+
+/**
+ * Embedder plugin interface for generating vector embeddings
+ */
+export interface EmbedderPlugin {
+  /**
+   * Generate embedding vector for text
+   * @param text - Input text to embed
+   * @param options - Optional embedding parameters
+   * @returns Promise resolving to embedding vector
+   */
+  embed(text: string, options?: any): Promise<number[]>;
+}
+
+/**
+ * Retriever plugin interface for vector search and document retrieval
+ */
+export interface RetrieverPlugin {
+  /**
+   * Retrieve relevant documents based on query
+   * @param query - Search query (text or embedding)
+   * @param options - Retrieval options (topK, filters, etc.)
+   * @returns Promise resolving to search results
+   */
+  retrieve(query: string | { embedding: number[] }, options?: RetrieveOptions): Promise<SearchResult[]>;
+}
+
+/**
+ * LLM plugin interface for text generation
+ */
+export interface LLMPlugin {
+  /**
+   * Generate text response based on prompt
+   * @param prompt - Input prompt for generation
+   * @param options - Generation parameters (temperature, maxTokens, etc.)
+   * @returns Promise resolving to LLM response
+   */
+  generate(prompt: string, options?: any): Promise<LLMResponse>;
+}
+
+/**
+ * Reranker plugin interface for improving retrieval relevance
+ */
+export interface RerankerPlugin {
+  /**
+   * Rerank search results based on query
+   * @param results - Initial search results
+   * @param query - Original query
+   * @param options - Reranking parameters
+   * @returns Promise resolving to reranked results
+   */
+  rerank(results: SearchResult[], query: string, options?: any): Promise<SearchResult[]>;
+}
+
+// =============================================================================
+// DAG Engine Types
+// =============================================================================
 
 export interface DAGNode {
   id: string;
@@ -51,6 +164,10 @@ export interface DAGOptions {
   retryFailedNodes?: boolean;
   maxRetries?: number;
 }
+
+// =============================================================================
+// Utility Types
+// =============================================================================
 
 export interface PluginRegistry {
   register(type: string, name: string, implementation: any): void;
