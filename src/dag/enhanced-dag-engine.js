@@ -639,9 +639,7 @@ class EnhancedDAGEngine {
         }
 
         // Wait for all nodes to complete
-        const allResults = await Promise.allSettled(
-          Array.from(nodePromises.values()),
-        );
+        await Promise.allSettled(Array.from(nodePromises.values()));
 
         const executionTime = Date.now() - startTime;
 
