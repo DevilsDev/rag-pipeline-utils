@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "embedder",
+  "version": "1.0.0",
+  "title": "Embedder Contract",
+  "description": "Contract for embedder plugins",
+  "methods": [
+    {
+      "name": "embed",
+      "parameters": ["chunks"],
+      "returns": "vectors"
+    }
+  ],
+  "properties": {
+    "embed": {
+      "type": "function",
+      "description": "Generate embeddings for text chunks",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "chunks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "content": { "type": "string" }
+              },
+              "required": ["id", "content"]
+            }
+          }
+        },
+        "required": ["chunks"]
+      },
+      "returns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "vector": {
+              "type": "array",
+              "items": { "type": "number" }
+            }
+          },
+          "required": ["id", "vector"]
+        }
+      }
+    }
+  },
+  "required": ["embed"]
+}

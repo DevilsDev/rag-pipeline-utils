@@ -1,0 +1,27 @@
+# build & coverage
+coverage/**
+dist/**
+# generated docs internals
+docs-site/.docusaurus/**
+docs-site/build/
+# test artifacts & data
+test-results-current.json
+pipelines/**
+# report directories
+ci-reports/**
+performance-reports/**
+profiling-reports/**
+e2e-reports/**
+comprehensive-security-reports/**
+security-reports/**
+.artifacts/
+# test fixtures
+__tests__/fixtures/**
+# misc
+*.log
+.eslintignore
+.prettierignore
+**/.pdf
+**/.png
+**/.jpg
+**/.ico

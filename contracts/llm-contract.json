@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "llm",
+  "version": "1.0.0",
+  "title": "LLM Contract",
+  "description": "Contract for LLM plugins",
+  "methods": [
+    {
+      "name": "generate",
+      "parameters": ["prompt"],
+      "returns": "response"
+    }
+  ],
+  "properties": {
+    "generate": {
+      "type": "function",
+      "description": "Generate text response",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "prompt": { "type": "string" },
+          "context": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "options": { "type": "object" }
+        },
+        "required": ["prompt"]
+      },
+      "returns": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["generate"]
+}

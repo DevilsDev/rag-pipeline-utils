@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "loader",
+  "version": "1.0.0",
+  "title": "Loader Contract",
+  "description": "Contract for loader plugins",
+  "methods": [
+    {
+      "name": "load",
+      "parameters": ["source"],
+      "returns": "documents"
+    }
+  ],
+  "properties": {
+    "load": {
+      "type": "function",
+      "description": "Load documents from source",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source path or identifier"
+          }
+        },
+        "required": ["source"]
+      },
+      "returns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "content": { "type": "string" },
+            "metadata": { "type": "object" }
+          },
+          "required": ["id", "content"]
+        }
+      }
+    }
+  },
+  "required": ["load"]
+}
