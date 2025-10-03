@@ -657,4 +657,4 @@ GPL-3.0 - See [LICENSE](https://github.com/DevilsDev/rag-pipeline-utils/blob/mai
 
 - Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 - Issues: https://github.com/DevilsDev/rag-pipeline-utils/issues
-- Discussions: https://github.com/DevilsDev/rag-pipeline-utils/discussions
+- Discussions: https://github.com/DevilsDev/rag-pipeline-utils/discussionsDo
