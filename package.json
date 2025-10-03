@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "2.1.11",
+  "version": "2.1.12",
   "description": "A comprehensive enterprise-grade toolkit for building RAG (Retrieval-Augmented Generation) pipelines with advanced AI/ML capabilities",
   "main": "dist/index.cjs",
   "type": "commonjs",
