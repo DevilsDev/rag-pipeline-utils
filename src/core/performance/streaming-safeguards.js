@@ -3,12 +3,12 @@
  * Prevents memory overload during large document processing
  */
 
-const { logger } = require("../../utils/logger.js");
+const { logger } = require('../../utils/logger.js');
 
 // Use performance.now() for monotonic timing, fallback to perf_hooks for older Node
 const { performance } = globalThis.performance
   ? globalThis
-  : require("node:perf_hooks");
+  : require('node:perf_hooks');
 
 /**
  * Memory monitor for tracking heap usage
@@ -22,7 +22,7 @@ class MemoryMonitor {
 
   getCurrentUsage() {
     const usage =
-      typeof process.memoryUsage === "function" ? process.memoryUsage() : null;
+      typeof process.memoryUsage === 'function' ? process.memoryUsage() : null;
     const heapUsed = usage?.heapUsed ?? 0;
     const heapTotal = usage?.heapTotal ?? Math.max(1, heapUsed);
     return {
@@ -59,10 +59,10 @@ class MemoryMonitor {
       usagePercentage: Math.round(ratio * 100),
       status:
         ratio > this.criticalThreshold
-          ? "critical"
+          ? 'critical'
           : ratio > this.warningThreshold
-            ? "warning"
-            : "normal",
+            ? 'warning'
+            : 'normal',
     };
   }
 }
@@ -105,7 +105,7 @@ class BackpressureController {
 
     this.isPaused = true;
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    logger.warn("Applying backpressure", {
+    logger.warn('Applying backpressure', {
       memoryPercentage: memoryReport.usagePercentage,
       bufferSize: this.buffer.length,
       maxBufferSize: this.maxBufferSize,
@@ -133,7 +133,7 @@ class BackpressureController {
     }, this.checkInterval);
 
     // Don't keep process alive for relief checks
-    if (typeof this.reliefCheckInterval.unref === "function") {
+    if (typeof this.reliefCheckInterval.unref === 'function') {
       this.reliefCheckInterval.unref();
     }
   }
@@ -145,7 +145,7 @@ class BackpressureController {
     if (!this.isPaused) return;
 
     this.isPaused = false;
-    logger.info("Backpressure relieved - resuming processing");
+    logger.info('Backpressure relieved - resuming processing');
 
     // Clear interval
     if (this.reliefCheckInterval) {
@@ -241,7 +241,7 @@ class StreamingProcessor {
           const error = new Error(
             `Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`,
           );
-          error.code = "TOKEN_LIMIT_EXCEEDED";
+          error.code = 'TOKEN_LIMIT_EXCEEDED';
           throw error;
         }
 
@@ -254,7 +254,7 @@ class StreamingProcessor {
           totalTokens > this.tokenLimit * this.tokenWarningThreshold &&
           chunkCount % 10 === 0
         ) {
-          logger.warn("Approaching token limit", {
+          logger.warn('Approaching token limit', {
             currentTokens: Math.round(totalTokens),
             tokenLimit: this.tokenLimit,
           });
@@ -296,13 +296,13 @@ class StreamingProcessor {
         yield item;
       }
 
-      logger.info("Streaming processing complete", {
+      logger.info('Streaming processing complete', {
         chunkCount,
         totalTokens: Math.round(totalTokens),
       });
     } catch (error) {
       const status = this.backpressureController.getStatus();
-      logger.error("Streaming processing failed", {
+      logger.error('Streaming processing failed', {
         error: error.message,
         totalTokens: Math.round(totalTokens),
         chunkCount,
@@ -443,7 +443,7 @@ class StreamingHelpers {
    * @returns {number} Estimated token count
    */
   static estimateTokens(text) {
-    if (typeof text !== "string") return 0;
+    if (typeof text !== 'string') return 0;
     // Rough approximation: 1 token ≈ 4 characters
     return Math.ceil(text.length / 4);
   }
@@ -463,7 +463,7 @@ class StreamingHelpers {
       ratio,
       isWarning: monitor.isWarningLevel(),
       isCritical: monitor.isCriticalLevel(),
-      status: ratio > 0.9 ? "critical" : ratio > 0.8 ? "warning" : "normal",
+      status: ratio > 0.9 ? 'critical' : ratio > 0.8 ? 'warning' : 'normal',
     };
   }
 
@@ -472,7 +472,7 @@ class StreamingHelpers {
    * @param {string} profile - Configuration profile ('light', 'standard', 'heavy')
    * @returns {object} Configuration object
    */
-  static getStreamingProfile(profile = "standard") {
+  static getStreamingProfile(profile = 'standard') {
     const profiles = {
       light: {
         chunkSize: 500,
@@ -542,7 +542,7 @@ class StreamingHelpers {
       }
     } catch (error) {
       const finalReport = monitor.getMemoryReport();
-      logger.error("Memory monitoring error:", {
+      logger.error('Memory monitoring error:', {
         error: error.message,
         itemsProcessed: itemCount,
         finalMemoryStatus: finalReport,

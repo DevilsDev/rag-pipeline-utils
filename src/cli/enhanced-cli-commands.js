@@ -3,38 +3,38 @@
  * Provides improved developer experience with dry-run, version display, and enhanced help
  */
 
-const { Command } = require("commander");
-const fs = require("fs/promises");
-const path = require("path");
-const pkg = require("../../package.json");
+const { Command } = require('commander');
+const fs = require('fs/promises');
+const path = require('path');
+const pkg = require('../../package.json');
 
-const { logger } = require("../utils/logger.js");
+const { logger } = require('../utils/logger.js');
 
 // Mock dependencies for test compatibility
 const mockPluginMarketplaceCommands = () => {
-  const cmd = new Command("plugin");
-  cmd.description("Plugin marketplace commands");
+  const cmd = new Command('plugin');
+  cmd.description('Plugin marketplace commands');
   cmd
-    .command("search")
-    .argument("[query]")
+    .command('search')
+    .argument('[query]')
     .action(() => {});
   cmd
-    .command("install")
-    .argument("<name>")
+    .command('install')
+    .argument('<name>')
     .action(() => {});
-  cmd.command("publish").action(() => {});
+  cmd.command('publish').action(() => {});
   return cmd;
 };
 
 const mockPipelineDoctor = async (options) => {
-  console.log("🏥 Running pipeline diagnostics");
+  console.log('🏥 Running pipeline diagnostics');
   if (options.categories) {
     options.categories.forEach((cat) => {
       console.log(`${cat.charAt(0).toUpperCase() + cat.slice(1)} Issues:`);
-      console.log("  ✅ No issues found");
+      console.log('  ✅ No issues found');
     });
   } else {
-    console.log("✅ All systems operational");
+    console.log('✅ All systems operational');
   }
   return {
     summary: { total: 0, passed: 0, warnings: 0, errors: 0 },
@@ -44,19 +44,19 @@ const mockPipelineDoctor = async (options) => {
 };
 
 const mockValidateSchema = (config) => {
-  if (!config || typeof config !== "object") {
+  if (!config || typeof config !== 'object') {
     return {
       valid: false,
-      errors: [{ message: "Invalid configuration format" }],
+      errors: [{ message: 'Invalid configuration format' }],
     };
   }
-  if (config.plugins && typeof config.plugins === "string") {
-    return { valid: false, errors: [{ message: "Invalid plugins format" }] };
+  if (config.plugins && typeof config.plugins === 'string') {
+    return { valid: false, errors: [{ message: 'Invalid plugins format' }] };
   }
   const isLegacy =
     config.plugins &&
-    typeof config.plugins === "object" &&
-    Object.values(config.plugins).some((p) => typeof p === "string");
+    typeof config.plugins === 'object' &&
+    Object.values(config.plugins).some((p) => typeof p === 'string');
   return { valid: true, legacy: isLegacy };
 };
 
@@ -90,7 +90,7 @@ class EnhancedCLI {
   createProgressBar(percentage, width = 20) {
     const filled = Math.round((percentage / 100) * width);
     const empty = width - filled;
-    const bar = "█".repeat(filled) + "░".repeat(empty);
+    const bar = '█'.repeat(filled) + '░'.repeat(empty);
     return `[${bar}]`;
   }
 
@@ -99,21 +99,21 @@ class EnhancedCLI {
    */
   setupGlobalOptions() {
     this.program
-      .name("rag-pipeline")
-      .description("Enterprise-grade RAG pipeline toolkit")
+      .name('rag-pipeline')
+      .description('Enterprise-grade RAG pipeline toolkit')
       .version(
         this.getVersion(),
-        "-v, --version",
-        "Display version information",
+        '-v, --version',
+        'Display version information',
       )
-      .option("--config <path>", "Configuration file path", ".ragrc.json")
-      .option("--verbose", "Enable verbose output")
-      .option("--quiet", "Suppress non-essential output")
-      .option("--no-color", "Disable colored output")
-      .option("--dry-run", "Show what would be done without executing")
-      .helpOption("-h, --help", "Display help information")
+      .option('--config <path>', 'Configuration file path', '.ragrc.json')
+      .option('--verbose', 'Enable verbose output')
+      .option('--quiet', 'Suppress non-essential output')
+      .option('--no-color', 'Disable colored output')
+      .option('--dry-run', 'Show what would be done without executing')
+      .helpOption('-h, --help', 'Display help information')
       .showHelpAfterError()
-      .addHelpText("after", this.getExtendedHelp());
+      .addHelpText('after', this.getExtendedHelp());
   }
 
   /**
@@ -122,88 +122,88 @@ class EnhancedCLI {
   setupCommands() {
     // Interactive initialization command
     this.program
-      .command("init")
-      .description("Initialize RAG pipeline configuration")
-      .option("--interactive", "Use interactive wizard", true)
-      .option("--no-interactive", "Skip interactive wizard")
-      .option("--template <name>", "Use configuration template")
-      .option("--output <path>", "Output configuration file", ".ragrc.json")
-      .option("--force", "Overwrite existing configuration")
+      .command('init')
+      .description('Initialize RAG pipeline configuration')
+      .option('--interactive', 'Use interactive wizard', true)
+      .option('--no-interactive', 'Skip interactive wizard')
+      .option('--template <name>', 'Use configuration template')
+      .option('--output <path>', 'Output configuration file', '.ragrc.json')
+      .option('--force', 'Overwrite existing configuration')
       .action(async (options) => {
         await this.handleInit(options);
       });
 
     // Run pipeline command
     this.program
-      .command("run")
-      .description("Execute RAG pipeline operations")
-      .option("--ingest <file>", "Ingest document into pipeline")
-      .option("--query <prompt>", "Query the pipeline")
-      .option("--stream", "Enable streaming output")
+      .command('run')
+      .description('Execute RAG pipeline operations')
+      .option('--ingest <file>', 'Ingest document into pipeline')
+      .option('--query <prompt>', 'Query the pipeline')
+      .option('--stream', 'Enable streaming output')
       .option(
-        "--abort-timeout <ms>",
-        "Abort operation after timeout (milliseconds)",
+        '--abort-timeout <ms>',
+        'Abort operation after timeout (milliseconds)',
         this.parsePositiveInteger,
       )
-      .option("--parallel", "Enable parallel processing")
+      .option('--parallel', 'Enable parallel processing')
       .action(async (options) => {
         await this.handleRun(options);
       });
 
     // Doctor command for diagnostics
     this.program
-      .command("doctor")
-      .description("Diagnose and fix common issues")
-      .option("--category <categories...>", "Diagnostic categories to check")
-      .option("--auto-fix", "Automatically fix issues where possible")
-      .option("--report <path>", "Save diagnostic report to file")
+      .command('doctor')
+      .description('Diagnose and fix common issues')
+      .option('--category <categories...>', 'Diagnostic categories to check')
+      .option('--auto-fix', 'Automatically fix issues where possible')
+      .option('--report <path>', 'Save diagnostic report to file')
       .action(async (options) => {
         await this.handleDoctor(options);
       });
 
     // Enhanced ingest command
     this.program
-      .command("ingest")
-      .description("Ingest documents into the pipeline")
-      .argument("<file>", "Document file to ingest")
-      .option("--validate", "Validate document before ingesting")
-      .option("--preview", "Show preview of document chunks")
-      .option("--parallel", "Enable parallel processing")
-      .option("--streaming", "Enable streaming with memory safeguards")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
+      .command('ingest')
+      .description('Ingest documents into the pipeline')
+      .argument('<file>', 'Document file to ingest')
+      .option('--validate', 'Validate document before ingesting')
+      .option('--preview', 'Show preview of document chunks')
+      .option('--parallel', 'Enable parallel processing')
+      .option('--streaming', 'Enable streaming with memory safeguards')
+      .option('--trace', 'Enable detailed tracing and event logging')
+      .option('--stats', 'Show pipeline metrics summary at the end')
       .option(
-        "--export-observability <file>",
-        "Export observability data to file",
+        '--export-observability <file>',
+        'Export observability data to file',
       )
       .option(
-        "--max-concurrency <number>",
-        "Maximum concurrent operations",
-        "3",
+        '--max-concurrency <number>',
+        'Maximum concurrent operations',
+        '3',
       )
       .option(
-        "--batch-size <number>",
-        "Batch size for parallel processing",
-        "10",
+        '--batch-size <number>',
+        'Batch size for parallel processing',
+        '10',
       )
-      .option("--max-memory <number>", "Maximum memory usage in MB", "512")
+      .option('--max-memory <number>', 'Maximum memory usage in MB', '512')
       .action(async (file, options) => {
         await this.handleIngest(file, options);
       });
 
     // Enhanced query command
     this.program
-      .command("query")
-      .description("Query the RAG pipeline")
-      .argument("<prompt>", "Query prompt")
-      .option("--stream", "Enable streaming response")
-      .option("--explain", "Show explanation of query processing")
-      .option("--parallel", "Enable parallel processing")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
+      .command('query')
+      .description('Query the RAG pipeline')
+      .argument('<prompt>', 'Query prompt')
+      .option('--stream', 'Enable streaming response')
+      .option('--explain', 'Show explanation of query processing')
+      .option('--parallel', 'Enable parallel processing')
+      .option('--trace', 'Enable detailed tracing and event logging')
+      .option('--stats', 'Show pipeline metrics summary at the end')
       .option(
-        "--export-observability <file>",
-        "Export observability data to file",
+        '--export-observability <file>',
+        'Export observability data to file',
       )
       .action(async (prompt, options) => {
         await this.handleQuery(prompt, options);
@@ -211,12 +211,12 @@ class EnhancedCLI {
 
     // Configuration validation command
     this.program
-      .command("validate")
-      .description("Validate configuration file")
-      .option("--schema", "Validate against schema only")
-      .option("--plugins", "Validate plugin availability")
-      .option("--dependencies", "Check plugin dependencies")
-      .option("--fix", "Attempt to fix validation issues")
+      .command('validate')
+      .description('Validate configuration file')
+      .option('--schema', 'Validate against schema only')
+      .option('--plugins', 'Validate plugin availability')
+      .option('--dependencies', 'Check plugin dependencies')
+      .option('--fix', 'Attempt to fix validation issues')
       .action(async (options) => {
         await this.handleValidate(options);
       });
@@ -225,31 +225,31 @@ class EnhancedCLI {
     this.program.addCommand(mockPluginMarketplaceCommands());
 
     // Configuration management commands
-    const configCmd = new Command("config");
-    configCmd.description("Configuration management commands");
+    const configCmd = new Command('config');
+    configCmd.description('Configuration management commands');
 
     configCmd
-      .command("show")
-      .description("Show current configuration")
-      .option("--format <format>", "Output format (json, yaml, table)", "json")
-      .option("--section <section>", "Show specific configuration section")
+      .command('show')
+      .description('Show current configuration')
+      .option('--format <format>', 'Output format (json, yaml, table)', 'json')
+      .option('--section <section>', 'Show specific configuration section')
       .action(async (options) => {
         await this.handleConfigShow(options);
       });
 
     configCmd
-      .command("set")
-      .description("Set configuration value")
-      .argument("<key>", "Configuration key (dot notation supported)")
-      .argument("<value>", "Configuration value")
+      .command('set')
+      .description('Set configuration value')
+      .argument('<key>', 'Configuration key (dot notation supported)')
+      .argument('<value>', 'Configuration value')
       .action(async (key, value, options) => {
         await this.handleConfigSet(key, value, options);
       });
 
     configCmd
-      .command("get")
-      .description("Get configuration value")
-      .argument("<key>", "Configuration key (dot notation supported)")
+      .command('get')
+      .description('Get configuration value')
+      .argument('<key>', 'Configuration key (dot notation supported)')
       .action(async (key, options) => {
         await this.handleConfigGet(key, options);
       });
@@ -258,20 +258,20 @@ class EnhancedCLI {
 
     // System information command
     this.program
-      .command("info")
-      .description("Show system and plugin information")
-      .option("--plugins", "Show registered plugin versions")
-      .option("--system", "Show system information")
-      .option("--config", "Show configuration summary")
+      .command('info')
+      .description('Show system and plugin information')
+      .option('--plugins', 'Show registered plugin versions')
+      .option('--system', 'Show system information')
+      .option('--config', 'Show configuration summary')
       .action(async (options) => {
         await this.handleInfo(options);
       });
 
     // Completion command for shell autocompletion
     this.program
-      .command("completion")
-      .description("Generate shell completion scripts")
-      .argument("[shell]", "Shell type (bash, zsh, fish)", "bash")
+      .command('completion')
+      .description('Generate shell completion scripts')
+      .argument('[shell]', 'Shell type (bash, zsh, fish)', 'bash')
       .action(async (shell, options) => {
         await this.handleCompletion(shell, options);
       });
@@ -284,12 +284,12 @@ class EnhancedCLI {
     const globalOptions = this.program.opts();
 
     if (globalOptions.dryRun) {
-      logger.info("🧪 Dry run: Would execute pipeline operation");
+      logger.info('🧪 Dry run: Would execute pipeline operation');
       if (options.ingest) logger.info(`Would ingest: ${options.ingest}`);
       if (options.query)
         logger.info(`Would query: ${options.query.substring(0, 100)}...`);
-      logger.info(`Streaming: ${options.stream ? "enabled" : "disabled"}`);
-      logger.info(`Parallel: ${options.parallel ? "enabled" : "disabled"}`);
+      logger.info(`Streaming: ${options.stream ? 'enabled' : 'disabled'}`);
+      logger.info(`Parallel: ${options.parallel ? 'enabled' : 'disabled'}`);
       if (options.abortTimeout)
         logger.info(`Abort timeout: ${options.abortTimeout}ms`);
       return;
@@ -297,7 +297,7 @@ class EnhancedCLI {
 
     try {
       // Load configuration
-      const { loadRagConfig } = require("../config/load-config.js");
+      const { loadRagConfig } = require('../config/load-config.js');
       const config = await loadRagConfig(globalOptions.config);
 
       // Create AbortController for timeout handling
@@ -315,15 +315,15 @@ class EnhancedCLI {
 
       // Setup SIGINT handling for clean shutdown
       const sigintHandler = () => {
-        logger.info("Received SIGINT, aborting operation...");
+        logger.info('Received SIGINT, aborting operation...');
         abortController.abort();
         if (timeoutId) clearTimeout(timeoutId);
       };
-      process.once("SIGINT", sigintHandler);
+      process.once('SIGINT', sigintHandler);
 
       try {
         // Create pipeline with performance options
-        const { createRagPipeline } = require("../core/create-pipeline.js");
+        const { createRagPipeline } = require('../core/create-pipeline.js');
         const pipeline = createRagPipeline(config.pipeline[0], {
           useParallelProcessing: options.parallel,
           useStreamingSafeguards: options.stream,
@@ -341,12 +341,12 @@ class EnhancedCLI {
               options.ingest,
             )) {
               if (abortController.signal.aborted) {
-                logger.info("Ingestion aborted");
+                logger.info('Ingestion aborted');
                 break;
               }
 
               const now = Date.now();
-              if (progress.type === "chunk_processed") {
+              if (progress.type === 'chunk_processed') {
                 // Show progress ticks every 500ms or every 10 chunks
                 if (
                   now - lastProgressTime > 500 ||
@@ -362,8 +362,8 @@ class EnhancedCLI {
                   );
                   lastProgressTime = now;
                 }
-              } else if (progress.type === "ingest_complete") {
-                process.stdout.write("\n");
+              } else if (progress.type === 'ingest_complete') {
+                process.stdout.write('\n');
                 logger.info(
                   `✅ Ingestion complete: ${progress.summary.processedChunks}/${progress.summary.totalChunks} chunks processed`,
                 );
@@ -372,19 +372,19 @@ class EnhancedCLI {
                     `⚠️  ${progress.summary.failedChunks} chunks failed`,
                   );
                 }
-              } else if (progress.type === "chunk_failed") {
-                process.stdout.write("✗");
+              } else if (progress.type === 'chunk_failed') {
+                process.stdout.write('✗');
               }
             }
           } else {
             // Non-streaming ingestion with progress callback
-            let currentStage = "";
+            let currentStage = '';
             const progressCallback = (progress) => {
               if (progress.stage !== currentStage) {
-                if (currentStage) process.stdout.write("\n");
+                if (currentStage) process.stdout.write('\n');
                 currentStage = progress.stage;
                 logger.info(
-                  `${progress.stage}: ${progress.message || "Processing..."}`,
+                  `${progress.stage}: ${progress.message || 'Processing...'}`,
                 );
               }
               if (
@@ -410,8 +410,8 @@ class EnhancedCLI {
             });
 
             await pipelineWithProgress.ingest(options.ingest);
-            process.stdout.write("\n");
-            logger.info("✅ Ingestion completed successfully");
+            process.stdout.write('\n');
+            logger.info('✅ Ingestion completed successfully');
           }
         }
 
@@ -419,35 +419,35 @@ class EnhancedCLI {
           logger.info(`Executing query: ${options.query.substring(0, 100)}...`);
 
           if (options.stream) {
-            process.stdout.write("\nResponse: ");
+            process.stdout.write('\nResponse: ');
             for await (const token of pipeline.queryStream(options.query)) {
               if (abortController.signal.aborted) {
-                logger.info("\nQuery aborted");
+                logger.info('\nQuery aborted');
                 break;
               }
               process.stdout.write(token);
             }
-            process.stdout.write("\n\n");
+            process.stdout.write('\n\n');
           } else {
             const response = await pipeline.query(options.query);
-            logger.info("Query completed successfully");
-            console.log("\nResponse:", response);
+            logger.info('Query completed successfully');
+            console.log('\nResponse:', response);
           }
         }
 
         if (!options.ingest && !options.query) {
           logger.error(
-            "No operation specified. Use --ingest <file> or --query <prompt>",
+            'No operation specified. Use --ingest <file> or --query <prompt>',
           );
           process.exit(1);
         }
       } finally {
         // Cleanup
-        process.removeListener("SIGINT", sigintHandler);
+        process.removeListener('SIGINT', sigintHandler);
         if (timeoutId) clearTimeout(timeoutId);
       }
     } catch (error) {
-      logger.error("Pipeline operation failed", { error: error.message });
+      logger.error('Pipeline operation failed', { error: error.message });
       process.exit(1);
     }
   }
@@ -460,7 +460,7 @@ class EnhancedCLI {
       const globalOptions = this.program.opts();
 
       if (globalOptions.dryRun) {
-        console.log("🧪 Dry run: Would initialize RAG pipeline configuration");
+        console.log('🧪 Dry run: Would initialize RAG pipeline configuration');
         console.log(`Output file: ${options.output}`);
         console.log(`Interactive mode: ${!options.noInteractive}`);
         return;
@@ -474,7 +474,7 @@ class EnhancedCLI {
             `❌ Configuration file already exists: ${options.output}`,
           );
           console.log(
-            "Use --force to overwrite or choose a different output path.",
+            'Use --force to overwrite or choose a different output path.',
           );
           return;
         } catch (error) {
@@ -483,14 +483,14 @@ class EnhancedCLI {
       }
 
       if (!options.noInteractive) {
-        console.log("🧙‍♂️ Starting interactive configuration wizard...\n");
+        console.log('🧙‍♂️ Starting interactive configuration wizard...\n');
         // Mock interactive wizard
         await this.createBasicConfig(options.output);
       } else {
         await this.createBasicConfig(options.output);
       }
     } catch (error) {
-      logger.error("❌ Initialization failed:", error.message);
+      logger.error('❌ Initialization failed:', error.message);
       process.exit(1);
     }
   }
@@ -516,7 +516,7 @@ class EnhancedCLI {
         console.log(`📋 Diagnostic report saved to: ${options.report}`);
       }
     } catch (error) {
-      logger.error("❌ Doctor command failed:", error.message);
+      logger.error('❌ Doctor command failed:', error.message);
       process.exit(1);
     }
   }
@@ -529,27 +529,27 @@ class EnhancedCLI {
       const globalOptions = this.program.opts();
 
       if (globalOptions.dryRun) {
-        console.log("🧪 Dry run: Would ingest document");
+        console.log('🧪 Dry run: Would ingest document');
         console.log(`File: ${file}`);
         console.log(
-          `Parallel processing: ${options.parallel ? "enabled" : "disabled"}`,
+          `Parallel processing: ${options.parallel ? 'enabled' : 'disabled'}`,
         );
-        console.log(`Streaming: ${options.streaming ? "enabled" : "disabled"}`);
-        console.log(`Tracing: ${options.trace ? "enabled" : "disabled"}`);
+        console.log(`Streaming: ${options.streaming ? 'enabled' : 'disabled'}`);
+        console.log(`Tracing: ${options.trace ? 'enabled' : 'disabled'}`);
 
         if (options.preview) {
-          console.log("📄 Document Preview:");
+          console.log('📄 Document Preview:');
         }
         if (options.validate) {
-          console.log("File validation passed");
+          console.log('File validation passed');
         }
         return;
       }
 
       console.log(`📄 Ingesting document: ${file}`);
-      console.log("✅ Document ingested successfully!");
+      console.log('✅ Document ingested successfully!');
     } catch (error) {
-      logger.error("❌ Document ingestion failed:", error.message);
+      logger.error('❌ Document ingestion failed:', error.message);
       process.exit(1);
     }
   }
@@ -562,30 +562,30 @@ class EnhancedCLI {
       const globalOptions = this.program.opts();
 
       if (globalOptions.dryRun) {
-        console.log("🧪 Dry run: Would execute query");
+        console.log('🧪 Dry run: Would execute query');
         console.log(
-          `Prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}`,
+          `Prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`,
         );
-        console.log(`Streaming: ${options.stream ? "enabled" : "disabled"}`);
+        console.log(`Streaming: ${options.stream ? 'enabled' : 'disabled'}`);
 
         if (options.explain) {
-          console.log("🔍 Query Explanation:");
-          console.log("Processing steps:");
-          console.log("  1. Text embedding generation");
-          console.log("  2. Vector similarity search");
-          console.log("  3. Context retrieval");
-          console.log("  4. Language model generation");
+          console.log('🔍 Query Explanation:');
+          console.log('Processing steps:');
+          console.log('  1. Text embedding generation');
+          console.log('  2. Vector similarity search');
+          console.log('  3. Context retrieval');
+          console.log('  4. Language model generation');
         }
         return;
       }
 
       console.log(
-        `🤔 Processing query: ${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}`,
+        `🤔 Processing query: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`,
       );
-      console.log("\n📝 Response:");
-      console.log("Mock response to query");
+      console.log('\n📝 Response:');
+      console.log('Mock response to query');
     } catch (error) {
-      logger.error("❌ Query processing failed:", error.message);
+      logger.error('❌ Query processing failed:', error.message);
       process.exit(1);
     }
   }
@@ -601,25 +601,25 @@ class EnhancedCLI {
       console.log(`🔍 Validating configuration: ${configPath}`);
 
       // Load and validate configuration
-      const configContent = await fs.readFile(configPath, "utf-8");
+      const configContent = await fs.readFile(configPath, 'utf-8');
       const config = JSON.parse(configContent);
 
       const validation = mockValidateSchema(config);
 
       if (validation.valid) {
-        console.log("✅ Configuration is valid");
+        console.log('✅ Configuration is valid');
 
         if (validation.legacy) {
-          console.log("⚠️  Using legacy format - consider upgrading");
+          console.log('⚠️  Using legacy format - consider upgrading');
         }
       } else {
-        console.log("❌ Configuration validation failed:");
+        console.log('❌ Configuration validation failed:');
         validation.errors?.forEach((error) => {
-          console.log(`  ${error.instancePath || "root"}: ${error.message}`);
+          console.log(`  ${error.instancePath || 'root'}: ${error.message}`);
         });
       }
     } catch (error) {
-      logger.error("❌ Validation failed:", error.message);
+      logger.error('❌ Validation failed:', error.message);
       process.exit(1);
     }
   }
@@ -631,12 +631,12 @@ class EnhancedCLI {
     try {
       const globalOptions = this.program.opts();
       const config = JSON.parse(
-        await fs.readFile(globalOptions.config, "utf-8"),
+        await fs.readFile(globalOptions.config, 'utf-8'),
       );
 
       let output = config;
       if (options.section) {
-        const sections = options.section.split(".");
+        const sections = options.section.split('.');
         for (const section of sections) {
           output = output[section];
           if (output === undefined) {
@@ -648,7 +648,7 @@ class EnhancedCLI {
 
       console.log(JSON.stringify(output, null, 2));
     } catch (error) {
-      logger.error("❌ Failed to show configuration:", error.message);
+      logger.error('❌ Failed to show configuration:', error.message);
       process.exit(1);
     }
   }
@@ -660,11 +660,11 @@ class EnhancedCLI {
     try {
       const globalOptions = this.program.opts();
       const config = JSON.parse(
-        await fs.readFile(globalOptions.config, "utf-8"),
+        await fs.readFile(globalOptions.config, 'utf-8'),
       );
 
       // Set value using dot notation
-      const keys = key.split(".");
+      const keys = key.split('.');
       let current = config;
 
       for (let i = 0; i < keys.length - 1; i++) {
@@ -686,9 +686,9 @@ class EnhancedCLI {
 
       // Save configuration
       await fs.writeFile(globalOptions.config, JSON.stringify(config, null, 2));
-      console.log("✅ Configuration updated");
+      console.log('✅ Configuration updated');
     } catch (error) {
-      logger.error("❌ Failed to set configuration:", error.message);
+      logger.error('❌ Failed to set configuration:', error.message);
       process.exit(1);
     }
   }
@@ -700,23 +700,23 @@ class EnhancedCLI {
     try {
       const globalOptions = this.program.opts();
       const config = JSON.parse(
-        await fs.readFile(globalOptions.config, "utf-8"),
+        await fs.readFile(globalOptions.config, 'utf-8'),
       );
 
-      const keys = key.split(".");
+      const keys = key.split('.');
       let value = config;
 
       for (const k of keys) {
         value = value[k];
         if (value === undefined) {
-          console.log("❌ Key not found");
+          console.log('❌ Key not found');
           return;
         }
       }
 
       console.log(JSON.stringify(value, null, 2));
     } catch (error) {
-      logger.error("❌ Failed to get configuration:", error.message);
+      logger.error('❌ Failed to get configuration:', error.message);
       process.exit(1);
     }
   }
@@ -726,17 +726,17 @@ class EnhancedCLI {
    */
   async handleInfo(options) {
     try {
-      console.log("📊 RAG Pipeline Information\n");
+      console.log('📊 RAG Pipeline Information\n');
 
       // System information
       if ((!options.plugins && !options.config) || options.system) {
-        console.log("System:");
+        console.log('System:');
         console.log(`  Node.js: ${process.version}`);
         console.log(`  Platform: ${process.platform} ${process.arch}`);
         console.log(
           `  Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB used`,
         );
-        console.log("");
+        console.log('');
       }
 
       // Configuration summary
@@ -744,19 +744,19 @@ class EnhancedCLI {
         const globalOptions = this.program.opts();
         try {
           const config = JSON.parse(
-            await fs.readFile(globalOptions.config, "utf-8"),
+            await fs.readFile(globalOptions.config, 'utf-8'),
           );
-          console.log("Configuration:");
+          console.log('Configuration:');
           console.log(`  File: ${globalOptions.config}`);
-          console.log(`  Format: ${config.plugins ? "Enhanced" : "Legacy"}`);
-          console.log("");
+          console.log(`  Format: ${config.plugins ? 'Enhanced' : 'Legacy'}`);
+          console.log('');
         } catch (error) {
-          console.log("Configuration: Not found or invalid");
-          console.log("");
+          console.log('Configuration: Not found or invalid');
+          console.log('');
         }
       }
     } catch (error) {
-      logger.error("❌ Failed to get system information:", error.message);
+      logger.error('❌ Failed to get system information:', error.message);
       process.exit(1);
     }
   }
@@ -773,21 +773,21 @@ class EnhancedCLI {
    * Create basic configuration
    */
   async createBasicConfig(outputPath) {
-    const { validateRagrc } = require("../config/enhanced-ragrc-schema.js");
+    const { validateRagrc } = require('../config/enhanced-ragrc-schema.js');
 
     const base = {
-      namespace: "default",
+      namespace: 'default',
       metadata: {
-        name: "rag-pipeline",
-        version: "1.0.0",
-        description: "RAG pipeline configuration",
+        name: 'rag-pipeline',
+        version: '1.0.0',
+        description: 'RAG pipeline configuration',
         createdAt: new Date().toISOString(),
       },
       pipeline: [
-        { stage: "loader", name: "fs-loader", version: "1.0.0" },
-        { stage: "embedder", name: "mock-embedder", version: "1.0.0" },
-        { stage: "retriever", name: "mock-retriever", version: "1.0.0" },
-        { stage: "llm", name: "mock-llm", version: "1.0.0" },
+        { stage: 'loader', name: 'fs-loader', version: '1.0.0' },
+        { stage: 'embedder', name: 'mock-embedder', version: '1.0.0' },
+        { stage: 'retriever', name: 'mock-retriever', version: '1.0.0' },
+        { stage: 'llm', name: 'mock-llm', version: '1.0.0' },
       ],
       performance: {
         parallel: {
@@ -802,7 +802,7 @@ class EnhancedCLI {
       },
       observability: {
         logging: {
-          level: "info",
+          level: 'info',
           structured: true,
         },
       },
@@ -811,9 +811,9 @@ class EnhancedCLI {
     const result = validateRagrc(base);
     if (!result.valid) {
       result.errors?.forEach((error) =>
-        console.error(`  ${error.instancePath || ""}: ${error.message}`),
+        console.error(`  ${error.instancePath || ''}: ${error.message}`),
       );
-      throw new Error("Failed to generate valid configuration");
+      throw new Error('Failed to generate valid configuration');
     }
 
     if (outputPath) {
@@ -854,14 +854,14 @@ For more information, visit: https://github.com/DevilsDev/rag-pipeline-utils
    */
   generateCompletionScript(shell) {
     switch (shell) {
-      case "bash":
+      case 'bash':
         return `# RAG Pipeline bash completion
 _rag_pipeline_completions() {
   COMPREPLY=($(compgen -W "init doctor ingest query plugin config info validate completion" -- "\${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _rag_pipeline_completions rag-pipeline`;
 
-      case "zsh":
+      case 'zsh':
         return `# RAG Pipeline zsh completion
 #compdef rag-pipeline
 _rag_pipeline() {
@@ -870,7 +870,7 @@ _rag_pipeline() {
 }
 _rag_pipeline "$@"`;
 
-      case "fish":
+      case 'fish':
         return `# RAG Pipeline fish completion
 complete -c rag-pipeline -n '__fish_use_subcommand' -a 'init doctor ingest query plugin config info validate completion'`;
 
@@ -886,8 +886,8 @@ complete -c rag-pipeline -n '__fish_use_subcommand' -a 'init doctor ingest query
     try {
       await this.program.parseAsync(argv);
     } catch (error) {
-      if (error.code !== "commander.unknownCommand") {
-        logger.error("❌ CLI error:", error.message);
+      if (error.code !== 'commander.unknownCommand') {
+        logger.error('❌ CLI error:', error.message);
         process.exit(1);
       }
       throw error;
@@ -913,7 +913,7 @@ const ingest = async () => ({ ok: true });
 const query = async () => ({ ok: true });
 const handleError = async () => ({ ok: true });
 const validateArgs = () => true;
-const showHelp = () => "help text";
+const showHelp = () => 'help text';
 
 // Extract createBasicConfig from the class for direct export
 const createBasicConfig = async (outputPath) => {
