@@ -120,8 +120,10 @@
   "homepage": "https://github.com/DevilsDev/rag-pipeline-utils#readme",
   "files": [
     "dist/",
+    "src/",
     "bin/",
     "contracts/",
+    ".ragrc.schema.json",
     "README.md",
     "LICENSE"
   ],
