@@ -18,67 +18,101 @@ npm install @devilsdev/rag-pipeline-utils
 
 ## Quick Start
 
-### Basic Pipeline
+### Basic Pipeline Setup
 
 ```javascript
 const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
 
-// Initialize pipeline with plugins
+// Create pipeline with your plugin implementations
 const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder({
-    apiKey: process.env.OPENAI_API_KEY,
-    model: "text-embedding-ada-002",
-  }),
-  retriever: new ChromaRetriever({
-    url: "http://localhost:8000",
-    collection: "documents",
-  }),
-  llm: new OpenAILLM({
-    apiKey: process.env.OPENAI_API_KEY,
-    model: "gpt-4",
-  }),
+  loader: yourLoaderPlugin,
+  embedder: yourEmbedderPlugin,
+  retriever: yourRetrieverPlugin,
+  llm: yourLLMPlugin,
 });
 
-// Ingest documents
-await pipeline.ingest("./documents/whitepaper.pdf");
-
-// Query
-const result = await pipeline.query("What is the main conclusion?");
-console.log(result.answer);
+// Use the pipeline
+await pipeline.ingest("./document.pdf");
+const result = await pipeline.query("What is this document about?");
+console.log(result);
 ```
 
-### Streaming Responses
+### Using Configuration File
 
-```javascript
-// Stream tokens in real-time
-const stream = await pipeline.query("Explain the methodology", {
-  stream: true,
-});
+Create `.ragrc.json`:
 
-for await (const chunk of stream) {
-  process.stdout.write(chunk);
+```json
+{
+  "loader": {
+    "pdf": "your-pdf-loader-plugin"
+  },
+  "embedder": {
+    "default": "your-embedder-plugin"
+  },
+  "retriever": {
+    "default": "your-vector-db-plugin"
+  },
+  "llm": {
+    "default": "your-llm-plugin"
+  }
 }
 ```
 
-### Batch Processing
+Load and use configuration:
 
 ```javascript
-// Process multiple documents concurrently
-const results = await pipeline.ingestBatch(
-  ["./docs/paper1.pdf", "./docs/paper2.pdf", "./docs/paper3.pdf"],
-  {
-    parallel: true,
-    maxConcurrency: 5,
-  },
-);
+const {
+  loadConfig,
+  createRagPipeline,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const config = await loadConfig(".ragrc.json");
+const pipeline = createRagPipeline(config);
 ```
 
 ## Core API
 
+### Exported Modules
+
+```javascript
+const {
+  // Core pipeline
+  createRagPipeline,
+
+  // Configuration
+  loadConfig,
+  validateRagrc,
+  normalizeConfig,
+
+  // Plugin system
+  pluginRegistry,
+
+  // DAG workflow engine
+  DAGEngine,
+
+  // Observability
+  eventLogger,
+  metrics,
+
+  // Performance
+  ParallelProcessor,
+
+  // AI/ML
+  MultiModalProcessor,
+  AdaptiveRetrievalEngine,
+
+  // Enterprise
+  AuditLogger,
+  DataGovernance,
+
+  // Utilities
+  logger,
+} = require("@devilsdev/rag-pipeline-utils");
+```
+
 ### createRagPipeline(config)
 
-Creates a pipeline instance with the specified plugins.
+Creates a RAG pipeline instance.
 
 **Parameters:**
 
@@ -88,235 +122,42 @@ Creates a pipeline instance with the specified plugins.
 - `config.llm` - Language model plugin
 - `config.reranker` (optional) - Result reranking plugin
 
-**Returns:** Pipeline instance
+**Returns:** Pipeline instance with `ingest()` and `query()` methods
 
-### Pipeline Methods
-
-#### `pipeline.ingest(filePath, options)`
-
-Ingest a document into the pipeline.
+### Configuration Management
 
 ```javascript
-await pipeline.ingest("./document.pdf", {
-  chunkSize: 1000,
-  chunkOverlap: 200,
-  metadata: { source: "research", year: 2024 },
-});
-```
-
-#### `pipeline.query(question, options)`
-
-Query the pipeline.
-
-```javascript
-const result = await pipeline.query("What is RAG?", {
-  topK: 5,
-  similarityThreshold: 0.7,
-  stream: false,
-});
-```
-
-**Result structure:**
-
-```javascript
-{
-  answer: string,
-  sources: Array<{
-    content: string,
-    metadata: object,
-    score: number
-  }>,
-  metrics: {
-    retrievalTime: number,
-    generationTime: number,
-    totalTime: number
-  }
-}
-```
-
-#### `pipeline.ingestBatch(files, options)`
-
-Batch ingest multiple documents.
-
-```javascript
-await pipeline.ingestBatch(["file1.pdf", "file2.pdf"], {
-  parallel: true,
-  maxConcurrency: 3,
-});
-```
-
-## Plugin System
-
-### Plugin Contracts
-
-All plugins implement standardized interfaces for interoperability.
-
-#### Loader Plugin
-
-```javascript
-class CustomLoader {
-  async load(filePath) {
-    // Return array of document chunks
-    return [{ content: string, metadata: object }];
-  }
-}
-```
-
-#### Embedder Plugin
-
-```javascript
-class CustomEmbedder {
-  async embed(texts) {
-    // Return array of vectors
-    return [[0.1, 0.2, ...], [0.3, 0.4, ...]];
-  }
-
-  async embedQuery(query) {
-    // Return single vector
-    return [0.5, 0.6, ...];
-  }
-
-  getDimensions() {
-    return 1536; // Vector dimensions
-  }
-}
-```
-
-#### Retriever Plugin
-
-```javascript
-class CustomRetriever {
-  async store(vectors, metadata) {
-    // Store vectors with metadata
-  }
-
-  async retrieve(queryVector, options = {}) {
-    const { topK = 5, threshold = 0.7 } = options;
-    // Return similar documents
-    return [{ content: string, metadata: object, score: number }];
-  }
-}
-```
-
-#### LLM Plugin
-
-```javascript
-class CustomLLM {
-  async generate(prompt, options = {}) {
-    // Return generated text
-    return { text: string, usage: object };
-  }
-
-  async stream(prompt, options = {}) {
-    // Return async iterable
-    async function* generate() {
-      yield chunk1;
-      yield chunk2;
-    }
-    return generate();
-  }
-}
-```
-
-#### Reranker Plugin (Optional)
-
-```javascript
-class CustomReranker {
-  async rerank(query, documents, options = {}) {
-    // Return reranked documents
-    return documents.map((doc) => ({
-      ...doc,
-      score: newScore,
-    }));
-  }
-}
-```
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# OpenAI
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4
-
-# Pinecone
-PINECONE_API_KEY=...
-PINECONE_ENVIRONMENT=us-east-1
-
-# ChromaDB
-CHROMA_URL=http://localhost:8000
-
-# Performance
-RAG_MAX_CONCURRENCY=5
-RAG_BATCH_SIZE=10
-```
-
-### Configuration File
-
-Create `.ragrc.json`:
-
-```json
-{
-  "loader": {
-    "pdf": "@devilsdev/pdf-loader",
-    "markdown": "@devilsdev/markdown-loader"
-  },
-  "embedder": {
-    "openai": "@devilsdev/openai-embedder"
-  },
-  "retriever": {
-    "chroma": "@devilsdev/chroma-retriever"
-  },
-  "llm": {
-    "openai": "@devilsdev/openai-llm"
-  },
-  "pipeline": {
-    "loader": "pdf",
-    "embedder": "openai",
-    "retriever": "chroma",
-    "llm": "openai"
-  },
-  "performance": {
-    "maxConcurrency": 5,
-    "enableStreaming": true
-  }
-}
-```
-
-Load configuration:
-
-```javascript
-const { loadConfig } = require("@devilsdev/rag-pipeline-utils");
+// Load configuration from file
 const config = await loadConfig(".ragrc.json");
+
+// Validate configuration
+const isValid = validateRagrc(config);
+
+// Normalize configuration
+const normalized = normalizeConfig(config);
 ```
 
-## Advanced Usage
-
-### Custom Pipeline Components
+### Plugin Registry
 
 ```javascript
-const {
-  createRagPipeline,
-  pluginRegistry,
-} = require("@devilsdev/rag-pipeline-utils");
+const { pluginRegistry } = require("@devilsdev/rag-pipeline-utils");
 
-// Register custom plugin
-pluginRegistry.register("my-embedder", MyCustomEmbedder);
+// Register a plugin
+pluginRegistry.register("my-plugin", MyPluginClass);
 
-// Use in pipeline
-const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: pluginRegistry.get("my-embedder"),
-  retriever: new ChromaRetriever({ url: "http://localhost:8000" }),
-  llm: new OpenAILLM({ model: "gpt-4" }),
-});
+// Get a plugin
+const Plugin = pluginRegistry.get("my-plugin");
+
+// List all plugins
+const plugins = pluginRegistry.list();
+
+// Check if plugin exists
+const exists = pluginRegistry.has("my-plugin");
 ```
 
-### DAG Workflows
+### DAG Workflow Engine
 
-Build complex multi-step pipelines using the DAG engine:
+Build complex multi-step workflows:
 
 ```javascript
 const { DAGEngine } = require("@devilsdev/rag-pipeline-utils");
@@ -326,19 +167,25 @@ const dag = new DAGEngine({
     {
       id: "load",
       type: "loader",
-      config: { source: "./docs" },
+      config: {
+        /* loader config */
+      },
     },
     {
       id: "embed",
       type: "embedder",
       dependencies: ["load"],
-      config: { model: "text-embedding-ada-002" },
+      config: {
+        /* embedder config */
+      },
     },
     {
       id: "store",
       type: "retriever",
       dependencies: ["embed"],
-      config: { collection: "documents" },
+      config: {
+        /* retriever config */
+      },
     },
   ],
 });
@@ -348,114 +195,288 @@ await dag.execute();
 
 ### Observability
 
-Enable monitoring and tracing:
-
 ```javascript
 const { eventLogger, metrics } = require("@devilsdev/rag-pipeline-utils");
 
-// Configure logging
+// Configure event logging
 eventLogger.configure({
   level: "info",
   format: "json",
 });
 
+// Log events
+eventLogger.log("info", "Pipeline started", { pipelineId: "abc123" });
+
 // Access metrics
 const pipelineMetrics = metrics.getMetrics();
-console.log(pipelineMetrics.queries.total);
-console.log(pipelineMetrics.queries.avgLatency);
+console.log(pipelineMetrics);
 ```
 
-### Error Handling
+### Parallel Processing
 
 ```javascript
-try {
-  const result = await pipeline.query("What is AI?");
-} catch (error) {
-  if (error.code === "RETRIEVAL_ERROR") {
-    console.error("Vector search failed:", error.message);
-  } else if (error.code === "LLM_ERROR") {
-    console.error("Generation failed:", error.message);
+const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
+
+const processor = new ParallelProcessor({
+  maxConcurrency: 5,
+});
+
+await processor.process(items, async (item) => {
+  // Process each item
+  return processItem(item);
+});
+```
+
+## Plugin Development
+
+This package provides a plugin-based architecture. You need to implement plugins for your specific use case.
+
+### Plugin Contracts
+
+#### Loader Plugin
+
+```javascript
+class MyLoader {
+  async load(filePath) {
+    // Load and parse document
+    // Return array of document chunks
+    return [
+      {
+        content: "Document text...",
+        metadata: { page: 1, source: filePath },
+      },
+    ];
   }
 }
 ```
 
+#### Embedder Plugin
+
+```javascript
+class MyEmbedder {
+  async embed(texts) {
+    // Generate embeddings for array of texts
+    // Return array of vectors
+    return [
+      [0.1, 0.2, 0.3, ...], // vector for text[0]
+      [0.4, 0.5, 0.6, ...]  // vector for text[1]
+    ];
+  }
+
+  async embedQuery(query) {
+    // Generate embedding for single query
+    return [0.7, 0.8, 0.9, ...];
+  }
+}
+```
+
+#### Retriever Plugin
+
+```javascript
+class MyRetriever {
+  async store(vectors, metadata) {
+    // Store vectors with metadata in your vector database
+  }
+
+  async retrieve(queryVector, options = {}) {
+    const { topK = 5, threshold = 0.7 } = options;
+
+    // Search for similar vectors
+    // Return documents with similarity scores
+    return [
+      {
+        content: "Document text...",
+        metadata: {
+          /* document metadata */
+        },
+        score: 0.95,
+      },
+    ];
+  }
+}
+```
+
+#### LLM Plugin
+
+```javascript
+class MyLLM {
+  async generate(prompt, options = {}) {
+    // Generate text from prompt
+    return {
+      text: "Generated response...",
+      usage: { tokens: 150 },
+    };
+  }
+
+  async *stream(prompt, options = {}) {
+    // Stream response chunks
+    yield "Generated ";
+    yield "response ";
+    yield "chunks...";
+  }
+}
+```
+
+#### Reranker Plugin (Optional)
+
+```javascript
+class MyReranker {
+  async rerank(query, documents, options = {}) {
+    // Rerank documents based on relevance to query
+    return documents
+      .map((doc) => ({
+        ...doc,
+        score: calculateRelevanceScore(query, doc),
+      }))
+      .sort((a, b) => b.score - a.score);
+  }
+}
+```
+
+## Environment Configuration
+
+```bash
+# Example environment variables for your plugins
+OPENAI_API_KEY=your_api_key
+PINECONE_API_KEY=your_api_key
+PINECONE_ENVIRONMENT=us-east-1
+CHROMA_URL=http://localhost:8000
+
+# Performance settings
+RAG_MAX_CONCURRENCY=5
+RAG_BATCH_SIZE=10
+```
+
+## Advanced Features
+
+### Multi-Modal Processing
+
+```javascript
+const { MultiModalProcessor } = require("@devilsdev/rag-pipeline-utils");
+
+const processor = new MultiModalProcessor({
+  // Configuration for processing text, images, audio, etc.
+});
+
+await processor.process(multiModalData);
+```
+
+### Adaptive Retrieval
+
+```javascript
+const { AdaptiveRetrievalEngine } = require("@devilsdev/rag-pipeline-utils");
+
+const retriever = new AdaptiveRetrievalEngine({
+  // Configuration for adaptive retrieval strategies
+});
+
+const results = await retriever.retrieve(query, context);
+```
+
+### Enterprise Audit Logging
+
+```javascript
+const { AuditLogger } = require("@devilsdev/rag-pipeline-utils");
+
+const auditLogger = new AuditLogger({
+  destination: "./audit-logs",
+});
+
+auditLogger.log("query", {
+  user: "user@example.com",
+  query: "sensitive query",
+  timestamp: new Date(),
+});
+```
+
+### Data Governance
+
+```javascript
+const { DataGovernance } = require("@devilsdev/rag-pipeline-utils");
+
+const governance = new DataGovernance({
+  policies: {
+    retention: "90d",
+    encryption: true,
+  },
+});
+
+await governance.enforce(data);
+```
+
 ## CLI Usage
 
-The package includes a CLI for common operations:
+The package includes a CLI tool for pipeline operations:
 
 ```bash
 # Initialize configuration
 npx rag-pipeline init
 
-# Ingest documents
-npx rag-pipeline ingest ./docs --loader pdf
+# Run pipeline operations (requires plugin implementation)
+npx rag-pipeline ingest ./documents
+npx rag-pipeline query "Your question"
 
-# Query interactively
-npx rag-pipeline query "Your question here"
-
-# Run health check
+# Run system diagnostics
 npx rag-pipeline doctor
+```
+
+## Error Handling
+
+```javascript
+try {
+  const result = await pipeline.query("What is AI?");
+} catch (error) {
+  if (error.code === "PLUGIN_NOT_FOUND") {
+    console.error("Required plugin not found:", error.message);
+  } else if (error.code === "INVALID_CONFIG") {
+    console.error("Invalid configuration:", error.message);
+  } else {
+    console.error("Pipeline error:", error.message);
+  }
+}
 ```
 
 ## Use Cases
 
-### Document Q&A Systems
-
-Build question-answering systems over proprietary documents:
+### Document Q&A System
 
 ```javascript
+// Implement your plugins
+const loader = new PDFLoaderPlugin();
+const embedder = new OpenAIEmbedderPlugin({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const retriever = new ChromaRetrieverPlugin({ url: "http://localhost:8000" });
+const llm = new OpenAILLMPlugin({ model: "gpt-4" });
+
+// Create pipeline
 const pipeline = createRagPipeline({
-  /* config */
+  loader,
+  embedder,
+  retriever,
+  llm,
 });
 
-// Ingest company documentation
-await pipeline.ingestBatch([
-  "./docs/handbook.pdf",
-  "./docs/policies.pdf",
-  "./docs/procedures.pdf",
-]);
+// Ingest documents
+await pipeline.ingest("./company-handbook.pdf");
 
-// Answer questions
+// Query
 const answer = await pipeline.query("What is the vacation policy?");
+console.log(answer);
 ```
 
-### Semantic Search
-
-Implement semantic search over large document collections:
+### Knowledge Base Search
 
 ```javascript
-const results = await pipeline.query("machine learning papers", {
-  topK: 10,
-  similarityThreshold: 0.75,
-  returnSources: true,
-});
-
-results.sources.forEach((source) => {
-  console.log(`${source.metadata.title} (score: ${source.score})`);
-});
-```
-
-### Knowledge Base Integration
-
-Integrate with existing knowledge bases:
-
-```javascript
-// Custom retriever for your database
+// Use your custom database retriever
 class PostgresRetriever {
   constructor(connectionString) {
     this.db = new PostgresClient(connectionString);
   }
 
-  async store(vectors, metadata) {
-    await this.db.query(
-      "INSERT INTO embeddings (vector, metadata) VALUES ($1, $2)",
-      [vectors, metadata],
-    );
-  }
-
   async retrieve(queryVector, options) {
     const results = await this.db.query(
-      "SELECT * FROM embeddings ORDER BY vector <-> $1 LIMIT $2",
+      "SELECT content, metadata, vector <-> $1 as score FROM embeddings ORDER BY score LIMIT $2",
       [queryVector, options.topK],
     );
     return results.rows;
@@ -463,191 +484,169 @@ class PostgresRetriever {
 }
 
 const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY }),
+  loader: yourLoader,
+  embedder: yourEmbedder,
   retriever: new PostgresRetriever("postgresql://localhost/kb"),
-  llm: new OpenAILLM({ model: "gpt-4" }),
+  llm: yourLLM,
 });
 ```
 
-### Multi-Source Aggregation
+## Performance Tips
 
-Combine data from multiple sources:
+### Batch Processing
 
 ```javascript
-const sources = [
-  { type: "pdf", path: "./research/*.pdf" },
-  { type: "markdown", path: "./docs/*.md" },
-  { type: "api", url: "https://api.example.com/docs" },
-];
+const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
 
-for (const source of sources) {
-  const loader = getLoaderForType(source.type);
-  await pipeline.ingest(source.path || source.url, {
-    loader,
-    metadata: { source: source.type },
-  });
+const processor = new ParallelProcessor({
+  maxConcurrency: 5,
+  batchSize: 10,
+});
+
+// Process documents in parallel
+await processor.process(documents, async (doc) => {
+  return await pipeline.ingest(doc);
+});
+```
+
+### Logging and Monitoring
+
+```javascript
+const { logger, metrics } = require("@devilsdev/rag-pipeline-utils");
+
+// Set log level
+logger.setLevel("debug");
+
+// Monitor performance
+const stats = metrics.getMetrics();
+console.log("Total queries:", stats.queries?.total || 0);
+console.log("Average latency:", stats.queries?.avgLatency || 0);
+```
+
+## Common Integration Examples
+
+### With OpenAI
+
+You need to implement OpenAI plugin wrappers:
+
+```javascript
+class OpenAIEmbedder {
+  constructor({ apiKey, model = "text-embedding-ada-002" }) {
+    this.client = new OpenAI({ apiKey });
+    this.model = model;
+  }
+
+  async embed(texts) {
+    const response = await this.client.embeddings.create({
+      model: this.model,
+      input: texts,
+    });
+    return response.data.map((d) => d.embedding);
+  }
+}
+
+class OpenAILLM {
+  constructor({ apiKey, model = "gpt-4" }) {
+    this.client = new OpenAI({ apiKey });
+    this.model = model;
+  }
+
+  async generate(prompt) {
+    const response = await this.client.chat.completions.create({
+      model: this.model,
+      messages: [{ role: "user", content: prompt }],
+    });
+    return { text: response.choices[0].message.content };
+  }
 }
 ```
 
-## Performance Optimization
-
-### Chunking Strategies
+### With ChromaDB
 
 ```javascript
-await pipeline.ingest("./large-document.pdf", {
-  chunkSize: 1000, // Characters per chunk
-  chunkOverlap: 200, // Overlap between chunks
-  chunkStrategy: "sentence", // 'sentence' | 'paragraph' | 'fixed'
-});
-```
+class ChromaRetriever {
+  constructor({ url, collection }) {
+    this.client = new ChromaClient({ path: url });
+    this.collectionName = collection;
+  }
 
-### Concurrent Processing
+  async store(vectors, metadata) {
+    const collection = await this.client.getOrCreateCollection({
+      name: this.collectionName,
+    });
 
-```javascript
-await pipeline.ingestBatch(files, {
-  parallel: true,
-  maxConcurrency: 5, // Parallel operations
-  batchSize: 10, // Embeddings per batch
-});
-```
+    await collection.add({
+      embeddings: vectors,
+      metadatas: metadata,
+      ids: metadata.map((_, i) => `doc_${i}`),
+    });
+  }
 
-### Caching
+  async retrieve(queryVector, options) {
+    const collection = await this.client.getCollection({
+      name: this.collectionName,
+    });
 
-```javascript
-const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder({
-    apiKey: process.env.OPENAI_API_KEY,
-    cache: true, // Cache embeddings
-    cacheTTL: 3600, // Cache lifetime in seconds
-  }),
-  retriever: new ChromaRetriever({ url: "http://localhost:8000" }),
-  llm: new OpenAILLM({ model: "gpt-4" }),
-});
-```
+    const results = await collection.query({
+      queryEmbeddings: [queryVector],
+      nResults: options.topK || 5,
+    });
 
-## TypeScript Support
-
-Full TypeScript definitions included:
-
-```typescript
-import {
-  createRagPipeline,
-  Pipeline,
-  LoaderPlugin,
-  EmbedderPlugin,
-  RetrieverPlugin,
-  LLMPlugin,
-} from "@devilsdev/rag-pipeline-utils";
-
-const pipeline: Pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder({ apiKey: string }),
-  retriever: new ChromaRetriever({ url: string }),
-  llm: new OpenAILLM({ model: string }),
-});
-
-interface QueryResult {
-  answer: string;
-  sources: Source[];
-  metrics: Metrics;
+    return results.metadatas[0].map((meta, i) => ({
+      content: results.documents[0][i],
+      metadata: meta,
+      score: 1 - results.distances[0][i],
+    }));
+  }
 }
-
-const result: QueryResult = await pipeline.query("question");
-```
-
-## API Reference
-
-### Exported Modules
-
-```javascript
-const {
-  // Core
-  createRagPipeline,
-  loadConfig,
-
-  // Plugin System
-  pluginRegistry,
-
-  // Workflow Engine
-  DAGEngine,
-
-  // Observability
-  eventLogger,
-  metrics,
-
-  // Utilities
-  logger,
-} = require("@devilsdev/rag-pipeline-utils");
-```
-
-### Plugin Registry API
-
-```javascript
-// Register plugin
-pluginRegistry.register("name", PluginClass);
-
-// Get plugin
-const Plugin = pluginRegistry.get("name");
-
-// List plugins
-const plugins = pluginRegistry.list();
-
-// Check if plugin exists
-const exists = pluginRegistry.has("name");
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Error: Module not found**
+**Error: Cannot find module**
 
 ```bash
-npm install --save @devilsdev/rag-pipeline-utils
+npm install @devilsdev/rag-pipeline-utils
 ```
 
-**Error: Invalid API key**
+**Error: Plugin not registered**
 
 ```javascript
-// Ensure environment variables are set
-require("dotenv").config();
-const embedder = new OpenAIEmbedder({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Make sure to register your plugins
+pluginRegistry.register("my-embedder", MyEmbedderClass);
 ```
 
-**Error: Connection refused (ChromaDB)**
+**Error: Invalid configuration**
 
-```bash
-# Start ChromaDB server
-docker run -p 8000:8000 chromadb/chroma
+```javascript
+// Validate your configuration
+const { validateRagrc } = require("@devilsdev/rag-pipeline-utils");
+const isValid = validateRagrc(config);
+if (!isValid) {
+  console.error("Configuration is invalid");
+}
 ```
 
 ### Debug Mode
 
-Enable verbose logging:
-
 ```javascript
 const { logger } = require("@devilsdev/rag-pipeline-utils");
 
+// Enable debug logging
 logger.setLevel("debug");
 ```
 
-## Examples
+## Documentation
 
-See the [examples directory](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) for complete working examples:
-
-- Basic RAG pipeline
-- Streaming responses
-- Custom plugins
-- DAG workflows
-- Multi-source ingestion
+- [GitHub Repository](https://github.com/DevilsDev/rag-pipeline-utils)
+- [Issue Tracker](https://github.com/DevilsDev/rag-pipeline-utils/issues)
+- [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
 
 ## Contributing
 
-Contributions welcome. Please read the [contribution guidelines](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md) and [plugin developer guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/PLUGIN_DEVELOPER_GUIDE.md).
+Contributions are welcome. Please see the [contribution guidelines](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md).
 
 ## License
 
@@ -655,6 +654,5 @@ GPL-3.0 - See [LICENSE](https://github.com/DevilsDev/rag-pipeline-utils/blob/mai
 
 ## Support
 
-- Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 - Issues: https://github.com/DevilsDev/rag-pipeline-utils/issues
-- Discussions: https://github.com/DevilsDev/rag-pipeline-utils/discussionsDo
+- Discussions: https://github.com/DevilsDev/rag-pipeline-utils/discussions
