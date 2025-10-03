@@ -208,3 +208,36 @@ pnpm-lock.yaml
 *.tmp
 test-temp/
 temp-test/
+
+# Development artifacts (do not commit)
+.artifacts/
+ci-reports/
+e2e-reports/
+performance-reports/
+profiling-reports/
+security-reports/
+comprehensive-security-reports/
+
+# Test pipeline files
+pipelines/
+
+# Root-level test/debug scripts
+test-*.js
+debug-*.js
+quick-test.js
+validate-*.js
+comprehensive-test-verification.js
+
+# Development documentation
+ANTI_PATTERN_REVIEW.md
+CODEBASE_REVIEW_ANALYSIS.md
+COMPREHENSIVE_CODEBASE_REVIEW.md
+MANUAL_TEST_ASSESSMENT.md
+PRODUCTION_READINESS_REPORT.md
+PR_DESCRIPTION.md
+TECHNICAL_DEBT_CHECKLIST.md
+TEST_STABILIZATION_REPORT*.md
+
+# Local IDE/editor settings
+.claude/
+.github.zip

@@ -1,0 +1,69 @@
+# Development artifacts - exclude from npm package
+
+# Test artifacts
+.artifacts/
+ci-reports/
+e2e-reports/
+junit.xml
+test-results/
+test-results-current.json
+coverage/
+.nyc_output/
+
+# Performance and profiling reports
+performance-reports/
+profiling-reports/
+
+# Test pipeline files
+pipelines/
+
+# Security reports
+security-reports/
+comprehensive-security-reports/
+
+# Development documentation
+ANTI_PATTERN_REVIEW.md
+CODEBASE_REVIEW_ANALYSIS.md
+COMPREHENSIVE_CODEBASE_REVIEW.md
+MANUAL_TEST_ASSESSMENT.md
+PRODUCTION_READINESS_REPORT.md
+PR_DESCRIPTION.md
+TECHNICAL_DEBT_CHECKLIST.md
+TEST_STABILIZATION_REPORT*.md
+
+# Root-level test scripts
+test-*.js
+debug-*.js
+quick-test.js
+validate-*.js
+comprehensive-test-verification.js
+
+# Local configuration
+.claude/
+.vscode/
+.idea/
+
+# GitHub artifacts
+.github.zip
+.github/act-events/
+.github/actions-lockfile.md
+
+# Scripts (keep only what's needed for package users)
+scripts/maintenance/
+scripts/testing/
+scripts/ci/
+scripts/audit/
+
+# Development dependencies
+__tests__/
+__mocks__/
+
+# Build artifacts
+*.log
+npm-debug.log*
+
+# Documentation site source
+docs-site/
+
+# Examples (optional - uncomment if you want to exclude)
+# examples/

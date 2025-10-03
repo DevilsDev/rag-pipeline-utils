@@ -1,4 +1,0 @@
-Batch Size,Duration (ms),Avg Time/Doc (ms),Throughput (docs/sec),Memory (MB)
-100,0.00,0.75,1339.85,50.00
-500,0.00,0.80,1256.81,50.00
-1000,0.00,0.80,1249.57,50.00
