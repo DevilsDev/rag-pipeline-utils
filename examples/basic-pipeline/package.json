@@ -1,0 +1,14 @@
+{
+  "name": "basic-rag-example",
+  "version": "1.0.0",
+  "description": "Basic example demonstrating RAG Pipeline Utils usage",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "^2.1.7"
+  }
+}

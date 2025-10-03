@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/DevilsDev/rag-pipeline-utils/main/.ragrc.schema.json",
+  "title": "RAG Pipeline Configuration Schema",
+  "description": "Configuration schema for @devilsdev/rag-pipeline-utils",
+  "type": "object",
+  "required": ["plugins"],
+  "properties": {
+    "plugins": {
+      "type": "object",
+      "description": "Plugin specifications for RAG pipeline components",
+      "required": ["loader", "embedder", "retriever", "llm"],
+      "properties": {
+        "loader": {
+          "type": "object",
+          "description": "Document loader plugins",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "source": {
+                    "type": "string",
+                    "enum": ["registry", "local", "git", "npm"]
+                  },
+                  "path": { "type": "string" },
+                  "config": { "type": "object" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            ]
+          }
+        },
+        "embedder": {
+          "type": "object",
+          "description": "Text embedding plugins",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "source": {
+                    "type": "string",
+                    "enum": ["registry", "local", "git", "npm"]
+                  },
+                  "path": { "type": "string" },
+                  "config": { "type": "object" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            ]
+          }
+        },
+        "retriever": {
+          "type": "object",
+          "description": "Vector retrieval plugins",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "source": {
+                    "type": "string",
+                    "enum": ["registry", "local", "git", "npm"]
+                  },
+                  "path": { "type": "string" },
+                  "config": { "type": "object" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            ]
+          }
+        },
+        "llm": {
+          "type": "object",
+          "description": "Language model plugins",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "source": {
+                    "type": "string",
+                    "enum": ["registry", "local", "git", "npm"]
+                  },
+                  "path": { "type": "string" },
+                  "config": { "type": "object" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            ]
+          }
+        },
+        "reranker": {
+          "type": "object",
+          "description": "Result reranking plugins (optional)",
+          "minProperties": 1,
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "version": { "type": "string" },
+                  "source": {
+                    "type": "string",
+                    "enum": ["registry", "local", "git", "npm"]
+                  },
+                  "path": { "type": "string" },
+                  "config": { "type": "object" },
+                  "enabled": { "type": "boolean" }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipeline": {
+      "type": "object",
+      "description": "Pipeline execution configuration",
+      "properties": {
+        "stages": {
+          "type": "array",
+          "description": "Pipeline execution stages",
+          "items": {
+            "type": "string",
+            "enum": ["loader", "embedder", "retriever", "llm", "reranker"]
+          }
+        },
+        "mode": {
+          "type": "string",
+          "description": "Pipeline execution mode",
+          "enum": ["sequential", "parallel", "dag"],
+          "default": "sequential"
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance and optimization settings",
+      "properties": {
+        "parallel": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "maxConcurrency": { "type": "number", "default": 5 },
+            "batchSize": { "type": "number", "default": 10 }
+          }
+        },
+        "streaming": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "maxMemoryMB": { "type": "number", "default": 512 },
+            "bufferSize": { "type": "number", "default": 100 }
+          }
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "description": "Logging and monitoring configuration",
+      "properties": {
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["debug", "info", "warn", "error"],
+              "default": "info"
+            },
+            "structured": { "type": "boolean", "default": true }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "exportFormat": {
+              "type": "string",
+              "enum": ["prometheus", "json", "statsd"],
+              "default": "json"
+            }
+          }
+        }
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Configuration namespace for isolation"
+    }
+  },
+  "additionalProperties": false
+}
