@@ -4,21 +4,15 @@
  */
 
 const inquirer = require('inquirer');
-// eslint-disable-line global-require
 const fs = require('fs/promises');
-// eslint-disable-line global-require
 const path = require('path');
-// eslint-disable-line global-require
 const {
   validateRagrc,
   extractPluginDependencies,
-} = require('../config/enhanced-ragrc-schema.js'); // eslint-disable-line global-require
+} = require('../config/enhanced-ragrc-schema.js');
 const {
   DEFAULT_REGISTRY_URLS,
 } = require('../core/plugin-marketplace/plugin-registry-format.js');
-// eslint-disable-line global-require
-// const { logger  } = require('../utils/logger.js');
-// eslint-disable-line global-require
 
 /**
  * Interactive wizard for RAG pipeline setup

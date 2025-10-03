@@ -1,35 +1,23 @@
 /**
  * Version: 2.1.2
  * Path: __tests__/scripts/ensure-roadmap-labels.test.js
- * Description: Unit tests for roadmap label creation using ESM-compatible Jest syntax.
+ * Description: Unit tests for roadmap label creation using CommonJS Jest syntax.
  * Author: Ali Kahwaji
  */
 
-// Jest is available globally in CommonJS mode;
+// Mock octokit before requiring any modules
+jest.mock("octokit");
 
-jest.unstable_mockModule("octokit", () => ({
-  Octokit: jest.fn().mockImplementation(() => ({
-    rest: {
-      issues: {
-        listLabelsForRepo: mockListLabelsForRepo,
-        createLabel: mockCreateLabel,
-      },
-    },
-  })),
-}));
+// Now import mocked functions and module under test
+const { Octokit } = require("octokit");
+const {
+  ensureRoadmapLabels,
+  roadmapLabels,
+} = require("../../scripts/ensure-roadmap-labels.js");
 
-// ✅ Shared mocks outside import context
-const mockCreateLabel = jest.fn();
-const mockListLabelsForRepo = jest.fn();
-
-let ensureRoadmapLabels;
-let roadmapLabels;
-
-beforeAll(async () => {
-  const imported = await import("../../scripts/ensure-roadmap-labels.js");
-  ensureRoadmapLabels = imported.ensureRoadmapLabels;
-  roadmapLabels = imported.roadmapLabels;
-});
+// Access mock functions from the manual mock
+const mockCreateLabel = Octokit.mockCreateLabel;
+const mockListLabelsForRepo = Octokit.mockListLabelsForRepo;
 
 beforeEach(() => {
   mockCreateLabel.mockReset();

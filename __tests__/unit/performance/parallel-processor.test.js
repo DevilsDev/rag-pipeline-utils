@@ -8,6 +8,7 @@ const {
   ParallelRetriever,
   Semaphore,
 } = require("../../../src/core/performance/parallel-processor.js");
+const { logger } = require("../../../src/utils/structured-logger");
 
 describe("Semaphore", () => {
   it("should allow concurrent operations up to limit", async () => {
@@ -117,7 +118,7 @@ describe("ParallelEmbedder", () => {
           [3, 4],
         ]);
 
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const loggerSpy = jest.spyOn(logger, "warn").mockImplementation();
 
       const result = await parallelEmbedder.embedBatch(chunks);
 
@@ -126,11 +127,15 @@ describe("ParallelEmbedder", () => {
         [1, 2],
         [3, 4],
       ]);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Batch 0 attempt 1 failed, retrying"),
+      expect(loggerSpy).toHaveBeenCalledWith(
+        "Batch attempt failed, retrying",
+        expect.objectContaining({
+          batchIndex: 0,
+          attempt: 1,
+        }),
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it("should handle partial batch failures gracefully", async () => {
@@ -144,7 +149,7 @@ describe("ParallelEmbedder", () => {
         .mockRejectedValueOnce(new Error("Batch failed")) // Batch 1 fails
         .mockRejectedValueOnce(new Error("Batch failed again")); // Retry fails
 
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const loggerSpy = jest.spyOn(logger, "warn").mockImplementation();
 
       const result = await parallelEmbedder.embedBatch(chunks);
 
@@ -152,11 +157,14 @@ describe("ParallelEmbedder", () => {
         [1, 2],
         [3, 4],
       ]);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Warning: 1 batches failed"),
+      expect(loggerSpy).toHaveBeenCalledWith(
+        "Batches failed during parallel embedding",
+        expect.objectContaining({
+          failedBatches: 1,
+        }),
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it("should throw error if too many batches fail", async () => {

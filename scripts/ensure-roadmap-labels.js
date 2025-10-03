@@ -1,11 +1,11 @@
 /**
- * Version: 2.0.1
+ * Version: 2.0.2
  * Path: scripts/ensure-roadmap-labels.js
  * Description: Ensures consistent GitHub labels for roadmap tracking and automation.
  * Author: Ali Kahwaji
  */
 
-// Octokit will be imported dynamically as it's an ES module
+const { Octokit } = require("octokit");
 
 /**
  * Label definitions for roadmap tracking.
@@ -75,7 +75,6 @@ const roadmapLabels = [
  * @param {string} params.repo  - Repository name
  */
 async function ensureRoadmapLabels({ token, owner, repo }) {
-  const { Octokit } = await import("octokit");
   const octokit = new Octokit({ auth: token });
 
   const { data: existingLabels } = await octokit.rest.issues.listLabelsForRepo({

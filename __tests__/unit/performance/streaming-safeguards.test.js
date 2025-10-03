@@ -8,6 +8,7 @@ const {
   StreamingProcessor,
   MemoryMonitor,
 } = require("../../../src/core/performance/streaming-safeguards.js");
+const { logger } = require("../../../src/utils/logger");
 
 describe("MemoryMonitor", () => {
   let memoryMonitor;
@@ -145,15 +146,21 @@ describe("BackpressureController", () => {
         controller.buffer.push(`item${i}`);
       }
 
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      // Spy on the internal _log method since logger uses pino which is silent in tests
+      const loggerSpy = jest.spyOn(logger, "_log").mockImplementation();
 
       // Start waiting for relief
       const reliefPromise = controller.waitForRelief();
 
       // Verify backpressure is applied
       expect(controller.isPaused).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Applying backpressure"),
+      expect(loggerSpy).toHaveBeenCalledWith(
+        "warn",
+        "Applying backpressure",
+        expect.objectContaining({
+          bufferSize: expect.any(Number),
+          maxBufferSize: expect.any(Number),
+        }),
       );
 
       // Simulate relief by clearing buffer
@@ -163,7 +170,7 @@ describe("BackpressureController", () => {
       await reliefPromise;
       expect(controller.isPaused).toBe(false);
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 
@@ -373,7 +380,7 @@ describe("StreamingProcessor", () => {
     });
 
     it("should warn when approaching token limit", async () => {
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const consoleSpy = jest.spyOn(logger, "_log").mockImplementation();
 
       // Create processor with specific token limit to trigger warning
       const warningProcessor = new StreamingProcessor({
@@ -407,7 +414,12 @@ describe("StreamingProcessor", () => {
       }
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Approaching token limit"),
+        "warn",
+        "Approaching token limit",
+        expect.objectContaining({
+          currentTokens: expect.any(Number),
+          tokenLimit: expect.any(Number),
+        }),
       );
 
       consoleSpy.mockRestore();
