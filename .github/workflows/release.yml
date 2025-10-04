@@ -1,41 +1,44 @@
 name: Release
+
 on:
-  push:
-    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
-    timeout-minutes: 25
+  publish:
+    name: NPM Release
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7
-        with:
-          egress-policy: audit
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - name: Setup Node.js
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
+          registry-url: https://registry.npmjs.org
 
       - name: Install
-        run: npm ci
+        run: CI=true npm ci --prefer-offline
+
+      - name: Test
+        run: npm test -- --ci --passWithNoTests
 
       - name: Build
-        run: npm run build --if-present
+        run: npm run build
 
-      - name: semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+      - name: Publish to npm via Trusted Publishers
+        run: npm publish --access public

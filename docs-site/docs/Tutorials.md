@@ -8,7 +8,7 @@ Welcome to the **RAG Pipeline Utils** tutorial section. These guides will help d
 
 ---
 
-##  1. Install the Package
+## 1. Install the Package
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils
@@ -88,10 +88,10 @@ npm run ci
 
 This runs:
 
--  Linting
--  Fixture validation
--  Unit/integration tests
--  Coverage reporting
+- Linting
+- Fixture validation
+- Unit/integration tests
+- Coverage reporting
 
 ---
 

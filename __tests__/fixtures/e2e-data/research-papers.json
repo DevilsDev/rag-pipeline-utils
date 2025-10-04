@@ -2,21 +2,18 @@
   "documents": [
     {
       "id": "paper-0",
-      "title": "Research Paper 0: Natural Language Processing",
+      "title": "Research Paper 0: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
+        "Dr. Jane Smith"
       ],
-      "citations": 25,
-      "year": 2022,
-      "venue": "AAAI",
+      "citations": 35,
+      "year": 2020,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
-        "deep learning",
-        "neural networks"
+        "deep learning"
       ],
       "metadata": {
         "type": "research_paper",
@@ -30,12 +27,34 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Dr. Jane Smith"
       ],
-      "citations": 59,
+      "citations": 2,
       "year": 2021,
-      "venue": "ICML",
+      "venue": "AAAI",
+      "keywords": [
+        "machine learning",
+        "deep learning"
+      ],
+      "metadata": {
+        "type": "research_paper",
+        "domain": "computer_science",
+        "language": "en"
+      }
+    },
+    {
+      "id": "paper-2",
+      "title": "Research Paper 2: Computer Vision Applications",
+      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
+      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
+      "authors": [
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
+      ],
+      "citations": 24,
+      "year": 2022,
+      "venue": "ICLR",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -48,15 +67,60 @@
       }
     },
     {
-      "id": "paper-2",
-      "title": "Research Paper 2: Distributed Systems Architecture",
+      "id": "paper-3",
+      "title": "Research Paper 3: Quantum Computing Algorithms",
+      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
+      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
+      "authors": [
+        "Dr. Jane Smith"
+      ],
+      "citations": 34,
+      "year": 2020,
+      "venue": "IJCAI",
+      "keywords": [
+        "machine learning",
+        "deep learning"
+      ],
+      "metadata": {
+        "type": "research_paper",
+        "domain": "computer_science",
+        "language": "en"
+      }
+    },
+    {
+      "id": "paper-4",
+      "title": "Research Paper 4: Computer Vision Applications",
+      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
+      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
+      "authors": [
+        "Dr. Jane Smith"
+      ],
+      "citations": 66,
+      "year": 2022,
+      "venue": "ICML",
+      "keywords": [
+        "machine learning",
+        "deep learning",
+        "neural networks",
+        "optimization"
+      ],
+      "metadata": {
+        "type": "research_paper",
+        "domain": "computer_science",
+        "language": "en"
+      }
+    },
+    {
+      "id": "paper-5",
+      "title": "Research Paper 5: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 8,
+      "citations": 52,
       "year": 2020,
       "venue": "IJCAI",
       "keywords": [
@@ -72,16 +136,17 @@
       }
     },
     {
-      "id": "paper-3",
-      "title": "Research Paper 3: Computer Vision Applications",
+      "id": "paper-6",
+      "title": "Research Paper 6: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 49,
-      "year": 2023,
-      "venue": "AAAI",
+      "citations": 26,
+      "year": 2020,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -93,40 +158,17 @@
       }
     },
     {
-      "id": "paper-4",
-      "title": "Research Paper 4: Natural Language Processing",
-      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
-      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
-      "authors": [
-        "Dr. Jane Smith"
-      ],
-      "citations": 27,
-      "year": 2020,
-      "venue": "NeurIPS",
-      "keywords": [
-        "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
-      ],
-      "metadata": {
-        "type": "research_paper",
-        "domain": "computer_science",
-        "language": "en"
-      }
-    },
-    {
-      "id": "paper-5",
-      "title": "Research Paper 5: Quantum Computing Algorithms",
+      "id": "paper-7",
+      "title": "Research Paper 7: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
         "Prof. John Doe"
       ],
-      "citations": 19,
-      "year": 2021,
-      "venue": "NeurIPS",
+      "citations": 21,
+      "year": 2023,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -139,65 +181,15 @@
       }
     },
     {
-      "id": "paper-6",
-      "title": "Research Paper 6: Machine Learning Optimization",
+      "id": "paper-8",
+      "title": "Research Paper 8: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 72,
-      "year": 2020,
-      "venue": "ICLR",
-      "keywords": [
-        "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
-      ],
-      "metadata": {
-        "type": "research_paper",
-        "domain": "computer_science",
-        "language": "en"
-      }
-    },
-    {
-      "id": "paper-7",
-      "title": "Research Paper 7: Quantum Computing Algorithms",
-      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
-      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
-      "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
-      ],
-      "citations": 33,
-      "year": 2021,
-      "venue": "AAAI",
-      "keywords": [
-        "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
-      ],
-      "metadata": {
-        "type": "research_paper",
-        "domain": "computer_science",
-        "language": "en"
-      }
-    },
-    {
-      "id": "paper-8",
-      "title": "Research Paper 8: Quantum Computing Algorithms",
-      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
-      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
-      "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
-      ],
-      "citations": 8,
-      "year": 2020,
+      "citations": 71,
+      "year": 2022,
       "venue": "NeurIPS",
       "keywords": [
         "machine learning",
@@ -211,16 +203,17 @@
     },
     {
       "id": "paper-9",
-      "title": "Research Paper 9: Distributed Systems Architecture",
+      "title": "Research Paper 9: Quantum Computing Algorithms",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 37,
-      "year": 2022,
-      "venue": "ICML",
+      "citations": 8,
+      "year": 2023,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -233,19 +226,19 @@
     },
     {
       "id": "paper-10",
-      "title": "Research Paper 10: Quantum Computing Algorithms",
+      "title": "Research Paper 10: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 7,
-      "year": 2021,
-      "venue": "AAAI",
+      "citations": 68,
+      "year": 2023,
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning",
-        "neural networks"
+        "deep learning"
       ],
       "metadata": {
         "type": "research_paper",
@@ -255,15 +248,15 @@
     },
     {
       "id": "paper-11",
-      "title": "Research Paper 11: Computer Vision Applications",
+      "title": "Research Paper 11: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 3,
-      "year": 2022,
-      "venue": "ICLR",
+      "citations": 81,
+      "year": 2020,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -276,16 +269,17 @@
     },
     {
       "id": "paper-12",
-      "title": "Research Paper 12: Computer Vision Applications",
+      "title": "Research Paper 12: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 49,
-      "year": 2021,
-      "venue": "NeurIPS",
+      "citations": 83,
+      "year": 2022,
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -304,16 +298,16 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 60,
-      "year": 2021,
-      "venue": "IJCAI",
+      "citations": 6,
+      "year": 2023,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -323,18 +317,19 @@
     },
     {
       "id": "paper-14",
-      "title": "Research Paper 14: Quantum Computing Algorithms",
+      "title": "Research Paper 14: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 9,
-      "year": 2022,
+      "citations": 84,
+      "year": 2021,
       "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -344,7 +339,7 @@
     },
     {
       "id": "paper-15",
-      "title": "Research Paper 15: Distributed Systems Architecture",
+      "title": "Research Paper 15: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -352,9 +347,9 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 20,
-      "year": 2021,
-      "venue": "ICLR",
+      "citations": 49,
+      "year": 2020,
+      "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -373,11 +368,12 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 60,
+      "citations": 36,
       "year": 2023,
-      "venue": "NeurIPS",
+      "venue": "ICLR",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -392,21 +388,19 @@
     },
     {
       "id": "paper-17",
-      "title": "Research Paper 17: Distributed Systems Architecture",
+      "title": "Research Paper 17: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Dr. Jane Smith"
       ],
-      "citations": 83,
-      "year": 2023,
-      "venue": "IJCAI",
+      "citations": 78,
+      "year": 2022,
+      "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -423,9 +417,9 @@
         "Dr. Jane Smith",
         "Prof. John Doe"
       ],
-      "citations": 40,
-      "year": 2021,
-      "venue": "ICLR",
+      "citations": 7,
+      "year": 2023,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -444,16 +438,14 @@
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
+        "Prof. John Doe"
       ],
-      "citations": 37,
-      "year": 2020,
-      "venue": "IJCAI",
+      "citations": 58,
+      "year": 2022,
+      "venue": "ICLR",
       "keywords": [
         "machine learning",
-        "deep learning",
-        "neural networks"
+        "deep learning"
       ],
       "metadata": {
         "type": "research_paper",
@@ -467,11 +459,13 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 37,
+      "citations": 63,
       "year": 2022,
-      "venue": "NeurIPS",
+      "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -484,17 +478,16 @@
     },
     {
       "id": "paper-21",
-      "title": "Research Paper 21: Quantum Computing Algorithms",
+      "title": "Research Paper 21: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
+        "Prof. John Doe"
       ],
-      "citations": 87,
-      "year": 2021,
-      "venue": "AAAI",
+      "citations": 57,
+      "year": 2020,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -509,16 +502,15 @@
     },
     {
       "id": "paper-22",
-      "title": "Research Paper 22: Quantum Computing Algorithms",
+      "title": "Research Paper 22: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Dr. Jane Smith"
       ],
-      "citations": 79,
+      "citations": 72,
       "year": 2021,
-      "venue": "IJCAI",
+      "venue": "ICLR",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -532,7 +524,7 @@
     },
     {
       "id": "paper-23",
-      "title": "Research Paper 23: Distributed Systems Architecture",
+      "title": "Research Paper 23: Quantum Computing Algorithms",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -540,9 +532,9 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 86,
+      "citations": 41,
       "year": 2023,
-      "venue": "AAAI",
+      "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -555,22 +547,19 @@
     },
     {
       "id": "paper-24",
-      "title": "Research Paper 24: Natural Language Processing",
+      "title": "Research Paper 24: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
+        "Dr. Jane Smith"
       ],
-      "citations": 91,
+      "citations": 98,
       "year": 2022,
-      "venue": "ICLR",
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -584,14 +573,17 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 37,
-      "year": 2021,
+      "citations": 77,
+      "year": 2020,
       "venue": "ICLR",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -605,14 +597,17 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 35,
-      "year": 2021,
+      "citations": 10,
+      "year": 2023,
       "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks",
+        "optimization"
       ],
       "metadata": {
         "type": "research_paper",
@@ -622,15 +617,41 @@
     },
     {
       "id": "paper-27",
-      "title": "Research Paper 27: Natural Language Processing",
+      "title": "Research Paper 27: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 74,
+      "citations": 31,
       "year": 2023,
-      "venue": "IJCAI",
+      "venue": "ICML",
+      "keywords": [
+        "machine learning",
+        "deep learning",
+        "neural networks",
+        "optimization"
+      ],
+      "metadata": {
+        "type": "research_paper",
+        "domain": "computer_science",
+        "language": "en"
+      }
+    },
+    {
+      "id": "paper-28",
+      "title": "Research Paper 28: Computer Vision Applications",
+      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
+      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
+      "authors": [
+        "Dr. Jane Smith",
+        "Prof. John Doe"
+      ],
+      "citations": 73,
+      "year": 2023,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -643,31 +664,8 @@
       }
     },
     {
-      "id": "paper-28",
-      "title": "Research Paper 28: Natural Language Processing",
-      "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
-      "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
-      "authors": [
-        "Dr. Jane Smith"
-      ],
-      "citations": 58,
-      "year": 2022,
-      "venue": "ICLR",
-      "keywords": [
-        "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
-      ],
-      "metadata": {
-        "type": "research_paper",
-        "domain": "computer_science",
-        "language": "en"
-      }
-    },
-    {
       "id": "paper-29",
-      "title": "Research Paper 29: Computer Vision Applications",
+      "title": "Research Paper 29: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -675,14 +673,13 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 44,
-      "year": 2023,
-      "venue": "IJCAI",
+      "citations": 71,
+      "year": 2022,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -692,20 +689,18 @@
     },
     {
       "id": "paper-30",
-      "title": "Research Paper 30: Computer Vision Applications",
+      "title": "Research Paper 30: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 35,
-      "year": 2022,
+      "citations": 56,
+      "year": 2020,
       "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
+        "deep learning"
       ],
       "metadata": {
         "type": "research_paper",
@@ -721,14 +716,13 @@
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 63,
+      "citations": 62,
       "year": 2021,
-      "venue": "AAAI",
+      "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -738,20 +732,19 @@
     },
     {
       "id": "paper-32",
-      "title": "Research Paper 32: Quantum Computing Algorithms",
+      "title": "Research Paper 32: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 40,
-      "year": 2020,
-      "venue": "IJCAI",
+      "citations": 23,
+      "year": 2022,
+      "venue": "ICLR",
       "keywords": [
         "machine learning",
-        "deep learning",
-        "neural networks",
-        "optimization"
+        "deep learning"
       ],
       "metadata": {
         "type": "research_paper",
@@ -761,21 +754,21 @@
     },
     {
       "id": "paper-33",
-      "title": "Research Paper 33: Distributed Systems Architecture",
+      "title": "Research Paper 33: Quantum Computing Algorithms",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 91,
-      "year": 2021,
-      "venue": "ICML",
+      "citations": 72,
+      "year": 2020,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -790,17 +783,15 @@
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe",
-        "Dr. Alice Johnson"
+        "Prof. John Doe"
       ],
-      "citations": 97,
-      "year": 2023,
+      "citations": 42,
+      "year": 2022,
       "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -810,20 +801,22 @@
     },
     {
       "id": "paper-35",
-      "title": "Research Paper 35: Computer Vision Applications",
+      "title": "Research Paper 35: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 18,
-      "year": 2020,
+      "citations": 67,
+      "year": 2021,
       "venue": "ICML",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks"
+        "neural networks",
+        "optimization"
       ],
       "metadata": {
         "type": "research_paper",
@@ -839,9 +832,9 @@
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 31,
+      "citations": 80,
       "year": 2021,
-      "venue": "AAAI",
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -855,15 +848,17 @@
     },
     {
       "id": "paper-37",
-      "title": "Research Paper 37: Quantum Computing Algorithms",
+      "title": "Research Paper 37: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
       "citations": 14,
       "year": 2020,
-      "venue": "ICLR",
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -876,16 +871,15 @@
     },
     {
       "id": "paper-38",
-      "title": "Research Paper 38: Quantum Computing Algorithms",
+      "title": "Research Paper 38: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith",
-        "Prof. John Doe"
+        "Dr. Jane Smith"
       ],
-      "citations": 98,
+      "citations": 3,
       "year": 2023,
-      "venue": "ICLR",
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -898,19 +892,20 @@
     },
     {
       "id": "paper-39",
-      "title": "Research Paper 39: Distributed Systems Architecture",
+      "title": "Research Paper 39: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
         "Prof. John Doe"
       ],
-      "citations": 97,
+      "citations": 79,
       "year": 2020,
-      "venue": "ICML",
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -920,19 +915,20 @@
     },
     {
       "id": "paper-40",
-      "title": "Research Paper 40: Natural Language Processing",
+      "title": "Research Paper 40: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 27,
+      "citations": 77,
       "year": 2021,
-      "venue": "AAAI",
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks"
+        "neural networks",
+        "optimization"
       ],
       "metadata": {
         "type": "research_paper",
@@ -946,14 +942,16 @@
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 9,
-      "year": 2023,
-      "venue": "AAAI",
+      "citations": 30,
+      "year": 2022,
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -963,18 +961,21 @@
     },
     {
       "id": "paper-42",
-      "title": "Research Paper 42: Natural Language Processing",
+      "title": "Research Paper 42: Distributed Systems Architecture",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe",
+        "Dr. Alice Johnson"
       ],
-      "citations": 27,
-      "year": 2023,
+      "citations": 71,
+      "year": 2020,
       "venue": "NeurIPS",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -984,18 +985,19 @@
     },
     {
       "id": "paper-43",
-      "title": "Research Paper 43: Quantum Computing Algorithms",
+      "title": "Research Paper 43: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith"
       ],
-      "citations": 96,
+      "citations": 33,
       "year": 2022,
-      "venue": "IJCAI",
+      "venue": "NeurIPS",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -1005,15 +1007,16 @@
     },
     {
       "id": "paper-44",
-      "title": "Research Paper 44: Quantum Computing Algorithms",
+      "title": "Research Paper 44: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
-        "Dr. Jane Smith"
+        "Dr. Jane Smith",
+        "Prof. John Doe"
       ],
-      "citations": 23,
-      "year": 2022,
-      "venue": "IJCAI",
+      "citations": 49,
+      "year": 2020,
+      "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
@@ -1028,7 +1031,7 @@
     },
     {
       "id": "paper-45",
-      "title": "Research Paper 45: Distributed Systems Architecture",
+      "title": "Research Paper 45: Machine Learning Optimization",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -1036,14 +1039,13 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 70,
-      "year": 2020,
+      "citations": 54,
+      "year": 2023,
       "venue": "AAAI",
       "keywords": [
         "machine learning",
         "deep learning",
-        "neural networks",
-        "optimization"
+        "neural networks"
       ],
       "metadata": {
         "type": "research_paper",
@@ -1053,14 +1055,14 @@
     },
     {
       "id": "paper-46",
-      "title": "Research Paper 46: Machine Learning Optimization",
+      "title": "Research Paper 46: Quantum Computing Algorithms",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
         "Prof. John Doe"
       ],
-      "citations": 80,
+      "citations": 79,
       "year": 2022,
       "venue": "AAAI",
       "keywords": [
@@ -1075,7 +1077,7 @@
     },
     {
       "id": "paper-47",
-      "title": "Research Paper 47: Distributed Systems Architecture",
+      "title": "Research Paper 47: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -1083,12 +1085,14 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 15,
+      "citations": 60,
       "year": 2021,
-      "venue": "NeurIPS",
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
-        "deep learning"
+        "deep learning",
+        "neural networks",
+        "optimization"
       ],
       "metadata": {
         "type": "research_paper",
@@ -1098,7 +1102,7 @@
     },
     {
       "id": "paper-48",
-      "title": "Research Paper 48: Quantum Computing Algorithms",
+      "title": "Research Paper 48: Natural Language Processing",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
@@ -1106,9 +1110,9 @@
         "Prof. John Doe",
         "Dr. Alice Johnson"
       ],
-      "citations": 94,
-      "year": 2020,
-      "venue": "NeurIPS",
+      "citations": 28,
+      "year": 2022,
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
         "deep learning"
@@ -1121,16 +1125,16 @@
     },
     {
       "id": "paper-49",
-      "title": "Research Paper 49: Distributed Systems Architecture",
+      "title": "Research Paper 49: Computer Vision Applications",
       "abstract": "This paper presents a novel approach to solving complex computational problems using advanced machine learning techniques. Our methodology demonstrates significant improvements over existing baselines.",
       "content": "Introduction: The field of artificial intelligence has seen remarkable progress in recent years... Methods: We propose a new algorithm that combines... Results: Our experiments show... Conclusion: This work contributes to...",
       "authors": [
         "Dr. Jane Smith",
         "Prof. John Doe"
       ],
-      "citations": 98,
-      "year": 2023,
-      "venue": "AAAI",
+      "citations": 18,
+      "year": 2022,
+      "venue": "IJCAI",
       "keywords": [
         "machine learning",
         "deep learning",

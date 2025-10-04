@@ -1,0 +1,8 @@
+{
+  "loader": { "pdf": "./src/mocks/pdf-loader.js" },
+  "embedder": { "openai": "./src/mocks/openai-embedder.js" },
+  "retriever": { "pinecone": "./src/mocks/pinecone-retriever.js" },
+  "llm": { "openai": "./src/mocks/openai-llm.js" },
+  "namespace": "cli-config-test",
+  "pipeline": ["loader", "embedder", "retriever"]
+}

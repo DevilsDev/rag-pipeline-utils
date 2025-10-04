@@ -16,9 +16,6 @@ class PDFLoader {
   }
 }
 
-
 // Default export
-
-
 
 module.exports = PDFLoader;

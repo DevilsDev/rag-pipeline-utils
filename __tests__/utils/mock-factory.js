@@ -9,22 +9,24 @@ class MockFactory {
    */
   static createOpenAILLMMock(options = {}) {
     return {
-      name: 'openai-llm',
-      type: 'llm', // Fixed: was _type, now type
+      name: "openai-llm",
+      type: "llm", // Fixed: was _type, now type
       generate: jest.fn().mockResolvedValue({
-        text: options.mockResponse || 'Mock LLM response',
+        text: options.mockResponse || "Mock LLM response",
         usage: { tokens: 150 },
-        model: 'gpt-3.5-turbo'
+        model: "gpt-3.5-turbo",
       }),
       // Legacy ask method for backward compatibility
-      ask: jest.fn().mockResolvedValue(options.mockResponse || 'Mock LLM response'),
+      ask: jest
+        .fn()
+        .mockResolvedValue(options.mockResponse || "Mock LLM response"),
       stream: jest.fn().mockImplementation(async function* () {
-        const tokens = (options.mockResponse || 'Mock response').split(' ');
+        const tokens = (options.mockResponse || "Mock response").split(" ");
         for (const token of tokens) {
           yield { token, done: false };
         }
-        yield { token: '', done: true };
-      })
+        yield { token: "", done: true };
+      }),
     };
   }
 
@@ -33,17 +35,17 @@ class MockFactory {
    */
   static createPineconeRetrieverMock(options = {}) {
     return {
-      name: 'pinecone-retriever',
-      type: 'retriever', // Fixed: was _type, now type
+      name: "pinecone-retriever",
+      type: "retriever", // Fixed: was _type, now type
       retrieve: jest.fn().mockResolvedValue({
         results: options.mockResults || [
-          { id: '1', score: 0.95, metadata: { text: 'Mock result 1' } },
-          { id: '2', score: 0.87, metadata: { text: 'Mock result 2' } }
+          { id: "1", score: 0.95, metadata: { text: "Mock result 1" } },
+          { id: "2", score: 0.87, metadata: { text: "Mock result 2" } },
         ],
-        total: options.mockResults?.length || 2
+        total: options.mockResults?.length || 2,
       }),
       // Legacy search method for backward compatibility
-      search: jest.fn().mockResolvedValue(options.mockResults || [])
+      search: jest.fn().mockResolvedValue(options.mockResults || []),
     };
   }
 
@@ -52,14 +54,14 @@ class MockFactory {
    */
   static createRerankerMock(options = {}) {
     return {
-      name: 'reranker',
-      type: 'reranker', // Fixed: was _type, now type
+      name: "reranker",
+      type: "reranker", // Fixed: was _type, now type
       rerank: jest.fn().mockResolvedValue({
         results: options.mockResults || [
-          { id: '1', score: 0.98, text: 'Reranked result 1' },
-          { id: '2', score: 0.89, text: 'Reranked result 2' }
-        ]
-      })
+          { id: "1", score: 0.98, text: "Reranked result 1" },
+          { id: "2", score: 0.89, text: "Reranked result 2" },
+        ],
+      }),
     };
   }
 
@@ -70,20 +72,21 @@ class MockFactory {
     return {
       register: jest.fn().mockResolvedValue(true),
       get: jest.fn().mockImplementation((name) => {
-        if (name === 'openai-llm') return this.createOpenAILLMMock();
-        if (name === 'pinecone-retriever') return this.createPineconeRetrieverMock();
-        if (name === 'reranker') return this.createRerankerMock();
+        if (name === "openai-llm") return this.createOpenAILLMMock();
+        if (name === "pinecone-retriever")
+          return this.createPineconeRetrieverMock();
+        if (name === "reranker") return this.createRerankerMock();
         return null;
       }),
       list: jest.fn().mockResolvedValue([
-        { name: 'openai-llm', type: 'llm', version: '1.0.0' },
-        { name: 'pinecone-retriever', type: 'retriever', version: '1.0.0' },
-        { name: 'reranker', type: 'reranker', version: '1.0.0' }
+        { name: "openai-llm", type: "llm", version: "1.0.0" },
+        { name: "pinecone-retriever", type: "retriever", version: "1.0.0" },
+        { name: "reranker", type: "reranker", version: "1.0.0" },
       ]),
       validateContract: jest.fn().mockResolvedValue({
         valid: true,
-        errors: []
-      })
+        errors: [],
+      }),
     };
   }
 
@@ -94,19 +97,19 @@ class MockFactory {
     const defaultConfig = {
       plugins: [],
       pipeline: {
-        stages: ['load', 'embed', 'store'],
-        parallel: false
+        stages: ["load", "embed", "store"],
+        parallel: false,
       },
       llm: {
-        provider: 'openai',
-        model: 'gpt-3.5-turbo',
-        temperature: 0.7
+        provider: "openai",
+        model: "gpt-3.5-turbo",
+        temperature: 0.7,
       },
       retriever: {
-        provider: 'pinecone',
-        topK: 5
+        provider: "pinecone",
+        topK: 5,
       },
-      ...options.overrides
+      ...options.overrides,
     };
 
     return {
@@ -114,9 +117,9 @@ class MockFactory {
       validate: jest.fn().mockResolvedValue({
         valid: true,
         config: defaultConfig,
-        errors: []
+        errors: [],
       }),
-      save: jest.fn().mockResolvedValue(true)
+      save: jest.fn().mockResolvedValue(true),
     };
   }
 
@@ -127,19 +130,19 @@ class MockFactory {
     return {
       executeCommand: jest.fn().mockResolvedValue({
         success: true,
-        output: options.mockOutput || 'Command executed successfully',
-        exitCode: 0
+        output: options.mockOutput || "Command executed successfully",
+        exitCode: 0,
       }),
       parseArgs: jest.fn().mockReturnValue({
-        command: options.command || 'query',
+        command: options.command || "query",
         options: options.options || {},
-        flags: options.flags || []
+        flags: options.flags || [],
       }),
-      showHelp: jest.fn().mockReturnValue('Mock help text'),
+      showHelp: jest.fn().mockReturnValue("Mock help text"),
       validateCommand: jest.fn().mockReturnValue({
         valid: true,
-        errors: []
-      })
+        errors: [],
+      }),
     };
   }
 }

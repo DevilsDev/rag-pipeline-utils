@@ -5,9 +5,12 @@
  * Author: Ali Kahwaji
  */
 
-const { createRagPipeline  } = require('./core/create-pipeline.js'); // eslint-disable-line global-require
-const { loadPluginsFromJson  } = require('./config/load-plugin-config.js'); // eslint-disable-line global-require
-const { logger  } = require('./utils/logger.js'); // eslint-disable-line global-require
+const { createRagPipeline } = require("./core/create-pipeline.js");
+// eslint-disable-line global-require
+const { loadPluginsFromJson } = require("./config/load-plugin-config.js");
+// eslint-disable-line global-require
+const { logger } = require("./utils/logger.js");
+// eslint-disable-line global-require
 
 /**
  * Query the RAG pipeline with a standard response
@@ -15,13 +18,13 @@ const { logger  } = require('./utils/logger.js'); // eslint-disable-line global
  * @param {object} config - Pipeline configuration
  * @returns {Promise<string>} Generated response
  */
-export async function queryPipeline(_prompt, config) {
+async function queryPipeline(_prompt, config) {
   if (!prompt) {
-    throw new Error('No prompt provided for query.');
+    throw new Error("No prompt provided for query.");
   }
 
   if (!config) {
-    throw new Error('No configuration provided for query.');
+    throw new Error("No configuration provided for query.");
   }
 
   try {
@@ -35,21 +38,24 @@ export async function queryPipeline(_prompt, config) {
     const llmName = Object.keys(config.llm)[0];
 
     // Create pipeline instance
-    const pipeline = createRagPipeline({
-      loader: loaderName,
-      embedder: embedderName,
-      retriever: retrieverName,
-      llm: llmName
-    }, {
-      useRetry: true,
-      useLogging: true,
-      useReranker: config.useReranker || false
-    });
+    const pipeline = createRagPipeline(
+      {
+        loader: loaderName,
+        embedder: embedderName,
+        retriever: retrieverName,
+        llm: llmName,
+      },
+      {
+        useRetry: true,
+        useLogging: true,
+        useReranker: config.useReranker || false,
+      },
+    );
 
     // Execute query
     return await pipeline.query(prompt);
   } catch (error) {
-    logger.error('Query pipeline failed', { error: error.message, prompt });
+    logger.error("Query pipeline failed", { error: error.message, prompt });
     throw error;
   }
 }
@@ -60,13 +66,13 @@ export async function queryPipeline(_prompt, config) {
  * @param {object} config - Pipeline configuration
  * @returns {AsyncIterable<string>} Stream of response tokens
  */
-export async function* queryPipelineStream(prompt, config) {
+async function* queryPipelineStream(prompt, config) {
   if (!prompt) {
-    throw new Error('No prompt provided for streaming query.');
+    throw new Error("No prompt provided for streaming query.");
   }
 
   if (!config) {
-    throw new Error('No configuration provided for streaming query.');
+    throw new Error("No configuration provided for streaming query.");
   }
 
   try {
@@ -80,24 +86,32 @@ export async function* queryPipelineStream(prompt, config) {
     const llmName = Object.keys(config.llm)[0];
 
     // Create pipeline instance
-    const pipeline = createRagPipeline({
-      loader: loaderName,
-      embedder: embedderName,
-      retriever: retrieverName,
-      llm: llmName
-    }, {
-      useRetry: true,
-      useLogging: true,
-      useReranker: config.useReranker || false
-    });
+    const pipeline = createRagPipeline(
+      {
+        loader: loaderName,
+        embedder: embedderName,
+        retriever: retrieverName,
+        llm: llmName,
+      },
+      {
+        useRetry: true,
+        useLogging: true,
+        useReranker: config.useReranker || false,
+      },
+    );
 
     // Execute streaming query
     yield* pipeline.queryStream(prompt);
   } catch (error) {
-    logger.error('Streaming query pipeline failed', { error: error.message, prompt });
+    logger.error("Streaming query pipeline failed", {
+      error: error.message,
+      prompt,
+    });
     throw error;
   }
 }
 
-// Default export
-
+module.exports = {
+  queryPipeline,
+  queryPipelineStream,
+};

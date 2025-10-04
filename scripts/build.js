@@ -35,12 +35,16 @@ fs.writeFileSync(cjsPath, fixedSourceCode);
 
 // Create ESM build by converting require/module.exports to import/export
 // and adding .js extensions for ESM compatibility
+// Use CJS interop pattern for proper ESM compatibility
 let esmCode = sourceCode
-  // Convert destructured require to named imports with .js extension
+  // Convert destructured require to CJS interop pattern
   .replace(
     /const\s+{\s*([^}]+)\s*}\s*=\s*require\(['"]\.\/([^'"]+)['"]\);/g,
     (match, names, modulePath) => {
-      return `import { ${names} } from '../src/${modulePath}.js';`;
+      // Generate unique module name from path
+      const moduleName =
+        modulePath.split("/").pop().replace(/-/g, "") + "Module";
+      return `import ${moduleName} from '../src/${modulePath}.js';\nconst { ${names} } = ${moduleName};`;
     },
   )
   // Convert default require to default import with .js extension
@@ -51,41 +55,46 @@ let esmCode = sourceCode
     },
   )
   // Convert module.exports object to named exports
-  .replace(/module\.exports\s*=\s*\{([^}]+)\};/s, (match, exportsContent) => {
-    // Extract property names and handle aliases
-    const lines = exportsContent
-      .split(",")
-      .map((line) => line.trim())
-      .filter(Boolean);
-    const exports = [];
-    const aliases = [];
+  .replace(
+    /module\.exports\s*=\s*\{([\s\S]+?)\};/m,
+    (match, exportsContent) => {
+      // Extract all property names, handling both shorthand and key:value patterns
+      const exports = [];
+      const aliases = [];
 
-    for (const line of lines) {
-      // Skip comments
-      if (line.startsWith("//")) continue;
+      // Split by newlines and filter out empty/comment-only lines
+      const lines = exportsContent
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith("//"));
 
-      // Check for alias pattern "newName: originalName"
-      const aliasMatch = line.match(/(\w+):\s*(\w+)(?:\s*\/\/.*)?$/);
-      if (aliasMatch && aliasMatch[1] !== aliasMatch[2]) {
-        // This is an alias - we'll export it separately
-        aliases.push(`export const ${aliasMatch[1]} = ${aliasMatch[2]};`);
-        // Don't add to main export block
-        continue;
+      for (const line of lines) {
+        // Remove trailing comma and inline comments
+        const cleanLine = line.replace(/,?\s*(\/\/.*)?$/, "");
+
+        // Check for alias pattern "newName: originalName"
+        const aliasMatch = cleanLine.match(/^(\w+):\s*(\w+)$/);
+        if (aliasMatch && aliasMatch[1] !== aliasMatch[2]) {
+          // This is an alias - export separately
+          aliases.push(`export const ${aliasMatch[1]} = ${aliasMatch[2]};`);
+          continue;
+        }
+
+        // Regular export (shorthand or same name)
+        const identifierMatch = cleanLine.match(/^(\w+)(?::\s*\1)?$/);
+        if (identifierMatch) {
+          exports.push(identifierMatch[1]);
+        }
       }
 
-      // Regular export or shorthand property
-      const identifierMatch = line.match(/(\w+)(?::\s*\w+)?/);
-      if (identifierMatch) {
-        exports.push(identifierMatch[1]);
+      let result = `export {\n  ${exports.join(",\n  ")}\n};`;
+      if (aliases.length > 0) {
+        result +=
+          "\n\n// Backward compatibility aliases\n" + aliases.join("\n");
       }
-    }
-
-    let result = `export {\n  ${exports.join(",\n  ")}\n};`;
-    if (aliases.length > 0) {
-      result += "\n\n// Backward compatibility aliases\n" + aliases.join("\n");
-    }
-    return result;
-  });
+      return result;
+    },
+  );
 
 // Add ESM header
 esmCode =

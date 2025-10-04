@@ -3,20 +3,21 @@
  * Generates HTML reports, coverage metrics, and streaming performance visualizations
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 class TestReporter {
   constructor(options = {}) {
-    this.outputDir = options.outputDir || path.join(process.cwd(), 'test-reports');
+    this.outputDir =
+      options.outputDir || path.join(process.cwd(), "test-reports");
     this.enableVisualReports = options.enableVisualReports !== false;
     this.enableCoverageReports = options.enableCoverageReports !== false;
     this.enablePerformanceReports = options.enablePerformanceReports !== false;
-    
+
     this.testResults = [];
     this.coverageData = {};
     this.performanceMetrics = [];
-    
+
     this.ensureOutputDirectory();
   }
 
@@ -29,7 +30,7 @@ class TestReporter {
   addTestResult(result) {
     this.testResults.push({
       ...result,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -40,7 +41,7 @@ class TestReporter {
   addPerformanceMetric(metric) {
     this.performanceMetrics.push({
       ...metric,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -48,11 +49,11 @@ class TestReporter {
     if (!this.enableVisualReports) return;
 
     const htmlContent = this.createHTMLReportContent();
-    const reportPath = path.join(this.outputDir, 'test-report.html');
-    
+    const reportPath = path.join(this.outputDir, "test-report.html");
+
     fs.writeFileSync(reportPath, htmlContent);
     console.log(`HTML test report generated: ${reportPath}`);
-    
+
     return reportPath;
   }
 
@@ -129,12 +130,15 @@ class TestReporter {
 
   generateSummary() {
     const total = this.testResults.length;
-    const passed = this.testResults.filter(r => r.status === 'passed').length;
-    const failed = this.testResults.filter(r => r.status === 'failed').length;
-    const duration = this.testResults.reduce((sum, r) => sum + (r.duration || 0), 0);
-    
+    const passed = this.testResults.filter((r) => r.status === "passed").length;
+    const failed = this.testResults.filter((r) => r.status === "failed").length;
+    const duration = this.testResults.reduce(
+      (sum, r) => sum + (r.duration || 0),
+      0,
+    );
+
     const coverage = this.calculateOverallCoverage();
-    const overallStatus = failed === 0 ? 'passed' : 'failed';
+    const overallStatus = failed === 0 ? "passed" : "failed";
 
     return {
       total,
@@ -142,29 +146,32 @@ class TestReporter {
       failed,
       duration,
       coverage: Math.round(coverage * 100) / 100,
-      overallStatus
+      overallStatus,
     };
   }
 
   calculateOverallCoverage() {
     if (Object.keys(this.coverageData).length === 0) return 0;
-    
+
     const coverageValues = Object.values(this.coverageData);
-    return coverageValues.reduce((sum, val) => sum + val, 0) / coverageValues.length;
+    return (
+      coverageValues.reduce((sum, val) => sum + val, 0) / coverageValues.length
+    );
   }
 
   generateTestResultsHTML() {
     if (this.testResults.length === 0) {
-      return '<p>No test results available.</p>';
+      return "<p>No test results available.</p>";
     }
 
     const groupedResults = this.groupTestsByCategory();
-    let html = '';
+    let html = "";
 
     for (const [category, tests] of Object.entries(groupedResults)) {
-      const categoryPassed = tests.filter(t => t.status === 'passed').length;
+      const categoryPassed = tests.filter((t) => t.status === "passed").length;
       const categoryTotal = tests.length;
-      const categoryStatus = categoryPassed === categoryTotal ? 'passed' : 'failed';
+      const categoryStatus =
+        categoryPassed === categoryTotal ? "passed" : "failed";
 
       html += `
         <div class="test-category">
@@ -172,7 +179,7 @@ class TestReporter {
             ${category} (${categoryPassed}/${categoryTotal})
           </h3>
           <div class="test-list">
-            ${tests.map(test => this.generateTestItemHTML(test)).join('')}
+            ${tests.map((test) => this.generateTestItemHTML(test)).join("")}
           </div>
         </div>
       `;
@@ -183,9 +190,9 @@ class TestReporter {
 
   groupTestsByCategory() {
     const grouped = {};
-    
-    this.testResults.forEach(result => {
-      const category = result.category || 'Uncategorized';
+
+    this.testResults.forEach((result) => {
+      const category = result.category || "Uncategorized";
       if (!grouped[category]) {
         grouped[category] = [];
       }
@@ -196,9 +203,11 @@ class TestReporter {
   }
 
   generateTestItemHTML(test) {
-    const statusIcon = test.status === 'passed' ? '✅' : '❌';
-    const errorHTML = test.error ? `<div class="error-message">${test.error}</div>` : '';
-    
+    const statusIcon = test.status === "passed" ? "✅" : "❌";
+    const errorHTML = test.error
+      ? `<div class="error-message">${test.error}</div>`
+      : "";
+
     return `
       <div class="test-item ${test.status}">
         <div class="test-header">
@@ -213,14 +222,16 @@ class TestReporter {
 
   generateCoverageHTML() {
     if (Object.keys(this.coverageData).length === 0) {
-      return '<p>No coverage data available.</p>';
+      return "<p>No coverage data available.</p>";
     }
 
-    const coverageItems = Object.entries(this.coverageData).map(([component, coverage]) => {
-      const percentage = Math.round(coverage * 100) / 100;
-      const statusClass = percentage >= 80 ? 'good' : percentage >= 60 ? 'medium' : 'poor';
-      
-      return `
+    const coverageItems = Object.entries(this.coverageData)
+      .map(([component, coverage]) => {
+        const percentage = Math.round(coverage * 100) / 100;
+        const statusClass =
+          percentage >= 80 ? "good" : percentage >= 60 ? "medium" : "poor";
+
+        return `
         <div class="coverage-item">
           <div class="coverage-label">${component}</div>
           <div class="coverage-bar">
@@ -229,7 +240,8 @@ class TestReporter {
           <div class="coverage-percentage">${percentage}%</div>
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
     return `
       <div class="coverage-chart">
@@ -243,7 +255,7 @@ class TestReporter {
 
   generatePerformanceHTML() {
     if (this.performanceMetrics.length === 0) {
-      return '<p>No performance data available.</p>';
+      return "<p>No performance data available.</p>";
     }
 
     const performanceCharts = `
@@ -265,15 +277,19 @@ class TestReporter {
   }
 
   generatePerformanceTable() {
-    const tableRows = this.performanceMetrics.map(metric => `
+    const tableRows = this.performanceMetrics
+      .map(
+        (metric) => `
       <tr>
-        <td>${metric.operation || 'Unknown'}</td>
+        <td>${metric.operation || "Unknown"}</td>
         <td>${metric.duration || 0}ms</td>
         <td>${metric.throughput || 0} ops/sec</td>
         <td>${metric.memoryUsage || 0}MB</td>
         <td>${new Date(metric.timestamp).toLocaleTimeString()}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join("");
 
     return `
       <div class="performance-table">
@@ -650,13 +666,13 @@ class TestReporter {
       metadata: {
         generatedAt: new Date().toISOString(),
         nodeVersion: process.version,
-        platform: process.platform
-      }
+        platform: process.platform,
+      },
     };
 
-    const reportPath = path.join(this.outputDir, 'test-report.json');
+    const reportPath = path.join(this.outputDir, "test-report.json");
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    
+
     return reportPath;
   }
 
@@ -666,15 +682,15 @@ class TestReporter {
     const coverageReport = {
       summary: {
         total: this.calculateOverallCoverage(),
-        byComponent: this.coverageData
+        byComponent: this.coverageData,
       },
       details: this.generateDetailedCoverage(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    const reportPath = path.join(this.outputDir, 'coverage-report.json');
+    const reportPath = path.join(this.outputDir, "coverage-report.json");
     fs.writeFileSync(reportPath, JSON.stringify(coverageReport, null, 2));
-    
+
     return reportPath;
   }
 
@@ -682,9 +698,9 @@ class TestReporter {
     return Object.entries(this.coverageData).map(([component, coverage]) => ({
       component,
       coverage,
-      status: coverage >= 80 ? 'good' : coverage >= 60 ? 'medium' : 'poor',
+      status: coverage >= 80 ? "good" : coverage >= 60 ? "medium" : "poor",
       target: 90,
-      gap: Math.max(0, 90 - coverage)
+      gap: Math.max(0, 90 - coverage),
     }));
   }
 
@@ -695,65 +711,67 @@ class TestReporter {
       summary: this.calculatePerformanceSummary(),
       metrics: this.performanceMetrics,
       benchmarks: this.generateBenchmarks(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    const reportPath = path.join(this.outputDir, 'performance-report.json');
+    const reportPath = path.join(this.outputDir, "performance-report.json");
     fs.writeFileSync(reportPath, JSON.stringify(performanceReport, null, 2));
-    
+
     return reportPath;
   }
 
   calculatePerformanceSummary() {
     if (this.performanceMetrics.length === 0) return {};
 
-    const durations = this.performanceMetrics.map(m => m.duration || 0);
-    const throughputs = this.performanceMetrics.map(m => m.throughput || 0);
-    
+    const durations = this.performanceMetrics.map((m) => m.duration || 0);
+    const throughputs = this.performanceMetrics.map((m) => m.throughput || 0);
+
     return {
-      averageResponseTime: durations.reduce((a, b) => a + b, 0) / durations.length,
+      averageResponseTime:
+        durations.reduce((a, b) => a + b, 0) / durations.length,
       maxResponseTime: Math.max(...durations),
       minResponseTime: Math.min(...durations),
-      averageThroughput: throughputs.reduce((a, b) => a + b, 0) / throughputs.length,
-      totalTests: this.performanceMetrics.length
+      averageThroughput:
+        throughputs.reduce((a, b) => a + b, 0) / throughputs.length,
+      totalTests: this.performanceMetrics.length,
     };
   }
 
   generateBenchmarks() {
     return {
       responseTimeTargets: {
-        excellent: '< 100ms',
-        good: '< 500ms',
-        acceptable: '< 1000ms',
-        poor: '>= 1000ms'
+        excellent: "< 100ms",
+        good: "< 500ms",
+        acceptable: "< 1000ms",
+        poor: ">= 1000ms",
       },
       throughputTargets: {
-        excellent: '> 100 ops/sec',
-        good: '> 50 ops/sec',
-        acceptable: '> 10 ops/sec',
-        poor: '<= 10 ops/sec'
-      }
+        excellent: "> 100 ops/sec",
+        good: "> 50 ops/sec",
+        acceptable: "> 10 ops/sec",
+        poor: "<= 10 ops/sec",
+      },
     };
   }
 
   generateAllReports() {
     const reports = {};
-    
+
     if (this.enableVisualReports) {
       reports.html = this.generateHTMLReport();
     }
-    
+
     reports.json = this.generateJSONReport();
-    
+
     if (this.enableCoverageReports) {
       reports.coverage = this.generateCoverageReport();
     }
-    
+
     if (this.enablePerformanceReports) {
       reports.performance = this.generatePerformanceReport();
     }
 
-    console.log('📊 Test reports generated:', reports);
+    console.log("📊 Test reports generated:", reports);
     return reports;
   }
 }

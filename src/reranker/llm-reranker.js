@@ -1,39 +1,85 @@
-/**
- * Version: 1.0.4
- * Description: LLM reranker using LLM to reorder documents based on relevance
- * Author: devilsdev
- * File: src/reranker/llm-reranker.js
- */
+"use strict";
 
 class LLMReranker {
-  /**
-   * @param {Object} _options
-   * @param {{ generate(prompt: string): Promise<string> }} _options.llm - An LLM client with a `generate` method
-   */
-  constructor({ llm }) {
-    this.llm = llm;
+  constructor(options = {}) {
+    this.llm = options.llm;
   }
 
-  /**
-   * Rerank documents based on the LLM output
-   * @param {string} query
-   * @param {Array<{ text: string }>} docs
-   * @returns {Promise<Array<{ text: string }>>}
-   */
-  async rerank(query, docs) {
-    const prompt = `Given the query: "${query}", rank the following documents by relevance: \n${docs.map((d, i) => `[${i}]: ${d.text}`).join('\n')}\nReturn an array of indices like [2, 0, 1]`;
+  async rerank(query, docs, opts = {}) {
+    if (!Array.isArray(docs)) {
+      return [];
+    }
+
+    // If no LLM provided, fall back to simple overlap scoring
+    if (!this.llm) {
+      return this._fallbackRerank(query, docs);
+    }
 
     try {
-      const json = await this.llm.generate(prompt);
-      const indices = JSON.parse(json);
-      return indices.map(i => docs[i]).filter(Boolean);
-    } catch (err) {
-      return docs; // Fallback if LLM response is not parsable
+      // Use LLM to get reranking order
+      const response = await this.llm.generate(query, docs, opts);
+      const rankingOrder = JSON.parse(response);
+
+      // Apply the ranking order
+      const reranked = [];
+      for (const index of rankingOrder) {
+        if (index >= 0 && index < docs.length) {
+          reranked.push(docs[index]);
+        }
+      }
+
+      return reranked;
+    } catch (error) {
+      // Fall back to simple overlap scoring on LLM error
+      return this._fallbackRerank(query, docs);
     }
+  }
+
+  _fallbackRerank(query, docs) {
+    // Simple bag-of-words overlap scoring
+    const queryTokens = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 0);
+
+    const scored = docs.map((doc, originalIndex) => {
+      const text = doc.text || doc.content || "";
+      const docTokens = text
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((t) => t.length > 0);
+
+      // Count overlapping tokens
+      let overlap = 0;
+      for (const qToken of queryTokens) {
+        if (docTokens.includes(qToken)) {
+          overlap++;
+        }
+      }
+
+      // Add tiny length-based tie-break
+      const lengthTieBreak = text.length * 0.0001;
+      const score = overlap + lengthTieBreak;
+
+      return { doc, score, originalIndex };
+    });
+
+    // Sort by score (descending), then by original index (ascending) for stable sort
+    scored.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.originalIndex - b.originalIndex;
+    });
+
+    return scored.map((item) => item.doc);
   }
 }
 
+// Create default instance
+const defaultInstance = new LLMReranker();
 
-module.exports = {
-  LLMReranker
-};
+// CJS+ESM interop pattern
+module.exports = defaultInstance;
+module.exports.LLMReranker = LLMReranker;
+module.exports.default = module.exports;

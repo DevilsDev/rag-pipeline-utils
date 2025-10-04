@@ -34,25 +34,27 @@ rag-pipeline monitor --metrics throughput,latency,memory --interval 5s
 ### **1. Embedding Performance**
 
 **Batch Processing Optimization**:
+
 ```javascript
-import { createRagPipeline } from '@DevilsDev/rag-pipeline-utils';
+import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
 
 const pipeline = createRagPipeline({
   embedder: {
-    name: 'openai',
+    name: "openai",
     config: {
-      batchSize: 100,           // Process 100 texts at once
-      maxConcurrency: 5,        // 5 parallel API calls
-      timeout: 30000,           // 30 second timeout
-      retryAttempts: 3,         // Retry failed requests
-      cacheEnabled: true,       // Cache embeddings
-      cacheSize: 10000         // Cache up to 10k embeddings
-    }
-  }
+      batchSize: 100, // Process 100 texts at once
+      maxConcurrency: 5, // 5 parallel API calls
+      timeout: 30000, // 30 second timeout
+      retryAttempts: 3, // Retry failed requests
+      cacheEnabled: true, // Cache embeddings
+      cacheSize: 10000, // Cache up to 10k embeddings
+    },
+  },
 });
 ```
 
 **Parallel Embedding Strategy**:
+
 ```javascript
 // Custom parallel embedding implementation
 class OptimizedEmbedder extends BaseEmbedder {
@@ -66,14 +68,14 @@ class OptimizedEmbedder extends BaseEmbedder {
   async embedBatch(texts, options = {}) {
     // Filter cached texts
     const uncachedTexts = texts.filter(text =&gt; !this.cache.has(text));
-    
+
     if (uncachedTexts.length === 0) {
       return texts.map(text =&gt; this.cache.get(text));
     }
 
     // Create batches for parallel processing
     const batches = this.createBatches(uncachedTexts, this.batchSize);
-    
+
     // Process batches with concurrency limit
     const results = await this.processBatchesParallel(batches, {
       concurrency: this.concurrencyLimit,
@@ -90,7 +92,7 @@ class OptimizedEmbedder extends BaseEmbedder {
 
   async processBatchesParallel(batches, options) {
     const semaphore = new Semaphore(options.concurrency);
-    
+
     return Promise.all(
       batches.map(async (batch) =&gt; {
         await semaphore.acquire();
@@ -106,6 +108,7 @@ class OptimizedEmbedder extends BaseEmbedder {
 ```
 
 **Embedding Benchmarks**:
+
 ```bash
 # Benchmark different embedding strategies
 rag-pipeline benchmark embedder \
@@ -118,53 +121,56 @@ rag-pipeline benchmark embedder \
 ### **2. Vector Retrieval Optimization**
 
 **Index Configuration**:
+
 ```javascript
 const pipeline = createRagPipeline({
   retriever: {
-    name: 'pinecone',
+    name: "pinecone",
     config: {
-      indexType: 'approximateSearch',  // Faster but less precise
+      indexType: "approximateSearch", // Faster but less precise
       dimensions: 1536,
-      metric: 'cosine',
+      metric: "cosine",
       pods: 1,
       replicas: 1,
-      podType: 'p1.x1',              // Optimize for your workload
-      
+      podType: "p1.x1", // Optimize for your workload
+
       // Query optimization
-      topK: 5,                       // Limit results
-      includeMetadata: false,        // Reduce payload size
-      includeValues: false,          // Reduce payload size
-      
+      topK: 5, // Limit results
+      includeMetadata: false, // Reduce payload size
+      includeValues: false, // Reduce payload size
+
       // Connection pooling
       maxConnections: 10,
       keepAlive: true,
-      timeout: 5000
-    }
-  }
+      timeout: 5000,
+    },
+  },
 });
 ```
 
 **Query Optimization**:
+
 ```javascript
 // Optimized retrieval with filtering
 async function optimizedRetrieve(query, options = {}) {
   const queryVector = await this.embedder.embed(query);
-  
+
   return await this.retriever.retrieve(queryVector, {
     topK: options.topK || 5,
-    filter: options.filter,           // Pre-filter to reduce search space
+    filter: options.filter, // Pre-filter to reduce search space
     includeMetadata: options.includeMetadata || false,
-    namespace: options.namespace,     // Use namespaces for isolation
-    
+    namespace: options.namespace, // Use namespaces for isolation
+
     // Performance optimizations
-    approximateSearch: true,          // Trade accuracy for speed
-    searchTimeout: 2000,             // 2 second timeout
-    maxRetries: 2
+    approximateSearch: true, // Trade accuracy for speed
+    searchTimeout: 2000, // 2 second timeout
+    maxRetries: 2,
   });
 }
 ```
 
 **Vector Store Benchmarks**:
+
 ```bash
 # Compare vector store performance
 rag-pipeline benchmark retriever \
@@ -177,64 +183,67 @@ rag-pipeline benchmark retriever \
 ### **3. LLM Generation Optimization**
 
 **Model Selection Strategy**:
+
 ```javascript
 // Choose optimal model for use case
 const modelConfigs = {
-  'fast-responses': {
-    name: 'openai-gpt-3.5-turbo',
+  "fast-responses": {
+    name: "openai-gpt-3.5-turbo",
     config: {
       maxTokens: 500,
       temperature: 0.3,
       topP: 0.9,
-      frequencyPenalty: 0.1
-    }
+      frequencyPenalty: 0.1,
+    },
   },
-  'high-quality': {
-    name: 'openai-gpt-4',
+  "high-quality": {
+    name: "openai-gpt-4",
     config: {
       maxTokens: 1500,
       temperature: 0.7,
-      topP: 0.95
-    }
+      topP: 0.95,
+    },
   },
-  'cost-optimized': {
-    name: 'openai-gpt-3.5-turbo',
+  "cost-optimized": {
+    name: "openai-gpt-3.5-turbo",
     config: {
       maxTokens: 300,
       temperature: 0.1,
-      stop: ['\n\n', '###']
-    }
-  }
+      stop: ["\n\n", "###"],
+    },
+  },
 };
 ```
 
 **Streaming Optimization**:
+
 ```javascript
 // Implement streaming for better perceived performance
 async function* optimizedGenerate(prompt, options = {}) {
   const stream = await this.llm.generateStream(prompt, {
     ...options,
-    bufferSize: 10,           // Buffer tokens for smoother streaming
-    flushInterval: 50,        // Flush every 50ms
-    earlyStop: true          // Stop on complete sentences
+    bufferSize: 10, // Buffer tokens for smoother streaming
+    flushInterval: 50, // Flush every 50ms
+    earlyStop: true, // Stop on complete sentences
   });
 
-  let buffer = '';
+  let buffer = "";
   for await (const token of stream) {
     buffer += token;
-    
+
     // Flush on sentence boundaries for better UX
     if (buffer.match(/[.!?]\s/)) {
       yield buffer;
-      buffer = '';
+      buffer = "";
     }
   }
-  
+
   if (buffer) yield buffer;
 }
 ```
 
 **Token Usage Optimization**:
+
 ```javascript
 // Optimize prompts for token efficiency
 class TokenOptimizer {
@@ -248,10 +257,10 @@ class TokenOptimizer {
     const basePrompt = `Context: {context}\n\nQuestion: ${query}\n\nAnswer:`;
     const baseTokens = this.tokenizer.encode(basePrompt.replace('{context}', '')).length;
     const availableTokens = this.maxContextTokens - baseTokens - this.maxResponseTokens;
-    
+
     // Truncate context to fit token limit
     const optimizedContext = this.truncateContext(context, availableTokens);
-    
+
     return basePrompt.replace('{context}', optimizedContext);
   }
 
@@ -259,15 +268,15 @@ class TokenOptimizer {
     const sentences = context.split(/[.!?]+/);
     let truncated = '';
     let tokenCount = 0;
-    
+
     for (const sentence of sentences) {
       const sentenceTokens = this.tokenizer.encode(sentence).length;
       if (tokenCount + sentenceTokens &gt; maxTokens) break;
-      
+
       truncated += sentence + '.';
       tokenCount += sentenceTokens;
     }
-    
+
     return truncated;
   }
 }
@@ -292,29 +301,29 @@ class StreamingPipeline {
     const documentStream = this.createDocumentStream(documents);
     const chunkStream = this.createChunkStream(documentStream);
     const embeddingStream = this.createEmbeddingStream(chunkStream);
-    
+
     for await (const batch of embeddingStream) {
       // Process embeddings in parallel
       const results = await Promise.allSettled(
         batch.map(item =&gt; this.processEmbedding(item))
       );
-      
+
       yield results.filter(r =&gt; r.status === 'fulfilled').map(r =&gt; r.value);
     }
   }
 
   async* createChunkStream(documentStream) {
     let buffer = [];
-    
+
     for await (const document of documentStream) {
       const chunks = await this.chunkDocument(document);
       buffer.push(...chunks);
-      
+
       if (buffer.length &gt;= this.bufferSize) {
         yield buffer.splice(0, this.bufferSize);
       }
     }
-    
+
     if (buffer.length &gt; 0) yield buffer;
   }
 }
@@ -333,24 +342,24 @@ class MemoryOptimizedPipeline {
 
   async processLargeDataset(documents) {
     const batches = this.createBatches(documents, this.batchSize);
-    
+
     for (const batch of batches) {
       // Monitor memory usage
       const memoryUsage = process.memoryUsage();
       const memoryPercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
-      
+
       if (memoryPercent &gt; this.gcThreshold) {
         // Force garbage collection
         if (global.gc) global.gc();
-        
+
         // Reduce batch size if memory pressure continues
         if (memoryPercent &gt; 0.9) {
           this.batchSize = Math.max(10, Math.floor(this.batchSize * 0.8));
         }
       }
-      
+
       await this.processBatch(batch);
-      
+
       // Clear batch references
       batch.length = 0;
     }
@@ -365,21 +374,21 @@ class MemoryOptimizedPipeline {
 class CacheManager {
   constructor(options = {}) {
     // L1: In-memory cache (fastest)
-    this.l1Cache = new LRUCache({ 
+    this.l1Cache = new LRUCache({
       max: options.l1Size || 1000,
-      ttl: options.l1TTL || 300000 // 5 minutes
+      ttl: options.l1TTL || 300000, // 5 minutes
     });
-    
+
     // L2: Redis cache (shared across instances)
     this.l2Cache = new RedisCache({
       host: options.redisHost,
-      ttl: options.l2TTL || 3600000 // 1 hour
+      ttl: options.l2TTL || 3600000, // 1 hour
     });
-    
+
     // L3: Disk cache (persistent)
     this.l3Cache = new DiskCache({
-      directory: options.cacheDir || './cache',
-      maxSize: options.l3Size || '1GB'
+      directory: options.cacheDir || "./cache",
+      maxSize: options.l3Size || "1GB",
     });
   }
 
@@ -387,14 +396,14 @@ class CacheManager {
     // Try L1 first
     let value = this.l1Cache.get(key);
     if (value) return value;
-    
+
     // Try L2
     value = await this.l2Cache.get(key);
     if (value) {
       this.l1Cache.set(key, value);
       return value;
     }
-    
+
     // Try L3
     value = await this.l3Cache.get(key);
     if (value) {
@@ -402,7 +411,7 @@ class CacheManager {
       this.l2Cache.set(key, value);
       return value;
     }
-    
+
     return null;
   }
 
@@ -422,17 +431,17 @@ class CacheManager {
 
 ```javascript
 // Built-in performance monitoring
-import { createPerformanceMonitor } from '@DevilsDev/rag-pipeline-utils';
+import { createPerformanceMonitor } from "@DevilsDev/rag-pipeline-utils";
 
 const monitor = createPerformanceMonitor({
-  metrics: ['throughput', 'latency', 'memory', 'tokens', 'errors'],
-  interval: 1000,           // Collect every second
-  retention: 3600,          // Keep 1 hour of data
+  metrics: ["throughput", "latency", "memory", "tokens", "errors"],
+  interval: 1000, // Collect every second
+  retention: 3600, // Keep 1 hour of data
   alerts: {
-    highLatency: { threshold: 5000, action: 'log' },
-    memoryUsage: { threshold: 0.9, action: 'gc' },
-    errorRate: { threshold: 0.05, action: 'alert' }
-  }
+    highLatency: { threshold: 5000, action: "log" },
+    memoryUsage: { threshold: 0.9, action: "gc" },
+    errorRate: { threshold: 0.05, action: "alert" },
+  },
 });
 
 const pipeline = createRagPipeline({
@@ -442,8 +451,8 @@ const pipeline = createRagPipeline({
 
 // Access performance data
 const metrics = monitor.getMetrics();
-console.log('Average latency:', metrics.latency.average);
-console.log('Throughput:', metrics.throughput.current);
+console.log("Average latency:", metrics.latency.average);
+console.log("Throughput:", metrics.throughput.current);
 ```
 
 ### **Profiling Tools**
@@ -498,7 +507,7 @@ class CustomMetrics {
   getStats(name) {
     const values = this.metrics.get(name) || [];
     if (values.length === 0) return null;
-    
+
     const nums = values.map(v =&gt; v.value);
     return {
       count: nums.length,
@@ -551,23 +560,23 @@ class LoadBalancer {
 
   async getHealthyInstance() {
     const startIndex = this.currentIndex;
-    
+
     do {
       const instance = this.instances[this.currentIndex];
       this.currentIndex = (this.currentIndex + 1) % this.instances.length;
-      
+
       if (await this.isHealthy(instance)) {
         return instance;
       }
     } while (this.currentIndex !== startIndex);
-    
-    throw new Error('No healthy instances available');
+
+    throw new Error("No healthy instances available");
   }
 
   async isHealthy(instance) {
     try {
       const response = await instance.healthCheck();
-      return response.status === 'healthy';
+      return response.status === "healthy";
     } catch (error) {
       return false;
     }
@@ -593,7 +602,7 @@ class AutoScaler {
     const metrics = await this.collectMetrics();
     const avgCPU = metrics.cpu.average;
     const avgMemory = metrics.memory.average;
-    
+
     if (avgCPU &gt; this.scaleUpThreshold && this.instances.length &lt; this.maxInstances) {
       await this.scaleUp();
     } else if (avgCPU &lt; this.scaleDownThreshold && this.instances.length &gt; this.minInstances) {
@@ -671,12 +680,12 @@ class AutoScaler {
 
 ### **Reference Performance**
 
-| Component | Throughput | Latency (P95) | Memory Usage |
-|-----------|------------|---------------|--------------|
-| PDF Loader | 50 docs/sec | 200ms | 100MB |
-| OpenAI Embedder | 1000 texts/sec | 500ms | 50MB |
-| Pinecone Retriever | 500 queries/sec | 100ms | 25MB |
-| GPT-4 Generation | 10 queries/sec | 3000ms | 75MB |
+| Component          | Throughput      | Latency (P95) | Memory Usage |
+| ------------------ | --------------- | ------------- | ------------ |
+| PDF Loader         | 50 docs/sec     | 200ms         | 100MB        |
+| OpenAI Embedder    | 1000 texts/sec  | 500ms         | 50MB         |
+| Pinecone Retriever | 500 queries/sec | 100ms         | 25MB         |
+| GPT-4 Generation   | 10 queries/sec  | 3000ms        | 75MB         |
 
 ### **Optimization Targets**
 
@@ -688,4 +697,4 @@ class AutoScaler {
 
 ---
 
-*This performance guide provides comprehensive optimization strategies for @DevilsDev/rag-pipeline-utils. For troubleshooting performance issues, see the [Troubleshooting Guide](./Troubleshooting.md).*
+_This performance guide provides comprehensive optimization strategies for @DevilsDev/rag-pipeline-utils. For troubleshooting performance issues, see the [Troubleshooting Guide](./Troubleshooting.md)._

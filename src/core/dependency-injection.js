@@ -26,7 +26,7 @@ class DependencyContainer {
     }
 
     // Register interface mappings
-    interfaces.forEach(interfaceName => {
+    interfaces.forEach((interfaceName) => {
       if (!this.interfaces.has(interfaceName)) {
         this.interfaces.set(interfaceName, []);
       }
@@ -37,7 +37,7 @@ class DependencyContainer {
       service: name,
       singleton,
       factory,
-      interfaces
+      interfaces,
     });
 
     return this;
@@ -89,16 +89,18 @@ class DependencyContainer {
     }
 
     const implementations = this.interfaces.get(interfaceName);
-    return implementations.map(name => this.resolve(name));
+    return implementations.map((name) => this.resolve(name));
   }
 
   /**
    * Check if a service is registered
    */
   has(name) {
-    return this.services.has(name) || 
-           this.factories.has(name) || 
-           this.interfaces.has(name);
+    return (
+      this.services.has(name) ||
+      this.factories.has(name) ||
+      this.interfaces.has(name)
+    );
   }
 
   /**
@@ -107,7 +109,10 @@ class DependencyContainer {
   _createInstance(implementation) {
     if (typeof implementation === 'function') {
       // Check if it's a class constructor
-      if (implementation.prototype && implementation.prototype.constructor === implementation) {
+      if (
+        implementation.prototype &&
+        implementation.prototype.constructor === implementation
+      ) {
         return new implementation(this);
       }
       // It's a factory function
@@ -137,7 +142,7 @@ class DependencyContainer {
       singletons: this.singletons.size,
       factories: this.factories.size,
       interfaces: this.interfaces.size,
-      totalRegistrations: this.services.size + this.factories.size
+      totalRegistrations: this.services.size + this.factories.size,
     };
   }
 }
@@ -146,7 +151,7 @@ class DependencyContainer {
  * Decorator for automatic dependency injection
  */
 function injectable(dependencies = []) {
-  return function(target) {
+  return function (target) {
     target.$dependencies = dependencies;
     return target;
   };
@@ -194,7 +199,7 @@ class ContainerBuilder {
         implementation,
         singleton = false,
         factory = false,
-        interfaces = []
+        interfaces = [],
       } = serviceConfig;
 
       // Resolve implementation from string path
@@ -206,12 +211,12 @@ class ContainerBuilder {
       this.container.register(name, impl, {
         singleton,
         factory,
-        interfaces
+        interfaces,
       });
     });
 
     logger.info('Container loaded from configuration', {
-      servicesCount: Object.keys(services).length
+      servicesCount: Object.keys(services).length,
     });
 
     return this.container;
@@ -233,5 +238,5 @@ module.exports = {
   ServiceLocator,
   ContainerBuilder,
   injectable,
-  defaultContainer
+  defaultContainer,
 };

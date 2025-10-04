@@ -35,6 +35,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 ## 🚀 Why Choose @DevilsDev/rag-pipeline-utils?
 
 ### **🏢 Enterprise-Grade Architecture**
+
 - **Dependency Injection Container**: IoC pattern with singleton/factory support for modular, testable code
 - **SLO Monitoring System**: Built-in Service Level Objectives tracking with error budgets and alerting
 - **Semantic Release Automation**: Automated versioning, changelog generation, and NPM publishing
@@ -42,6 +43,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Production Observability**: Structured logging with correlation IDs and comprehensive metrics
 
 ### **🤖 Advanced AI Capabilities**
+
 - **Multi-Modal Processing**: Handle text, images, and structured data in unified pipelines
 - **Federated Learning**: Distributed model training with privacy-preserving aggregation
 - **Adaptive Retrieval Engine**: Dynamic retrieval strategies with performance optimization
@@ -49,6 +51,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Intelligent Reranking**: Context-aware reranking with multiple scoring algorithms
 
 ### **⚡ Developer Experience Excellence**
+
 - **Enhanced CLI Suite**: Interactive wizards, doctor diagnostics, and plugin management
 - **Streaming Evaluation**: Real-time dashboard with live metrics and performance monitoring
 - **Plugin Marketplace**: Certified plugin ecosystem with discovery and installation workflows
@@ -56,6 +59,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Hot Module Reloading**: Dynamic plugin updates without pipeline restarts
 
 ### **📊 Production Monitoring & Analytics**
+
 - **SLO Dashboard**: Real-time service health with error budget tracking and alerting
 - **Performance Profiling**: Built-in performance monitoring with bottleneck identification
 - **Audit Logging**: Comprehensive security and compliance logging for enterprise deployments
@@ -76,7 +80,7 @@ graph TD
     D --> E[Vector Embeddings]
     E --> F[Retriever Plugin]
     F --> G[Vector Store]
-    
+
     H[User Query] --> I[Query Embedder]
     I --> J[Query Vector]
     J --> F
@@ -90,7 +94,9 @@ graph TD
 ### Core Components
 
 #### **Loader Plugins**
+
 Handle document ingestion and preprocessing:
+
 - `pdf-loader`: Extract text from PDF documents
 - `markdown-loader`: Process Markdown files with metadata
 - `html-loader`: Parse HTML content and extract text
@@ -98,21 +104,27 @@ Handle document ingestion and preprocessing:
 - `csv-loader`: Process structured CSV data
 
 #### **Embedder Plugins**
+
 Convert text into vector representations:
+
 - `openai-embedder`: Use OpenAI's text-embedding models
 - `cohere-embedder`: Leverage Cohere's embedding API
 - `huggingface-embedder`: Local embeddings via Hugging Face
 - `sentence-transformers`: High-performance local embeddings
 
 #### **Retriever Plugins**
+
 Manage vector storage and similarity search:
+
 - `pinecone-retriever`: Cloud-native vector database
 - `chroma-retriever`: Open-source vector store
 - `weaviate-retriever`: GraphQL-based vector database
 - `qdrant-retriever`: High-performance vector search engine
 
 #### **LLM Plugins**
+
 Generate responses using language models:
+
 - `openai-llm`: GPT-3.5, GPT-4, and GPT-4 Turbo
 - `anthropic-llm`: Claude models with large context windows
 - `ollama-llm`: Local LLM execution with Ollama
@@ -125,35 +137,33 @@ Generate responses using language models:
 Here's a complete example showing how to set up and use a RAG pipeline:
 
 ```javascript
-import { createRagPipeline } from '@DevilsDev/rag-pipeline-utils';
+import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
 
 // Create a pipeline with your preferred components
 const pipeline = createRagPipeline({
-  loader: 'markdown',
-  embedder: 'openai',
-  retriever: 'pinecone',
-  llm: 'openai-gpt-4',
+  loader: "markdown",
+  embedder: "openai",
+  retriever: "pinecone",
+  llm: "openai-gpt-4",
   useReranker: true,
   config: {
     openai: {
       apiKey: process.env.OPENAI_API_KEY,
-      model: 'text-embedding-3-large'
+      model: "text-embedding-3-large",
     },
     pinecone: {
       apiKey: process.env.PINECONE_API_KEY,
-      environment: 'us-west1-gcp',
-      indexName: 'rag-documents'
-    }
-  }
+      environment: "us-west1-gcp",
+      indexName: "rag-documents",
+    },
+  },
 });
 
 // Ingest documents
-await pipeline.ingest('./docs/**/*.md');
+await pipeline.ingest("./docs/**/*.md");
 
 // Query the pipeline
-const response = await pipeline.query(
-  "How do I implement custom plugins?"
-);
+const response = await pipeline.query("How do I implement custom plugins?");
 
 console.log(response.answer);
 console.log(`Sources: ${response.sources.length} documents`);
@@ -189,6 +199,7 @@ rag-pipeline dashboard --port 3000
 ### **Current Status: Enterprise Ready v2.2.0**
 
 ✅ **Production Features:**
+
 - **Enterprise Architecture**: Dependency injection, SLO monitoring, semantic release automation
 - **Advanced AI**: Multi-modal processing, federated learning, adaptive retrieval engines
 - **Developer Tools**: Enhanced CLI with doctor diagnostics, interactive wizards, plugin marketplace
@@ -198,12 +209,14 @@ rag-pipeline dashboard --port 3000
 - **Deployment**: Kubernetes templates, Helm charts, Prometheus/Grafana monitoring
 
 🚧 **Active Development:**
+
 - **GraphRAG Implementation**: Knowledge graph-based retrieval with entity linking
-- **Agentic Workflows**: Tool calling and autonomous agent capabilities  
+- **Agentic Workflows**: Tool calling and autonomous agent capabilities
 - **Advanced Caching**: Multi-tier caching with intelligent invalidation strategies
 - **Fine-tuning Integration**: Custom model training with pipeline-specific optimization
 
 🔮 **Enterprise Roadmap:**
+
 - **Multi-tenant Architecture**: Isolated workspaces with RBAC and resource quotas
 - **Advanced Security**: Zero-trust networking, encryption at rest, compliance reporting
 - **Global Distribution**: Edge deployment with regional data residency
@@ -222,6 +235,7 @@ rag-pipeline dashboard --port 3000
 ### Contributing
 
 We welcome contributions! See our [Contributing Guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CONTRIBUTING.md) for details on:
+
 - Setting up the development environment
 - Running tests and linting
 - Submitting pull requests
@@ -230,7 +244,8 @@ We welcome contributions! See our [Contributing Guide](https://github.com/Devils
 
 ---
 
-*Ready to build powerful RAG applications? Continue to the [Architecture](./Architecture.md) guide to understand the system design, or jump to [Usage](./Usage.md) for hands-on examples.*
+_Ready to build powerful RAG applications? Continue to the [Architecture](./Architecture.md) guide to understand the system design, or jump to [Usage](./Usage.md) for hands-on examples._
+
 - Compatible with Node.js `>=18`
 - Published to npm under `DevilsDev`
 

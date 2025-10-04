@@ -17,6 +17,7 @@ This comprehensive security guide covers best practices, threat mitigation, and 
 ### **Threat Model**
 
 **Common Threats**:
+
 - API key exposure and misuse
 - Prompt injection attacks
 - Data exfiltration through embeddings
@@ -31,6 +32,7 @@ This comprehensive security guide covers best practices, threat mitigation, and 
 ### **API Key Management**
 
 **Secure Storage**:
+
 ```bash
 # Use environment variables (recommended)
 export OPENAI_API_KEY="sk-your-secure-key-here"
@@ -41,13 +43,14 @@ export OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id openai-k
 ```
 
 **Configuration Security**:
+
 ```json
 {
   "plugins": {
     "embedder": {
       "name": "openai",
       "config": {
-        "apiKey": "${OPENAI_API_KEY}",  // Environment variable reference
+        "apiKey": "${OPENAI_API_KEY}", // Environment variable reference
         "organization": "${OPENAI_ORG_ID}",
         "timeout": 30000,
         "retryAttempts": 3
@@ -63,6 +66,7 @@ export OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id openai-k
 ```
 
 **Key Rotation Strategy**:
+
 ```javascript
 // Implement automatic key rotation
 class SecureKeyManager {
@@ -73,17 +77,17 @@ class SecureKeyManager {
   }
 
   async rotateKeys() {
-    const services = ['openai', 'pinecone', 'cohere'];
-    
+    const services = ["openai", "pinecone", "cohere"];
+
     for (const service of services) {
       try {
         const newKey = await this.generateNewKey(service);
         await this.updateServiceKey(service, newKey);
         await this.keyStore.storeKey(service, newKey);
-        
+
         // Keep old key for graceful transition
         setTimeout(() => this.revokeOldKey(service), 300000); // 5 minutes
-        
+
         console.log(`Successfully rotated key for ${service}`);
       } catch (error) {
         console.error(`Failed to rotate key for ${service}:`, error);
@@ -97,7 +101,7 @@ class SecureKeyManager {
     if (keyAge > this.keyRotationInterval) {
       await this.rotateKeys();
     }
-    
+
     return this.keyStore.getKey(service);
   }
 }
@@ -106,25 +110,26 @@ class SecureKeyManager {
 ### **Access Control**
 
 **Role-Based Access Control (RBAC)**:
+
 ```javascript
 // Define user roles and permissions
 const roles = {
-  'admin': {
-    permissions: ['read', 'write', 'delete', 'configure', 'manage-users'],
-    resources: ['*']
+  admin: {
+    permissions: ["read", "write", "delete", "configure", "manage-users"],
+    resources: ["*"],
   },
-  'developer': {
-    permissions: ['read', 'write', 'configure'],
-    resources: ['pipelines', 'plugins', 'evaluations']
+  developer: {
+    permissions: ["read", "write", "configure"],
+    resources: ["pipelines", "plugins", "evaluations"],
   },
-  'analyst': {
-    permissions: ['read', 'query'],
-    resources: ['pipelines', 'evaluations']
+  analyst: {
+    permissions: ["read", "query"],
+    resources: ["pipelines", "evaluations"],
   },
-  'viewer': {
-    permissions: ['read'],
-    resources: ['evaluations']
-  }
+  viewer: {
+    permissions: ["read"],
+    resources: ["evaluations"],
+  },
 };
 
 // Implement access control middleware
@@ -138,8 +143,8 @@ class AccessControl {
     if (!userRole) return false;
 
     const hasPermission = userRole.permissions.includes(action);
-    const hasResourceAccess = userRole.resources.includes('*') || 
-                             userRole.resources.includes(resource);
+    const hasResourceAccess =
+      userRole.resources.includes("*") || userRole.resources.includes(resource);
 
     return hasPermission && hasResourceAccess;
   }
@@ -147,11 +152,11 @@ class AccessControl {
   middleware() {
     return (req, res, next) => {
       const { user, action, resource } = req;
-      
+
       if (!this.authorize(user, action, resource)) {
-        return res.status(403).json({ error: 'Access denied' });
+        return res.status(403).json({ error: "Access denied" });
       }
-      
+
       next();
     };
   }
@@ -159,32 +164,33 @@ class AccessControl {
 ```
 
 **API Authentication**:
+
 ```javascript
 // Implement JWT-based authentication
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 class AuthenticationManager {
   constructor(options = {}) {
     this.jwtSecret = options.jwtSecret || process.env.JWT_SECRET;
-    this.tokenExpiry = options.tokenExpiry || '1h';
-    this.refreshTokenExpiry = options.refreshTokenExpiry || '7d';
+    this.tokenExpiry = options.tokenExpiry || "1h";
+    this.refreshTokenExpiry = options.refreshTokenExpiry || "7d";
   }
 
   generateTokens(user) {
     const accessToken = jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         role: user.role,
-        permissions: user.permissions 
+        permissions: user.permissions,
       },
       this.jwtSecret,
-      { expiresIn: this.tokenExpiry }
+      { expiresIn: this.tokenExpiry },
     );
 
     const refreshToken = jwt.sign(
-      { userId: user.id, type: 'refresh' },
+      { userId: user.id, type: "refresh" },
       this.jwtSecret,
-      { expiresIn: this.refreshTokenExpiry }
+      { expiresIn: this.refreshTokenExpiry },
     );
 
     return { accessToken, refreshToken };
@@ -194,15 +200,17 @@ class AuthenticationManager {
     try {
       return jwt.verify(token, this.jwtSecret);
     } catch (error) {
-      throw new Error('Invalid or expired token');
+      throw new Error("Invalid or expired token");
     }
   }
 
   middleware() {
     return (req, res, next) => {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Missing or invalid authorization header' });
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res
+          .status(401)
+          .json({ error: "Missing or invalid authorization header" });
       }
 
       const token = authHeader.substring(7);
@@ -211,7 +219,7 @@ class AuthenticationManager {
         req.user = decoded;
         next();
       } catch (error) {
-        return res.status(401).json({ error: 'Invalid token' });
+        return res.status(401).json({ error: "Invalid token" });
       }
     };
   }
@@ -225,44 +233,45 @@ class AuthenticationManager {
 ### **Encryption**
 
 **Data at Rest**:
+
 ```javascript
 // Encrypt sensitive data before storage
-import crypto from 'crypto';
+import crypto from "crypto";
 
 class DataEncryption {
   constructor(encryptionKey) {
-    this.algorithm = 'aes-256-gcm';
-    this.key = crypto.scryptSync(encryptionKey, 'salt', 32);
+    this.algorithm = "aes-256-gcm";
+    this.key = crypto.scryptSync(encryptionKey, "salt", 32);
   }
 
   encrypt(data) {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipher(this.algorithm, this.key, iv);
-    
-    let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    
+
+    let encrypted = cipher.update(JSON.stringify(data), "utf8", "hex");
+    encrypted += cipher.final("hex");
+
     const authTag = cipher.getAuthTag();
-    
+
     return {
       encrypted,
-      iv: iv.toString('hex'),
-      authTag: authTag.toString('hex')
+      iv: iv.toString("hex"),
+      authTag: authTag.toString("hex"),
     };
   }
 
   decrypt(encryptedData) {
     const decipher = crypto.createDecipher(
-      this.algorithm, 
-      this.key, 
-      Buffer.from(encryptedData.iv, 'hex')
+      this.algorithm,
+      this.key,
+      Buffer.from(encryptedData.iv, "hex"),
     );
-    
-    decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
-    
-    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    
+
+    decipher.setAuthTag(Buffer.from(encryptedData.authTag, "hex"));
+
+    let decrypted = decipher.update(encryptedData.encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
     return JSON.parse(decrypted);
   }
 }
@@ -273,34 +282,36 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 ```
 
 **Data in Transit**:
+
 ```javascript
 // Enforce HTTPS and TLS
 const pipeline = createRagPipeline({
   security: {
     enforceHTTPS: true,
-    tlsVersion: '1.3',
+    tlsVersion: "1.3",
     certificateValidation: true,
-    
+
     // API client security
     apiClients: {
       openai: {
         timeout: 30000,
         validateCertificate: true,
-        rejectUnauthorized: true
+        rejectUnauthorized: true,
       },
       pinecone: {
         timeout: 10000,
         validateCertificate: true,
-        customCA: process.env.PINECONE_CA_CERT
-      }
-    }
-  }
+        customCA: process.env.PINECONE_CA_CERT,
+      },
+    },
+  },
 });
 ```
 
 ### **Data Sanitization**
 
 **Input Sanitization**:
+
 ```javascript
 // Sanitize user inputs to prevent injection attacks
 class InputSanitizer {
@@ -313,63 +324,64 @@ class InputSanitizer {
       /ignore\s+previous/i,
       /forget\s+everything/i,
       /<script/i,
-      /javascript:/i
+      /javascript:/i,
     ];
   }
 
   sanitizeQuery(query) {
     // Length validation
     if (query.length > this.maxQueryLength) {
-      throw new Error('Query exceeds maximum length');
+      throw new Error("Query exceeds maximum length");
     }
 
     // Character validation
     if (!this.allowedCharacters.test(query)) {
-      throw new Error('Query contains invalid characters');
+      throw new Error("Query contains invalid characters");
     }
 
     // Pattern blocking
     for (const pattern of this.blockedPatterns) {
       if (pattern.test(query)) {
-        throw new Error('Query contains blocked patterns');
+        throw new Error("Query contains blocked patterns");
       }
     }
 
     // HTML encoding
     return query
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;");
   }
 
   sanitizeMetadata(metadata) {
     const sanitized = {};
-    
+
     for (const [key, value] of Object.entries(metadata)) {
       // Validate key
       if (!/^[a-zA-Z0-9_]+$/.test(key)) {
         continue; // Skip invalid keys
       }
-      
+
       // Sanitize value
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         sanitized[key] = this.sanitizeQuery(value);
-      } else if (typeof value === 'number') {
+      } else if (typeof value === "number") {
         sanitized[key] = value;
-      } else if (typeof value === 'boolean') {
+      } else if (typeof value === "boolean") {
         sanitized[key] = value;
       }
       // Skip other types
     }
-    
+
     return sanitized;
   }
 }
 ```
 
 **Output Filtering**:
+
 ```javascript
 // Filter sensitive information from outputs
 class OutputFilter {
@@ -379,17 +391,17 @@ class OutputFilter {
       /\b\d{3}-\d{2}-\d{4}\b/g, // SSN
       /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, // Credit card
       /\bsk-[a-zA-Z0-9]{48}\b/g, // OpenAI API key
-      /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/g // UUID
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/g, // UUID
     ];
   }
 
   filterSensitiveData(text) {
     let filtered = text;
-    
+
     for (const pattern of this.sensitivePatterns) {
-      filtered = filtered.replace(pattern, '[REDACTED]');
+      filtered = filtered.replace(pattern, "[REDACTED]");
     }
-    
+
     return filtered;
   }
 
@@ -397,10 +409,10 @@ class OutputFilter {
     return {
       ...response,
       content: this.filterSensitiveData(response.content),
-      sources: response.sources?.map(source => ({
+      sources: response.sources?.map((source) => ({
         ...source,
-        content: this.filterSensitiveData(source.content)
-      }))
+        content: this.filterSensitiveData(source.content),
+      })),
     };
   }
 }
@@ -414,13 +426,13 @@ class OutputFilter {
 
 ```javascript
 // Implement secure plugin execution
-import { VM } from 'vm2';
+import { VM } from "vm2";
 
 class SecurePluginRunner {
   constructor(options = {}) {
     this.timeout = options.timeout || 30000;
     this.memoryLimit = options.memoryLimit || 128 * 1024 * 1024; // 128MB
-    this.allowedModules = options.allowedModules || ['fs', 'path', 'crypto'];
+    this.allowedModules = options.allowedModules || ["fs", "path", "crypto"];
   }
 
   async executePlugin(pluginCode, context = {}) {
@@ -429,18 +441,18 @@ class SecurePluginRunner {
       sandbox: {
         ...context,
         console: {
-          log: (...args) => console.log('[Plugin]', ...args),
-          error: (...args) => console.error('[Plugin]', ...args)
+          log: (...args) => console.log("[Plugin]", ...args),
+          error: (...args) => console.error("[Plugin]", ...args),
         },
         require: (module) => {
           if (!this.allowedModules.includes(module)) {
             throw new Error(`Module '${module}' is not allowed`);
           }
           return require(module);
-        }
+        },
       },
       wasm: false,
-      fixAsync: true
+      fixAsync: true,
     });
 
     try {
@@ -453,27 +465,31 @@ class SecurePluginRunner {
   validatePlugin(plugin) {
     const validationRules = [
       {
-        name: 'No eval usage',
-        test: (code) => !code.includes('eval(')
+        name: "No eval usage",
+        test: (code) => !code.includes("eval("),
       },
       {
-        name: 'No Function constructor',
-        test: (code) => !code.includes('new Function(')
+        name: "No Function constructor",
+        test: (code) => !code.includes("new Function("),
       },
       {
-        name: 'No process access',
-        test: (code) => !code.includes('process.')
+        name: "No process access",
+        test: (code) => !code.includes("process."),
       },
       {
-        name: 'No global access',
-        test: (code) => !code.includes('global.')
-      }
+        name: "No global access",
+        test: (code) => !code.includes("global."),
+      },
     ];
 
-    const violations = validationRules.filter(rule => !rule.test(plugin.toString()));
-    
+    const violations = validationRules.filter(
+      (rule) => !rule.test(plugin.toString()),
+    );
+
     if (violations.length > 0) {
-      throw new Error(`Plugin validation failed: ${violations.map(v => v.name).join(', ')}`);
+      throw new Error(
+        `Plugin validation failed: ${violations.map((v) => v.name).join(", ")}`,
+      );
     }
   }
 }
@@ -483,42 +499,42 @@ class SecurePluginRunner {
 
 ```javascript
 // Verify plugin integrity and authenticity
-import crypto from 'crypto';
+import crypto from "crypto";
 
 class PluginVerifier {
   constructor(trustedPublishers = []) {
     this.trustedPublishers = trustedPublishers;
-    this.signatureAlgorithm = 'sha256';
+    this.signatureAlgorithm = "sha256";
   }
 
   verifySignature(plugin, signature, publicKey) {
     const verify = crypto.createVerify(this.signatureAlgorithm);
     verify.update(plugin);
     verify.end();
-    
-    return verify.verify(publicKey, signature, 'hex');
+
+    return verify.verify(publicKey, signature, "hex");
   }
 
   async verifyPlugin(pluginPath) {
-    const plugin = await fs.readFile(pluginPath, 'utf8');
+    const plugin = await fs.readFile(pluginPath, "utf8");
     const metadata = await this.extractMetadata(plugin);
-    
+
     // Check if publisher is trusted
     if (!this.trustedPublishers.includes(metadata.publisher)) {
       throw new Error(`Untrusted publisher: ${metadata.publisher}`);
     }
-    
+
     // Verify digital signature
     const signature = metadata.signature;
     const publicKey = await this.getPublisherPublicKey(metadata.publisher);
-    
+
     if (!this.verifySignature(plugin, signature, publicKey)) {
-      throw new Error('Plugin signature verification failed');
+      throw new Error("Plugin signature verification failed");
     }
-    
+
     // Check for known vulnerabilities
     await this.scanForVulnerabilities(plugin);
-    
+
     return { verified: true, metadata };
   }
 
@@ -527,12 +543,14 @@ class PluginVerifier {
       /require\(['"]child_process['"]\)/,
       /require\(['"]fs['"]\).*unlinkSync/,
       /require\(['"]net['"]\).*createServer/,
-      /Buffer\.from\(.*base64.*\)/
+      /Buffer\.from\(.*base64.*\)/,
     ];
 
     for (const pattern of vulnerabilityPatterns) {
       if (pattern.test(plugin)) {
-        throw new Error(`Potential security vulnerability detected: ${pattern}`);
+        throw new Error(
+          `Potential security vulnerability detected: ${pattern}`,
+        );
       }
     }
   }
@@ -549,8 +567,8 @@ class PluginVerifier {
 // Implement comprehensive security logging
 class SecurityLogger {
   constructor(options = {}) {
-    this.logLevel = options.logLevel || 'info';
-    this.logFile = options.logFile || './security.log';
+    this.logLevel = options.logLevel || "info";
+    this.logFile = options.logFile || "./security.log";
     this.enableAuditTrail = options.enableAuditTrail || true;
   }
 
@@ -560,12 +578,12 @@ class SecurityLogger {
       event,
       details,
       severity: this.getSeverity(event),
-      source: 'rag-pipeline-utils',
-      version: process.env.npm_package_version
+      source: "rag-pipeline-utils",
+      version: process.env.npm_package_version,
     };
 
     // Log to file
-    fs.appendFileSync(this.logFile, JSON.stringify(logEntry) + '\n');
+    fs.appendFileSync(this.logFile, JSON.stringify(logEntry) + "\n");
 
     // Send to SIEM if configured
     if (process.env.SIEM_ENDPOINT) {
@@ -573,42 +591,42 @@ class SecurityLogger {
     }
 
     // Alert on high severity events
-    if (logEntry.severity === 'high' || logEntry.severity === 'critical') {
+    if (logEntry.severity === "high" || logEntry.severity === "critical") {
       this.sendAlert(logEntry);
     }
   }
 
   getSeverity(event) {
     const severityMap = {
-      'authentication_failure': 'medium',
-      'authorization_failure': 'medium',
-      'plugin_execution_failure': 'high',
-      'api_key_rotation': 'low',
-      'suspicious_query': 'medium',
-      'data_access_violation': 'high',
-      'configuration_change': 'medium'
+      authentication_failure: "medium",
+      authorization_failure: "medium",
+      plugin_execution_failure: "high",
+      api_key_rotation: "low",
+      suspicious_query: "medium",
+      data_access_violation: "high",
+      configuration_change: "medium",
     };
 
-    return severityMap[event] || 'low';
+    return severityMap[event] || "low";
   }
 
   auditApiCall(req, res, next) {
     const startTime = Date.now();
-    
-    res.on('finish', () => {
+
+    res.on("finish", () => {
       const duration = Date.now() - startTime;
-      
-      this.logSecurityEvent('api_call', {
+
+      this.logSecurityEvent("api_call", {
         method: req.method,
         path: req.path,
         statusCode: res.statusCode,
         duration,
-        userAgent: req.get('User-Agent'),
+        userAgent: req.get("User-Agent"),
         ip: req.ip,
-        user: req.user?.id
+        user: req.user?.id,
       });
     });
-    
+
     next();
   }
 }
@@ -629,50 +647,56 @@ class AnomalyDetector {
     if (!this.metrics.has(name)) {
       this.metrics.set(name, []);
     }
-    
+
     const values = this.metrics.get(name);
     values.push({ value, timestamp: Date.now() });
-    
+
     // Keep only recent values
     const cutoff = Date.now() - this.baselineWindow;
-    this.metrics.set(name, values.filter(v => v.timestamp > cutoff));
+    this.metrics.set(
+      name,
+      values.filter((v) => v.timestamp > cutoff),
+    );
   }
 
   detectAnomaly(name, currentValue) {
     const values = this.metrics.get(name);
     if (!values || values.length < 10) return false; // Need baseline
-    
-    const nums = values.map(v => v.value);
+
+    const nums = values.map((v) => v.value);
     const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
-    const variance = nums.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / nums.length;
+    const variance =
+      nums.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / nums.length;
     const stdDev = Math.sqrt(variance);
-    
+
     const zScore = Math.abs(currentValue - mean) / stdDev;
-    
+
     if (zScore > this.anomalyThreshold) {
       this.alertAnomaly(name, currentValue, mean, zScore);
       return true;
     }
-    
+
     return false;
   }
 
   alertAnomaly(metric, value, baseline, zScore) {
-    console.warn(`Anomaly detected in ${metric}: ${value} (baseline: ${baseline}, z-score: ${zScore})`);
-    
+    console.warn(
+      `Anomaly detected in ${metric}: ${value} (baseline: ${baseline}, z-score: ${zScore})`,
+    );
+
     // Send alert to monitoring system
     if (process.env.ALERT_WEBHOOK) {
       fetch(process.env.ALERT_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          alert: 'anomaly_detected',
+          alert: "anomaly_detected",
           metric,
           value,
           baseline,
           zScore,
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        }),
       });
     }
   }
@@ -735,34 +759,34 @@ class AnomalyDetector {
 const devSecurityConfig = {
   authentication: { required: false },
   plugins: { signatureVerification: false },
-  logging: { logLevel: 'debug' }
+  logging: { logLevel: "debug" },
 };
 
 // Staging environment
 const stagingSecurityConfig = {
   authentication: { required: true },
   plugins: { signatureVerification: true },
-  logging: { logLevel: 'info' }
+  logging: { logLevel: "info" },
 };
 
 // Production environment
 const prodSecurityConfig = {
   authentication: { required: true, mfa: true },
-  plugins: { 
+  plugins: {
     signatureVerification: true,
     trustedPublishersOnly: true,
-    sandboxing: true
+    sandboxing: true,
   },
-  logging: { 
-    logLevel: 'warn',
+  logging: {
+    logLevel: "warn",
     auditTrail: true,
-    siemIntegration: true
+    siemIntegration: true,
   },
   encryption: {
     dataAtRest: true,
     dataInTransit: true,
-    keyRotationInterval: '7d'
-  }
+    keyRotationInterval: "7d",
+  },
 };
 ```
 
@@ -779,37 +803,37 @@ class IncidentResponse {
     this.alertThresholds = options.alertThresholds || {
       failedLogins: 5,
       suspiciousQueries: 10,
-      pluginFailures: 3
+      pluginFailures: 3,
     };
     this.responseActions = options.responseActions || {};
   }
 
   handleSecurityIncident(incident) {
     const { type, severity, details } = incident;
-    
+
     // Log incident
     this.logIncident(incident);
-    
+
     // Execute response actions
     switch (type) {
-      case 'authentication_failure':
+      case "authentication_failure":
         if (details.attempts >= this.alertThresholds.failedLogins) {
           this.blockIP(details.ip);
           this.notifyAdmins(incident);
         }
         break;
-        
-      case 'suspicious_query':
+
+      case "suspicious_query":
         this.quarantineQuery(details.query);
         this.alertSecurityTeam(incident);
         break;
-        
-      case 'plugin_compromise':
+
+      case "plugin_compromise":
         this.disablePlugin(details.pluginId);
         this.initiateForensics(incident);
         break;
-        
-      case 'data_breach':
+
+      case "data_breach":
         this.emergencyShutdown();
         this.notifyStakeholders(incident);
         break;
@@ -823,7 +847,7 @@ class IncidentResponse {
   }
 
   emergencyShutdown() {
-    console.log('Initiating emergency shutdown');
+    console.log("Initiating emergency shutdown");
     process.exit(1);
   }
 }
@@ -874,4 +898,4 @@ class IncidentResponse {
 
 ---
 
-*This security guide provides comprehensive protection strategies for @DevilsDev/rag-pipeline-utils deployments. For additional security concerns, consult our security team or review the latest security advisories.*
+_This security guide provides comprehensive protection strategies for @DevilsDev/rag-pipeline-utils deployments. For additional security concerns, consult our security team or review the latest security advisories._

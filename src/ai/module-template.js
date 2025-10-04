@@ -3,7 +3,8 @@
  * Ensures reliable module.exports that work with Jest and Node.js
  */
 
-const { EventEmitter } = require('events'); // eslint-disable-line global-require
+const { EventEmitter } = require("events");
+// eslint-disable-line global-require
 
 // Example class with proper CommonJS export pattern
 class ExampleAIModule extends EventEmitter {
@@ -13,7 +14,7 @@ class ExampleAIModule extends EventEmitter {
   }
 
   async exampleMethod() {
-    return 'example result';
+    return "example result";
   }
 }
 
@@ -29,9 +30,8 @@ module.exports = ExampleAIModule;
 // };
 
 // DO NOT USE:  any ESM syntax in CommonJS files
-// DO NOT USE: exports.default = 
+// DO NOT USE: exports.default =
 // DO NOT MIX: CommonJS and ESM syntax in the same file
-
 
 // Ensure module.exports is properly defined
 module.exports = {};

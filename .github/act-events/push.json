@@ -35,9 +35,7 @@
         ".github/workflows/roadmap-maintenance.yml",
         ".github/workflows/blog-release.yml"
       ],
-      "modified": [
-        "README.md"
-      ]
+      "modified": ["README.md"]
     }
   ]
 }

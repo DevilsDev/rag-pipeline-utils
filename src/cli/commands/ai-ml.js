@@ -3,19 +3,26 @@
  * Command-line interface for model training, adaptive retrieval, multi-modal processing, and federated learning
  */
 
-const chalk = require('chalk'); // eslint-disable-line global-require
-const ora = require('ora'); // eslint-disable-line global-require
-const inquirer = require('inquirer'); // eslint-disable-line global-require
-const Table = require('cli-table3'); // eslint-disable-line global-require
-const fs = require('fs').promises; // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
+const chalk = require('chalk');
+// eslint-disable-line global-require
+const ora = require('ora');
+// eslint-disable-line global-require
+const inquirer = require('inquirer');
+// eslint-disable-line global-require
+const Table = require('cli-table3');
+// eslint-disable-line global-require
+const fs = require('fs').promises;
+// eslint-disable-line global-require
+const _path = require('path');
+// eslint-disable-line global-require
 
 const {
   ModelTrainingOrchestrator,
   AdaptiveRetrievalEngine,
   MultiModalProcessor,
-  FederatedLearningCoordinator
-} = require('../../ai'); // eslint-disable-line global-require
+  FederatedLearningCoordinator,
+} = require('../../ai');
+// eslint-disable-line global-require
 
 class AIMLCommands {
   constructor() {
@@ -193,17 +200,20 @@ class AIMLCommands {
         architecture: _options.architecture,
         dataset: {
           path: _options.dataset,
-          _type: 'text_pairs'
+          _type: 'text_pairs',
         },
         hyperparameters: {
           epochs: parseInt(_options.epochs),
           batchSize: parseInt(_options.batchSize),
-          learningRate: parseFloat(_options.learningRate)
-        }
+          learningRate: parseFloat(_options.learningRate),
+        },
       };
 
       spinner.text = 'Creating training job...';
-      const jobId = await this.modelTrainer.createTrainingJob(_options.tenant, trainingConfig);
+      const jobId = await this.modelTrainer.createTrainingJob(
+        _options.tenant,
+        trainingConfig,
+      );
 
       if (_options.optimize) {
         spinner.text = 'Starting hyperparameter optimization...';
@@ -212,31 +222,39 @@ class AIMLCommands {
           hyperparameters: {
             learningRate: [0.0001, 0.001, 0.01],
             batchSize: [16, 32, 64],
-            hiddenSize: [256, 512, 768]
+            hiddenSize: [256, 512, 768],
           },
           optimization: {
             strategy: 'bayesian',
             maxTrials: 10,
-            metric: 'accuracy'
-          }
+            metric: 'accuracy',
+          },
         };
 
         const optimizationId = await this.modelTrainer.optimizeHyperparameters(
           _options.tenant,
-          optimizationConfig
+          optimizationConfig,
         );
 
-        spinner.succeed(`Hyperparameter optimization started: ${optimizationId}`);
+        spinner.succeed(
+          `Hyperparameter optimization started: ${optimizationId}`,
+        );
       } else {
         spinner.text = 'Starting training...';
         await this.modelTrainer.startTraining(jobId);
         spinner.succeed(`Training started: ${jobId}`);
       }
 
-      console.log(chalk.green('\n✓ Training initiated successfully')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Job ID: ${jobId}`)); // eslint-disable-line no-console
-      console.log(chalk.gray(`Use 'rag-pipeline ai train status ${jobId}' to check progress`)); // eslint-disable-line no-console
-
+      console.log(chalk.green('\n✓ Training initiated successfully'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Job ID: ${jobId}`));
+      // eslint-disable-line no-console
+      console.log(
+        chalk.gray(
+          `Use 'rag-pipeline ai train status ${jobId}' to check progress`,
+        ),
+      );
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Training failed: ${error.message}`);
     }
@@ -256,25 +274,29 @@ class AIMLCommands {
         baseModel: _options.baseModel,
         dataset: {
           path: _options.dataset,
-          _type: 'instruction_following'
+          _type: 'instruction_following',
         },
         fineTuning: {
           method: _options.lora ? 'lora' : 'full',
           epochs: parseInt(_options.epochs),
-          learningRate: 0.0001
-        }
+          learningRate: 0.0001,
+        },
       };
 
       spinner.text = 'Creating fine-tuning job...';
-      const jobId = await this.modelTrainer.createTrainingJob(_options.tenant, trainingConfig);
+      const jobId = await this.modelTrainer.createTrainingJob(
+        _options.tenant,
+        trainingConfig,
+      );
 
       spinner.text = 'Starting fine-tuning...';
       await this.modelTrainer.startTraining(jobId);
 
       spinner.succeed(`Fine-tuning started: ${jobId}`);
-      console.log(chalk.green('\n✓ LLM fine-tuning initiated')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Job ID: ${jobId}`)); // eslint-disable-line no-console
-
+      console.log(chalk.green('\n✓ LLM fine-tuning initiated'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Job ID: ${jobId}`));
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Fine-tuning failed: ${error.message}`);
     }
@@ -289,7 +311,7 @@ class AIMLCommands {
 
       const table = new Table({
         head: ['Property', 'Value'],
-        colWidths: [20, 50]
+        colWidths: [20, 50],
       });
 
       table.push(
@@ -299,21 +321,29 @@ class AIMLCommands {
         ['Current Epoch', `${status.currentEpoch}/${status.totalEpochs}`],
         ['Accuracy', status.metrics?.accuracy?.toFixed(4) || 'N/A'],
         ['Loss', status.metrics?.loss?.toFixed(4) || 'N/A'],
-        ['Estimated Time', status.estimatedTimeRemaining || 'N/A']
+        ['Estimated Time', status.estimatedTimeRemaining || 'N/A'],
       );
 
-      console.log(table.toString()); // eslint-disable-line no-console
+      console.log(table.toString());
+      // eslint-disable-line no-console
 
       if (status.status === 'completed') {
-        console.log(chalk.green('\n✓ Training completed successfully!')); // eslint-disable-line no-console
-        console.log(chalk.blue(`Use 'rag-pipeline ai train deploy ${jobId}' to deploy the model`)); // eslint-disable-line no-console
+        console.log(chalk.green('\n✓ Training completed successfully!'));
+        // eslint-disable-line no-console
+        console.log(
+          chalk.blue(
+            `Use 'rag-pipeline ai train deploy ${jobId}' to deploy the model`,
+          ),
+        );
+        // eslint-disable-line no-console
       } else if (status.status === 'failed') {
-        console.log(chalk.red('\n✗ Training failed')); // eslint-disable-line no-console
+        console.log(chalk.red('\n✗ Training failed'));
+        // eslint-disable-line no-console
         if (status.error) {
-          console.log(chalk.gray(`Error: ${status.error}`)); // eslint-disable-line no-console
+          console.log(chalk.gray(`Error: ${status.error}`));
+          // eslint-disable-line no-console
         }
       }
-
     } catch (error) {
       spinner.fail(`Failed to get status: ${error.message}`);
     }
@@ -328,17 +358,22 @@ class AIMLCommands {
         scalingConfig: {
           minInstances: 1,
           maxInstances: _options.autoScale ? 5 : 1,
-          autoScale: !!_options.autoScale
-        }
+          autoScale: !!_options.autoScale,
+        },
       };
 
-      const deploymentId = await this.modelTrainer.deployModel(jobId, deploymentConfig);
-      
-      spinner.succeed(`Model deployed: ${deploymentId}`);
-      console.log(chalk.green('\n✓ Model deployment successful')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Deployment ID: ${deploymentId}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Environment: ${_options.environment}`)); // eslint-disable-line no-console
+      const deploymentId = await this.modelTrainer.deployModel(
+        jobId,
+        deploymentConfig,
+      );
 
+      spinner.succeed(`Model deployed: ${deploymentId}`);
+      console.log(chalk.green('\n✓ Model deployment successful'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Deployment ID: ${deploymentId}`));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Environment: ${_options.environment}`));
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Deployment failed: ${error.message}`);
     }
@@ -350,41 +385,49 @@ class AIMLCommands {
 
     try {
       let profile;
-      
+
       try {
         profile = await this.adaptiveRetrieval.getUserProfile(userId);
         spinner.succeed('User profile found');
       } catch {
         // Profile doesn't exist, create new one
         const profileData = {};
-        
+
         if (_options.interests) {
-          profileData.interests = _options.interests.split(',').map(i => i.trim());
+          profileData.interests = _options.interests
+            .split(',')
+            .map((i) => i.trim());
         }
-        
+
         if (_options.expertise) {
           profileData.expertise = _options.expertise;
         }
 
-        profile = await this.adaptiveRetrieval.initializeUserProfile(userId, profileData);
+        profile = await this.adaptiveRetrieval.initializeUserProfile(
+          userId,
+          profileData,
+        );
         spinner.succeed('User profile created');
       }
 
       const table = new Table({
         head: ['Property', 'Value'],
-        colWidths: [20, 50]
+        colWidths: [20, 50],
       });
 
       table.push(
         ['User ID', profile.userId],
         ['Interests', profile.preferences?.interests?.join(', ') || 'None'],
         ['Expertise', profile.preferences?.expertise || 'Not set'],
-        ['Learning History', `${profile.learningHistory?.length || 0} interactions`],
-        ['Created', profile.createdAt || 'Unknown']
+        [
+          'Learning History',
+          `${profile.learningHistory?.length || 0} interactions`,
+        ],
+        ['Created', profile.createdAt || 'Unknown'],
       );
 
-      console.log(table.toString()); // eslint-disable-line no-console
-
+      console.log(table.toString());
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Profile management failed: ${error.message}`);
     }
@@ -396,29 +439,46 @@ class AIMLCommands {
     try {
       const searchOptions = {
         maxResults: parseInt(_options.maxResults),
-        explain: !!_options.explain
+        explain: !!_options.explain,
       };
 
-      const results = await this.adaptiveRetrieval.adaptiveRetrieve(userId, query, searchOptions);
-      
+      const results = await this.adaptiveRetrieval.adaptiveRetrieve(
+        userId,
+        query,
+        searchOptions,
+      );
+
       spinner.succeed(`Found ${results.documents.length} results`);
 
       // Display results
-      console.log(chalk.blue(`\nSearch Results for: "${query}"`)); // eslint-disable-line no-console
-      console.log(chalk.gray('=' .repeat(50))); // eslint-disable-line no-console
+      console.log(chalk.blue(`\nSearch Results for: "${query}"`));
+      // eslint-disable-line no-console
+      console.log(chalk.gray('='.repeat(50)));
+      // eslint-disable-line no-console
 
       results.documents.forEach((doc, index) => {
-        console.log(chalk.green(`\n${index + 1}. ${doc.title || doc.id}`)); // eslint-disable-line no-console
-        console.log(chalk.gray(`   Score: ${doc.score?.toFixed(4) || 'N/A'}`)); // eslint-disable-line no-console
-        console.log(chalk.gray(`   Personalized Score: ${doc.personalizedScore?.toFixed(4) || 'N/A'}`)); // eslint-disable-line no-console
-        console.log(`   ${doc.content?.substring(0, 200)}...`); // eslint-disable-line no-console
+        console.log(chalk.green(`\n${index + 1}. ${doc.title || doc.id}`));
+        // eslint-disable-line no-console
+        console.log(chalk.gray(`   Score: ${doc.score?.toFixed(4) || 'N/A'}`));
+        // eslint-disable-line no-console
+        console.log(
+          chalk.gray(
+            `   Personalized Score: ${doc.personalizedScore?.toFixed(4) || 'N/A'}`,
+          ),
+        );
+        // eslint-disable-line no-console
+        console.log(`   ${doc.content?.substring(0, 200)}...`);
+        // eslint-disable-line no-console
       });
 
       if (_options.explain && results.adaptationMetadata) {
-        console.log(chalk.blue('\nAdaptation Explanation:')); // eslint-disable-line no-console
-        console.log(chalk.gray(JSON.stringify(results.adaptationMetadata, null, 2))); // eslint-disable-line no-console
+        console.log(chalk.blue('\nAdaptation Explanation:'));
+        // eslint-disable-line no-console
+        console.log(
+          chalk.gray(JSON.stringify(results.adaptationMetadata, null, 2)),
+        );
+        // eslint-disable-line no-console
       }
-
     } catch (error) {
       spinner.fail(`Adaptive search failed: ${error.message}`);
     }
@@ -430,13 +490,13 @@ class AIMLCommands {
         {
           _type: 'input',
           name: 'query',
-          message: 'Enter the original query:'
+          message: 'Enter the original query:',
         },
         {
           _type: 'input',
           name: 'ratings',
-          message: 'Enter ratings for results (comma-separated, 1-5):'
-        }
+          message: 'Enter ratings for results (comma-separated, 1-5):',
+        },
       ]);
       _options.query = answers.query;
       _options.ratings = answers.ratings;
@@ -445,20 +505,22 @@ class AIMLCommands {
     const spinner = ora('Processing feedback...').start();
 
     try {
-      const ratings = _options.ratings.split(',').map(r => parseInt(r.trim()));
-      
+      const ratings = _options.ratings
+        .split(',')
+        .map((r) => parseInt(r.trim()));
+
       const feedback = {
         query: _options.query,
         ratings,
         clickedResults: [0], // Assume first result was clicked
-        dwellTime: [120] // Assume 2 minutes dwell time
+        dwellTime: [120], // Assume 2 minutes dwell time
       };
 
       await this.adaptiveRetrieval.processFeedback(userId, feedback);
-      
-      spinner.succeed('Feedback processed successfully');
-      console.log(chalk.green('\n✓ User profile updated with feedback')); // eslint-disable-line no-console
 
+      spinner.succeed('Feedback processed successfully');
+      console.log(chalk.green('\n✓ User profile updated with feedback'));
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Feedback processing failed: ${error.message}`);
     }
@@ -479,7 +541,7 @@ class AIMLCommands {
       const content = {
         _type: this._detectContentType(contentPath),
         size: stats.size,
-        path: contentPath
+        path: contentPath,
       };
 
       // Add additional content based on type
@@ -488,20 +550,33 @@ class AIMLCommands {
       }
 
       spinner.text = 'Processing content...';
-      const result = await this.multiModalProcessor.processContent(_options.tenant, content);
+      const result = await this.multiModalProcessor.processContent(
+        _options.tenant,
+        content,
+      );
 
       spinner.succeed('Content processed successfully');
 
-      console.log(chalk.green('\n✓ Multi-modal processing completed')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Content ID: ${result.id}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Modalities detected: ${Object.keys(result.modalities).join(', ')}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Processing time: ${result.metadata.processingTime}ms`)); // eslint-disable-line no-console
+      console.log(chalk.green('\n✓ Multi-modal processing completed'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Content ID: ${result.id}`));
+      // eslint-disable-line no-console
+      console.log(
+        chalk.blue(
+          `Modalities detected: ${Object.keys(result.modalities).join(', ')}`,
+        ),
+      );
+      // eslint-disable-line no-console
+      console.log(
+        chalk.blue(`Processing time: ${result.metadata.processingTime}ms`),
+      );
+      // eslint-disable-line no-console
 
       if (_options.output) {
         await fs.writeFile(_options.output, JSON.stringify(result, null, 2));
-        console.log(chalk.gray(`Results saved to: ${_options.output}`)); // eslint-disable-line no-console
+        console.log(chalk.gray(`Results saved to: ${_options.output}`));
+        // eslint-disable-line no-console
       }
-
     } catch (error) {
       spinner.fail(`Content processing failed: ${error.message}`);
     }
@@ -534,23 +609,40 @@ class AIMLCommands {
       }
 
       const searchOptions = {
-        maxResults: parseInt(_options.maxResults)
+        maxResults: parseInt(_options.maxResults),
       };
 
-      const results = await this.multiModalProcessor.multiModalSearch(tenantId, query, searchOptions);
-      
+      const results = await this.multiModalProcessor.multiModalSearch(
+        tenantId,
+        query,
+        searchOptions,
+      );
+
       spinner.succeed(`Found ${results.results.length} results`);
 
-      console.log(chalk.blue('\nMulti-modal Search Results:')); // eslint-disable-line no-console
-      console.log(chalk.gray('=' .repeat(50))); // eslint-disable-line no-console
+      console.log(chalk.blue('\nMulti-modal Search Results:'));
+      // eslint-disable-line no-console
+      console.log(chalk.gray('='.repeat(50)));
+      // eslint-disable-line no-console
 
       results.results.forEach((result, index) => {
-        console.log(chalk.green(`\n${index + 1}. Content ID: ${result.contentId}`)); // eslint-disable-line no-console
-        console.log(chalk.gray(`   Multi-modal Score: ${result.multiModalScore?.toFixed(4)}`)); // eslint-disable-line no-console
-        console.log(chalk.gray(`   Modalities: ${result.modalities?.join(', ')}`)); // eslint-disable-line no-console
-        console.log(chalk.gray(`   Rank: ${result.rank}`)); // eslint-disable-line no-console
+        console.log(
+          chalk.green(`\n${index + 1}. Content ID: ${result.contentId}`),
+        );
+        // eslint-disable-line no-console
+        console.log(
+          chalk.gray(
+            `   Multi-modal Score: ${result.multiModalScore?.toFixed(4)}`,
+          ),
+        );
+        // eslint-disable-line no-console
+        console.log(
+          chalk.gray(`   Modalities: ${result.modalities?.join(', ')}`),
+        );
+        // eslint-disable-line no-console
+        console.log(chalk.gray(`   Rank: ${result.rank}`));
+        // eslint-disable-line no-console
       });
-
     } catch (error) {
       spinner.fail(`Multi-modal search failed: ${error.message}`);
     }
@@ -560,21 +652,24 @@ class AIMLCommands {
     const spinner = ora('Generating content description...').start();
 
     try {
-      const descriptions = await this.multiModalProcessor.generateContentDescription(
-        contentId,
-        { detailed: !!_options.detailed }
-      );
+      const descriptions =
+        await this.multiModalProcessor.generateContentDescription(contentId, {
+          detailed: !!_options.detailed,
+        });
 
       spinner.succeed('Description generated');
 
-      console.log(chalk.blue('\nContent Descriptions:')); // eslint-disable-line no-console
-      console.log(chalk.gray('=' .repeat(50))); // eslint-disable-line no-console
+      console.log(chalk.blue('\nContent Descriptions:'));
+      // eslint-disable-line no-console
+      console.log(chalk.gray('='.repeat(50)));
+      // eslint-disable-line no-console
 
       for (const [modality, description] of Object.entries(descriptions)) {
-        console.log(chalk.green(`\n${modality.toUpperCase()}:`)); // eslint-disable-line no-console
-        console.log(description); // eslint-disable-line no-console
+        console.log(chalk.green(`\n${modality.toUpperCase()}:`));
+        // eslint-disable-line no-console
+        console.log(description);
+        // eslint-disable-line no-console
       }
-
     } catch (error) {
       spinner.fail(`Description generation failed: ${error.message}`);
     }
@@ -592,27 +687,34 @@ class AIMLCommands {
 
       const modelConfig = {
         _type: _options.modelType,
-        architecture: _options.architecture
+        architecture: _options.architecture,
       };
 
       const federationOptions = {
         minParticipants: parseInt(_options.minParticipants),
-        maxParticipants: parseInt(_options.maxParticipants)
+        maxParticipants: parseInt(_options.maxParticipants),
       };
 
       const federationId = await this.federatedLearning.createFederation(
         _options.tenant,
         modelConfig,
-        federationOptions
+        federationOptions,
       );
 
       spinner.succeed('Federation created successfully');
 
-      console.log(chalk.green('\n✓ Federated learning session created')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Federation ID: ${federationId}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Model Type: ${_options.modelType}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Min/Max Participants: ${_options.minParticipants}/${_options.maxParticipants}`)); // eslint-disable-line no-console
-
+      console.log(chalk.green('\n✓ Federated learning session created'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Federation ID: ${federationId}`));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Model Type: ${_options.modelType}`));
+      // eslint-disable-line no-console
+      console.log(
+        chalk.blue(
+          `Min/Max Participants: ${_options.minParticipants}/${_options.maxParticipants}`,
+        ),
+      );
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Federation creation failed: ${error.message}`);
     }
@@ -632,20 +734,22 @@ class AIMLCommands {
         dataSize: parseInt(_options.dataSize) || 1000,
         computeCapacity: parseFloat(_options.computeCapacity) || 0.8,
         networkBandwidth: 100,
-        privacyLevel: _options.privacyLevel
+        privacyLevel: _options.privacyLevel,
       };
 
       const participantId = await this.federatedLearning.registerParticipant(
         federationId,
-        participantInfo
+        participantInfo,
       );
 
       spinner.succeed('Successfully joined federation');
 
-      console.log(chalk.green('\n✓ Joined federated learning session')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Participant ID: ${participantId}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Federation ID: ${federationId}`)); // eslint-disable-line no-console
-
+      console.log(chalk.green('\n✓ Joined federated learning session'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Participant ID: ${participantId}`));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Federation ID: ${federationId}`));
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Failed to join federation: ${error.message}`);
     }
@@ -655,16 +759,27 @@ class AIMLCommands {
     const spinner = ora('Starting federated learning round...').start();
 
     try {
-      const result = await this.federatedLearning.startFederatedRound(federationId);
-      
+      const result =
+        await this.federatedLearning.startFederatedRound(federationId);
+
       spinner.succeed('Federated round completed');
 
-      console.log(chalk.green('\n✓ Federated learning round completed')); // eslint-disable-line no-console
-      console.log(chalk.blue(`Round: ${result.round}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Participants: ${result.participants}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Converged: ${result.convergence.converged ? 'Yes' : 'No'}`)); // eslint-disable-line no-console
-      console.log(chalk.blue(`Global Accuracy: ${result.convergence.globalAccuracy?.toFixed(4)}`)); // eslint-disable-line no-console
-
+      console.log(chalk.green('\n✓ Federated learning round completed'));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Round: ${result.round}`));
+      // eslint-disable-line no-console
+      console.log(chalk.blue(`Participants: ${result.participants}`));
+      // eslint-disable-line no-console
+      console.log(
+        chalk.blue(`Converged: ${result.convergence.converged ? 'Yes' : 'No'}`),
+      );
+      // eslint-disable-line no-console
+      console.log(
+        chalk.blue(
+          `Global Accuracy: ${result.convergence.globalAccuracy?.toFixed(4)}`,
+        ),
+      );
+      // eslint-disable-line no-console
     } catch (error) {
       spinner.fail(`Federated round failed: ${error.message}`);
     }
@@ -674,13 +789,14 @@ class AIMLCommands {
     const spinner = ora('Fetching federation statistics...').start();
 
     try {
-      const stats = await this.federatedLearning.getFederationStats(federationId);
-      
+      const stats =
+        await this.federatedLearning.getFederationStats(federationId);
+
       spinner.succeed('Statistics retrieved');
 
       const table = new Table({
         head: ['Property', 'Value'],
-        colWidths: [25, 40]
+        colWidths: [25, 40],
       });
 
       table.push(
@@ -690,34 +806,42 @@ class AIMLCommands {
         ['Total Participants', stats.federation.totalParticipants],
         ['Active Participants', stats.federation.activeParticipants],
         ['Model Type', stats.federation.modelType],
-        ['Average Accuracy', stats.performance.averageAccuracy?.toFixed(4) || 'N/A'],
+        [
+          'Average Accuracy',
+          stats.performance.averageAccuracy?.toFixed(4) || 'N/A',
+        ],
         ['Total Data Size', stats.performance.totalDataSize],
-        ['Privacy Enabled', stats.privacy.differentialPrivacyEnabled ? 'Yes' : 'No']
+        [
+          'Privacy Enabled',
+          stats.privacy.differentialPrivacyEnabled ? 'Yes' : 'No',
+        ],
       );
 
-      console.log(table.toString()); // eslint-disable-line no-console
+      console.log(table.toString());
+      // eslint-disable-line no-console
 
       if (_options.detailed && stats.participants.length > 0) {
-        console.log(chalk.blue('\nParticipant Details:')); // eslint-disable-line no-console
-        
+        console.log(chalk.blue('\nParticipant Details:'));
+        // eslint-disable-line no-console
+
         const participantTable = new Table({
           head: ['Tenant ID', 'Data Size', 'Accuracy', 'Rounds', 'Status'],
-          colWidths: [15, 12, 12, 8, 12]
+          colWidths: [15, 12, 12, 8, 12],
         });
 
-        stats.participants.forEach(participant => {
+        stats.participants.forEach((participant) => {
           participantTable.push([
             participant.tenantId,
             participant.dataSize,
             participant.performance.accuracy?.toFixed(4) || 'N/A',
             participant.performance.rounds,
-            participant.status
+            participant.status,
           ]);
         });
 
-        console.log(participantTable.toString()); // eslint-disable-line no-console
+        console.log(participantTable.toString());
+        // eslint-disable-line no-console
       }
-
     } catch (error) {
       spinner.fail(`Failed to get statistics: ${error.message}`);
     }
@@ -730,16 +854,28 @@ class AIMLCommands {
     try {
       // Mock benchmark implementation
       const benchmarks = {
-        embedding: { latency: '45ms', throughput: '2000 docs/sec', accuracy: 0.89 },
-        retrieval: { latency: '12ms', throughput: '5000 queries/sec', recall: 0.92 },
-        generation: { latency: '150ms', throughput: '500 tokens/sec', quality: 0.85 }
+        embedding: {
+          latency: '45ms',
+          throughput: '2000 docs/sec',
+          accuracy: 0.89,
+        },
+        retrieval: {
+          latency: '12ms',
+          throughput: '5000 queries/sec',
+          recall: 0.92,
+        },
+        generation: {
+          latency: '150ms',
+          throughput: '500 tokens/sec',
+          quality: 0.85,
+        },
       };
 
       spinner.succeed('Benchmarks completed');
 
       const table = new Table({
         head: ['Model', 'Latency', 'Throughput', 'Quality Score'],
-        colWidths: [15, 15, 20, 15]
+        colWidths: [15, 15, 20, 15],
       });
 
       Object.entries(benchmarks).forEach(([model, metrics]) => {
@@ -747,37 +883,50 @@ class AIMLCommands {
           model,
           metrics.latency,
           metrics.throughput,
-          (metrics.accuracy || metrics.recall || metrics.quality)?.toFixed(3)
+          (metrics.accuracy || metrics.recall || metrics.quality)?.toFixed(3),
         ]);
       });
 
-      console.log(table.toString()); // eslint-disable-line no-console
+      console.log(table.toString());
+      // eslint-disable-line no-console
 
       if (_options.output) {
-        await fs.writeFile(_options.output, JSON.stringify(benchmarks, null, 2));
-        console.log(chalk.gray(`Results saved to: ${_options.output}`)); // eslint-disable-line no-console
+        await fs.writeFile(
+          _options.output,
+          JSON.stringify(benchmarks, null, 2),
+        );
+        console.log(chalk.gray(`Results saved to: ${_options.output}`));
+        // eslint-disable-line no-console
       }
-
     } catch (error) {
       spinner.fail(`Benchmark failed: ${error.message}`);
     }
   }
 
   async launchDashboard(_options) {
-    console.log(chalk.blue('🚀 Launching AI/ML Dashboard...')); // eslint-disable-line no-console
-    console.log(chalk.gray(`Port: ${_options.port}`)); // eslint-disable-line no-console
+    console.log(chalk.blue('🚀 Launching AI/ML Dashboard...'));
+    // eslint-disable-line no-console
+    console.log(chalk.gray(`Port: ${_options.port}`));
+    // eslint-disable-line no-console
     console.log(chalk.gray(`URL: http://localhost:${_options.port}`)); // eslint-disable-line no-console
-    
+
     if (_options.open) {
-      console.log(chalk.green('Opening browser...')); // eslint-disable-line no-console
+      console.log(chalk.green('Opening browser...'));
+      // eslint-disable-line no-console
     }
-    
-    console.log(chalk.yellow('\nDashboard features:')); // eslint-disable-line no-console
-    console.log('• Model training monitoring'); // eslint-disable-line no-console
-    console.log('• Adaptive retrieval analytics'); // eslint-disable-line no-console
-    console.log('• Multi-modal content explorer'); // eslint-disable-line no-console
-    console.log('• Federated learning coordinator'); // eslint-disable-line no-console
-    console.log('• Performance benchmarks'); // eslint-disable-line no-console
+
+    console.log(chalk.yellow('\nDashboard features:'));
+    // eslint-disable-line no-console
+    console.log('• Model training monitoring');
+    // eslint-disable-line no-console
+    console.log('• Adaptive retrieval analytics');
+    // eslint-disable-line no-console
+    console.log('• Multi-modal content explorer');
+    // eslint-disable-line no-console
+    console.log('• Federated learning coordinator');
+    // eslint-disable-line no-console
+    console.log('• Performance benchmarks');
+    // eslint-disable-line no-console
   }
 
   // Helper methods
@@ -799,8 +948,8 @@ class AIMLCommands {
   }
 
   _detectContentType(_filePath) {
-    const ext = path.extname(_filePath).toLowerCase();
-    
+    const ext = _path.extname(_filePath).toLowerCase();
+
     if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
       return 'image/jpeg';
     } else if (['.mp3', '.wav', '.flac', '.ogg'].includes(ext)) {
@@ -810,7 +959,7 @@ class AIMLCommands {
     } else if (['.txt', '.md', '.json'].includes(ext)) {
       return 'text/plain';
     }
-    
+
     return 'application/octet-stream';
   }
 }

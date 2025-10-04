@@ -16,6 +16,106 @@ npm install @devilsdev/rag-pipeline-utils
 
 **Requirements:** Node.js >= 18.0.0
 
+## Compatibility
+
+### Platform Support
+
+| Platform    | Status             | Notes                                                         |
+| ----------- | ------------------ | ------------------------------------------------------------- |
+| **Linux**   | ✅ Fully Supported | Tested on Ubuntu 20.04+, Debian 11+, RHEL 8+                  |
+| **macOS**   | ✅ Fully Supported | Tested on macOS 12+ (Intel & Apple Silicon)                   |
+| **Windows** | ✅ Fully Supported | Tested on Windows 10/11, WSL2 recommended for best experience |
+| **Docker**  | ✅ Fully Supported | Alpine & Debian-based images available                        |
+
+### Module Systems
+
+This package supports both CommonJS and ES Modules:
+
+**CommonJS (require)**
+
+```javascript
+const {
+  createRagPipeline,
+  DAGEngine,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const pipeline = createRagPipeline({
+  /* config */
+});
+const dag = new DAGEngine();
+```
+
+**ES Modules (import)**
+
+```javascript
+import { createRagPipeline, DAGEngine } from "@devilsdev/rag-pipeline-utils";
+
+const pipeline = createRagPipeline({
+  /* config */
+});
+const dag = new DAGEngine();
+```
+
+### TypeScript Support
+
+Full TypeScript definitions included:
+
+```typescript
+import {
+  createRagPipeline,
+  DAGEngine,
+  RagPipelineConfig,
+  LoaderPlugin,
+  EmbedderPlugin,
+  RetrieverPlugin,
+  LLMPlugin,
+} from "@devilsdev/rag-pipeline-utils";
+
+const config: RagPipelineConfig = {
+  loader: "my-loader",
+  embedder: "my-embedder",
+};
+
+const pipeline = createRagPipeline(config);
+```
+
+### Package Size & Dependencies
+
+- **Minimal footprint**: ~50KB core (gzipped)
+- **Runtime dependencies**: Only 11 production dependencies
+- **Total install size**: ~15MB (including dependencies)
+- **Tree-shakeable**: ES module exports support tree-shaking
+
+### Docker Usage
+
+**Basic Docker setup:**
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+COPY . .
+
+CMD ["node", "index.js"]
+```
+
+**Docker Compose example:**
+
+```yaml
+version: "3.8"
+services:
+  rag-pipeline:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      - NODE_ENV=production
+    command: npm start
+```
+
 ## Quick Start
 
 ### Basic Pipeline Setup

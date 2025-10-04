@@ -3,15 +3,15 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    cluster: 'rag-pipeline-production'
-    environment: 'production'
+    cluster: "rag-pipeline-production"
+    environment: "production"
 
 # Alertmanager configuration
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - alertmanager:9093
+            - alertmanager:9093
 
 # Load rules once and periodically evaluate them
 rule_files:
@@ -21,18 +21,18 @@ rule_files:
 # Scrape configuration
 scrape_configs:
   # RAG Pipeline application metrics
-  - job_name: 'rag-pipeline-app'
+  - job_name: "rag-pipeline-app"
     static_configs:
-      - targets: ['rag-pipeline-service:3001']
-    metrics_path: '/metrics'
+      - targets: ["rag-pipeline-service:3001"]
+    metrics_path: "/metrics"
     scrape_interval: 30s
     scrape_timeout: 10s
     honor_labels: true
     params:
-      format: ['prometheus']
+      format: ["prometheus"]
 
   # Kubernetes API server
-  - job_name: 'kubernetes-apiservers'
+  - job_name: "kubernetes-apiservers"
     kubernetes_sd_configs:
       - role: endpoints
     scheme: https
@@ -40,12 +40,17 @@ scrape_configs:
       ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
     relabel_configs:
-      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+      - source_labels:
+          [
+            __meta_kubernetes_namespace,
+            __meta_kubernetes_service_name,
+            __meta_kubernetes_endpoint_port_name,
+          ]
         action: keep
         regex: default;kubernetes;https
 
   # Kubernetes nodes
-  - job_name: 'kubernetes-nodes'
+  - job_name: "kubernetes-nodes"
     kubernetes_sd_configs:
       - role: node
     scheme: https
@@ -63,7 +68,7 @@ scrape_configs:
         replacement: /api/v1/nodes/${1}/proxy/metrics
 
   # Kubernetes pods
-  - job_name: 'kubernetes-pods'
+  - job_name: "kubernetes-pods"
     kubernetes_sd_configs:
       - role: pod
     relabel_configs:
@@ -74,7 +79,8 @@ scrape_configs:
         action: replace
         target_label: __metrics_path__
         regex: (.+)
-      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+      - source_labels:
+          [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
         action: replace
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
@@ -89,30 +95,30 @@ scrape_configs:
         target_label: kubernetes_pod_name
 
   # Redis metrics
-  - job_name: 'redis'
+  - job_name: "redis"
     static_configs:
-      - targets: ['rag-redis-service:6379']
-    metrics_path: '/metrics'
+      - targets: ["rag-redis-service:6379"]
+    metrics_path: "/metrics"
     scrape_interval: 30s
 
   # PostgreSQL metrics
-  - job_name: 'postgres'
+  - job_name: "postgres"
     static_configs:
-      - targets: ['rag-postgres-service:5432']
-    metrics_path: '/metrics'
+      - targets: ["rag-postgres-service:5432"]
+    metrics_path: "/metrics"
     scrape_interval: 30s
 
   # Node exporter for system metrics
-  - job_name: 'node-exporter'
+  - job_name: "node-exporter"
     kubernetes_sd_configs:
       - role: endpoints
     relabel_configs:
       - source_labels: [__meta_kubernetes_endpoints_name]
-        regex: 'node-exporter'
+        regex: "node-exporter"
         action: keep
 
   # cAdvisor for container metrics
-  - job_name: 'kubernetes-cadvisor'
+  - job_name: "kubernetes-cadvisor"
     kubernetes_sd_configs:
       - role: node
     scheme: https
@@ -128,7 +134,6 @@ scrape_configs:
         regex: (.+)
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
-
 # Remote write configuration (optional - for long-term storage)
 # remote_write:
 #   - url: "https://your-remote-storage-endpoint/api/v1/write"

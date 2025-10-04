@@ -9,6 +9,7 @@ This comprehensive migration guide helps you upgrade between versions of **@Devi
 ### **Upgrading from v2.0.x to v2.1.x**
 
 **Breaking Changes**:
+
 - Plugin contract standardization
 - Configuration file format updates
 - CLI command restructuring
@@ -16,11 +17,13 @@ This comprehensive migration guide helps you upgrade between versions of **@Devi
 **Migration Steps**:
 
 1. **Update Package**:
+
 ```bash
 npm update @DevilsDev/rag-pipeline-utils
 ```
 
 2. **Update Configuration**:
+
 ```bash
 # Backup existing config
 cp .ragrc.json .ragrc.json.backup
@@ -30,19 +33,25 @@ rag-pipeline config migrate --from 2.0 --to 2.1
 ```
 
 3. **Update Plugin Registrations**:
+
 ```javascript
 // v2.0.x (deprecated)
-registry.register('llm', 'openai', {
-  ask: async (prompt) => { /* implementation */ }
+registry.register("llm", "openai", {
+  ask: async (prompt) => {
+    /* implementation */
+  },
 });
 
 // v2.1.x (current)
-registry.register('llm', 'openai', {
-  generate: async (prompt) => { /* implementation */ }
+registry.register("llm", "openai", {
+  generate: async (prompt) => {
+    /* implementation */
+  },
 });
 ```
 
 4. **Update CLI Commands**:
+
 ```bash
 # v2.0.x (deprecated)
 rag-pipeline eval ./test-data.json
@@ -54,6 +63,7 @@ rag-pipeline evaluate ./test-data.json
 ### **Upgrading from v1.x to v2.x**
 
 **Major Changes**:
+
 - Complete plugin architecture overhaul
 - New streaming support
 - Enhanced evaluation framework
@@ -62,12 +72,14 @@ rag-pipeline evaluate ./test-data.json
 **Migration Checklist**:
 
 1. **Install New Version**:
+
 ```bash
 npm uninstall @DevilsDev/rag-pipeline-utils
 npm install @DevilsDev/rag-pipeline-utils@^2.0.0
 ```
 
 2. **Migrate Configuration**:
+
 ```json
 // v1.x format
 {
@@ -101,26 +113,28 @@ npm install @DevilsDev/rag-pipeline-utils@^2.0.0
 ```
 
 3. **Update Code**:
+
 ```javascript
 // v1.x (deprecated)
-import { RAGPipeline } from '@DevilsDev/rag-pipeline-utils';
+import { RAGPipeline } from "@DevilsDev/rag-pipeline-utils";
 
 const pipeline = new RAGPipeline({
   openaiKey: process.env.OPENAI_API_KEY,
-  pineconeKey: process.env.PINECONE_API_KEY
+  pineconeKey: process.env.PINECONE_API_KEY,
 });
 
 // v2.x (current)
-import { createRagPipeline } from '@DevilsDev/rag-pipeline-utils';
+import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
 
 const pipeline = createRagPipeline({
-  embedder: { name: 'openai' },
-  retriever: { name: 'pinecone' },
-  llm: { name: 'openai-gpt-4' }
+  embedder: { name: "openai" },
+  retriever: { name: "pinecone" },
+  llm: { name: "openai-gpt-4" },
 });
 ```
 
 4. **Update Plugin Development**:
+
 ```javascript
 // v1.x plugin interface
 class MyLoader {
@@ -155,6 +169,7 @@ class MyLoader extends BaseLoader {
 ### **Migrating from LangChain**
 
 **Key Differences**:
+
 - Plugin-based vs. chain-based architecture
 - Built-in evaluation framework
 - Streaming-first design
@@ -163,6 +178,7 @@ class MyLoader extends BaseLoader {
 **Migration Steps**:
 
 1. **Document Loaders**:
+
 ```python
 # LangChain (Python)
 from langchain.document_loaders import PyPDFLoader
@@ -178,6 +194,7 @@ const docs = await pipeline.load('./document.pdf');
 ```
 
 2. **Embeddings**:
+
 ```python
 # LangChain
 from langchain.embeddings import OpenAIEmbeddings
@@ -192,6 +209,7 @@ const vectors = await pipeline.embed(texts);
 ```
 
 3. **Vector Stores**:
+
 ```python
 # LangChain
 from langchain.vectorstores import Pinecone
@@ -207,6 +225,7 @@ const results = await pipeline.retrieve(query);
 ```
 
 4. **LLM Integration**:
+
 ```python
 # LangChain
 from langchain.llms import OpenAI
@@ -215,7 +234,7 @@ response = llm(prompt)
 
 # @DevilsDev/rag-pipeline-utils
 const pipeline = createRagPipeline({
-  llm: { 
+  llm: {
     name: 'openai-gpt-4',
     config: { temperature: 0.7 }
   }
@@ -226,11 +245,13 @@ const response = await pipeline.generate(prompt);
 ### **Migrating from Haystack**
 
 **Architecture Mapping**:
+
 - Haystack Nodes → RAG Pipeline Plugins
 - Haystack Pipelines → RAG Pipeline Configurations
 - Haystack Document Stores → RAG Retrievers
 
 **Migration Example**:
+
 ```python
 # Haystack
 from haystack import Pipeline
@@ -252,12 +273,13 @@ const pipeline = createRagPipeline({
 **Common Migration Patterns**:
 
 1. **Custom Vector Search**:
+
 ```javascript
 // Custom implementation
 class CustomVectorSearch {
   async search(query, vectors) {
     // Custom similarity calculation
-    const similarities = vectors.map(v => cosineSimilarity(query, v));
+    const similarities = vectors.map((v) => cosineSimilarity(query, v));
     return similarities.sort((a, b) => b.score - a.score).slice(0, 5);
   }
 }
@@ -266,31 +288,32 @@ class CustomVectorSearch {
 class CustomRetriever extends BaseRetriever {
   constructor() {
     super();
-    this.name = 'custom-vector-search';
-    this.version = '1.0.0';
+    this.name = "custom-vector-search";
+    this.version = "1.0.0";
   }
 
   async retrieve(query, options = {}) {
     const queryVector = await this.embedder.embed(query);
     const results = await this.search(queryVector, this.vectors);
-    return results.map(r => ({
+    return results.map((r) => ({
       id: r.id,
       content: r.content,
       score: r.score,
-      metadata: r.metadata
+      metadata: r.metadata,
     }));
   }
 }
 ```
 
 2. **Custom Chunking Logic**:
+
 ```javascript
 // Custom implementation
 function chunkDocument(text, chunkSize = 1000) {
-  const sentences = text.split('.');
+  const sentences = text.split(".");
   const chunks = [];
-  let currentChunk = '';
-  
+  let currentChunk = "";
+
   for (const sentence of sentences) {
     if (currentChunk.length + sentence.length > chunkSize) {
       chunks.push(currentChunk);
@@ -299,7 +322,7 @@ function chunkDocument(text, chunkSize = 1000) {
       currentChunk += sentence;
     }
   }
-  
+
   return chunks;
 }
 
@@ -319,6 +342,7 @@ class CustomLoader extends BaseLoader {
 ### **Vector Store Migration**
 
 **Export from Existing System**:
+
 ```bash
 # Export vectors and metadata
 rag-pipeline export \
@@ -329,6 +353,7 @@ rag-pipeline export \
 ```
 
 **Import to New System**:
+
 ```bash
 # Import to new vector store
 rag-pipeline import \
@@ -339,31 +364,37 @@ rag-pipeline import \
 ```
 
 **Cross-Platform Migration**:
+
 ```javascript
 // Migration script
-import { createMigrator } from '@DevilsDev/rag-pipeline-utils';
+import { createMigrator } from "@DevilsDev/rag-pipeline-utils";
 
 const migrator = createMigrator({
   source: {
-    type: 'pinecone',
-    config: { /* source config */ }
+    type: "pinecone",
+    config: {
+      /* source config */
+    },
   },
   target: {
-    type: 'weaviate',
-    config: { /* target config */ }
-  }
+    type: "weaviate",
+    config: {
+      /* target config */
+    },
+  },
 });
 
 await migrator.migrate({
   batchSize: 500,
   parallel: 3,
-  validateIntegrity: true
+  validateIntegrity: true,
 });
 ```
 
 ### **Configuration Migration**
 
 **Automated Migration Tool**:
+
 ```bash
 # Migrate configuration files
 rag-pipeline migrate-config \
@@ -374,18 +405,19 @@ rag-pipeline migrate-config \
 ```
 
 **Manual Migration**:
+
 ```javascript
 // Migration helper
-import { migrateConfig } from '@DevilsDev/rag-pipeline-utils';
+import { migrateConfig } from "@DevilsDev/rag-pipeline-utils";
 
-const oldConfig = require('./old-config.json');
+const oldConfig = require("./old-config.json");
 const newConfig = migrateConfig(oldConfig, {
-  targetVersion: '2.1.0',
+  targetVersion: "2.1.0",
   preserveCustomFields: true,
-  updatePluginNames: true
+  updatePluginNames: true,
 });
 
-fs.writeFileSync('./.ragrc.json', JSON.stringify(newConfig, null, 2));
+fs.writeFileSync("./.ragrc.json", JSON.stringify(newConfig, null, 2));
 ```
 
 ---
@@ -395,6 +427,7 @@ fs.writeFileSync('./.ragrc.json', JSON.stringify(newConfig, null, 2));
 ### **Validation Strategy**
 
 1. **Configuration Validation**:
+
 ```bash
 # Validate migrated configuration
 rag-pipeline config validate --strict
@@ -404,6 +437,7 @@ rag-pipeline plugins list --validate
 ```
 
 2. **Functionality Testing**:
+
 ```bash
 # Test basic pipeline operations
 rag-pipeline query "test query" --dry-run
@@ -413,6 +447,7 @@ rag-pipeline evaluate ./test-queries.json --metrics bleu,rouge
 ```
 
 3. **Performance Comparison**:
+
 ```bash
 # Benchmark before migration
 rag-pipeline benchmark --baseline --output before-migration.json
@@ -424,6 +459,7 @@ rag-pipeline benchmark --compare before-migration.json
 ### **Rollback Strategy**
 
 **Backup Before Migration**:
+
 ```bash
 # Create complete backup
 rag-pipeline export --all --output pre-migration-backup.json
@@ -433,6 +469,7 @@ cp .ragrc.json .ragrc.json.pre-migration
 ```
 
 **Rollback Process**:
+
 ```bash
 # Restore from backup
 rag-pipeline import pre-migration-backup.json --overwrite
@@ -468,39 +505,39 @@ rag-pipeline migration verify --post-migration-tests
 
 ```javascript
 // Custom migration script
-import { 
+import {
   createMigrationPlan,
   executeMigration,
-  validateMigration 
-} from '@DevilsDev/rag-pipeline-utils';
+  validateMigration,
+} from "@DevilsDev/rag-pipeline-utils";
 
 async function migrateProject() {
   // 1. Create migration plan
   const plan = await createMigrationPlan({
-    from: '2.0.5',
-    to: '2.1.0',
-    projectPath: process.cwd()
+    from: "2.0.5",
+    to: "2.1.0",
+    projectPath: process.cwd(),
   });
 
-  console.log('Migration plan:', plan);
+  console.log("Migration plan:", plan);
 
   // 2. Execute migration
   const result = await executeMigration(plan, {
     backup: true,
     validateEachStep: true,
-    rollbackOnFailure: true
+    rollbackOnFailure: true,
   });
 
   // 3. Validate migration
   const validation = await validateMigration({
-    testSuite: './migration-tests.json',
-    performanceBaseline: './baseline-metrics.json'
+    testSuite: "./migration-tests.json",
+    performanceBaseline: "./baseline-metrics.json",
   });
 
   if (validation.success) {
-    console.log('Migration completed successfully!');
+    console.log("Migration completed successfully!");
   } else {
-    console.error('Migration validation failed:', validation.errors);
+    console.error("Migration validation failed:", validation.errors);
   }
 }
 
@@ -512,6 +549,7 @@ migrateProject().catch(console.error);
 ## 📋 **Migration Checklist**
 
 ### **Pre-Migration**
+
 - [ ] Backup all data and configurations
 - [ ] Document current system architecture
 - [ ] Identify custom plugins and integrations
@@ -519,6 +557,7 @@ migrateProject().catch(console.error);
 - [ ] Prepare rollback strategy
 
 ### **During Migration**
+
 - [ ] Follow migration guide step-by-step
 - [ ] Validate each migration step
 - [ ] Test functionality after each major change
@@ -526,6 +565,7 @@ migrateProject().catch(console.error);
 - [ ] Document any custom modifications needed
 
 ### **Post-Migration**
+
 - [ ] Run comprehensive functionality tests
 - [ ] Compare performance metrics
 - [ ] Validate data integrity
@@ -552,4 +592,4 @@ migrateProject().catch(console.error);
 
 ---
 
-*This migration guide ensures smooth transitions between versions and frameworks. For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md) or contact our migration specialists.*
+_This migration guide ensures smooth transitions between versions and frameworks. For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md) or contact our migration specialists._

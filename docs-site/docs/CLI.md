@@ -74,6 +74,7 @@ rag-pipeline init my-project --yes --template enterprise
 ```
 
 **Options:**
+
 - `--template <name>`: Use predefined template (enterprise, minimal, research)
 - `--plugins <list>`: Comma-separated list of plugins to include
 - `--yes, -y`: Skip interactive prompts
@@ -117,6 +118,7 @@ rag-pipeline config import config-backup.json
 ```
 
 **Options:**
+
 - `--format <type>`: Output format (json, yaml, table)
 - `--global, -g`: Operate on global configuration
 - `--local, -l`: Operate on local project configuration
@@ -165,6 +167,7 @@ rag-pipeline ingest ./docs --loader markdown --dry-run
 ```
 
 **Options:**
+
 - `--loader <name>`: Document loader to use (pdf, markdown, html, docx, auto)
 - `--embedder <name>`: Embedding model to use (openai, cohere, sentence-transformers)
 - `--chunk-size <number>`: Size of text chunks (default: 1000)
@@ -198,6 +201,7 @@ rag-pipeline status --component llm
 ```
 
 **Options:**
+
 - `--detailed, -d`: Show detailed statistics
 - `--format <type>`: Output format (table, json, yaml)
 - `--component <name>`: Check specific component status
@@ -243,6 +247,7 @@ rag-pipeline query "Plugin development guide" \
 ```
 
 **Options:**
+
 - `--llm <name>`: Language model to use
 - `--max-tokens <number>`: Maximum response tokens
 - `--temperature <number>`: Response creativity (0.0-1.0)
@@ -275,6 +280,7 @@ rag-pipeline chat --system "You are a helpful RAG expert assistant."
 ```
 
 **Options:**
+
 - `--llm <name>`: Language model for chat
 - `--temperature <number>`: Response creativity
 - `--history <file>`: Load/save conversation history
@@ -318,6 +324,7 @@ rag-pipeline evaluate ./queries.json \
 ```
 
 **Options:**
+
 - `--metrics <list>`: Evaluation metrics (bleu, rouge, bertscore, semantic, all)
 - `--output, -o <file>`: Output file for results
 - `--format <type>`: Output format (json, csv, xlsx)
@@ -354,6 +361,7 @@ rag-pipeline benchmark --stress \
 ```
 
 **Options:**
+
 - `--component <name>`: Benchmark specific component
 - `--queries <number>`: Number of test queries
 - `--concurrent <number>`: Concurrent requests
@@ -381,6 +389,7 @@ rag-pipeline dashboard --data ./evaluation-results.json
 ```
 
 **Options:**
+
 - `--port, -p <number>`: Port number (default: 3000)
 - `--host, -h <address>`: Host address (default: localhost)
 - `--auth`: Enable authentication
@@ -425,6 +434,7 @@ rag-pipeline plugins uninstall my-custom-plugin
 ```
 
 **Options:**
+
 - `--type <name>`: Filter by plugin type
 - `--installed`: Show only installed plugins
 - `--template <name>`: Plugin template (javascript, typescript)
@@ -453,6 +463,7 @@ rag-pipeline clear --all --confirm
 ```
 
 **Options:**
+
 - `--cache`: Clear cache only
 - `--embeddings`: Clear embeddings only
 - `--logs`: Clear log files
@@ -476,6 +487,7 @@ rag-pipeline rebuild --chunk-size 1500 --embedder openai
 ```
 
 **Options:**
+
 - `--force, -f`: Force rebuild without confirmation
 - `--chunk-size <number>`: New chunk size
 - `--embedder <name>`: New embedder to use
@@ -499,6 +511,7 @@ rag-pipeline export --components embeddings,config --output partial-backup.json
 ```
 
 **Options:**
+
 - `--output, -o <file>`: Output file
 - `--format <type>`: Export format (json, yaml)
 - `--compress, -c`: Compress export file
@@ -605,6 +618,7 @@ rag-pipeline doctor --fix --auto
 ```
 
 **Options:**
+
 - `--check <component>`: Check specific component
 - `--report`: Generate detailed diagnostic report
 - `--output, -o <file>`: Save report to file
@@ -772,7 +786,7 @@ docker exec rag-pipeline-prod rag-pipeline doctor --check all
 
 ```yaml
 # docker-compose.enterprise.yml
-version: '3.8'
+version: "3.8"
 services:
   rag-pipeline:
     image: rag-pipeline:enterprise
@@ -787,14 +801,14 @@ services:
       - prometheus
       - jaeger
       - elasticsearch
-  
+
   prometheus:
     image: prom/prometheus:latest
     ports:
       - "9091:9090"
     volumes:
       - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-  
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -823,19 +837,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run diagnostics
         run: npx rag-pipeline doctor --check all
-      
+
       - name: Run tests with mocking
         run: npm test
         env:
           RAG_MOCK_EXTERNAL_APIS: true
-  
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -849,4 +863,4 @@ jobs:
 
 ---
 
-*This comprehensive CLI reference covers all available commands and enterprise features in @DevilsDev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), explore [Enterprise Features](./Enterprise.md) for production deployments, or check [Observability](./Observability.md) for monitoring and alerting.*
+_This comprehensive CLI reference covers all available commands and enterprise features in @DevilsDev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), explore [Enterprise Features](./Enterprise.md) for production deployments, or check [Observability](./Observability.md) for monitoring and alerting._

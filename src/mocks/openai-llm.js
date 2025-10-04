@@ -8,7 +8,7 @@
 class OpenAILLM {
   constructor(_options = {}) {
     this.streamDelay = _options.streamDelay || 50; // ms between tokens
-    this.model = _options.model || 'gpt-3.5-turbo';
+    this.model = _options.model || "gpt-3.5-turbo";
   }
 
   /**
@@ -18,7 +18,9 @@ class OpenAILLM {
    * @returns {Promise<string>}
    */
   async generate(prompt, context) {
-    const contextText = Array.isArray(context) ? context.map(d => d.text || d).join(', ') : '';
+    const contextText = Array.isArray(context)
+      ? context.map((d) => d.text || d).join(", ")
+      : "";
     return `Generated answer using context: ${contextText}. Query: "${prompt}". This is a comprehensive response that addresses the user's question based on the retrieved information.`;
   }
 
@@ -28,10 +30,10 @@ class OpenAILLM {
    * @param {Array<{ text: string }>} context
    * @returns {AsyncIterable<string>} Stream of tokens
    */
-  async* generateStream(prompt, context) {
+  async *generateStream(prompt, context) {
     const fullResponse = await this.generate(prompt, context);
     const tokens = this.#tokenize(fullResponse);
-    
+
     for (const token of tokens) {
       // Simulate network delay between tokens
       await this.#delay(this.streamDelay);
@@ -48,7 +50,7 @@ class OpenAILLM {
   #tokenize(text) {
     // Simple word-based tokenization for demo purposes
     // In real implementation, this would use proper tokenization
-    return text.split(/\s+/).map(word => word + ' ');
+    return text.split(/\s+/).map((word) => word + " ");
   }
 
   /**
@@ -58,7 +60,7 @@ class OpenAILLM {
    * @returns {Promise<void>}
    */
   #delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -71,7 +73,5 @@ class OpenAILLM {
 }
 
 // Default export
-
-
 
 module.exports = OpenAILLM;

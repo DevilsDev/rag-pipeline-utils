@@ -3,8 +3,8 @@
  * Handles ML model training lifecycle and deployment orchestration
  */
 
-const { EventEmitter } = require('events');
-const crypto = require('crypto');
+const { EventEmitter } = require("events");
+const crypto = require("crypto");
 
 class ModelTrainingOrchestrator extends EventEmitter {
   constructor(options = {}) {
@@ -12,7 +12,7 @@ class ModelTrainingOrchestrator extends EventEmitter {
     this.config = {
       batchSize: options.batchSize || 32,
       learningRate: options.learningRate || 1e-4,
-      epochs: options.epochs || 10
+      epochs: options.epochs || 10,
     };
     this.trainingJobs = new Map();
     this.deployments = new Map();
@@ -24,13 +24,13 @@ class ModelTrainingOrchestrator extends EventEmitter {
     const job = {
       id: jobId,
       tenantId,
-      status: 'created',
+      status: "created",
       config,
       createdAt: Date.now(),
-      progress: 0
+      progress: 0,
     };
     this.trainingJobs.set(jobId, job);
-    this.emit('jobCreated', { jobId, tenantId });
+    this.emit("jobCreated", { jobId, tenantId });
     return jobId;
   }
 
@@ -39,25 +39,25 @@ class ModelTrainingOrchestrator extends EventEmitter {
     if (!job) {
       throw new Error(`Training job ${jobId} not found`);
     }
-    
-    job.status = 'training';
+
+    job.status = "training";
     job.startedAt = Date.now();
-    this.emit('training_started', { jobId });
-    
+    this.emit("training_started", { jobId });
+
     // Simulate training progress with faster completion for tests
     setTimeout(() => {
       job.progress = 0.5;
-      this.emit('training_progress', { jobId, progress: 0.5 });
+      this.emit("training_progress", { jobId, progress: 0.5 });
     }, 50);
-    
+
     setTimeout(() => {
-      job.status = 'completed';
+      job.status = "completed";
       job.progress = 1.0;
       job.completedAt = Date.now();
-      this.emit('training_completed', { jobId });
+      this.emit("training_completed", { jobId });
     }, 100);
-    
-    return { jobId, status: 'started' };
+
+    return { jobId, status: "started" };
   }
 
   getTrainingStatus(jobId) {
@@ -66,9 +66,9 @@ class ModelTrainingOrchestrator extends EventEmitter {
 
   async stopTraining(jobId) {
     const job = this.trainingJobs.get(jobId);
-    if (job && job.status === 'training') {
-      job.status = 'stopped';
-      this.emit('trainingStopped', { jobId });
+    if (job && job.status === "training") {
+      job.status = "stopped";
+      this.emit("trainingStopped", { jobId });
       return true;
     }
     return false;
@@ -79,8 +79,10 @@ class ModelTrainingOrchestrator extends EventEmitter {
     if (!job) {
       throw new Error(`Training job ${jobId} not found`);
     }
-    if (job.status !== 'completed') {
-      throw new Error(`Cannot deploy model: job ${jobId} is not completed (status: ${job.status})`);
+    if (job.status !== "completed") {
+      throw new Error(
+        `Cannot deploy model: job ${jobId} is not completed (status: ${job.status})`,
+      );
     }
 
     const deploymentId = crypto.randomUUID();
@@ -88,21 +90,25 @@ class ModelTrainingOrchestrator extends EventEmitter {
       id: deploymentId,
       jobId,
       modelId: `model_${jobId}`,
-      environment: deploymentConfig.environment || 'production',
-      status: 'deploying',
+      environment: deploymentConfig.environment || "production",
+      status: "deploying",
       deployedAt: Date.now(),
-      config: deploymentConfig
+      config: deploymentConfig,
     };
 
     this.deployments.set(deploymentId, deployment);
 
     // Simulate deployment process
     setTimeout(() => {
-      deployment.status = 'deployed';
-      this.emit('modelDeployed', { deploymentId, jobId, environment: deployment.environment });
+      deployment.status = "deployed";
+      this.emit("modelDeployed", {
+        deploymentId,
+        jobId,
+        environment: deployment.environment,
+      });
     }, 500);
 
-    this.emit('deploymentStarted', { deploymentId, jobId });
+    this.emit("deploymentStarted", { deploymentId, jobId });
     return deploymentId;
   }
 
@@ -115,17 +121,17 @@ class ModelTrainingOrchestrator extends EventEmitter {
     // Fallback simulation for backward compatibility
     return {
       id: deploymentId,
-      status: 'deployed',
+      status: "deployed",
       endpoint: `https://api.example.com/models/${deploymentId}`,
-      environment: 'production',
-      health: 'healthy',
+      environment: "production",
+      health: "healthy",
       metrics: {
         requestsPerSecond: 10 + Math.random() * 90,
         averageLatency: 50 + Math.random() * 200,
-        errorRate: Math.random() * 0.01
+        errorRate: Math.random() * 0.01,
       },
       deployedAt: Date.now() - Math.random() * 86400000,
-      lastHealthCheck: Date.now() - Math.random() * 300000
+      lastHealthCheck: Date.now() - Math.random() * 300000,
     };
   }
 
@@ -135,29 +141,29 @@ class ModelTrainingOrchestrator extends EventEmitter {
       id: optimizationId,
       tenantId,
       config: optimizationConfig,
-      status: 'running',
+      status: "running",
       startedAt: Date.now(),
       trials: [],
       bestConfiguration: null,
-      bestScore: -Infinity
+      bestScore: -Infinity,
     };
 
     this.optimizations.set(optimizationId, optimization);
-    this.emit('optimizationStarted', { optimizationId, tenantId });
+    this.emit("optimizationStarted", { optimizationId, tenantId });
 
     // Simulate hyperparameter optimization trials
     const { hyperparameters, optimization: optConfig } = optimizationConfig;
     const maxTrials = optConfig.maxTrials || 5;
-    
+
     for (let i = 0; i < maxTrials; i++) {
       // Generate random hyperparameter combination
       const trialConfig = {};
       for (const [param, values] of Object.entries(hyperparameters)) {
         trialConfig[param] = values[Math.floor(Math.random() * values.length)];
       }
-      
+
       const score = 0.6 + Math.random() * 0.3;
-      
+
       const trial = {
         id: crypto.randomUUID(),
         trialNumber: i + 1,
@@ -166,36 +172,36 @@ class ModelTrainingOrchestrator extends EventEmitter {
         metrics: {
           accuracy: score,
           loss: 1 - score,
-          trainingTime: 30000 + Math.random() * 60000
+          trainingTime: 30000 + Math.random() * 60000,
         },
-        completedAt: Date.now()
+        completedAt: Date.now(),
       };
-      
+
       optimization.trials.push(trial);
-      
+
       if (score > optimization.bestScore) {
         optimization.bestScore = score;
         optimization.bestConfiguration = trialConfig;
       }
-      
-      this.emit('optimizationProgress', {
+
+      this.emit("optimizationProgress", {
         optimizationId,
         trialNumber: i + 1,
         totalTrials: maxTrials,
-        bestScore: optimization.bestScore
+        bestScore: optimization.bestScore,
       });
-      
-      await new Promise(resolve => setTimeout(resolve, 50));
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    
-    optimization.status = 'completed';
+
+    optimization.status = "completed";
     optimization.completedAt = Date.now();
-    
-    this.emit('optimizationCompleted', {
+
+    this.emit("optimizationCompleted", {
       optimizationId,
       bestConfiguration: optimization.bestConfiguration,
       bestScore: optimization.bestScore,
-      totalTrials: optimization.trials.length
+      totalTrials: optimization.trials.length,
     });
 
     return optimizationId;
@@ -206,7 +212,7 @@ class ModelTrainingOrchestrator extends EventEmitter {
     if (!optimization) {
       throw new Error(`Optimization ${optimizationId} not found`);
     }
-    
+
     return {
       id: optimizationId,
       status: optimization.status,
@@ -214,7 +220,7 @@ class ModelTrainingOrchestrator extends EventEmitter {
       bestScore: optimization.bestScore,
       trials: optimization.trials,
       startedAt: optimization.startedAt,
-      completedAt: optimization.completedAt
+      completedAt: optimization.completedAt,
     };
   }
 }

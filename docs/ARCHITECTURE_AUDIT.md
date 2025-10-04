@@ -7,23 +7,27 @@ The RAG Pipeline Utils project is a comprehensive enterprise-grade Node.js monor
 ### Architectural Layers
 
 1. **Core Runtime Layer** (`src/core/`)
+
    - Pipeline execution engine
    - Plugin management system
    - Performance optimization components
    - Streaming and backpressure handling
 
 2. **AI/ML Layer** (`src/ai/`)
+
    - Large Language Model integrations
    - Federated learning capabilities
    - Vector embeddings and similarity search
    - Model optimization and caching
 
 3. **CLI & Developer Experience** (`src/cli/`)
+
    - Command-line interface with modular commands
    - Interactive wizards and configuration management
    - Developer tooling and diagnostics
 
 4. **Plugin Ecosystem** (`src/plugins/`, `src/ecosystem/`)
+
    - Plugin certification and marketplace
    - Analytics dashboard and monitoring
    - Hub management and discovery
@@ -38,44 +42,53 @@ The RAG Pipeline Utils project is a comprehensive enterprise-grade Node.js monor
 Based on dependency analysis of 225 JavaScript files:
 
 1. **src/ai/index.js** - 36,851 bytes (1,078 lines)
+
    - Main AI/ML orchestration module
    - 2 imports, 2 exports
    - Central hub for AI capabilities
 
 2. **src/cli/enhanced-cli-commands.js** - 31,398 bytes (837 lines)
+
    - Enhanced CLI command implementations
    - 13 imports, 4 exports
    - High complexity command processing
 
 3. **src/cli/commands/ai-ml.js** - 30,160 bytes (819 lines)
+
    - AI/ML specific CLI commands
    - 7 imports, 1 export
    - Specialized AI command handling
 
 4. **src/cli/commands/plugin-hub.js** - 28,591 bytes (763 lines)
+
    - Plugin marketplace CLI integration
    - 8 imports, 1 export
    - Plugin ecosystem management
 
 5. **src/cli/doctor-command.js** - 28,325 bytes (815 lines)
+
    - System diagnostics and health checks
    - 12 imports, 3 exports
    - Comprehensive system analysis
 
 6. **src/ai/federated-learning.js** - 27,713 bytes (870 lines)
+
    - Federated learning implementation
    - 2 imports, 1 export
    - Advanced ML capabilities
 
 7. **src/ecosystem/plugin-hub.js** - 27,200 bytes (720 lines)
+
    - Plugin hub core functionality
    - Plugin discovery and management
 
 8. **src/cli/interactive-wizard.js** - 26,800 bytes (695 lines)
+
    - Interactive setup and configuration
    - User experience optimization
 
 9. **src/enterprise/sso-integration.js** - 25,900 bytes (680 lines)
+
    - Enterprise SSO capabilities
    - Security and authentication
 
@@ -101,6 +114,7 @@ Analysis of 711 total imports across the codebase:
 ## Architectural Patterns
 
 ### Module System Compliance
+
 - **CommonJS Files:** 180 (80%)
 - **ESM Files:** 32 (14.2%)
 - **Mixed Files:** 13 (5.8%)
@@ -108,6 +122,7 @@ Analysis of 711 total imports across the codebase:
 **Finding:** Predominantly CommonJS with some ESM adoption. Mixed files indicate potential migration in progress.
 
 ### Plugin Boundaries
+
 - **Core Modules:** 89 files in `src/core/` and `src/`
 - **Plugin Modules:** 47 files in `src/plugins/` and `src/ecosystem/`
 - **CLI Modules:** 34 files in `src/cli/`
@@ -116,6 +131,7 @@ Analysis of 711 total imports across the codebase:
 **Finding:** Clear separation of concerns with well-defined plugin boundaries.
 
 ### Import/Export Patterns
+
 - **Total Imports:** 711 across 225 files (3.16 imports per file average)
 - **Total Exports:** 242 across 225 files (1.08 exports per file average)
 - **Import/Export Ratio:** 2.94:1 (healthy consumption vs. production ratio)
@@ -125,11 +141,13 @@ Analysis of 711 total imports across the codebase:
 ### High-Priority Risks
 
 1. **Large Module Complexity**
+
    - `src/ai/index.js` (1,078 lines) - Consider decomposition
    - `src/cli/enhanced-cli-commands.js` (837 lines) - Refactor into smaller commands
    - **Impact:** Maintenance difficulty, testing complexity
 
 2. **Mixed Module Systems**
+
    - 13 files mixing CommonJS and ESM
    - **Impact:** Potential runtime issues, bundling complications
    - **Files:** Various CLI and utility modules
@@ -141,10 +159,12 @@ Analysis of 711 total imports across the codebase:
 ### Medium-Priority Risks
 
 1. **File System Heavy Usage**
+
    - 138 `fs` imports across codebase
    - **Impact:** Potential I/O bottlenecks, testing challenges
 
 2. **Child Process Dependencies**
+
    - 43 `child_process` imports
    - **Impact:** Platform compatibility, security considerations
 
@@ -155,7 +175,9 @@ Analysis of 711 total imports across the codebase:
 ## Actionable Refactors (Small PR Slices)
 
 ### Phase 1: Module Decomposition
+
 1. **Split `src/ai/index.js`** into focused modules:
+
    - `src/ai/orchestrator.js` (main coordination)
    - `src/ai/model-manager.js` (model lifecycle)
    - `src/ai/inference-engine.js` (inference logic)
@@ -166,7 +188,9 @@ Analysis of 711 total imports across the codebase:
    - Implement lazy loading for commands
 
 ### Phase 2: Module System Standardization
+
 1. **Convert mixed files to consistent CommonJS**:
+
    - Standardize on CommonJS for Node.js compatibility
    - Update import/export patterns
    - Ensure ESLint compliance
@@ -177,7 +201,9 @@ Analysis of 711 total imports across the codebase:
    - Add interface documentation
 
 ### Phase 3: Dependency Optimization
+
 1. **Reduce fs coupling**:
+
    - Create centralized file system abstraction
    - Implement caching layer for frequent reads
    - Add async/await patterns consistently
@@ -190,12 +216,14 @@ Analysis of 711 total imports across the codebase:
 ## Plugin Architecture Assessment
 
 ### Strengths
+
 - Clear plugin boundaries with dedicated directories
 - Plugin hub and marketplace integration
 - Certification and analytics capabilities
 - Enterprise-grade plugin management
 
 ### Areas for Improvement
+
 - Plugin loading performance optimization needed
 - Better plugin dependency management
 - Enhanced plugin security sandboxing
@@ -204,12 +232,14 @@ Analysis of 711 total imports across the codebase:
 ## Performance Considerations
 
 ### Current Optimizations
+
 - Pipeline optimizer implementation
 - Memory profiler integration
 - Streaming safeguards for large data
 - Performance monitoring capabilities
 
 ### Recommended Improvements
+
 - Implement module lazy loading
 - Add connection pooling for external services
 - Optimize large file processing
@@ -218,12 +248,14 @@ Analysis of 711 total imports across the codebase:
 ## Security Architecture
 
 ### Current Security Features
+
 - Enterprise SSO integration
 - Audit logging capabilities
 - Plugin sandboxing mechanisms
 - Security policy enforcement
 
 ### Security Recommendations
+
 - Implement content security policies
 - Add input validation layers
 - Enhance secret management
@@ -232,12 +264,14 @@ Analysis of 711 total imports across the codebase:
 ## Testing Architecture
 
 ### Current Test Coverage
+
 - 225 JavaScript files analyzed
 - Comprehensive test suites for core functionality
 - Integration tests for plugin system
 - Performance benchmarking capabilities
 
 ### Testing Improvements Needed
+
 - Increase unit test coverage for large modules
 - Add contract testing for plugin interfaces
 - Implement chaos engineering tests
@@ -250,12 +284,14 @@ The RAG Pipeline Utils architecture demonstrates enterprise-grade design with cl
 **Overall Architecture Grade: A-**
 
 **Key Strengths:**
+
 - Well-defined layer separation
 - Comprehensive plugin architecture
 - Enterprise-ready features
 - Performance optimization focus
 
 **Priority Actions:**
+
 1. Decompose large modules (>800 lines)
 2. Standardize module system usage
 3. Optimize file system dependencies

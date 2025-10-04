@@ -4,7 +4,7 @@ title: Real-World Use Cases
 sidebar_position: 5
 ---
 
-##  Real-World Applications of RAG Pipeline Utils
+## Real-World Applications of RAG Pipeline Utils
 
 This project goes beyond traditional RAG tools — it’s a **developer-focused modular framework**. Here's how it’s used:
 
@@ -35,16 +35,16 @@ rag-utils evaluate --dataset tests/eval.json --llm anthropic
 **Use Case:** Embed RAG processing into a backend:
 
 ```js
-import { PluginRegistry, runPipeline } from 'rag-pipeline-utils';
+import { PluginRegistry, runPipeline } from "rag-pipeline-utils";
 
 const registry = new PluginRegistry();
-registry.register('embedder', 'openai', new OpenAIEmbedder());
+registry.register("embedder", "openai", new OpenAIEmbedder());
 
 const output = await runPipeline({
-  loader: 'pdf',
-  retriever: 'pinecone',
-  llm: 'openai',
-  query: 'How does this work?'
+  loader: "pdf",
+  retriever: "pinecone",
+  llm: "openai",
+  query: "How does this work?",
 });
 ```
 
@@ -64,7 +64,7 @@ const output = await runPipeline({
 
 ---
 
-###  Benefits
+### Benefits
 
 - **Pluggable** components via clean interfaces
 - **CLI + programmatic** access for flexible DX

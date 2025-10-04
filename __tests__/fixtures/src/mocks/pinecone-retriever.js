@@ -13,18 +13,18 @@ class PineconeRetriever {
    */
   async store(vectors) {
     // Simulate async storage
-    await new Promise(resolve => setTimeout(resolve, 5));
-    
-    this._store = vectors.map(v => ({
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    this._store = vectors.map((v) => ({
       id: v.id,
       values: v.values,
       metadata: v.metadata || {},
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
-    
+
     return {
       stored: vectors.length,
-      namespace: 'default'
+      namespace: "default",
     };
   }
 
@@ -39,35 +39,33 @@ class PineconeRetriever {
    */
   async retrieve(queryVector, options = {}) {
     const { topK = 5, filter = {}, threshold = 0.0 } = options;
-    
+
     // Simulate async retrieval
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
     let results = this._store
-      .map(v => {
+      .map((v) => {
         // Simple cosine similarity simulation
         const similarity = Math.random() * 0.4 + 0.6; // 0.6-1.0 range
         return {
           id: v.id,
           score: similarity,
-          metadata: v.metadata
+          metadata: v.metadata,
         };
       })
-      .filter(r => r.score >= threshold);
-    
+      .filter((r) => r.score >= threshold);
+
     // Apply metadata filtering
     if (Object.keys(filter).length > 0) {
-      results = results.filter(r => {
-        return Object.entries(filter).every(([key, value]) => 
-          r.metadata[key] === value
+      results = results.filter((r) => {
+        return Object.entries(filter).every(
+          ([key, value]) => r.metadata[key] === value,
         );
       });
     }
-    
+
     // Sort by score and limit results
-    return results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
+    return results.sort((a, b) => b.score - a.score).slice(0, topK);
   }
 }
 

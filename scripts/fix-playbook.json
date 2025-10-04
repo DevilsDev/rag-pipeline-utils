@@ -31,7 +31,10 @@
   "esmCjs": [
     {
       "rule": "Prefer CommonJS in tests",
-      "actions": ["replace import with require", "ensure module.exports not overridden later"],
+      "actions": [
+        "replace import with require",
+        "ensure module.exports not overridden later"
+      ],
       "description": "Jest configuration requires CommonJS for stability",
       "applied": false,
       "priority": "P0"
@@ -67,7 +70,11 @@
   "moduleResolution": [
     {
       "rule": "Fix empty exports and missing modules",
-      "actions": ["ensure proper module.exports", "fix import/require paths", "add missing files"],
+      "actions": [
+        "ensure proper module.exports",
+        "fix import/require paths",
+        "add missing files"
+      ],
       "description": "Module resolution failures from missing or malformed exports",
       "applied": false,
       "priority": "P0"
@@ -76,10 +83,17 @@
   "implementation": [
     {
       "rule": "Align test expectations with actual implementation",
-      "examples": ["certificationId field", "fetch call counts", "error message formats"],
+      "examples": [
+        "certificationId field",
+        "fetch call counts",
+        "error message formats"
+      ],
       "description": "Tests must match actual implementation behavior and signatures",
       "applied": true,
-      "files": ["src/ecosystem/plugin-hub.js", "__tests__/ecosystem/plugin-hub.test.js"]
+      "files": [
+        "src/ecosystem/plugin-hub.js",
+        "__tests__/ecosystem/plugin-hub.test.js"
+      ]
     }
   ],
   "mockContract": [
@@ -90,7 +104,7 @@
     },
     {
       "from": "_type",
-      "to": "type", 
+      "to": "type",
       "description": "Event property standardization"
     },
     {
@@ -101,11 +115,17 @@
   "cliSchema": [
     {
       "rule": "Keep schema strict; add defaults in loader/normalizer",
-      "examples": ["loadConfig() applies defaults", "schema validates structure"]
+      "examples": [
+        "loadConfig() applies defaults",
+        "schema validates structure"
+      ]
     },
     {
       "rule": "Error messages must be actionable for developers",
-      "examples": ["'Missing required field: apiKey'", "'Invalid format: expected URL'"]
+      "examples": [
+        "'Missing required field: apiKey'",
+        "'Invalid format: expected URL'"
+      ]
     }
   ]
 }

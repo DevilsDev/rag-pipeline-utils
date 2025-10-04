@@ -3,24 +3,32 @@
  * Verified publisher program with automated and manual review processes
  */
 
-const crypto = require('crypto'); // eslint-disable-line global-require
-const { EventEmitter } = require('events'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
+const { EventEmitter } = require('events'); // eslint-disable-line global-require
+
+function pickFetch(pref) {
+  // Prefer a provided fetch if it is a function; otherwise fall back to globalThis.fetch if available.
+  if (typeof pref === 'function') return pref;
+  if (typeof globalThis.fetch === 'function') return globalThis.fetch;
+  return null;
+}
 
 class PluginCertification extends EventEmitter {
   constructor(_options = {}) {
     super();
-    
+
     this._config = {
       registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
       apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
+      fetch: _options.fetch, // optional injected fetch for tests
       certificationLevels: {
         BASIC: { score: 60, automated: true },
         VERIFIED: { score: 80, manual: true },
-        ENTERPRISE: { score: 95, manual: true, audit: true }
+        ENTERPRISE: { score: 95, manual: true, audit: true },
       },
-      ..._options
+      ..._options,
     };
-    
+
     this.validators = new Map();
     this._initializeValidators();
   }
@@ -30,62 +38,81 @@ class PluginCertification extends EventEmitter {
    */
   async submitForCertification(pluginId, level = 'BASIC') {
     const submissionId = crypto.randomUUID();
-    
+
     try {
       this.emit('certification_start', { pluginId, level, submissionId });
-      
+
       // Validate certification level
       if (!this._config.certificationLevels[level]) {
         throw new Error(`Invalid certification level: ${level}`);
       }
-      
+
       const certLevel = this._config.certificationLevels[level];
-      
+
       // Run automated checks
-      this.emit('certification_progress', { submissionId, stage: 'automated_checks' });
+      this.emit('certification_progress', {
+        submissionId,
+        stage: 'automated_checks',
+      });
       const automatedResults = await this._runAutomatedChecks(pluginId);
-      
+
       // Calculate initial score
       const score = this._calculateScore(automatedResults);
-      
+
       if (score < certLevel.score) {
-        throw new Error(`Plugin score ${score} below required ${certLevel.score} for ${level} certification`);
+        throw new Error(
+          `Plugin score ${score} below required ${certLevel.score} for ${level} certification`,
+        );
       }
-      
+
       // Manual review if required
       let manualResults = null;
       if (certLevel.manual) {
-        this.emit('certification_progress', { submissionId, stage: 'manual_review' });
-        manualResults = await this._submitForManualReview(pluginId, level, automatedResults);
+        this.emit('certification_progress', {
+          submissionId,
+          stage: 'manual_review',
+        });
+        manualResults = await this._submitForManualReview(
+          pluginId,
+          level,
+          automatedResults,
+        );
       }
-      
+
       // Security audit if required
       let auditResults = null;
       if (certLevel.audit) {
-        this.emit('certification_progress', { submissionId, stage: 'security_audit' });
+        this.emit('certification_progress', {
+          submissionId,
+          stage: 'security_audit',
+        });
         auditResults = await this._performSecurityAudit(pluginId);
       }
-      
+
       // Generate certification
       const certification = await this._generateCertification(pluginId, level, {
         automated: automatedResults,
         manual: manualResults,
         audit: auditResults,
         score,
-        submissionId
+        submissionId,
       });
-      
-      this.emit('certification_complete', { 
-        pluginId, 
-        level, 
-        submissionId, 
-        certification 
+
+      this.emit('certification_complete', {
+        pluginId,
+        level,
+        submissionId,
+        certification,
       });
-      
+
       return certification;
-      
     } catch (error) {
-      this.emit('certification_error', { pluginId, level, submissionId, error });
+      this.emit('certification_error', {
+        pluginId,
+        level,
+        submissionId,
+        error,
+      });
       throw error;
     }
   }
@@ -95,15 +122,19 @@ class PluginCertification extends EventEmitter {
    */
   async verifyCertification(pluginId, certificationId) {
     try {
-      const response = await this._makeRequest('GET', `/certifications/${certificationId}/verify`, {
-        pluginId
-      });
-      
+      const response = await this._makeRequest(
+        'GET',
+        `/certifications/${certificationId}/verify`,
+        {
+          pluginId,
+        },
+      );
+
       return {
         valid: response.valid,
         certification: response.certification,
         expiresAt: response.expiresAt,
-        verifiedAt: new Date().toISOString()
+        verifiedAt: new Date().toISOString(),
       };
     } catch (error) {
       throw new Error(`Certification verification failed: ${error.message}`);
@@ -121,12 +152,12 @@ class PluginCertification extends EventEmitter {
           'Security vulnerability scan',
           'Performance benchmarks',
           'Documentation completeness',
-          'Test coverage analysis'
+          'Test coverage analysis',
         ],
         manual: [],
         audit: [],
         minScore: 60,
-        validityPeriod: '1 year'
+        validityPeriod: '1 year',
       },
       VERIFIED: {
         automated: [
@@ -136,17 +167,17 @@ class PluginCertification extends EventEmitter {
           'Documentation completeness',
           'Test coverage analysis',
           'Dependency analysis',
-          'License compliance'
+          'License compliance',
         ],
         manual: [
           'Code review by certified developer',
           'Functionality verification',
           'Integration testing',
-          'User experience evaluation'
+          'User experience evaluation',
         ],
         audit: [],
         minScore: 80,
-        validityPeriod: '2 years'
+        validityPeriod: '2 years',
       },
       ENTERPRISE: {
         automated: [
@@ -157,26 +188,26 @@ class PluginCertification extends EventEmitter {
           'Full test coverage analysis',
           'Dependency security analysis',
           'License and compliance check',
-          'Accessibility compliance'
+          'Accessibility compliance',
         ],
         manual: [
           'Senior developer code review',
           'Architecture review',
           'Security expert review',
           'Performance expert review',
-          'Documentation expert review'
+          'Documentation expert review',
         ],
         audit: [
           'Third-party security audit',
           'Penetration testing',
           'Compliance audit (SOC2, ISO27001)',
-          'Privacy impact assessment'
+          'Privacy impact assessment',
         ],
         minScore: 95,
-        validityPeriod: '3 years'
-      }
+        validityPeriod: '3 years',
+      },
     };
-    
+
     return requirements[level] || null;
   }
 
@@ -185,8 +216,11 @@ class PluginCertification extends EventEmitter {
    */
   async getPublisherStatus(publisherId) {
     try {
-      const response = await this._makeRequest('GET', `/publishers/${publisherId}/status`);
-      
+      const response = await this._makeRequest(
+        'GET',
+        `/publishers/${publisherId}/status`,
+      );
+
       return {
         verified: response.verified,
         level: response.level,
@@ -194,7 +228,7 @@ class PluginCertification extends EventEmitter {
         certifiedPlugins: response.certifiedPlugins || 0,
         reputation: response.reputation || 0,
         joinedAt: response.joinedAt,
-        lastActivity: response.lastActivity
+        lastActivity: response.lastActivity,
       };
     } catch (error) {
       throw new Error(`Failed to get publisher status: ${error.message}`);
@@ -206,21 +240,23 @@ class PluginCertification extends EventEmitter {
    */
   async applyForPublisherVerification(publisherInfo) {
     const applicationId = crypto.randomUUID();
-    
+
     try {
       const response = await this._makeRequest('POST', '/publishers/verify', {
         ...publisherInfo,
-        applicationId
+        applicationId,
       });
-      
+
       return {
         applicationId,
         status: response.status,
         estimatedReviewTime: response.estimatedReviewTime,
-        requirements: response.requirements
+        requirements: response.requirements,
       };
     } catch (error) {
-      throw new Error(`Publisher verification application failed: ${error.message}`);
+      throw new Error(
+        `Publisher verification application failed: ${error.message}`,
+      );
     }
   }
 
@@ -234,11 +270,11 @@ class PluginCertification extends EventEmitter {
         return {
           score: results.overallScore,
           details: results.details,
-          issues: results.issues
+          issues: results.issues,
         };
-      }
+      },
     });
-    
+
     // Security Validator
     this.validators.set('security', {
       weight: 30,
@@ -247,11 +283,11 @@ class PluginCertification extends EventEmitter {
         return {
           score: results.securityScore,
           vulnerabilities: results.vulnerabilities,
-          recommendations: results.recommendations
+          recommendations: results.recommendations,
         };
-      }
+      },
     });
-    
+
     // Performance Validator
     this.validators.set('performance', {
       weight: 20,
@@ -260,11 +296,11 @@ class PluginCertification extends EventEmitter {
         return {
           score: results.performanceScore,
           metrics: results.metrics,
-          bottlenecks: results.bottlenecks
+          bottlenecks: results.bottlenecks,
         };
-      }
+      },
     });
-    
+
     // Documentation Validator
     this.validators.set('documentation', {
       weight: 15,
@@ -273,11 +309,11 @@ class PluginCertification extends EventEmitter {
         return {
           score: results.completenessScore,
           coverage: results.coverage,
-          quality: results.quality
+          quality: results.quality,
         };
-      }
+      },
     });
-    
+
     // Testing Validator
     this.validators.set('testing', {
       weight: 10,
@@ -286,85 +322,91 @@ class PluginCertification extends EventEmitter {
         return {
           score: results.testScore,
           coverage: results.coverage,
-          quality: results.testQuality
+          quality: results.testQuality,
         };
-      }
+      },
     });
   }
 
   async _runAutomatedChecks(pluginId) {
     const results = {};
-    
+
     for (const [name, validator] of this.validators) {
       try {
         this.emit('validator_start', { pluginId, validator: name });
         results[name] = await validator.run(pluginId);
-        this.emit('validator_complete', { pluginId, validator: name, result: results[name] });
+        this.emit('validator_complete', {
+          pluginId,
+          validator: name,
+          result: results[name],
+        });
       } catch (error) {
         this.emit('validator_error', { pluginId, validator: name, error });
         results[name] = {
           score: 0,
-          error: error.message
+          error: error.message,
         };
       }
     }
-    
+
     return results;
   }
 
   _calculateScore(results) {
     let totalScore = 0;
     let totalWeight = 0;
-    
+
     for (const [name, validator] of this.validators) {
       if (results[name] && typeof results[name].score === 'number') {
         totalScore += results[name].score * validator.weight;
         totalWeight += validator.weight;
       }
     }
-    
+
     return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
   }
 
   async _submitForManualReview(pluginId, level, automatedResults) {
     const reviewId = crypto.randomUUID();
-    
+
     const response = await this._makeRequest('POST', '/reviews/manual', {
       pluginId,
       level,
       automatedResults,
-      reviewId
+      reviewId,
     });
-    
+
     return {
       reviewId: response.reviewId,
       status: response.status,
       estimatedCompletion: response.estimatedCompletion,
-      reviewers: response.reviewers
+      reviewers: response.reviewers,
     };
   }
 
   async _performSecurityAudit(pluginId) {
     const auditId = crypto.randomUUID();
-    
+
     const response = await this._makeRequest('POST', '/audits/security', {
       pluginId,
-      auditId
+      auditId,
     });
-    
+
     return {
       auditId: response.auditId,
       status: response.status,
       estimatedCompletion: response.estimatedCompletion,
-      auditor: response.auditor
+      auditor: response.auditor,
     };
   }
 
   async _generateCertification(pluginId, level, results) {
     const certificationId = crypto.randomUUID();
     const issuedAt = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year
-    
+    const expiresAt = new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000,
+    ).toISOString(); // 1 year
+
     const certification = {
       id: certificationId,
       pluginId,
@@ -375,15 +417,20 @@ class PluginCertification extends EventEmitter {
       results: {
         automated: results.automated,
         manual: results.manual,
-        audit: results.audit
+        audit: results.audit,
       },
       badge: this._generateBadge(level, results.score),
-      certificate: this._generateCertificate(pluginId, level, certificationId, issuedAt)
+      certificate: this._generateCertificate(
+        pluginId,
+        level,
+        certificationId,
+        issuedAt,
+      ),
     };
-    
+
     // Submit to registry
     await this._makeRequest('POST', '/certifications', certification);
-    
+
     return certification;
   }
 
@@ -392,27 +439,27 @@ class PluginCertification extends EventEmitter {
       BASIC: {
         name: 'RAG Pipeline Certified',
         color: '#28a745',
-        icon: '✓'
+        icon: '✓',
       },
       VERIFIED: {
         name: 'RAG Pipeline Verified',
         color: '#007bff',
-        icon: '✓✓'
+        icon: '✓✓',
       },
       ENTERPRISE: {
         name: 'RAG Pipeline Enterprise',
         color: '#6f42c1',
-        icon: '★'
-      }
+        icon: '★',
+      },
     };
-    
+
     const badge = badges[level];
-    
+
     return {
       ...badge,
       score,
       svg: this._generateBadgeSVG(badge, score),
-      markdown: `![${badge.name}](https://registry.rag-pipeline.dev/badges/${level.toLowerCase()}.svg)`
+      markdown: `![${badge.name}](https://registry.rag-pipeline.dev/badges/${level.toLowerCase()}.svg)`,
     };
   }
 
@@ -432,8 +479,13 @@ class PluginCertification extends EventEmitter {
       level,
       issuedAt,
       issuer: 'RAG Pipeline Certification Authority',
-      signature: this._generateSignature(certificationId, pluginId, level, issuedAt),
-      verificationUrl: `https://registry.rag-pipeline.dev/certifications/${certificationId}/verify`
+      signature: this._generateSignature(
+        certificationId,
+        pluginId,
+        level,
+        issuedAt,
+      ),
+      verificationUrl: `https://registry.rag-pipeline.dev/certifications/${certificationId}/verify`,
     };
   }
 
@@ -450,9 +502,9 @@ class PluginCertification extends EventEmitter {
       details: {
         complexity: 'low',
         maintainability: 'high',
-        reliability: 'high'
+        reliability: 'high',
       },
-      issues: []
+      issues: [],
     };
   }
 
@@ -461,7 +513,7 @@ class PluginCertification extends EventEmitter {
     return {
       securityScore: 90,
       vulnerabilities: [],
-      recommendations: []
+      recommendations: [],
     };
   }
 
@@ -472,9 +524,9 @@ class PluginCertification extends EventEmitter {
       metrics: {
         avgResponseTime: '150ms',
         throughput: '1000 ops/sec',
-        memoryUsage: '50MB'
+        memoryUsage: '50MB',
       },
-      bottlenecks: []
+      bottlenecks: [],
     };
   }
 
@@ -483,7 +535,7 @@ class PluginCertification extends EventEmitter {
     return {
       completenessScore: 75,
       coverage: 0.8,
-      quality: 'good'
+      quality: 'good',
     };
   }
 
@@ -492,32 +544,35 @@ class PluginCertification extends EventEmitter {
     return {
       testScore: 70,
       coverage: 0.85,
-      testQuality: 'good'
+      testQuality: 'good',
     };
   }
 
   async _makeRequest(method, endpoint, data = {}) {
+    const doFetch = pickFetch(this._config.fetch);
+    if (!doFetch) throw new Error('fetch is not available in this environment');
+
     const url = `${this._config.registryUrl}${endpoint}`;
-    
+
     const _options = {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this._config.apiKey}`
-      }
+        Authorization: `Bearer ${this._config.apiKey}`,
+      },
     };
-    
+
     if (method !== 'GET') {
       _options.body = JSON.stringify(data);
     }
-    
-    const response = await fetch(url, _options);
-    
+
+    const response = await doFetch(url, _options);
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.message || `HTTP ${response.status}`);
     }
-    
+
     return await response.json();
   }
 }

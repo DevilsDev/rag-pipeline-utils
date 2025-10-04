@@ -4,28 +4,20 @@ This file documents all third-party actions used in our workflows with their pin
 
 ## Action Pinning Reference
 
-| Action | Version | SHA | Release Date | Security Review |
-|--------|---------|-----|--------------|-----------------|
-| `actions/checkout` | v4.2.2 | `11bd71901bbe5b1630ceea73d27597364c9af683` | 2024-11-18 | ✅ Official GitHub action |
-| `actions/setup-node` | v4.1.0 | `39370e3970a6d050c480ffad4ff0ed4d3fdee5af` | 2024-10-07 | ✅ Official GitHub action |
-| `actions/cache` | v4.1.2 | `6849a6489cac3c0e0f0c8b8b4e0b7c8b8b4e0b7c` | 2024-11-15 | ✅ Official GitHub action |
-| `actions/upload-artifact` | v4.4.3 | `b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882` | 2024-12-19 | ✅ Official GitHub action |
-| `actions/download-artifact` | v4.1.8 | `fa0a91b85d4f404e444e00e005971372dc801d16` | 2024-09-30 | ✅ Official GitHub action |
-| `actions/github-script` | v7.0.1 | `60a0d83039c74a4aee543508d2ffcb1c3799cdea` | 2024-01-30 | ✅ Official GitHub action |
-| `docker/setup-buildx-action` | v3.7.1 | `c47758b77c9736f4b2ef4073d4d51994fabfe349` | 2024-10-29 | ✅ Official Docker action |
-| `docker/login-action` | v3.3.0 | `9780b0c442fbb1117ed29e0efdff1e18412f7567` | 2024-09-17 | ✅ Official Docker action |
-| `docker/metadata-action` | v5.5.1 | `8e5442c4ef9f78752691e2d8f8d19755c6f78e81` | 2024-09-03 | ✅ Official Docker action |
-| `docker/build-push-action` | v6.9.0 | `4f58ea79222b3b9dc2c8bbdd6debcef730109a75` | 2024-10-11 | ✅ Official Docker action |
-| `codecov/codecov-action` | v5.0.7 | `015f24e6818733317a2da2edd6290ab26238649a` | 2024-11-25 | ✅ Codecov official action |
-| `peaceiris/actions-gh-pages` | v4.0.0 | `4f9cc6602d3f66b9c108549d475ec49e8ef4d45e` | 2024-02-29 | ✅ Community action, high trust |
-| `8398a7/action-slack` | v3.16.2 | `28ba43ae48961b90ced0e3a2b7f9a3b3fb92dd30` | 2024-01-08 | ✅ Community action, reviewed |
-| `softprops/action-gh-release` | v2.0.8 | `c062e08bd532815e2082a85e87e3ef29c3e6d191` | 2024-09-24 | ✅ Community action, high trust |
-| `azure/setup-helm` | v4.2.0 | `fe7b79cd5ee1e45176fcad797de68a8e2eca42f2` | 2024-06-05 | ✅ Official Azure action |
-| `azure/setup-kubectl` | v4.0.0 | `3e0aec4d80787158d308d7b364cb1b702e7feb7f` | 2024-01-30 | ✅ Official Azure action |
-| `aquasecurity/trivy-action` | v0.28.0 | `5681af892cd0b2d4b9b5d1187e3e5aab2ca8b2d4` | 2024-11-28 | ✅ Security scanner, official |
-| `anchore/sbom-action` | v0.17.7 | `fc46c5c7c2cb6649b4c52b9b4b5d1187e3e5aab2` | 2024-10-15 | ✅ SBOM generation, official |
-| `github/codeql-action/upload-sarif` | v3.27.6 | `ea9e4e37992a54ee68a9622e985e60c8e8f12d9f` | 2024-12-19 | ✅ Official GitHub security action |
-| `actions/dependency-review-action` | v4.4.0 | `4081bf99e2866ebe428fc0477b69eb4fcda7220a` | 2024-11-25 | ✅ Official GitHub security action |
+| Action                              | Version  | SHA                                        | Release Date | Security Review                    |
+| ----------------------------------- | -------- | ------------------------------------------ | ------------ | ---------------------------------- |
+| `actions/checkout`                  | v4.1.7   | `692973e3d937129bcbf40652eb9f2f61becf3332` | 2024-07-16   | ✅ Official GitHub action          |
+| `actions/setup-node`                | v4.0.3   | `1e60f620b9541d16bece96c5465dc8ee9832be0b` | 2024-08-15   | ✅ Official GitHub action          |
+| `actions/configure-pages`           | v5.0.0   | `983d7736d9b0ae728b81ab479565c72886d7745b` | 2024-09-30   | ✅ Official GitHub action          |
+| `actions/upload-pages-artifact`     | v3.0.1   | `56afc609e74202658d3ffba0e8f6dda462b719fa` | 2024-02-09   | ✅ Official GitHub action          |
+| `actions/deploy-pages`              | v4.0.5   | `d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e` | 2024-03-22   | ✅ Official GitHub action          |
+| `step-security/harden-runner`       | v2.10.1  | `91182cccc01eb5e619899d80e4e971d6181294a7` | 2024-10-01   | ✅ Security hardening action       |
+| `github/codeql-action/init`         | v3.26.10 | `e2b3eafc8d227b0241d48be5f425d47c2d750a13` | 2024-10-25   | ✅ Official GitHub security action |
+| `github/codeql-action/analyze`      | v3.26.10 | `e2b3eafc8d227b0241d48be5f425d47c2d750a13` | 2024-10-25   | ✅ Official GitHub security action |
+| `github/codeql-action/autobuild`    | v3.26.10 | `e2b3eafc8d227b0241d48be5f425d47c2d750a13` | 2024-10-25   | ✅ Official GitHub security action |
+| `github/codeql-action/upload-sarif` | v3.26.10 | `e2b3eafc8d227b0241d48be5f425d47c2d750a13` | 2024-10-25   | ✅ Official GitHub security action |
+| `codecov/codecov-action`            | v4.5.0   | `e28ff129e5465c2c0dcc6f003fc735cb6ae0c673` | 2024-07-12   | ✅ Codecov official action         |
+| `ossf/scorecard-action`             | v2.4.0   | `62b2cac7ed8198b15735ed49ab1e5cf35480ba46` | 2024-10-07   | ✅ OSSF security scorecard         |
 
 ## Security Review Process
 
@@ -50,8 +42,29 @@ When updating an action:
 - **Secondary**: Platform Engineering Team
 - **Emergency**: Security Incident Response Team
 
+## How to Bump Actions
+
+To update an action to a newer version:
+
+1. **Find the latest release**: Check the action's GitHub repository releases page
+2. **Get the commit SHA**: Copy the full commit SHA for the release tag
+3. **Update workflows**: Replace the SHA in all workflow files that use the action
+4. **Update this lockfile**: Update the version, SHA, and release date in the table above
+5. **Test thoroughly**: Run workflows in a test environment before merging
+6. **Security review**: Verify the action source and review any permission changes
+
+## Example Update Process
+
+```bash
+# Find the latest release SHA for actions/checkout
+git ls-remote --tags https://github.com/actions/checkout.git
+# Update workflow files with new SHA
+# Update this lockfile with new version info
+# Test in PR before merging
+```
+
 ---
 
-**Last Updated**: 2025-08-08  
-**Next Review**: 2025-11-08  
-**Maintained By**: Developer Experience & Quality Automation Lead
+**Last Updated**: 2025-01-04  
+**Next Review**: 2025-04-04  
+**Maintained By**: DevOps Security Team

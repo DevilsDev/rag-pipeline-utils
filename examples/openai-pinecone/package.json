@@ -1,0 +1,26 @@
+{
+  "name": "rag-pipeline-openai-pinecone-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Complete RAG pipeline example using OpenAI embeddings/LLM with Pinecone vector store",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "mock": "USE_MOCK_MODE=true node index.js"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "^2.1.8",
+    "@pinecone-database/pinecone": "^5.1.1",
+    "dotenv": "^16.5.0",
+    "openai": "^4.93.0"
+  },
+  "keywords": [
+    "rag",
+    "openai",
+    "pinecone",
+    "vector-search",
+    "llm"
+  ],
+  "author": "DevilsDev",
+  "license": "GPL-3.0"
+}

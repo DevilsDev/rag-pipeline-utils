@@ -1,64 +1,33 @@
 /**
- * AI/ML Module Index - Refactored to use extracted bounded contexts
- * Provides unified interface to decomposed AI components
+ * AI/ML Module Index - Decomposed Architecture
+ * Provides unified interface to 4 separate AI modules as required by CLAUDE.md
+ *
+ * Decomposed modules:
+ * - orchestrator.js - ModelTrainingOrchestrator
+ * - retrieval-engine.js - AdaptiveRetrievalEngine
+ * - multimodal.js - MultiModalProcessor
+ * - federation.js - FederatedLearningCoordinator
  */
 
-const { ModelTrainingOrchestrator } = require('./training/model-training-orchestrator');
-const { AdaptiveRetrievalEngine } = require('./retrieval/adaptive-retrieval-engine');
-const { MultiModalProcessor } = require('./multimodal/multi-modal-processor');
-const { FederatedLearningCoordinator } = require('./federation/federated-learning-coordinator');
-const { logger } = require('../utils/logger');
+const orchestrator = require("./orchestrator");
+const retrievalEngine = require("./retrieval-engine");
+const multimodal = require("./multimodal");
+const federation = require("./federation");
 
-/**
- * AI Module Factory - Creates and manages AI component instances
- */
-class AIModuleFactory {
-  constructor() {
-    this.instances = new Map();
-  }
-
-  createTrainingOrchestrator(options = {}) {
-    const instance = new ModelTrainingOrchestrator(options);
-    this.instances.set('training', instance);
-    logger.info('ModelTrainingOrchestrator created', { options });
-    return instance;
-  }
-
-  createRetrievalEngine(options = {}) {
-    const instance = new AdaptiveRetrievalEngine(options);
-    this.instances.set('retrieval', instance);
-    logger.info('AdaptiveRetrievalEngine created', { options });
-    return instance;
-  }
-
-  createMultiModalProcessor(options = {}) {
-    const instance = new MultiModalProcessor(options);
-    this.instances.set('multimodal', instance);
-    logger.info('MultiModalProcessor created', { options });
-    return instance;
-  }
-
-  createFederationCoordinator(options = {}) {
-    const instance = new FederatedLearningCoordinator(options);
-    this.instances.set('federation', instance);
-    logger.info('FederatedLearningCoordinator created', { options });
-    return instance;
-  }
-
-  getInstance(type) {
-    return this.instances.get(type);
-  }
-
-  getAllInstances() {
-    return Object.fromEntries(this.instances);
-  }
-}
-
-// Backward compatibility exports
+// Export the decomposed modules
 module.exports = {
-  ModelTrainingOrchestrator,
-  AdaptiveRetrievalEngine,
-  MultiModalProcessor,
-  FederatedLearningCoordinator,
-  AIModuleFactory
+  // Primary exports with new decomposed architecture
+  ModelTrainingOrchestrator: orchestrator,
+  AdaptiveRetrievalEngine: retrievalEngine,
+  MultiModalProcessor: multimodal,
+  FederatedLearningCoordinator: federation,
+
+  // Legacy names for backward compatibility
+  modelTrainer: orchestrator,
+  adaptiveRetrieval: retrievalEngine,
+  multiModalProcessor: multimodal,
+  federatedLearning: federation,
 };
+
+// CJS+ESM interop pattern
+module.exports.default = module.exports;
