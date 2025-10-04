@@ -5,8 +5,8 @@
 
 class SampleEmbedder {
   constructor(options = {}) {
-    this.name = "sample-embedder";
-    this.version = "1.0.0";
+    this.name = 'sample-embedder';
+    this.version = '1.0.0';
     this.options = options;
 
     // Configurable batch size from environment or options
@@ -31,7 +31,7 @@ class SampleEmbedder {
         this.options.onProgress({
           processed: Math.min(i + this.batchSize, texts.length),
           total: texts.length,
-          stage: "embedding",
+          stage: 'embedding',
         });
       }
     }

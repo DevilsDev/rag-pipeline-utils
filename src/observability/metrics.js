@@ -5,13 +5,13 @@
  * Provides Counter, Histogram, and PipelineMetrics classes for comprehensive observability.
  */
 
-const EventEmitter = require("events"); // eslint-disable-line global-require
+const EventEmitter = require('events'); // eslint-disable-line global-require
 
 /**
  * Counter metric for tracking cumulative values
  */
 class Counter extends EventEmitter {
-  constructor(name, description = "", labels = []) {
+  constructor(name, description = '', labels = []) {
     super();
 
     this.name = name;
@@ -28,7 +28,7 @@ class Counter extends EventEmitter {
   inc(amount = 1, labelValues = {}) {
     if (amount < 0) {
       throw new Error(
-        "Counter can only be incremented by non-negative amounts",
+        'Counter can only be incremented by non-negative amounts',
       );
     }
 
@@ -40,7 +40,7 @@ class Counter extends EventEmitter {
       this.labeledValues.set(labelKey, current + amount);
     }
 
-    this.emit("increment", { amount, labelValues, timestamp: Date.now() });
+    this.emit('increment', { amount, labelValues, timestamp: Date.now() });
   }
 
   /**
@@ -66,7 +66,7 @@ class Counter extends EventEmitter {
       this.labeledValues.set(labelKey, 0);
     }
 
-    this.emit("reset", { labelValues, timestamp: Date.now() });
+    this.emit('reset', { labelValues, timestamp: Date.now() });
   }
 
   /**
@@ -87,7 +87,7 @@ class Counter extends EventEmitter {
    */
   _getLabelKey(labelValues) {
     const sortedKeys = Object.keys(labelValues).sort();
-    return sortedKeys.map((key) => `${key}=${labelValues[key]}`).join(",");
+    return sortedKeys.map((key) => `${key}=${labelValues[key]}`).join(',');
   }
 
   /**
@@ -97,7 +97,7 @@ class Counter extends EventEmitter {
     return {
       name: this.name,
       description: this.description,
-      type: "counter",
+      type: 'counter',
       value: this.value,
       labeledValues: Object.fromEntries(this.labeledValues),
       created: this.created,
@@ -110,7 +110,7 @@ class Counter extends EventEmitter {
  * Histogram metric for tracking distributions of values
  */
 class Histogram extends EventEmitter {
-  constructor(name, description = "", buckets = [0.1, 0.5, 1, 2.5, 5, 10]) {
+  constructor(name, description = '', buckets = [0.1, 0.5, 1, 2.5, 5, 10]) {
     super();
 
     this.name = name;
@@ -126,15 +126,15 @@ class Histogram extends EventEmitter {
     for (const bucket of this.buckets) {
       this.bucketCounts.set(bucket, 0);
     }
-    this.bucketCounts.set("+Inf", 0);
+    this.bucketCounts.set('+Inf', 0);
   }
 
   /**
    * Observe a value
    */
   observe(value, labelValues = {}) {
-    if (typeof value !== "number" || isNaN(value)) {
-      throw new Error("Histogram can only observe numeric values");
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw new Error('Histogram can only observe numeric values');
     }
 
     if (Object.keys(labelValues).length === 0) {
@@ -143,7 +143,7 @@ class Histogram extends EventEmitter {
       this._observeLabeled(value, labelValues);
     }
 
-    this.emit("observe", { value, labelValues, timestamp: Date.now() });
+    this.emit('observe', { value, labelValues, timestamp: Date.now() });
   }
 
   /**
@@ -159,7 +159,7 @@ class Histogram extends EventEmitter {
         this.bucketCounts.set(bucket, this.bucketCounts.get(bucket) + 1);
       }
     }
-    this.bucketCounts.set("+Inf", this.bucketCounts.get("+Inf") + 1);
+    this.bucketCounts.set('+Inf', this.bucketCounts.get('+Inf') + 1);
   }
 
   /**
@@ -180,7 +180,7 @@ class Histogram extends EventEmitter {
       for (const bucket of this.buckets) {
         metric.bucketCounts.set(bucket, 0);
       }
-      metric.bucketCounts.set("+Inf", 0);
+      metric.bucketCounts.set('+Inf', 0);
     }
 
     const metric = this.labeledMetrics.get(labelKey);
@@ -193,7 +193,7 @@ class Histogram extends EventEmitter {
         metric.bucketCounts.set(bucket, metric.bucketCounts.get(bucket) + 1);
       }
     }
-    metric.bucketCounts.set("+Inf", metric.bucketCounts.get("+Inf") + 1);
+    metric.bucketCounts.set('+Inf', metric.bucketCounts.get('+Inf') + 1);
   }
 
   /**
@@ -251,7 +251,7 @@ class Histogram extends EventEmitter {
         cumulativeCount += count;
         if (cumulativeCount >= targetCount) {
           result[`p${percentile}`] =
-            bucket === "+Inf" ? Infinity : parseFloat(bucket);
+            bucket === '+Inf' ? Infinity : parseFloat(bucket);
           break;
         }
       }
@@ -265,7 +265,7 @@ class Histogram extends EventEmitter {
    */
   _getLabelKey(labelValues) {
     const sortedKeys = Object.keys(labelValues).sort();
-    return sortedKeys.map((key) => `${key}=${labelValues[key]}`).join(",");
+    return sortedKeys.map((key) => `${key}=${labelValues[key]}`).join(',');
   }
 
   /**
@@ -278,13 +278,13 @@ class Histogram extends EventEmitter {
       for (const bucket of this.buckets) {
         this.bucketCounts.set(bucket, 0);
       }
-      this.bucketCounts.set("+Inf", 0);
+      this.bucketCounts.set('+Inf', 0);
     } else {
       const labelKey = this._getLabelKey(labelValues);
       this.labeledMetrics.delete(labelKey);
     }
 
-    this.emit("reset", { labelValues, timestamp: Date.now() });
+    this.emit('reset', { labelValues, timestamp: Date.now() });
   }
 
   /**
@@ -303,7 +303,7 @@ class Histogram extends EventEmitter {
     return {
       name: this.name,
       description: this.description,
-      type: "histogram",
+      type: 'histogram',
       buckets: this.buckets,
       count: this.count,
       sum: this.sum,
@@ -344,46 +344,46 @@ class PipelineMetrics extends EventEmitter {
   initializeMetrics() {
     // Execution counters
     this.metrics.set(
-      "executions_total",
+      'executions_total',
       new Counter(
-        "pipeline_executions_total",
-        "Total number of pipeline executions",
-        ["status", "component"],
+        'pipeline_executions_total',
+        'Total number of pipeline executions',
+        ['status', 'component'],
       ),
     );
 
     this.metrics.set(
-      "documents_processed",
+      'documents_processed',
       new Counter(
-        "pipeline_documents_processed_total",
-        "Total number of documents processed",
-        ["component", "source"],
+        'pipeline_documents_processed_total',
+        'Total number of documents processed',
+        ['component', 'source'],
       ),
     );
 
     this.metrics.set(
-      "errors_total",
-      new Counter("pipeline_errors_total", "Total number of errors", [
-        "component",
-        "error_type",
+      'errors_total',
+      new Counter('pipeline_errors_total', 'Total number of errors', [
+        'component',
+        'error_type',
       ]),
     );
 
     // Duration histograms
     this.metrics.set(
-      "execution_duration",
+      'execution_duration',
       new Histogram(
-        "pipeline_execution_duration_seconds",
-        "Pipeline execution duration in seconds",
+        'pipeline_execution_duration_seconds',
+        'Pipeline execution duration in seconds',
         [0.1, 0.5, 1, 2, 5, 10, 30, 60],
       ),
     );
 
     this.metrics.set(
-      "component_duration",
+      'component_duration',
       new Histogram(
-        "pipeline_component_duration_seconds",
-        "Component execution duration in seconds",
+        'pipeline_component_duration_seconds',
+        'Component execution duration in seconds',
         [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
       ),
     );
@@ -391,19 +391,19 @@ class PipelineMetrics extends EventEmitter {
     // Performance metrics
     if (this.options.enablePerformanceMetrics) {
       this.metrics.set(
-        "memory_usage",
+        'memory_usage',
         new Histogram(
-          "pipeline_memory_usage_bytes",
-          "Memory usage during pipeline execution",
+          'pipeline_memory_usage_bytes',
+          'Memory usage during pipeline execution',
           [1e6, 10e6, 50e6, 100e6, 500e6, 1e9], // 1MB to 1GB
         ),
       );
 
       this.metrics.set(
-        "throughput",
+        'throughput',
         new Histogram(
-          "pipeline_throughput_docs_per_second",
-          "Document processing throughput",
+          'pipeline_throughput_docs_per_second',
+          'Document processing throughput',
           [1, 5, 10, 50, 100, 500],
         ),
       );
@@ -418,14 +418,14 @@ class PipelineMetrics extends EventEmitter {
       id: executionId,
       startTime: Date.now(),
       endTime: null,
-      status: "running",
+      status: 'running',
       metadata,
       components: [],
       errors: [],
     };
 
     this.executionHistory.push(execution);
-    this.emit("executionStarted", { executionId, execution });
+    this.emit('executionStarted', { executionId, execution });
 
     return execution;
   }
@@ -433,7 +433,7 @@ class PipelineMetrics extends EventEmitter {
   /**
    * Record pipeline execution completion
    */
-  recordExecutionEnd(executionId, status = "success", metadata = {}) {
+  recordExecutionEnd(executionId, status = 'success', metadata = {}) {
     const execution = this.executionHistory.find((e) => e.id === executionId);
     if (!execution) {
       throw new Error(`Execution ${executionId} not found`);
@@ -446,10 +446,10 @@ class PipelineMetrics extends EventEmitter {
     const duration = (execution.endTime - execution.startTime) / 1000; // Convert to seconds
 
     // Update metrics
-    this.metrics.get("executions_total").inc(1, { status });
-    this.metrics.get("execution_duration").observe(duration);
+    this.metrics.get('executions_total').inc(1, { status });
+    this.metrics.get('execution_duration').observe(duration);
 
-    this.emit("executionCompleted", { executionId, execution, duration });
+    this.emit('executionCompleted', { executionId, execution, duration });
 
     return execution;
   }
@@ -462,7 +462,7 @@ class PipelineMetrics extends EventEmitter {
     componentId,
     componentType,
     duration,
-    status = "success",
+    status = 'success',
     metadata = {},
   ) {
     const execution = this.executionHistory.find((e) => e.id === executionId);
@@ -479,13 +479,13 @@ class PipelineMetrics extends EventEmitter {
 
     // Update metrics
     this.metrics
-      .get("executions_total")
+      .get('executions_total')
       .inc(1, { status, component: componentType });
     this.metrics
-      .get("component_duration")
+      .get('component_duration')
       .observe(duration / 1000, { component: componentType });
 
-    this.emit("componentExecuted", {
+    this.emit('componentExecuted', {
       executionId,
       componentId,
       componentType,
@@ -497,11 +497,11 @@ class PipelineMetrics extends EventEmitter {
   /**
    * Record document processing
    */
-  recordDocumentProcessed(componentType, source = "unknown", count = 1) {
+  recordDocumentProcessed(componentType, source = 'unknown', count = 1) {
     this.metrics
-      .get("documents_processed")
+      .get('documents_processed')
       .inc(count, { component: componentType, source });
-    this.emit("documentsProcessed", { componentType, source, count });
+    this.emit('documentsProcessed', { componentType, source, count });
   }
 
   /**
@@ -509,7 +509,7 @@ class PipelineMetrics extends EventEmitter {
    */
   recordError(componentType, errorType, error, executionId = null) {
     this.metrics
-      .get("errors_total")
+      .get('errors_total')
       .inc(1, { component: componentType, error_type: errorType });
 
     if (executionId) {
@@ -524,7 +524,7 @@ class PipelineMetrics extends EventEmitter {
       }
     }
 
-    this.emit("errorRecorded", {
+    this.emit('errorRecorded', {
       componentType,
       errorType,
       error,
@@ -538,15 +538,15 @@ class PipelineMetrics extends EventEmitter {
   recordPerformanceMetrics(memoryUsage, throughput) {
     if (this.options.enablePerformanceMetrics) {
       if (memoryUsage !== undefined) {
-        this.metrics.get("memory_usage").observe(memoryUsage);
+        this.metrics.get('memory_usage').observe(memoryUsage);
       }
 
       if (throughput !== undefined) {
-        this.metrics.get("throughput").observe(throughput);
+        this.metrics.get('throughput').observe(throughput);
       }
     }
 
-    this.emit("performanceRecorded", { memoryUsage, throughput });
+    this.emit('performanceRecorded', { memoryUsage, throughput });
   }
 
   /**
@@ -574,12 +574,12 @@ class PipelineMetrics extends EventEmitter {
     const now = Date.now();
     const uptime = now - this.startTime;
 
-    const totalExecutions = this.metrics.get("executions_total").get();
-    const totalErrors = this.metrics.get("errors_total").get();
-    const totalDocuments = this.metrics.get("documents_processed").get();
+    const totalExecutions = this.metrics.get('executions_total').get();
+    const totalErrors = this.metrics.get('errors_total').get();
+    const totalDocuments = this.metrics.get('documents_processed').get();
 
-    const executionStats = this.metrics.get("execution_duration").getStats();
-    const componentStats = this.metrics.get("component_duration").getStats();
+    const executionStats = this.metrics.get('execution_duration').getStats();
+    const componentStats = this.metrics.get('component_duration').getStats();
 
     return {
       pipelineId: this.pipelineId,
@@ -600,7 +600,7 @@ class PipelineMetrics extends EventEmitter {
   /**
    * Export all metrics data
    */
-  exportMetrics(format = "json") {
+  exportMetrics(format = 'json') {
     const data = {
       pipelineId: this.pipelineId,
       timestamp: Date.now(),
@@ -610,7 +610,7 @@ class PipelineMetrics extends EventEmitter {
       executionHistory: this.executionHistory,
     };
 
-    if (format === "prometheus") {
+    if (format === 'prometheus') {
       return this._exportPrometheusFormat(data);
     }
 
@@ -627,7 +627,7 @@ class PipelineMetrics extends EventEmitter {
       lines.push(`# HELP ${metric.name} ${metric.description}`);
       lines.push(`# TYPE ${metric.name} ${metric.type}`);
 
-      if (metric.type === "counter") {
+      if (metric.type === 'counter') {
         if (
           metric.labeledValues &&
           Object.keys(metric.labeledValues).length > 0
@@ -638,20 +638,20 @@ class PipelineMetrics extends EventEmitter {
         } else {
           lines.push(`${metric.name} ${metric.value}`);
         }
-      } else if (metric.type === "histogram") {
+      } else if (metric.type === 'histogram') {
         // Histogram buckets
         for (const [bucket, count] of Object.entries(metric.bucketCounts)) {
-          const le = bucket === "+Inf" ? "+Inf" : bucket;
+          const le = bucket === '+Inf' ? '+Inf' : bucket;
           lines.push(`${metric.name}_bucket{le="${le}"} ${count}`);
         }
         lines.push(`${metric.name}_sum ${metric.sum}`);
         lines.push(`${metric.name}_count ${metric.count}`);
       }
 
-      lines.push("");
+      lines.push('');
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
   /**
@@ -663,7 +663,7 @@ class PipelineMetrics extends EventEmitter {
       (e) => e.startTime > cutoffTime,
     );
 
-    this.emit("cleanup", {
+    this.emit('cleanup', {
       removedCount: this.executionHistory.length,
       retainedCount: this.executionHistory.length,
     });
@@ -680,7 +680,7 @@ class PipelineMetrics extends EventEmitter {
     this.executionHistory = [];
     this.startTime = Date.now();
 
-    this.emit("reset", { timestamp: Date.now() });
+    this.emit('reset', { timestamp: Date.now() });
   }
 }
 

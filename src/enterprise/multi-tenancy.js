@@ -3,13 +3,13 @@
  * Isolated workspaces, resource quotas, and tenant management
  */
 
-const fs = require("fs").promises;
+const fs = require('fs').promises;
 // eslint-disable-line global-require
-const path = require("path");
+const path = require('path');
 // eslint-disable-line global-require
-const crypto = require("crypto");
+const crypto = require('crypto');
 // eslint-disable-line global-require
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 
 class TenantManager extends EventEmitter {
@@ -17,7 +17,7 @@ class TenantManager extends EventEmitter {
     super();
 
     this._config = {
-      dataDir: _options.dataDir || path.join(process.cwd(), ".rag-enterprise"),
+      dataDir: _options.dataDir || path.join(process.cwd(), '.rag-enterprise'),
       defaultQuotas: {
         maxUsers: 100,
         maxWorkspaces: 10,
@@ -49,7 +49,7 @@ class TenantManager extends EventEmitter {
       id: _tenantId,
       name: tenantData.name,
       domain: tenantData.domain,
-      plan: tenantData.plan || "enterprise",
+      plan: tenantData.plan || 'enterprise',
       quotas: { ...this._config.defaultQuotas, ...tenantData.quotas },
       settings: {
         ssoEnabled: tenantData.ssoEnabled || false,
@@ -61,11 +61,11 @@ class TenantManager extends EventEmitter {
       metadata: {
         createdAt: new Date().toISOString(),
         createdBy: tenantData.createdBy,
-        status: "active",
+        status: 'active',
         lastActivity: new Date().toISOString(),
       },
       isolation: {
-        dataPath: path.join(this._config.dataDir, "tenants", _tenantId),
+        dataPath: path.join(this._config.dataDir, 'tenants', _tenantId),
         networkNamespace: `tenant-${_tenantId}`,
         resourceLimits: this._calculateResourceLimits(tenantData.plan),
       },
@@ -79,7 +79,7 @@ class TenantManager extends EventEmitter {
 
     this.tenants.set(_tenantId, tenant);
 
-    this.emit("tenant_created", { _tenantId, tenant });
+    this.emit('tenant_created', { _tenantId, tenant });
 
     return tenant;
   }
@@ -110,7 +110,7 @@ class TenantManager extends EventEmitter {
       name: workspaceData.name,
       description: workspaceData.description,
       settings: {
-        privacy: workspaceData.privacy || "private",
+        privacy: workspaceData.privacy || 'private',
         collaborationEnabled: workspaceData.collaborationEnabled || false,
         pluginsEnabled: workspaceData.pluginsEnabled || true,
         ...workspaceData.settings,
@@ -124,27 +124,27 @@ class TenantManager extends EventEmitter {
       isolation: {
         dataPath: path.join(
           tenant.isolation.dataPath,
-          "workspaces",
+          'workspaces',
           _workspaceId,
         ),
         configPath: path.join(
           tenant.isolation.dataPath,
-          "workspaces",
+          'workspaces',
           _workspaceId,
-          ".ragrc.json",
+          '.ragrc.json',
         ),
         pluginsPath: path.join(
           tenant.isolation.dataPath,
-          "workspaces",
+          'workspaces',
           _workspaceId,
-          "plugins",
+          'plugins',
         ),
       },
       metadata: {
         createdAt: new Date().toISOString(),
         createdBy: workspaceData.createdBy,
         lastActivity: new Date().toISOString(),
-        version: "1.0.0",
+        version: '1.0.0',
       },
     };
 
@@ -153,7 +153,7 @@ class TenantManager extends EventEmitter {
 
     this.workspaces.set(_workspaceId, workspace);
 
-    this.emit("workspace_created", { _tenantId, _workspaceId, workspace });
+    this.emit('workspace_created', { _tenantId, _workspaceId, workspace });
 
     return workspace;
   }
@@ -212,7 +212,7 @@ class TenantManager extends EventEmitter {
     // Persist changes
     await this._persistTenant(tenant);
 
-    this.emit("tenant_quotas_updated", {
+    this.emit('tenant_quotas_updated', {
       _tenantId,
       oldQuotas,
       newQuotas: tenant.quotas,
@@ -233,13 +233,13 @@ class TenantManager extends EventEmitter {
     const usage = await this.resourceMonitor.getTenantUsage(_tenantId);
 
     switch (resourceType) {
-      case "storage":
+      case 'storage':
         if (usage.storageUsedGB + amount / 1024 > tenant.quotas.maxStorageGB) {
           throw new Error(`Storage quota exceeded for tenant ${_tenantId}`);
         }
         break;
 
-      case "apiCalls":
+      case 'apiCalls':
         if (
           usage.apiCallsThisMonth + amount >
           tenant.quotas.maxAPICallsPerMonth
@@ -248,7 +248,7 @@ class TenantManager extends EventEmitter {
         }
         break;
 
-      case "concurrentPipelines":
+      case 'concurrentPipelines':
         if (usage.activePipelines >= tenant.quotas.maxConcurrentPipelines) {
           throw new Error(
             `Concurrent pipelines quota exceeded for tenant ${_tenantId}`,
@@ -256,7 +256,7 @@ class TenantManager extends EventEmitter {
         }
         break;
 
-      case "plugins":
+      case 'plugins':
         if (usage.installedPlugins >= tenant.quotas.maxPlugins) {
           throw new Error(`Plugins quota exceeded for tenant ${_tenantId}`);
         }
@@ -277,13 +277,13 @@ class TenantManager extends EventEmitter {
 
     // Soft delete by default for compliance
     if (!_options.hardDelete) {
-      tenant.metadata.status = "deleted";
+      tenant.metadata.status = 'deleted';
       tenant.metadata.deletedAt = new Date().toISOString();
       tenant.metadata.deletedBy = _options.deletedBy;
 
       await this._persistTenant(tenant);
 
-      this.emit("tenant_soft_deleted", { _tenantId, tenant });
+      this.emit('tenant_soft_deleted', { _tenantId, tenant });
       return { deleted: true, hardDelete: false };
     }
 
@@ -301,7 +301,7 @@ class TenantManager extends EventEmitter {
 
     this.tenants.delete(_tenantId);
 
-    this.emit("tenant_hard_deleted", { _tenantId });
+    this.emit('tenant_hard_deleted', { _tenantId });
     return { deleted: true, hardDelete: true };
   }
 
@@ -315,13 +315,13 @@ class TenantManager extends EventEmitter {
     }
 
     if (!_options.hardDelete) {
-      workspace.metadata.status = "deleted";
+      workspace.metadata.status = 'deleted';
       workspace.metadata.deletedAt = new Date().toISOString();
       workspace.metadata.deletedBy = _options.deletedBy;
 
       await this._persistWorkspace(workspace);
 
-      this.emit("workspace_soft_deleted", { _workspaceId, workspace });
+      this.emit('workspace_soft_deleted', { _workspaceId, workspace });
       return { deleted: true, hardDelete: false };
     }
 
@@ -329,7 +329,7 @@ class TenantManager extends EventEmitter {
     await fs.rmdir(workspace.isolation.dataPath, { recursive: true });
     this.workspaces.delete(_workspaceId);
 
-    this.emit("workspace_hard_deleted", { _workspaceId });
+    this.emit('workspace_hard_deleted', { _workspaceId });
     return { deleted: true, hardDelete: true };
   }
 
@@ -338,9 +338,9 @@ class TenantManager extends EventEmitter {
     const tenantDir = tenant.isolation.dataPath;
 
     await fs.mkdir(tenantDir, { recursive: true });
-    await fs.mkdir(path.join(tenantDir, "workspaces"), { recursive: true });
-    await fs.mkdir(path.join(tenantDir, "audit-logs"), { recursive: true });
-    await fs.mkdir(path.join(tenantDir, "backups"), { recursive: true });
+    await fs.mkdir(path.join(tenantDir, 'workspaces'), { recursive: true });
+    await fs.mkdir(path.join(tenantDir, 'audit-logs'), { recursive: true });
+    await fs.mkdir(path.join(tenantDir, 'backups'), { recursive: true });
 
     // Create tenant configuration
     const tenantConfig = {
@@ -354,7 +354,7 @@ class TenantManager extends EventEmitter {
     };
 
     await fs.writeFile(
-      path.join(tenantDir, "tenant.json"),
+      path.join(tenantDir, 'tenant.json'),
       JSON.stringify(tenantConfig, null, 2),
     );
   }
@@ -364,8 +364,8 @@ class TenantManager extends EventEmitter {
 
     await fs.mkdir(workspaceDir, { recursive: true });
     await fs.mkdir(workspace.isolation.pluginsPath, { recursive: true });
-    await fs.mkdir(path.join(workspaceDir, "data"), { recursive: true });
-    await fs.mkdir(path.join(workspaceDir, "cache"), { recursive: true });
+    await fs.mkdir(path.join(workspaceDir, 'data'), { recursive: true });
+    await fs.mkdir(path.join(workspaceDir, 'cache'), { recursive: true });
 
     // Create default .ragrc.json for workspace
     const defaultConfig = {
@@ -405,7 +405,7 @@ class TenantManager extends EventEmitter {
     };
 
     await fs.writeFile(
-      path.join(tenant.isolation.dataPath, "services.json"),
+      path.join(tenant.isolation.dataPath, 'services.json'),
       JSON.stringify(servicesConfig, null, 2),
     );
   }
@@ -413,19 +413,19 @@ class TenantManager extends EventEmitter {
   _calculateResourceLimits(plan) {
     const limits = {
       starter: {
-        cpu: "1000m",
-        memory: "2Gi",
-        storage: "10Gi",
+        cpu: '1000m',
+        memory: '2Gi',
+        storage: '10Gi',
       },
       professional: {
-        cpu: "2000m",
-        memory: "4Gi",
-        storage: "50Gi",
+        cpu: '2000m',
+        memory: '4Gi',
+        storage: '50Gi',
       },
       enterprise: {
-        cpu: "4000m",
-        memory: "8Gi",
-        storage: "200Gi",
+        cpu: '4000m',
+        memory: '8Gi',
+        storage: '200Gi',
       },
     };
 
@@ -444,14 +444,14 @@ class TenantManager extends EventEmitter {
   }
 
   async _persistTenant(tenant) {
-    const tenantFile = path.join(tenant.isolation.dataPath, "tenant.json");
+    const tenantFile = path.join(tenant.isolation.dataPath, 'tenant.json');
     await fs.writeFile(tenantFile, JSON.stringify(tenant, null, 2));
   }
 
   async _persistWorkspace(workspace) {
     const workspaceFile = path.join(
       workspace.isolation.dataPath,
-      "workspace.json",
+      'workspace.json',
     );
     await fs.writeFile(workspaceFile, JSON.stringify(workspace, null, 2));
   }

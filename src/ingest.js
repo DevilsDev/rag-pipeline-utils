@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 /**
  * Minimal ingest surface; wire real backend later.
  */
-const path = require("path");
-const { logger } = require("./utils/logger.js");
+const path = require('path');
+const { logger } = require('./utils/logger.js');
 
 /**
  * Ingest a single document by path.
@@ -13,27 +13,27 @@ const { logger } = require("./utils/logger.js");
  */
 function ingestDocument(filepath, config) {
   // Validate document path - always throw synchronously for validation errors
-  if (!filepath || typeof filepath !== "string" || filepath.trim() === "") {
-    throw new Error("Document path is required");
+  if (!filepath || typeof filepath !== 'string' || filepath.trim() === '') {
+    throw new Error('Document path is required');
   }
 
   // Validate configuration - always throw synchronously for validation errors
-  if (!config || typeof config !== "object") {
-    throw new Error("Configuration is required");
+  if (!config || typeof config !== 'object') {
+    throw new Error('Configuration is required');
   }
 
   // Process document with safer error handling
   try {
     const abs = path.resolve(filepath);
-    logger.info({ file: abs }, "ingest:start");
+    logger.info({ file: abs }, 'ingest:start');
 
     // TODO: real ingestion (mime sniff, loader selection, vector upsert)
     // For now, return success
-    logger.info({ file: abs }, "ingest:complete");
+    logger.info({ file: abs }, 'ingest:complete');
     return true;
   } catch (error) {
     // Log processing errors but don't crash
-    logger.error({ file: filepath, error: error.message }, "ingest:error");
+    logger.error({ file: filepath, error: error.message }, 'ingest:error');
 
     // Re-throw with more context for better debugging
     const enhancedError = new Error(

@@ -3,13 +3,13 @@
  * Provides span-style lifecycle tracking with OpenTelemetry compatibility
  */
 
-const { randomBytes } = require("crypto"); // eslint-disable-line global-require
+const { randomBytes } = require('crypto'); // eslint-disable-line global-require
 const {
   eventLogger,
   EventTypes,
   EventSeverity,
   PipelineEventLogger,
-} = require("../../observability/event-logger.js");
+} = require('../../observability/event-logger.js');
 
 const _logger = global.eventLogger || eventLogger || new PipelineEventLogger();
 global.eventLogger = _logger;
@@ -39,7 +39,7 @@ const SpanKind = {
  * @returns {string} 32-character hex trace ID
  */
 function generateTraceId() {
-  return randomBytes(16).toString("hex");
+  return randomBytes(16).toString('hex');
 }
 
 /**
@@ -47,7 +47,7 @@ function generateTraceId() {
  * @returns {string} 16-character hex span ID
  */
 function generateSpanId() {
-  return randomBytes(8).toString("hex");
+  return randomBytes(8).toString('hex');
 }
 
 /**
@@ -60,7 +60,7 @@ class Span {
     // Handle legacy parameter format: (name, traceId, parentSpanId)
     // vs new options format: (name, options)
     let _options = {};
-    if (typeof traceIdOrOptions === "string") {
+    if (typeof traceIdOrOptions === 'string') {
       // Legacy format: second parameter is traceId
       _options.traceId = traceIdOrOptions;
       _options.parentSpanId = parentSpanId;
@@ -76,14 +76,14 @@ class Span {
     this.startTime = new Date();
     this.endTime = null;
     this.duration = null;
-    this.status = { code: "UNSET" };
+    this.status = { code: 'UNSET' };
     this.attributes = new Map();
     this.events = [];
     this.links = [];
     this.resource = _options.resource || {};
     this.instrumentationLibrary = _options.instrumentationLibrary || {
-      name: "rag-pipeline-utils",
-      version: "2.1.8",
+      name: 'rag-pipeline-utils',
+      version: '2.1.8',
     };
     // Store reference to parent tracer for span lifecycle management
     this._tracer = _options._tracer || null;
@@ -92,15 +92,15 @@ class Span {
     const attributesProxy = new Proxy(this.attributes, {
       get(target, prop) {
         // Handle string properties as Map.get() for bracket notation
-        if (typeof prop === "string" && !target[prop]) {
+        if (typeof prop === 'string' && !target[prop]) {
           return target.get(prop);
         }
         // Delegate all other properties (including Map methods) to the target
         const value = target[prop];
-        return typeof value === "function" ? value.bind(target) : value;
+        return typeof value === 'function' ? value.bind(target) : value;
       },
       set(target, prop, value) {
-        if (typeof prop === "string") {
+        if (typeof prop === 'string') {
           target.set(prop, value);
           return true;
         }
@@ -113,7 +113,7 @@ class Span {
     this.attributes = attributesProxy;
 
     // Set initial attributes if provided
-    if (_options.attributes && typeof _options.attributes === "object") {
+    if (_options.attributes && typeof _options.attributes === 'object') {
       Object.entries(_options.attributes).forEach(([key, value]) => {
         this.attributes.set(key, value);
       });
@@ -172,44 +172,44 @@ class Span {
   recordException(exception) {
     // Check if we already have an exception event to avoid duplicates
     const hasExceptionEvent = this.events.some(
-      (event) => event.name === "exception",
+      (event) => event.name === 'exception',
     );
     if (hasExceptionEvent) {
       return this;
     }
 
     const attributes = {
-      "exception.type": exception.name || "Error",
-      "exception.message": exception.message || "Unknown error",
+      'exception.type': exception.name || 'Error',
+      'exception.message': exception.message || 'Unknown error',
     };
 
     // Only include stacktrace if it exists and is not empty
     if (exception.stack && exception.stack.trim()) {
-      attributes["exception.stacktrace"] = exception.stack;
+      attributes['exception.stacktrace'] = exception.stack;
     }
 
     // Include exception code if present
     if (exception.code) {
-      attributes["exception.code"] = exception.code;
+      attributes['exception.code'] = exception.code;
     }
 
     // Include additional error properties
     if (exception.errno) {
-      attributes["exception.errno"] = exception.errno;
+      attributes['exception.errno'] = exception.errno;
     }
 
     if (exception.syscall) {
-      attributes["exception.syscall"] = exception.syscall;
+      attributes['exception.syscall'] = exception.syscall;
     }
 
     if (exception.path) {
-      attributes["exception.path"] = exception.path;
+      attributes['exception.path'] = exception.path;
     }
 
-    this.addEvent("exception", attributes);
+    this.addEvent('exception', attributes);
     this.setStatus({
-      code: "ERROR",
-      message: exception.message || "Unknown error",
+      code: 'ERROR',
+      message: exception.message || 'Unknown error',
     });
     return this;
   }
@@ -244,8 +244,8 @@ class Span {
     );
 
     // Set status to OK if not already set
-    if (this.status.code === "UNSET") {
-      this.status.code = "OK";
+    if (this.status.code === 'UNSET') {
+      this.status.code = 'OK';
     }
 
     // Notify tracer to move span from active to completed (only if not already called by tracer)
@@ -362,15 +362,15 @@ class Span {
  * Tracer implementation
  */
 class Tracer {
-  constructor(name, version = "1.0.0", _options = {}) {
+  constructor(name, version = '1.0.0', _options = {}) {
     this.name = name;
     this.version = version;
     this.activeSpans = new Map();
     this.completedSpans = [];
     this.maxCompletedSpans = _options.maxCompletedSpans || 1000;
     this.resource = _options.resource || {
-      "service.name": "rag-pipeline-utils",
-      "service.version": "2.1.8",
+      'service.name': 'rag-pipeline-utils',
+      'service.version': '2.1.8',
     };
   }
 
@@ -430,7 +430,7 @@ class Tracer {
 
     try {
       const result = await _fn(span);
-      span.setStatus({ code: "OK" });
+      span.setStatus({ code: 'OK' });
       return result;
     } catch (error) {
       span.recordException(error);
@@ -560,21 +560,21 @@ class Tracer {
     const allSpans = [...activeSpans, ...completedSpans];
     allSpans.forEach((span) => {
       // Extract type from span name (e.g., "embedder.openai" -> "embedder")
-      const spanType = span.name.includes(".")
-        ? span.name.split(".")[0]
-        : "plugin";
+      const spanType = span.name.includes('.')
+        ? span.name.split('.')[0]
+        : 'plugin';
       spansByType[spanType] = (spansByType[spanType] || 0) + 1;
     });
 
     // If we have plugin-related spans, group them under 'plugin'
     if (
       Object.keys(spansByType).some((_type) =>
-        ["embedder", "llm", "retriever", "loader", "reranker"].includes(_type),
+        ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(_type),
       )
     ) {
       const pluginCount = Object.entries(spansByType)
         .filter(([_type]) =>
-          ["embedder", "llm", "retriever", "loader", "reranker"].includes(
+          ['embedder', 'llm', 'retriever', 'loader', 'reranker'].includes(
             _type,
           ),
         )
@@ -607,7 +607,7 @@ class Tracer {
  */
 class PipelineTracer extends Tracer {
   constructor(_options = {}) {
-    super("rag-pipeline-tracer", "1.0.0", _options);
+    super('rag-pipeline-tracer', '1.0.0', _options);
   }
 
   /**
@@ -624,16 +624,16 @@ class PipelineTracer extends Tracer {
       `plugin.${pluginType}.${pluginName}`,
       async (span) => {
         span.setAttributes({
-          "plugin.type": pluginType,
-          "plugin.name": pluginName,
-          "plugin.input.size": this.getInputSize(input),
-          "operation.type": "plugin_execution",
-          "plugin.version": context.version || "unknown",
-          "plugin.provider": context.provider || pluginName,
+          'plugin.type': pluginType,
+          'plugin.name': pluginName,
+          'plugin.input.size': this.getInputSize(input),
+          'operation.type': 'plugin_execution',
+          'plugin.version': context.version || 'unknown',
+          'plugin.provider': context.provider || pluginName,
         });
 
         // Add context attributes if provided
-        if (context && typeof context === "object") {
+        if (context && typeof context === 'object') {
           Object.entries(context).forEach(([key, value]) => {
             span.setAttribute(`plugin.context.${key}`, value);
           });
@@ -646,34 +646,34 @@ class PipelineTracer extends Tracer {
           const duration = Date.now() - startTime;
 
           span.setAttributes({
-            "plugin.duration": duration,
-            "plugin.result.size": this.getResultSize(result),
-            "plugin.status": "success",
-            "plugin.success": true,
-            "plugin.result.type": Array.isArray(result)
-              ? "array"
+            'plugin.duration': duration,
+            'plugin.result.size': this.getResultSize(result),
+            'plugin.status': 'success',
+            'plugin.success': true,
+            'plugin.result.type': Array.isArray(result)
+              ? 'array'
               : typeof result,
           });
 
-          span.setStatus({ code: "OK" });
+          span.setStatus({ code: 'OK' });
 
           return result;
         } catch (error) {
           const duration = Date.now() - startTime;
 
           span.setAttributes({
-            "plugin.duration": duration,
-            "plugin.status": "error",
-            "plugin.success": false,
-            "plugin.error.type": error.name || "Error",
-            "plugin.error.message": error.message || "Unknown error",
+            'plugin.duration': duration,
+            'plugin.status': 'error',
+            'plugin.success': false,
+            'plugin.error.type': error.name || 'Error',
+            'plugin.error.message': error.message || 'Unknown error',
           });
 
           span.recordException(error);
 
           span.setStatus({
-            code: "ERROR",
-            message: error.message || "Unknown error",
+            code: 'ERROR',
+            message: error.message || 'Unknown error',
           });
 
           throw error;
@@ -693,13 +693,13 @@ class PipelineTracer extends Tracer {
   async traceStage(stage, _fn, context = {}, metadata = {}) {
     return this.startActiveSpan(`pipeline.${stage}`, async (span) => {
       span.setAttributes({
-        "pipeline.stage": stage,
-        "operation.type": "pipeline_stage",
+        'pipeline.stage': stage,
+        'operation.type': 'pipeline_stage',
         ...metadata,
       });
 
       // Add context attributes if provided
-      if (context && typeof context === "object") {
+      if (context && typeof context === 'object') {
         Object.entries(context).forEach(([key, value]) => {
           span.setAttribute(`stage.context.${key}`, value);
         });
@@ -709,15 +709,15 @@ class PipelineTracer extends Tracer {
         const result = await _fn();
 
         // Set success attributes
-        span.setAttribute("stage.success", true);
-        span.setStatus({ code: "OK" });
+        span.setAttribute('stage.success', true);
+        span.setStatus({ code: 'OK' });
 
         return result;
       } catch (error) {
         // Set failure attributes
-        span.setAttribute("stage.success", false);
+        span.setAttribute('stage.success', false);
         span.setStatus({
-          code: "ERROR",
+          code: 'ERROR',
           message: error.message,
         });
 
@@ -737,9 +737,9 @@ class PipelineTracer extends Tracer {
   getInputSize(input) {
     if (Array.isArray(input)) {
       return input.length;
-    } else if (typeof input === "string") {
+    } else if (typeof input === 'string') {
       return input.length;
-    } else if (typeof input === "object" && input !== null) {
+    } else if (typeof input === 'object' && input !== null) {
       return Object.keys(input).length;
     }
     return 1;

@@ -159,10 +159,11 @@ module.exports = {
         "**/*.config.{js,jsx}",
         "**/tools/**/*.{js,jsx}",
         "bin/**/*.{js,jsx}",
+        "**/cli/**/*.{js,jsx}", // CLI commands need console output
       ],
       rules: {
         "no-unused-vars": "off",
-        "no-console": "off", // Scripts need console output
+        "no-console": "off", // Scripts and CLI need console output
         quotes: "off",
         semi: "off",
       },

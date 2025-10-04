@@ -2,9 +2,9 @@
  * CSV document loader with row-wise chunking
  */
 
-const fs = require("fs/promises");
-const path = require("path");
-const { parse } = require("csv-parse/sync");
+const fs = require('fs/promises');
+const path = require('path');
+const { parse } = require('csv-parse/sync');
 
 class CSVLoader {
   /**
@@ -16,15 +16,15 @@ class CSVLoader {
     const absPath = path.resolve(filePath);
 
     try {
-      const raw = await fs.readFile(absPath, "utf8");
-      const src = raw.replace(/^\uFEFF/, ""); // Remove BOM
-      const normalizedSrc = src.replace(/\r\n|\r/g, "\n"); // Normalize line endings
+      const raw = await fs.readFile(absPath, 'utf8');
+      const src = raw.replace(/^\uFEFF/, ''); // Remove BOM
+      const normalizedSrc = src.replace(/\r\n|\r/g, '\n'); // Normalize line endings
 
       const records = parse(normalizedSrc, { columns: true });
 
       return [
         {
-          chunk: () => records.map((r) => Object.values(r).join(" ")),
+          chunk: () => records.map((r) => Object.values(r).join(' ')),
         },
       ];
     } catch (error) {

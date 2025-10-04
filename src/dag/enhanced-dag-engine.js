@@ -8,10 +8,10 @@
  * @version 2.1.8
  */
 
-const { logger } = require("../utils/structured-logger.js");
+const { logger } = require('../utils/structured-logger.js');
 const {
   defaultPolicy: defaultRetryPolicy,
-} = require("../utils/retry-policy.js");
+} = require('../utils/retry-policy.js');
 
 /**
  * @typedef {Object} DAGNodeOptions
@@ -73,11 +73,11 @@ class EnhancedDAGNode {
    * @param {DAGNodeOptions} [options={}] - Node configuration options
    */
   constructor(id, run, options = {}) {
-    if (!id || typeof id !== "string") {
-      throw new Error("Node ID must be a non-empty string");
+    if (!id || typeof id !== 'string') {
+      throw new Error('Node ID must be a non-empty string');
     }
-    if (!run || typeof run !== "function") {
-      throw new Error("Node run function must be provided");
+    if (!run || typeof run !== 'function') {
+      throw new Error('Node run function must be provided');
     }
 
     this.id = id;
@@ -108,7 +108,7 @@ class EnhancedDAGNode {
 
     // Create child logger with node context
     this.logger = logger.child({
-      component: "dag-node",
+      component: 'dag-node',
       nodeId: this.id,
       priority: this.priority,
       optional: this.optional,
@@ -123,13 +123,13 @@ class EnhancedDAGNode {
   addOutput(node) {
     if (!node || !(node instanceof EnhancedDAGNode)) {
       throw new Error(
-        "Invalid output node: must be an EnhancedDAGNode instance",
+        'Invalid output node: must be an EnhancedDAGNode instance',
       );
     }
 
     if (!this.outputs.includes(node)) {
       this.outputs.push(node);
-      this.logger.debug("Added output connection", { targetNodeId: node.id });
+      this.logger.debug('Added output connection', { targetNodeId: node.id });
     }
     if (!node.inputs.includes(this)) {
       node.inputs.push(this);
@@ -145,13 +145,13 @@ class EnhancedDAGNode {
   addInput(node) {
     if (!node || !(node instanceof EnhancedDAGNode)) {
       throw new Error(
-        "Invalid input node: must be an EnhancedDAGNode instance",
+        'Invalid input node: must be an EnhancedDAGNode instance',
       );
     }
 
     if (!this.inputs.includes(node)) {
       this.inputs.push(node);
-      this.logger.debug("Added input connection", { sourceNodeId: node.id });
+      this.logger.debug('Added input connection', { sourceNodeId: node.id });
     }
     if (!node.outputs.includes(this)) {
       node.outputs.push(this);
@@ -266,11 +266,11 @@ class EnhancedDAGEngine {
 
     // Create engine logger
     this.logger = logger.child({
-      component: "enhanced-dag-engine",
-      version: "2.1.8",
+      component: 'enhanced-dag-engine',
+      version: '2.1.8',
     });
 
-    this.logger.info("Enhanced DAG Engine initialized", {
+    this.logger.info('Enhanced DAG Engine initialized', {
       defaultConcurrency: this.defaultOptions.concurrency,
       metricsEnabled: this.enableMetrics,
       tracingEnabled: this.enableTracing,
@@ -292,7 +292,7 @@ class EnhancedDAGEngine {
     const node = new EnhancedDAGNode(id, run, options);
     this.nodes.set(id, node);
 
-    this.logger.debug("Node added to DAG", {
+    this.logger.debug('Node added to DAG', {
       nodeId: id,
       priority: node.priority,
       optional: node.optional,
@@ -330,7 +330,7 @@ class EnhancedDAGEngine {
 
     fromNode.addOutput(toNode);
 
-    this.logger.debug("Nodes connected", {
+    this.logger.debug('Nodes connected', {
       fromNodeId: fromId,
       toNodeId: toId,
     });
@@ -343,7 +343,7 @@ class EnhancedDAGEngine {
    * @throws {Error} If DAG is invalid
    */
   validate() {
-    this.logger.debug("Validating DAG structure");
+    this.logger.debug('Validating DAG structure');
 
     // Check for cycles using DFS
     const visited = new Set();
@@ -396,7 +396,7 @@ class EnhancedDAGEngine {
       }
     }
 
-    this.logger.info("DAG validation completed successfully", {
+    this.logger.info('DAG validation completed successfully', {
       nodeCount: this.nodes.size,
     });
   }
@@ -441,7 +441,7 @@ class EnhancedDAGEngine {
       visit(node);
     }
 
-    this.logger.debug("Topological order computed", {
+    this.logger.debug('Topological order computed', {
       nodeCount: order.length,
       sourceNodes: sourceNodes.map((n) => n.id),
     });
@@ -462,7 +462,7 @@ class EnhancedDAGEngine {
 
     const correlationId = this.logger.getContext()?.correlationId;
 
-    node.logger.debug("Starting node execution", {
+    node.logger.debug('Starting node execution', {
       correlationId,
       dependencies: node.getDependencies(),
       hasResults: node.inputs.map((dep) => results.has(dep.id)),
@@ -516,7 +516,7 @@ class EnhancedDAGEngine {
         node.updateMetrics(executionTime, true, retryCount);
       }
 
-      node.logger.info("Node execution completed successfully", {
+      node.logger.info('Node execution completed successfully', {
         correlationId,
         executionTime,
         retryCount,
@@ -535,7 +535,7 @@ class EnhancedDAGEngine {
       // Handle optional node failures
       if (node.optional && context.gracefulDegradation) {
         node.logger.warn(
-          "Optional node failed, continuing with graceful degradation",
+          'Optional node failed, continuing with graceful degradation',
           {
             correlationId,
             error: error.message,
@@ -543,13 +543,13 @@ class EnhancedDAGEngine {
             retryCount,
           },
         );
-        return Symbol("failed-optional-node");
+        return Symbol('failed-optional-node');
       }
 
       // Store error for required nodes
       errors.set(node.id, error);
 
-      node.logger.error("Node execution failed", {
+      node.logger.error('Node execution failed', {
         correlationId,
         error: error.message,
         errorCode: error.code,
@@ -570,14 +570,14 @@ class EnhancedDAGEngine {
    * @returns {Promise<Object>} Execution results
    */
   async execute(seed, options = {}) {
-    const executionId = require("crypto").randomUUID();
+    const executionId = require('crypto').randomUUID();
     const startTime = Date.now();
 
     // Merge options with defaults
     const config = { ...this.defaultOptions, ...options };
 
     return this.logger.withCorrelation(executionId, async () => {
-      this.logger.info("Starting DAG execution", {
+      this.logger.info('Starting DAG execution', {
         executionId,
         seedType: typeof seed,
         nodeCount: this.nodes.size,
@@ -623,8 +623,8 @@ class EnhancedDAGEngine {
               const result = await this.executeNode(node, context);
 
               if (
-                typeof result !== "symbol" ||
-                result.description !== "failed-optional-node"
+                typeof result !== 'symbol' ||
+                result.description !== 'failed-optional-node'
               ) {
                 results.set(node.id, result);
               }
@@ -688,7 +688,7 @@ class EnhancedDAGEngine {
           }
         }
 
-        this.logger.info("DAG execution completed", summary);
+        this.logger.info('DAG execution completed', summary);
 
         // Return results
         return {
@@ -705,7 +705,7 @@ class EnhancedDAGEngine {
           this.engineMetrics.failedExecutions++;
         }
 
-        this.logger.error("DAG execution failed", {
+        this.logger.error('DAG execution failed', {
           executionId,
           error: error.message,
           executionTime,

@@ -6,7 +6,7 @@
  * @since 2.1.8
  */
 
-const { logger } = require("./structured-logger.js");
+const { logger } = require('./structured-logger.js');
 
 /**
  * Retry policy with exponential backoff and circuit breaker
@@ -25,7 +25,7 @@ class RetryPolicy {
       enabled: options.circuitBreaker?.enabled !== false,
       failureThreshold: options.circuitBreaker?.failureThreshold || 5,
       resetTimeout: options.circuitBreaker?.resetTimeout || 60000,
-      state: "CLOSED", // CLOSED, OPEN, HALF_OPEN
+      state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
       failures: 0,
       lastFailureTime: null,
     };
@@ -58,12 +58,12 @@ class RetryPolicy {
   defaultRetryCondition(error) {
     // Retry on common transient errors
     const retryableCodes = [
-      "ECONNRESET",
-      "ENOTFOUND",
-      "ECONNREFUSED",
-      "ETIMEDOUT",
+      'ECONNRESET',
+      'ENOTFOUND',
+      'ECONNREFUSED',
+      'ETIMEDOUT',
     ];
-    const retryableMessages = ["timeout", "network", "connection", "temporary"];
+    const retryableMessages = ['timeout', 'network', 'connection', 'temporary'];
 
     if (error.code && retryableCodes.includes(error.code)) {
       return true;
@@ -80,8 +80,8 @@ class RetryPolicy {
    * @param {number} delay - Delay before next attempt
    */
   defaultOnRetry(error, attempt, delay) {
-    logger.warn("Retrying operation", {
-      component: "retry-policy",
+    logger.warn('Retrying operation', {
+      component: 'retry-policy',
       attempt,
       delay,
       error: error.message,
@@ -95,8 +95,8 @@ class RetryPolicy {
    * @param {number} attempts - Total attempts made
    */
   defaultOnFailure(error, attempts) {
-    logger.error("Operation failed after all retries", {
-      component: "retry-policy",
+    logger.error('Operation failed after all retries', {
+      component: 'retry-policy',
       attempts,
       error: error.message,
       errorCode: error.code,
@@ -115,12 +115,12 @@ class RetryPolicy {
     const { state, failures, failureThreshold, resetTimeout, lastFailureTime } =
       this.circuitBreaker;
 
-    if (state === "OPEN") {
+    if (state === 'OPEN') {
       // Check if we should transition to HALF_OPEN
       if (Date.now() - lastFailureTime >= resetTimeout) {
-        this.circuitBreaker.state = "HALF_OPEN";
-        logger.info("Circuit breaker transitioning to HALF_OPEN", {
-          component: "circuit-breaker",
+        this.circuitBreaker.state = 'HALF_OPEN';
+        logger.info('Circuit breaker transitioning to HALF_OPEN', {
+          component: 'circuit-breaker',
           previousFailures: failures,
         });
         return false;
@@ -137,11 +137,11 @@ class RetryPolicy {
   recordCircuitSuccess() {
     if (!this.circuitBreaker.enabled) return;
 
-    if (this.circuitBreaker.state === "HALF_OPEN") {
-      this.circuitBreaker.state = "CLOSED";
+    if (this.circuitBreaker.state === 'HALF_OPEN') {
+      this.circuitBreaker.state = 'CLOSED';
       this.circuitBreaker.failures = 0;
-      logger.info("Circuit breaker closed after successful operation", {
-        component: "circuit-breaker",
+      logger.info('Circuit breaker closed after successful operation', {
+        component: 'circuit-breaker',
       });
     }
   }
@@ -156,9 +156,9 @@ class RetryPolicy {
     this.circuitBreaker.lastFailureTime = Date.now();
 
     if (this.circuitBreaker.failures >= this.circuitBreaker.failureThreshold) {
-      this.circuitBreaker.state = "OPEN";
-      logger.warn("Circuit breaker opened due to excessive failures", {
-        component: "circuit-breaker",
+      this.circuitBreaker.state = 'OPEN';
+      logger.warn('Circuit breaker opened due to excessive failures', {
+        component: 'circuit-breaker',
         failures: this.circuitBreaker.failures,
         threshold: this.circuitBreaker.failureThreshold,
       });
@@ -188,8 +188,8 @@ class RetryPolicy {
       retriesInWindow < this.retryBudget.maxRetriesPerMinute;
 
     if (!budgetAvailable) {
-      logger.warn("Retry budget exhausted", {
-        component: "retry-budget",
+      logger.warn('Retry budget exhausted', {
+        component: 'retry-budget',
         retriesInWindow,
         maxRetries: this.retryBudget.maxRetriesPerMinute,
         windowSize: this.retryBudget.windowSize,
@@ -234,8 +234,8 @@ class RetryPolicy {
   async execute(operation, context = {}) {
     // Check circuit breaker
     if (this.isCircuitOpen()) {
-      const error = new Error("Circuit breaker is open - failing fast");
-      error.code = "CIRCUIT_OPEN";
+      const error = new Error('Circuit breaker is open - failing fast');
+      error.code = 'CIRCUIT_OPEN';
       throw error;
     }
 
@@ -247,7 +247,7 @@ class RetryPolicy {
       const timeoutError = new Error(
         `Operation timeout after ${this.timeout}ms`,
       );
-      timeoutError.code = "OPERATION_TIMEOUT";
+      timeoutError.code = 'OPERATION_TIMEOUT';
       throw timeoutError;
     }, this.timeout);
 
@@ -259,8 +259,8 @@ class RetryPolicy {
           // Record success for circuit breaker
           this.recordCircuitSuccess();
 
-          logger.debug("Operation succeeded", {
-            component: "retry-policy",
+          logger.debug('Operation succeeded', {
+            component: 'retry-policy',
             attempt,
             duration: Date.now() - startTime,
             ...context,
@@ -273,8 +273,8 @@ class RetryPolicy {
 
           // Check if error is retryable
           if (!this.retryCondition(error)) {
-            logger.debug("Error is not retryable, failing immediately", {
-              component: "retry-policy",
+            logger.debug('Error is not retryable, failing immediately', {
+              component: 'retry-policy',
               error: error.message,
               errorCode: error.code,
               ...context,
@@ -289,8 +289,8 @@ class RetryPolicy {
 
           // Check retry budget
           if (!this.checkRetryBudget()) {
-            const budgetError = new Error("Retry budget exhausted");
-            budgetError.code = "RETRY_BUDGET_EXHAUSTED";
+            const budgetError = new Error('Retry budget exhausted');
+            budgetError.code = 'RETRY_BUDGET_EXHAUSTED';
             throw budgetError;
           }
 
@@ -317,7 +317,7 @@ class RetryPolicy {
       );
       enhancedError.originalError = lastError;
       enhancedError.attempts = attempt;
-      enhancedError.code = lastError.code || "RETRY_EXHAUSTED";
+      enhancedError.code = lastError.code || 'RETRY_EXHAUSTED';
 
       throw enhancedError;
     } finally {
@@ -355,7 +355,7 @@ class RetryPolicy {
    * Reset retry policy state
    */
   reset() {
-    this.circuitBreaker.state = "CLOSED";
+    this.circuitBreaker.state = 'CLOSED';
     this.circuitBreaker.failures = 0;
     this.circuitBreaker.lastFailureTime = null;
     this.retryBudget.retries = [];

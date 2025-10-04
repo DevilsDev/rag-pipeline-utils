@@ -3,8 +3,8 @@
  * Addresses T-2 remediation: Production observability with SLOs
  */
 
-const { logger } = require("../utils/logger");
-const EventEmitter = require("events");
+const { logger } = require('../utils/logger');
+const EventEmitter = require('events');
 
 class SLOMonitor extends EventEmitter {
   constructor(config = {}) {
@@ -24,46 +24,46 @@ class SLOMonitor extends EventEmitter {
 
   _initializeDefaultSLOs() {
     // Availability SLO: 99.9% uptime
-    this.defineSLO("availability", {
+    this.defineSLO('availability', {
       target: 0.999,
       measurementWindow: this.config.measurementWindow,
-      description: "System availability percentage",
+      description: 'System availability percentage',
       errorBudget: 0.001,
       alertThreshold: 0.995,
     });
 
     // Deployment Success SLO: 95% successful deployments
-    this.defineSLO("deployment_success", {
+    this.defineSLO('deployment_success', {
       target: 0.95,
       measurementWindow: 7 * 24 * 60 * 60 * 1000, // 7 days
-      description: "Deployment success rate",
+      description: 'Deployment success rate',
       errorBudget: 0.05,
       alertThreshold: 0.9,
     });
 
     // Test Reliability SLO: 95% test pass rate
-    this.defineSLO("test_reliability", {
+    this.defineSLO('test_reliability', {
       target: 0.95,
       measurementWindow: 7 * 24 * 60 * 60 * 1000, // 7 days
-      description: "Test suite reliability",
+      description: 'Test suite reliability',
       errorBudget: 0.05,
       alertThreshold: 0.9,
     });
 
     // Security Compliance SLO: 100% security scans pass
-    this.defineSLO("security_compliance", {
+    this.defineSLO('security_compliance', {
       target: 1.0,
       measurementWindow: 24 * 60 * 60 * 1000, // 1 day
-      description: "Security compliance rate",
+      description: 'Security compliance rate',
       errorBudget: 0.0,
       alertThreshold: 0.99,
     });
 
     // Response Time SLO: 95% of requests under 2s
-    this.defineSLO("response_time", {
+    this.defineSLO('response_time', {
       target: 0.95,
       measurementWindow: this.config.measurementWindow,
-      description: "95th percentile response time under 2s",
+      description: '95th percentile response time under 2s',
       errorBudget: 0.05,
       alertThreshold: 0.9,
       threshold: 2000, // 2 seconds
@@ -77,7 +77,7 @@ class SLOMonitor extends EventEmitter {
       measurements: [],
     });
 
-    logger.info("SLO defined", {
+    logger.info('SLO defined', {
       slo: name,
       target: config.target,
       description: config.description,
@@ -101,7 +101,7 @@ class SLOMonitor extends EventEmitter {
 
     const currentSLI = this.calculateSLI(sloName);
 
-    logger.debug("SLO measurement recorded", {
+    logger.debug('SLO measurement recorded', {
       slo: sloName,
       success,
       currentSLI,
@@ -113,7 +113,7 @@ class SLOMonitor extends EventEmitter {
       this._triggerAlert(sloName, currentSLI, slo);
     }
 
-    this.emit("measurement", {
+    this.emit('measurement', {
       slo: sloName,
       success,
       currentSLI,
@@ -210,7 +210,7 @@ class SLOMonitor extends EventEmitter {
     const alert = {
       id: `slo-${sloName}-${Date.now()}`,
       slo: sloName,
-      severity: "warning",
+      severity: 'warning',
       message: `SLO ${sloName} is below alert threshold`,
       currentSLI,
       target: slo.target,
@@ -220,9 +220,9 @@ class SLOMonitor extends EventEmitter {
 
     this.alerts.push(alert);
 
-    logger.warn("SLO alert triggered", alert);
+    logger.warn('SLO alert triggered', alert);
 
-    this.emit("alert", alert);
+    this.emit('alert', alert);
   }
 
   getActiveAlerts() {
@@ -249,7 +249,7 @@ class SLOMonitor extends EventEmitter {
       recommendations: this._generateRecommendations(allStatus),
     };
 
-    logger.info("SLO report generated", {
+    logger.info('SLO report generated', {
       totalSLOs: report.summary.totalSLOs,
       healthySLOs: report.summary.healthySLOs,
       atRiskSLOs: report.summary.atRiskSLOs,
@@ -265,17 +265,17 @@ class SLOMonitor extends EventEmitter {
     Object.values(sloStatus).forEach((slo) => {
       if (slo.isAtRisk) {
         recommendations.push({
-          type: "urgent",
+          type: 'urgent',
           slo: slo.name,
           message: `SLO ${slo.name} is at risk. Current: ${(slo.current * 100).toFixed(2)}%, Target: ${(slo.target * 100).toFixed(2)}%`,
-          action: "Investigate root cause and implement fixes",
+          action: 'Investigate root cause and implement fixes',
         });
       } else if (slo.errorBudget.errorBudgetPercentage < 25) {
         recommendations.push({
-          type: "warning",
+          type: 'warning',
           slo: slo.name,
           message: `Error budget for ${slo.name} is running low (${slo.errorBudget.errorBudgetPercentage.toFixed(1)}% remaining)`,
-          action: "Monitor closely and consider preventive measures",
+          action: 'Monitor closely and consider preventive measures',
         });
       }
     });
@@ -285,25 +285,25 @@ class SLOMonitor extends EventEmitter {
 
   // Convenience methods for common measurements
   recordAvailability(isUp, metadata = {}) {
-    return this.recordMeasurement("availability", isUp, metadata);
+    return this.recordMeasurement('availability', isUp, metadata);
   }
 
   recordDeployment(success, metadata = {}) {
-    return this.recordMeasurement("deployment_success", success, metadata);
+    return this.recordMeasurement('deployment_success', success, metadata);
   }
 
   recordTestRun(success, metadata = {}) {
-    return this.recordMeasurement("test_reliability", success, metadata);
+    return this.recordMeasurement('test_reliability', success, metadata);
   }
 
   recordSecurityScan(passed, metadata = {}) {
-    return this.recordMeasurement("security_compliance", passed, metadata);
+    return this.recordMeasurement('security_compliance', passed, metadata);
   }
 
   recordResponseTime(responseTimeMs, metadata = {}) {
-    const slo = this.slos.get("response_time");
+    const slo = this.slos.get('response_time');
     const success = responseTimeMs <= (slo?.threshold || 2000);
-    return this.recordMeasurement("response_time", success, {
+    return this.recordMeasurement('response_time', success, {
       ...metadata,
       responseTime: responseTimeMs,
     });

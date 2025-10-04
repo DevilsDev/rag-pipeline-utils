@@ -5,19 +5,19 @@
  * Author: Ali Kahwaji
  */
 
-const fg = require("fast-glob");
+const fg = require('fast-glob');
 // eslint-disable-line global-require
-const { MarkdownLoader } = require("./markdown-loader.js");
+const { MarkdownLoader } = require('./markdown-loader.js');
 // eslint-disable-line global-require
-const { HTMLLoader } = require("./html-loader.js");
+const { HTMLLoader } = require('./html-loader.js');
 // eslint-disable-line global-require
-const { CSVLoader } = require("./csv-loader.js");
+const { CSVLoader } = require('./csv-loader.js');
 // eslint-disable-line global-require
 
 const loaders = {
-  ".md": new MarkdownLoader(),
-  ".html": new HTMLLoader(),
-  ".csv": new CSVLoader(),
+  '.md': new MarkdownLoader(),
+  '.html': new HTMLLoader(),
+  '.csv': new CSVLoader(),
 };
 
 class DirectoryLoader {
@@ -30,7 +30,7 @@ class DirectoryLoader {
     const matches = await fg([`${dirPath}/**/*.{md,html,csv}`]);
     const all = [];
     for (const file of matches) {
-      const ext = file.slice(file.lastIndexOf("."));
+      const ext = file.slice(file.lastIndexOf('.'));
       const loader = loaders[ext];
       if (loader) {
         const docs = await loader.load(file);

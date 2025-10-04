@@ -3,11 +3,11 @@
  * PII detection, data lineage, retention policies, and privacy controls
  */
 
-const fs = require("fs").promises;
-const path = require("path");
-const crypto = require("crypto");
+const fs = require('fs').promises;
+const path = require('path');
+const crypto = require('crypto');
 // eslint-disable-line global-require
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 
 class DataGovernanceManager extends EventEmitter {
@@ -23,7 +23,7 @@ class DataGovernanceManager extends EventEmitter {
           backupRetentionDays: 365,
         },
         dataClassification: {
-          levels: ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"],
+          levels: ['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'RESTRICTED'],
           autoClassify: true,
           requireManualReview: true,
         },
@@ -36,7 +36,7 @@ class DataGovernanceManager extends EventEmitter {
         },
       },
       compliance: {
-        standards: ["GDPR", "CCPA", "HIPAA", "SOX"],
+        standards: ['GDPR', 'CCPA', 'HIPAA', 'SOX'],
         autoReporting: true,
         breachNotification: true,
       },
@@ -63,7 +63,7 @@ class DataGovernanceManager extends EventEmitter {
       lineage: null,
       retentionPolicy: null,
       privacyControls: [],
-      complianceStatus: "pending",
+      complianceStatus: 'pending',
     };
 
     try {
@@ -99,11 +99,11 @@ class DataGovernanceManager extends EventEmitter {
       governanceResult.complianceStatus =
         await this._checkCompliance(governanceResult);
 
-      this.emit("data_governed", governanceResult);
+      this.emit('data_governed', governanceResult);
 
       return governanceResult;
     } catch (error) {
-      this.emit("governance_error", { error: error.message, _tenantId });
+      this.emit('governance_error', { error: error.message, _tenantId });
       throw error;
     }
   }
@@ -120,32 +120,32 @@ class DataGovernanceManager extends EventEmitter {
       type: _request.type, // access, rectification, erasure, portability, restriction
       subjectId: _request.subjectId,
       subjectEmail: _request.subjectEmail,
-      status: "received",
+      status: 'received',
       requestedAt: new Date().toISOString(),
       deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
       metadata: _request.metadata || {},
     };
 
     switch (_request._type) {
-      case "access":
+      case 'access':
         privacyRequest.result = await this._handleDataAccess(
           _tenantId,
           _request,
         );
         break;
-      case "erasure":
+      case 'erasure':
         privacyRequest.result = await this._handleDataErasure(
           _tenantId,
           _request,
         );
         break;
-      case "portability":
+      case 'portability':
         privacyRequest.result = await this._handleDataPortability(
           _tenantId,
           _request,
         );
         break;
-      case "rectification":
+      case 'rectification':
         privacyRequest.result = await this._handleDataRectification(
           _tenantId,
           _request,
@@ -153,10 +153,10 @@ class DataGovernanceManager extends EventEmitter {
         break;
     }
 
-    privacyRequest.status = "completed";
+    privacyRequest.status = 'completed';
     privacyRequest.completedAt = new Date().toISOString();
 
-    this.emit("privacy_request_completed", privacyRequest);
+    this.emit('privacy_request_completed', privacyRequest);
 
     return privacyRequest;
   }
@@ -191,9 +191,9 @@ class DataGovernanceManager extends EventEmitter {
       piiTypes: {},
       retentionStatus: {},
       complianceStatus: {
-        GDPR: "compliant",
-        CCPA: "compliant",
-        HIPAA: "compliant",
+        GDPR: 'compliant',
+        CCPA: 'compliant',
+        HIPAA: 'compliant',
       },
     };
 
@@ -218,17 +218,17 @@ class DataGovernanceManager extends EventEmitter {
       governanceResult.piiDetected &&
       !governanceResult.privacyControls.length
     ) {
-      violations.push("PII detected without privacy controls");
+      violations.push('PII detected without privacy controls');
     }
 
     if (
-      governanceResult.classification.level === "RESTRICTED" &&
+      governanceResult.classification.level === 'RESTRICTED' &&
       !governanceResult.retentionPolicy
     ) {
-      violations.push("Restricted _data without retention policy");
+      violations.push('Restricted _data without retention policy');
     }
 
-    return violations.length === 0 ? "compliant" : "non_compliant";
+    return violations.length === 0 ? 'compliant' : 'non_compliant';
   }
 
   async _handleDataAccess(_tenantId, _request) {
@@ -237,10 +237,10 @@ class DataGovernanceManager extends EventEmitter {
       dataFound: true,
       records: [
         {
-          _type: "profile",
-          _data: { email: _request.subjectEmail, name: "User Name" },
+          _type: 'profile',
+          _data: { email: _request.subjectEmail, name: 'User Name' },
         },
-        { _type: "activity", _data: { lastLogin: "2024-01-01T00:00:00Z" } },
+        { _type: 'activity', _data: { lastLogin: '2024-01-01T00:00:00Z' } },
       ],
     };
   }
@@ -257,8 +257,8 @@ class DataGovernanceManager extends EventEmitter {
   async _handleDataPortability(_tenantId, _request) {
     // Mock _data export - would generate actual export
     return {
-      exportFormat: "JSON",
-      exportSize: "2.5MB",
+      exportFormat: 'JSON',
+      exportSize: '2.5MB',
       downloadUrl: `https://exports.example.com/${crypto.randomUUID()}.json`,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
@@ -281,12 +281,12 @@ class DataClassificationEngine {
   async classify(_data, _context) {
     // Mock classification - would use ML models
     const confidence = Math.random();
-    const levels = ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"];
+    const levels = ['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'RESTRICTED'];
 
     return {
       level: levels[Math.floor(Math.random() * levels.length)],
       confidence,
-      reasoning: "Automated classification based on content analysis",
+      reasoning: 'Automated classification based on content analysis',
       reviewRequired: confidence < 0.8,
     };
   }
@@ -333,11 +333,11 @@ class DataLineageTracker {
 
   async track(_data, _context) {
     return {
-      source: _context.source || "unknown",
+      source: _context.source || 'unknown',
       transformations: _context.transformations || [],
       destinations: _context.destinations || [],
       timestamp: new Date().toISOString(),
-      version: "1.0",
+      version: '1.0',
     };
   }
 }
@@ -358,7 +358,7 @@ class DataRetentionManager {
       deleteAfter: new Date(
         Date.now() + retentionDays * 24 * 60 * 60 * 1000,
       ).toISOString(),
-      policy: hasPII ? "PII_RETENTION" : "STANDARD_RETENTION",
+      policy: hasPII ? 'PII_RETENTION' : 'STANDARD_RETENTION',
       autoDelete: true,
     };
   }
@@ -374,21 +374,21 @@ class PrivacyManager {
 
     if (piiResults.detected) {
       controls.push({
-        _type: "ENCRYPTION",
+        _type: 'ENCRYPTION',
         applied: true,
-        algorithm: "AES-256-GCM",
+        algorithm: 'AES-256-GCM',
       });
 
       controls.push({
-        _type: "ACCESS_CONTROL",
+        _type: 'ACCESS_CONTROL',
         applied: true,
-        permissions: ["read:pii", "write:pii"],
+        permissions: ['read:pii', 'write:pii'],
       });
 
       controls.push({
-        _type: "AUDIT_LOGGING",
+        _type: 'AUDIT_LOGGING',
         applied: true,
-        level: "DETAILED",
+        level: 'DETAILED',
       });
     }
 

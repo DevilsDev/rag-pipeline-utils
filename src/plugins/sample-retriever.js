@@ -5,8 +5,8 @@
 
 class SampleRetriever {
   constructor(options = {}) {
-    this.name = "sample-retriever";
-    this.version = "1.0.0";
+    this.name = 'sample-retriever';
+    this.version = '1.0.0';
     this.options = options;
     this.storage = [];
 
@@ -29,7 +29,7 @@ class SampleRetriever {
           this.options.onProgress({
             processed: Math.min(i + this.batchSize, vectors.length),
             total: vectors.length,
-            stage: "storing",
+            stage: 'storing',
           });
         }
 
@@ -57,7 +57,7 @@ class SampleRetriever {
         this.options.onProgress({
           processed: Math.min(i + this.batchSize, totalResults),
           total: totalResults,
-          stage: "retrieving",
+          stage: 'retrieving',
         });
       }
 

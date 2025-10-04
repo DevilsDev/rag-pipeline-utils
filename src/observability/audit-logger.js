@@ -7,13 +7,13 @@
  * @version 2.1.0
  */
 
-const fs = require("fs").promises;
-const path = require("path");
-const crypto = require("crypto");
-const { AsyncLocalStorage } = require("async_hooks");
-const { EventEmitter } = require("events");
-const logger = require("../utils/structured-logger");
-const { getTelemetryService } = require("./telemetry");
+const fs = require('fs').promises;
+const path = require('path');
+const crypto = require('crypto');
+const { AsyncLocalStorage } = require('async_hooks');
+const { EventEmitter } = require('events');
+const logger = require('../utils/structured-logger');
+const { getTelemetryService } = require('./telemetry');
 
 /**
  * Audit context for tracking compliance events across async operations.
@@ -41,13 +41,13 @@ class AuditLogger extends EventEmitter {
     this.config = {
       // Core Configuration
       enabled: options.enabled !== false,
-      serviceName: options.serviceName || "@devilsdev/rag-pipeline-utils",
+      serviceName: options.serviceName || '@devilsdev/rag-pipeline-utils',
       instanceId: options.instanceId || crypto.randomUUID(),
 
       // Storage Configuration
       storage: {
-        type: options.storage?.type || "file", // file, database, s3
-        location: options.storage?.location || "./audit-logs",
+        type: options.storage?.type || 'file', // file, database, s3
+        location: options.storage?.location || './audit-logs',
         maxFileSize: options.storage?.maxFileSize || 100 * 1024 * 1024, // 100MB
         compression: options.storage?.compression !== false,
         encryption: options.storage?.encryption !== false,
@@ -57,7 +57,7 @@ class AuditLogger extends EventEmitter {
 
       // Compliance Configuration
       compliance: {
-        frameworks: options.compliance?.frameworks || ["GDPR", "SOX"], // GDPR, SOX, HIPAA, PCI-DSS
+        frameworks: options.compliance?.frameworks || ['GDPR', 'SOX'], // GDPR, SOX, HIPAA, PCI-DSS
         retentionPeriod:
           options.compliance?.retentionPeriod || 7 * 365 * 24 * 60 * 60 * 1000, // 7 years
         immutableStorage: options.compliance?.immutableStorage !== false,
@@ -69,9 +69,9 @@ class AuditLogger extends EventEmitter {
       // Security Configuration
       security: {
         signatureAlgorithm:
-          options.security?.signatureAlgorithm || "RSA-SHA256",
+          options.security?.signatureAlgorithm || 'RSA-SHA256',
         encryptionAlgorithm:
-          options.security?.encryptionAlgorithm || "aes-256-gcm",
+          options.security?.encryptionAlgorithm || 'aes-256-gcm',
         keyRotationInterval:
           options.security?.keyRotationInterval || 90 * 24 * 60 * 60 * 1000, // 90 days
         integrityChecks: options.security?.integrityChecks !== false,
@@ -81,29 +81,29 @@ class AuditLogger extends EventEmitter {
       // Event Configuration
       events: {
         categories: options.events?.categories || [
-          "authentication",
-          "authorization",
-          "data_access",
-          "data_modification",
-          "system_access",
-          "configuration_change",
-          "security_event",
-          "compliance_event",
+          'authentication',
+          'authorization',
+          'data_access',
+          'data_modification',
+          'system_access',
+          'configuration_change',
+          'security_event',
+          'compliance_event',
         ],
         requiredFields: options.events?.requiredFields || [
-          "timestamp",
-          "eventType",
-          "userId",
-          "resource",
-          "action",
-          "outcome",
+          'timestamp',
+          'eventType',
+          'userId',
+          'resource',
+          'action',
+          'outcome',
         ],
         sensitiveFields: options.events?.sensitiveFields || [
-          "password",
-          "token",
-          "apiKey",
-          "ssn",
-          "creditCard",
+          'password',
+          'token',
+          'apiKey',
+          'ssn',
+          'creditCard',
         ],
         ...options.events,
       },
@@ -147,17 +147,17 @@ class AuditLogger extends EventEmitter {
    */
   async initialize() {
     if (this.isInitialized) {
-      logger.warn("Audit logger already initialized");
+      logger.warn('Audit logger already initialized');
       return;
     }
 
     if (!this.config.enabled) {
-      logger.info("Audit logging is disabled");
+      logger.info('Audit logging is disabled');
       return;
     }
 
     try {
-      logger.info("Initializing audit logging service", {
+      logger.info('Initializing audit logging service', {
         serviceName: this.config.serviceName,
         instanceId: this.config.instanceId,
         compliance: this.config.compliance.frameworks,
@@ -180,12 +180,12 @@ class AuditLogger extends EventEmitter {
 
       // Record initialization in audit log
       await this.logAuditEvent({
-        eventType: "system_startup",
-        category: "system_access",
-        userId: "system",
-        resource: "audit_logger",
-        action: "initialize",
-        outcome: "success",
+        eventType: 'system_startup',
+        category: 'system_access',
+        userId: 'system',
+        resource: 'audit_logger',
+        action: 'initialize',
+        outcome: 'success',
         details: {
           version: this.config.serviceVersion,
           compliance: this.config.compliance.frameworks,
@@ -193,9 +193,9 @@ class AuditLogger extends EventEmitter {
         },
       });
 
-      logger.info("Audit logging service initialized successfully");
+      logger.info('Audit logging service initialized successfully');
     } catch (error) {
-      logger.error("Failed to initialize audit logging service", {
+      logger.error('Failed to initialize audit logging service', {
         error: error.message,
         stack: error.stack,
       });
@@ -234,23 +234,23 @@ class AuditLogger extends EventEmitter {
       this.updateComplianceTracking(auditEvent);
 
       // Emit event for real-time monitoring
-      this.emit("auditEvent", auditEvent);
+      this.emit('auditEvent', auditEvent);
 
       // Record telemetry
-      this.telemetry.recordMetric("audit_events_total", 1, {
+      this.telemetry.recordMetric('audit_events_total', 1, {
         category: auditEvent.category,
         outcome: auditEvent.outcome,
       });
 
       return auditEvent.id;
     } catch (error) {
-      logger.error("Failed to log audit event", {
+      logger.error('Failed to log audit event', {
         event,
         error: error.message,
       });
 
       // Log the failure itself as an audit event
-      await this.logSystemEvent("audit_failure", {
+      await this.logSystemEvent('audit_failure', {
         originalEvent: event,
         error: error.message,
       });
@@ -397,7 +397,7 @@ class AuditLogger extends EventEmitter {
     }
 
     // Validate outcome
-    const validOutcomes = ["success", "failure", "error", "denied"];
+    const validOutcomes = ['success', 'failure', 'error', 'denied'];
     if (!validOutcomes.includes(eventData.outcome)) {
       throw new ValidationError(`Invalid event outcome: ${eventData.outcome}`);
     }
@@ -416,7 +416,7 @@ class AuditLogger extends EventEmitter {
 
     for (const field of sensitiveFields) {
       if (sanitized[field]) {
-        sanitized[field] = "[REDACTED]";
+        sanitized[field] = '[REDACTED]';
       }
     }
 
@@ -459,13 +459,13 @@ class AuditLogger extends EventEmitter {
    */
   async storeAuditEvent(auditEvent) {
     switch (this.config.storage.type) {
-      case "file":
+      case 'file':
         await this.storeToFile(auditEvent);
         break;
-      case "database":
+      case 'database':
         await this.storeToDatabase(auditEvent);
         break;
-      case "s3":
+      case 's3':
         await this.storeToS3(auditEvent);
         break;
       default:
@@ -485,7 +485,7 @@ class AuditLogger extends EventEmitter {
     const fileName = this.generateLogFileName(auditEvent.timestamp);
     const filePath = path.join(this.config.storage.location, fileName);
 
-    let eventData = JSON.stringify(auditEvent) + "\n";
+    let eventData = JSON.stringify(auditEvent) + '\n';
 
     // Encrypt if enabled
     if (this.config.storage.encryption) {
@@ -497,7 +497,7 @@ class AuditLogger extends EventEmitter {
       eventData = await this.compressData(eventData);
     }
 
-    await fs.appendFile(filePath, eventData, { flag: "a" });
+    await fs.appendFile(filePath, eventData, { flag: 'a' });
 
     // Check if file rotation is needed
     await this.checkFileRotation(filePath);
@@ -519,7 +519,7 @@ class AuditLogger extends EventEmitter {
       frameworks = this.config.compliance.frameworks,
     } = options;
 
-    logger.info("Generating compliance report", {
+    logger.info('Generating compliance report', {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       frameworks,
@@ -588,7 +588,7 @@ class AuditLogger extends EventEmitter {
     // Add compliance analysis
     report.analysis = await this.analyzeCompliance(events, frameworks);
 
-    logger.info("Compliance report generated", {
+    logger.info('Compliance report generated', {
       reportId: report.id,
       totalEvents: report.summary.totalEvents,
       violations: report.summary.violations.length,
@@ -607,7 +607,7 @@ class AuditLogger extends EventEmitter {
       return { enabled: false };
     }
 
-    logger.info("Verifying audit chain integrity");
+    logger.info('Verifying audit chain integrity');
 
     const result = {
       enabled: true,
@@ -628,7 +628,7 @@ class AuditLogger extends EventEmitter {
             result.valid = false;
             result.errors.push({
               eventId: entry.eventId,
-              error: "Hash chain broken",
+              error: 'Hash chain broken',
               expected: previousEntry.hash,
               actual: entry.previousHash,
             });
@@ -642,7 +642,7 @@ class AuditLogger extends EventEmitter {
             result.valid = false;
             result.errors.push({
               eventId: entry.eventId,
-              error: "Invalid digital signature",
+              error: 'Invalid digital signature',
             });
           }
         }
@@ -659,7 +659,7 @@ class AuditLogger extends EventEmitter {
 
     this.lastIntegrityCheck = Date.now();
 
-    logger.info("Audit chain integrity verification completed", {
+    logger.info('Audit chain integrity verification completed', {
       valid: result.valid,
       totalEvents: result.totalEvents,
       errors: result.errors.length,
@@ -702,7 +702,7 @@ class AuditLogger extends EventEmitter {
 class ValidationError extends Error {
   constructor(message) {
     super(message);
-    this.name = "ValidationError";
+    this.name = 'ValidationError';
   }
 }
 

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 async function createPipeline({
   loader,
@@ -9,19 +9,19 @@ async function createPipeline({
   evaluator,
 } = {}) {
   // Required components check
-  const required = ["loader", "embedder", "retriever", "llm"];
+  const required = ['loader', 'embedder', 'retriever', 'llm'];
   const missing = required.filter(
     (name) => !arguments[0] || !arguments[0][name],
   );
   if (missing.length > 0) {
-    throw new Error(`Required components missing: ${missing.join(", ")}`);
+    throw new Error(`Required components missing: ${missing.join(', ')}`);
   }
 
   return {
     async run(input, { signal } = {}) {
       // Check if signal is already aborted
       if (signal && signal.aborted) {
-        throw new Error("Aborted");
+        throw new Error('Aborted');
       }
 
       // Execute pipeline in order
@@ -30,14 +30,14 @@ async function createPipeline({
       const candidates = await retriever.retrieve(embeddings, { signal });
 
       let ranked = candidates;
-      if (reranker && typeof reranker.rerank === "function") {
+      if (reranker && typeof reranker.rerank === 'function') {
         ranked = await reranker.rerank(input, candidates, { signal });
       }
 
       const answer = await llm.generate(input, ranked, { signal });
 
       let evaluation = null;
-      if (evaluator && typeof evaluator.evaluate === "function") {
+      if (evaluator && typeof evaluator.evaluate === 'function') {
         evaluation = await evaluator.evaluate(input, answer, ranked);
       }
 

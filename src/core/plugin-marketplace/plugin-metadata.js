@@ -6,9 +6,9 @@
 const {
   validatePluginMetadata,
   PLUGIN_NAMING,
-} = require("./plugin-registry-format.js");
+} = require('./plugin-registry-format.js');
 // eslint-disable-line global-require
-const { VersionUtils } = require("./version-resolver.js");
+const { VersionUtils } = require('./version-resolver.js');
 // eslint-disable-line global-require
 
 /**
@@ -16,18 +16,18 @@ const { VersionUtils } = require("./version-resolver.js");
  */
 class PluginMetadataExtractor {
   constructor() {
-    this.requiredFields = ["name", "version", "_type", "description", "author"];
+    this.requiredFields = ['name', 'version', '_type', 'description', 'author'];
     this.optionalFields = [
-      "homepage",
-      "repository",
-      "keywords",
-      "license",
-      "engines",
-      "dependencies",
-      "peerDependencies",
-      "_config",
-      "examples",
-      "tags",
+      'homepage',
+      'repository',
+      'keywords',
+      'license',
+      'engines',
+      'dependencies',
+      'peerDependencies',
+      '_config',
+      'examples',
+      'tags',
     ];
   }
 
@@ -46,12 +46,12 @@ class PluginMetadataExtractor {
       metadata = pluginModule.metadata;
     }
     // Pattern 2: getMetadata() method
-    else if (typeof pluginModule.getMetadata === "function") {
+    else if (typeof pluginModule.getMetadata === 'function') {
       metadata = pluginModule.getMetadata();
     }
     // Pattern 3: Class constructor with static metadata
     else if (
-      typeof pluginModule === "function" &&
+      typeof pluginModule === 'function' &&
       pluginModule.prototype &&
       pluginModule.constructor.metadata
     ) {
@@ -71,7 +71,7 @@ class PluginMetadataExtractor {
 
     if (!metadata) {
       throw new Error(
-        "Plugin does not export required metadata. Please add a 'metadata' property or 'getMetadata()' method.",
+        'Plugin does not export required metadata. Please add a \'metadata\' property or \'getMetadata()\' method.',
       );
     }
 
@@ -100,7 +100,7 @@ class PluginMetadataExtractor {
       _type: pluginType,
       description: packageData.description,
       author:
-        typeof packageData.author === "string"
+        typeof packageData.author === 'string'
           ? packageData.author
           : packageData.author?.name,
       homepage: packageData.homepage,
@@ -142,7 +142,7 @@ class PluginMetadataExtractor {
     if (!schemaValidation.valid) {
       const errors = schemaValidation.errors
         .map((err) => `${err.instancePath}: ${err.message}`)
-        .join(", ");
+        .join(', ');
       throw new Error(`Plugin metadata validation failed: ${errors}`);
     }
 
@@ -178,30 +178,30 @@ class PluginMetadataExtractor {
     // Add version stability tags
     const version = VersionUtils.parseVersion(metadata.version);
     if (version.isPrerelease) {
-      if (version.prerelease[0] === "alpha") {
-        tags.add("alpha");
-      } else if (version.prerelease[0] === "beta") {
-        tags.add("beta");
+      if (version.prerelease[0] === 'alpha') {
+        tags.add('alpha');
+      } else if (version.prerelease[0] === 'beta') {
+        tags.add('beta');
       } else {
-        tags.add("prerelease");
+        tags.add('prerelease');
       }
     } else {
-      tags.add("stable");
+      tags.add('stable');
     }
 
     // Add dependency-based tags
     if (Object.keys(metadata.dependencies).length === 0) {
-      tags.add("zero-dependencies");
+      tags.add('zero-dependencies');
     }
 
     // Add feature tags based on config schema
     if (metadata._config && Object.keys(metadata._config).length > 0) {
-      tags.add("configurable");
+      tags.add('configurable');
     }
 
     // Add example tags
     if (metadata.examples && metadata.examples.length > 0) {
-      tags.add("documented");
+      tags.add('documented');
     }
 
     return Array.from(tags);
@@ -301,37 +301,37 @@ class PluginMetadataValidator {
     // Check for missing optional but recommended fields
     if (!metadata.homepage) {
       warnings.push(
-        "Consider adding a homepage URL for better discoverability",
+        'Consider adding a homepage URL for better discoverability',
       );
     }
 
     if (!metadata.repository) {
-      warnings.push("Consider adding repository information for transparency");
+      warnings.push('Consider adding repository information for transparency');
     }
 
     if (!metadata.license) {
-      warnings.push("Consider specifying a license for legal clarity");
+      warnings.push('Consider specifying a license for legal clarity');
     }
 
     if (!metadata.keywords || metadata.keywords.length === 0) {
-      warnings.push("Consider adding keywords to improve searchability");
+      warnings.push('Consider adding keywords to improve searchability');
     }
 
     if (!metadata.examples || metadata.examples.length === 0) {
-      warnings.push("Consider adding usage examples for better documentation");
+      warnings.push('Consider adding usage examples for better documentation');
     }
 
     // Check version format
     const version = VersionUtils.parseVersion(metadata.version);
     if (version.major === 0) {
       warnings.push(
-        "Version 0.x.x indicates unstable API - consider releasing 1.0.0 when stable",
+        'Version 0.x.x indicates unstable API - consider releasing 1.0.0 when stable',
       );
     }
 
     // Check description length
     if (metadata.description.length < 20) {
-      warnings.push("Consider providing a more detailed description");
+      warnings.push('Consider providing a more detailed description');
     }
 
     return warnings;
@@ -352,31 +352,31 @@ const MetadataUtils = {
   createTemplate(_type, name, _options = {}) {
     return {
       name,
-      version: "1.0.0",
+      version: '1.0.0',
       _type,
       description: `A ${_type} plugin for RAG pipeline`,
-      author: _options.author || "Unknown",
-      homepage: _options.homepage || "",
+      author: _options.author || 'Unknown',
+      homepage: _options.homepage || '',
       repository: _options.repository || {
-        _type: "git",
-        url: "",
+        _type: 'git',
+        url: '',
       },
-      keywords: [_type, "rag", "plugin"],
-      license: _options.license || "MIT",
+      keywords: [_type, 'rag', 'plugin'],
+      license: _options.license || 'MIT',
       engines: {
-        node: ">=18.0.0",
-        "rag-pipeline-utils": ">=2.0.0",
+        node: '>=18.0.0',
+        'rag-pipeline-utils': '>=2.0.0',
       },
       dependencies: {},
       peerDependencies: {},
       _config: {
-        _type: "object",
+        _type: 'object',
         properties: {},
         additionalProperties: false,
       },
       examples: [
         {
-          title: "Basic Usage",
+          title: 'Basic Usage',
           description: `Basic ${_type} plugin usage`,
           _config: {},
         },

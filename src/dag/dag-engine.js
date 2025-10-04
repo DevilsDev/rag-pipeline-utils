@@ -5,7 +5,7 @@
  * Author: Ali Kahwaji
  */
 
-const DAGNode = require("./dag-node.js");
+const DAGNode = require('./dag-node.js');
 
 class DAG {
   constructor() {
@@ -40,18 +40,18 @@ class DAG {
     let seed, options;
     if (
       seedOrOptions &&
-      typeof seedOrOptions === "object" &&
+      typeof seedOrOptions === 'object' &&
       !Array.isArray(seedOrOptions) &&
-      ("concurrency" in seedOrOptions ||
-        "timeout" in seedOrOptions ||
-        "continueOnError" in seedOrOptions ||
-        "enableCheckpoints" in seedOrOptions ||
-        "checkpointId" in seedOrOptions ||
-        "requiredNodes" in seedOrOptions ||
-        "returnFormat" in seedOrOptions ||
-        "retryFailedNodes" in seedOrOptions ||
-        "maxRetries" in seedOrOptions ||
-        "gracefulDegradation" in seedOrOptions)
+      ('concurrency' in seedOrOptions ||
+        'timeout' in seedOrOptions ||
+        'continueOnError' in seedOrOptions ||
+        'enableCheckpoints' in seedOrOptions ||
+        'checkpointId' in seedOrOptions ||
+        'requiredNodes' in seedOrOptions ||
+        'returnFormat' in seedOrOptions ||
+        'retryFailedNodes' in seedOrOptions ||
+        'maxRetries' in seedOrOptions ||
+        'gracefulDegradation' in seedOrOptions)
     ) {
       // First parameter is options
       options = seedOrOptions;
@@ -71,7 +71,7 @@ class DAG {
       enableCheckpoints: false,
       checkpointId: null,
       requiredNodes: [],
-      returnFormat: "auto",
+      returnFormat: 'auto',
       retryFailedNodes: false,
       maxRetries: 3,
       ...options,
@@ -148,8 +148,8 @@ class DAG {
         });
         // Only set result if it's not the special failed-optional-node symbol
         if (
-          typeof result !== "symbol" ||
-          result.description !== "failed-optional-node"
+          typeof result !== 'symbol' ||
+          result.description !== 'failed-optional-node'
         ) {
           results.set(node.id, result);
         }
@@ -223,7 +223,7 @@ class DAG {
   _handleExecutionError(error) {
     // Error policy: wrap everything in try/catch
     // If caught error is a node error (message starts with "Node " OR error.nodeId) → rethrow unchanged
-    if (error.message.startsWith("Node ") || error.nodeId) {
+    if (error.message.startsWith('Node ') || error.nodeId) {
       throw error;
     }
 
@@ -243,8 +243,8 @@ class DAG {
 
     // Do NOT wrap timeout errors or 'no sink nodes' errors
     if (
-      error.message === "Execution timeout" ||
-      error.message === "DAG has no sink nodes - no final output available"
+      error.message === 'Execution timeout' ||
+      error.message === 'DAG has no sink nodes - no final output available'
     ) {
       throw error;
     }
@@ -269,7 +269,7 @@ class DAG {
       await Promise.race([
         runFn(),
         new Promise((_, reject) => {
-          setTimeout(() => reject(new Error("Execution timeout")), timeout);
+          setTimeout(() => reject(new Error('Execution timeout')), timeout);
         }),
       ]);
     } else {
@@ -295,7 +295,7 @@ class DAG {
 
     // Check for multiple errors first
     if (errors.size >= 2) {
-      const agg = new Error("Multiple execution errors");
+      const agg = new Error('Multiple execution errors');
       agg.errors = [...errors.values()].map((x) => x.cause || x);
       throw agg;
     }
@@ -308,7 +308,7 @@ class DAG {
       if (errors.size === 1) {
         throw [...errors.values()][0];
       }
-      throw new Error("DAG has no sink nodes - no final output available");
+      throw new Error('DAG has no sink nodes - no final output available');
     }
 
     const successfulSinks = sinkIds.filter((id) => results.has(id));
@@ -318,7 +318,7 @@ class DAG {
       if (errors.size === 1) {
         throw [...errors.values()][0];
       }
-      throw new Error("DAG has no sink nodes - no final output available");
+      throw new Error('DAG has no sink nodes - no final output available');
     }
 
     // Save checkpoint if enabled
@@ -333,15 +333,15 @@ class DAG {
       const obj = Object.fromEntries(sinkEntries);
 
       // Attach non-enumerable helpers backed by ALL results
-      Object.defineProperty(obj, "__allResults", {
+      Object.defineProperty(obj, '__allResults', {
         value: new Map(results),
         enumerable: false,
       });
-      Object.defineProperty(obj, "get", {
+      Object.defineProperty(obj, 'get', {
         value: (k) => obj.__allResults.get(k),
         enumerable: false,
       });
-      Object.defineProperty(obj, "has", {
+      Object.defineProperty(obj, 'has', {
         value: (k) => obj.__allResults.has(k),
         enumerable: false,
       });
@@ -422,7 +422,7 @@ class DAG {
       run,
       new Promise((_, reject) => {
         const t = setTimeout(
-          () => reject(new Error("Execution timeout")),
+          () => reject(new Error('Execution timeout')),
           timeout,
         );
         run.finally(() => clearTimeout(t));
@@ -524,28 +524,28 @@ class DAG {
    */
   validate() {
     if (this.nodes.size === 0) {
-      throw new Error("DAG is empty - no nodes to execute");
+      throw new Error('DAG is empty - no nodes to execute');
     }
 
     // Check for cycles using topological sort
     try {
       this.topoSort();
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         // Extract cycle information from error message or use error.cycle if available
         let nodes = error.cycle;
-        if (!nodes && error.message.includes("involving node:")) {
+        if (!nodes && error.message.includes('involving node:')) {
           // Parse cycle from message if cycle array not available
           const match = error.message.match(/involving node: (.+)/);
           if (match) {
-            nodes = match[1].split(" -> ");
+            nodes = match[1].split(' -> ');
           }
         }
         if (!nodes) {
-          nodes = ["unknown"];
+          nodes = ['unknown'];
         }
 
-        const pretty = nodes.join(" -> ");
+        const pretty = nodes.join(' -> ');
         const err = new Error(
           `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
         );
@@ -559,7 +559,7 @@ class DAG {
     const { fwd } = this._buildAdjacency();
     const sinkIds = this._getSinkIds(fwd);
     if (sinkIds.length === 0) {
-      throw new Error("DAG has no sink nodes - no final output available");
+      throw new Error('DAG has no sink nodes - no final output available');
     }
 
     return true;
@@ -584,7 +584,7 @@ class DAG {
     } = context;
 
     // Handle undefined node.run function
-    if (typeof node.run !== "function") {
+    if (typeof node.run !== 'function') {
       throw new Error(`Node ${node.id} has no run function`);
     }
 
@@ -650,8 +650,8 @@ class DAG {
         // FINAL failure path
         const deps = [...(fwd.get(node.id) || [])];
         const suffix = deps.length
-          ? `. This affects downstream nodes: ${deps.join(", ")}`
-          : "";
+          ? `. This affects downstream nodes: ${deps.join(', ')}`
+          : '';
         const nodeErr = new Error(
           `Node ${node.id} execution failed: ${e.message}${suffix}`,
         );
@@ -664,7 +664,7 @@ class DAG {
           console.warn(`Non-critical node failure: ${nodeErr.message}`);
           errors.set(node.id, nodeErr);
           // Don't set result for failed optional nodes - return special symbol so they don't appear in results
-          return Symbol("failed-optional-node");
+          return Symbol('failed-optional-node');
         }
         errors.set(node.id, nodeErr);
         throw nodeErr;
@@ -683,13 +683,13 @@ class DAG {
 
     // Check for empty DAG
     if (this.nodes.size === 0) {
-      throw new Error("DAG cannot be empty");
+      throw new Error('DAG cannot be empty');
     }
 
     // Check for self-loops
     for (const node of this.nodes.values()) {
       if (node.outputs.includes(node)) {
-        throw new Error("Self-loop detected");
+        throw new Error('Self-loop detected');
       }
     }
 
@@ -697,21 +697,21 @@ class DAG {
     try {
       this.topoSort();
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         // Extract cycle information from error message or use error.cycle if available
         let nodes = error.cycle;
-        if (!nodes && error.message.includes("involving node:")) {
+        if (!nodes && error.message.includes('involving node:')) {
           // Parse cycle from message if cycle array not available
           const match = error.message.match(/involving node: (.+)/);
           if (match) {
-            nodes = match[1].split(" -> ");
+            nodes = match[1].split(' -> ');
           }
         }
         if (!nodes) {
-          nodes = ["unknown"];
+          nodes = ['unknown'];
         }
 
-        const err = new Error("Cycle detected in DAG");
+        const err = new Error('Cycle detected in DAG');
         err.cycle = nodes;
         throw err;
       }
@@ -756,7 +756,7 @@ class DAG {
           const restNodes = cyclePath.slice(1, -1).reverse();
           cyclePath = [startNode, ...restNodes, startNode];
         }
-        const cyclePathString = cyclePath.join(" -> ");
+        const cyclePathString = cyclePath.join(' -> ');
         const error = new Error(
           `Cycle detected involving node: ${cyclePathString}`,
         );
@@ -772,7 +772,7 @@ class DAG {
       try {
         node.inputs.forEach((input) => visit(input, newPath));
       } catch (error) {
-        if (error.message.includes("Cycle detected")) {
+        if (error.message.includes('Cycle detected')) {
           throw error; // Preserve original message and cycle property
         }
         throw error;
@@ -788,7 +788,7 @@ class DAG {
         visit(node);
       }
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         throw error;
       }
       throw new Error(`DAG topological sort failed: ${error.message}`);
@@ -823,7 +823,7 @@ class DAG {
 
       try {
         // Handle undefined node.run function
-        if (typeof node.run !== "function") {
+        if (typeof node.run !== 'function') {
           throw new Error(`Node ${node.id} has no run function`);
         }
 

@@ -5,11 +5,11 @@
  * Author: Ali Kahwaji
  */
 
-const { createRagPipeline } = require("./core/create-pipeline.js");
+const { createRagPipeline } = require('./core/create-pipeline.js');
 // eslint-disable-line global-require
-const { loadPluginsFromJson } = require("./config/load-plugin-config.js");
+const { loadPluginsFromJson } = require('./config/load-plugin-config.js');
 // eslint-disable-line global-require
-const { logger } = require("./utils/logger.js");
+const { logger } = require('./utils/logger.js');
 // eslint-disable-line global-require
 
 /**
@@ -20,11 +20,11 @@ const { logger } = require("./utils/logger.js");
  */
 async function queryPipeline(_prompt, config) {
   if (!prompt) {
-    throw new Error("No prompt provided for query.");
+    throw new Error('No prompt provided for query.');
   }
 
   if (!config) {
-    throw new Error("No configuration provided for query.");
+    throw new Error('No configuration provided for query.');
   }
 
   try {
@@ -55,7 +55,7 @@ async function queryPipeline(_prompt, config) {
     // Execute query
     return await pipeline.query(prompt);
   } catch (error) {
-    logger.error("Query pipeline failed", { error: error.message, prompt });
+    logger.error('Query pipeline failed', { error: error.message, prompt });
     throw error;
   }
 }
@@ -68,11 +68,11 @@ async function queryPipeline(_prompt, config) {
  */
 async function* queryPipelineStream(prompt, config) {
   if (!prompt) {
-    throw new Error("No prompt provided for streaming query.");
+    throw new Error('No prompt provided for streaming query.');
   }
 
   if (!config) {
-    throw new Error("No configuration provided for streaming query.");
+    throw new Error('No configuration provided for streaming query.');
   }
 
   try {
@@ -103,7 +103,7 @@ async function* queryPipelineStream(prompt, config) {
     // Execute streaming query
     yield* pipeline.queryStream(prompt);
   } catch (error) {
-    logger.error("Streaming query pipeline failed", {
+    logger.error('Streaming query pipeline failed', {
       error: error.message,
       prompt,
     });

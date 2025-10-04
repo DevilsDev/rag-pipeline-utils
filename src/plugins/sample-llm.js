@@ -5,8 +5,8 @@
 
 class SampleLLM {
   constructor(options = {}) {
-    this.name = "sample-llm";
-    this.version = "1.0.0";
+    this.name = 'sample-llm';
+    this.version = '1.0.0';
     this.options = options;
   }
 
@@ -17,10 +17,10 @@ class SampleLLM {
 
   async *generateStream(prompt, context = []) {
     const response = `Generated response for: ${prompt.substring(0, 50)}...`;
-    const tokens = response.split(" ");
+    const tokens = response.split(' ');
 
     for (const token of tokens) {
-      yield token + " ";
+      yield token + ' ';
       // Small delay for realistic streaming
       await new Promise((resolve) => setTimeout(resolve, 10));
     }

@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
 const EventTypes = {
-  PLUGIN_START: "plugin.start",
-  PLUGIN_END: "plugin.end",
-  PLUGIN_ERROR: "plugin.error",
-  STAGE_START: "stage.start",
-  STAGE_END: "stage.end",
-  PERFORMANCE_METRIC: "performance.metric",
-  MEMORY_WARNING: "memory.warning",
-  BACKPRESSURE_APPLIED: "backpressure.applied",
-  BACKPRESSURE_RELEASED: "backpressure.released",
+  PLUGIN_START: 'plugin.start',
+  PLUGIN_END: 'plugin.end',
+  PLUGIN_ERROR: 'plugin.error',
+  STAGE_START: 'stage.start',
+  STAGE_END: 'stage.end',
+  PERFORMANCE_METRIC: 'performance.metric',
+  MEMORY_WARNING: 'memory.warning',
+  BACKPRESSURE_APPLIED: 'backpressure.applied',
+  BACKPRESSURE_RELEASED: 'backpressure.released',
 };
 
 const EventSeverity = {
-  DEBUG: "debug",
-  INFO: "info",
-  WARN: "warn",
-  ERROR: "error",
+  DEBUG: 'debug',
+  INFO: 'info',
+  WARN: 'warn',
+  ERROR: 'error',
 };
 
 function nowISO() {
@@ -42,7 +42,7 @@ class PipelineEventLogger {
     this._listeners = new Map();
   }
 
-  logEvent(eventType, severity, metadata = {}, message = "") {
+  logEvent(eventType, severity, metadata = {}, message = '') {
     if (!this.enabled) return;
     const evt = {
       timestamp: nowISO(),
@@ -68,7 +68,7 @@ class PipelineEventLogger {
         try {
           fn(evt);
         } catch (e) {
-          console.warn("Event listener error:", e);
+          console.warn('Event listener error:', e);
         }
       }
     }
@@ -76,11 +76,11 @@ class PipelineEventLogger {
 
   getInputSize(input) {
     return Array.isArray(input)
-      ? { type: "array", length: input.length }
-      : typeof input === "string"
-        ? { type: "string", length: input.length }
-        : typeof input === "object" && input !== null
-          ? { type: "object", keys: Object.keys(input).length }
+      ? { type: 'array', length: input.length }
+      : typeof input === 'string'
+        ? { type: 'string', length: input.length }
+        : typeof input === 'object' && input !== null
+          ? { type: 'object', keys: Object.keys(input).length }
           : { type: typeof input };
   }
 
@@ -94,7 +94,7 @@ class PipelineEventLogger {
         pluginName,
         inputSize,
         context,
-        stage: "start",
+        stage: 'start',
         pid: process.pid,
         platform: process.platform,
         nodeVersion: process.version,
@@ -119,8 +119,8 @@ class PipelineEventLogger {
         duration,
         resultSize,
         context,
-        status: "success",
-        stage: "end",
+        status: 'success',
+        stage: 'end',
         pid: process.pid,
         platform: process.platform,
         nodeVersion: process.version,
@@ -133,7 +133,7 @@ class PipelineEventLogger {
     const safeError =
       error instanceof Error
         ? { name: error.name, message: error.message, code: error.code }
-        : { name: "Error", message: String(error) };
+        : { name: 'Error', message: String(error) };
     this.logEvent(
       EventTypes.PLUGIN_ERROR,
       EventSeverity.ERROR,
@@ -142,7 +142,7 @@ class PipelineEventLogger {
         pluginName,
         duration,
         context,
-        status: "error",
+        status: 'error',
         error: safeError,
         pid: process.pid,
         platform: process.platform,
@@ -174,7 +174,7 @@ class PipelineEventLogger {
       {
         stage,
         duration,
-        status: "success", // Default status for completed stages
+        status: 'success', // Default status for completed stages
         ...metadata,
         pid: process.pid,
         platform: process.platform,
@@ -184,7 +184,7 @@ class PipelineEventLogger {
     );
   }
 
-  logPerformanceMetric(name, value, unit = "", extra = {}) {
+  logPerformanceMetric(name, value, unit = '', extra = {}) {
     this.logEvent(
       EventTypes.PERFORMANCE_METRIC,
       EventSeverity.DEBUG,
@@ -207,13 +207,13 @@ class PipelineEventLogger {
       EventTypes.MEMORY_WARNING,
       EventSeverity.WARN,
       { memoryUsage, threshold: thresholdMB, usagePercentage },
-      "Memory warning",
+      'Memory warning',
     );
   }
 
   logBackpressure(action, status = {}) {
     const eventType =
-      action === "released"
+      action === 'released'
         ? EventTypes.BACKPRESSURE_RELEASED
         : EventTypes.BACKPRESSURE_APPLIED;
     this.logEvent(
@@ -245,7 +245,7 @@ class PipelineEventLogger {
       );
     if (since)
       out = out.filter((e) => new Date(e.timestamp) >= new Date(since));
-    if (typeof limit === "number") out = out.slice(-limit);
+    if (typeof limit === 'number') out = out.slice(-limit);
     return out;
   }
 
