@@ -1,0 +1,7 @@
+{
+  "loader": "invalid-loader-format",
+  "embedder": true,
+  "retriever": 123,
+  "llm": null,
+  "pipeline": "should-be-array"
+}

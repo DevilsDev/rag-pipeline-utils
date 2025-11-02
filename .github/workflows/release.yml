@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: NPM Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: CI=true npm ci --prefer-offline
+
+      - name: Test
+        run: npm test -- --ci --passWithNoTests
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm via Trusted Publishers
+        run: npm publish --access public

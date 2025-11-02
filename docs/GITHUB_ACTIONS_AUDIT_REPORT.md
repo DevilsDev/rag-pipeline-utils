@@ -6,14 +6,14 @@
 
 ## Executive Summary
 
-| Metric | Count |
-|--------|-------|
-| Total Workflows | 20 |
-| ✅ Passed | 0 |
-| ⚠️ Warnings | 6 |
-| ❌ Failed | 14 |
-| 🔒 Security Issues | 25 |
-| 🚨 Critical Issues | 0 |
+| Metric             | Count |
+| ------------------ | ----- |
+| Total Workflows    | 20    |
+| ✅ Passed          | 0     |
+| ⚠️ Warnings        | 6     |
+| ❌ Failed          | 14    |
+| 🔒 Security Issues | 25    |
+| 🚨 Critical Issues | 0     |
 
 ## Recommendations
 
@@ -397,4 +397,4 @@ This audit examined the following areas:
 
 ---
 
-*This report was generated automatically by the GitHub Actions Workflow Auditor.*
+_This report was generated automatically by the GitHub Actions Workflow Auditor._

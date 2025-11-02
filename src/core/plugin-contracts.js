@@ -4,8 +4,6 @@
  * Author: Ali Kahwaji
  */
 
-// const path = require('path'); // Removed unused import
-
 const pluginContracts = {
   loader: {
     requiredMethods: ['load'],
@@ -14,9 +12,9 @@ const pluginContracts = {
         params: ['_filePath'],
         paramTypes: ['string'],
         returnType: 'Promise<Array<{chunk: () => string[]}>>',
-        description: 'Load and parse a document from the given file path'
-      }
-    }
+        description: 'Load and parse a document from the given file path',
+      },
+    },
   },
   embedder: {
     requiredMethods: ['embed', 'embedQuery'],
@@ -25,15 +23,15 @@ const pluginContracts = {
         params: ['chunks'],
         paramTypes: ['string[]'],
         returnType: 'Promise<number[][]>',
-        description: 'Generate embeddings for an array of text chunks'
+        description: 'Generate embeddings for an array of text chunks',
       },
       embedQuery: {
         params: ['query'],
         paramTypes: ['string'],
         returnType: 'Promise<number[]>',
-        description: 'Generate embedding for a single query string'
-      }
-    }
+        description: 'Generate embedding for a single query string',
+      },
+    },
   },
   retriever: {
     requiredMethods: ['store', 'retrieve'],
@@ -42,15 +40,15 @@ const pluginContracts = {
         params: ['vectors'],
         paramTypes: ['number[][]'],
         returnType: 'Promise<void>',
-        description: 'Store vectors in the retrieval system'
+        description: 'Store vectors in the retrieval system',
       },
       retrieve: {
         params: ['queryVector'],
         paramTypes: ['number[]'],
         returnType: 'Promise<string[]>',
-        description: 'Retrieve relevant context based on query vector'
-      }
-    }
+        description: 'Retrieve relevant context based on query vector',
+      },
+    },
   },
   llm: {
     requiredMethods: ['generate'],
@@ -60,15 +58,16 @@ const pluginContracts = {
         params: ['prompt', 'context'],
         paramTypes: ['string', 'string[]'],
         returnType: 'Promise<string>',
-        description: 'Generate response based on prompt and retrieved context'
+        description: 'Generate response based on prompt and retrieved context',
       },
       generateStream: {
         params: ['prompt', 'context'],
         paramTypes: ['string', 'string[]'],
         returnType: 'AsyncIterable<string>',
-        description: 'Generate streaming response token-by-token based on prompt and retrieved context'
-      }
-    }
+        description:
+          'Generate streaming response token-by-token based on prompt and retrieved context',
+      },
+    },
   },
   reranker: {
     requiredMethods: ['rerank'],
@@ -77,16 +76,14 @@ const pluginContracts = {
         params: ['query', 'documents'],
         paramTypes: ['string', 'string[]'],
         returnType: 'Promise<string[]>',
-        description: 'Rerank documents based on relevance to query'
-      }
-    }
-  }
+        description: 'Rerank documents based on relevance to query',
+      },
+    },
+  },
 };
 
 // Default export
 
-
-
 module.exports = {
-  pluginContracts
+  pluginContracts,
 };

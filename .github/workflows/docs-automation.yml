@@ -1,0 +1,272 @@
+name: Documentation Automation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "src/**/*.js"
+      - "scripts/generate-docs.js"
+      - ".github/workflows/docs-automation.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**/*.js"
+      - "scripts/generate-docs.js"
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      generate_benchmarks:
+        description: "Generate performance benchmarks"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-docs:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint codebase
+        run: npm run lint
+
+      - name: Generate API documentation
+        run: npm run docs:api
+
+      - name: Generate project report
+        run: npm run dev:report
+
+      - name: Run performance benchmarks
+        if: ${{ github.event.inputs.generate_benchmarks == 'true' || github.ref == 'refs/heads/main' }}
+        run: npm run benchmark:quick
+
+      - name: Validate generated documentation
+        run: |
+          # Check if documentation files were generated
+          if [ ! -f "docs/api.html" ]; then
+            echo "❌ HTML documentation not generated"
+            exit 1
+          fi
+
+          if [ ! -f "docs/api.md" ]; then
+            echo "❌ Markdown documentation not generated"
+            exit 1
+          fi
+
+          if [ ! -f "docs/api.json" ]; then
+            echo "❌ JSON documentation not generated"
+            exit 1
+          fi
+
+          echo "✅ All documentation files generated successfully"
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-documentation
+          path: |
+            docs/
+            project-report.json
+            benchmark-results/
+          retention-days: 30
+
+      - name: Setup Pages (main branch only)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages (main branch only)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main'
+    needs: generate-docs
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  update-docs-pr:
+    name: Update Documentation in PR
+    if: github.event_name == 'pull_request'
+    needs: generate-docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate documentation
+        run: npm run docs:api
+
+      - name: Check for documentation changes
+        id: docs-changes
+        run: |
+          if git diff --quiet docs/; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit documentation updates
+        if: steps.docs-changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/
+          git commit -m "docs: auto-update API documentation [skip ci]" || exit 0
+          git push
+
+      - name: Comment on PR
+        if: steps.docs-changes.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📚 API documentation has been automatically updated based on code changes.'
+            });
+
+  doc-health-check:
+    name: Documentation Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check JSDoc coverage
+        run: |
+          echo "🔍 Analyzing JSDoc coverage..."
+
+          # Count total functions/classes
+          total_items=$(find src -name "*.js" -exec grep -l "function\|class\|=>" {} \; | wc -l)
+
+          # Count documented items
+          documented_items=$(find src -name "*.js" -exec grep -l "/\*\*" {} \; | wc -l)
+
+          if [ $total_items -gt 0 ]; then
+            coverage=$((documented_items * 100 / total_items))
+            echo "📊 Documentation coverage: $coverage% ($documented_items/$total_items files)"
+
+            if [ $coverage -lt 80 ]; then
+              echo "⚠️ Documentation coverage is below 80%"
+              echo "Consider adding JSDoc comments to improve documentation coverage"
+            else
+              echo "✅ Documentation coverage is good!"
+            fi
+          fi
+
+      - name: Validate documentation quality
+        run: |
+          echo "🔍 Validating documentation quality..."
+
+          # Check for common documentation issues
+          issues=0
+
+          # Check for TODO/FIXME in documentation
+          if grep -r "TODO\|FIXME" docs/ > /dev/null 2>&1; then
+            echo "⚠️ Found TODO/FIXME comments in documentation"
+            issues=$((issues + 1))
+          fi
+
+          # Check for broken internal links (basic check)
+          if find docs -name "*.md" -exec grep -l "](\./" {} \; > /dev/null 2>&1; then
+            echo "🔗 Found internal links in documentation - manual verification recommended"
+          fi
+
+          if [ $issues -eq 0 ]; then
+            echo "✅ Documentation quality check passed"
+          else
+            echo "⚠️ Found $issues documentation quality issues"
+          fi
+
+      - name: Generate documentation metrics
+        run: |
+          echo "📈 Generating documentation metrics..."
+
+          # Count lines of documentation
+          doc_lines=$(find docs -name "*.md" -exec wc -l {} \; | awk '{sum += $1} END {print sum}' || echo "0")
+
+          # Count API endpoints documented
+          api_endpoints=$(grep -r "@param\|@returns" src/ | wc -l || echo "0")
+
+          # Count examples
+          examples=$(grep -r "@example" src/ | wc -l || echo "0")
+
+          echo "📝 Total documentation lines: $doc_lines"
+          echo "🔧 API endpoints documented: $api_endpoints"
+          echo "💡 Code examples: $examples"
+
+          # Create metrics file
+          cat > docs-metrics.json << EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "documentation_lines": $doc_lines,
+            "api_endpoints": $api_endpoints,
+            "examples": $examples,
+            "workflow_run": "${{ github.run_number }}"
+          }
+          EOF
+
+      - name: Upload documentation metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-metrics
+          path: docs-metrics.json
+          retention-days: 90

@@ -5,6 +5,11 @@
 
 const { logger } = require('../../utils/logger.js');
 
+// Use performance.now() for monotonic timing, fallback to perf_hooks for older Node
+const { performance } = globalThis.performance
+  ? globalThis
+  : require('node:perf_hooks');
+
 /**
  * Memory monitor for tracking heap usage
  */
@@ -16,12 +21,17 @@ class MemoryMonitor {
   }
 
   getCurrentUsage() {
-    const usage = process.memoryUsage();
+    const usage =
+      typeof process.memoryUsage === 'function' ? process.memoryUsage() : null;
+    const heapUsed = usage?.heapUsed ?? 0;
+    const heapTotal = usage?.heapTotal ?? Math.max(1, heapUsed);
     return {
-      heapUsed: usage.heapUsed,
-      heapTotal: usage.heapTotal,
-      external: usage.external,
-      rss: usage.rss
+      heapUsed,
+      heapTotal,
+      external: usage?.external ?? 0,
+      rss: usage?.rss ?? 0,
+      heapUsedMB: Math.round(heapUsed / 1024 / 1024),
+      heapTotalMB: Math.round(heapTotal / 1024 / 1024),
     };
   }
 
@@ -41,14 +51,18 @@ class MemoryMonitor {
   getMemoryReport() {
     const usage = this.getCurrentUsage();
     const ratio = this.getUsageRatio();
-    
+
     return {
-      heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
-      heapTotalMB: Math.round(usage.heapTotal / 1024 / 1024),
+      heapUsedMB: usage.heapUsedMB,
+      heapTotalMB: usage.heapTotalMB,
       maxMemoryMB: Math.round(this.maxMemoryBytes / 1024 / 1024),
       usagePercentage: Math.round(ratio * 100),
-      status: ratio > this.criticalThreshold ? 'critical' : 
-              ratio > this.warningThreshold ? 'warning' : 'normal'
+      status:
+        ratio > this.criticalThreshold
+          ? 'critical'
+          : ratio > this.warningThreshold
+            ? 'warning'
+            : 'normal',
     };
   }
 }
@@ -77,7 +91,7 @@ class BackpressureController {
   shouldApplyBackpressure() {
     const memoryRatio = this.memoryMonitor.getUsageRatio();
     const bufferFull = this.buffer.length >= this.maxBufferSize;
-    
+
     return memoryRatio > this.pauseThreshold || bufferFull;
   }
 
@@ -92,7 +106,11 @@ class BackpressureController {
 
     this.isPaused = true;
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    console.warn(`⚠️  Applying backpressure - Memory: ${memoryReport.usagePercentage}%, Buffer: ${this.buffer.length}/${this.maxBufferSize}`); // eslint-disable-line no-console
+    logger.warn('Applying backpressure', {
+      memoryPercentage: memoryReport.usagePercentage,
+      bufferSize: this.buffer.length,
+      maxBufferSize: this.maxBufferSize,
+    });
 
     return new Promise((resolve) => {
       this.waitingResolvers.push(resolve);
@@ -122,6 +140,11 @@ class BackpressureController {
         this.relieveBackpressure();
       }
     }, this.checkInterval);
+
+    // Don't keep process alive for relief checks
+    if (typeof this.reliefCheckInterval.unref === 'function') {
+      this.reliefCheckInterval.unref();
+    }
   }
 
   /**
@@ -131,8 +154,8 @@ class BackpressureController {
     if (!this.isPaused) return;
 
     this.isPaused = false;
-    console.log('✅ Backpressure relieved - resuming processing'); // eslint-disable-line no-console
-    
+    logger.info('Backpressure relieved - resuming processing');
+
     // Clear interval
     if (this.reliefCheckInterval) {
       clearInterval(this.reliefCheckInterval);
@@ -141,7 +164,7 @@ class BackpressureController {
 
     // Resolve all waiting promises
     const resolvers = this.waitingResolvers.splice(0);
-    resolvers.forEach(resolve => resolve());
+    resolvers.forEach((resolve) => resolve());
   }
 
   /**
@@ -168,13 +191,13 @@ class BackpressureController {
    */
   getStatus() {
     const memoryReport = this.memoryMonitor.getMemoryReport();
-    
+
     return {
       isPaused: this.isPaused,
       bufferSize: this.buffer.length,
       maxBufferSize: this.maxBufferSize,
       memory: memoryReport,
-      shouldApplyBackpressure: this.shouldApplyBackpressure()
+      shouldApplyBackpressure: this.shouldApplyBackpressure(),
     };
   }
 }
@@ -196,7 +219,7 @@ class StreamingProcessor {
    * @param {object} pipeline - Pipeline _instance
    * @returns {AsyncGenerator} Stream of processed chunks
    */
-  async* processDocumentStream(docPath, pipeline) {
+  async *processDocumentStream(docPath, pipeline) {
     let totalTokens = 0;
     let chunkCount = 0;
     let processedCount = 0;
@@ -206,11 +229,14 @@ class StreamingProcessor {
     try {
       // First, count total chunks for progress tracking
       const allChunks = [];
-      for await (const documentChunk of this.loadInChunks(docPath, pipeline.loaderInstance)) {
+      for await (const documentChunk of this.loadInChunks(
+        docPath,
+        pipeline.loaderInstance,
+      )) {
         allChunks.push(documentChunk);
       }
       totalChunks = allChunks.length;
-      
+
       for (const documentChunk of allChunks) {
         // Check memory and apply backpressure if needed
         await this.backpressureController.waitForRelief();
@@ -221,7 +247,9 @@ class StreamingProcessor {
 
         // Check token limits
         if (totalTokens > this.tokenLimit) {
-          const error = new Error(`Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`);
+          const error = new Error(
+            `Token limit exceeded: ${totalTokens} > ${this.tokenLimit}`,
+          );
           error.code = 'TOKEN_LIMIT_EXCEEDED';
           throw error;
         }
@@ -229,12 +257,18 @@ class StreamingProcessor {
         // Process chunk
         const processed = await this.processChunk(documentChunk, pipeline);
         chunkCount++;
-        
+
         // Warn if approaching token limit (check after incrementing chunkCount)
-        if (totalTokens > this.tokenLimit * this.tokenWarningThreshold && chunkCount % 10 === 0) {
-          console.warn(`⚠️  Approaching token limit: ${Math.round(totalTokens)} / ${this.tokenLimit} tokens`); // eslint-disable-line no-console
+        if (
+          totalTokens > this.tokenLimit * this.tokenWarningThreshold &&
+          chunkCount % 10 === 0
+        ) {
+          logger.warn('Approaching token limit', {
+            currentTokens: Math.round(totalTokens),
+            tokenLimit: this.tokenLimit,
+          });
         }
-        
+
         if (processed.processed) {
           processedCount++;
         } else {
@@ -243,7 +277,7 @@ class StreamingProcessor {
 
         // Add to buffer and yield
         await this.backpressureController.addToBuffer(processed);
-        
+
         // Yield processed chunks from buffer with progress information
         const bufferedItems = this.backpressureController.removeFromBuffer(1);
         for (const item of bufferedItems) {
@@ -252,8 +286,8 @@ class StreamingProcessor {
             progress: {
               processed: processedCount,
               failed: failedCount,
-              total: totalChunks
-            }
+              total: totalChunks,
+            },
           };
         }
 
@@ -264,21 +298,25 @@ class StreamingProcessor {
       }
 
       // Yield any remaining buffered items
-      const remainingItems = this.backpressureController.removeFromBuffer(this.backpressureController.buffer.length);
+      const remainingItems = this.backpressureController.removeFromBuffer(
+        this.backpressureController.buffer.length,
+      );
       for (const item of remainingItems) {
         yield item;
       }
 
-      console.log(`✅ Streaming processing complete: ${chunkCount} chunks, ${Math.round(totalTokens)} tokens`); // eslint-disable-line no-console
-      
+      logger.info('Streaming processing complete', {
+        chunkCount,
+        totalTokens: Math.round(totalTokens),
+      });
     } catch (error) {
       const status = this.backpressureController.getStatus();
-      logger.error('❌ Streaming processing failed:', {
+      logger.error('Streaming processing failed', {
         error: error.message,
         totalTokens: Math.round(totalTokens),
         chunkCount,
         memoryStatus: status.memory,
-        bufferSize: status.bufferSize
+        bufferSize: status.bufferSize,
       });
       throw error;
     }
@@ -290,12 +328,12 @@ class StreamingProcessor {
    * @param {object} loader - Loader _instance
    * @returns {AsyncGenerator} Stream of document chunks
    */
-  async* loadInChunks(docPath, loader) {
+  async *loadInChunks(docPath, loader) {
     const documents = await loader.load(docPath);
-    
+
     for (const doc of documents) {
       const chunks = doc.chunk();
-      
+
       // Yield chunks in batches to control memory
       for (let i = 0; i < chunks.length; i += this.chunkSize) {
         const batch = chunks.slice(i, i + this.chunkSize);
@@ -313,31 +351,35 @@ class StreamingProcessor {
    * @returns {Promise<object>} Processed chunk
    */
   async processChunk(chunk, pipeline) {
-    const startTime = Date.now();
-    
+    const start = performance.now();
+
     try {
       // Embed the chunk
       const vector = await pipeline.embedderInstance.embed([chunk]);
-      
+
       // Store in retriever
       await pipeline.retrieverInstance.store(vector);
-      
-      const duration = Date.now() - startTime;
-      
+
+      const end = performance.now();
+      const duration = Math.max(1, Math.round(end - start)); // clamp to minimum 1ms
+
       return {
         chunk,
         vector: vector[0],
         processed: true,
         duration,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
+      const end = performance.now();
+      const duration = Math.max(1, Math.round(end - start)); // clamp to minimum 1ms
+
       return {
         chunk,
         processed: false,
         error: error.message,
-        duration: Date.now() - startTime,
-        timestamp: new Date().toISOString()
+        duration,
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -348,20 +390,231 @@ class StreamingProcessor {
    */
   getStats() {
     const status = this.backpressureController.getStatus();
-    
+
     return {
       backpressure: status,
       tokenLimit: this.tokenLimit,
-      chunkSize: this.chunkSize
+      chunkSize: this.chunkSize,
     };
   }
 }
 
+/**
+ * Helper utilities for streaming operations
+ */
+class StreamingHelpers {
+  /**
+   * Create a streaming processor with default configuration
+   * @param {object} options - Configuration options
+   * @returns {StreamingProcessor} Configured streaming processor
+   */
+  static createProcessor(options = {}) {
+    return new StreamingProcessor({
+      chunkSize: options.chunkSize || 1000,
+      maxMemoryMB: options.maxMemoryMB || 512,
+      tokenLimit: options.tokenLimit || 100000,
+      tokenWarningThreshold: options.tokenWarningThreshold || 0.8,
+      pauseThreshold: options.pauseThreshold || 0.85,
+      resumeThreshold: options.resumeThreshold || 0.7,
+      checkInterval: options.checkInterval || 1000,
+      ...options,
+    });
+  }
 
+  /**
+   * Create a memory monitor with default configuration
+   * @param {number} maxMemoryMB - Maximum memory in MB
+   * @returns {MemoryMonitor} Configured memory monitor
+   */
+  static createMemoryMonitor(maxMemoryMB = 512) {
+    return new MemoryMonitor(maxMemoryMB);
+  }
 
+  /**
+   * Create a backpressure controller with default configuration
+   * @param {object} options - Configuration options
+   * @returns {BackpressureController} Configured backpressure controller
+   */
+  static createBackpressureController(options = {}) {
+    return new BackpressureController({
+      maxBufferSize: options.maxBufferSize || 100,
+      maxMemoryMB: options.maxMemoryMB || 512,
+      pauseThreshold: options.pauseThreshold || 0.85,
+      resumeThreshold: options.resumeThreshold || 0.7,
+      checkInterval: options.checkInterval || 1000,
+      ...options,
+    });
+  }
+
+  /**
+   * Estimate token count from text
+   * @param {string} text - Input text
+   * @returns {number} Estimated token count
+   */
+  static estimateTokens(text) {
+    if (typeof text !== 'string') return 0;
+    // Rough approximation: 1 token ≈ 4 characters
+    return Math.ceil(text.length / 4);
+  }
+
+  /**
+   * Check if memory usage is within safe limits
+   * @param {number} maxMemoryMB - Maximum allowed memory in MB
+   * @returns {object} Memory status report
+   */
+  static checkMemoryStatus(maxMemoryMB = 512) {
+    const monitor = new MemoryMonitor(maxMemoryMB);
+    const usage = monitor.getCurrentUsage();
+    const ratio = monitor.getUsageRatio();
+
+    return {
+      ...usage,
+      ratio,
+      isWarning: monitor.isWarningLevel(),
+      isCritical: monitor.isCriticalLevel(),
+      status: ratio > 0.9 ? 'critical' : ratio > 0.8 ? 'warning' : 'normal',
+    };
+  }
+
+  /**
+   * Create a streaming configuration for different use cases
+   * @param {string} profile - Configuration profile ('light', 'standard', 'heavy')
+   * @returns {object} Configuration object
+   */
+  static getStreamingProfile(profile = 'standard') {
+    const profiles = {
+      light: {
+        chunkSize: 500,
+        maxMemoryMB: 256,
+        tokenLimit: 50000,
+        maxBufferSize: 50,
+        pauseThreshold: 0.8,
+        resumeThreshold: 0.6,
+      },
+      standard: {
+        chunkSize: 1000,
+        maxMemoryMB: 512,
+        tokenLimit: 100000,
+        maxBufferSize: 100,
+        pauseThreshold: 0.85,
+        resumeThreshold: 0.7,
+      },
+      heavy: {
+        chunkSize: 2000,
+        maxMemoryMB: 1024,
+        tokenLimit: 200000,
+        maxBufferSize: 200,
+        pauseThreshold: 0.9,
+        resumeThreshold: 0.75,
+      },
+    };
+
+    return profiles[profile] || profiles.standard;
+  }
+
+  /**
+   * Wrap an async iterator with memory monitoring
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {object} options - Monitoring options
+   * @returns {AsyncGenerator} Monitored async generator
+   */
+  static async *withMemoryMonitoring(iterator, options = {}) {
+    const monitor = new MemoryMonitor(options.maxMemoryMB || 512);
+    let itemCount = 0;
+
+    try {
+      for await (const item of iterator) {
+        itemCount++;
+
+        // Check memory every N items
+        if (itemCount % (options.checkInterval || 10) === 0) {
+          const report = monitor.getMemoryReport();
+
+          if (monitor.isCriticalLevel()) {
+            throw new Error(
+              `Critical memory usage: ${report.usagePercentage}% (${report.heapUsedMB}MB)`,
+            );
+          }
+
+          if (monitor.isWarningLevel() && options.onWarning) {
+            options.onWarning(report);
+          }
+        }
+
+        yield {
+          ...item,
+          memoryStatus:
+            itemCount % (options.reportInterval || 100) === 0
+              ? monitor.getMemoryReport()
+              : undefined,
+        };
+      }
+    } catch (error) {
+      const finalReport = monitor.getMemoryReport();
+      logger.error('Memory monitoring error:', {
+        error: error.message,
+        itemsProcessed: itemCount,
+        finalMemoryStatus: finalReport,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create a throttled async iterator
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {number} delayMs - Delay between items in milliseconds
+   * @returns {AsyncGenerator} Throttled async generator
+   */
+  static async *throttle(iterator, delayMs = 100) {
+    for await (const item of iterator) {
+      yield item;
+
+      // Add delay between items
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  /**
+   * Batch items from an async iterator
+   * @param {AsyncIterator} iterator - Source async iterator
+   * @param {number} batchSize - Number of items per batch
+   * @returns {AsyncGenerator} Batched async generator
+   */
+  static async *batch(iterator, batchSize = 10) {
+    let batch = [];
+
+    for await (const item of iterator) {
+      batch.push(item);
+
+      if (batch.length >= batchSize) {
+        yield batch;
+        batch = [];
+      }
+    }
+
+    // Yield remaining items
+    if (batch.length > 0) {
+      yield batch;
+    }
+  }
+}
 
 module.exports = {
   BackpressureController,
   StreamingProcessor,
-  MemoryMonitor
+  MemoryMonitor,
+  StreamingHelpers,
+  // Convenience exports
+  createProcessor: StreamingHelpers.createProcessor,
+  createMemoryMonitor: StreamingHelpers.createMemoryMonitor,
+  createBackpressureController: StreamingHelpers.createBackpressureController,
+  estimateTokens: StreamingHelpers.estimateTokens,
+  checkMemoryStatus: StreamingHelpers.checkMemoryStatus,
+  getStreamingProfile: StreamingHelpers.getStreamingProfile,
+  withMemoryMonitoring: StreamingHelpers.withMemoryMonitoring,
+  throttle: StreamingHelpers.throttle,
+  batch: StreamingHelpers.batch,
 };

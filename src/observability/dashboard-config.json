@@ -1,0 +1,675 @@
+{
+  "dashboards": [
+    {
+      "id": "rag_pipeline_overview",
+      "title": "RAG Pipeline Overview",
+      "description": "High-level metrics and health status for the RAG pipeline system",
+      "category": "overview",
+      "tags": ["rag", "pipeline", "overview"],
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": "system_health",
+          "title": "System Health Status",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "up{job=\"rag-pipeline\"}",
+              "legendFormat": "Service Status"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "steps": [
+                  { "color": "red", "value": 0 },
+                  { "color": "green", "value": 1 }
+                ]
+              },
+              "mappings": [
+                {
+                  "options": { "0": { "text": "Down" }, "1": { "text": "Up" } }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "request_rate",
+          "title": "Request Rate",
+          "type": "graph",
+          "gridPos": { "x": 6, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(rag_requests_total[5m])",
+              "legendFormat": "Requests/sec"
+            }
+          ],
+          "yAxes": [{ "label": "requests/sec", "min": 0 }]
+        },
+        {
+          "id": "error_rate",
+          "title": "Error Rate",
+          "type": "graph",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(rag_errors_total[5m]) / rate(rag_requests_total[5m]) * 100",
+              "legendFormat": "Error %"
+            }
+          ],
+          "yAxes": [{ "label": "percentage", "min": 0, "max": 100 }],
+          "alert": {
+            "conditions": [
+              {
+                "query": { "params": ["A", "5m", "now"] },
+                "reducer": { "type": "avg" },
+                "evaluator": { "params": [5], "type": "gt" }
+              }
+            ],
+            "executionErrorState": "alerting",
+            "for": "5m",
+            "frequency": "10s",
+            "handler": 1,
+            "name": "High Error Rate",
+            "noDataState": "no_data",
+            "notifications": []
+          }
+        },
+        {
+          "id": "response_time",
+          "title": "Response Time Distribution",
+          "type": "heatmap",
+          "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(rag_request_duration_bucket[5m]))",
+              "legendFormat": "50th percentile"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(rag_request_duration_bucket[5m]))",
+              "legendFormat": "95th percentile"
+            },
+            {
+              "expr": "histogram_quantile(0.99, rate(rag_request_duration_bucket[5m]))",
+              "legendFormat": "99th percentile"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dag_performance",
+      "title": "DAG Engine Performance",
+      "description": "Detailed metrics for DAG execution and node performance",
+      "category": "performance",
+      "tags": ["dag", "performance", "execution"],
+      "refresh": "15s",
+      "panels": [
+        {
+          "id": "dag_executions",
+          "title": "DAG Executions",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(dag_execution_count[5m])",
+              "legendFormat": "Executions/sec"
+            }
+          ]
+        },
+        {
+          "id": "dag_duration",
+          "title": "DAG Execution Duration",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(dag_execution_duration_bucket[5m]))",
+              "legendFormat": "Median"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(dag_execution_duration_bucket[5m]))",
+              "legendFormat": "95th percentile"
+            }
+          ],
+          "yAxes": [{ "label": "milliseconds", "min": 0 }]
+        },
+        {
+          "id": "node_execution_count",
+          "title": "Node Execution Rate by Type",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(dag_node_execution_count[5m])",
+              "legendFormat": "{{node_type}}"
+            }
+          ]
+        },
+        {
+          "id": "node_failures",
+          "title": "Node Failure Rate",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(dag_execution_errors[5m])",
+              "legendFormat": "{{error_type}}"
+            }
+          ],
+          "alert": {
+            "conditions": [
+              {
+                "query": { "params": ["A", "5m", "now"] },
+                "reducer": { "type": "avg" },
+                "evaluator": { "params": [0.1], "type": "gt" }
+              }
+            ],
+            "executionErrorState": "alerting",
+            "for": "2m",
+            "frequency": "10s",
+            "handler": 1,
+            "name": "High DAG Node Failure Rate",
+            "noDataState": "no_data"
+          }
+        },
+        {
+          "id": "concurrent_executions",
+          "title": "Concurrent DAG Executions",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 16, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "dag_concurrent_executions",
+              "legendFormat": "Active"
+            }
+          ]
+        },
+        {
+          "id": "dag_memory_usage",
+          "title": "DAG Memory Usage",
+          "type": "graph",
+          "gridPos": { "x": 6, "y": 16, "w": 18, "h": 8 },
+          "targets": [
+            {
+              "expr": "dag_memory_usage_bytes",
+              "legendFormat": "Memory Usage"
+            }
+          ],
+          "yAxes": [{ "label": "bytes", "min": 0 }]
+        }
+      ]
+    },
+    {
+      "id": "security_monitoring",
+      "title": "Security Monitoring",
+      "description": "Security events, threats, and compliance monitoring",
+      "category": "security",
+      "tags": ["security", "compliance", "threats"],
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": "security_events",
+          "title": "Security Events Rate",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(security_events_total[5m])",
+              "legendFormat": "{{severity}}"
+            }
+          ]
+        },
+        {
+          "id": "threats_detected",
+          "title": "Threats Detected",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "threats_detected",
+              "legendFormat": "Active Threats"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "steps": [
+                  { "color": "green", "value": 0 },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "red", "value": 5 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": "blocked_entities",
+          "title": "Blocked Entities",
+          "type": "stat",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "security_entities_blocked",
+              "legendFormat": "Blocked"
+            }
+          ]
+        },
+        {
+          "id": "audit_events",
+          "title": "Audit Events",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(audit_events_total[5m])",
+              "legendFormat": "{{category}}"
+            }
+          ]
+        },
+        {
+          "id": "security_violations",
+          "title": "Security Violations by Type",
+          "type": "piechart",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "increase(plugin_sandbox_violations[1h])",
+              "legendFormat": "{{violation_type}}"
+            }
+          ]
+        },
+        {
+          "id": "compliance_status",
+          "title": "Compliance Framework Status",
+          "type": "table",
+          "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "compliance_framework_status",
+              "legendFormat": "{{framework}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plugin_performance",
+      "title": "Plugin Performance",
+      "description": "Plugin execution metrics and sandbox monitoring",
+      "category": "plugins",
+      "tags": ["plugins", "sandbox", "performance"],
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": "plugin_executions",
+          "title": "Plugin Execution Rate",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(plugin_execution_count[5m])",
+              "legendFormat": "{{plugin_type}}"
+            }
+          ]
+        },
+        {
+          "id": "plugin_duration",
+          "title": "Plugin Execution Duration",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(plugin_execution_duration_bucket[5m]))",
+              "legendFormat": "{{plugin_type}} 95th percentile"
+            }
+          ]
+        },
+        {
+          "id": "sandbox_violations",
+          "title": "Sandbox Security Violations",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(plugin_sandbox_violations[5m])",
+              "legendFormat": "{{violation_type}}"
+            }
+          ],
+          "alert": {
+            "conditions": [
+              {
+                "query": { "params": ["A", "5m", "now"] },
+                "reducer": { "type": "sum" },
+                "evaluator": { "params": [0], "type": "gt" }
+              }
+            ],
+            "executionErrorState": "alerting",
+            "for": "0m",
+            "frequency": "10s",
+            "handler": 1,
+            "name": "Plugin Sandbox Violations",
+            "noDataState": "no_data"
+          }
+        },
+        {
+          "id": "active_sandboxes",
+          "title": "Active Plugin Sandboxes",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "plugin_sandboxes_active",
+              "legendFormat": "Active"
+            }
+          ]
+        },
+        {
+          "id": "plugin_resource_usage",
+          "title": "Plugin Resource Usage",
+          "type": "graph",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "plugin_memory_usage_bytes",
+              "legendFormat": "Memory"
+            },
+            {
+              "expr": "plugin_cpu_usage_seconds",
+              "legendFormat": "CPU"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag_quality_metrics",
+      "title": "RAG Quality Metrics",
+      "description": "Retrieval accuracy, embedding quality, and response metrics",
+      "category": "quality",
+      "tags": ["rag", "quality", "accuracy"],
+      "refresh": "1m",
+      "panels": [
+        {
+          "id": "retrieval_accuracy",
+          "title": "Retrieval Accuracy",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rag_retrieval_accuracy",
+              "legendFormat": "Accuracy Score"
+            }
+          ],
+          "yAxes": [{ "label": "score", "min": 0, "max": 1 }]
+        },
+        {
+          "id": "embedding_count",
+          "title": "Embeddings Generated",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(rag_embedding_count[5m])",
+              "legendFormat": "Embeddings/sec"
+            }
+          ]
+        },
+        {
+          "id": "query_processing_time",
+          "title": "Query Processing Time",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(rag_query_duration_bucket[5m]))",
+              "legendFormat": "Median"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(rag_query_duration_bucket[5m]))",
+              "legendFormat": "95th percentile"
+            }
+          ]
+        },
+        {
+          "id": "document_relevance",
+          "title": "Document Relevance Score",
+          "type": "stat",
+          "gridPos": { "x": 12, "y": 8, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "avg(rag_document_relevance_score)",
+              "legendFormat": "Avg Relevance"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100
+            }
+          }
+        },
+        {
+          "id": "semantic_similarity",
+          "title": "Semantic Similarity",
+          "type": "heatmap",
+          "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+          "targets": [
+            {
+              "expr": "rag_semantic_similarity_score",
+              "legendFormat": "Similarity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "system_resources",
+      "title": "System Resources",
+      "description": "Infrastructure monitoring and resource utilization",
+      "category": "infrastructure",
+      "tags": ["system", "resources", "infrastructure"],
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": "cpu_usage",
+          "title": "CPU Usage",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "legendFormat": "CPU Usage %"
+            }
+          ],
+          "yAxes": [{ "label": "percentage", "min": 0, "max": 100 }]
+        },
+        {
+          "id": "memory_usage",
+          "title": "Memory Usage",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "memory_usage",
+              "legendFormat": "Used Memory"
+            },
+            {
+              "expr": "node_memory_MemTotal_bytes",
+              "legendFormat": "Total Memory"
+            }
+          ],
+          "yAxes": [{ "label": "bytes", "min": 0 }]
+        },
+        {
+          "id": "network_io",
+          "title": "Network I/O",
+          "type": "graph",
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "rate(node_network_receive_bytes_total[5m])",
+              "legendFormat": "Received"
+            },
+            {
+              "expr": "rate(node_network_transmit_bytes_total[5m])",
+              "legendFormat": "Transmitted"
+            }
+          ]
+        },
+        {
+          "id": "disk_usage",
+          "title": "Disk Usage",
+          "type": "graph",
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+          "targets": [
+            {
+              "expr": "100 - ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes)",
+              "legendFormat": "{{mountpoint}}"
+            }
+          ],
+          "yAxes": [{ "label": "percentage", "min": 0, "max": 100 }]
+        },
+        {
+          "id": "active_connections",
+          "title": "Active Connections",
+          "type": "stat",
+          "gridPos": { "x": 0, "y": 16, "w": 6, "h": 4 },
+          "targets": [
+            {
+              "expr": "active_connections",
+              "legendFormat": "Connections"
+            }
+          ]
+        },
+        {
+          "id": "file_descriptors",
+          "title": "File Descriptors",
+          "type": "graph",
+          "gridPos": { "x": 6, "y": 16, "w": 18, "h": 8 },
+          "targets": [
+            {
+              "expr": "node_filefd_allocated",
+              "legendFormat": "Allocated"
+            },
+            {
+              "expr": "node_filefd_maximum",
+              "legendFormat": "Maximum"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "alerting": {
+    "rules": [
+      {
+        "alert": "ServiceDown",
+        "expr": "up{job=\"rag-pipeline\"} == 0",
+        "for": "1m",
+        "labels": {
+          "severity": "critical",
+          "service": "rag-pipeline"
+        },
+        "annotations": {
+          "summary": "RAG Pipeline service is down",
+          "description": "The RAG Pipeline service has been down for more than 1 minute."
+        }
+      },
+      {
+        "alert": "HighErrorRate",
+        "expr": "rate(rag_errors_total[5m]) / rate(rag_requests_total[5m]) * 100 > 5",
+        "for": "5m",
+        "labels": {
+          "severity": "warning",
+          "service": "rag-pipeline"
+        },
+        "annotations": {
+          "summary": "High error rate detected",
+          "description": "Error rate is above 5% for more than 5 minutes."
+        }
+      },
+      {
+        "alert": "HighResponseTime",
+        "expr": "histogram_quantile(0.95, rate(rag_request_duration_bucket[5m])) > 5000",
+        "for": "10m",
+        "labels": {
+          "severity": "warning",
+          "service": "rag-pipeline"
+        },
+        "annotations": {
+          "summary": "High response time",
+          "description": "95th percentile response time is above 5 seconds."
+        }
+      },
+      {
+        "alert": "SecurityViolation",
+        "expr": "rate(plugin_sandbox_violations[5m]) > 0",
+        "for": "0m",
+        "labels": {
+          "severity": "critical",
+          "service": "security"
+        },
+        "annotations": {
+          "summary": "Security violation detected",
+          "description": "Plugin sandbox security violation detected."
+        }
+      },
+      {
+        "alert": "HighMemoryUsage",
+        "expr": "memory_usage / node_memory_MemTotal_bytes * 100 > 85",
+        "for": "5m",
+        "labels": {
+          "severity": "warning",
+          "service": "infrastructure"
+        },
+        "annotations": {
+          "summary": "High memory usage",
+          "description": "Memory usage is above 85% for more than 5 minutes."
+        }
+      }
+    ]
+  },
+  "notifications": [
+    {
+      "name": "default-webhook",
+      "type": "webhook",
+      "settings": {
+        "url": "http://localhost:3000/api/alerts",
+        "httpMethod": "POST",
+        "title": "RAG Pipeline Alert",
+        "username": "rag-pipeline"
+      }
+    },
+    {
+      "name": "security-alerts",
+      "type": "webhook",
+      "settings": {
+        "url": "http://localhost:3000/api/security-alerts",
+        "httpMethod": "POST",
+        "title": "Security Alert",
+        "username": "security-monitor"
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2023-12-07T00:00:00Z",
+    "author": "DevilsDev Team",
+    "description": "Comprehensive observability dashboards for RAG Pipeline Utils",
+    "tags": ["rag", "observability", "monitoring", "security"],
+    "prometheus": {
+      "datasource": "prometheus",
+      "url": "http://localhost:9090"
+    },
+    "grafana": {
+      "version": ">=8.0.0",
+      "plugins": ["grafana-piechart-panel"]
+    }
+  }
+}

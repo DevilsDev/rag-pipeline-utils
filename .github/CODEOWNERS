@@ -1,0 +1,36 @@
+# Global ownership
+* @DevilsDev
+
+# Core runtime and architecture
+/src/core/ @DevilsDev
+/src/config/ @DevilsDev
+/src/dag/ @DevilsDev
+
+# AI/ML capabilities
+/src/ai/ @DevilsDev
+
+# Enterprise features
+/src/enterprise/ @DevilsDev
+
+# CLI and developer experience
+/src/cli/ @DevilsDev
+/src/dx/ @DevilsDev
+
+# Plugin ecosystem
+/src/plugins/ @DevilsDev
+/src/ecosystem/ @DevilsDev
+
+# Documentation
+/docs/ @DevilsDev
+/docs-site/ @DevilsDev
+*.md @DevilsDev
+
+# CI/CD and workflows
+/.github/ @DevilsDev
+
+# Configuration files
+package.json @DevilsDev
+package-lock.json @DevilsDev
+.releaserc.js @DevilsDev
+jest.config.js @DevilsDev
+.eslintrc.js @DevilsDev

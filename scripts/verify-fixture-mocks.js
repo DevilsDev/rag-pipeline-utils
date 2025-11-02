@@ -1,47 +1,54 @@
 /**
-const fs = require('fs');
-const path = require('path');
  * Version: 1.0.0
  * Description: Verifies that plugin mock implementations expose required methods
  * Author: Ali Kahwaji
  */
 
-import { readdirSync, statSync } from 'fs';
-import { resolve, join, extname } from 'path';
-import { pathToFileURL } from 'url';
+const fs = require("fs");
+const path = require("path");
 
-const MOCKS_DIR = resolve('__tests__/fixtures/src/mocks');
+const { readdirSync, statSync } = fs;
+const { resolve, join, extname } = path;
+
+const MOCKS_DIR = resolve("__tests__/fixtures/src/mocks");
 
 const pluginContracts = {
-  'openai-embedder.js': ['embed', 'embedQuery'],
-  'openai-llm.js': ['ask'],
-  'pdf-loader.js': ['load'],
-  'pinecone-retriever.js': ['store', 'search'],
+  "openai-embedder.js": ["embed", "embedQuery"],
+  "openai-llm.js": ["ask"],
+  "pdf-loader.js": ["load"],
+  "pinecone-retriever.js": ["store", "search"],
 };
 
-const failures = [];
+async function verifyMocks() {
+  const failures = [];
 
-for (const file of readdirSync(MOCKS_DIR)) {
-  const fullPath = join(MOCKS_DIR, file);
-  const isFile = statSync(fullPath).isFile();
-  if (!isFile || extname(file) !== '.js') continue;
+  for (const file of readdirSync(MOCKS_DIR)) {
+    const fullPath = join(MOCKS_DIR, file);
+    const isFile = statSync(fullPath).isFile();
+    if (!isFile || extname(file) !== ".js") continue;
 
-  const expectedMethods = pluginContracts[file];
-  if (!expectedMethods) continue;
+    const expectedMethods = pluginContracts[file];
+    if (!expectedMethods) continue;
 
-  const mod = await import(pathToFileURL(fullPath).href);
-  const plugin = new mod.default();
+    const mod = require(fullPath);
+    const PluginClass = mod.default || mod;
+    const plugin = new PluginClass();
 
-  for (const method of expectedMethods) {
-    if (typeof plugin[method] !== 'function') {
-      failures.push(`❌ ${file} failed: [${file}] missing method: ${method}`);
+    for (const method of expectedMethods) {
+      if (typeof plugin[method] !== "function") {
+        failures.push(`❌ ${file} failed: [${file}] missing method: ${method}`);
+      }
     }
+  }
+
+  if (failures.length > 0) {
+    failures.forEach((msg) => console.error(msg));
+    // eslint-disable-line no-console
+    process.exit(1);
+  } else {
+    console.log("✅ All plugin mocks verified.");
+    // eslint-disable-line no-console
   }
 }
 
-if (failures.length > 0) {
-  failures.forEach(msg => console.error(msg)); // eslint-disable-line no-console
-  process.exit(1);
-} else {
-  console.log('✅ All plugin mocks verified.'); // eslint-disable-line no-console
-}
+verifyMocks();

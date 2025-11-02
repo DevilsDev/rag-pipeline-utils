@@ -4,19 +4,22 @@
  */
 
 // Jest is available globally in CommonJS mode;
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
+describe("Comprehensive Security and CI/CD Pipeline Test Suite", () => {
   let suiteResults = {
     securityTests: [],
     ciTests: [],
     overallScore: 0,
-    recommendations: []
+    recommendations: [],
   };
 
   beforeAll(() => {
-    const outputDir = path.join(process.cwd(), 'comprehensive-security-reports');
+    const outputDir = path.join(
+      process.cwd(),
+      "comprehensive-security-reports",
+    );
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -26,168 +29,170 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
     await generateComprehensiveReport();
   });
 
-  describe('Security Validation Suite', () => {
-    it('should run complete secrets scanning validation', async () => {
+  describe("Security Validation Suite", () => {
+    it("should run complete secrets scanning validation", async () => {
       const secretsValidation = await runSecretsValidation();
-      
+
       expect(secretsValidation.criticalIssues).toBe(0);
       expect(secretsValidation.highRiskSecrets).toBe(0);
       expect(secretsValidation.environmentVariableUsage).toBe(true);
-      
+
       suiteResults.securityTests.push({
-        category: 'secrets-scanning',
+        category: "secrets-scanning",
         score: secretsValidation.score,
         issues: secretsValidation.issues,
-        recommendations: secretsValidation.recommendations
+        recommendations: secretsValidation.recommendations,
       });
-      
-      console.log(`🔍 Secrets Validation: ${secretsValidation.score}/100 score`);
+
+      expect(secretsValidation.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate plugin security and isolation', async () => {
+    it("should validate plugin security and isolation", async () => {
       const pluginSecurity = await validatePluginSecurity();
-      
+
       expect(pluginSecurity.pathTraversalVulnerabilities).toBe(0);
       expect(pluginSecurity.codeInjectionRisks).toBe(0);
       expect(pluginSecurity.sandboxingEnabled).toBe(true);
-      
+
       suiteResults.securityTests.push({
-        category: 'plugin-security',
+        category: "plugin-security",
         score: pluginSecurity.score,
         issues: pluginSecurity.issues,
-        recommendations: pluginSecurity.recommendations
+        recommendations: pluginSecurity.recommendations,
       });
-      
-      console.log(`🔌 Plugin Security: ${pluginSecurity.score}/100 score`);
+
+      expect(pluginSecurity.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate input sanitization and validation', async () => {
+    it("should validate input sanitization and validation", async () => {
       const inputValidation = await validateInputSecurity();
-      
+
       expect(inputValidation.injectionVulnerabilities).toBe(0);
       expect(inputValidation.xssProtection).toBe(true);
       expect(inputValidation.sqlInjectionProtection).toBe(true);
-      
+
       suiteResults.securityTests.push({
-        category: 'input-validation',
+        category: "input-validation",
         score: inputValidation.score,
         issues: inputValidation.issues,
-        recommendations: inputValidation.recommendations
+        recommendations: inputValidation.recommendations,
       });
-      
-      console.log(`🛡️ Input Validation: ${inputValidation.score}/100 score`);
+
+      expect(inputValidation.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate dependency security', async () => {
+    it("should validate dependency security", async () => {
       const dependencySecurity = await validateDependencySecurity();
-      
+
       expect(dependencySecurity.criticalVulnerabilities).toBe(0);
       expect(dependencySecurity.highVulnerabilities).toBeLessThanOrEqual(2);
       expect(dependencySecurity.outdatedDependencies).toBeLessThanOrEqual(5);
-      
+
       suiteResults.securityTests.push({
-        category: 'dependency-security',
+        category: "dependency-security",
         score: dependencySecurity.score,
         issues: dependencySecurity.issues,
-        recommendations: dependencySecurity.recommendations
+        recommendations: dependencySecurity.recommendations,
       });
-      
-      console.log(`📦 Dependency Security: ${dependencySecurity.score}/100 score`);
+
+      expect(dependencySecurity.score).toBeGreaterThanOrEqual(80);
     });
   });
 
-  describe('CI/CD Pipeline Security Suite', () => {
-    it('should validate GitHub Actions workflow security', async () => {
+  describe("CI/CD Pipeline Security Suite", () => {
+    it("should validate GitHub Actions workflow security", async () => {
       const workflowSecurity = await validateWorkflowSecurity();
-      
+
       expect(workflowSecurity.excessivePermissions).toBe(0);
       expect(workflowSecurity.secretsExposure).toBe(0);
       expect(workflowSecurity.unpinnedActions).toBeLessThanOrEqual(3);
-      
+
       suiteResults.ciTests.push({
-        category: 'workflow-security',
+        category: "workflow-security",
         score: workflowSecurity.score,
         issues: workflowSecurity.issues,
-        recommendations: workflowSecurity.recommendations
+        recommendations: workflowSecurity.recommendations,
       });
-      
-      console.log(`⚙️ Workflow Security: ${workflowSecurity.score}/100 score`);
+
+      expect(workflowSecurity.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate release and artifact security', async () => {
+    it("should validate release and artifact security", async () => {
       const releaseSecurity = await validateReleaseSecurity();
-      
+
       expect(releaseSecurity.immutableReleases).toBe(true);
       expect(releaseSecurity.signedArtifacts).toBe(true);
       expect(releaseSecurity.provenanceTracking).toBe(true);
-      
+
       suiteResults.ciTests.push({
-        category: 'release-security',
+        category: "release-security",
         score: releaseSecurity.score,
         issues: releaseSecurity.issues,
-        recommendations: releaseSecurity.recommendations
+        recommendations: releaseSecurity.recommendations,
       });
-      
-      console.log(`🏷️ Release Security: ${releaseSecurity.score}/100 score`);
+
+      expect(releaseSecurity.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate contract schema enforcement', async () => {
+    it("should validate contract schema enforcement", async () => {
       const contractValidation = await validateContractSecurity();
-      
+
       expect(contractValidation.invalidContracts).toBe(0);
       expect(contractValidation.breakingChanges).toBe(0);
       expect(contractValidation.schemaValidation).toBe(true);
-      
+
       suiteResults.ciTests.push({
-        category: 'contract-validation',
+        category: "contract-validation",
         score: contractValidation.score,
         issues: contractValidation.issues,
-        recommendations: contractValidation.recommendations
+        recommendations: contractValidation.recommendations,
       });
-      
-      console.log(`📋 Contract Validation: ${contractValidation.score}/100 score`);
+
+      expect(contractValidation.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate test infrastructure hardening', async () => {
+    it("should validate test infrastructure hardening", async () => {
       const testInfrastructure = await validateTestInfrastructure();
-      
+
       expect(testInfrastructure.actCompatibility).toBe(true);
       expect(testInfrastructure.failureReporting).toBe(true);
       expect(testInfrastructure.cacheOptimization).toBe(true);
-      
+
       suiteResults.ciTests.push({
-        category: 'test-infrastructure',
+        category: "test-infrastructure",
         score: testInfrastructure.score,
         issues: testInfrastructure.issues,
-        recommendations: testInfrastructure.recommendations
+        recommendations: testInfrastructure.recommendations,
       });
-      
-      console.log(`🧪 Test Infrastructure: ${testInfrastructure.score}/100 score`);
+
+      expect(testInfrastructure.score).toBeGreaterThanOrEqual(80);
     });
   });
 
-  describe('Overall Security Assessment', () => {
-    it('should calculate comprehensive security score', async () => {
+  describe("Overall Security Assessment", () => {
+    it("should calculate comprehensive security score", async () => {
       const overallAssessment = calculateOverallSecurityScore();
-      
+
       expect(overallAssessment.score).toBeGreaterThanOrEqual(80);
       expect(overallAssessment.criticalIssues).toBe(0);
       expect(overallAssessment.highIssues).toBeLessThanOrEqual(3);
-      
+
       suiteResults.overallScore = overallAssessment.score;
       suiteResults.recommendations = overallAssessment.recommendations;
-      
-      console.log(`🎯 Overall Security Score: ${overallAssessment.score}/100`);
+
+      expect(overallAssessment.score).toBeGreaterThanOrEqual(80);
     });
 
-    it('should validate compliance with security standards', async () => {
+    it("should validate compliance with security standards", async () => {
       const complianceCheck = await validateSecurityCompliance();
-      
+
       expect(complianceCheck.owasp).toBe(true);
       expect(complianceCheck.nist).toBe(true);
       expect(complianceCheck.cis).toBe(true);
-      
-      console.log(`✅ Security Compliance: OWASP, NIST, CIS standards met`);
+
+      expect(
+        complianceCheck.owasp && complianceCheck.nist && complianceCheck.cis,
+      ).toBe(true);
     });
   });
 
@@ -198,13 +203,11 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       criticalIssues: 0,
       highRiskSecrets: 0,
       environmentVariableUsage: true,
-      issues: [
-        'Test fixture contains mock password (acceptable)'
-      ],
+      issues: ["Test fixture contains mock password (acceptable)"],
       recommendations: [
-        'Continue using environment variables for all secrets',
-        'Consider implementing secret rotation policies'
-      ]
+        "Continue using environment variables for all secrets",
+        "Consider implementing secret rotation policies",
+      ],
     };
   }
 
@@ -214,13 +217,11 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       pathTraversalVulnerabilities: 0,
       codeInjectionRisks: 0,
       sandboxingEnabled: true,
-      issues: [
-        'Plugin path validation could be more restrictive'
-      ],
+      issues: ["Plugin path validation could be more restrictive"],
       recommendations: [
-        'Implement plugin signature verification',
-        'Add runtime plugin behavior monitoring'
-      ]
+        "Implement plugin signature verification",
+        "Add runtime plugin behavior monitoring",
+      ],
     };
   }
 
@@ -230,13 +231,11 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       injectionVulnerabilities: 0,
       xssProtection: true,
       sqlInjectionProtection: true,
-      issues: [
-        'Some edge cases in input sanitization'
-      ],
+      issues: ["Some edge cases in input sanitization"],
       recommendations: [
-        'Enhance input validation for complex data structures',
-        'Add rate limiting for API endpoints'
-      ]
+        "Enhance input validation for complex data structures",
+        "Add rate limiting for API endpoints",
+      ],
     };
   }
 
@@ -247,13 +246,13 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       highVulnerabilities: 1,
       outdatedDependencies: 3,
       issues: [
-        '1 high-severity vulnerability in dev dependency',
-        '3 outdated dependencies with available updates'
+        "1 high-severity vulnerability in dev dependency",
+        "3 outdated dependencies with available updates",
       ],
       recommendations: [
-        'Update outdated dependencies to latest secure versions',
-        'Implement automated dependency vulnerability scanning'
-      ]
+        "Update outdated dependencies to latest secure versions",
+        "Implement automated dependency vulnerability scanning",
+      ],
     };
   }
 
@@ -263,13 +262,11 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       excessivePermissions: 0,
       secretsExposure: 0,
       unpinnedActions: 2,
-      issues: [
-        '2 GitHub Actions not pinned to specific versions'
-      ],
+      issues: ["2 GitHub Actions not pinned to specific versions"],
       recommendations: [
-        'Pin all GitHub Actions to specific SHA commits',
-        'Implement workflow permission reviews'
-      ]
+        "Pin all GitHub Actions to specific SHA commits",
+        "Implement workflow permission reviews",
+      ],
     };
   }
 
@@ -281,9 +278,9 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       provenanceTracking: true,
       issues: [],
       recommendations: [
-        'Consider implementing SLSA Level 3 compliance',
-        'Add automated security scanning to release pipeline'
-      ]
+        "Consider implementing SLSA Level 3 compliance",
+        "Add automated security scanning to release pipeline",
+      ],
     };
   }
 
@@ -295,9 +292,9 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       schemaValidation: true,
       issues: [],
       recommendations: [
-        'Implement automated contract compatibility testing',
-        'Add semantic versioning enforcement'
-      ]
+        "Implement automated contract compatibility testing",
+        "Add semantic versioning enforcement",
+      ],
     };
   }
 
@@ -307,92 +304,99 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
       actCompatibility: true,
       failureReporting: true,
       cacheOptimization: true,
-      issues: [
-        'Test coverage could be higher for edge cases'
-      ],
+      issues: ["Test coverage could be higher for edge cases"],
       recommendations: [
-        'Implement parallel test execution',
-        'Add performance regression testing'
-      ]
+        "Implement parallel test execution",
+        "Add performance regression testing",
+      ],
     };
   }
 
   function calculateOverallSecurityScore() {
-    const securityScores = suiteResults.securityTests.map(test => test.score);
-    const ciScores = suiteResults.ciTests.map(test => test.score);
+    const securityScores = suiteResults.securityTests.map((test) => test.score);
+    const ciScores = suiteResults.ciTests.map((test) => test.score);
     const allScores = [...securityScores, ...ciScores];
-    
-    const averageScore = allScores.reduce((sum, score) => sum + score, 0) / allScores.length;
-    
-    const criticalIssues = suiteResults.securityTests.reduce((count, test) => 
-      count + test.issues.filter(issue => issue.includes('critical')).length, 0
+
+    const averageScore =
+      allScores.reduce((sum, score) => sum + score, 0) / allScores.length;
+
+    const criticalIssues = suiteResults.securityTests.reduce(
+      (count, test) =>
+        count +
+        test.issues.filter((issue) => issue.includes("critical")).length,
+      0,
     );
-    
-    const highIssues = suiteResults.securityTests.reduce((count, test) => 
-      count + test.issues.filter(issue => issue.includes('high')).length, 0
+
+    const highIssues = suiteResults.securityTests.reduce(
+      (count, test) =>
+        count + test.issues.filter((issue) => issue.includes("high")).length,
+      0,
     );
-    
+
     return {
       score: Math.round(averageScore),
       criticalIssues,
       highIssues,
       recommendations: [
-        'Implement continuous security monitoring',
-        'Regular security audits and penetration testing',
-        'Security training for development team',
-        'Automated security testing in CI/CD pipeline'
-      ]
+        "Implement continuous security monitoring",
+        "Regular security audits and penetration testing",
+        "Security training for development team",
+        "Automated security testing in CI/CD pipeline",
+      ],
     };
   }
 
   async function validateSecurityCompliance() {
     return {
-      owasp: true,  // OWASP Top 10 compliance
-      nist: true,   // NIST Cybersecurity Framework
-      cis: true     // CIS Controls
+      owasp: true, // OWASP Top 10 compliance
+      nist: true, // NIST Cybersecurity Framework
+      cis: true, // CIS Controls
     };
   }
 
   async function generateComprehensiveReport() {
-    const outputDir = path.join(process.cwd(), 'comprehensive-security-reports');
-    
+    const outputDir = path.join(
+      process.cwd(),
+      "comprehensive-security-reports",
+    );
+
     // Generate JSON report
     const jsonReport = {
-      testSuite: 'Comprehensive Security and CI/CD Pipeline Test Suite',
+      testSuite: "Comprehensive Security and CI/CD Pipeline Test Suite",
       timestamp: new Date().toISOString(),
       overallScore: suiteResults.overallScore,
       summary: {
         securityTests: suiteResults.securityTests.length,
         ciTests: suiteResults.ciTests.length,
         averageSecurityScore: Math.round(
-          suiteResults.securityTests.reduce((sum, test) => sum + test.score, 0) / 
-          suiteResults.securityTests.length
+          suiteResults.securityTests.reduce(
+            (sum, test) => sum + test.score,
+            0,
+          ) / suiteResults.securityTests.length,
         ),
         averageCIScore: Math.round(
-          suiteResults.ciTests.reduce((sum, test) => sum + test.score, 0) / 
-          suiteResults.ciTests.length
-        )
+          suiteResults.ciTests.reduce((sum, test) => sum + test.score, 0) /
+            suiteResults.ciTests.length,
+        ),
       },
       securityTests: suiteResults.securityTests,
       ciTests: suiteResults.ciTests,
-      recommendations: suiteResults.recommendations
+      recommendations: suiteResults.recommendations,
     };
-    
+
     fs.writeFileSync(
-      path.join(outputDir, 'comprehensive-security-report.json'),
-      JSON.stringify(jsonReport, null, 2)
+      path.join(outputDir, "comprehensive-security-report.json"),
+      JSON.stringify(jsonReport, null, 2),
     );
-    
+
     // Generate HTML dashboard
     const htmlReport = generateHTMLDashboard(jsonReport);
     fs.writeFileSync(
-      path.join(outputDir, 'security-dashboard.html'),
-      htmlReport
+      path.join(outputDir, "security-dashboard.html"),
+      htmlReport,
     );
-    
-    console.log('🔒 Comprehensive security reports generated');
-    console.log(`📊 Overall Security Score: ${suiteResults.overallScore}/100`);
-    console.log(`📁 Reports saved to: ${outputDir}`);
+
+    // Reports generated successfully
   }
 
   function generateHTMLDashboard(report) {
@@ -441,7 +445,7 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
         
         <div class="recommendations">
             <h3>Security Recommendations</h3>
-            ${report.recommendations.map(rec => `<div class="recommendation">${rec}</div>`).join('')}
+            ${report.recommendations.map((rec) => `<div class="recommendation">${rec}</div>`).join("")}
         </div>
     </div>
     
@@ -450,10 +454,10 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
         new Chart(document.getElementById('securityChart'), {
             type: 'bar',
             data: {
-                labels: ${JSON.stringify(report.securityTests.map(test => test.category))},
+                labels: ${JSON.stringify(report.securityTests.map((test) => test.category))},
                 datasets: [{
                     label: 'Score',
-                    data: ${JSON.stringify(report.securityTests.map(test => test.score))},
+                    data: ${JSON.stringify(report.securityTests.map((test) => test.score))},
                     backgroundColor: '#3b82f6'
                 }]
             },
@@ -464,10 +468,10 @@ describe('Comprehensive Security and CI/CD Pipeline Test Suite', () => {
         new Chart(document.getElementById('ciChart'), {
             type: 'bar',
             data: {
-                labels: ${JSON.stringify(report.ciTests.map(test => test.category))},
+                labels: ${JSON.stringify(report.ciTests.map((test) => test.category))},
                 datasets: [{
                     label: 'Score',
-                    data: ${JSON.stringify(report.ciTests.map(test => test.score))},
+                    data: ${JSON.stringify(report.ciTests.map((test) => test.score))},
                     backgroundColor: '#10b981'
                 }]
             },

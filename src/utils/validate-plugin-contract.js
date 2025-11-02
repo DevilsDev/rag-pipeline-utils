@@ -22,13 +22,13 @@ function validatePluginContract(type, instance, filePath) {
 
   const expectedMethods = contract.requiredMethods || pluginContracts[type];
 
-  const missing = expectedMethods.filter(method =>
-    typeof instance[method] !== 'function'
+  const missing = expectedMethods.filter(
+    (method) => typeof instance[method] !== 'function',
   );
 
   if (missing.length > 0) {
     throw new Error(
-      `[validatePluginContract] Plugin '${filePath}' is missing required methods for '${type}': ${missing.join(', ')}`
+      `[validatePluginContract] Plugin '${filePath}' is missing required methods for '${type}': ${missing.join(', ')}`,
     );
   }
 }
@@ -38,5 +38,5 @@ function validatePluginContract(type, instance, filePath) {
  */
 
 module.exports = {
-  validatePluginContract
+  validatePluginContract,
 };

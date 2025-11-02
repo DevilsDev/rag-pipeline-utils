@@ -11,15 +11,15 @@
 
 ## Best Practices Compliance
 
-| Practice | Implemented | Total | Percentage |
-|----------|-------------|-------|------------|
-| Action Pinning | 20 | 20 | 100.0% |
-| Timeouts | 20 | 20 | 100.0% |
-| Permissions | 20 | 20 | 100.0% |
-| Caching | 18 | 20 | 90.0% |
-| Concurrency | 20 | 20 | 100.0% |
-| Shell Hardening | 16 | 20 | 80.0% |
-| Secrets Management | 11 | 20 | 55.0% |
+| Practice           | Implemented | Total | Percentage |
+| ------------------ | ----------- | ----- | ---------- |
+| Action Pinning     | 20          | 20    | 100.0%     |
+| Timeouts           | 20          | 20    | 100.0%     |
+| Permissions        | 20          | 20    | 100.0%     |
+| Caching            | 18          | 20    | 90.0%      |
+| Concurrency        | 20          | 20    | 100.0%     |
+| Shell Hardening    | 16          | 20    | 80.0%      |
+| Secrets Management | 11          | 20    | 55.0%      |
 
 ## Workflow Details
 
@@ -28,18 +28,17 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
 **Warnings (3):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -53,20 +52,19 @@
 **Status:** ❌ FAILED
 
 **Security Issues (5):**
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
 
-
-
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
 
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -80,20 +78,19 @@
 **Status:** ❌ FAILED
 
 **Security Issues (2):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
-
-
-
 
 **Warnings (4):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -107,26 +104,25 @@
 **Status:** ❌ FAILED
 
 **Security Issues (4):**
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
 
-
-
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
 
 **Warnings (8):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -140,22 +136,21 @@
 **Status:** ❌ FAILED
 
 **Security Issues (5):**
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
-- **HIGH:** Potential shell injection vulnerability detected
 
-
-
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
+- **HIGH:** Potential shell injection vulnerability detected
 
 **Warnings (3):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -169,18 +164,15 @@
 **Status:** ❌ FAILED
 
 **Security Issues (5):**
+
 - **CRITICAL:** Action 'github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f' not pinned to SHA - supply chain risk
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
-
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -193,18 +185,15 @@
 
 **Status:** ⚠️ WARNING
 
-
-
-
-
 **Warnings (4):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -218,17 +207,16 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **CRITICAL:** Action 'peaceiris/actions-gh-pages@v4' not pinned to SHA - supply chain risk
 
-
-
-
 **Warnings (2):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -242,14 +230,11 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
-
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -263,18 +248,17 @@
 **Status:** ❌ FAILED
 
 **Security Issues (2):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
-
-
-
 
 **Warnings (2):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -288,14 +272,11 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
-
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -309,6 +290,7 @@
 **Status:** ❌ FAILED
 
 **Security Issues (9):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
@@ -319,14 +301,12 @@
 - **HIGH:** Potential shell injection vulnerability detected
 - **CRITICAL:** Action 'softprops/action-gh-release@v1' not pinned to SHA - supply chain risk
 
-
-
-
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -340,16 +320,15 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -362,16 +341,13 @@
 
 **Status:** ⚠️ WARNING
 
-
-
-
-
 **Warnings (2):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -385,16 +361,15 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -408,16 +383,15 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -430,17 +404,14 @@
 
 **Status:** ⚠️ WARNING
 
-
-
-
-
 **Warnings (3):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -454,16 +425,13 @@
 **Status:** ❌ FAILED
 
 **Security Issues (3):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
 - **HIGH:** Potential shell injection vulnerability detected
-
-
-
-
-
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -476,19 +444,16 @@
 
 **Status:** ⚠️ WARNING
 
-
-
-
-
 **Warnings (5):**
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
-- Consider using shell hardening (set -e, set -o pipefail)
 
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
+- Consider using shell hardening (set -e, set -o pipefail)
 
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -502,16 +467,15 @@
 **Status:** ❌ FAILED
 
 **Security Issues (1):**
+
 - **HIGH:** Potential shell injection vulnerability detected
 
-
-
-
 **Warnings (1):**
+
 - Consider using shell hardening (set -e, set -o pipefail)
 
-
 **Best Practices:**
+
 - Action Pinning: ✅
 - Timeouts: ✅
 - Permissions: ✅
@@ -519,7 +483,6 @@
 - Concurrency: ✅
 - Shell Hardening: ✅
 - Secrets Management: ❌
-
 
 ## Available Patches
 

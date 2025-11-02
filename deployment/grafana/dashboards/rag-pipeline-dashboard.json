@@ -23,14 +23,14 @@
             },
             "thresholds": {
               "steps": [
-                {"color": "red", "value": 0},
-                {"color": "yellow", "value": 1},
-                {"color": "green", "value": 3}
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 1 },
+                { "color": "green", "value": 3 }
               ]
             }
           }
         },
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 }
       },
       {
         "id": 2,
@@ -42,10 +42,8 @@
             "legendFormat": "{{method}} {{status}}"
           }
         ],
-        "yAxes": [
-          {"label": "Requests/sec", "min": 0}
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
+        "yAxes": [{ "label": "Requests/sec", "min": 0 }],
+        "gridPos": { "h": 8, "w": 12, "x": 6, "y": 0 }
       },
       {
         "id": 3,
@@ -61,10 +59,8 @@
             "legendFormat": "50th percentile"
           }
         ],
-        "yAxes": [
-          {"label": "Seconds", "min": 0}
-        ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+        "yAxes": [{ "label": "Seconds", "min": 0 }],
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 }
       },
       {
         "id": 4,
@@ -76,10 +72,8 @@
             "legendFormat": "{{instance}}"
           }
         ],
-        "yAxes": [
-          {"label": "Bytes", "min": 0}
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+        "yAxes": [{ "label": "Bytes", "min": 0 }],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
       },
       {
         "id": 5,
@@ -91,10 +85,8 @@
             "legendFormat": "{{instance}}"
           }
         ],
-        "yAxes": [
-          {"label": "Percent", "min": 0, "max": 100}
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+        "yAxes": [{ "label": "Percent", "min": 0, "max": 100 }],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
       },
       {
         "id": 6,
@@ -106,7 +98,7 @@
             "legendFormat": "{{operation}}"
           }
         ],
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 }
       },
       {
         "id": 7,
@@ -122,10 +114,8 @@
             "legendFormat": "4xx errors"
           }
         ],
-        "yAxes": [
-          {"label": "Errors/sec", "min": 0}
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+        "yAxes": [{ "label": "Errors/sec", "min": 0 }],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 }
       },
       {
         "id": 8,
@@ -141,10 +131,8 @@
             "legendFormat": "Redis connections"
           }
         ],
-        "yAxes": [
-          {"label": "Connections", "min": 0}
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+        "yAxes": [{ "label": "Connections", "min": 0 }],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 }
       }
     ],
     "time": {

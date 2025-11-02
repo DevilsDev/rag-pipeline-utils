@@ -21,14 +21,14 @@ Our testing strategy encompasses multiple layers:
 
 ### Test Coverage Metrics
 
-| Component | Current Coverage | Target |
-|-----------|------------------|---------|
-| Plugin Contracts | 100% | 100% |
-| Streaming Features | 85% | 90% |
-| CLI Enhancements | 90% | 95% |
-| Script Utilities | 80% | 85% |
-| Error Handling | 90% | 95% |
-| **Overall** | **90%** | **95%** |
+| Component          | Current Coverage | Target  |
+| ------------------ | ---------------- | ------- |
+| Plugin Contracts   | 100%             | 100%    |
+| Streaming Features | 85%              | 90%     |
+| CLI Enhancements   | 90%              | 95%     |
+| Script Utilities   | 80%              | 85%     |
+| Error Handling     | 90%              | 95%     |
+| **Overall**        | **90%**          | **95%** |
 
 ## Running Tests
 
@@ -57,6 +57,7 @@ PROPERTY_TEST_ITERATIONS=1000 npm run test:property
 ### CI/CD Pipeline
 
 Our comprehensive CI/CD pipeline runs automatically on:
+
 - Push to `main` or `develop` branches
 - Pull requests
 - Manual workflow dispatch
@@ -72,6 +73,7 @@ gh workflow run comprehensive-testing.yml \
 ### Test Categories in Detail
 
 #### Unit Tests
+
 - **Plugin Contract Validation**: Ensures all plugins implement required interfaces
 - **Streaming Functionality**: Token-level streaming, backpressure, error handling
 - **CLI Features**: New flags, error messages, interactive modes
@@ -79,23 +81,27 @@ gh workflow run comprehensive-testing.yml \
 - **Script Utilities**: Validation, dry-run logic, retry mechanisms
 
 #### Integration Tests
+
 - **End-to-End Streaming**: Complete pipeline with streaming output
 - **Plugin Interoperability**: Cross-plugin data flow validation
 - **Middleware Integration**: Retry logic, logging, reranking workflows
 
 #### Performance Tests
+
 - **Large Dataset Processing**: Up to 10,000 documents
 - **Concurrent Pipeline Execution**: Multiple simultaneous queries
 - **Memory Management**: Backpressure and resource optimization
 - **Latency Benchmarks**: Response time targets and regression detection
 
 #### Security Tests
+
 - **Plugin Sandboxing**: Isolation and scope pollution prevention
 - **Input Sanitization**: XSS, injection, and malformed data handling
 - **Access Control**: File system and network restrictions
 - **Vulnerability Detection**: Automated security scanning
 
 #### Property-Based Tests
+
 - **Contract Invariants**: Automated validation of plugin contracts
 - **Edge Case Discovery**: Fuzz testing with random inputs
 - **Data Flow Consistency**: Cross-component integration properties
@@ -106,7 +112,11 @@ gh workflow run comprehensive-testing.yml \
 ### Core Test Helpers (`__tests__/utils/test-helpers.js`)
 
 ```javascript
-import { TestDataGenerator, ValidationHelper, ErrorSimulator } from '../utils/test-helpers.js';
+import {
+  TestDataGenerator,
+  ValidationHelper,
+  ErrorSimulator,
+} from "../utils/test-helpers.js";
 
 // Generate test data
 const documents = TestDataGenerator.generateDocuments(100);
@@ -116,27 +126,27 @@ const vectors = TestDataGenerator.generateVectors(50);
 const isValid = ValidationHelper.validateLLMContract(plugin);
 
 // Simulate errors
-const errorStream = ErrorSimulator.createFailingStream('network-error');
+const errorStream = ErrorSimulator.createFailingStream("network-error");
 ```
 
 ### Visual Test Reporter (`__tests__/utils/test-reporter.js`)
 
 ```javascript
-import TestReporter from '../utils/test-reporter.js';
+import TestReporter from "../utils/test-reporter.js";
 
 const reporter = new TestReporter({
-  outputDir: 'test-reports',
+  outputDir: "test-reports",
   enableVisualReports: true,
   enableCoverageReports: true,
-  enablePerformanceReports: true
+  enablePerformanceReports: true,
 });
 
 // Add test results
 reporter.addTestResult({
-  name: 'Plugin Contract Test',
-  status: 'passed',
+  name: "Plugin Contract Test",
+  status: "passed",
   duration: 150,
-  category: 'Unit Tests'
+  category: "Unit Tests",
 });
 
 // Generate reports
@@ -150,18 +160,21 @@ const reports = reporter.generateAllReports();
 Our test suite includes comprehensive mock implementations:
 
 #### LLM Mock (`__tests__/fixtures/src/mocks/openai-llm.js`)
+
 - ✅ Updated to use `generate()` method (not deprecated `ask()`)
 - ✅ Streaming support with async generators
 - ✅ Token usage tracking and metrics
 - ✅ Error simulation and edge case handling
 
 #### Retriever Mock (`__tests__/fixtures/src/mocks/pinecone-retriever.js`)
+
 - ✅ Updated to use `retrieve()` method (not deprecated `search()`)
 - ✅ Async storage with metadata filtering
 - ✅ Pagination and similarity scoring
 - ✅ Configurable failure modes
 
 #### Reranker Mock (`__tests__/fixtures/src/mocks/reranker.js`)
+
 - ✅ Complete `rerank()` implementation
 - ✅ Query relevance scoring with multiple factors
 - ✅ Threshold filtering and metadata preservation
@@ -171,36 +184,39 @@ Our test suite includes comprehensive mock implementations:
 
 ### Response Time Targets
 
-| Operation | Excellent | Good | Acceptable | Poor |
-|-----------|-----------|------|------------|------|
-| Embedding | < 50ms | < 200ms | < 500ms | ≥ 500ms |
-| Retrieval | < 100ms | < 300ms | < 1000ms | ≥ 1000ms |
-| LLM Generation | < 200ms | < 1000ms | < 3000ms | ≥ 3000ms |
-| Reranking | < 50ms | < 150ms | < 500ms | ≥ 500ms |
+| Operation      | Excellent | Good     | Acceptable | Poor     |
+| -------------- | --------- | -------- | ---------- | -------- |
+| Embedding      | < 50ms    | < 200ms  | < 500ms    | ≥ 500ms  |
+| Retrieval      | < 100ms   | < 300ms  | < 1000ms   | ≥ 1000ms |
+| LLM Generation | < 200ms   | < 1000ms | < 3000ms   | ≥ 3000ms |
+| Reranking      | < 50ms    | < 150ms  | < 500ms    | ≥ 500ms  |
 
 ### Throughput Targets
 
-| Component | Excellent | Good | Acceptable | Poor |
-|-----------|-----------|------|------------|------|
-| Document Processing | > 100 docs/sec | > 50 docs/sec | > 10 docs/sec | ≤ 10 docs/sec |
-| Concurrent Queries | > 50 queries/sec | > 20 queries/sec | > 5 queries/sec | ≤ 5 queries/sec |
-| Streaming Tokens | > 1000 tokens/sec | > 500 tokens/sec | > 100 tokens/sec | ≤ 100 tokens/sec |
+| Component           | Excellent         | Good             | Acceptable       | Poor             |
+| ------------------- | ----------------- | ---------------- | ---------------- | ---------------- |
+| Document Processing | > 100 docs/sec    | > 50 docs/sec    | > 10 docs/sec    | ≤ 10 docs/sec    |
+| Concurrent Queries  | > 50 queries/sec  | > 20 queries/sec | > 5 queries/sec  | ≤ 5 queries/sec  |
+| Streaming Tokens    | > 1000 tokens/sec | > 500 tokens/sec | > 100 tokens/sec | ≤ 100 tokens/sec |
 
 ## Security Testing
 
 ### Plugin Isolation Tests
+
 - Global scope pollution prevention
 - File system access restrictions
 - Network request limitations
 - Memory limit enforcement
 
 ### Input Validation Tests
+
 - XSS prevention in user inputs
 - SQL injection in query strings
 - Path traversal in file operations
 - Buffer overflow in large inputs
 
 ### Vulnerability Scanning
+
 - Dependency audit with `npm audit`
 - Static analysis with ESLint security rules
 - Runtime monitoring for suspicious activity
@@ -208,16 +224,19 @@ Our test suite includes comprehensive mock implementations:
 ## Compatibility Matrix
 
 ### Node.js Versions
+
 - ✅ Node.js 16.x (LTS)
 - ✅ Node.js 18.x (LTS)
 - ✅ Node.js 20.x (Current)
 
 ### Operating Systems
+
 - ✅ Ubuntu 20.04+ (Linux)
 - ✅ Windows 10+ (Windows)
 - ✅ macOS 11+ (Darwin)
 
 ### Feature Compatibility
+
 - ✅ ES Modules and dynamic imports
 - ✅ Async/await and async generators
 - ✅ AbortController for cancellation
@@ -227,7 +246,9 @@ Our test suite includes comprehensive mock implementations:
 ## Visual Reports
 
 ### HTML Dashboard
+
 Our test suite generates comprehensive HTML reports with:
+
 - Interactive charts and graphs
 - Coverage heatmaps
 - Performance trend analysis
@@ -235,6 +256,7 @@ Our test suite generates comprehensive HTML reports with:
 - Compatibility matrix
 
 ### CI/CD Integration
+
 - GitHub Actions workflow status
 - Pull request comments with test summaries
 - Automated badge generation
@@ -245,10 +267,10 @@ Our test suite generates comprehensive HTML reports with:
 ### Unit Test Template
 
 ```javascript
-import { jest } from '@jest/globals';
-import { TestDataGenerator, ValidationHelper } from '../utils/test-helpers.js';
+import { jest } from "@jest/globals";
+import { TestDataGenerator, ValidationHelper } from "../utils/test-helpers.js";
 
-describe('Component Name', () => {
+describe("Component Name", () => {
   let component;
 
   beforeEach(() => {
@@ -259,21 +281,21 @@ describe('Component Name', () => {
     jest.clearAllMocks();
   });
 
-  it('should handle valid input correctly', async () => {
+  it("should handle valid input correctly", async () => {
     // Arrange
     const input = TestDataGenerator.generateValidInput();
-    
+
     // Act
     const result = await component.process(input);
-    
+
     // Assert
     expect(result).toBeDefined();
     expect(ValidationHelper.validateOutput(result)).toBe(true);
   });
 
-  it('should handle edge cases gracefully', async () => {
-    const edgeCases = [null, undefined, '', [], {}];
-    
+  it("should handle edge cases gracefully", async () => {
+    const edgeCases = [null, undefined, "", [], {}];
+
     for (const testCase of edgeCases) {
       const result = await component.process(testCase);
       expect(result).toBeDefined();
@@ -285,15 +307,15 @@ describe('Component Name', () => {
 ### Property-Based Test Template
 
 ```javascript
-describe('Property-Based Tests', () => {
-  it('should maintain invariant properties', async () => {
+describe("Property-Based Tests", () => {
+  it("should maintain invariant properties", async () => {
     for (let i = 0; i < 100; i++) {
       const randomInput = generateRandomInput();
       const result = await component.process(randomInput);
-      
+
       // Property assertions
-      expect(result).toHaveProperty('requiredField');
-      expect(typeof result.requiredField).toBe('string');
+      expect(result).toHaveProperty("requiredField");
+      expect(typeof result.requiredField).toBe("string");
       expect(result.requiredField.length).toBeGreaterThan(0);
     }
   });
@@ -303,6 +325,7 @@ describe('Property-Based Tests', () => {
 ## Best Practices
 
 ### Test Organization
+
 1. **Group related tests** in describe blocks
 2. **Use descriptive test names** that explain the scenario
 3. **Follow AAA pattern** (Arrange, Act, Assert)
@@ -310,6 +333,7 @@ describe('Property-Based Tests', () => {
 5. **Use test helpers** to reduce code duplication
 
 ### Performance Testing
+
 1. **Set realistic timeouts** for async operations
 2. **Use performance.now()** for accurate timing
 3. **Test with various data sizes** to identify bottlenecks
@@ -317,6 +341,7 @@ describe('Property-Based Tests', () => {
 5. **Establish baseline metrics** for regression detection
 
 ### Security Testing
+
 1. **Test with malicious inputs** to verify sanitization
 2. **Validate access controls** for sensitive operations
 3. **Check for information leakage** in error messages
@@ -328,24 +353,28 @@ describe('Property-Based Tests', () => {
 ### Common Issues
 
 #### Test Timeouts
+
 ```bash
 # Increase timeout for long-running tests
 jest --testTimeout=30000
 ```
 
 #### Memory Issues
+
 ```bash
 # Run tests with increased memory
 node --max-old-space-size=4096 node_modules/.bin/jest
 ```
 
 #### Mock Import Issues
+
 ```javascript
 // Use dynamic imports for ES modules
-const { mockFunction } = await import('../mocks/mock-module.js');
+const { mockFunction } = await import("../mocks/mock-module.js");
 ```
 
 ### Debug Mode
+
 ```bash
 # Run tests with debug output
 DEBUG=rag-pipeline:* npm test
@@ -357,6 +386,7 @@ npm test -- --verbose --testNamePattern="specific test name"
 ## Contributing
 
 ### Adding New Tests
+
 1. Identify the test category (unit, integration, performance, etc.)
 2. Create test file in appropriate directory
 3. Follow naming convention: `component-name.test.js`
@@ -365,6 +395,7 @@ npm test -- --verbose --testNamePattern="specific test name"
 6. Update this documentation
 
 ### Test Review Checklist
+
 - [ ] Tests cover both happy path and edge cases
 - [ ] Mocks are properly isolated and don't affect other tests
 - [ ] Performance tests have realistic expectations
@@ -376,6 +407,7 @@ npm test -- --verbose --testNamePattern="specific test name"
 Our testing strategy evolves continuously:
 
 ### Completed Improvements
+
 - ✅ Plugin contract compliance (100%)
 - ✅ Streaming feature coverage (85%)
 - ✅ Visual HTML reporting
@@ -383,6 +415,7 @@ Our testing strategy evolves continuously:
 - ✅ CI/CD automation with parallel execution
 
 ### Planned Enhancements
+
 - [ ] Mutation testing for test quality validation
 - [ ] Visual regression testing for UI components
 - [ ] Chaos engineering for resilience testing

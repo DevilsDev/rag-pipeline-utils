@@ -1,4 +1,5 @@
 # Production Deployment Guide
+
 **@DevilsDev/rag-pipeline-utils**  
 **Enterprise-Grade RAG Pipeline Toolkit**
 
@@ -9,6 +10,7 @@ This guide provides comprehensive instructions for deploying the RAG Pipeline Ut
 ## 📋 Prerequisites
 
 ### System Requirements
+
 - **Kubernetes Cluster**: v1.24+ (EKS, GKE, AKS, or self-managed)
 - **Helm**: v3.12+ for package management
 - **Docker**: v20.10+ for containerization
@@ -16,6 +18,7 @@ This guide provides comprehensive instructions for deploying the RAG Pipeline Ut
 - **Node.js**: v20+ for local development
 
 ### Required Secrets
+
 - **OpenAI API Key**: For LLM operations
 - **Pinecone API Key**: For vector database (optional)
 - **Database Credentials**: PostgreSQL connection string
@@ -314,7 +317,7 @@ data:
       tag kubernetes.*
       format json
     </source>
-    
+
     <match kubernetes.**>
       @type elasticsearch
       host elasticsearch.logging.svc.cluster.local
@@ -338,26 +341,26 @@ spec:
     matchLabels:
       app.kubernetes.io/name: rag-pipeline-utils
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 3000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
   egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: kube-system
-    ports:
-    - protocol: TCP
-      port: 53
-    - protocol: UDP
-      port: 53
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
 ```
 
 ### Pod Security Standards
@@ -425,18 +428,18 @@ resources:
 
 # JVM tuning for Node.js
 env:
-- name: NODE_OPTIONS
-  value: "--max-old-space-size=3072"
+  - name: NODE_OPTIONS
+    value: "--max-old-space-size=3072"
 ```
 
 #### Database Connection Pooling
 
 ```yaml
 env:
-- name: POSTGRES_POOL_SIZE
-  value: "20"
-- name: POSTGRES_POOL_TIMEOUT
-  value: "30000"
+  - name: POSTGRES_POOL_SIZE
+    value: "20"
+  - name: POSTGRES_POOL_TIMEOUT
+    value: "30000"
 ```
 
 ## 📚 Additional Resources
@@ -457,5 +460,6 @@ For deployment issues and support:
 - 📧 [Email Support](mailto:support@devilsdev.com)
 
 ---
+
 **Last Updated:** 2025-08-05  
 **Version:** 2.1.7

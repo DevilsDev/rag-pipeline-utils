@@ -1,6 +1,6 @@
 # Docker Compose for RAG Pipeline Utils
 # Local development and testing environment
-version: '3.8'
+version: "3.8"
 
 services:
   # Main RAG Pipeline application
@@ -11,9 +11,9 @@ services:
       target: development
     container_name: rag-pipeline-dev
     ports:
-      - "3000:3000"    # Main application port
-      - "3001:3001"    # Health check port
-      - "9229:9229"    # Node.js debugger port
+      - "3000:3000" # Main application port
+      - "3001:3001" # Health check port
+      - "9229:9229" # Node.js debugger port
     environment:
       - NODE_ENV=development
       - RAG_PIPELINE_ENV=development
@@ -93,12 +93,12 @@ services:
       - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
     networks:
       - rag-network
     restart: unless-stopped

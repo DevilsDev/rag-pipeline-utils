@@ -1,20 +1,29 @@
 {
-  "name": "rag-docs-test",
-  "version": "0.0.0",
+  "name": "@devilsdev/rag-pipeline-utils-docs",
+  "version": "2.2.0",
   "private": true,
+  "description": "Enterprise-grade RAG Pipeline Utils documentation site",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "directory": "docs-site"
+  },
+  "author": "Ali Kahwaji <ali@devilsdev.com>",
+  "license": "MIT",
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
+    "clean": "rimraf build .docusaurus",
     "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
+    "serve": "docusaurus serve --dir build --build",
+    "start": "docusaurus start",
     "deploy": "docusaurus deploy",
+    "check:links": "docusaurus build --no-minify",
+    "typecheck": "tsc -p . || echo \"no tsconfig\"",
+    "docusaurus": "docusaurus",
+    "swizzle": "docusaurus swizzle",
     "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
-    "lint": "echo 'Lint skipped for docs-site'",
-    "test": "echo 'No tests in docs-site. Run from root.'",
-    "docs:build": "npm run --workspace ../ docs:build"
+    "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",
@@ -27,7 +36,8 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.7.0",
-    "@docusaurus/types": "3.7.0"
+    "@docusaurus/types": "3.7.0",
+    "rimraf": "^5.0.5"
   },
   "browserslist": {
     "production": [
@@ -42,6 +52,6 @@
     ]
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=18 <23"
   }
 }

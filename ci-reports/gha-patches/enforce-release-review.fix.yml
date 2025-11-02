@@ -1,6 +1,0 @@
-workflow: enforce-release-review.yml
-patches:
-  - type: add_timeout
-    description: Add timeout to job 'review'
-    changes:
-      timeout-minutes: 30

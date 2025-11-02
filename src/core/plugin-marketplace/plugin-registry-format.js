@@ -15,75 +15,78 @@ const PLUGIN_METADATA_SCHEMA = {
       pattern: '^[a-z0-9-]+$',
       minLength: 1,
       maxLength: 50,
-      description: 'Plugin name (kebab-case, alphanumeric + hyphens)'
+      description: 'Plugin name (kebab-case, alphanumeric + hyphens)',
     },
     version: {
       _type: 'string',
       pattern: '^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9-]+)?$',
-      description: 'Semantic version (e.g., 1.0.0, 1.0.0-beta.1)'
+      description: 'Semantic version (e.g., 1.0.0, 1.0.0-beta.1)',
     },
     _type: {
       _type: 'string',
       enum: ['loader', 'embedder', 'retriever', 'llm', 'reranker'],
-      description: 'Plugin _type'
+      description: 'Plugin _type',
     },
     description: {
       _type: 'string',
       minLength: 10,
       maxLength: 200,
-      description: 'Brief plugin description'
+      description: 'Brief plugin description',
     },
     author: {
       _type: 'string',
       minLength: 1,
       maxLength: 100,
-      description: 'Plugin author name or organization'
+      description: 'Plugin author name or organization',
     },
     homepage: {
       _type: 'string',
       format: 'uri',
-      description: 'Plugin homepage URL'
+      description: 'Plugin homepage URL',
     },
     repository: {
       _type: 'object',
       properties: {
         _type: { _type: 'string', enum: ['git'] },
-        url: { _type: 'string', format: 'uri' }
+        url: { _type: 'string', format: 'uri' },
       },
       required: ['_type', 'url'],
-      description: 'Source code repository'
+      description: 'Source code repository',
     },
     keywords: {
       _type: 'array',
       items: { _type: 'string', minLength: 1, maxLength: 20 },
       maxItems: 10,
-      description: 'Search keywords'
+      description: 'Search keywords',
     },
     license: {
       _type: 'string',
-      description: 'SPDX license identifier (e.g., MIT, Apache-2.0)'
+      description: 'SPDX license identifier (e.g., MIT, Apache-2.0)',
     },
     engines: {
       _type: 'object',
       properties: {
         node: { _type: 'string', description: 'Node.js version requirement' },
-        'rag-pipeline-utils': { _type: 'string', description: 'RAG pipeline version requirement' }
+        'rag-pipeline-utils': {
+          _type: 'string',
+          description: 'RAG pipeline version requirement',
+        },
       },
-      description: 'Engine compatibility requirements'
+      description: 'Engine compatibility requirements',
     },
     dependencies: {
       _type: 'object',
       additionalProperties: { _type: 'string' },
-      description: 'NPM dependencies'
+      description: 'NPM dependencies',
     },
     peerDependencies: {
       _type: 'object',
       additionalProperties: { _type: 'string' },
-      description: 'Peer dependencies'
+      description: 'Peer dependencies',
     },
     _config: {
       _type: 'object',
-      description: 'Plugin-specific configuration schema'
+      description: 'Plugin-specific configuration schema',
     },
     examples: {
       _type: 'array',
@@ -92,27 +95,28 @@ const PLUGIN_METADATA_SCHEMA = {
         properties: {
           title: { _type: 'string' },
           description: { _type: 'string' },
-          _config: { _type: 'object' }
+          _config: { _type: 'object' },
         },
-        required: ['title', '_config']
+        required: ['title', '_config'],
       },
-      description: 'Usage examples'
+      description: 'Usage examples',
     },
     tags: {
       _type: 'array',
       items: { _type: 'string' },
-      description: 'Classification tags (e.g., official, community, experimental)'
+      description:
+        'Classification tags (e.g., official, community, experimental)',
     },
     deprecated: {
       _type: 'boolean',
-      description: 'Whether the plugin is deprecated'
+      description: 'Whether the plugin is deprecated',
     },
     deprecationMessage: {
       _type: 'string',
-      description: 'Deprecation notice message'
-    }
+      description: 'Deprecation notice message',
+    },
   },
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 /**
@@ -132,26 +136,29 @@ const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
           version: { _type: 'string' },
           publishedAt: { _type: 'string', format: 'date-time' },
           downloadUrl: { _type: 'string', format: 'uri' },
-          integrity: { _type: 'string', description: 'SHA-256 hash for verification' },
+          integrity: {
+            _type: 'string',
+            description: 'SHA-256 hash for verification',
+          },
           size: { _type: 'number', description: 'Package size in bytes' },
           deprecated: { _type: 'boolean' },
-          deprecationMessage: { _type: 'string' }
+          deprecationMessage: { _type: 'string' },
         },
-        additionalProperties: false
+        additionalProperties: false,
       },
-      description: 'Available versions'
+      description: 'Available versions',
     },
     latest: {
       _type: 'string',
-      description: 'Latest stable version'
+      description: 'Latest stable version',
     },
     beta: {
       _type: 'string',
-      description: 'Latest beta version'
+      description: 'Latest beta version',
     },
     alpha: {
       _type: 'string',
-      description: 'Latest alpha version'
+      description: 'Latest alpha version',
     },
     downloads: {
       _type: 'object',
@@ -159,30 +166,30 @@ const PLUGIN_REGISTRY_ENTRY_SCHEMA = {
         total: { _type: 'number' },
         monthly: { _type: 'number' },
         weekly: { _type: 'number' },
-        daily: { _type: 'number' }
+        daily: { _type: 'number' },
       },
-      description: 'Download statistics'
+      description: 'Download statistics',
     },
     rating: {
       _type: 'object',
       properties: {
         average: { _type: 'number', minimum: 0, maximum: 5 },
-        count: { _type: 'number', minimum: 0 }
+        count: { _type: 'number', minimum: 0 },
       },
-      description: 'User ratings'
+      description: 'User ratings',
     },
     createdAt: {
       _type: 'string',
       format: 'date-time',
-      description: 'Plugin creation timestamp'
+      description: 'Plugin creation timestamp',
     },
     updatedAt: {
       _type: 'string',
       format: 'date-time',
-      description: 'Last update timestamp'
-    }
+      description: 'Last update timestamp',
+    },
   },
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 /**
@@ -195,38 +202,38 @@ const PLUGIN_REGISTRY_SCHEMA = {
     version: {
       _type: 'string',
       enum: ['1.0.0'],
-      description: 'Registry format version'
+      description: 'Registry format version',
     },
     plugins: {
       _type: 'object',
       additionalProperties: PLUGIN_REGISTRY_ENTRY_SCHEMA,
-      description: 'Plugin entries keyed by plugin name'
+      description: 'Plugin entries keyed by plugin name',
     },
     categories: {
       _type: 'object',
       additionalProperties: {
         _type: 'array',
-        items: { _type: 'string' }
+        items: { _type: 'string' },
       },
-      description: 'Plugin categories for organization'
+      description: 'Plugin categories for organization',
     },
     featured: {
       _type: 'array',
       items: { _type: 'string' },
-      description: 'Featured plugin names'
+      description: 'Featured plugin names',
     },
     updatedAt: {
       _type: 'string',
       format: 'date-time',
-      description: 'Registry last update timestamp'
+      description: 'Registry last update timestamp',
     },
     mirrors: {
       _type: 'array',
       items: { _type: 'string', format: 'uri' },
-      description: 'Mirror registry URLs'
-    }
+      description: 'Mirror registry URLs',
+    },
   },
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 /**
@@ -234,7 +241,7 @@ const PLUGIN_REGISTRY_SCHEMA = {
  */
 const DEFAULT_REGISTRY_URLS = [
   'https://registry.rag-pipeline.dev/plugins.json',
-  'https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-registry@main/plugins.json'
+  'https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-registry@main/plugins.json',
 ];
 
 /**
@@ -253,15 +260,17 @@ const PLUGIN_CACHE_DIR = '.rag-plugins-cache';
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginMetadata(metadata) {
-  const Ajv = require('ajv'); // eslint-disable-line global-require
-  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
-  
+  const Ajv = require('ajv');
+  // eslint-disable-line global-require
+  const addFormats = require('ajv-formats');
+  // eslint-disable-line global-require
+
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
-  
+
   const validate = ajv.compile(PLUGIN_METADATA_SCHEMA);
   const valid = validate(metadata);
-  
+
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
 
@@ -271,15 +280,17 @@ function validatePluginMetadata(metadata) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validateRegistryEntry(entry) {
-  const Ajv = require('ajv'); // eslint-disable-line global-require
-  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
-  
+  const Ajv = require('ajv');
+  // eslint-disable-line global-require
+  const addFormats = require('ajv-formats');
+  // eslint-disable-line global-require
+
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
-  
+
   const validate = ajv.compile(PLUGIN_REGISTRY_ENTRY_SCHEMA);
   const valid = validate(entry);
-  
+
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
 
@@ -289,15 +300,17 @@ function validateRegistryEntry(entry) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginRegistry(registry) {
-  const Ajv = require('ajv'); // eslint-disable-line global-require
-  const addFormats = require('ajv-formats'); // eslint-disable-line global-require
-  
+  const Ajv = require('ajv');
+  // eslint-disable-line global-require
+  const addFormats = require('ajv-formats');
+  // eslint-disable-line global-require
+
   const ajv = new Ajv({ allErrors: true });
   addFormats(ajv);
-  
+
   const validate = ajv.compile(PLUGIN_REGISTRY_SCHEMA);
   const valid = validate(registry);
-  
+
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
 
@@ -312,11 +325,11 @@ function createEmptyRegistry() {
     categories: {
       official: [],
       community: [],
-      experimental: []
+      experimental: [],
     },
     featured: [],
     updatedAt: new Date().toISOString(),
-    mirrors: []
+    mirrors: [],
   };
 }
 
@@ -326,17 +339,28 @@ function createEmptyRegistry() {
 const PLUGIN_NAMING = {
   // Official plugins use @rag-pipeline scope
   OFFICIAL_SCOPE: '@rag-pipeline',
-  
+
   // Community plugins should follow naming pattern
   COMMUNITY_PATTERN: /^[a-z0-9-]+$/,
-  
+
   // Reserved plugin names
   RESERVED_NAMES: [
-    'core', 'utils', 'common', 'base', 'default',
-    'loader', 'embedder', 'retriever', 'llm', 'reranker',
-    'pipeline', 'registry', '_config', 'cli'
+    'core',
+    'utils',
+    'common',
+    'base',
+    'default',
+    'loader',
+    'embedder',
+    'retriever',
+    'llm',
+    'reranker',
+    'pipeline',
+    'registry',
+    '_config',
+    'cli',
   ],
-  
+
   /**
    * Validate plugin name
    * @param {string} name - Plugin name to validate
@@ -346,35 +370,39 @@ const PLUGIN_NAMING = {
     if (!name || typeof name !== 'string') {
       return { valid: false, reason: 'Name must be a non-empty string' };
     }
-    
+
     if (name.length < 1 || name.length > 50) {
       return { valid: false, reason: 'Name must be 1-50 characters long' };
     }
-    
+
     if (!this.COMMUNITY_PATTERN.test(name)) {
-      return { valid: false, reason: 'Name must contain only lowercase letters, numbers, and hyphens' };
+      return {
+        valid: false,
+        reason:
+          'Name must contain only lowercase letters, numbers, and hyphens',
+      };
     }
-    
+
     if (this.RESERVED_NAMES.includes(name)) {
       return { valid: false, reason: `Name '${name}' is reserved` };
     }
-    
+
     if (name.startsWith('-') || name.endsWith('-')) {
       return { valid: false, reason: 'Name cannot start or end with a hyphen' };
     }
-    
+
     if (name.includes('--')) {
-      return { valid: false, reason: 'Name cannot contain consecutive hyphens' };
+      return {
+        valid: false,
+        reason: 'Name cannot contain consecutive hyphens',
+      };
     }
-    
+
     return { valid: true };
-  }
+  },
 };
 
-
 // Default export
-
-
 
 module.exports = {
   validatePluginMetadata,
@@ -387,5 +415,5 @@ module.exports = {
   DEFAULT_REGISTRY_URLS,
   LOCAL_REGISTRY_FILE,
   PLUGIN_CACHE_DIR,
-  PLUGIN_NAMING
+  PLUGIN_NAMING,
 };

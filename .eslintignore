@@ -1,5 +1,37 @@
-node_modules
-docs-site
-public
-dist
-coverage
+node_modules/
+coverage/
+dist/
+
+# test data & helper directories (not actual tests)
+__tests__/fixtures/
+__tests__/mocks/
+__tests__/utils/
+__tests__/__temp__/
+
+# misc generated / local scripts
+*.coverage.*
+*.tmp
+*.log
+
+# (optional) temporarily exclude large subsystems; re-enable incrementally
+# src/dag/**
+# src/observability/**
+# scripts/
+
+coverage/**
+dist/**
+docs-site/.docusaurus/**
+docs-site/build/
+pipelines/**
+test-results-current.json
+ci-reports/**
+performance-reports/**
+profiling-reports/**
+e2e-reports/**
+comprehensive-security-reports/**
+security-reports/**
+.artifacts/
+__tests__/fixtures/**
+**/-backup.js
+**/.backup.js
+**/*.bak

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "retriever",
+  "version": "1.0.0",
+  "title": "Retriever Contract",
+  "description": "Contract for retriever plugins",
+  "methods": [
+    {
+      "name": "store",
+      "parameters": ["vectors"],
+      "returns": "success"
+    },
+    {
+      "name": "retrieve",
+      "parameters": ["query", "k"],
+      "returns": "results"
+    }
+  ],
+  "properties": {
+    "store": {
+      "type": "function",
+      "description": "Store vectors in the retrieval system",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "vectors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "vector": { "type": "array", "items": { "type": "number" } },
+                "metadata": { "type": "object" }
+              },
+              "required": ["id", "vector"]
+            }
+          }
+        },
+        "required": ["vectors"]
+      }
+    },
+    "retrieve": {
+      "type": "function",
+      "description": "Retrieve relevant vectors",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "k": { "type": "number", "default": 10 }
+        },
+        "required": ["query"]
+      },
+      "returns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "score": { "type": "number" },
+            "metadata": { "type": "object" }
+          },
+          "required": ["id", "score"]
+        }
+      }
+    }
+  },
+  "required": ["store", "retrieve"]
+}

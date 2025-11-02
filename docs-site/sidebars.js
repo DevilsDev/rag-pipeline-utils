@@ -11,29 +11,41 @@
 const sidebars = {
   tutorialSidebar: [
     {
-      type: 'category',
-      label: 'Overview',
+      type: "category",
+      label: "Overview",
       collapsed: false,
-      items: ['Introduction', 'Architecture', 'Tutorials', 'Use-Cases'],
+      items: ["Introduction", "Architecture", "Tutorials", "Use-Cases"],
     },
     {
-      type: 'category',
-      label: 'Developer Guide',
+      type: "category",
+      label: "Developer Guide",
       collapsed: false,
-      items: ['Usage', 'CLI', 'Plugins'],
+      items: ["Usage", "CLI", "Plugins"],
     },
     {
-      type: 'category',
-      label: 'Advanced',
+      type: "category",
+      label: "Enterprise",
+      collapsed: false,
+      items: ["Enterprise", "Observability", "Security"],
+    },
+    {
+      type: "category",
+      label: "Advanced",
       collapsed: true,
-      items: ['Evaluation', 'FAQ'],
+      items: [
+        "Evaluation",
+        "Performance",
+        "Migration",
+        "Troubleshooting",
+        "FAQ",
+      ],
     },
     {
-      type: 'link',
-      label: '📰 Blog',
-      href: '/blog',
-    },    
+      type: "link",
+      label: "📰 Blog",
+      href: "/blog",
+    },
   ],
 };
 
-export default sidebars;
+module.exports = sidebars;

@@ -4,65 +4,65 @@
  */
 
 // Jest is available globally in CommonJS mode;
-const { DAG, DAGNode  } = require('../../../src/dag/dag-engine.js');
+const { DAG, DAGNode } = require("../../../src/dag/dag-engine.js");
 
-describe('DAG Error Handling and Cycle Detection', () => {
+describe("DAG Error Handling and Cycle Detection", () => {
   let dag;
 
   beforeEach(() => {
     dag = new DAG();
   });
-  
+
   afterEach(async () => {
     // Clean up Jest mocks to prevent state pollution between tests
     jest.clearAllMocks();
     jest.restoreAllMocks();
-    
+
     // Clear all timers to prevent async pollution
     jest.clearAllTimers();
-    
+
     // Wait for any pending async operations to complete
-    await new Promise(resolve => setImmediate(resolve));
-    
+    await new Promise((resolve) => setImmediate(resolve));
+
     // Force garbage collection if available (helps with memory cleanup)
     if (global.gc) {
       global.gc();
     }
   });
 
-  describe('cycle detection', () => {
-    it('should detect simple cycles', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      
+  describe("cycle detection", () => {
+    it("should detect simple cycles", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+
       // Create cycle: A -> B -> A
       nodeA.addOutput(nodeB);
       nodeB.addOutput(nodeA);
 
-      expect(() => dag.validateTopology()).toThrow('Cycle detected in DAG');
+      expect(() => dag.validateTopology()).toThrow("Cycle detected in DAG");
     });
 
-    it('should detect complex cycles', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      const nodeC = dag.addNode('C', jest.fn());
-      const nodeD = dag.addNode('D', jest.fn());
-      
+    it("should detect complex cycles", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+      const nodeC = dag.addNode("C", jest.fn());
+      const nodeD = dag.addNode("D", jest.fn());
+
       // Create complex cycle: A -> B -> C -> D -> B
       nodeA.addOutput(nodeB);
       nodeB.addOutput(nodeC);
       nodeC.addOutput(nodeD);
       nodeD.addOutput(nodeB); // Creates cycle
 
-      expect(() => dag.validateTopology()).toThrow('Cycle detected in DAG');
+      expect(() => dag.validateTopology()).toThrow("Cycle detected in DAG");
     });
 
-    it('should allow valid DAG structures', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      const nodeC = dag.addNode('C', jest.fn());
-      const nodeD = dag.addNode('D', jest.fn());
-      
+    it("should allow valid DAG structures", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+      const nodeC = dag.addNode("C", jest.fn());
+      const nodeD = dag.addNode("D", jest.fn());
+
       // Create valid DAG: A -> B, A -> C, B -> D, C -> D
       nodeA.addOutput(nodeB);
       nodeA.addOutput(nodeC);
@@ -72,21 +72,21 @@ describe('DAG Error Handling and Cycle Detection', () => {
       expect(() => dag.validateTopology()).not.toThrow();
     });
 
-    it('should detect self-loops', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      
+    it("should detect self-loops", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+
       // Create self-loop: A -> A
       nodeA.addOutput(nodeA);
 
-      expect(() => dag.validateTopology()).toThrow('Self-loop detected');
+      expect(() => dag.validateTopology()).toThrow("Self-loop detected");
     });
 
-    it('should handle disconnected components', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      const nodeC = dag.addNode('C', jest.fn());
-      const nodeD = dag.addNode('D', jest.fn());
-      
+    it("should handle disconnected components", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+      const nodeC = dag.addNode("C", jest.fn());
+      const nodeD = dag.addNode("D", jest.fn());
+
       // Create two disconnected components: A -> B and C -> D
       nodeA.addOutput(nodeB);
       nodeC.addOutput(nodeD);
@@ -94,198 +94,204 @@ describe('DAG Error Handling and Cycle Detection', () => {
       expect(() => dag.validateTopology()).not.toThrow();
     });
 
-    it('should provide detailed cycle information', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      const nodeC = dag.addNode('C', jest.fn());
-      
+    it("should provide detailed cycle information", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+      const nodeC = dag.addNode("C", jest.fn());
+
       nodeA.addOutput(nodeB);
       nodeB.addOutput(nodeC);
       nodeC.addOutput(nodeA); // Creates cycle
 
-      expect(() => dag.validateTopology()).toThrow('Cycle detected in DAG');
-      
+      expect(() => dag.validateTopology()).toThrow("Cycle detected in DAG");
+
       // Test error properties separately to avoid Jest instanceof issues
       try {
         dag.validateTopology();
         expect(() => {}).toThrow();
       } catch (error) {
-        expect(error.message).toContain('Cycle detected');
-        expect(error.cycle).toEqual(['A', 'B', 'C', 'A']);
+        expect(error.message).toContain("Cycle detected");
+        expect(error.cycle).toEqual(["A", "B", "C", "A"]);
       }
     });
   });
 
-  describe('error propagation', () => {
-    it('should propagate errors through DAG execution', async () => {
-      const errorNode = dag.addNode('error', () => {
-        throw new Error('Node execution failed');
+  describe("error propagation", () => {
+    it("should propagate errors through DAG execution", async () => {
+      const errorNode = dag.addNode("error", () => {
+        throw new Error("Node execution failed");
       });
-      const dependentNode = dag.addNode('dependent', jest.fn());
-      
+      const dependentNode = dag.addNode("dependent", jest.fn());
+
       errorNode.addOutput(dependentNode);
 
-      await expect(dag.execute()).rejects.toThrow('Node execution failed');
+      await expect(dag.execute()).rejects.toThrow("Node execution failed");
       expect(dependentNode.run).not.toHaveBeenCalled();
     });
 
-    it('should handle partial execution failures', async () => {
-      const successNode = dag.addNode('success', jest.fn().mockResolvedValue('success'));
-      const errorNode = dag.addNode('error', jest.fn().mockRejectedValue(new Error('Partial failure')));
-      const dependentNode = dag.addNode('dependent', jest.fn());
-      
+    it("should handle partial execution failures", async () => {
+      const successNode = dag.addNode(
+        "success",
+        jest.fn().mockResolvedValue("success"),
+      );
+      const errorNode = dag.addNode(
+        "error",
+        jest.fn().mockRejectedValue(new Error("Partial failure")),
+      );
+      const dependentNode = dag.addNode("dependent", jest.fn());
+
       // Independent paths: success runs, error fails
       successNode.addOutput(dependentNode);
       errorNode.addOutput(dependentNode);
 
-      await expect(dag.execute()).rejects.toThrow('Partial failure');
+      await expect(dag.execute()).rejects.toThrow("Partial failure");
       expect(successNode.run).toHaveBeenCalled();
       expect(errorNode.run).toHaveBeenCalled();
     });
 
-    it('should collect and report multiple errors', async () => {
-      const error1Node = dag.addNode('error1', () => {
-        throw new Error('First error');
+    it("should collect and report multiple errors", async () => {
+      const error1Node = dag.addNode("error1", () => {
+        throw new Error("First error");
       });
-      const error2Node = dag.addNode('error2', () => {
-        throw new Error('Second error');
+      const error2Node = dag.addNode("error2", () => {
+        throw new Error("Second error");
       });
 
       try {
         await dag.execute();
-        expect.fail('Expected execution to throw');
+        expect.fail("Expected execution to throw");
       } catch (error) {
-        expect(error.message).toContain('Multiple execution errors');
+        expect(error.message).toContain("Multiple execution errors");
         expect(error.errors).toHaveLength(2);
-        expect(error.errors[0].message).toBe('First error');
-        expect(error.errors[1].message).toBe('Second error');
+        expect(error.errors[0].message).toBe("First error");
+        expect(error.errors[1].message).toBe("Second error");
       }
     });
 
-    it('should handle async error propagation', async () => {
-      const asyncErrorNode = dag.addNode('asyncError', async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
-        throw new Error('Async error');
+    it("should handle async error propagation", async () => {
+      const asyncErrorNode = dag.addNode("asyncError", async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        throw new Error("Async error");
       });
-      const dependentNode = dag.addNode('dependent', jest.fn());
-      
+      const dependentNode = dag.addNode("dependent", jest.fn());
+
       asyncErrorNode.addOutput(dependentNode);
 
-      await expect(dag.execute()).rejects.toThrow('Async error');
+      await expect(dag.execute()).rejects.toThrow("Async error");
       expect(dependentNode.run).not.toHaveBeenCalled();
     });
 
-    it('should provide error context and stack traces', async () => {
-      const contextNode = dag.addNode('context', () => {
-        const error = new Error('Context error');
-        error.nodeId = 'context';
+    it("should provide error context and stack traces", async () => {
+      const contextNode = dag.addNode("context", () => {
+        const error = new Error("Context error");
+        error.nodeId = "context";
         error.timestamp = Date.now();
         throw error;
       });
 
       try {
         await dag.execute();
-        expect.fail('Expected execution to throw');
+        expect.fail("Expected execution to throw");
       } catch (error) {
-        expect(error.nodeId).toBe('context');
+        expect(error.nodeId).toBe("context");
         expect(error.timestamp).toBeDefined();
         expect(error.stack).toBeDefined();
       }
     });
   });
 
-  describe('invalid topology handling', () => {
-    it('should reject DAGs with no nodes', () => {
-      expect(() => dag.validateTopology()).toThrow('DAG cannot be empty');
+  describe("invalid topology handling", () => {
+    it("should reject DAGs with no nodes", () => {
+      expect(() => dag.validateTopology()).toThrow("DAG cannot be empty");
     });
 
-    it('should handle orphaned nodes', () => {
-      const orphanNode = dag.addNode('orphan', jest.fn());
-      const connectedA = dag.addNode('connectedA', jest.fn());
-      const connectedB = dag.addNode('connectedB', jest.fn());
-      
+    it("should handle orphaned nodes", () => {
+      const orphanNode = dag.addNode("orphan", jest.fn());
+      const connectedA = dag.addNode("connectedA", jest.fn());
+      const connectedB = dag.addNode("connectedB", jest.fn());
+
       connectedA.addOutput(connectedB);
       // orphanNode has no connections
 
       const warnings = dag.validateTopology({ strict: false });
-      expect(warnings).toContain('Orphaned node detected: orphan');
+      expect(warnings).toContain("Orphaned node detected: orphan");
     });
 
-    it('should validate node dependencies', () => {
-      const nodeA = dag.addNode('A', jest.fn());
-      const nodeB = dag.addNode('B', jest.fn());
-      
+    it("should validate node dependencies", () => {
+      const nodeA = dag.addNode("A", jest.fn());
+      const nodeB = dag.addNode("B", jest.fn());
+
       // Try to add invalid dependency
       expect(() => {
         nodeA.addOutput(null);
-      }).toThrow('Invalid output node');
-      
+      }).toThrow("Invalid output node");
+
       // Self-loops are allowed during construction but detected during validation
       nodeA.addOutput(nodeA); // Self-reference should succeed
-      expect(() => dag.validateTopology()).toThrow('Self-loop detected');
+      expect(() => dag.validateTopology()).toThrow("Self-loop detected");
     });
 
-    it('should handle duplicate node IDs', () => {
-      dag.addNode('duplicate', jest.fn());
-      
+    it("should handle duplicate node IDs", () => {
+      dag.addNode("duplicate", jest.fn());
+
       expect(() => {
-        dag.addNode('duplicate', jest.fn());
+        dag.addNode("duplicate", jest.fn());
       }).toThrow('Node with ID "duplicate" already exists');
     });
 
-    it('should validate node execution order', async () => {
+    it("should validate node execution order", async () => {
       const executionOrder = [];
-      
-      const nodeA = dag.addNode('A', () => {
-        executionOrder.push('A');
-        return 'A-result';
+
+      const nodeA = dag.addNode("A", () => {
+        executionOrder.push("A");
+        return "A-result";
       });
-      const nodeB = dag.addNode('B', () => {
-        executionOrder.push('B');
-        return 'B-result';
+      const nodeB = dag.addNode("B", () => {
+        executionOrder.push("B");
+        return "B-result";
       });
-      const nodeC = dag.addNode('C', () => {
-        executionOrder.push('C');
-        return 'C-result';
+      const nodeC = dag.addNode("C", () => {
+        executionOrder.push("C");
+        return "C-result";
       });
-      
+
       // B depends on A, C depends on B
       nodeA.addOutput(nodeB);
       nodeB.addOutput(nodeC);
 
       await dag.execute();
 
-      expect(executionOrder).toEqual(['A', 'B', 'C']);
+      expect(executionOrder).toEqual(["A", "B", "C"]);
     });
   });
 
-  describe('resource management', () => {
-    it('should handle memory cleanup on errors', async () => {
-      const memoryLeakNode = dag.addNode('memoryLeak', () => {
+  describe("resource management", () => {
+    it("should handle memory cleanup on errors", async () => {
+      const memoryLeakNode = dag.addNode("memoryLeak", () => {
         // Simulate memory allocation
-        const largeArray = new Array(1000000).fill('data');
-        throw new Error('Memory leak error');
+        const largeArray = new Array(1000000).fill("data");
+        throw new Error("Memory leak error");
       });
 
       try {
         await dag.execute();
-        throw new Error('Expected execution to throw');
+        throw new Error("Expected execution to throw");
       } catch (error) {
         // Verify cleanup occurred (in real implementation)
-        expect(error.message).toContain('Memory leak error');
+        expect(error.message).toContain("Memory leak error");
       }
     });
 
-    it('should handle concurrent execution limits', async () => {
+    it("should handle concurrent execution limits", async () => {
       const concurrentNodes = [];
       let activeCount = 0;
       let maxConcurrent = 0;
-      
+
       for (let i = 0; i < 10; i++) {
         const node = dag.addNode(`concurrent-${i}`, async () => {
           activeCount++;
           maxConcurrent = Math.max(maxConcurrent, activeCount);
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           activeCount--;
           return `result-${i}`;
         });
@@ -297,87 +303,98 @@ describe('DAG Error Handling and Cycle Detection', () => {
       expect(maxConcurrent).toBeLessThanOrEqual(3);
     });
 
-    it('should handle timeout scenarios', async () => {
-      const timeoutNode = dag.addNode('timeout', async () => {
-        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
-        return 'completed';
+    it("should handle timeout scenarios", async () => {
+      const timeoutNode = dag.addNode("timeout", async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200)); // 200ms delay
+        return "completed";
       });
 
-    // TODO: Fix timeout parameter passing in DAG execution
-      await expect(dag.execute(null, { timeout: 100 })).rejects.toThrow('Execution timeout');
+      // TODO: Fix timeout parameter passing in DAG execution
+      await expect(dag.execute(null, { timeout: 100 })).rejects.toThrow(
+        "Execution timeout",
+      );
     }, 10000);
   });
 
-  describe('recovery mechanisms', () => {
-    it('should support retry on node failure', async () => {
+  describe("recovery mechanisms", () => {
+    it("should support retry on node failure", async () => {
       let attempts = 0;
-      const retryNode = dag.addNode('retry', () => {
+      const retryNode = dag.addNode("retry", () => {
         attempts++;
         if (attempts < 3) {
-          throw new Error('Temporary failure');
+          throw new Error("Temporary failure");
         }
-        return 'success';
+        return "success";
       });
 
-      const result = await dag.execute({ retryFailedNodes: true, maxRetries: 3 });
-      
+      const result = await dag.execute({
+        retryFailedNodes: true,
+        maxRetries: 3,
+      });
+
       expect(attempts).toBe(3);
-      expect(result.get('retry')).toBe('success');
+      expect(result.get("retry")).toBe("success");
     });
 
-    it('should support graceful degradation', async () => {
-      const criticalNode = dag.addNode('critical', jest.fn().mockResolvedValue('critical-result'));
-      const optionalNode = dag.addNode('optional', () => {
-        throw new Error('Optional failure');
+    it("should support graceful degradation", async () => {
+      const criticalNode = dag.addNode(
+        "critical",
+        jest.fn().mockResolvedValue("critical-result"),
+      );
+      const optionalNode = dag.addNode("optional", () => {
+        throw new Error("Optional failure");
       });
-      const finalNode = dag.addNode('final', jest.fn().mockResolvedValue('final-result'));
-      
+      const finalNode = dag.addNode(
+        "final",
+        jest.fn().mockResolvedValue("final-result"),
+      );
+
       criticalNode.addOutput(finalNode);
       optionalNode.addOutput(finalNode);
 
-      const result = await dag.execute({ 
+      const result = await dag.execute({
         gracefulDegradation: true,
-        requiredNodes: ['critical', 'final']
+        requiredNodes: ["critical", "final"],
       });
 
-      expect(result.get('critical')).toBe('critical-result');
-      expect(result.get('final')).toBe('final-result');
-      expect(result.has('optional')).toBe(false);
+      expect(result.get("critical")).toBe("critical-result");
+      expect(result.get("final")).toBe("final-result");
+      expect(result.has("optional")).toBe(false);
     });
 
-    it('should support checkpoint and resume', async () => {
+    it("should support checkpoint and resume", async () => {
       const checkpointData = new Map();
-      
-      const nodeA = dag.addNode('A', () => {
-        checkpointData.set('A', 'A-completed');
-        return 'A-result';
+
+      const nodeA = dag.addNode("A", () => {
+        checkpointData.set("A", "A-completed");
+        return "A-result";
       });
-      const nodeB = dag.addNode('B', () => {
-        throw new Error('B failed');
+      const nodeB = dag.addNode("B", () => {
+        throw new Error("B failed");
       });
-      const nodeC = dag.addNode('C', jest.fn().mockResolvedValue('C-result'));
-      
+      const nodeC = dag.addNode("C", jest.fn().mockResolvedValue("C-result"));
+
       nodeA.addOutput(nodeB);
       nodeA.addOutput(nodeC);
 
       // First execution fails at B
       try {
         await dag.execute({ enableCheckpoints: true });
-        expect.fail('Expected execution to fail');
-    // TODO: Implement proper checkpoint data persistence
+        expect.fail("Expected execution to fail");
+        // TODO: Implement proper checkpoint data persistence
       } catch (error) {
-        expect(checkpointData.get('A')).toBe('A-completed');
+        expect(checkpointData.get("A")).toBe("A-completed");
       }
 
       // Resume from checkpoint
       const resumeResult = await dag.resume(checkpointData);
-      expect(resumeResult.get('A')).toBe('A-result');
-      expect(resumeResult.get('C')).toBe('C-result');
+      expect(resumeResult.get("A")).toBe("A-result");
+      expect(resumeResult.get("C")).toBe("C-result");
     });
   });
 
-  describe('validation edge cases', () => {
-    it('should handle very large DAGs', () => {
+  describe("validation edge cases", () => {
+    it("should handle very large DAGs", () => {
       // Create a large linear DAG
       let previousNode = null;
       for (let i = 0; i < 1000; i++) {
@@ -392,20 +409,20 @@ describe('DAG Error Handling and Cycle Detection', () => {
       expect(dag.nodes.size).toBe(1000);
     });
 
-    it('should handle complex branching patterns', () => {
-      const root = dag.addNode('root', jest.fn());
-      
+    it("should handle complex branching patterns", () => {
+      const root = dag.addNode("root", jest.fn());
+
       // Create diamond pattern with multiple levels
       for (let level = 1; level <= 5; level++) {
         for (let branch = 0; branch < Math.pow(2, level); branch++) {
           const node = dag.addNode(`L${level}-B${branch}`, jest.fn());
-          
+
           if (level === 1) {
             root.addOutput(node);
           } else {
             // Connect to previous level nodes
             const parentBranch = Math.floor(branch / 2);
-            const parentNode = dag.nodes.get(`L${level-1}-B${parentBranch}`);
+            const parentNode = dag.nodes.get(`L${level - 1}-B${parentBranch}`);
             if (parentNode) {
               parentNode.addOutput(node);
             }
@@ -416,16 +433,16 @@ describe('DAG Error Handling and Cycle Detection', () => {
       expect(() => dag.validateTopology()).not.toThrow();
     });
 
-    it('should handle nodes with no inputs or outputs', () => {
-      const isolatedNode = dag.addNode('isolated', jest.fn());
-      const sourceNode = dag.addNode('source', jest.fn());
-      const sinkNode = dag.addNode('sink', jest.fn());
-      
+    it("should handle nodes with no inputs or outputs", () => {
+      const isolatedNode = dag.addNode("isolated", jest.fn());
+      const sourceNode = dag.addNode("source", jest.fn());
+      const sinkNode = dag.addNode("sink", jest.fn());
+
       sourceNode.addOutput(sinkNode);
       // isolatedNode has no connections
 
       const warnings = dag.validateTopology({ strict: false });
-      expect(warnings).toContain('Orphaned node detected: isolated');
+      expect(warnings).toContain("Orphaned node detected: isolated");
     });
   });
 });

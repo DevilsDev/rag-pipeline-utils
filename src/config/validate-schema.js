@@ -5,81 +5,82 @@
  * File: /src/_config/validate-schema.js
  */
 
-const Ajv = require('ajv'); // eslint-disable-line global-require
+const Ajv = require("ajv");
+// eslint-disable-line global-require
 
 /**
  * Full .ragrc.json schema (used in load-_config.js)
  */
 const ragrcSchema = {
-  type: 'object',
-  required: ['loader', 'embedder', 'retriever', 'llm', 'namespace', 'pipeline'],
+  type: "object",
+  required: ["loader", "embedder", "retriever", "llm", "namespace", "pipeline"],
   properties: {
     loader: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     embedder: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     retriever: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     llm: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     namespace: {
-      type: 'string',
-      minLength: 1
+      type: "string",
+      minLength: 1,
     },
     pipeline: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'string',
-        enum: ['loader', 'embedder', 'retriever']
+        type: "string",
+        enum: ["loader", "embedder", "retriever"],
       },
       minItems: 1,
-      uniqueItems: true
-    }
+      uniqueItems: true,
+    },
   },
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 /**
  * Minimal plugin-only schema (used in load-plugin-_config.js)
  */
 const pluginSchema = {
-  type: 'object',
-  required: ['loader', 'embedder', 'retriever', 'llm'],
+  type: "object",
+  required: ["loader", "embedder", "retriever", "llm"],
   properties: {
     loader: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     embedder: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     retriever: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
+      additionalProperties: { type: "string" },
     },
     llm: {
-      type: 'object',
+      type: "object",
       minProperties: 1,
-      additionalProperties: { type: 'string' }
-    }
+      additionalProperties: { type: "string" },
+    },
   },
-  additionalProperties: true // allow namespace, pipeline, etc.
+  additionalProperties: true, // allow namespace, pipeline, etc.
 };
 
 /**
@@ -106,8 +107,7 @@ function validatePluginSchema(config) {
   return valid ? { valid: true } : { valid: false, errors: validate.errors };
 }
 
-
 module.exports = {
   validateRagrcSchema,
-  validatePluginSchema
+  validatePluginSchema,
 };

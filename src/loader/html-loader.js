@@ -1,14 +1,10 @@
 /**
-const fs = require('fs');
- * Version: 0.1.0
- * Path: /src/loader/html-loader.js
- * Description: Loader for HTML (.html) documents
- * Author: Ali Kahwaji
+ * Loader for HTML (.html) documents
  */
 
-const fs = require('fs/promises'); // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
-const { JSDOM  } = require('jsdom'); // eslint-disable-line global-require
+const fs = require('fs/promises');
+const path = require('path');
+const { JSDOM } = require('jsdom');
 
 /**
  * HTMLLoader reads HTML files and extracts visible text.
@@ -17,19 +13,23 @@ const { JSDOM  } = require('jsdom'); // eslint-disable-line global-require
 class HTMLLoader {
   /**
    * Load and extract text from an HTML file
-   * @param {string} _filePath - Path to .html file
+   * @param {string} filePath - Path to .html file
    * @returns {Promise<Array<{ chunk(): string[] }>>}
    */
-  async load(_filePath) {
-    const absPath = path.resolve(_filePath);
+  async load(filePath) {
+    const absPath = path.resolve(filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
     const dom = new JSDOM(raw);
-    const text = dom.window.document.body.textContent || '';
+    let text = dom.window.document.body.textContent || '';
+
+    const MAX_LEN = 1_000_000;
+    text = String(text).replace(/\s+/g, ' ').trim();
+    if (text.length > MAX_LEN) text = text.slice(0, MAX_LEN);
 
     return [
       {
-        chunk: () => this._chunkText(text)
-      }
+        chunk: () => this._chunkText(text),
+      },
     ];
   }
 
@@ -57,11 +57,6 @@ class HTMLLoader {
   }
 }
 
-
-// Default export
-
-
-
 module.exports = {
-  HTMLLoader
+  HTMLLoader,
 };

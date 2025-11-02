@@ -6,9 +6,12 @@ const fs = require('fs');
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs/promises'); // eslint-disable-line global-require
-const path = require('path'); // eslint-disable-line global-require
-const { marked  } = require('marked'); // eslint-disable-line global-require
+const fs = require('fs/promises');
+// eslint-disable-line global-require
+const path = require('path');
+// eslint-disable-line global-require
+const { marked } = require('marked');
+// eslint-disable-line global-require
 
 /**
  * MarkdownLoader reads and parses .md files into plain text chunks.
@@ -28,8 +31,8 @@ class MarkdownLoader {
 
     return [
       {
-        chunk: () => this._chunkText(text)
-      }
+        chunk: () => this._chunkText(text),
+      },
     ];
   }
 
@@ -57,12 +60,8 @@ class MarkdownLoader {
   }
 }
 
-
-
 // Default export
 
-
-
 module.exports = {
-  MarkdownLoader
+  MarkdownLoader,
 };

@@ -1,0 +1,55 @@
+# CODEOWNERS - Code Review Governance
+# This file defines who must review changes to specific parts of the codebase
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global fallback - requires tech lead approval for any unspecified files
+* @tech-lead
+
+# Core architecture - requires senior developer approval
+src/core/ @tech-lead @senior-dev
+src/dag/ @tech-lead @senior-dev
+src/ai/ @ml-engineer @tech-lead
+
+# CLI and user-facing interfaces
+bin/ @tech-lead @ux-engineer
+src/cli/ @tech-lead @senior-dev
+
+# Configuration and infrastructure
+src/config/ @devops @tech-lead
+deployment/ @devops @sre
+docker-compose.yml @devops @sre
+Dockerfile @devops @sre
+
+# Security-sensitive files - requires security team approval
+.github/workflows/ @devops @security
+.secrets @security @tech-lead
+package.json @security @tech-lead
+package-lock.json @security @tech-lead
+src/security/ @security @tech-lead
+src/utils/safe-evaluator.js @security @tech-lead
+src/cli/commands/doctor-command.js @security @devops
+src/auth/ @security @tech-lead
+
+# Enterprise and multi-tenant features
+src/enterprise/ @tech-lead @security @senior-dev
+
+# Testing infrastructure
+__tests__/ @qa-lead @senior-dev
+jest.config.js @qa-lead @tech-lead
+jest.setup.js @qa-lead @tech-lead
+
+# Documentation - requires technical writer approval
+docs/ @tech-writer @product
+README.md @tech-lead @tech-writer
+*.md @tech-writer
+
+# Release and versioning
+CHANGELOG.md @release-manager @tech-lead
+release.config.js @release-manager @devops
+
+# Scripts and automation
+scripts/ @devops @tech-lead
+
+# Plugin ecosystem
+src/plugins/ @plugin-maintainer @tech-lead
+plugin.config.json @plugin-maintainer @tech-lead
