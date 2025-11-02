@@ -79,6 +79,14 @@ web_modules/
 .env.production.local
 .env.local
 
+# Secret files
+.secrets
+secrets.json
+*.key
+*.pem
+*.p12
+*.pfx
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

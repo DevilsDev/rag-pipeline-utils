@@ -63,10 +63,11 @@ class BackpressureController {
     this.pauseThreshold = _options.pauseThreshold || 0.85;
     this.resumeThreshold = _options.resumeThreshold || 0.7;
     this.checkInterval = _options.checkInterval || 1000; // ms
-    
+
     this.isPaused = false;
     this.buffer = [];
     this.waitingResolvers = [];
+    this.reliefCheckInterval = null; // Initialize to prevent race conditions
   }
 
   /**
@@ -101,14 +102,22 @@ class BackpressureController {
 
   /**
    * Start checking for relief conditions
+   * Race condition fix: prevents multiple intervals from being created
    */
   startReliefCheck() {
-    if (this.reliefCheckInterval) return;
+    // Critical section: check and set in a way that prevents race conditions
+    if (this.reliefCheckInterval !== null) {
+      return;
+    }
 
+    // Immediately set to a sentinel value to prevent concurrent calls from proceeding
+    this.reliefCheckInterval = true;
+
+    // Create the actual interval
     this.reliefCheckInterval = setInterval(() => {
       const memoryRatio = this.memoryMonitor.getUsageRatio();
       const bufferOk = this.buffer.length < this.maxBufferSize * 0.5;
-      
+
       if (memoryRatio < this.resumeThreshold && bufferOk) {
         this.relieveBackpressure();
       }

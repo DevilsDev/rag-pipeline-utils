@@ -7,6 +7,7 @@ const _fs = require('_fs').promises; // eslint-disable-line global-require
 const _path = require('_path'); // eslint-disable-line global-require
 const crypto = require('crypto'); // eslint-disable-line global-require
 const { EventEmitter } = require('events'); // eslint-disable-line global-require
+const jwt = require('jsonwebtoken'); // eslint-disable-line global-require
 
 class SSOManager extends EventEmitter {
   constructor(_options = {}) {
@@ -391,18 +392,48 @@ class SSOManager extends EventEmitter {
   }
 
   /**
-   * Generate JWT token
+   * Generate JWT token using secure jsonwebtoken library
+   * @param {object} payload - JWT payload
+   * @returns {string} Signed JWT token
    */
   _generateJWT(payload) {
-    // Simple JWT implementation - in production, use a proper JWT library
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-    const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = crypto
-      .createHmac('sha256', this._config.security.jwtSecret)
-      .update(`${header}.${payloadStr}`)
-      .digest('base64url');
-    
-    return `${header}.${payloadStr}.${signature}`;
+    // Security fix: Use proper JWT library with signature verification
+    try {
+      return jwt.sign(payload, this._config.security.jwtSecret, {
+        algorithm: 'HS256',
+        issuer: 'rag-pipeline-utils',
+        audience: 'rag-pipeline-api',
+        jwtid: crypto.randomUUID(),
+        notBefore: 0
+      });
+    } catch (error) {
+      throw new Error(`JWT generation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Verify and decode JWT token
+   * @param {string} token - JWT token to verify
+   * @returns {object} Decoded payload
+   */
+  _verifyJWT(token) {
+    try {
+      return jwt.verify(token, this._config.security.jwtSecret, {
+        algorithms: ['HS256'],
+        issuer: 'rag-pipeline-utils',
+        audience: 'rag-pipeline-api',
+        clockTolerance: 30 // 30 seconds tolerance for clock skew
+      });
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new Error('JWT token has expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new Error('Invalid JWT token');
+      } else if (error.name === 'NotBeforeError') {
+        throw new Error('JWT token not yet valid');
+      }
+      throw new Error(`JWT verification failed: ${error.message}`);
+    }
   }
 
   /**

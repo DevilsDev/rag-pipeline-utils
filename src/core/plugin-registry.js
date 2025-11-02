@@ -91,9 +91,7 @@ class PluginRegistry {
 
 const _registry = new PluginRegistry();
 
-
-
-
 module.exports = {
-  PluginRegistry
+  PluginRegistry,
+  registry: _registry
 };
