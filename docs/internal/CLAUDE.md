@@ -855,8 +855,8 @@ info:
     url: https://github.com/DevilsDev/rag-pipeline-utils
     email: support@devilsdev.com
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: GPL-3.0
+    url: https://opensource.org/licenses/GPL-3.0
 
 paths:
   /dag/execute:

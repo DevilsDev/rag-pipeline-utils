@@ -31,6 +31,9 @@ PR_DESCRIPTION.md
 TECHNICAL_DEBT_CHECKLIST.md
 TEST_STABILIZATION_REPORT*.md
 
+# Internal documentation (now in docs/internal/)
+docs/internal/
+
 # Root-level test scripts
 test-*.js
 debug-*.js
