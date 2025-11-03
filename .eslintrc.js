@@ -213,5 +213,19 @@ module.exports = {
         "no-console": "off", // Allow console in DX tools
       },
     },
+
+    // === CLI COMMAND FILES - Override production rules for user-facing output ===
+    {
+      files: [
+        "src/cli/commands/**/*.{js,jsx}",
+        "src/cli/interactive-wizard.{js,jsx}",
+        "src/cli/doctor-command.{js,jsx}",
+      ],
+      rules: {
+        "no-console": "off", // CLI commands are supposed to print to console
+        quotes: "off",
+        semi: "off",
+      },
+    },
   ],
 };

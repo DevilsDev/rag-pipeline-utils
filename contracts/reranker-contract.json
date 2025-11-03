@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "reranker",
+  "version": "1.0.0",
+  "title": "Reranker Contract",
+  "description": "Contract for reranker plugins",
+  "methods": [
+    {
+      "name": "rerank",
+      "parameters": ["results", "query", "options"],
+      "returns": "rankedResults"
+    }
+  ],
+  "properties": {
+    "rerank": {
+      "type": "function",
+      "description": "Rerank search results based on relevance to query",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "content": { "type": "string" },
+                "score": { "type": "number" }
+              },
+              "required": ["id", "content"]
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The original search query"
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "topK": {
+                "type": "number",
+                "description": "Number of top results to return"
+              },
+              "threshold": {
+                "type": "number",
+                "description": "Minimum relevance score threshold"
+              }
+            }
+          }
+        },
+        "required": ["results", "query"]
+      },
+      "returns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "content": { "type": "string" },
+            "score": { "type": "number" },
+            "relevanceScore": { "type": "number" }
+          },
+          "required": ["id", "content", "relevanceScore"]
+        }
+      }
+    }
+  },
+  "required": ["rerank"]
+}
