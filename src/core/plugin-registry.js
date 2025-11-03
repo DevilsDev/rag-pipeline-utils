@@ -1,27 +1,27 @@
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 const {
   createPluginVerifier,
-} = require("../security/plugin-signature-verifier.js");
+} = require('../security/plugin-signature-verifier.js');
 
 class PluginRegistry {
   constructor(options = {}) {
     this._plugins = new Map();
     this._validTypes = new Set([
-      "loader",
-      "embedder",
-      "retriever",
-      "reranker",
-      "llm",
-      "evaluator",
+      'loader',
+      'embedder',
+      'retriever',
+      'reranker',
+      'llm',
+      'evaluator',
     ]);
     this._contracts = new Map();
 
     // Environment-aware signature verification defaults
-    const isDevelopment = process.env.NODE_ENV === "development";
-    const isProduction = process.env.NODE_ENV === "production";
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isProduction = process.env.NODE_ENV === 'production';
 
     this._signatureVerifier = createPluginVerifier({
       enabled:
@@ -36,23 +36,23 @@ class PluginRegistry {
   }
 
   _loadContracts() {
-    const contractsDir = path.join(__dirname, "../../contracts");
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const contractsDir = path.join(__dirname, '../../contracts');
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
     try {
       const contractFiles = {
-        loader: "loader-contract.json",
-        embedder: "embedder-contract.json",
-        retriever: "retriever-contract.json",
-        llm: "llm-contract.json",
-        reranker: "reranker-contract.json",
+        loader: 'loader-contract.json',
+        embedder: 'embedder-contract.json',
+        retriever: 'retriever-contract.json',
+        llm: 'llm-contract.json',
+        reranker: 'reranker-contract.json',
       };
 
       for (const [type, filename] of Object.entries(contractFiles)) {
         try {
           const contractPath = path.join(contractsDir, filename);
           if (fs.existsSync(contractPath)) {
-            const contractContent = fs.readFileSync(contractPath, "utf8");
+            const contractContent = fs.readFileSync(contractPath, 'utf8');
             const contract = JSON.parse(contractContent);
             this._contracts.set(type, contract);
           } else if (isDevelopment) {
@@ -87,7 +87,7 @@ class PluginRegistry {
     const contract = this._contracts.get(category);
     if (!contract) {
       // Warn in dev mode when registering a plugin without a contract
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NODE_ENV === 'development') {
         console.warn(
           `[PLUGIN_REGISTRY] Warning: No contract available for plugin category '${category}'. Skipping contract validation.`,
         ); // eslint-disable-line no-console
@@ -100,15 +100,15 @@ class PluginRegistry {
 
     // Check if plugin has metadata
     if (!impl.metadata) {
-      throw new Error("Plugin missing metadata property");
+      throw new Error('Plugin missing metadata property');
     }
 
-    if (!impl.metadata.name || typeof impl.metadata.name !== "string") {
-      throw new Error("Plugin metadata must have a name property");
+    if (!impl.metadata.name || typeof impl.metadata.name !== 'string') {
+      throw new Error('Plugin metadata must have a name property');
     }
 
-    if (!impl.metadata.version || typeof impl.metadata.version !== "string") {
-      throw new Error("Plugin metadata must have a version property");
+    if (!impl.metadata.version || typeof impl.metadata.version !== 'string') {
+      throw new Error('Plugin metadata must have a version property');
     }
 
     if (!impl.metadata.type || impl.metadata.type !== category) {
@@ -123,7 +123,7 @@ class PluginRegistry {
         throw new Error(`Plugin missing required method: ${methodName}`);
       }
 
-      if (typeof impl[methodName] !== "function") {
+      if (typeof impl[methodName] !== 'function') {
         throw new Error(`Plugin method '${methodName}' must be a function`);
       }
     }
@@ -140,7 +140,7 @@ class PluginRegistry {
       for (const [methodName, methodSpec] of Object.entries(
         contract.properties,
       )) {
-        if (methodSpec.type === "function") {
+        if (methodSpec.type === 'function') {
           methods.push(methodName);
         }
       }
@@ -150,14 +150,14 @@ class PluginRegistry {
   }
 
   async register(category, name, impl, manifest = null) {
-    if (!category || typeof category !== "string") {
-      throw new Error("Category must be a non-empty string");
+    if (!category || typeof category !== 'string') {
+      throw new Error('Category must be a non-empty string');
     }
-    if (!name || typeof name !== "string") {
-      throw new Error("Name must be a non-empty string");
+    if (!name || typeof name !== 'string') {
+      throw new Error('Name must be a non-empty string');
     }
     if (impl == null) {
-      throw new Error("Implementation cannot be null or undefined");
+      throw new Error('Implementation cannot be null or undefined');
     }
     if (!this._validTypes.has(category)) {
       throw new Error(`Unknown plugin type: ${category}`);
@@ -204,7 +204,7 @@ class PluginRegistry {
       }
 
       // Emit audit entry for successful verification
-      this._emitAuditEntry("plugin_verified", {
+      this._emitAuditEntry('plugin_verified', {
         pluginName,
         signerId: manifest.signerId,
         version: manifest.version,
@@ -213,10 +213,10 @@ class PluginRegistry {
       });
     } catch (error) {
       // Emit audit entry for failed verification
-      this._emitAuditEntry("plugin_verification_failed", {
+      this._emitAuditEntry('plugin_verification_failed', {
         pluginName,
-        signerId: manifest.signerId || "unknown",
-        version: manifest.version || "unknown",
+        signerId: manifest.signerId || 'unknown',
+        version: manifest.version || 'unknown',
         verified: false,
         error: error.message,
         timestamp: new Date().toISOString(),
@@ -235,15 +235,15 @@ class PluginRegistry {
     const auditEntry = {
       timestamp: new Date().toISOString(),
       action,
-      component: "plugin_registry",
+      component: 'plugin_registry',
       ...details,
     };
 
     // In production, this should go to a secure audit log
-    if (process.env.NODE_ENV === "production") {
-      console.warn("[AUDIT]", JSON.stringify(auditEntry)); // eslint-disable-line no-console
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[AUDIT]', JSON.stringify(auditEntry)); // eslint-disable-line no-console
     } else {
-      console.log("[AUDIT]", auditEntry); // eslint-disable-line no-console
+      console.log('[AUDIT]', auditEntry); // eslint-disable-line no-console
     }
   }
 
@@ -284,8 +284,8 @@ class PluginRegistry {
 
 // Create singleton instance with default security settings
 const registry = new PluginRegistry({
-  verifySignatures: process.env.NODE_ENV === "production",
-  failClosed: process.env.NODE_ENV === "production",
+  verifySignatures: process.env.NODE_ENV === 'production',
+  failClosed: process.env.NODE_ENV === 'production',
 });
 
 // CJS+ESM interop pattern

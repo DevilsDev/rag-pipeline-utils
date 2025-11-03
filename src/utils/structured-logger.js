@@ -8,6 +8,7 @@
 
 const { AsyncLocalStorage } = require('async_hooks');
 const crypto = require('crypto');
+const { redactLogData } = require('./secure-logging');
 
 /**
  * Async local storage for correlation context
@@ -36,6 +37,7 @@ class StructuredLogger {
     this.logLevel = options.logLevel || process.env.LOG_LEVEL || 'info';
     this.enableCorrelation = options.enableCorrelation !== false;
     this.enableMetrics = options.enableMetrics !== false;
+    this.enableSecureLogging = options.enableSecureLogging !== false; // Default enabled for security
     this.outputFormat = options.outputFormat || 'json'; // json, console
 
     // Performance tracking
@@ -201,7 +203,12 @@ class StructuredLogger {
   error(message, meta = {}) {
     if (!this.shouldLog('error')) return;
 
-    const entry = this.createLogEntry('error', message, meta);
+    // Redact sensitive information if secure logging is enabled
+    const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
+      ? redactLogData(message, meta)
+      : { message, meta };
+
+    const entry = this.createLogEntry('error', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -213,7 +220,12 @@ class StructuredLogger {
   warn(message, meta = {}) {
     if (!this.shouldLog('warn')) return;
 
-    const entry = this.createLogEntry('warn', message, meta);
+    // Redact sensitive information if secure logging is enabled
+    const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
+      ? redactLogData(message, meta)
+      : { message, meta };
+
+    const entry = this.createLogEntry('warn', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -225,7 +237,12 @@ class StructuredLogger {
   info(message, meta = {}) {
     if (!this.shouldLog('info')) return;
 
-    const entry = this.createLogEntry('info', message, meta);
+    // Redact sensitive information if secure logging is enabled
+    const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
+      ? redactLogData(message, meta)
+      : { message, meta };
+
+    const entry = this.createLogEntry('info', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -237,7 +254,12 @@ class StructuredLogger {
   debug(message, meta = {}) {
     if (!this.shouldLog('debug')) return;
 
-    const entry = this.createLogEntry('debug', message, meta);
+    // Redact sensitive information if secure logging is enabled
+    const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
+      ? redactLogData(message, meta)
+      : { message, meta };
+
+    const entry = this.createLogEntry('debug', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -249,7 +271,12 @@ class StructuredLogger {
   trace(message, meta = {}) {
     if (!this.shouldLog('trace')) return;
 
-    const entry = this.createLogEntry('trace', message, meta);
+    // Redact sensitive information if secure logging is enabled
+    const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
+      ? redactLogData(message, meta)
+      : { message, meta };
+
+    const entry = this.createLogEntry('trace', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
