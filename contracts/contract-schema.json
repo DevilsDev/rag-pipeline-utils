@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/devilsdev/rag-pipeline-utils/schemas/contract.json",
+  "title": "Plugin Contract Schema",
+  "description": "Schema for validating plugin contract specifications in the RAG pipeline utilities",
+  "type": "object",
+  "required": [
+    "type",
+    "version",
+    "title",
+    "description",
+    "methods",
+    "properties",
+    "required"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema specification URI"
+    },
+    "type": {
+      "type": "string",
+      "description": "Plugin type identifier",
+      "enum": [
+        "loader",
+        "embedder",
+        "retriever",
+        "llm",
+        "reranker",
+        "evaluator"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "description": "Contract version (semantic versioning)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable contract title",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "Contract description",
+      "minLength": 1
+    },
+    "methods": {
+      "type": "array",
+      "description": "Array of method specifications",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "parameters", "returns"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Method name",
+            "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+          },
+          "parameters": {
+            "type": "array",
+            "description": "Method parameter names",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+            }
+          },
+          "returns": {
+            "type": "string",
+            "description": "Return type description",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "properties": {
+      "type": "object",
+      "description": "Detailed method property specifications",
+      "minProperties": 1,
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "required": ["type", "description"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Property type",
+              "enum": [
+                "function",
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "array"
+              ]
+            },
+            "description": {
+              "type": "string",
+              "description": "Property description",
+              "minLength": 1
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Parameter schema (for function properties)",
+              "properties": {
+                "type": {
+                  "const": "object"
+                },
+                "properties": {
+                  "type": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "returns": {
+              "type": "object",
+              "description": "Return value schema (for function properties)"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "required": {
+      "type": "array",
+      "description": "List of required methods",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "loader",
+      "version": "1.0.0",
+      "title": "Loader Contract",
+      "description": "Contract for loader plugins",
+      "methods": [
+        {
+          "name": "load",
+          "parameters": ["source"],
+          "returns": "documents"
+        }
+      ],
+      "properties": {
+        "load": {
+          "type": "function",
+          "description": "Load documents from source",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Source path or identifier"
+              }
+            },
+            "required": ["source"]
+          },
+          "returns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "content": { "type": "string" },
+                "metadata": { "type": "object" }
+              },
+              "required": ["id", "content"]
+            }
+          }
+        }
+      },
+      "required": ["load"]
+    }
+  ]
+}

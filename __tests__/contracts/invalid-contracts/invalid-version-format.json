@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "loader",
+  "version": "1.0",
+  "title": "Invalid Version Format",
+  "description": "Version should be semantic versioning (x.y.z)",
+  "methods": [
+    {
+      "name": "load",
+      "parameters": ["source"],
+      "returns": "documents"
+    }
+  ],
+  "properties": {
+    "load": {
+      "type": "function",
+      "description": "Load documents"
+    }
+  },
+  "required": ["load"]
+}

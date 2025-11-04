@@ -19,7 +19,9 @@ describe("Contract Schema Validation", () => {
   describe("Plugin Contract Schema Validation", () => {
     test("should validate all plugin contract schemas are well-formed", async () => {
       const contractFiles = await fs.readdir(contractsDir);
-      const jsonFiles = contractFiles.filter((file) => file.endsWith(".json"));
+      const jsonFiles = contractFiles.filter(
+        (file) => file.endsWith(".json") && file !== "contract-schema.json",
+      );
 
       expect(jsonFiles.length).toBeGreaterThan(0);
 

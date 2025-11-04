@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Redaction Patterns Configuration",
+  "description": "Configuration for secure logger redaction patterns. Define custom patterns to automatically redact sensitive data from logs.",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable or disable secure logging globally",
+      "default": true
+    },
+    "trackStats": {
+      "type": "boolean",
+      "description": "Enable statistics tracking for redactions",
+      "default": true
+    },
+    "redactionMarker": {
+      "type": "string",
+      "description": "Default marker to use for redacted values",
+      "default": "[REDACTED]"
+    },
+    "enabledPatterns": {
+      "type": "array",
+      "description": "List of pattern names to enable (leave empty to use all)",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "disabledPatterns": {
+      "type": "array",
+      "description": "List of pattern names to disable",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "redactEmails": {
+      "type": "boolean",
+      "description": "Enable email address redaction",
+      "default": false
+    },
+    "redactIPs": {
+      "type": "boolean",
+      "description": "Enable IP address redaction",
+      "default": false
+    },
+    "customPatterns": {
+      "type": "object",
+      "description": "Custom redaction patterns",
+      "patternProperties": {
+        "^[a-zA-Z0-9_]+$": {
+          "type": "object",
+          "properties": {
+            "regex": {
+              "type": "string",
+              "description": "Regular expression pattern (as string)"
+            },
+            "flags": {
+              "type": "string",
+              "description": "Regex flags (e.g., 'gi')",
+              "default": "g"
+            },
+            "replacement": {
+              "type": "string",
+              "description": "Replacement string"
+            },
+            "description": {
+              "type": "string",
+              "description": "Pattern description"
+            },
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable this pattern",
+              "default": true
+            }
+          },
+          "required": ["regex", "replacement"]
+        }
+      },
+      "default": {}
+    },
+    "sensitiveFields": {
+      "type": "array",
+      "description": "Additional field names to treat as sensitive",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "environments": {
+      "type": "object",
+      "description": "Environment-specific configurations",
+      "properties": {
+        "development": {
+          "type": "object",
+          "description": "Configuration for development environment"
+        },
+        "production": {
+          "type": "object",
+          "description": "Configuration for production environment"
+        },
+        "test": {
+          "type": "object",
+          "description": "Configuration for test environment"
+        }
+      },
+      "default": {}
+    }
+  },
+  "examples": [
+    {
+      "enabled": true,
+      "trackStats": true,
+      "redactionMarker": "***REDACTED***",
+      "redactEmails": true,
+      "redactIPs": false,
+      "customPatterns": {
+        "internalToken": {
+          "regex": "\\bINT-[A-Z0-9]{32}\\b",
+          "flags": "g",
+          "replacement": "[INTERNAL_TOKEN]",
+          "description": "Internal application tokens",
+          "enabled": true
+        },
+        "sessionId": {
+          "regex": "\\bsession_id=([a-f0-9]{64})\\b",
+          "flags": "gi",
+          "replacement": "session_id=[REDACTED_SESSION]",
+          "description": "Session identifiers",
+          "enabled": true
+        }
+      },
+      "sensitiveFields": ["ssn", "taxId", "bankAccount", "routingNumber"],
+      "disabledPatterns": ["creditCard"],
+      "environments": {
+        "development": {
+          "enabled": false,
+          "trackStats": false
+        },
+        "production": {
+          "enabled": true,
+          "trackStats": true,
+          "redactEmails": true,
+          "redactIPs": true
+        }
+      }
+    }
+  ]
+}

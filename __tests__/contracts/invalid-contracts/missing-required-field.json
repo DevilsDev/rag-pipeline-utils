@@ -1,0 +1,19 @@
+{
+  "type": "loader",
+  "version": "1.0.0",
+  "description": "Missing title field - should fail schema validation",
+  "methods": [
+    {
+      "name": "load",
+      "parameters": ["source"],
+      "returns": "documents"
+    }
+  ],
+  "properties": {
+    "load": {
+      "type": "function",
+      "description": "Load documents from source"
+    }
+  },
+  "required": ["load"]
+}

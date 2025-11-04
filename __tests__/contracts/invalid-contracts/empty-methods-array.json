@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "loader",
+  "version": "1.0.0",
+  "title": "Empty Methods Array",
+  "description": "Methods array must have at least one item",
+  "methods": [],
+  "properties": {
+    "load": {
+      "type": "function",
+      "description": "Load documents"
+    }
+  },
+  "required": ["load"]
+}
