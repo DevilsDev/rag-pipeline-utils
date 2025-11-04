@@ -13,10 +13,16 @@ const {
   validateDAG,
   validateTopology,
 } = require('./core/topology-validation.js');
+const ExecutionScheduler = require('./core/execution-scheduler.js');
+const ErrorContext = require('./core/error-context.js');
 
 class DAG {
   constructor() {
     this.nodes = new Map();
+    this.scheduler = new ExecutionScheduler({
+      getSinkIds: (fwd) => getSinkIds(fwd),
+    });
+    this.errorContext = new ErrorContext();
   }
 
   addNode(id, _fn, options = {}) {
@@ -94,89 +100,7 @@ class DAG {
    * @returns {Promise<void>}
    */
   async _runAllNodes(order, context) {
-    const {
-      concurrency,
-      results,
-      errors,
-      fwd,
-      continueOnError,
-      requiredIds,
-      seed,
-      gracefulDegradation,
-      requiredNodes,
-      retryFailedNodes,
-      maxRetries,
-    } = context;
-
-    const semaphore = concurrency ? new Array(concurrency).fill(null) : null;
-    let semaphoreIndex = 0;
-
-    const executeWithSemaphore = async (node) => {
-      if (semaphore) {
-        // Wait for available slot
-        while (semaphore[semaphoreIndex % semaphore.length] !== null) {
-          await new Promise((resolve) => setTimeout(resolve, 10));
-        }
-        const slotIndex = semaphoreIndex % semaphore.length;
-        semaphoreIndex++;
-
-        try {
-          const result = await this.executeNode(node, {
-            results,
-            errors,
-            fwd,
-            continueOnError,
-            requiredIds,
-            seed,
-            gracefulDegradation,
-            requiredNodes,
-            retryFailedNodes,
-            maxRetries,
-          });
-          // Only set result if it's not undefined (failed optional nodes return undefined)
-          if (result !== undefined) {
-            results.set(node.id, result);
-          }
-        } finally {
-          semaphore[slotIndex] = null;
-        }
-      } else {
-        const result = await this.executeNode(node, {
-          results,
-          errors,
-          fwd,
-          continueOnError,
-          requiredIds,
-          seed,
-          gracefulDegradation,
-          requiredNodes,
-          retryFailedNodes,
-          maxRetries,
-        });
-        // Only set result if it's not the special failed-optional-node symbol
-        if (
-          typeof result !== 'symbol' ||
-          result.description !== 'failed-optional-node'
-        ) {
-          results.set(node.id, result);
-        }
-      }
-    };
-
-    // Execute nodes respecting dependencies
-    for (const node of order) {
-      // Check if all dependencies are satisfied
-      const canExecute = this._canExecuteNode(node, {
-        results,
-        errors,
-        gracefulDegradation,
-        requiredNodes,
-      });
-
-      if (canExecute) {
-        await executeWithSemaphore(node);
-      }
-    }
+    return this.scheduler.scheduleExecution(order, context);
   }
 
   /**
@@ -186,23 +110,7 @@ class DAG {
    * @returns {boolean}
    */
   _canExecuteNode(node, context) {
-    const { results, errors, gracefulDegradation, requiredNodes } = context;
-
-    return node.inputs.every((dep) => {
-      // If dependency has result or error, it's satisfied
-      if (results.has(dep.id) || errors.has(dep.id)) {
-        return true;
-      }
-      // If graceful degradation is enabled and dependency is not required, it's satisfied
-      if (
-        gracefulDegradation &&
-        requiredNodes &&
-        !requiredNodes.includes(dep.id)
-      ) {
-        return true;
-      }
-      return false;
-    });
+    return this.scheduler.canExecuteNode(node, context);
   }
 
   /**
@@ -228,41 +136,7 @@ class DAG {
    * @throws {Error} - Appropriately wrapped error
    */
   _handleExecutionError(error) {
-    // Error policy: wrap everything in try/catch
-    // If caught error is a node error (message starts with "Node " OR error.nodeId) → rethrow unchanged
-    if (error.message.startsWith('Node ') || error.nodeId) {
-      throw error;
-    }
-
-    // If caught error is validation or aggregate → wrap once
-    if (
-      error.cycle ||
-      /^DAG validation failed/.test(error.message) ||
-      error.errors
-    ) {
-      const wrappedError = new Error(`DAG execution failed: ${error.message}`);
-      if (error.cycle) wrappedError.cycle = error.cycle;
-      if (error.errors) wrappedError.errors = error.errors;
-      if (error.nodeId) wrappedError.nodeId = error.nodeId;
-      if (error.timestamp) wrappedError.timestamp = error.timestamp;
-      throw wrappedError;
-    }
-
-    // Do NOT wrap timeout errors or 'no sink nodes' errors
-    if (
-      error.message === 'Execution timeout' ||
-      error.message === 'DAG has no sink nodes - no final output available'
-    ) {
-      throw error;
-    }
-
-    // Otherwise wrap with 'DAG execution failed: ...'
-    const wrappedError = new Error(`DAG execution failed: ${error.message}`);
-    if (error.errors) wrappedError.errors = error.errors;
-    if (error.nodeId) wrappedError.nodeId = error.nodeId;
-    if (error.timestamp) wrappedError.timestamp = error.timestamp;
-    if (error.cycle) wrappedError.cycle = error.cycle;
-    throw wrappedError;
+    throw this.errorContext.wrapExecutionError(error);
   }
 
   /**
@@ -272,16 +146,7 @@ class DAG {
    * @returns {Promise<void>}
    */
   async _executeWithTimeout(runFn, timeout) {
-    if (timeout && timeout > 0) {
-      await Promise.race([
-        runFn(),
-        new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Execution timeout')), timeout);
-        }),
-      ]);
-    } else {
-      await runFn();
-    }
+    return this.scheduler.executeWithTimeout(runFn, timeout);
   }
 
   /**
@@ -301,10 +166,9 @@ class DAG {
     } = options;
 
     // Check for multiple errors first
-    if (errors.size >= 2) {
-      const agg = new Error('Multiple execution errors');
-      agg.errors = [...errors.values()].map((x) => x.cause || x);
-      throw agg;
+    const aggregatedError = this.errorContext.aggregateErrors(errors);
+    if (aggregatedError && errors.size >= 2) {
+      throw aggregatedError;
     }
 
     // Determine sink nodes and successful sinks
@@ -514,104 +378,7 @@ class DAG {
    * @returns {Promise<any>} Node execution result
    */
   async executeNode(node, context) {
-    const {
-      results,
-      errors,
-      fwd,
-      continueOnError,
-      requiredIds,
-      seed,
-      gracefulDegradation,
-      requiredNodes,
-    } = context;
-
-    // Handle undefined node.run function
-    if (typeof node.run !== 'function') {
-      throw new Error(`Node ${node.id} has no run function`);
-    }
-
-    // Determine criticality - default is critical unless explicitly marked optional
-    // OR if gracefulDegradation is enabled and node is not in requiredNodes
-    // OR if there are multiple sink nodes (individual sink failures should be non-critical)
-    const sinkIds = this._getSinkIds(fwd);
-    const isMultipleSinks = sinkIds.length > 1;
-    const isSinkNode = sinkIds.includes(node.id);
-
-    const isNonCritical =
-      node?.optional === true ||
-      node?.isOptional === true ||
-      node?.critical === false ||
-      (gracefulDegradation &&
-        requiredNodes &&
-        !requiredNodes.includes(node.id)) ||
-      (isMultipleSinks && isSinkNode); // Sink nodes are non-critical when there are multiple sinks
-
-    // Prepare input based on dependencies
-    let input;
-    if (node.inputs.length === 0) {
-      input = seed;
-    } else if (node.inputs.length === 1) {
-      input = results.get(node.inputs[0].id);
-    } else {
-      input = node.inputs.map((inputNode) => {
-        // For graceful degradation, return undefined for failed optional dependencies
-        if (
-          !results.has(inputNode.id) &&
-          gracefulDegradation &&
-          requiredNodes &&
-          !requiredNodes.includes(inputNode.id)
-        ) {
-          return undefined;
-        }
-        return results.get(inputNode.id);
-      });
-    }
-
-    // Retry logic - use global options if available, otherwise node-specific
-    const { retryFailedNodes, maxRetries: globalMaxRetries } = context;
-    const nodeMaxRetries = retryFailedNodes
-      ? Math.max(0, globalMaxRetries ?? 3)
-      : Math.max(0, node?.retry?.retries ?? 0);
-    const delayMs = Math.max(0, node?.retry?.delayMs ?? 0);
-    let attempt = 0;
-    let keepRetrying = true;
-
-    while (keepRetrying) {
-      try {
-        // Execute the node
-        const output = await node.run(input);
-        if (errors.has(node.id)) errors.delete(node.id);
-        return output;
-      } catch (e) {
-        attempt += 1;
-        if (attempt <= nodeMaxRetries) {
-          if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
-          continue; // no error recorded yet
-        }
-        keepRetrying = false;
-        // FINAL failure path
-        const deps = [...(fwd.get(node.id) || [])];
-        const suffix = deps.length
-          ? `. This affects downstream nodes: ${deps.join(', ')}`
-          : '';
-        const nodeErr = new Error(
-          `Node ${node.id} execution failed: ${e.message}${suffix}`,
-        );
-        nodeErr.nodeId = node.id;
-        nodeErr.timestamp = Date.now();
-        nodeErr.cause = e;
-
-        // Handle non-critical failures with warnings and no result nullification
-        if (isNonCritical || (continueOnError && !requiredIds.has(node.id))) {
-          console.warn(`Non-critical node failure: ${nodeErr.message}`);
-          errors.set(node.id, nodeErr);
-          // Don't set result for failed optional nodes - return special symbol so they don't appear in results
-          return Symbol('failed-optional-node');
-        }
-        errors.set(node.id, nodeErr);
-        throw nodeErr;
-      }
-    }
+    return this.scheduler.executeNode(node, context);
   }
 
   /**
