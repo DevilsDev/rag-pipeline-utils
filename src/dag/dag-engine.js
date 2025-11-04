@@ -6,6 +6,13 @@
  */
 
 const DAGNode = require('./dag-node.js');
+const {
+  buildAdjacency,
+  getSinkIds,
+  topologicalSort,
+  validateDAG,
+  validateTopology,
+} = require('./core/topology-validation.js');
 
 class DAG {
   constructor() {
@@ -435,27 +442,7 @@ class DAG {
    * @returns {Object} - Object with fwd and rev adjacency maps
    */
   _buildAdjacency() {
-    const fwd = new Map(); // node -> Set of children
-    const rev = new Map(); // node -> Set of parents
-
-    // Initialize adjacency lists for all nodes
-    for (const node of this.nodes.values()) {
-      fwd.set(node.id, new Set());
-      rev.set(node.id, new Set());
-    }
-
-    // Populate adjacency lists based on node connections
-    for (const node of this.nodes.values()) {
-      for (const output of node.outputs) {
-        fwd.get(node.id).add(output.id);
-        // Only add reverse edge if the output node exists in the DAG
-        if (rev.has(output.id)) {
-          rev.get(output.id).add(node.id);
-        }
-      }
-    }
-
-    return { fwd, rev };
+    return buildAdjacency(this.nodes);
   }
 
   /**
@@ -464,13 +451,7 @@ class DAG {
    * @returns {Array} - Array of sink node IDs
    */
   _getSinkIds(fwd) {
-    const sinkIds = [];
-    for (const [nodeId, children] of fwd) {
-      if (children.size === 0) {
-        sinkIds.push(nodeId);
-      }
-    }
-    return sinkIds;
+    return getSinkIds(fwd);
   }
 
   /**
@@ -523,46 +504,7 @@ class DAG {
    * @throws {Error} - If validation fails
    */
   validate() {
-    if (this.nodes.size === 0) {
-      throw new Error('DAG is empty - no nodes to execute');
-    }
-
-    // Check for cycles using topological sort
-    try {
-      this.topoSort();
-    } catch (error) {
-      if (error.message.includes('Cycle detected')) {
-        // Extract cycle information from error message or use error.cycle if available
-        let nodes = error.cycle;
-        if (!nodes && error.message.includes('involving node:')) {
-          // Parse cycle from message if cycle array not available
-          const match = error.message.match(/involving node: (.+)/);
-          if (match) {
-            nodes = match[1].split(' -> ');
-          }
-        }
-        if (!nodes) {
-          nodes = ['unknown'];
-        }
-
-        const pretty = nodes.join(' -> ');
-        const err = new Error(
-          `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
-        );
-        err.cycle = nodes;
-        throw err;
-      }
-      throw new Error(`DAG validation failed: ${error.message}`);
-    }
-
-    // Check for orphaned nodes (nodes with no path to any sink)
-    const { fwd } = this._buildAdjacency();
-    const sinkIds = this._getSinkIds(fwd);
-    if (sinkIds.length === 0) {
-      throw new Error('DAG has no sink nodes - no final output available');
-    }
-
-    return true;
+    return validateDAG(this.nodes);
   }
 
   /**
@@ -678,59 +620,7 @@ class DAG {
    * @returns {Array} - Array of warnings (empty if no issues)
    */
   validateTopology(_options = {}) {
-    const { strict = true } = _options;
-    const warnings = [];
-
-    // Check for empty DAG
-    if (this.nodes.size === 0) {
-      throw new Error('DAG cannot be empty');
-    }
-
-    // Check for self-loops
-    for (const node of this.nodes.values()) {
-      if (node.outputs.includes(node)) {
-        throw new Error('Self-loop detected');
-      }
-    }
-
-    // Check for cycles by attempting topological sort
-    try {
-      this.topoSort();
-    } catch (error) {
-      if (error.message.includes('Cycle detected')) {
-        // Extract cycle information from error message or use error.cycle if available
-        let nodes = error.cycle;
-        if (!nodes && error.message.includes('involving node:')) {
-          // Parse cycle from message if cycle array not available
-          const match = error.message.match(/involving node: (.+)/);
-          if (match) {
-            nodes = match[1].split(' -> ');
-          }
-        }
-        if (!nodes) {
-          nodes = ['unknown'];
-        }
-
-        const err = new Error('Cycle detected in DAG');
-        err.cycle = nodes;
-        throw err;
-      }
-      throw error;
-    }
-
-    // Check for isolated nodes
-    for (const node of this.nodes.values()) {
-      if (node.inputs.length === 0 && node.outputs.length === 0) {
-        const message = `Orphaned node detected: ${node.id}`;
-        if (strict) {
-          throw new Error(message);
-        } else {
-          warnings.push(message);
-        }
-      }
-    }
-
-    return warnings;
+    return validateTopology(this.nodes, _options);
   }
 
   /**
@@ -739,62 +629,7 @@ class DAG {
    * @throws {Error} If cycles are detected
    */
   topoSort() {
-    const order = [];
-    const visited = new Set();
-    const visiting = new Set(); // Track nodes currently being visited
-
-    const visit = (node, path = []) => {
-      if (visiting.has(node.id)) {
-        const cycleStart = path.indexOf(node.id);
-        let cyclePath =
-          cycleStart >= 0
-            ? path.slice(cycleStart).concat([node.id])
-            : [node.id];
-        // Reverse interior to show forward traversal order (A->B->C->A)
-        if (cyclePath.length > 2) {
-          const startNode = cyclePath[0];
-          const restNodes = cyclePath.slice(1, -1).reverse();
-          cyclePath = [startNode, ...restNodes, startNode];
-        }
-        const cyclePathString = cyclePath.join(' -> ');
-        const error = new Error(
-          `Cycle detected involving node: ${cyclePathString}`,
-        );
-        error.cycle = cyclePath; // Array format for test assertions
-        throw error;
-      }
-
-      if (visited.has(node.id)) return;
-
-      visiting.add(node.id);
-      const newPath = [...path, node.id];
-
-      try {
-        node.inputs.forEach((input) => visit(input, newPath));
-      } catch (error) {
-        if (error.message.includes('Cycle detected')) {
-          throw error; // Preserve original message and cycle property
-        }
-        throw error;
-      }
-
-      visiting.delete(node.id);
-      visited.add(node.id);
-      order.push(node);
-    };
-
-    try {
-      for (const node of this.nodes.values()) {
-        visit(node);
-      }
-    } catch (error) {
-      if (error.message.includes('Cycle detected')) {
-        throw error;
-      }
-      throw new Error(`DAG topological sort failed: ${error.message}`);
-    }
-
-    return order;
+    return topologicalSort(this.nodes);
   }
 
   /**
