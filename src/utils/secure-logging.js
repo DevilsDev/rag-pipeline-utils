@@ -173,6 +173,24 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
   // Handle Date objects
   if (obj instanceof Date) return obj;
 
+  // Handle Error objects specially to preserve standard properties
+  if (obj instanceof Error) {
+    const errorObj = {
+      name: obj.name,
+      message: obj.message,
+      stack: obj.stack,
+    };
+
+    // Include any other enumerable properties (like code)
+    for (const [key, value] of Object.entries(obj)) {
+      if (!['name', 'message', 'stack'].includes(key)) {
+        errorObj[key] = redactObject(value, depth + 1, maxDepth);
+      }
+    }
+
+    return errorObj;
+  }
+
   // Handle arrays
   if (Array.isArray(obj)) {
     return obj.map((item) => redactObject(item, depth + 1, maxDepth));
