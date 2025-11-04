@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "name": "test-project",
+    "version": "1.0.0",
+    "createdAt": "2025-11-04T01:16:55.157Z"
+  },
+  "plugins": {
+    "loader": {
+      "file-loader": "latest"
+    },
+    "embedder": {
+      "openai-embedder": "latest"
+    },
+    "retriever": {
+      "vector-retriever": "latest"
+    },
+    "llm": {
+      "openai-llm": "latest"
+    }
+  },
+  "pipeline": {
+    "stages": [
+      "loader",
+      "embedder",
+      "retriever",
+      "llm"
+    ],
+    "middleware": {
+      "retry": {
+        "enabled": true,
+        "maxAttempts": 3
+      },
+      "logging": {
+        "enabled": true,
+        "level": "info"
+      }
+    }
+  },
+  "performance": {
+    "parallel": {
+      "enabled": true,
+      "maxConcurrency": 3
+    },
+    "streaming": {
+      "enabled": true,
+      "batchSize": 10,
+      "maxMemoryMB": 512
+    }
+  },
+  "observability": {
+    "eventLogging": {
+      "enabled": true
+    },
+    "tracing": {
+      "enabled": false
+    },
+    "metrics": {
+      "enabled": true
+    }
+  }
+}
