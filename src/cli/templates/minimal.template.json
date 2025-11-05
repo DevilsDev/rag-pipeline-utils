@@ -1,0 +1,33 @@
+{
+  "$schema": "../config/ragrc.schema.json",
+  "metadata": {
+    "name": "minimal-rag-pipeline",
+    "version": "1.0.0",
+    "description": "Minimal RAG pipeline configuration with essential plugins",
+    "environment": "development",
+    "template": "minimal"
+  },
+  "plugins": {
+    "loader": {
+      "file-loader": "latest"
+    },
+    "embedder": {
+      "openai-embedder": "latest"
+    },
+    "retriever": {
+      "vector-retriever": "latest"
+    },
+    "llm": {
+      "openai-llm": "latest"
+    }
+  },
+  "pipeline": {
+    "stages": ["loader", "embedder", "retriever", "llm"]
+  },
+  "observability": {
+    "logging": {
+      "level": "info",
+      "structured": true
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../config/ragrc.schema.json",
+  "metadata": {
+    "name": "dev-rag-pipeline",
+    "version": "1.0.0",
+    "description": "Development RAG pipeline with verbose logging and local models",
+    "environment": "development",
+    "template": "development"
+  },
+  "plugins": {
+    "loader": {
+      "file-loader": "latest"
+    },
+    "embedder": {
+      "local-embedder": {
+        "name": "local-embedder",
+        "version": "latest",
+        "config": {
+          "modelPath": "./models/embeddings",
+          "dimensions": 768
+        }
+      }
+    },
+    "retriever": {
+      "vector-retriever": {
+        "name": "vector-retriever",
+        "version": "latest",
+        "config": {
+          "topK": 5,
+          "threshold": 0.6
+        }
+      }
+    },
+    "llm": {
+      "local-llm": {
+        "name": "local-llm",
+        "version": "latest",
+        "config": {
+          "modelPath": "./models/llm",
+          "maxTokens": 500
+        }
+      }
+    }
+  },
+  "pipeline": {
+    "stages": ["loader", "embedder", "retriever", "llm"],
+    "timeout": 30000
+  },
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "maxSize": 100,
+      "ttl": 600
+    }
+  },
+  "observability": {
+    "logging": {
+      "level": "debug",
+      "structured": true,
+      "events": true,
+      "console": true
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "../config/ragrc.schema.json",
+  "metadata": {
+    "name": "test-rag-pipeline",
+    "version": "1.0.0",
+    "description": "Testing RAG pipeline with mock plugins",
+    "environment": "testing",
+    "template": "testing"
+  },
+  "plugins": {
+    "loader": {
+      "mock-loader": {
+        "source": "local",
+        "path": "./src/mocks/pdf-loader.js"
+      }
+    },
+    "embedder": {
+      "mock-embedder": {
+        "source": "local",
+        "path": "./src/mocks/openai-embedder.js"
+      }
+    },
+    "retriever": {
+      "mock-retriever": {
+        "source": "local",
+        "path": "./src/mocks/pinecone-retriever.js"
+      }
+    },
+    "llm": {
+      "mock-llm": {
+        "source": "local",
+        "path": "./src/mocks/openai-llm.js"
+      }
+    }
+  },
+  "pipeline": {
+    "stages": ["loader", "embedder", "retriever", "llm"]
+  },
+  "observability": {
+    "logging": {
+      "level": "warn",
+      "structured": true
+    }
+  }
+}

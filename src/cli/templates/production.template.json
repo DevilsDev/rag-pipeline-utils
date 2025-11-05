@@ -1,0 +1,104 @@
+{
+  "$schema": "../config/ragrc.schema.json",
+  "metadata": {
+    "name": "production-rag-pipeline",
+    "version": "1.0.0",
+    "description": "Production-grade RAG pipeline with full observability and optimization",
+    "environment": "production",
+    "template": "production"
+  },
+  "plugins": {
+    "loader": {
+      "file-loader": "latest"
+    },
+    "embedder": {
+      "openai-embedder": {
+        "name": "openai-embedder",
+        "version": "latest",
+        "config": {
+          "batchSize": 100,
+          "timeout": 30000,
+          "retryAttempts": 3
+        }
+      }
+    },
+    "retriever": {
+      "vector-retriever": {
+        "name": "vector-retriever",
+        "version": "latest",
+        "config": {
+          "topK": 10,
+          "threshold": 0.7,
+          "includeMetadata": true
+        }
+      }
+    },
+    "llm": {
+      "openai-llm": {
+        "name": "openai-llm",
+        "version": "latest",
+        "config": {
+          "model": "gpt-4",
+          "temperature": 0.7,
+          "maxTokens": 1000
+        }
+      }
+    },
+    "reranker": {
+      "similarity-reranker": "latest"
+    }
+  },
+  "pipeline": {
+    "stages": ["loader", "embedder", "retriever", "reranker", "llm"],
+    "retries": {
+      "enabled": true,
+      "maxAttempts": 3,
+      "backoff": "exponential"
+    },
+    "timeout": 60000
+  },
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "maxSize": 1000,
+      "ttl": 3600
+    },
+    "parallel": {
+      "enabled": true,
+      "maxConcurrency": 5,
+      "batchSize": 10
+    },
+    "streaming": {
+      "enabled": true,
+      "maxMemoryMB": 512,
+      "bufferSize": 100
+    }
+  },
+  "observability": {
+    "logging": {
+      "level": "info",
+      "structured": true,
+      "events": true
+    },
+    "tracing": {
+      "enabled": true,
+      "sampleRate": 0.1,
+      "exportUrl": "http://localhost:4318"
+    },
+    "metrics": {
+      "enabled": true,
+      "interval": 60000,
+      "exportUrl": "http://localhost:4318"
+    }
+  },
+  "security": {
+    "encryption": {
+      "enabled": true,
+      "algorithm": "aes-256-gcm"
+    },
+    "authentication": {
+      "enabled": true,
+      "provider": "jwt"
+    }
+  }
+}
