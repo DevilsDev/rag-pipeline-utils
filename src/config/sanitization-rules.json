@@ -1,0 +1,323 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Input Sanitization Rules Configuration",
+  "description": "Configuration for input validation and sanitization rules across the application",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable or disable input sanitization globally",
+      "default": true
+    },
+    "enableCache": {
+      "type": "boolean",
+      "description": "Enable result caching for performance",
+      "default": true
+    },
+    "cacheSize": {
+      "type": "integer",
+      "description": "Maximum number of cached sanitization results",
+      "default": 1000,
+      "minimum": 0
+    },
+    "cacheTTL": {
+      "type": "integer",
+      "description": "Cache time-to-live in milliseconds",
+      "default": 60000,
+      "minimum": 1000
+    },
+    "throwOnInvalid": {
+      "type": "boolean",
+      "description": "Throw error on invalid input instead of sanitizing",
+      "default": false
+    },
+    "stripInvalid": {
+      "type": "boolean",
+      "description": "Strip invalid content instead of rejecting",
+      "default": true
+    },
+    "trackStats": {
+      "type": "boolean",
+      "description": "Track sanitization statistics",
+      "default": true
+    },
+    "defaultObjectDepth": {
+      "type": "integer",
+      "description": "Maximum depth for recursive object sanitization",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 50
+    },
+    "fieldRules": {
+      "type": "object",
+      "description": "Field-specific sanitization rules",
+      "properties": {
+        "cli": {
+          "type": "object",
+          "description": "CLI input rules",
+          "properties": {
+            "command": {
+              "type": "string",
+              "enum": ["command", "alphanumeric"],
+              "default": "command"
+            },
+            "path": {
+              "type": "string",
+              "enum": ["path"],
+              "default": "path"
+            },
+            "file": {
+              "type": "string",
+              "enum": ["path"],
+              "default": "path"
+            },
+            "url": {
+              "type": "string",
+              "enum": ["url"],
+              "default": "url"
+            },
+            "email": {
+              "type": "string",
+              "enum": ["email"],
+              "default": "email"
+            },
+            "string": {
+              "type": "string",
+              "enum": ["html", "xss"],
+              "default": "html"
+            }
+          }
+        },
+        "api": {
+          "type": "object",
+          "description": "API input rules",
+          "properties": {
+            "query": {
+              "type": "string",
+              "enum": ["html", "xss"],
+              "default": "html"
+            },
+            "body": {
+              "type": "string",
+              "enum": ["html", "xss"],
+              "default": "xss"
+            },
+            "headers": {
+              "type": "string",
+              "enum": ["html"],
+              "default": "html"
+            },
+            "url": {
+              "type": "string",
+              "enum": ["url"],
+              "default": "url"
+            }
+          }
+        },
+        "database": {
+          "type": "object",
+          "description": "Database input rules",
+          "properties": {
+            "query": {
+              "type": "string",
+              "enum": ["sql"],
+              "default": "sql"
+            },
+            "text": {
+              "type": "string",
+              "enum": ["html", "xss"],
+              "default": "html"
+            }
+          }
+        },
+        "filesystem": {
+          "type": "object",
+          "description": "Filesystem operation rules",
+          "properties": {
+            "path": {
+              "type": "string",
+              "enum": ["path"],
+              "default": "path"
+            },
+            "filename": {
+              "type": "string",
+              "enum": ["alphanumeric", "slug"],
+              "default": "slug"
+            }
+          }
+        },
+        "common": {
+          "type": "object",
+          "description": "Common field rules",
+          "properties": {
+            "id": {
+              "type": "string",
+              "enum": ["uuid", "alphanumeric"],
+              "default": "alphanumeric"
+            },
+            "uuid": {
+              "type": "string",
+              "enum": ["uuid"],
+              "default": "uuid"
+            },
+            "email": {
+              "type": "string",
+              "enum": ["email"],
+              "default": "email"
+            },
+            "url": {
+              "type": "string",
+              "enum": ["url"],
+              "default": "url"
+            },
+            "slug": {
+              "type": "string",
+              "enum": ["slug"],
+              "default": "slug"
+            },
+            "domain": {
+              "type": "string",
+              "enum": ["domain"],
+              "default": "domain"
+            },
+            "ipv4": {
+              "type": "string",
+              "enum": ["ipv4"],
+              "default": "ipv4"
+            },
+            "ipv6": {
+              "type": "string",
+              "enum": ["ipv6"],
+              "default": "ipv6"
+            }
+          }
+        }
+      }
+    },
+    "environments": {
+      "type": "object",
+      "description": "Environment-specific configurations",
+      "properties": {
+        "development": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "throwOnInvalid": {
+              "type": "boolean",
+              "default": true
+            },
+            "trackStats": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "production": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "throwOnInvalid": {
+              "type": "boolean",
+              "default": false
+            },
+            "stripInvalid": {
+              "type": "boolean",
+              "default": true
+            },
+            "trackStats": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "test": {
+          "type": "boolean",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "enableCache": {
+              "type": "boolean",
+              "default": false
+            },
+            "throwOnInvalid": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "enabled": true,
+      "enableCache": true,
+      "cacheSize": 2000,
+      "cacheTTL": 120000,
+      "throwOnInvalid": false,
+      "stripInvalid": true,
+      "trackStats": true,
+      "defaultObjectDepth": 10,
+      "fieldRules": {
+        "cli": {
+          "command": "command",
+          "path": "path",
+          "file": "path",
+          "url": "url",
+          "email": "email",
+          "string": "xss"
+        },
+        "api": {
+          "query": "xss",
+          "body": "xss",
+          "headers": "html",
+          "url": "url"
+        },
+        "database": {
+          "query": "sql",
+          "text": "xss"
+        },
+        "filesystem": {
+          "path": "path",
+          "filename": "slug"
+        },
+        "common": {
+          "id": "alphanumeric",
+          "uuid": "uuid",
+          "email": "email",
+          "url": "url",
+          "slug": "slug",
+          "domain": "domain",
+          "ipv4": "ipv4",
+          "ipv6": "ipv6"
+        }
+      },
+      "environments": {
+        "development": {
+          "enabled": true,
+          "throwOnInvalid": true,
+          "trackStats": true
+        },
+        "production": {
+          "enabled": true,
+          "throwOnInvalid": false,
+          "stripInvalid": true,
+          "trackStats": true
+        },
+        "test": {
+          "enabled": true,
+          "enableCache": false,
+          "throwOnInvalid": true
+        }
+      }
+    }
+  ]
+}

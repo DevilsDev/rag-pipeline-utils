@@ -1,0 +1,259 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Connection Pool Configuration",
+  "description": "HTTP/HTTPS connection pooling configuration for external API calls",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable connection pooling globally",
+      "default": true
+    },
+    "maxSockets": {
+      "type": "integer",
+      "description": "Maximum total sockets across all hosts",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "maxFreeSockets": {
+      "type": "integer",
+      "description": "Maximum idle sockets to keep in pool",
+      "default": 10,
+      "minimum": 0,
+      "maximum": 100
+    },
+    "maxSocketsPerHost": {
+      "type": "integer",
+      "description": "Maximum sockets per host",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "timeout": {
+      "type": "integer",
+      "description": "Socket timeout in milliseconds",
+      "default": 30000,
+      "minimum": 1000,
+      "maximum": 300000
+    },
+    "freeSocketTimeout": {
+      "type": "integer",
+      "description": "Idle socket timeout in milliseconds",
+      "default": 15000,
+      "minimum": 1000,
+      "maximum": 60000
+    },
+    "keepAliveTimeout": {
+      "type": "integer",
+      "description": "Keep-alive timeout in milliseconds",
+      "default": 60000,
+      "minimum": 5000,
+      "maximum": 300000
+    },
+    "keepAlive": {
+      "type": "boolean",
+      "description": "Enable keep-alive for connections",
+      "default": true
+    },
+    "keepAliveMsecs": {
+      "type": "integer",
+      "description": "Keep-alive probe interval in milliseconds",
+      "default": 1000,
+      "minimum": 100,
+      "maximum": 60000
+    },
+    "scheduling": {
+      "type": "string",
+      "description": "Socket scheduling algorithm",
+      "enum": ["lifo", "fifo"],
+      "default": "lifo"
+    },
+    "trackMetrics": {
+      "type": "boolean",
+      "description": "Enable metrics tracking",
+      "default": true
+    },
+    "metricsInterval": {
+      "type": "integer",
+      "description": "Metrics collection interval in milliseconds",
+      "default": 60000,
+      "minimum": 1000,
+      "maximum": 600000
+    },
+    "perHostPools": {
+      "type": "object",
+      "description": "Per-host connection pool configurations",
+      "properties": {
+        "openai": {
+          "type": "object",
+          "properties": {
+            "maxSockets": {
+              "type": "integer",
+              "default": 20
+            },
+            "maxFreeSockets": {
+              "type": "integer",
+              "default": 5
+            },
+            "timeout": {
+              "type": "integer",
+              "default": 60000
+            }
+          }
+        },
+        "anthropic": {
+          "type": "object",
+          "properties": {
+            "maxSockets": {
+              "type": "integer",
+              "default": 20
+            },
+            "maxFreeSockets": {
+              "type": "integer",
+              "default": 5
+            },
+            "timeout": {
+              "type": "integer",
+              "default": 60000
+            }
+          }
+        },
+        "pinecone": {
+          "type": "object",
+          "properties": {
+            "maxSockets": {
+              "type": "integer",
+              "default": 15
+            },
+            "maxFreeSockets": {
+              "type": "integer",
+              "default": 5
+            },
+            "timeout": {
+              "type": "integer",
+              "default": 30000
+            }
+          }
+        }
+      }
+    },
+    "environments": {
+      "type": "object",
+      "description": "Environment-specific configurations",
+      "properties": {
+        "development": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "maxSockets": {
+              "type": "integer",
+              "default": 20
+            },
+            "trackMetrics": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "production": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "maxSockets": {
+              "type": "integer",
+              "default": 100
+            },
+            "maxFreeSockets": {
+              "type": "integer",
+              "default": 20
+            },
+            "trackMetrics": {
+              "type": "boolean",
+              "default": true
+            },
+            "metricsInterval": {
+              "type": "integer",
+              "default": 30000
+            }
+          }
+        },
+        "test": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "maxSockets": {
+              "type": "integer",
+              "default": 10
+            },
+            "trackMetrics": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "enabled": true,
+      "maxSockets": 100,
+      "maxFreeSockets": 20,
+      "maxSocketsPerHost": 15,
+      "timeout": 30000,
+      "freeSocketTimeout": 15000,
+      "keepAliveTimeout": 60000,
+      "keepAlive": true,
+      "keepAliveMsecs": 1000,
+      "scheduling": "lifo",
+      "trackMetrics": true,
+      "metricsInterval": 60000,
+      "perHostPools": {
+        "openai": {
+          "maxSockets": 30,
+          "maxFreeSockets": 10,
+          "timeout": 60000
+        },
+        "anthropic": {
+          "maxSockets": 30,
+          "maxFreeSockets": 10,
+          "timeout": 60000
+        },
+        "pinecone": {
+          "maxSockets": 20,
+          "maxFreeSockets": 5,
+          "timeout": 30000
+        }
+      },
+      "environments": {
+        "development": {
+          "enabled": true,
+          "maxSockets": 20,
+          "trackMetrics": true
+        },
+        "production": {
+          "enabled": true,
+          "maxSockets": 100,
+          "maxFreeSockets": 20,
+          "trackMetrics": true,
+          "metricsInterval": 30000
+        },
+        "test": {
+          "enabled": true,
+          "maxSockets": 10,
+          "trackMetrics": false
+        }
+      }
+    }
+  ]
+}
