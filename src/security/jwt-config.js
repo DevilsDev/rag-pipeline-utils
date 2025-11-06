@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * JWT Security Configuration
@@ -10,9 +10,9 @@
  * @since 2.3.0
  */
 
-const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Load JWT configuration from environment or defaults
@@ -31,17 +31,18 @@ const path = require("path");
  * @returns {Object} JWT configuration
  */
 function loadJWTConfig() {
-  const isProduction = process.env.NODE_ENV === "production";
-  const isDevelopment = process.env.NODE_ENV === "development";
-  const isTest = process.env.NODE_ENV === "test";
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isTest = process.env.NODE_ENV === 'test';
+  const isUndefined = !process.env.NODE_ENV; // Treat undefined as development
 
   // Load algorithm
-  const algorithm = process.env.JWT_ALGORITHM || "HS256";
-  const isSymmetric = algorithm.startsWith("HS");
+  const algorithm = process.env.JWT_ALGORITHM || 'HS256';
+  const isSymmetric = algorithm.startsWith('HS');
   const isAsymmetric =
-    algorithm.startsWith("RS") ||
-    algorithm.startsWith("ES") ||
-    algorithm.startsWith("PS");
+    algorithm.startsWith('RS') ||
+    algorithm.startsWith('ES') ||
+    algorithm.startsWith('PS');
 
   // Load secret for symmetric algorithms
   let secret = null;
@@ -51,24 +52,26 @@ function loadJWTConfig() {
     if (!secret) {
       if (isProduction) {
         throw new Error(
-          "JWT_SECRET environment variable is required in production. " +
-            "Generate a secure secret with: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
+          'JWT_SECRET environment variable is required in production. ' +
+            'Generate a secure secret with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"',
         );
-      } else if (isDevelopment || isTest) {
-        // Generate a random secret for development/test
-        secret = crypto.randomBytes(64).toString("hex");
-        console.warn(
-          "[JWT_CONFIG] Warning: Using generated JWT_SECRET for development. " +
-            "Set JWT_SECRET environment variable for consistent tokens.",
-        );
+      } else if (isDevelopment || isTest || isUndefined) {
+        // Generate a random secret for development/test/undefined environments
+        secret = crypto.randomBytes(64).toString('hex');
+        if (!isUndefined) {
+          console.warn(
+            '[JWT_CONFIG] Warning: Using generated JWT_SECRET for development. ' +
+              'Set JWT_SECRET environment variable for consistent tokens.',
+          );
+        }
       }
     }
 
     // Validate secret strength
     if (secret) {
-      const secretBits = Buffer.byteLength(secret, "utf8") * 8;
+      const secretBits = Buffer.byteLength(secret, 'utf8') * 8;
       const minBits =
-        algorithm === "HS256" ? 256 : algorithm === "HS384" ? 384 : 512;
+        algorithm === 'HS256' ? 256 : algorithm === 'HS384' ? 384 : 512;
 
       if (secretBits < minBits) {
         throw new Error(
@@ -91,16 +94,16 @@ function loadJWTConfig() {
     if (!publicKeyPath) {
       if (isProduction) {
         throw new Error(
-          "JWT_PUBLIC_KEY_PATH environment variable is required for asymmetric algorithms in production",
+          'JWT_PUBLIC_KEY_PATH environment variable is required for asymmetric algorithms in production',
         );
       } else {
         console.warn(
-          "[JWT_CONFIG] Warning: No JWT_PUBLIC_KEY_PATH set. Token verification will not be available.",
+          '[JWT_CONFIG] Warning: No JWT_PUBLIC_KEY_PATH set. Token verification will not be available.',
         );
       }
     } else {
       try {
-        publicKey = fs.readFileSync(path.resolve(publicKeyPath), "utf8");
+        publicKey = fs.readFileSync(path.resolve(publicKeyPath), 'utf8');
       } catch (error) {
         throw new Error(
           `Failed to read public key from ${publicKeyPath}: ${error.message}`,
@@ -110,11 +113,11 @@ function loadJWTConfig() {
 
     if (!privateKeyPath) {
       console.warn(
-        "[JWT_CONFIG] Warning: No JWT_PRIVATE_KEY_PATH set. Token signing will not be available.",
+        '[JWT_CONFIG] Warning: No JWT_PRIVATE_KEY_PATH set. Token signing will not be available.',
       );
     } else {
       try {
-        privateKey = fs.readFileSync(path.resolve(privateKeyPath), "utf8");
+        privateKey = fs.readFileSync(path.resolve(privateKeyPath), 'utf8');
       } catch (error) {
         throw new Error(
           `Failed to read private key from ${privateKeyPath}: ${error.message}`,
@@ -128,7 +131,7 @@ function loadJWTConfig() {
     // Algorithm configuration
     algorithm,
     allowedAlgorithms: process.env.JWT_ALLOWED_ALGORITHMS
-      ? process.env.JWT_ALLOWED_ALGORITHMS.split(",").map((a) => a.trim())
+      ? process.env.JWT_ALLOWED_ALGORITHMS.split(',').map((a) => a.trim())
       : [algorithm],
 
     // Secret/Key configuration
@@ -137,8 +140,8 @@ function loadJWTConfig() {
     privateKey,
 
     // Issuer and audience
-    issuer: process.env.JWT_ISSUER || "rag-pipeline-utils",
-    audience: process.env.JWT_AUDIENCE || "rag-pipeline-api",
+    issuer: process.env.JWT_ISSUER || 'rag-pipeline-utils',
+    audience: process.env.JWT_AUDIENCE || 'rag-pipeline-api',
 
     // Timing configuration
     clockTolerance: parseInt(process.env.JWT_CLOCK_TOLERANCE, 10) || 30,
@@ -146,21 +149,21 @@ function loadJWTConfig() {
     notBeforeTolerance: parseInt(process.env.JWT_NBF_TOLERANCE, 10) || 30,
 
     // Security options
-    requireJti: process.env.JWT_REQUIRE_JTI !== "false",
-    requireSub: process.env.JWT_REQUIRE_SUB !== "false",
-    strictValidation: process.env.JWT_STRICT_VALIDATION !== "false",
+    requireJti: process.env.JWT_REQUIRE_JTI !== 'false',
+    requireSub: process.env.JWT_REQUIRE_SUB !== 'false',
+    strictValidation: process.env.JWT_STRICT_VALIDATION !== 'false',
 
     // JTI tracking for replay protection
-    enableJtiTracking: process.env.JWT_ENABLE_JTI_TRACKING !== "false",
+    enableJtiTracking: process.env.JWT_ENABLE_JTI_TRACKING !== 'false',
     jtiExpirationMs:
       parseInt(process.env.JWT_JTI_EXPIRATION_MS, 10) ||
       7 * 24 * 60 * 60 * 1000,
 
     // Audit logging
-    enableAuditLog: process.env.JWT_ENABLE_AUDIT_LOG !== "false",
+    enableAuditLog: process.env.JWT_ENABLE_AUDIT_LOG !== 'false',
 
     // Environment-specific defaults
-    environment: process.env.NODE_ENV || "development",
+    environment: process.env.NODE_ENV || 'development',
   };
 
   // Validate configuration
@@ -178,24 +181,24 @@ function loadJWTConfig() {
 function validateJWTConfig(config) {
   // Check algorithm
   const validAlgorithms = [
-    "HS256",
-    "HS384",
-    "HS512",
-    "RS256",
-    "RS384",
-    "RS512",
-    "ES256",
-    "ES384",
-    "ES512",
-    "PS256",
-    "PS384",
-    "PS512",
+    'HS256',
+    'HS384',
+    'HS512',
+    'RS256',
+    'RS384',
+    'RS512',
+    'ES256',
+    'ES384',
+    'ES512',
+    'PS256',
+    'PS384',
+    'PS512',
   ];
 
   if (!validAlgorithms.includes(config.algorithm)) {
     throw new Error(
       `Invalid JWT algorithm: ${config.algorithm}. ` +
-        `Must be one of: ${validAlgorithms.join(", ")}`,
+        `Must be one of: ${validAlgorithms.join(', ')}`,
     );
   }
 
@@ -204,56 +207,60 @@ function validateJWTConfig(config) {
     !Array.isArray(config.allowedAlgorithms) ||
     config.allowedAlgorithms.length === 0
   ) {
-    throw new Error("allowedAlgorithms must be a non-empty array");
+    throw new Error('allowedAlgorithms must be a non-empty array');
   }
 
   for (const alg of config.allowedAlgorithms) {
+    // Check for "none" algorithm first (security critical)
+    if (
+      alg === 'none' ||
+      (typeof alg === 'string' && alg.toLowerCase() === 'none')
+    ) {
+      throw new Error('Algorithm "none" is not allowed');
+    }
     if (!validAlgorithms.includes(alg)) {
       throw new Error(`Invalid algorithm in allowedAlgorithms: ${alg}`);
-    }
-    if (alg === "none") {
-      throw new Error('Algorithm "none" is not allowed in allowedAlgorithms');
     }
   }
 
   // Check issuer and audience
-  if (!config.issuer || typeof config.issuer !== "string") {
-    throw new Error("issuer must be a non-empty string");
+  if (!config.issuer || typeof config.issuer !== 'string') {
+    throw new Error('issuer must be a non-empty string');
   }
 
-  if (!config.audience || typeof config.audience !== "string") {
-    throw new Error("audience must be a non-empty string");
+  if (!config.audience || typeof config.audience !== 'string') {
+    throw new Error('audience must be a non-empty string');
   }
 
   // Check timing values
   if (config.clockTolerance < 0 || config.clockTolerance > 300) {
-    throw new Error("clockTolerance must be between 0 and 300 seconds");
+    throw new Error('clockTolerance must be between 0 and 300 seconds');
   }
 
   if (config.maxTokenAge < 60 || config.maxTokenAge > 86400) {
     throw new Error(
-      "maxTokenAge must be between 60 seconds (1 minute) and 86400 seconds (24 hours)",
+      'maxTokenAge must be between 60 seconds (1 minute) and 86400 seconds (24 hours)',
     );
   }
 
   // Check secret/key availability
-  const isSymmetric = config.algorithm.startsWith("HS");
+  const isSymmetric = config.algorithm.startsWith('HS');
   const isAsymmetric =
-    config.algorithm.startsWith("RS") ||
-    config.algorithm.startsWith("ES") ||
-    config.algorithm.startsWith("PS");
+    config.algorithm.startsWith('RS') ||
+    config.algorithm.startsWith('ES') ||
+    config.algorithm.startsWith('PS');
 
   if (isSymmetric && !config.secret) {
-    throw new Error("secret is required for HMAC algorithms");
+    throw new Error('secret is required for HMAC algorithms');
   }
 
   if (
     isAsymmetric &&
     !config.publicKey &&
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === 'production'
   ) {
     throw new Error(
-      "publicKey is required for asymmetric algorithms in production",
+      'publicKey is required for asymmetric algorithms in production',
     );
   }
 }
@@ -336,7 +343,7 @@ function createJWTConfig(overrides = {}) {
  * console.log('Add to .env: JWT_SECRET=' + secret);
  */
 function generateJWTSecret(bytes = 64) {
-  return crypto.randomBytes(bytes).toString("hex");
+  return crypto.randomBytes(bytes).toString('hex');
 }
 
 /**
@@ -353,16 +360,16 @@ function generateJWTSecret(bytes = 64) {
 async function generateRSAKeyPair(modulusLength = 2048) {
   return new Promise((resolve, reject) => {
     crypto.generateKeyPair(
-      "rsa",
+      'rsa',
       {
         modulusLength,
         publicKeyEncoding: {
-          type: "spki",
-          format: "pem",
+          type: 'spki',
+          format: 'pem',
         },
         privateKeyEncoding: {
-          type: "pkcs8",
-          format: "pem",
+          type: 'pkcs8',
+          format: 'pem',
         },
       },
       (err, publicKey, privateKey) => {
@@ -387,19 +394,19 @@ async function generateRSAKeyPair(modulusLength = 2048) {
  * fs.writeFileSync('jwt-public-ec.pem', publicKey);
  * fs.writeFileSync('jwt-private-ec.pem', privateKey);
  */
-async function generateECDSAKeyPair(namedCurve = "prime256v1") {
+async function generateECDSAKeyPair(namedCurve = 'prime256v1') {
   return new Promise((resolve, reject) => {
     crypto.generateKeyPair(
-      "ec",
+      'ec',
       {
         namedCurve, // prime256v1 (ES256), secp384r1 (ES384), secp521r1 (ES512)
         publicKeyEncoding: {
-          type: "spki",
-          format: "pem",
+          type: 'spki',
+          format: 'pem',
         },
         privateKeyEncoding: {
-          type: "pkcs8",
-          format: "pem",
+          type: 'pkcs8',
+          format: 'pem',
         },
       },
       (err, publicKey, privateKey) => {

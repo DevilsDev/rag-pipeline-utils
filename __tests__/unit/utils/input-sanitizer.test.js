@@ -194,24 +194,29 @@ describe("Input Sanitizer Security Suite", () => {
   describe("Path Traversal Prevention", () => {
     it("should block ../ path traversal", () => {
       const malicious = "../../../etc/passwd";
-      const safe = sanitizer.sanitize(malicious, SanitizationRules.PATH);
 
-      expect(safe).not.toContain("../");
-      expect(safe).not.toContain("etc/passwd");
+      // Path traversal should throw an error, not return sanitized value
+      expect(() => {
+        sanitizer.sanitize(malicious, SanitizationRules.PATH);
+      }).toThrow("Potential path traversal detected");
     });
 
     it("should block ..\\ Windows path traversal", () => {
       const malicious = "..\\..\\..\\windows\\system32";
-      const safe = sanitizer.sanitize(malicious, SanitizationRules.PATH);
 
-      expect(safe).not.toContain("..\\");
+      // Path traversal should throw an error, not return sanitized value
+      expect(() => {
+        sanitizer.sanitize(malicious, SanitizationRules.PATH);
+      }).toThrow("Potential path traversal detected");
     });
 
     it("should block URL-encoded path traversal", () => {
       const malicious = "%2e%2e%2f%2e%2e%2fetc%2fpasswd";
-      const safe = sanitizer.sanitize(malicious, SanitizationRules.PATH);
 
-      expect(safe).not.toMatch(/%2e%2e/i);
+      // Path traversal should throw an error, not return sanitized value
+      expect(() => {
+        sanitizer.sanitize(malicious, SanitizationRules.PATH);
+      }).toThrow("Potential path traversal detected");
     });
 
     it("should normalize path separators", () => {
@@ -631,8 +636,10 @@ describe("Input Sanitizer Security Suite", () => {
     });
 
     it("sanitizePath should block path traversal", () => {
-      const result = sanitizePath("../../../etc/passwd");
-      expect(result).not.toContain("../");
+      // Path traversal should throw an error
+      expect(() => {
+        sanitizePath("../../../etc/passwd");
+      }).toThrow("Potential path traversal detected");
     });
 
     it("validateEmail should validate emails", () => {

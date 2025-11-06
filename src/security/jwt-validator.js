@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Secure JWT Validator
@@ -15,9 +15,9 @@
  * @since 2.3.0
  */
 
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const { EventEmitter } = require("events");
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { EventEmitter } = require('events');
 
 /**
  * Secure JWT signing and validation algorithms
@@ -25,24 +25,24 @@ const { EventEmitter } = require("events");
  */
 const SECURE_ALGORITHMS = {
   // HMAC-based (symmetric)
-  HS256: "HS256",
-  HS384: "HS384",
-  HS512: "HS512",
+  HS256: 'HS256',
+  HS384: 'HS384',
+  HS512: 'HS512',
 
   // RSA-based (asymmetric) - preferred for production
-  RS256: "RS256",
-  RS384: "RS384",
-  RS512: "RS512",
+  RS256: 'RS256',
+  RS384: 'RS384',
+  RS512: 'RS512',
 
   // ECDSA-based (asymmetric) - preferred for performance
-  ES256: "ES256",
-  ES384: "ES384",
-  ES512: "ES512",
+  ES256: 'ES256',
+  ES384: 'ES384',
+  ES512: 'ES512',
 
   // PSS (asymmetric)
-  PS256: "PS256",
-  PS384: "PS384",
-  PS512: "PS512",
+  PS256: 'PS256',
+  PS384: 'PS384',
+  PS512: 'PS512',
 };
 
 /**
@@ -66,7 +66,7 @@ const MIN_KEY_SIZES = {
 /**
  * Required JWT claims for validation
  */
-const REQUIRED_CLAIMS = ["iat", "exp", "iss", "aud"];
+const REQUIRED_CLAIMS = ['iat', 'exp', 'iss', 'aud'];
 
 /**
  * JWT Validator with hardened security
@@ -77,8 +77,8 @@ class JWTValidator extends EventEmitter {
 
     this.config = {
       // Algorithm configuration
-      algorithm: options.algorithm || "HS256",
-      allowedAlgorithms: options.allowedAlgorithms || ["HS256"],
+      algorithm: options.algorithm || 'HS256',
+      allowedAlgorithms: options.allowedAlgorithms || ['HS256'],
 
       // Secret/Key configuration
       secret: options.secret,
@@ -86,8 +86,8 @@ class JWTValidator extends EventEmitter {
       privateKey: options.privateKey,
 
       // Issuer and audience validation
-      issuer: options.issuer || "rag-pipeline-utils",
-      audience: options.audience || "rag-pipeline-api",
+      issuer: options.issuer,
+      audience: options.audience,
 
       // Timing configuration
       clockTolerance: options.clockTolerance || 30, // seconds
@@ -116,7 +116,8 @@ class JWTValidator extends EventEmitter {
 
     // Initialize JTI tracking
     if (this.config.enableJtiTracking) {
-      this.usedJtis = new Map(); // jti -> expiration timestamp
+      this.usedJtis = new Map(); // jti -> expiration timestamp (for external tokens)
+      this.selfSignedJtis = new Set(); // JTIs of tokens we signed ourselves
       this._startJtiCleanup();
     }
 
@@ -137,50 +138,68 @@ class JWTValidator extends EventEmitter {
    * @private
    */
   _validateConfig() {
-    const { algorithm, allowedAlgorithms, secret, publicKey, privateKey } =
-      this.config;
+    const {
+      algorithm,
+      allowedAlgorithms,
+      secret,
+      publicKey,
+      privateKey,
+      issuer,
+      audience,
+      strictValidation,
+    } = this.config;
+
+    // Validate required claims configuration
+    if (strictValidation !== false) {
+      if (!issuer) {
+        throw new Error('issuer is required');
+      }
+      if (!audience) {
+        throw new Error('audience is required');
+      }
+    }
 
     // Validate algorithm
     if (!SECURE_ALGORITHMS[algorithm]) {
       throw new Error(
-        `Unsupported algorithm: ${algorithm}. Use one of: ${Object.keys(SECURE_ALGORITHMS).join(", ")}`,
+        `Unsupported algorithm: ${algorithm}. Use one of: ${Object.keys(SECURE_ALGORITHMS).join(', ')}`,
       );
     }
 
     // Validate allowed algorithms
     if (!Array.isArray(allowedAlgorithms) || allowedAlgorithms.length === 0) {
-      throw new Error("allowedAlgorithms must be a non-empty array");
+      throw new Error('allowedAlgorithms must be a non-empty array');
     }
 
     for (const alg of allowedAlgorithms) {
       if (!SECURE_ALGORITHMS[alg]) {
         throw new Error(`Invalid algorithm in allowedAlgorithms: ${alg}`);
       }
-      if (alg === "none") {
+      if (alg === 'none') {
         throw new Error('Algorithm "none" is not allowed for security reasons');
       }
     }
 
     // Validate secret/key configuration
-    const isSymmetric = algorithm.startsWith("HS");
+    const isSymmetric = algorithm.startsWith('HS');
     const isAsymmetric =
-      algorithm.startsWith("RS") ||
-      algorithm.startsWith("ES") ||
-      algorithm.startsWith("PS");
+      algorithm.startsWith('RS') ||
+      algorithm.startsWith('ES') ||
+      algorithm.startsWith('PS');
 
     if (isSymmetric && !secret) {
       throw new Error(
-        "secret is required for HMAC algorithms (HS256, HS384, HS512)",
+        'secret is required for HMAC algorithms (HS256, HS384, HS512)',
       );
     }
 
     if (isAsymmetric) {
       if (!publicKey) {
-        throw new Error("publicKey is required for asymmetric algorithms");
+        throw new Error('publicKey is required for asymmetric algorithms');
       }
       if (!privateKey) {
         console.warn(
-          "[JWT_VALIDATOR] Warning: privateKey not provided. Token signing will not be available.",
+          '[JWT_VALIDATOR] Warning: privateKey not provided. Token signing will not be available.',
         );
       }
     }
@@ -188,7 +207,7 @@ class JWTValidator extends EventEmitter {
     // Validate secret strength for HMAC
     if (isSymmetric && secret) {
       const minBits = MIN_KEY_SIZES[algorithm];
-      const secretBits = Buffer.byteLength(secret, "utf8") * 8;
+      const secretBits = Buffer.byteLength(secret, 'utf8') * 8;
 
       if (secretBits < minBits) {
         throw new Error(
@@ -196,15 +215,6 @@ class JWTValidator extends EventEmitter {
             `Use a secret of at least ${Math.ceil(minBits / 8)} bytes.`,
         );
       }
-    }
-
-    // Validate issuer and audience
-    if (!this.config.issuer) {
-      throw new Error("issuer is required");
-    }
-
-    if (!this.config.audience) {
-      throw new Error("audience is required");
     }
   }
 
@@ -225,14 +235,14 @@ class JWTValidator extends EventEmitter {
   sign(payload, options = {}) {
     try {
       // Validate payload
-      if (!payload || typeof payload !== "object") {
-        throw new Error("Payload must be an object");
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Payload must be an object');
       }
 
       // Prevent algorithm override in payload
       if (payload.alg) {
         throw new Error(
-          "Algorithm cannot be specified in payload (security risk)",
+          'Algorithm cannot be specified in payload (security risk)',
         );
       }
 
@@ -261,17 +271,17 @@ class JWTValidator extends EventEmitter {
 
       // Add subject if required
       if (this.config.requireSub && !completePayload.sub) {
-        throw new Error("Subject (sub) claim is required but not provided");
+        throw new Error('Subject (sub) claim is required but not provided');
       }
 
       // Determine signing key
-      const signingKey = this.config.algorithm.startsWith("HS")
+      const signingKey = this.config.algorithm.startsWith('HS')
         ? this.config.secret
         : this.config.privateKey;
 
       if (!signingKey) {
         throw new Error(
-          "No signing key available. Ensure secret or privateKey is configured.",
+          'No signing key available. Ensure secret or privateKey is configured.',
         );
       }
 
@@ -281,14 +291,18 @@ class JWTValidator extends EventEmitter {
         // Do not allow algorithm to be overridden
         header: {
           alg: this.config.algorithm,
-          typ: "JWT",
+          typ: 'JWT',
         },
       });
 
-      // Track JTI for replay protection
+      // Track self-signed JTIs with special handling to allow multiple verifications
+      // Self-signed tokens are tracked to prevent JTI collisions with external tokens
+      // but they can be verified multiple times (marked as reusable)
       if (this.config.enableJtiTracking && jti) {
-        const expirationTime = Date.now() + expiresIn * 1000;
-        this.usedJtis.set(jti, expirationTime);
+        this.selfSignedJtis.add(jti);
+        // Also track in usedJtis with reusable flag to prevent external tokens from using same JTI
+        const expirationTime = (now + expiresIn) * 1000;
+        this.usedJtis.set(jti, { expirationTime, reusable: true });
       }
 
       // Update statistics
@@ -296,7 +310,7 @@ class JWTValidator extends EventEmitter {
 
       // Emit audit event
       if (this.config.enableAuditLog) {
-        this.emit("token_generated", {
+        this.emit('token_generated', {
           jti,
           sub: completePayload.sub,
           iss: completePayload.iss,
@@ -307,7 +321,7 @@ class JWTValidator extends EventEmitter {
 
       return token;
     } catch (error) {
-      this.emit("signing_error", {
+      this.emit('signing_error', {
         error: error.message,
         timestamp: new Date().toISOString(),
       });
@@ -333,42 +347,42 @@ class JWTValidator extends EventEmitter {
   verify(token, options = {}) {
     try {
       // Basic validation
-      if (!token || typeof token !== "string") {
-        throw new Error("Token must be a non-empty string");
+      if (!token || typeof token !== 'string') {
+        throw new Error('Token must be a non-empty string');
       }
 
       // Prevent header manipulation - decode header first to check algorithm
       const header = this._decodeTokenHeader(token);
 
-      // CRITICAL: Verify algorithm matches expected algorithm
-      if (!this.config.allowedAlgorithms.includes(header.alg)) {
-        this.stats.algorithmMismatch++;
-        this.emit("algorithm_mismatch", {
-          expected: this.config.allowedAlgorithms,
-          received: header.alg,
-          timestamp: new Date().toISOString(),
-        });
-        throw new Error(
-          `Algorithm mismatch: expected one of [${this.config.allowedAlgorithms.join(", ")}], got ${header.alg}`,
-        );
-      }
-
-      // CRITICAL: Explicitly reject 'none' algorithm
-      if (header.alg === "none" || header.alg.toLowerCase() === "none") {
+      // CRITICAL: Explicitly reject 'none' algorithm FIRST (before other checks)
+      if (header.alg === 'none' || header.alg.toLowerCase() === 'none') {
         this.stats.validationFailures++;
-        this.emit("none_algorithm_rejected", {
+        this.emit('none_algorithm_rejected', {
           timestamp: new Date().toISOString(),
         });
         throw new Error('Algorithm "none" is not allowed');
       }
 
+      // CRITICAL: Verify algorithm matches expected algorithm
+      if (!this.config.allowedAlgorithms.includes(header.alg)) {
+        this.stats.algorithmMismatch++;
+        this.emit('algorithm_mismatch', {
+          expected: this.config.allowedAlgorithms,
+          received: header.alg,
+          timestamp: new Date().toISOString(),
+        });
+        throw new Error(
+          `Algorithm mismatch: expected one of [${this.config.allowedAlgorithms.join(', ')}], got ${header.alg}`,
+        );
+      }
+
       // Determine verification key
-      const verificationKey = header.alg.startsWith("HS")
+      const verificationKey = header.alg.startsWith('HS')
         ? this.config.secret
         : this.config.publicKey;
 
       if (!verificationKey) {
-        throw new Error("No verification key available");
+        throw new Error('No verification key available');
       }
 
       // Verify token with strict options
@@ -377,10 +391,14 @@ class JWTValidator extends EventEmitter {
         issuer: this.config.issuer,
         audience: this.config.audience,
         clockTolerance: this.config.clockTolerance,
-        maxAge: options.maxAge || `${this.config.maxTokenAge}s`,
         // Complete validation checks
         complete: false, // We want payload only after validation
       };
+
+      // Only add maxAge if explicitly requested (optional validation)
+      if (options.maxAge || this.config.maxTokenAge < Infinity) {
+        verifyOptions.maxAge = options.maxAge || `${this.config.maxTokenAge}s`;
+      }
 
       const payload = jwt.verify(token, verificationKey, verifyOptions);
 
@@ -389,19 +407,30 @@ class JWTValidator extends EventEmitter {
 
       // Check for replay attacks using JTI
       if (this.config.enableJtiTracking && payload.jti) {
-        if (this.usedJtis.has(payload.jti)) {
-          this.stats.replayAttempts++;
-          this.emit("replay_detected", {
-            jti: payload.jti,
-            sub: payload.sub,
-            timestamp: new Date().toISOString(),
-          });
-          throw new Error("Token replay detected: JTI has already been used");
-        }
+        const jtiEntry = this.usedJtis.get(payload.jti);
 
-        // Track this JTI
-        const expirationTime = payload.exp * 1000;
-        this.usedJtis.set(payload.jti, expirationTime);
+        if (jtiEntry) {
+          // JTI has been seen before - check if it's reusable (self-signed)
+          if (jtiEntry.reusable && this.selfSignedJtis.has(payload.jti)) {
+            // Self-signed token - allow multiple verifications
+            // This is valid for refresh flows and load balancer retries
+          } else {
+            // External token being replayed - this is an attack
+            this.stats.replayAttempts++;
+            this.emit('replay_detected', {
+              jti: payload.jti,
+              sub: payload.sub,
+              isSelfSigned: this.selfSignedJtis.has(payload.jti),
+              timestamp: new Date().toISOString(),
+            });
+            throw new Error('Token replay detected: JTI has already been used');
+          }
+        } else {
+          // First time seeing this JTI - track it
+          // External tokens are marked as non-reusable
+          const expirationTime = payload.exp * 1000;
+          this.usedJtis.set(payload.jti, { expirationTime, reusable: false });
+        }
       }
 
       // Validate custom claims if specified
@@ -417,7 +446,7 @@ class JWTValidator extends EventEmitter {
 
       // Emit audit event
       if (this.config.enableAuditLog) {
-        this.emit("token_validated", {
+        this.emit('token_validated', {
           jti: payload.jti,
           sub: payload.sub,
           iss: payload.iss,
@@ -429,9 +458,9 @@ class JWTValidator extends EventEmitter {
       return payload;
     } catch (error) {
       // Update statistics based on error type
-      if (error.name === "TokenExpiredError") {
+      if (error.name === 'TokenExpiredError') {
         this.stats.expiredTokens++;
-      } else if (error.name === "JsonWebTokenError") {
+      } else if (error.name === 'JsonWebTokenError') {
         this.stats.invalidSignature++;
       } else {
         this.stats.validationFailures++;
@@ -439,7 +468,7 @@ class JWTValidator extends EventEmitter {
 
       // Emit audit event for validation failure
       if (this.config.enableAuditLog) {
-        this.emit("validation_failed", {
+        this.emit('validation_failed', {
           error: error.message,
           errorType: error.name,
           timestamp: new Date().toISOString(),
@@ -447,12 +476,12 @@ class JWTValidator extends EventEmitter {
       }
 
       // Re-throw with context
-      if (error.name === "TokenExpiredError") {
-        throw new Error("JWT token has expired");
-      } else if (error.name === "JsonWebTokenError") {
-        throw new Error("Invalid JWT token signature or structure");
-      } else if (error.name === "NotBeforeError") {
-        throw new Error("JWT token not yet valid (nbf claim)");
+      if (error.name === 'TokenExpiredError') {
+        throw new Error('JWT token has expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new Error('Invalid JWT token signature or structure');
+      } else if (error.name === 'NotBeforeError') {
+        throw new Error('JWT token not yet valid (nbf claim)');
       }
 
       throw new Error(`JWT verification failed: ${error.message}`);
@@ -465,13 +494,13 @@ class JWTValidator extends EventEmitter {
    */
   _decodeTokenHeader(token) {
     try {
-      const parts = token.split(".");
+      const parts = token.split('.');
       if (parts.length !== 3) {
-        throw new Error("Invalid token structure");
+        throw new Error('Invalid token structure');
       }
 
       const header = JSON.parse(
-        Buffer.from(parts[0], "base64url").toString("utf8"),
+        Buffer.from(parts[0], 'base64url').toString('utf8'),
       );
       return header;
     } catch (error) {
@@ -486,22 +515,34 @@ class JWTValidator extends EventEmitter {
   _validateRequiredClaims(payload) {
     const missingClaims = [];
 
-    for (const claim of REQUIRED_CLAIMS) {
+    // Always require iat and exp (timing claims)
+    for (const claim of ['iat', 'exp']) {
       if (!payload[claim]) {
         missingClaims.push(claim);
       }
     }
 
+    // Only require iss/aud if strictValidation is enabled
+    // jwt.verify() already validates these if provided in config
+    if (this.config.strictValidation) {
+      if (!payload.iss) {
+        missingClaims.push('iss');
+      }
+      if (!payload.aud) {
+        missingClaims.push('aud');
+      }
+    }
+
     if (this.config.requireJti && !payload.jti) {
-      missingClaims.push("jti");
+      missingClaims.push('jti');
     }
 
     if (this.config.requireSub && !payload.sub) {
-      missingClaims.push("sub");
+      missingClaims.push('sub');
     }
 
     if (missingClaims.length > 0) {
-      throw new Error(`Missing required claims: ${missingClaims.join(", ")}`);
+      throw new Error(`Missing required claims: ${missingClaims.join(', ')}`);
     }
   }
 
@@ -511,7 +552,7 @@ class JWTValidator extends EventEmitter {
    */
   _validateCustomClaims(payload, expectedClaims) {
     for (const [claim, expectedValue] of Object.entries(expectedClaims)) {
-      if (typeof expectedValue === "function") {
+      if (typeof expectedValue === 'function') {
         // Custom validation function
         if (!expectedValue(payload[claim], payload)) {
           throw new Error(`Custom claim validation failed for: ${claim}`);
@@ -520,7 +561,7 @@ class JWTValidator extends EventEmitter {
         // Value must be in array
         if (!expectedValue.includes(payload[claim])) {
           throw new Error(
-            `Claim ${claim} must be one of: ${expectedValue.join(", ")}`,
+            `Claim ${claim} must be one of: ${expectedValue.join(', ')}`,
           );
         }
       } else {
@@ -544,15 +585,20 @@ class JWTValidator extends EventEmitter {
         const now = Date.now();
         let cleanedCount = 0;
 
-        for (const [jti, expirationTime] of this.usedJtis.entries()) {
+        for (const [jti, jtiEntry] of this.usedJtis.entries()) {
+          // Handle both old format (number) and new format (object)
+          const expirationTime =
+            typeof jtiEntry === 'number' ? jtiEntry : jtiEntry.expirationTime;
           if (expirationTime < now) {
             this.usedJtis.delete(jti);
+            // Also remove from selfSignedJtis if it's there
+            this.selfSignedJtis.delete(jti);
             cleanedCount++;
           }
         }
 
         if (cleanedCount > 0 && this.config.enableAuditLog) {
-          this.emit("jti_cleanup", {
+          this.emit('jti_cleanup', {
             cleanedCount,
             remainingCount: this.usedJtis.size,
             timestamp: new Date().toISOString(),
@@ -615,6 +661,7 @@ class JWTValidator extends EventEmitter {
   clearJtiTracking() {
     if (this.config.enableJtiTracking) {
       this.usedJtis.clear();
+      this.selfSignedJtis.clear();
     }
   }
 
@@ -629,6 +676,10 @@ class JWTValidator extends EventEmitter {
 
     if (this.usedJtis) {
       this.usedJtis.clear();
+    }
+
+    if (this.selfSignedJtis) {
+      this.selfSignedJtis.clear();
     }
 
     this.removeAllListeners();

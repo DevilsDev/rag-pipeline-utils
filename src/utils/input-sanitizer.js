@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Input Sanitizer
@@ -22,27 +22,27 @@
  * Sanitization rules enum
  */
 const SanitizationRules = {
-  NONE: "none", // No sanitization
-  HTML: "html", // HTML escape
-  HTML_STRICT: "html_strict", // Remove all HTML tags
-  XSS: "xss", // XSS prevention (aggressive)
-  SQL: "sql", // SQL injection prevention
-  COMMAND: "command", // Command injection prevention
-  PATH: "path", // Path traversal prevention
-  URL: "url", // URL validation and sanitization
-  EMAIL: "email", // Email validation
-  ALPHANUMERIC: "alphanumeric", // Only letters and numbers
-  UUID: "uuid", // UUID validation
-  INTEGER: "integer", // Integer validation
-  FLOAT: "float", // Float validation
-  BOOLEAN: "boolean", // Boolean validation
-  JSON: "json", // JSON validation
-  BASE64: "base64", // Base64 validation
-  HEX: "hex", // Hexadecimal validation
-  SLUG: "slug", // Slug format (URL-friendly)
-  DOMAIN: "domain", // Domain name validation
-  IPV4: "ipv4", // IPv4 address validation
-  IPV6: "ipv6", // IPv6 address validation
+  NONE: 'none', // No sanitization
+  HTML: 'html', // HTML escape
+  HTML_STRICT: 'html_strict', // Remove all HTML tags
+  XSS: 'xss', // XSS prevention (aggressive)
+  SQL: 'sql', // SQL injection prevention
+  COMMAND: 'command', // Command injection prevention
+  PATH: 'path', // Path traversal prevention
+  URL: 'url', // URL validation and sanitization
+  EMAIL: 'email', // Email validation
+  ALPHANUMERIC: 'alphanumeric', // Only letters and numbers
+  UUID: 'uuid', // UUID validation
+  INTEGER: 'integer', // Integer validation
+  FLOAT: 'float', // Float validation
+  BOOLEAN: 'boolean', // Boolean validation
+  JSON: 'json', // JSON validation
+  BASE64: 'base64', // Base64 validation
+  HEX: 'hex', // Hexadecimal validation
+  SLUG: 'slug', // Slug format (URL-friendly)
+  DOMAIN: 'domain', // Domain name validation
+  IPV4: 'ipv4', // IPv4 address validation
+  IPV6: 'ipv6', // IPv6 address validation
 };
 
 /**
@@ -82,6 +82,9 @@ const DangerousPatterns = {
     /expression\s*\(/gi,
     /<meta/gi,
     /<link/gi,
+    /alert\s*\(/gi, // Remove alert() function calls
+    /confirm\s*\(/gi, // Remove confirm() function calls
+    /prompt\s*\(/gi, // Remove prompt() function calls
   ],
 
   // SQL injection patterns
@@ -128,12 +131,12 @@ const DangerousPatterns = {
  * HTML entity map for escaping
  */
 const HtmlEntityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#x27;",
-  "/": "&#x2F;",
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&#x27;',
+  '/': '&#x2F;',
 };
 
 /**
@@ -206,10 +209,18 @@ class InputSanitizer {
    * });
    */
   sanitize(input, rules = null) {
-    const startTime =
-      typeof performance !== "undefined" && performance.now
-        ? performance.now()
-        : Date.now();
+    // Use high-resolution timing
+    let startTime;
+    if (typeof process !== 'undefined' && process.hrtime) {
+      startTime = process.hrtime.bigint();
+    } else if (
+      typeof performance !== 'undefined' &&
+      typeof performance.now === 'function'
+    ) {
+      startTime = performance.now();
+    } else {
+      startTime = Date.now();
+    }
 
     try {
       // Handle null/undefined
@@ -220,14 +231,14 @@ class InputSanitizer {
       // Determine sanitization strategy
       let result;
 
-      if (typeof input === "string") {
+      if (typeof input === 'string') {
         result = this._sanitizeString(
           input,
           rules || this.options.defaultStringRule,
         );
       } else if (Array.isArray(input)) {
         result = this._sanitizeArray(input, rules);
-      } else if (typeof input === "object") {
+      } else if (typeof input === 'object') {
         result = this._sanitizeObject(input, rules, 0);
       } else {
         // Primitives (number, boolean, etc.)
@@ -236,11 +247,34 @@ class InputSanitizer {
 
       // Update statistics
       if (this.options.trackStats) {
-        const endTime =
-          typeof performance !== "undefined" && performance.now
-            ? performance.now()
-            : Date.now();
-        const duration = endTime - startTime;
+        let duration;
+        if (
+          typeof process !== 'undefined' &&
+          process.hrtime &&
+          process.hrtime.bigint
+        ) {
+          try {
+            const endTime = process.hrtime.bigint();
+            // Convert nanoseconds to milliseconds
+            duration = Number(endTime - startTime) / 1000000;
+          } catch (e) {
+            // Fallback if hrtime.bigint() fails (e.g., in test environments with fake timers)
+            duration = 0.001; // Minimum 1 microsecond
+          }
+        } else if (
+          typeof performance !== 'undefined' &&
+          typeof performance.now === 'function'
+        ) {
+          duration = performance.now() - startTime;
+        } else {
+          duration = Date.now() - startTime;
+        }
+
+        // Ensure duration is at least 0.001ms (1 microsecond) to avoid zero averages
+        if (duration === 0 || !isFinite(duration)) {
+          duration = 0.001;
+        }
+
         this.stats.sanitized++;
         this.stats.totalTime += duration;
         this.stats.averageTime = this.stats.totalTime / this.stats.sanitized;
@@ -248,6 +282,18 @@ class InputSanitizer {
 
       return result;
     } catch (error) {
+      // Always throw critical security errors regardless of throwOnInvalid setting
+      if (error.message) {
+        // Path traversal is a critical security violation - always throw
+        if (error.message.includes('Potential path traversal detected')) {
+          throw error;
+        }
+        // Depth errors should also always throw
+        if (error.message.includes('Maximum object depth exceeded')) {
+          throw error;
+        }
+      }
+
       if (this.options.throwOnInvalid) {
         throw error;
       }
@@ -262,7 +308,7 @@ class InputSanitizer {
    * @private
    */
   _sanitizeString(str, rule) {
-    if (typeof str !== "string") {
+    if (typeof str !== 'string') {
       return str;
     }
 
@@ -407,14 +453,14 @@ class InputSanitizer {
       const safeKey = this._sanitizeString(key, SanitizationRules.ALPHANUMERIC);
 
       // Determine rule for this field
-      const fieldRule = rules && typeof rules === "object" ? rules[key] : rules;
+      const fieldRule = rules && typeof rules === 'object' ? rules[key] : rules;
 
       // Sanitize value
-      if (typeof value === "string") {
+      if (typeof value === 'string') {
         sanitized[safeKey] = this._sanitizeString(value, fieldRule);
       } else if (Array.isArray(value)) {
         sanitized[safeKey] = this._sanitizeArray(value, fieldRule);
-      } else if (typeof value === "object" && value !== null) {
+      } else if (typeof value === 'object' && value !== null) {
         sanitized[safeKey] = this._sanitizeObject(value, fieldRule, depth + 1);
       } else {
         sanitized[safeKey] = value;
@@ -437,7 +483,7 @@ class InputSanitizer {
    * @private
    */
   _stripHtml(str) {
-    return str.replace(/<[^>]*>/g, "");
+    return str.replace(/<[^>]*>/g, '');
   }
 
   /**
@@ -451,7 +497,7 @@ class InputSanitizer {
     for (const pattern of DangerousPatterns.xss) {
       if (pattern.test(sanitized)) {
         this.stats.blocked++;
-        sanitized = sanitized.replace(pattern, "");
+        sanitized = sanitized.replace(pattern, '');
       }
     }
 
@@ -473,15 +519,15 @@ class InputSanitizer {
       if (pattern.test(sanitized)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
-          throw new Error("Potential SQL injection detected");
+          throw new Error('Potential SQL injection detected');
         }
         // Remove dangerous patterns
-        sanitized = sanitized.replace(pattern, "");
+        sanitized = sanitized.replace(pattern, '');
       }
     }
 
     // Escape single quotes (basic SQL escaping)
-    sanitized = sanitized.replace(/'/g, "''");
+    sanitized = sanitized.replace(/'/g, '\'\'');
 
     return sanitized;
   }
@@ -496,9 +542,9 @@ class InputSanitizer {
       if (pattern.test(str)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
-          throw new Error("Potential command injection detected");
+          throw new Error('Potential command injection detected');
         }
-        return "";
+        return '';
       }
     }
 
@@ -510,22 +556,29 @@ class InputSanitizer {
    * @private
    */
   _sanitizePath(str) {
-    // Check for path traversal patterns
+    // First decode any URL encoding
+    let decoded = str;
+    try {
+      decoded = decodeURIComponent(str);
+    } catch (e) {
+      // If decoding fails, use original
+    }
+
+    // Check for path traversal patterns in both original and decoded
     for (const pattern of DangerousPatterns.pathTraversal) {
-      if (pattern.test(str)) {
+      if (pattern.test(str) || pattern.test(decoded)) {
         this.stats.blocked++;
-        if (this.options.throwOnInvalid) {
-          throw new Error("Potential path traversal detected");
-        }
-        str = str.replace(pattern, "");
+        // SECURITY: Always throw on path traversal - it should never be silently sanitized
+        // Empty paths could resolve to application root, creating security vulnerabilities
+        throw new Error('Potential path traversal detected');
       }
     }
 
     // Remove leading/trailing slashes
-    str = str.replace(/^[/\\]+|[/\\]+$/g, "");
+    str = str.replace(/^[/\\]+|[/\\]+$/g, '');
 
     // Normalize path separators
-    str = str.replace(/\\/g, "/");
+    str = str.replace(/\\/g, '/');
 
     return str;
   }
@@ -538,17 +591,17 @@ class InputSanitizer {
     // Check against URL pattern
     if (!ValidationPatterns.url.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid URL format");
+        throw new Error('Invalid URL format');
       }
-      return "";
+      return '';
     }
 
     // Only allow http and https protocols
-    if (!str.startsWith("http://") && !str.startsWith("https://")) {
+    if (!str.startsWith('http://') && !str.startsWith('https://')) {
       if (this.options.throwOnInvalid) {
-        throw new Error("URL must use http or https protocol");
+        throw new Error('URL must use http or https protocol');
       }
-      return "";
+      return '';
     }
 
     return str;
@@ -561,9 +614,9 @@ class InputSanitizer {
   _validateEmail(str) {
     if (!ValidationPatterns.email.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid email format");
+        throw new Error('Invalid email format');
       }
-      return "";
+      return '';
     }
     return str.toLowerCase();
   }
@@ -575,9 +628,9 @@ class InputSanitizer {
   _validateAlphanumeric(str) {
     if (!ValidationPatterns.alphanumeric.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Must contain only alphanumeric characters");
+        throw new Error('Must contain only alphanumeric characters');
       }
-      return str.replace(/[^a-zA-Z0-9]/g, "");
+      return str.replace(/[^a-zA-Z0-9]/g, '');
     }
     return str;
   }
@@ -589,9 +642,9 @@ class InputSanitizer {
   _validateUuid(str) {
     if (!ValidationPatterns.uuid.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid UUID format");
+        throw new Error('Invalid UUID format');
       }
-      return "";
+      return '';
     }
     return str.toLowerCase();
   }
@@ -603,9 +656,9 @@ class InputSanitizer {
   _validateInteger(str) {
     if (!ValidationPatterns.integer.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid integer format");
+        throw new Error('Invalid integer format');
       }
-      return "";
+      return '';
     }
     return str;
   }
@@ -617,9 +670,9 @@ class InputSanitizer {
   _validateFloat(str) {
     if (!ValidationPatterns.float.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid float format");
+        throw new Error('Invalid float format');
       }
-      return "";
+      return '';
     }
     return str;
   }
@@ -630,16 +683,16 @@ class InputSanitizer {
    */
   _validateBoolean(str) {
     const lower = str.toLowerCase();
-    if (lower === "true" || lower === "1" || lower === "yes") {
-      return "true";
-    } else if (lower === "false" || lower === "0" || lower === "no") {
-      return "false";
+    if (lower === 'true' || lower === '1' || lower === 'yes') {
+      return 'true';
+    } else if (lower === 'false' || lower === '0' || lower === 'no') {
+      return 'false';
     }
 
     if (this.options.throwOnInvalid) {
-      throw new Error("Invalid boolean value");
+      throw new Error('Invalid boolean value');
     }
-    return "";
+    return '';
   }
 
   /**
@@ -652,9 +705,9 @@ class InputSanitizer {
       return str;
     } catch (error) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid JSON format");
+        throw new Error('Invalid JSON format');
       }
-      return "";
+      return '';
     }
   }
 
@@ -665,9 +718,9 @@ class InputSanitizer {
   _validateBase64(str) {
     if (!ValidationPatterns.base64.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid base64 format");
+        throw new Error('Invalid base64 format');
       }
-      return "";
+      return '';
     }
     return str;
   }
@@ -679,9 +732,9 @@ class InputSanitizer {
   _validateHex(str) {
     if (!ValidationPatterns.hex.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid hexadecimal format");
+        throw new Error('Invalid hexadecimal format');
       }
-      return "";
+      return '';
     }
     return str.toLowerCase();
   }
@@ -693,13 +746,13 @@ class InputSanitizer {
   _validateSlug(str) {
     if (!ValidationPatterns.slug.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid slug format");
+        throw new Error('Invalid slug format');
       }
       // Convert to slug
       return str
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     }
     return str;
   }
@@ -711,9 +764,9 @@ class InputSanitizer {
   _validateDomain(str) {
     if (!ValidationPatterns.domain.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid domain format");
+        throw new Error('Invalid domain format');
       }
-      return "";
+      return '';
     }
     return str.toLowerCase();
   }
@@ -725,9 +778,9 @@ class InputSanitizer {
   _validateIpv4(str) {
     if (!ValidationPatterns.ipv4.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid IPv4 address");
+        throw new Error('Invalid IPv4 address');
       }
-      return "";
+      return '';
     }
     return str;
   }
@@ -739,9 +792,9 @@ class InputSanitizer {
   _validateIpv6(str) {
     if (!ValidationPatterns.ipv6.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error("Invalid IPv6 address");
+        throw new Error('Invalid IPv6 address');
       }
-      return "";
+      return '';
     }
     return str.toLowerCase();
   }
