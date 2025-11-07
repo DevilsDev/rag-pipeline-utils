@@ -14,4 +14,22 @@ module.exports = {
   // transform ESM deps like inquirer to CJS so require() won't crash
   transform: { "^.+\\.js$": "babel-jest" },
   transformIgnorePatterns: ["node_modules/(?!(inquirer)/)"],
+  // Coverage configuration
+  collectCoverageFrom: [
+    "src/**/*.js",
+    "!src/**/*.test.js",
+    "!src/**/*.spec.js",
+    "!**/node_modules/**",
+    "!**/__tests__/**",
+  ],
+  coverageReporters: ["text", "lcov", "html"],
+  coverageDirectory: "coverage",
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
 };
