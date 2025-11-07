@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Optimized OpenAI Embedder with Intelligent Batch Processing
@@ -10,7 +10,7 @@
  * @since 2.3.0
  */
 
-const { createBatchedEmbedder } = require("../utils/batch-processor");
+const { createBatchedEmbedder } = require('../utils/batch-processor');
 
 /**
  * Optimized OpenAI Embedder Class
@@ -25,7 +25,7 @@ const { createBatchedEmbedder } = require("../utils/batch-processor");
 class OptimizedOpenAIEmbedder {
   constructor(options = {}) {
     this.apiKey = options.apiKey || process.env.OPENAI_API_KEY;
-    this.model = options.model || "text-embedding-ada-002";
+    this.model = options.model || 'text-embedding-ada-002';
     this.dimensions = this._getDimensions(this.model);
     this.options = options;
 
@@ -58,7 +58,7 @@ class OptimizedOpenAIEmbedder {
    */
   async embed(texts, options = {}) {
     if (!Array.isArray(texts)) {
-      throw new Error("texts must be an array");
+      throw new Error('texts must be an array');
     }
 
     return await this.batchedEmbedder.embed(texts, options);
@@ -71,8 +71,8 @@ class OptimizedOpenAIEmbedder {
    * @returns {Promise<number[]>} Embedding
    */
   async embedQuery(query) {
-    if (typeof query !== "string") {
-      throw new Error("query must be a string");
+    if (typeof query !== 'string') {
+      throw new Error('query must be a string');
     }
 
     const results = await this.embed([query]);
@@ -99,9 +99,9 @@ class OptimizedOpenAIEmbedder {
    */
   _getDimensions(model) {
     const dimensions = {
-      "text-embedding-ada-002": 1536,
-      "text-embedding-3-small": 1536,
-      "text-embedding-3-large": 3072,
+      'text-embedding-ada-002': 1536,
+      'text-embedding-3-small': 1536,
+      'text-embedding-3-large': 3072,
     };
     return dimensions[model] || 1536;
   }
@@ -112,9 +112,9 @@ class OptimizedOpenAIEmbedder {
    */
   _getModelTokenLimit(model) {
     const limits = {
-      "text-embedding-ada-002": 8191,
-      "text-embedding-3-small": 8191,
-      "text-embedding-3-large": 8191,
+      'text-embedding-ada-002': 8191,
+      'text-embedding-3-small': 8191,
+      'text-embedding-3-large': 8191,
     };
     return limits[model] || 8191;
   }
@@ -125,9 +125,9 @@ class OptimizedOpenAIEmbedder {
    */
   _getModelItemLimit(model) {
     const limits = {
-      "text-embedding-ada-002": 2048,
-      "text-embedding-3-small": 2048,
-      "text-embedding-3-large": 2048,
+      'text-embedding-ada-002': 2048,
+      'text-embedding-3-small': 2048,
+      'text-embedding-3-large': 2048,
     };
     return limits[model] || 2048;
   }

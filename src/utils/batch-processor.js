@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Intelligent Batch Processor
@@ -19,7 +19,7 @@
  * @since 2.3.0
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for batch processing
@@ -52,11 +52,11 @@ const DEFAULT_CONFIG = {
  * Model-specific token limits
  */
 const MODEL_LIMITS = {
-  "text-embedding-ada-002": { maxTokens: 8191, maxItems: 2048 },
-  "text-embedding-3-small": { maxTokens: 8191, maxItems: 2048 },
-  "text-embedding-3-large": { maxTokens: 8191, maxItems: 2048 },
-  "voyage-large-2": { maxTokens: 16000, maxItems: 128 },
-  "cohere-embed-v3": { maxTokens: 512, maxItems: 96 },
+  'text-embedding-ada-002': { maxTokens: 8191, maxItems: 2048 },
+  'text-embedding-3-small': { maxTokens: 8191, maxItems: 2048 },
+  'text-embedding-3-large': { maxTokens: 8191, maxItems: 2048 },
+  'voyage-large-2': { maxTokens: 16000, maxItems: 128 },
+  'cohere-embed-v3': { maxTokens: 512, maxItems: 96 },
   default: { maxTokens: 8191, maxItems: 2048 },
 };
 
@@ -118,11 +118,11 @@ class BatchProcessor extends EventEmitter {
    */
   async processBatches(items, processFn, options = {}) {
     if (!Array.isArray(items) || items.length === 0) {
-      throw new Error("Items must be a non-empty array");
+      throw new Error('Items must be a non-empty array');
     }
 
-    if (typeof processFn !== "function") {
-      throw new Error("processFn must be a function");
+    if (typeof processFn !== 'function') {
+      throw new Error('processFn must be a function');
     }
 
     const startTime = Date.now();
@@ -141,7 +141,7 @@ class BatchProcessor extends EventEmitter {
 
     try {
       // Emit start event
-      this.emit("start", {
+      this.emit('start', {
         totalItems: items.length,
         estimatedBatches: this._estimateBatchCount(items),
       });
@@ -154,7 +154,7 @@ class BatchProcessor extends EventEmitter {
       const naiveBatchCount = items.length; // One API call per item
       this.metrics.apiCallsSaved = naiveBatchCount - batches.length;
 
-      this.emit("batches_created", {
+      this.emit('batches_created', {
         batchCount: batches.length,
         avgBatchSize: items.length / batches.length,
         apiCallsSaved: this.metrics.apiCallsSaved,
@@ -167,7 +167,7 @@ class BatchProcessor extends EventEmitter {
       for (let i = 0; i < batches.length; i++) {
         // Check cancellation
         if (this.cancelled || this.abortController.signal.aborted) {
-          throw new Error("Processing cancelled");
+          throw new Error('Processing cancelled');
         }
 
         const batch = batches[i];
@@ -192,7 +192,7 @@ class BatchProcessor extends EventEmitter {
           this._updateAdaptiveState(batch.items.length, batchDuration);
 
           // Emit progress
-          if (onProgress || this.listenerCount("progress") > 0) {
+          if (onProgress || this.listenerCount('progress') > 0) {
             const progressData = {
               processed: processedCount,
               total: items.length,
@@ -209,7 +209,7 @@ class BatchProcessor extends EventEmitter {
             if (onProgress) {
               onProgress(progressData);
             }
-            this.emit("progress", progressData);
+            this.emit('progress', progressData);
           }
 
           // Emit batch complete
@@ -221,7 +221,7 @@ class BatchProcessor extends EventEmitter {
             });
           }
 
-          this.emit("batch_complete", {
+          this.emit('batch_complete', {
             batchIndex: i,
             batchSize: batch.items.length,
             tokens: batch.estimatedTokens,
@@ -238,7 +238,7 @@ class BatchProcessor extends EventEmitter {
         } catch (error) {
           this.metrics.failedBatches++;
 
-          this.emit("batch_error", {
+          this.emit('batch_error', {
             batchIndex: i,
             batchSize: batch.items.length,
             error: error.message,
@@ -261,7 +261,7 @@ class BatchProcessor extends EventEmitter {
         this.metrics.totalTokens / batches.length;
 
       // Emit completion
-      this.emit("complete", {
+      this.emit('complete', {
         totalItems: items.length,
         totalBatches: batches.length,
         successfulBatches: this.metrics.successfulBatches,
@@ -273,7 +273,7 @@ class BatchProcessor extends EventEmitter {
 
       return finalResults;
     } catch (error) {
-      this.emit("error", {
+      this.emit('error', {
         message: error.message,
         processedItems: this.metrics.processedItems,
         totalItems: items.length,
@@ -304,7 +304,7 @@ class BatchProcessor extends EventEmitter {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const text =
-        typeof item === "string"
+        typeof item === 'string'
           ? item
           : item.text || item.content || String(item);
       const tokens = this._estimateTokens(text);
@@ -360,7 +360,7 @@ class BatchProcessor extends EventEmitter {
       try {
         // Extract items for processing
         const items = batch.items.map((item) =>
-          typeof item === "string"
+          typeof item === 'string'
             ? item
             : item.text || item.content || String(item),
         );
@@ -380,7 +380,7 @@ class BatchProcessor extends EventEmitter {
         lastError = error;
 
         // Don't retry on cancellation
-        if (this.cancelled || error.message === "Processing cancelled") {
+        if (this.cancelled || error.message === 'Processing cancelled') {
           throw error;
         }
 
@@ -391,7 +391,7 @@ class BatchProcessor extends EventEmitter {
             this.config.retryDelay *
             Math.pow(this.config.retryBackoff, retryCount - 1);
 
-          this.emit("batch_retry", {
+          this.emit('batch_retry', {
             batchIndex,
             retryCount,
             maxRetries: this.config.maxRetries,
@@ -434,7 +434,7 @@ class BatchProcessor extends EventEmitter {
     let totalTokens = 0;
     for (const item of items) {
       const text =
-        typeof item === "string"
+        typeof item === 'string'
           ? item
           : item.text || item.content || String(item);
       totalTokens += this._estimateTokens(text);
@@ -473,7 +473,7 @@ class BatchProcessor extends EventEmitter {
     // Emit warning if memory threshold exceeded
     const memoryMB = this.metrics.memoryUsed / (1024 * 1024);
     if (memoryMB > this.config.maxMemoryMB * 0.9) {
-      this.emit("memory_warning", {
+      this.emit('memory_warning', {
         used: memoryMB,
         limit: this.config.maxMemoryMB,
         percentage: (memoryMB / this.config.maxMemoryMB) * 100,
@@ -549,7 +549,7 @@ class BatchProcessor extends EventEmitter {
 
       const estimatedTokens = batchItems.reduce((sum, item) => {
         const text =
-          typeof item === "string"
+          typeof item === 'string'
             ? item
             : item.text || item.content || String(item);
         return sum + this._estimateTokens(text);
@@ -583,7 +583,7 @@ class BatchProcessor extends EventEmitter {
     if (this.abortController) {
       this.abortController.abort();
     }
-    this.emit("cancelled", {
+    this.emit('cancelled', {
       processedItems: this.metrics.processedItems,
       totalItems: this.metrics.totalItems,
     });
@@ -657,7 +657,7 @@ class BatchProcessor extends EventEmitter {
       optimalBatchSize: null,
     };
 
-    this.emit("metrics_reset");
+    this.emit('metrics_reset');
   }
 }
 

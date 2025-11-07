@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Error Formatter Utility
@@ -15,63 +15,63 @@
  */
 const ERROR_CODES = {
   // Configuration errors (CONFIG_*)
-  CONFIG_NOT_FOUND: "CONFIG_NOT_FOUND",
-  CONFIG_INVALID_JSON: "CONFIG_INVALID_JSON",
-  CONFIG_VALIDATION_FAILED: "CONFIG_VALIDATION_FAILED",
-  CONFIG_MISSING_REQUIRED: "CONFIG_MISSING_REQUIRED",
-  CONFIG_INVALID_TYPE: "CONFIG_INVALID_TYPE",
-  CONFIG_INVALID_VALUE: "CONFIG_INVALID_VALUE",
+  CONFIG_NOT_FOUND: 'CONFIG_NOT_FOUND',
+  CONFIG_INVALID_JSON: 'CONFIG_INVALID_JSON',
+  CONFIG_VALIDATION_FAILED: 'CONFIG_VALIDATION_FAILED',
+  CONFIG_MISSING_REQUIRED: 'CONFIG_MISSING_REQUIRED',
+  CONFIG_INVALID_TYPE: 'CONFIG_INVALID_TYPE',
+  CONFIG_INVALID_VALUE: 'CONFIG_INVALID_VALUE',
 
   // Plugin errors (PLUGIN_*)
-  PLUGIN_NOT_FOUND: "PLUGIN_NOT_FOUND",
-  PLUGIN_LOAD_FAILED: "PLUGIN_LOAD_FAILED",
-  PLUGIN_INVALID_EXPORT: "PLUGIN_INVALID_EXPORT",
-  PLUGIN_EXECUTION_FAILED: "PLUGIN_EXECUTION_FAILED",
-  PLUGIN_INITIALIZATION_FAILED: "PLUGIN_INITIALIZATION_FAILED",
-  PLUGIN_CONTRACT_VIOLATION: "PLUGIN_CONTRACT_VIOLATION",
-  PLUGIN_DEPENDENCY_MISSING: "PLUGIN_DEPENDENCY_MISSING",
+  PLUGIN_NOT_FOUND: 'PLUGIN_NOT_FOUND',
+  PLUGIN_LOAD_FAILED: 'PLUGIN_LOAD_FAILED',
+  PLUGIN_INVALID_EXPORT: 'PLUGIN_INVALID_EXPORT',
+  PLUGIN_EXECUTION_FAILED: 'PLUGIN_EXECUTION_FAILED',
+  PLUGIN_INITIALIZATION_FAILED: 'PLUGIN_INITIALIZATION_FAILED',
+  PLUGIN_CONTRACT_VIOLATION: 'PLUGIN_CONTRACT_VIOLATION',
+  PLUGIN_DEPENDENCY_MISSING: 'PLUGIN_DEPENDENCY_MISSING',
 
   // Pipeline errors (PIPELINE_*)
-  PIPELINE_CREATION_FAILED: "PIPELINE_CREATION_FAILED",
-  PIPELINE_EXECUTION_FAILED: "PIPELINE_EXECUTION_FAILED",
-  PIPELINE_STAGE_FAILED: "PIPELINE_STAGE_FAILED",
-  PIPELINE_INVALID_STAGE: "PIPELINE_INVALID_STAGE",
+  PIPELINE_CREATION_FAILED: 'PIPELINE_CREATION_FAILED',
+  PIPELINE_EXECUTION_FAILED: 'PIPELINE_EXECUTION_FAILED',
+  PIPELINE_STAGE_FAILED: 'PIPELINE_STAGE_FAILED',
+  PIPELINE_INVALID_STAGE: 'PIPELINE_INVALID_STAGE',
 
   // Validation errors (VALIDATION_*)
-  VALIDATION_FAILED: "VALIDATION_FAILED",
-  VALIDATION_SCHEMA_ERROR: "VALIDATION_SCHEMA_ERROR",
-  VALIDATION_CONSTRAINT_ERROR: "VALIDATION_CONSTRAINT_ERROR",
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  VALIDATION_SCHEMA_ERROR: 'VALIDATION_SCHEMA_ERROR',
+  VALIDATION_CONSTRAINT_ERROR: 'VALIDATION_CONSTRAINT_ERROR',
 
   // File system errors (FS_*)
-  FS_FILE_NOT_FOUND: "FS_FILE_NOT_FOUND",
-  FS_DIRECTORY_NOT_FOUND: "FS_DIRECTORY_NOT_FOUND",
-  FS_PERMISSION_DENIED: "FS_PERMISSION_DENIED",
-  FS_READ_ERROR: "FS_READ_ERROR",
-  FS_WRITE_ERROR: "FS_WRITE_ERROR",
+  FS_FILE_NOT_FOUND: 'FS_FILE_NOT_FOUND',
+  FS_DIRECTORY_NOT_FOUND: 'FS_DIRECTORY_NOT_FOUND',
+  FS_PERMISSION_DENIED: 'FS_PERMISSION_DENIED',
+  FS_READ_ERROR: 'FS_READ_ERROR',
+  FS_WRITE_ERROR: 'FS_WRITE_ERROR',
 
   // Network errors (NETWORK_*)
-  NETWORK_REQUEST_FAILED: "NETWORK_REQUEST_FAILED",
-  NETWORK_TIMEOUT: "NETWORK_TIMEOUT",
-  NETWORK_INVALID_RESPONSE: "NETWORK_INVALID_RESPONSE",
+  NETWORK_REQUEST_FAILED: 'NETWORK_REQUEST_FAILED',
+  NETWORK_TIMEOUT: 'NETWORK_TIMEOUT',
+  NETWORK_INVALID_RESPONSE: 'NETWORK_INVALID_RESPONSE',
 
   // Hot reload errors (HOT_RELOAD_*)
-  HOT_RELOAD_FAILED: "HOT_RELOAD_FAILED",
-  HOT_RELOAD_STATE_ERROR: "HOT_RELOAD_STATE_ERROR",
-  HOT_RELOAD_WATCH_ERROR: "HOT_RELOAD_WATCH_ERROR",
+  HOT_RELOAD_FAILED: 'HOT_RELOAD_FAILED',
+  HOT_RELOAD_STATE_ERROR: 'HOT_RELOAD_STATE_ERROR',
+  HOT_RELOAD_WATCH_ERROR: 'HOT_RELOAD_WATCH_ERROR',
 
   // DAG errors (DAG_*)
-  DAG_CYCLE_DETECTED: "DAG_CYCLE_DETECTED",
-  DAG_NODE_NOT_FOUND: "DAG_NODE_NOT_FOUND",
-  DAG_EXECUTION_FAILED: "DAG_EXECUTION_FAILED",
-  DAG_INVALID_TOPOLOGY: "DAG_INVALID_TOPOLOGY",
+  DAG_CYCLE_DETECTED: 'DAG_CYCLE_DETECTED',
+  DAG_NODE_NOT_FOUND: 'DAG_NODE_NOT_FOUND',
+  DAG_EXECUTION_FAILED: 'DAG_EXECUTION_FAILED',
+  DAG_INVALID_TOPOLOGY: 'DAG_INVALID_TOPOLOGY',
 
   // Authentication/Authorization errors (AUTH_*)
-  AUTH_INVALID_TOKEN: "AUTH_INVALID_TOKEN",
-  AUTH_TOKEN_EXPIRED: "AUTH_TOKEN_EXPIRED",
-  AUTH_INSUFFICIENT_PERMISSIONS: "AUTH_INSUFFICIENT_PERMISSIONS",
+  AUTH_INVALID_TOKEN: 'AUTH_INVALID_TOKEN',
+  AUTH_TOKEN_EXPIRED: 'AUTH_TOKEN_EXPIRED',
+  AUTH_INSUFFICIENT_PERMISSIONS: 'AUTH_INSUFFICIENT_PERMISSIONS',
 
   // Generic errors
-  UNKNOWN_ERROR: "UNKNOWN_ERROR",
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 };
 
 /**
@@ -79,274 +79,274 @@ const ERROR_CODES = {
  */
 const ERROR_TEMPLATES = {
   [ERROR_CODES.CONFIG_NOT_FOUND]: {
-    message: "Configuration file not found at '{path}'",
+    message: 'Configuration file not found at \'{path}\'',
     suggestions: [
-      "Create a .ragrc.json file in the project root",
-      "Specify the config path using --config flag",
-      "Run 'rag-pipeline init' to create a default configuration",
+      'Create a .ragrc.json file in the project root',
+      'Specify the config path using --config flag',
+      'Run \'rag-pipeline init\' to create a default configuration',
     ],
-    documentation: "configuration.md#getting-started",
+    documentation: 'configuration.md#getting-started',
   },
 
   [ERROR_CODES.CONFIG_INVALID_JSON]: {
-    message: "Invalid JSON in configuration file '{path}'",
+    message: 'Invalid JSON in configuration file \'{path}\'',
     suggestions: [
-      "Validate JSON syntax using a JSON validator",
-      "Check for missing commas, quotes, or brackets",
-      "Use an IDE with JSON validation support",
-      "Review the error details: {details}",
+      'Validate JSON syntax using a JSON validator',
+      'Check for missing commas, quotes, or brackets',
+      'Use an IDE with JSON validation support',
+      'Review the error details: {details}',
     ],
-    documentation: "configuration.md#json-format",
+    documentation: 'configuration.md#json-format',
   },
 
   [ERROR_CODES.CONFIG_VALIDATION_FAILED]: {
-    message: "Configuration validation failed: {reason}",
+    message: 'Configuration validation failed: {reason}',
     suggestions: [
-      "Review the validation errors listed above",
-      "Check the configuration schema documentation",
-      "Ensure all required fields are present: {requiredFields}",
-      "Validate configuration using: rag-pipeline validate",
+      'Review the validation errors listed above',
+      'Check the configuration schema documentation',
+      'Ensure all required fields are present: {requiredFields}',
+      'Validate configuration using: rag-pipeline validate',
     ],
-    documentation: "configuration.md#schema-validation",
+    documentation: 'configuration.md#schema-validation',
   },
 
   [ERROR_CODES.CONFIG_MISSING_REQUIRED]: {
-    message: "Missing required configuration field: '{field}'",
+    message: 'Missing required configuration field: \'{field}\'',
     suggestions: [
-      "Add the '{field}' field to your .ragrc.json",
-      "Check the configuration examples in documentation",
-      "Required type: {expectedType}",
+      'Add the \'{field}\' field to your .ragrc.json',
+      'Check the configuration examples in documentation',
+      'Required type: {expectedType}',
     ],
-    documentation: "configuration.md#required-fields",
+    documentation: 'configuration.md#required-fields',
   },
 
   [ERROR_CODES.CONFIG_INVALID_TYPE]: {
     message:
-      "Invalid type for configuration field '{field}': expected {expected}, got {actual}",
+      'Invalid type for configuration field \'{field}\': expected {expected}, got {actual}',
     suggestions: [
-      "Change '{field}' to type {expected}",
-      "Review the configuration schema for correct types",
-      "Current value: {currentValue}",
+      'Change \'{field}\' to type {expected}',
+      'Review the configuration schema for correct types',
+      'Current value: {currentValue}',
     ],
-    documentation: "configuration.md#field-types",
+    documentation: 'configuration.md#field-types',
   },
 
   [ERROR_CODES.PLUGIN_NOT_FOUND]: {
-    message: "Plugin '{plugin}' not found",
+    message: 'Plugin \'{plugin}\' not found',
     suggestions: [
-      "Check if the plugin is installed: npm list {plugin}",
-      "Install the plugin: npm install {plugin}",
-      "Verify the plugin path in configuration: {path}",
-      "Check for typos in the plugin name",
+      'Check if the plugin is installed: npm list {plugin}',
+      'Install the plugin: npm install {plugin}',
+      'Verify the plugin path in configuration: {path}',
+      'Check for typos in the plugin name',
     ],
-    documentation: "plugins.md#installation",
+    documentation: 'plugins.md#installation',
   },
 
   [ERROR_CODES.PLUGIN_LOAD_FAILED]: {
-    message: "Failed to load plugin '{plugin}': {reason}",
+    message: 'Failed to load plugin \'{plugin}\': {reason}',
     suggestions: [
-      "Check if the plugin file exists at: {path}",
-      "Verify the plugin exports a valid module",
-      "Install plugin dependencies: npm install",
-      "Review the plugin error: {details}",
+      'Check if the plugin file exists at: {path}',
+      'Verify the plugin exports a valid module',
+      'Install plugin dependencies: npm install',
+      'Review the plugin error: {details}',
     ],
-    documentation: "plugins.md#troubleshooting",
+    documentation: 'plugins.md#troubleshooting',
   },
 
   [ERROR_CODES.PLUGIN_INVALID_EXPORT]: {
-    message: "Plugin '{plugin}' does not export a valid structure",
+    message: 'Plugin \'{plugin}\' does not export a valid structure',
     suggestions: [
-      "Ensure the plugin exports a class or function",
-      "Check that required methods are implemented: {requiredMethods}",
-      "Review plugin contract documentation",
-      "Example: module.exports = class MyPlugin { execute() {} }",
+      'Ensure the plugin exports a class or function',
+      'Check that required methods are implemented: {requiredMethods}',
+      'Review plugin contract documentation',
+      'Example: module.exports = class MyPlugin { execute() {} }',
     ],
-    documentation: "plugins.md#plugin-contract",
+    documentation: 'plugins.md#plugin-contract',
   },
 
   [ERROR_CODES.PLUGIN_EXECUTION_FAILED]: {
-    message: "Plugin '{plugin}' execution failed: {reason}",
+    message: 'Plugin \'{plugin}\' execution failed: {reason}',
     suggestions: [
-      "Check plugin input data matches expected format",
-      "Review plugin error logs above",
-      "Verify plugin dependencies are installed",
-      "Try running plugin in isolation for debugging",
-      "Input received: {input}",
+      'Check plugin input data matches expected format',
+      'Review plugin error logs above',
+      'Verify plugin dependencies are installed',
+      'Try running plugin in isolation for debugging',
+      'Input received: {input}',
     ],
-    documentation: "plugins.md#debugging",
+    documentation: 'plugins.md#debugging',
   },
 
   [ERROR_CODES.PLUGIN_CONTRACT_VIOLATION]: {
-    message: "Plugin '{plugin}' violates contract: {violation}",
+    message: 'Plugin \'{plugin}\' violates contract: {violation}',
     suggestions: [
-      "Implement required method: {missingMethod}",
-      "Return expected type: {expectedType}",
-      "Review plugin contract documentation",
-      "Check plugin certification requirements",
+      'Implement required method: {missingMethod}',
+      'Return expected type: {expectedType}',
+      'Review plugin contract documentation',
+      'Check plugin certification requirements',
     ],
-    documentation: "plugins.md#contract-requirements",
+    documentation: 'plugins.md#contract-requirements',
   },
 
   [ERROR_CODES.PLUGIN_DEPENDENCY_MISSING]: {
-    message: "Plugin '{plugin}' missing dependency: {dependency}",
+    message: 'Plugin \'{plugin}\' missing dependency: {dependency}',
     suggestions: [
-      "Install missing dependency: npm install {dependency}",
-      "Check plugin's package.json for required dependencies",
-      "Verify dependency version compatibility: {requiredVersion}",
+      'Install missing dependency: npm install {dependency}',
+      'Check plugin\'s package.json for required dependencies',
+      'Verify dependency version compatibility: {requiredVersion}',
     ],
-    documentation: "plugins.md#dependencies",
+    documentation: 'plugins.md#dependencies',
   },
 
   [ERROR_CODES.PIPELINE_CREATION_FAILED]: {
-    message: "Failed to create pipeline: {reason}",
+    message: 'Failed to create pipeline: {reason}',
     suggestions: [
-      "Verify configuration is valid: rag-pipeline validate",
-      "Check all plugins are installed and accessible",
-      "Review pipeline stages configuration",
-      "Ensure all required stages are defined: {requiredStages}",
+      'Verify configuration is valid: rag-pipeline validate',
+      'Check all plugins are installed and accessible',
+      'Review pipeline stages configuration',
+      'Ensure all required stages are defined: {requiredStages}',
     ],
-    documentation: "pipeline.md#creation",
+    documentation: 'pipeline.md#creation',
   },
 
   [ERROR_CODES.PIPELINE_EXECUTION_FAILED]: {
-    message: "Pipeline execution failed at stage '{stage}': {reason}",
+    message: 'Pipeline execution failed at stage \'{stage}\': {reason}',
     suggestions: [
-      "Check input data format for stage '{stage}'",
-      "Review plugin configuration for this stage",
-      "Enable verbose logging: pipeline.execute({ verbose: true })",
-      "Check previous stage outputs",
+      'Check input data format for stage \'{stage}\'',
+      'Review plugin configuration for this stage',
+      'Enable verbose logging: pipeline.execute({ verbose: true })',
+      'Check previous stage outputs',
     ],
-    documentation: "pipeline.md#execution-errors",
+    documentation: 'pipeline.md#execution-errors',
   },
 
   [ERROR_CODES.PIPELINE_STAGE_FAILED]: {
-    message: "Stage '{stage}' failed: {reason}",
+    message: 'Stage \'{stage}\' failed: {reason}',
     suggestions: [
-      "Verify stage configuration is correct",
-      "Check stage dependencies are met",
-      "Review stage plugin logs",
-      "Input data: {input}",
+      'Verify stage configuration is correct',
+      'Check stage dependencies are met',
+      'Review stage plugin logs',
+      'Input data: {input}',
     ],
-    documentation: "pipeline.md#stage-configuration",
+    documentation: 'pipeline.md#stage-configuration',
   },
 
   [ERROR_CODES.FS_FILE_NOT_FOUND]: {
-    message: "File not found: {path}",
+    message: 'File not found: {path}',
     suggestions: [
-      "Verify the file path is correct: {path}",
-      "Check file permissions and access rights",
-      "Ensure the file has not been moved or deleted",
-      "Use absolute path instead of relative path",
+      'Verify the file path is correct: {path}',
+      'Check file permissions and access rights',
+      'Ensure the file has not been moved or deleted',
+      'Use absolute path instead of relative path',
     ],
-    documentation: "troubleshooting.md#file-errors",
+    documentation: 'troubleshooting.md#file-errors',
   },
 
   [ERROR_CODES.FS_DIRECTORY_NOT_FOUND]: {
-    message: "Directory not found: {path}",
+    message: 'Directory not found: {path}',
     suggestions: [
-      "Create the directory: mkdir -p {path}",
-      "Verify the directory path is correct",
-      "Check parent directory exists and is accessible",
+      'Create the directory: mkdir -p {path}',
+      'Verify the directory path is correct',
+      'Check parent directory exists and is accessible',
     ],
-    documentation: "troubleshooting.md#file-errors",
+    documentation: 'troubleshooting.md#file-errors',
   },
 
   [ERROR_CODES.FS_PERMISSION_DENIED]: {
-    message: "Permission denied accessing: {path}",
+    message: 'Permission denied accessing: {path}',
     suggestions: [
-      "Check file/directory permissions: ls -la {path}",
-      "Ensure your user has read/write access",
-      "Try running with appropriate permissions",
-      "Contact system administrator if needed",
+      'Check file/directory permissions: ls -la {path}',
+      'Ensure your user has read/write access',
+      'Try running with appropriate permissions',
+      'Contact system administrator if needed',
     ],
-    documentation: "troubleshooting.md#permission-errors",
+    documentation: 'troubleshooting.md#permission-errors',
   },
 
   [ERROR_CODES.HOT_RELOAD_FAILED]: {
-    message: "Hot reload failed for '{path}': {reason}",
+    message: 'Hot reload failed for \'{path}\': {reason}',
     suggestions: [
-      "Check for syntax errors in the modified file",
-      "Ensure the file is within watched paths: {watchPaths}",
-      "Try manual reload: hotReload.triggerReload('{path}')",
-      "Review error details above",
+      'Check for syntax errors in the modified file',
+      'Ensure the file is within watched paths: {watchPaths}',
+      'Try manual reload: hotReload.triggerReload(\'{path}\')',
+      'Review error details above',
     ],
-    documentation: "hot-reload.md#troubleshooting",
+    documentation: 'hot-reload.md#troubleshooting',
   },
 
   [ERROR_CODES.HOT_RELOAD_STATE_ERROR]: {
-    message: "Failed to preserve/restore state during reload: {reason}",
+    message: 'Failed to preserve/restore state during reload: {reason}',
     suggestions: [
-      "Check that state is serializable (no functions, circular refs)",
-      "Implement getState/setState methods in your plugin",
-      "Disable state preservation if not needed: preserveState: false",
-      "Review state preservation documentation",
+      'Check that state is serializable (no functions, circular refs)',
+      'Implement getState/setState methods in your plugin',
+      'Disable state preservation if not needed: preserveState: false',
+      'Review state preservation documentation',
     ],
-    documentation: "hot-reload.md#state-preservation",
+    documentation: 'hot-reload.md#state-preservation',
   },
 
   [ERROR_CODES.DAG_CYCLE_DETECTED]: {
-    message: "Cycle detected in DAG: {cycle}",
+    message: 'Cycle detected in DAG: {cycle}',
     suggestions: [
-      "Review the dependency chain: {cycle}",
-      "Remove circular dependencies between nodes",
-      "Ensure all edges form a directed acyclic graph",
-      "Use topological sort to verify order",
+      'Review the dependency chain: {cycle}',
+      'Remove circular dependencies between nodes',
+      'Ensure all edges form a directed acyclic graph',
+      'Use topological sort to verify order',
     ],
-    documentation: "dag.md#cycles",
+    documentation: 'dag.md#cycles',
   },
 
   [ERROR_CODES.DAG_NODE_NOT_FOUND]: {
-    message: "DAG node '{node}' not found",
+    message: 'DAG node \'{node}\' not found',
     suggestions: [
-      "Check node ID is correct: {node}",
-      "Verify node was added to DAG before execution",
-      "List all nodes: dag.getNodes()",
-      "Available nodes: {availableNodes}",
+      'Check node ID is correct: {node}',
+      'Verify node was added to DAG before execution',
+      'List all nodes: dag.getNodes()',
+      'Available nodes: {availableNodes}',
     ],
-    documentation: "dag.md#nodes",
+    documentation: 'dag.md#nodes',
   },
 
   [ERROR_CODES.VALIDATION_FAILED]: {
-    message: "Validation failed: {reason}",
+    message: 'Validation failed: {reason}',
     suggestions: [
-      "Review validation errors: {errors}",
-      "Check input data against schema",
-      "Use validation tools to verify format",
+      'Review validation errors: {errors}',
+      'Check input data against schema',
+      'Use validation tools to verify format',
     ],
-    documentation: "validation.md",
+    documentation: 'validation.md',
   },
 
   [ERROR_CODES.AUTH_INVALID_TOKEN]: {
-    message: "Invalid authentication token",
+    message: 'Invalid authentication token',
     suggestions: [
-      "Check token format and signature",
-      "Verify token hasn't been tampered with",
-      "Ensure token is properly encoded",
-      "Generate new token if needed",
+      'Check token format and signature',
+      'Verify token hasn\'t been tampered with',
+      'Ensure token is properly encoded',
+      'Generate new token if needed',
     ],
-    documentation: "security.md#authentication",
+    documentation: 'security.md#authentication',
   },
 
   [ERROR_CODES.AUTH_TOKEN_EXPIRED]: {
-    message: "Authentication token expired at {expiredAt}",
+    message: 'Authentication token expired at {expiredAt}',
     suggestions: [
-      "Generate a new authentication token",
-      "Increase token expiration time in configuration",
-      "Implement token refresh mechanism",
-      "Check system clock is synchronized",
+      'Generate a new authentication token',
+      'Increase token expiration time in configuration',
+      'Implement token refresh mechanism',
+      'Check system clock is synchronized',
     ],
-    documentation: "security.md#token-expiration",
+    documentation: 'security.md#token-expiration',
   },
 
   [ERROR_CODES.UNKNOWN_ERROR]: {
-    message: "An unexpected error occurred: {reason}",
+    message: 'An unexpected error occurred: {reason}',
     suggestions: [
-      "Check application logs for more details",
-      "Enable verbose logging for debugging",
-      "Report this issue if it persists",
-      "Include error details in bug report",
+      'Check application logs for more details',
+      'Enable verbose logging for debugging',
+      'Report this issue if it persists',
+      'Include error details in bug report',
     ],
-    documentation: "troubleshooting.md",
+    documentation: 'troubleshooting.md',
   },
 };
 
@@ -358,7 +358,7 @@ class EnhancedError extends Error {
     const formattedMessage = formatError(code, context);
     super(formattedMessage.message);
 
-    this.name = "EnhancedError";
+    this.name = 'EnhancedError';
     this.code = code;
     this.context = context;
     this.suggestions = formattedMessage.suggestions;
@@ -469,7 +469,7 @@ function formatErrorMessage(error, options = {}) {
     error.context &&
     Object.keys(error.context).length > 0
   ) {
-    output.push("\nContext:");
+    output.push('\nContext:');
     for (const [key, value] of Object.entries(error.context)) {
       output.push(`  ${key}: ${JSON.stringify(value)}`);
     }
@@ -477,7 +477,7 @@ function formatErrorMessage(error, options = {}) {
 
   // Suggestions
   if (includeSuggestions && error.suggestions && error.suggestions.length > 0) {
-    output.push("\nSuggestions:");
+    output.push('\nSuggestions:');
     error.suggestions.forEach((suggestion, index) => {
       output.push(`  ${index + 1}. ${suggestion}`);
     });
@@ -492,11 +492,11 @@ function formatErrorMessage(error, options = {}) {
 
   // Stack trace (optional)
   if (includeStack && error.stack) {
-    output.push("\nStack Trace:");
+    output.push('\nStack Trace:');
     output.push(error.stack);
   }
 
-  return output.join("\n");
+  return output.join('\n');
 }
 
 /**
@@ -559,9 +559,9 @@ function getErrorSeverity(code) {
     ERROR_CODES.HOT_RELOAD_STATE_ERROR,
   ];
 
-  if (critical.includes(code)) return "critical";
-  if (warnings.includes(code)) return "warning";
-  return "error";
+  if (critical.includes(code)) return 'critical';
+  if (warnings.includes(code)) return 'warning';
+  return 'error';
 }
 
 /**
@@ -573,16 +573,16 @@ function getErrorSeverity(code) {
 function logError(error, logger = console) {
   const severity = isEnhancedError(error)
     ? getErrorSeverity(error.code)
-    : "error";
+    : 'error';
   const formatted = formatErrorMessage(error, {
     includeSuggestions: true,
     includeDocumentation: true,
-    includeStack: severity === "critical",
+    includeStack: severity === 'critical',
   });
 
-  if (severity === "critical") {
+  if (severity === 'critical') {
     logger.error(formatted);
-  } else if (severity === "warning") {
+  } else if (severity === 'warning') {
     logger.warn(formatted);
   } else {
     logger.error(formatted);

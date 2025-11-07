@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Secure Logger Configuration Loader
@@ -10,9 +10,9 @@
  * @since 2.2.5
  */
 
-const fs = require("fs");
-const path = require("path");
-const { SecureLogger } = require("./secure-logger");
+const fs = require('fs');
+const path = require('path');
+const { SecureLogger } = require('./secure-logger');
 
 /**
  * Load configuration from JSON file
@@ -25,7 +25,7 @@ const { SecureLogger } = require("./secure-logger");
  */
 function loadConfigFile(configPath) {
   try {
-    const content = fs.readFileSync(configPath, "utf8");
+    const content = fs.readFileSync(configPath, 'utf8');
     return JSON.parse(content);
   } catch (error) {
     throw new Error(
@@ -43,7 +43,7 @@ function loadConfigFile(configPath) {
  *
  * @private
  */
-function compileRegex(regexStr, flags = "g") {
+function compileRegex(regexStr, flags = 'g') {
   try {
     return new RegExp(regexStr, flags);
   } catch (error) {
@@ -61,7 +61,7 @@ function compileRegex(regexStr, flags = "g") {
  * @private
  */
 function applyEnvironmentOverrides(config, environment) {
-  const env = environment || process.env.NODE_ENV || "development";
+  const env = environment || process.env.NODE_ENV || 'development';
 
   if (config.environments && config.environments[env]) {
     return {
@@ -86,9 +86,9 @@ function convertCustomPatterns(customPatterns) {
 
   for (const [name, pattern] of Object.entries(customPatterns)) {
     converted[name] = {
-      regex: compileRegex(pattern.regex, pattern.flags || "g"),
+      regex: compileRegex(pattern.regex, pattern.flags || 'g'),
       replacement: pattern.replacement,
-      description: pattern.description || "",
+      description: pattern.description || '',
       enabled: pattern.enabled !== false,
     };
   }
@@ -126,7 +126,7 @@ function createLoggerFromConfig(config, environment) {
   let configuration;
 
   // Load from file if string path provided
-  if (typeof config === "string") {
+  if (typeof config === 'string') {
     configuration = loadConfigFile(config);
   } else {
     configuration = config;
@@ -203,9 +203,9 @@ function createLoggerFromConfig(config, environment) {
  */
 function loadDefaultConfig(environment) {
   const defaultPaths = [
-    path.join(process.cwd(), "redaction-config.json"),
-    path.join(process.cwd(), "config", "redaction-patterns.json"),
-    path.join(__dirname, "..", "config", "redaction-patterns.json"),
+    path.join(process.cwd(), 'redaction-config.json'),
+    path.join(process.cwd(), 'config', 'redaction-patterns.json'),
+    path.join(__dirname, '..', 'config', 'redaction-patterns.json'),
   ];
 
   for (const configPath of defaultPaths) {
@@ -241,26 +241,26 @@ function validateConfig(config) {
   const errors = [];
 
   // Check required fields
-  if (config.enabled !== undefined && typeof config.enabled !== "boolean") {
-    errors.push("enabled must be a boolean");
+  if (config.enabled !== undefined && typeof config.enabled !== 'boolean') {
+    errors.push('enabled must be a boolean');
   }
 
   if (
     config.trackStats !== undefined &&
-    typeof config.trackStats !== "boolean"
+    typeof config.trackStats !== 'boolean'
   ) {
-    errors.push("trackStats must be a boolean");
+    errors.push('trackStats must be a boolean');
   }
 
   if (
     config.redactionMarker !== undefined &&
-    typeof config.redactionMarker !== "string"
+    typeof config.redactionMarker !== 'string'
   ) {
-    errors.push("redactionMarker must be a string");
+    errors.push('redactionMarker must be a string');
   }
 
   // Validate custom patterns
-  if (config.customPatterns && typeof config.customPatterns === "object") {
+  if (config.customPatterns && typeof config.customPatterns === 'object') {
     for (const [name, pattern] of Object.entries(config.customPatterns)) {
       if (!pattern.regex) {
         errors.push(`Custom pattern '${name}' missing regex field`);
@@ -272,7 +272,7 @@ function validateConfig(config) {
       // Try to compile regex
       if (pattern.regex) {
         try {
-          compileRegex(pattern.regex, pattern.flags || "g");
+          compileRegex(pattern.regex, pattern.flags || 'g');
         } catch (error) {
           errors.push(
             `Custom pattern '${name}' has invalid regex: ${error.message}`,
@@ -285,10 +285,10 @@ function validateConfig(config) {
   // Validate sensitive fields
   if (config.sensitiveFields !== undefined) {
     if (!Array.isArray(config.sensitiveFields)) {
-      errors.push("sensitiveFields must be an array");
+      errors.push('sensitiveFields must be an array');
     } else {
       config.sensitiveFields.forEach((field, index) => {
-        if (typeof field !== "string") {
+        if (typeof field !== 'string') {
           errors.push(`sensitiveFields[${index}] must be a string`);
         }
       });
@@ -315,7 +315,7 @@ function createConfigTemplate() {
   return {
     enabled: true,
     trackStats: true,
-    redactionMarker: "[REDACTED]",
+    redactionMarker: '[REDACTED]',
     redactEmails: false,
     redactIPs: false,
     customPatterns: {},

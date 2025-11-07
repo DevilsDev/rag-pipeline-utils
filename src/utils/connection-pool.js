@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Connection Pool Manager
@@ -19,9 +19,9 @@
  * @since 2.3.0
  */
 
-const http = require("http");
-const https = require("https");
-const { EventEmitter } = require("events");
+const http = require('http');
+const https = require('https');
+const { EventEmitter } = require('events');
 
 /**
  * Connection Pool Configuration
@@ -42,7 +42,7 @@ const DEFAULT_CONFIG = {
   keepAliveMsecs: 1000,
 
   // Scheduling algorithm
-  scheduling: "lifo", // 'lifo' or 'fifo'
+  scheduling: 'lifo', // 'lifo' or 'fifo'
 
   // Monitoring
   trackMetrics: true,
@@ -128,10 +128,10 @@ class ConnectionPoolManager extends EventEmitter {
     this.httpsAgent = new https.Agent(httpsConfig);
 
     // Instrument agents for metrics
-    this._instrumentAgent(this.httpAgent, "http");
-    this._instrumentAgent(this.httpsAgent, "https");
+    this._instrumentAgent(this.httpAgent, 'http');
+    this._instrumentAgent(this.httpsAgent, 'https');
 
-    this.emit("agents_initialized", {
+    this.emit('agents_initialized', {
       http: this.httpAgent,
       https: this.httpsAgent,
     });
@@ -155,7 +155,7 @@ class ConnectionPoolManager extends EventEmitter {
         this.metrics.peakPoolSize = this.activeConnections;
       }
 
-      this.emit("connection_created", {
+      this.emit('connection_created', {
         protocol,
         active: this.activeConnections,
         total: this.totalConnections,
@@ -165,11 +165,11 @@ class ConnectionPoolManager extends EventEmitter {
     };
 
     // Track socket lifecycle
-    agent.on("free", (socket, options) => {
+    agent.on('free', (socket, options) => {
       this.activeConnections--;
       this.metrics.cachedConnections++;
 
-      this.emit("connection_freed", {
+      this.emit('connection_freed', {
         protocol,
         host: options.host,
         port: options.port,
@@ -183,7 +183,7 @@ class ConnectionPoolManager extends EventEmitter {
       this.metrics.connectionsDestroyed++;
       this.activeConnections = Math.max(0, this.activeConnections - 1);
 
-      this.emit("connection_removed", {
+      this.emit('connection_removed', {
         protocol,
         host: options?.host,
         active: this.activeConnections,
@@ -218,8 +218,8 @@ class ConnectionPoolManager extends EventEmitter {
    * @returns {http.Agent|https.Agent} Appropriate agent
    */
   getAgentForUrl(url) {
-    const protocol = url.startsWith("https") ? "https" : "http";
-    return protocol === "https" ? this.httpsAgent : this.httpAgent;
+    const protocol = url.startsWith('https') ? 'https' : 'http';
+    return protocol === 'https' ? this.httpsAgent : this.httpAgent;
   }
 
   /**
@@ -246,7 +246,7 @@ class ConnectionPoolManager extends EventEmitter {
       this.metrics.connectionReuse = reuseRate * 100; // Percentage
     }
 
-    this.emit("request_completed", {
+    this.emit('request_completed', {
       duration,
       avgResponseTime: this.metrics.avgResponseTime,
       connectionReuse: this.metrics.connectionReuse,
@@ -259,14 +259,14 @@ class ConnectionPoolManager extends EventEmitter {
    * @param {Error} error - Request error
    * @param {string} type - Error type (timeout, network, etc.)
    */
-  trackError(error, type = "error") {
+  trackError(error, type = 'error') {
     this.metrics.errors++;
 
-    if (type === "timeout") {
+    if (type === 'timeout') {
       this.metrics.timeouts++;
     }
 
-    this.emit("request_error", {
+    this.emit('request_error', {
       error: error.message,
       type,
       totalErrors: this.metrics.errors,
@@ -279,7 +279,7 @@ class ConnectionPoolManager extends EventEmitter {
   trackPoolExhaustion() {
     this.metrics.poolExhausted++;
 
-    this.emit("pool_exhausted", {
+    this.emit('pool_exhausted', {
       maxSockets: this.config.maxSockets,
       active: this.activeConnections,
       exhaustedCount: this.metrics.poolExhausted,
@@ -412,7 +412,7 @@ class ConnectionPoolManager extends EventEmitter {
 
     this.requestTimings = [];
 
-    this.emit("metrics_reset");
+    this.emit('metrics_reset');
   }
 
   /**
@@ -423,11 +423,11 @@ class ConnectionPoolManager extends EventEmitter {
     this.metricsInterval = setInterval(() => {
       const metrics = this.getMetrics();
 
-      this.emit("metrics_collected", metrics);
+      this.emit('metrics_collected', metrics);
 
       // Warn if pool utilization is high
       if (metrics.poolUtilization > 80) {
-        this.emit("high_utilization", {
+        this.emit('high_utilization', {
           utilization: metrics.poolUtilization,
           active: this.activeConnections,
           max: this.config.maxSockets,
@@ -438,7 +438,7 @@ class ConnectionPoolManager extends EventEmitter {
       const errorRate =
         (metrics.errors / Math.max(1, metrics.totalRequests)) * 100;
       if (errorRate > 5) {
-        this.emit("high_error_rate", {
+        this.emit('high_error_rate', {
           errorRate,
           errors: metrics.errors,
           requests: metrics.totalRequests,
@@ -478,7 +478,7 @@ class ConnectionPoolManager extends EventEmitter {
     this.activeConnections = 0;
     this.requestTimings = [];
 
-    this.emit("destroyed");
+    this.emit('destroyed');
     this.removeAllListeners();
   }
 
@@ -494,7 +494,7 @@ class ConnectionPoolManager extends EventEmitter {
     return `
 Connection Pool Report
 ======================
-Status: ${status.healthy ? "Healthy ✓" : "Warning ⚠"}
+Status: ${status.healthy ? 'Healthy ✓' : 'Warning ⚠'}
 Pool Utilization: ${status.utilization.toFixed(1)}%
 Active Connections: ${status.activeConnections} / ${status.maxConnections}
 Connection Reuse Rate: ${status.connectionReuse.toFixed(1)}%
@@ -586,9 +586,9 @@ function createPooledFetch(pool) {
     } catch (error) {
       // Track error
       const errorType =
-        error.code === "ETIMEDOUT" || error.code === "ESOCKETTIMEDOUT"
-          ? "timeout"
-          : "error";
+        error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT'
+          ? 'timeout'
+          : 'error';
       pool.trackError(error, errorType);
 
       throw error;

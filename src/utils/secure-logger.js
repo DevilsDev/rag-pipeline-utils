@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Secure Logger with Automatic Secret Redaction
@@ -30,28 +30,28 @@ const DEFAULT_PATTERNS = {
       /\b([a-zA-Z0-9_-]*(?:api[_-]?key|apikey|key)[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([a-zA-Z0-9_\-]{16,})(['"]?)/gi,
     replacement: (match, prefix, quote1, key, quote2) =>
       `${prefix}${quote1}[REDACTED_API_KEY]${quote2}`,
-    description: "API keys in key-value format",
+    description: 'API keys in key-value format',
   },
 
   // Bearer tokens
   bearerToken: {
     regex: /\b(bearer\s+)([a-zA-Z0-9_\-\.=]+)/gi,
-    replacement: "$1[REDACTED_BEARER_TOKEN]",
-    description: "Bearer authentication tokens",
+    replacement: '$1[REDACTED_BEARER_TOKEN]',
+    description: 'Bearer authentication tokens',
   },
 
   // JWT tokens
   jwt: {
     regex: /\b(eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]+)/g,
-    replacement: "[REDACTED_JWT]",
-    description: "JSON Web Tokens",
+    replacement: '[REDACTED_JWT]',
+    description: 'JSON Web Tokens',
   },
 
   // AWS Access Keys
   awsAccessKey: {
     regex: /\b(AKIA[0-9A-Z]{16})\b/g,
-    replacement: "[REDACTED_AWS_KEY]",
-    description: "AWS access keys",
+    replacement: '[REDACTED_AWS_KEY]',
+    description: 'AWS access keys',
   },
 
   // AWS Secret Keys
@@ -60,7 +60,7 @@ const DEFAULT_PATTERNS = {
       /\b(aws[_-]?secret[_-]?access[_-]?key[:=]\s*)(['"]?)([a-zA-Z0-9/+=]{40})(['"]?)/gi,
     replacement: (match, prefix, quote1, key, quote2) =>
       `${prefix}${quote1}[REDACTED_AWS_SECRET]${quote2}`,
-    description: "AWS secret access keys",
+    description: 'AWS secret access keys',
   },
 
   // Generic passwords
@@ -69,7 +69,7 @@ const DEFAULT_PATTERNS = {
       /\b([a-zA-Z0-9_-]*password[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
     replacement: (match, prefix, quote1, pwd, quote2) =>
       `${prefix}${quote1}[REDACTED_PASSWORD]${quote2}`,
-    description: "Password fields",
+    description: 'Password fields',
   },
 
   // Generic tokens
@@ -78,7 +78,7 @@ const DEFAULT_PATTERNS = {
       /\b([a-zA-Z0-9_-]*token[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([a-zA-Z0-9_\-\.=]{16,})(['"]?)/gi,
     replacement: (match, prefix, quote1, token, quote2) =>
       `${prefix}${quote1}[REDACTED_TOKEN]${quote2}`,
-    description: "Generic token fields",
+    description: 'Generic token fields',
   },
 
   // Generic secrets
@@ -87,37 +87,37 @@ const DEFAULT_PATTERNS = {
       /\b([a-zA-Z0-9_-]*secret[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
     replacement: (match, prefix, quote1, secret, quote2) =>
       `${prefix}${quote1}[REDACTED_SECRET]${quote2}`,
-    description: "Generic secret fields",
+    description: 'Generic secret fields',
   },
 
   // Private keys (PEM format)
   privateKey: {
     regex:
       /(-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----)([\s\S]*?)(-----END\s+(?:RSA\s+)?PRIVATE\s+KEY-----)/gi,
-    replacement: "$1\n[REDACTED_PRIVATE_KEY]\n$3",
-    description: "PEM-format private keys",
+    replacement: '$1\n[REDACTED_PRIVATE_KEY]\n$3',
+    description: 'PEM-format private keys',
   },
 
   // Credit card numbers (basic pattern)
   creditCard: {
     regex: /\b(\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4})\b/g,
-    replacement: "[REDACTED_CC]",
-    description: "Credit card numbers",
+    replacement: '[REDACTED_CC]',
+    description: 'Credit card numbers',
   },
 
   // Email addresses (optional redaction)
   email: {
     regex: /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g,
-    replacement: "[REDACTED_EMAIL]",
-    description: "Email addresses",
+    replacement: '[REDACTED_EMAIL]',
+    description: 'Email addresses',
     enabled: false, // Disabled by default
   },
 
   // IP addresses (optional redaction)
   ipAddress: {
     regex: /\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/g,
-    replacement: "[REDACTED_IP]",
-    description: "IP addresses",
+    replacement: '[REDACTED_IP]',
+    description: 'IP addresses',
     enabled: false, // Disabled by default
   },
 };
@@ -129,30 +129,30 @@ const DEFAULT_PATTERNS = {
  * @private
  */
 const SENSITIVE_FIELD_NAMES = new Set([
-  "password",
-  "passwd",
-  "pwd",
-  "secret",
-  "api_key",
-  "apikey",
-  "apiKey",
-  "access_token",
-  "accessToken",
-  "refresh_token",
-  "refreshToken",
-  "auth_token",
-  "authToken",
-  "bearer_token",
-  "bearerToken",
-  "private_key",
-  "privateKey",
-  "client_secret",
-  "clientSecret",
-  "jwt",
-  "authorization",
-  "auth",
-  "credentials",
-  "credential",
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'api_key',
+  'apikey',
+  'apiKey',
+  'access_token',
+  'accessToken',
+  'refresh_token',
+  'refreshToken',
+  'auth_token',
+  'authToken',
+  'bearer_token',
+  'bearerToken',
+  'private_key',
+  'privateKey',
+  'client_secret',
+  'clientSecret',
+  'jwt',
+  'authorization',
+  'auth',
+  'credentials',
+  'credential',
 ]);
 
 /**
@@ -182,7 +182,7 @@ class SecureLogger {
       ...(options.sensitiveFields || []),
     ]);
     this.trackStats = options.trackStats !== false;
-    this.redactionMarker = options.redactionMarker || "[REDACTED]";
+    this.redactionMarker = options.redactionMarker || '[REDACTED]';
 
     // Enable/disable optional patterns
     if (options.redactEmails) {
@@ -233,7 +233,7 @@ class SecureLogger {
    * @returns {boolean} True if field is sensitive
    */
   _isSensitiveField(fieldName) {
-    if (typeof fieldName !== "string") return false;
+    if (typeof fieldName !== 'string') return false;
 
     const lowerName = fieldName.toLowerCase();
 
@@ -258,7 +258,7 @@ class SecureLogger {
    * @returns {string} Redacted string
    */
   _redactString(value) {
-    if (typeof value !== "string" || !value) return value;
+    if (typeof value !== 'string' || !value) return value;
 
     let redacted = value;
     let hasRedaction = false;
@@ -289,14 +289,14 @@ class SecureLogger {
    * @param {Set} [seen=new Set()] - Circular reference detection
    * @returns {*} Redacted value with preserved structure
    */
-  _redactValue(value, fieldName = "", seen = new Set()) {
+  _redactValue(value, fieldName = '', seen = new Set()) {
     // Handle null/undefined
     if (value == null) return value;
 
     // Circular reference detection
-    if (typeof value === "object") {
+    if (typeof value === 'object') {
       if (seen.has(value)) {
-        return "[Circular]";
+        return '[Circular]';
       }
       seen.add(value);
     }
@@ -312,7 +312,7 @@ class SecureLogger {
     }
 
     // Handle different types
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       return this._redactString(value);
     }
 
@@ -322,7 +322,7 @@ class SecureLogger {
       );
     }
 
-    if (typeof value === "object") {
+    if (typeof value === 'object') {
       const redacted = {};
       for (const [key, val] of Object.entries(value)) {
         const newFieldName = fieldName ? `${fieldName}.${key}` : key;
@@ -412,7 +412,7 @@ class SecureLogger {
     this.patterns[name] = {
       regex: pattern.regex,
       replacement: pattern.replacement,
-      description: pattern.description || "",
+      description: pattern.description || '',
       enabled: pattern.enabled !== false,
     };
     this._compilePatterns();

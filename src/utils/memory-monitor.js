@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Enhanced Memory Monitor
@@ -19,8 +19,8 @@
  * @since 2.3.0
  */
 
-const { EventEmitter } = require("events");
-const { performance } = require("perf_hooks");
+const { EventEmitter } = require('events');
+const { performance } = require('perf_hooks');
 
 /**
  * Default configuration for memory monitoring
@@ -156,7 +156,7 @@ class MemoryLeakDetector {
    */
   getTrend() {
     if (this.leakHistory.length < 2) {
-      return { trend: "unknown", averageGrowthRate: 0 };
+      return { trend: 'unknown', averageGrowthRate: 0 };
     }
 
     const recentHistory = this.leakHistory.slice(-10);
@@ -166,7 +166,7 @@ class MemoryLeakDetector {
 
     return {
       trend:
-        avgGrowthRate > this.leakRateThreshold * 100 ? "increasing" : "stable",
+        avgGrowthRate > this.leakRateThreshold * 100 ? 'increasing' : 'stable',
       averageGrowthRate: avgGrowthRate,
       sampleCount: recentHistory.length,
     };
@@ -233,7 +233,7 @@ class GCOptimizer {
    */
   triggerGC() {
     if (!global.gc) {
-      return { triggered: false, reason: "GC not exposed" };
+      return { triggered: false, reason: 'GC not exposed' };
     }
 
     const before = process.memoryUsage();
@@ -351,7 +351,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
     }
 
     this.monitoring = true;
-    this.emit("start");
+    this.emit('start');
 
     // Start sampling
     this.samplingInterval = setInterval(() => {
@@ -397,7 +397,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
       this.snapshotInterval = null;
     }
 
-    this.emit("stop");
+    this.emit('stop');
   }
 
   /**
@@ -429,14 +429,14 @@ class EnhancedMemoryMonitor extends EventEmitter {
       // Check thresholds
       if (ratio > this.config.criticalThreshold) {
         this.metrics.criticalCount++;
-        this.emit("critical", {
+        this.emit('critical', {
           ratio,
           heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
           maxMemoryMB: this.config.maxMemoryMB,
         });
       } else if (ratio > this.config.warningThreshold) {
         this.metrics.warningCount++;
-        this.emit("warning", {
+        this.emit('warning', {
           ratio,
           heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
           maxMemoryMB: this.config.maxMemoryMB,
@@ -449,7 +449,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
 
         if (leakAnalysis.leakDetected && this.metrics.leakDetections === 0) {
           this.metrics.leakDetections++;
-          this.emit("leak_detected", {
+          this.emit('leak_detected', {
             ...leakAnalysis,
             heapUsedMB: Math.round(usage.heapUsed / 1024 / 1024),
             trend: this.leakDetector.getTrend(),
@@ -466,9 +466,9 @@ class EnhancedMemoryMonitor extends EventEmitter {
 
           if (gcAnalysis.gcTriggered) {
             this.metrics.gcTriggers++;
-            this.emit("gc_triggered", gcAnalysis);
+            this.emit('gc_triggered', gcAnalysis);
           } else {
-            this.emit("gc_suggested", gcAnalysis);
+            this.emit('gc_suggested', gcAnalysis);
           }
         }
       }
@@ -483,13 +483,13 @@ class EnhancedMemoryMonitor extends EventEmitter {
         this.overheadSamples.reduce((a, b) => a + b, 0) /
         this.overheadSamples.length;
 
-      this.emit("sample", {
+      this.emit('sample', {
         usage,
         ratio,
         timestamp: Date.now(),
       });
     } catch (error) {
-      this.emit("error", error);
+      this.emit('error', error);
     }
   }
 
@@ -511,9 +511,9 @@ class EnhancedMemoryMonitor extends EventEmitter {
 
       this.metrics.totalSnapshots++;
 
-      this.emit("snapshot", snapshot);
+      this.emit('snapshot', snapshot);
     } catch (error) {
-      this.emit("error", error);
+      this.emit('error', error);
     }
   }
 
@@ -522,7 +522,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
    * @private
    */
   _getMemoryUsage() {
-    if (typeof process.memoryUsage === "function") {
+    if (typeof process.memoryUsage === 'function') {
       return process.memoryUsage();
     }
 
@@ -565,10 +565,10 @@ class EnhancedMemoryMonitor extends EventEmitter {
       // Status
       status:
         ratio > this.config.criticalThreshold
-          ? "critical"
+          ? 'critical'
           : ratio > this.config.warningThreshold
-            ? "warning"
-            : "normal",
+            ? 'warning'
+            : 'normal',
 
       // Statistics
       stats: {
@@ -633,31 +633,31 @@ class EnhancedMemoryMonitor extends EventEmitter {
     const recommendations = [];
 
     // High memory usage
-    if (metrics.status === "critical") {
+    if (metrics.status === 'critical') {
       recommendations.push({
-        priority: "high",
-        category: "memory",
+        priority: 'high',
+        category: 'memory',
         message: `Critical memory usage: ${metrics.current.percentage}%`,
         action:
-          "Reduce batch sizes, implement streaming, or increase memory limit",
+          'Reduce batch sizes, implement streaming, or increase memory limit',
       });
-    } else if (metrics.status === "warning") {
+    } else if (metrics.status === 'warning') {
       recommendations.push({
-        priority: "medium",
-        category: "memory",
+        priority: 'medium',
+        category: 'memory',
         message: `High memory usage: ${metrics.current.percentage}%`,
-        action: "Monitor closely and consider optimizations",
+        action: 'Monitor closely and consider optimizations',
       });
     }
 
     // Memory leak
     if (metrics.leak && metrics.leak.detected) {
       recommendations.push({
-        priority: "high",
-        category: "leak",
+        priority: 'high',
+        category: 'leak',
         message: `Memory leak detected with ${metrics.leak.confidence.toFixed(0)}% confidence`,
         action:
-          "Investigate increasing memory trend. Check for unclosed resources, event listeners, or circular references",
+          'Investigate increasing memory trend. Check for unclosed resources, event listeners, or circular references',
         details: metrics.leak.trend,
       });
     }
@@ -665,23 +665,23 @@ class EnhancedMemoryMonitor extends EventEmitter {
     // GC optimization
     if (metrics.gc && metrics.current.ratio > this.config.gcThreshold) {
       recommendations.push({
-        priority: "medium",
-        category: "gc",
+        priority: 'medium',
+        category: 'gc',
         message: `GC recommended at ${metrics.current.percentage}% memory usage`,
         action: global.gc
-          ? "Trigger manual GC or enable autoGC"
-          : "Run with --expose-gc flag to enable manual GC",
+          ? 'Trigger manual GC or enable autoGC'
+          : 'Run with --expose-gc flag to enable manual GC',
       });
     }
 
     // Performance overhead
     if (parseFloat(metrics.overhead.percentage) > 5) {
       recommendations.push({
-        priority: "low",
-        category: "performance",
+        priority: 'low',
+        category: 'performance',
         message: `Monitoring overhead at ${metrics.overhead.percentage}%`,
         action:
-          "Consider increasing samplingInterval or disabling detailed metrics",
+          'Consider increasing samplingInterval or disabling detailed metrics',
       });
     }
 
@@ -697,11 +697,11 @@ class EnhancedMemoryMonitor extends EventEmitter {
 
     const report = [];
 
-    report.push("=".repeat(60));
-    report.push("ENHANCED MEMORY MONITOR REPORT");
-    report.push("=".repeat(60));
+    report.push('='.repeat(60));
+    report.push('ENHANCED MEMORY MONITOR REPORT');
+    report.push('='.repeat(60));
 
-    report.push("\nCurrent Memory Usage:");
+    report.push('\nCurrent Memory Usage:');
     report.push(`  Heap Used:    ${metrics.current.heapUsedMB} MB`);
     report.push(`  Heap Total:   ${metrics.current.heapTotalMB} MB`);
     report.push(`  External:     ${metrics.current.externalMB} MB`);
@@ -709,16 +709,16 @@ class EnhancedMemoryMonitor extends EventEmitter {
     report.push(`  Usage:        ${metrics.current.percentage}%`);
     report.push(`  Status:       ${metrics.status.toUpperCase()}`);
 
-    report.push("\nStatistics:");
+    report.push('\nStatistics:');
     report.push(`  Total Samples:    ${metrics.stats.totalSamples}`);
     report.push(`  Snapshots:        ${metrics.stats.snapshotCount}`);
     report.push(`  Warnings:         ${metrics.stats.warningCount}`);
     report.push(`  Critical Events:  ${metrics.stats.criticalCount}`);
 
     if (metrics.leak) {
-      report.push("\nLeak Detection:");
+      report.push('\nLeak Detection:');
       report.push(
-        `  Status:           ${metrics.leak.detected ? "LEAK DETECTED" : "No leak"}`,
+        `  Status:           ${metrics.leak.detected ? 'LEAK DETECTED' : 'No leak'}`,
       );
       report.push(`  Confidence:       ${metrics.leak.confidence.toFixed(0)}%`);
       report.push(`  Trend:            ${metrics.leak.trend.trend}`);
@@ -730,7 +730,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
     }
 
     if (metrics.gc) {
-      report.push("\nGarbage Collection:");
+      report.push('\nGarbage Collection:');
       report.push(`  GC Count:         ${metrics.gc.gcCount}`);
       report.push(`  Suggestions:      ${metrics.stats.gcSuggestions}`);
       report.push(`  Auto Triggers:    ${metrics.stats.gcTriggers}`);
@@ -740,12 +740,12 @@ class EnhancedMemoryMonitor extends EventEmitter {
       }
     }
 
-    report.push("\nPerformance Overhead:");
+    report.push('\nPerformance Overhead:');
     report.push(`  Avg Overhead:     ${metrics.overhead.avgMs}ms per sample`);
     report.push(`  Percentage:       ${metrics.overhead.percentage}%`);
 
     if (recommendations.length > 0) {
-      report.push("\nRecommendations:");
+      report.push('\nRecommendations:');
       recommendations.forEach((rec, i) => {
         report.push(
           `\n${i + 1}. [${rec.priority.toUpperCase()}] ${rec.category}`,
@@ -755,9 +755,9 @@ class EnhancedMemoryMonitor extends EventEmitter {
       });
     }
 
-    report.push("\n" + "=".repeat(60));
+    report.push('\n' + '='.repeat(60));
 
-    return report.join("\n");
+    return report.join('\n');
   }
 
   /**
@@ -779,7 +779,7 @@ class EnhancedMemoryMonitor extends EventEmitter {
     };
     this.overheadSamples = [];
 
-    this.emit("reset");
+    this.emit('reset');
   }
 }
 

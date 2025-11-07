@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * API Client Connection Pool Integration
@@ -10,7 +10,7 @@
  * @since 2.3.0
  */
 
-const { getGlobalPool } = require("./connection-pool");
+const { getGlobalPool } = require('./connection-pool');
 
 /**
  * Create OpenAI client with connection pooling
@@ -49,7 +49,7 @@ function createPooledOpenAIClient(OpenAI, config = {}, pool = null) {
   });
 
   // Wrap methods to track metrics
-  return wrapClientWithMetrics(client, connectionPool, "openai");
+  return wrapClientWithMetrics(client, connectionPool, 'openai');
 }
 
 /**
@@ -77,7 +77,7 @@ function createPooledAnthropicClient(Anthropic, config = {}, pool = null) {
     fetch: createPooledFetchWrapper(connectionPool),
   });
 
-  return wrapClientWithMetrics(client, connectionPool, "anthropic");
+  return wrapClientWithMetrics(client, connectionPool, 'anthropic');
 }
 
 /**
@@ -93,7 +93,7 @@ function createPooledFetchWrapper(pool) {
 
     try {
       // Check if native fetch is available
-      if (typeof fetch === "undefined") {
+      if (typeof fetch === 'undefined') {
         // Fallback to https/http module
         return makeRequestWithAgent(url, options, agent);
       }
@@ -112,9 +112,9 @@ function createPooledFetchWrapper(pool) {
     } catch (error) {
       // Track error
       const errorType =
-        error.code === "ETIMEDOUT" || error.code === "ESOCKETTIMEDOUT"
-          ? "timeout"
-          : "error";
+        error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT'
+          ? 'timeout'
+          : 'error';
       pool.trackError(error, errorType);
 
       throw error;
@@ -127,12 +127,12 @@ function createPooledFetchWrapper(pool) {
  * @private
  */
 async function makeRequestWithAgent(url, options, agent) {
-  const https = require("https");
-  const http = require("http");
-  const { URL } = require("url");
+  const https = require('https');
+  const http = require('http');
+  const { URL } = require('url');
 
   const parsedUrl = new URL(url);
-  const protocol = parsedUrl.protocol === "https:" ? https : http;
+  const protocol = parsedUrl.protocol === 'https:' ? https : http;
 
   return new Promise((resolve, reject) => {
     const requestOptions = {
@@ -140,19 +140,19 @@ async function makeRequestWithAgent(url, options, agent) {
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
       path: parsedUrl.pathname + parsedUrl.search,
-      method: options.method || "GET",
+      method: options.method || 'GET',
       headers: options.headers || {},
       agent,
     };
 
     const req = protocol.request(requestOptions, (res) => {
-      let data = "";
+      let data = '';
 
-      res.on("data", (chunk) => {
+      res.on('data', (chunk) => {
         data += chunk;
       });
 
-      res.on("end", () => {
+      res.on('end', () => {
         resolve({
           ok: res.statusCode >= 200 && res.statusCode < 300,
           status: res.statusCode,
@@ -164,11 +164,11 @@ async function makeRequestWithAgent(url, options, agent) {
       });
     });
 
-    req.on("error", reject);
+    req.on('error', reject);
 
     if (options.body) {
       req.write(
-        typeof options.body === "string"
+        typeof options.body === 'string'
           ? options.body
           : JSON.stringify(options.body),
       );
@@ -189,7 +189,7 @@ function wrapClientWithMetrics(client, pool, clientName) {
       const original = target[prop];
 
       // Only wrap async methods
-      if (typeof original === "function") {
+      if (typeof original === 'function') {
         return async function (...args) {
           const startTime = Date.now();
 
@@ -203,7 +203,7 @@ function wrapClientWithMetrics(client, pool, clientName) {
             return result;
           } catch (error) {
             // Track error
-            pool.trackError(error, "api_error");
+            pool.trackError(error, 'api_error');
             throw error;
           }
         };
@@ -225,18 +225,18 @@ function createPooledHttpClient(options = {}, pool = null) {
   const connectionPool = pool || getGlobalPool();
 
   return {
-    get: (url, config) => makePooledRequest("GET", url, config, connectionPool),
+    get: (url, config) => makePooledRequest('GET', url, config, connectionPool),
     post: (url, data, config) =>
-      makePooledRequest("POST", url, { ...config, data }, connectionPool),
+      makePooledRequest('POST', url, { ...config, data }, connectionPool),
     put: (url, data, config) =>
-      makePooledRequest("PUT", url, { ...config, data }, connectionPool),
+      makePooledRequest('PUT', url, { ...config, data }, connectionPool),
     patch: (url, data, config) =>
-      makePooledRequest("PATCH", url, { ...config, data }, connectionPool),
+      makePooledRequest('PATCH', url, { ...config, data }, connectionPool),
     delete: (url, config) =>
-      makePooledRequest("DELETE", url, config, connectionPool),
+      makePooledRequest('DELETE', url, config, connectionPool),
     request: (config) =>
       makePooledRequest(
-        config.method || "GET",
+        config.method || 'GET',
         config.url,
         config,
         connectionPool,
@@ -261,12 +261,12 @@ async function makePooledRequest(method, url, config = {}, pool) {
 
     if (config.data) {
       options.body =
-        typeof config.data === "string"
+        typeof config.data === 'string'
           ? config.data
           : JSON.stringify(config.data);
 
-      if (!options.headers["Content-Type"]) {
-        options.headers["Content-Type"] = "application/json";
+      if (!options.headers['Content-Type']) {
+        options.headers['Content-Type'] = 'application/json';
       }
     }
 
@@ -280,9 +280,9 @@ async function makePooledRequest(method, url, config = {}, pool) {
   } catch (error) {
     // Track error
     const errorType =
-      error.code === "ETIMEDOUT" || error.code === "ESOCKETTIMEDOUT"
-        ? "timeout"
-        : "error";
+      error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT'
+        ? 'timeout'
+        : 'error';
     pool.trackError(error, errorType);
 
     throw error;
@@ -332,9 +332,9 @@ function addAxiosPoolingInterceptor(axios, pool = null) {
         const duration = Date.now() - error.config.metadata.startTime;
 
         const errorType =
-          error.code === "ECONNABORTED" || error.message.includes("timeout")
-            ? "timeout"
-            : "error";
+          error.code === 'ECONNABORTED' || error.message.includes('timeout')
+            ? 'timeout'
+            : 'error';
 
         connectionPool.trackError(error, errorType);
       }
@@ -380,9 +380,9 @@ function createPooledNodeFetch(nodeFetch, pool = null) {
     } catch (error) {
       // Track error
       const errorType =
-        error.type === "request-timeout" || error.code === "ETIMEDOUT"
-          ? "timeout"
-          : "error";
+        error.type === 'request-timeout' || error.code === 'ETIMEDOUT'
+          ? 'timeout'
+          : 'error';
       connectionPool.trackError(error, errorType);
 
       throw error;

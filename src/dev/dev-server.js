@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Development Server with Hot Reload Support
@@ -17,9 +17,9 @@
  * @since 2.4.0
  */
 
-const { EventEmitter } = require("events");
-const { createHotReloadManager } = require("./hot-reload");
-const logger = require("../utils/logger");
+const { EventEmitter } = require('events');
+const { createHotReloadManager } = require('./hot-reload');
+const logger = require('../utils/logger');
 
 /**
  * Development Server
@@ -32,9 +32,9 @@ class DevServer extends EventEmitter {
 
     this.options = {
       port: options.port || 3000,
-      host: options.host || "localhost",
-      watchPaths: options.watchPaths || ["./src/plugins", "./src/mocks"],
-      configPath: options.configPath || ".ragrc.json",
+      host: options.host || 'localhost',
+      watchPaths: options.watchPaths || ['./src/plugins', './src/mocks'],
+      configPath: options.configPath || '.ragrc.json',
       verbose: options.verbose !== false,
       autoReload: options.autoReload !== false,
       notifyOnReload: options.notifyOnReload !== false,
@@ -67,32 +67,32 @@ class DevServer extends EventEmitter {
    */
   _setupHotReloadHandlers() {
     // Plugin reloaded
-    this.hotReload.on("plugin:reloaded", ({ path, duration }) => {
-      this._log(`✓ Plugin reloaded: ${path} (${duration}ms)`, "success");
-      this.emit("plugin:reloaded", { path, duration });
+    this.hotReload.on('plugin:reloaded', ({ path, duration }) => {
+      this._log(`✓ Plugin reloaded: ${path} (${duration}ms)`, 'success');
+      this.emit('plugin:reloaded', { path, duration });
 
       if (this.options.notifyOnReload) {
-        this._notify(`Plugin reloaded: ${path}`, "success");
+        this._notify(`Plugin reloaded: ${path}`, 'success');
       }
     });
 
     // Plugin reload failed
-    this.hotReload.on("plugin:reload-failed", ({ path, error }) => {
-      this._log(`✗ Plugin reload failed: ${path} - ${error}`, "error");
-      this.emit("plugin:reload-failed", { path, error });
+    this.hotReload.on('plugin:reload-failed', ({ path, error }) => {
+      this._log(`✗ Plugin reload failed: ${path} - ${error}`, 'error');
+      this.emit('plugin:reload-failed', { path, error });
 
       if (this.options.notifyOnReload) {
-        this._notify(`Plugin reload failed: ${path}`, "error");
+        this._notify(`Plugin reload failed: ${path}`, 'error');
       }
     });
 
     // Config reloaded
-    this.hotReload.on("config:reloaded", ({ path, duration }) => {
-      this._log(`✓ Configuration reloaded: ${path} (${duration}ms)`, "success");
-      this.emit("config:reloaded", { path, duration });
+    this.hotReload.on('config:reloaded', ({ path, duration }) => {
+      this._log(`✓ Configuration reloaded: ${path} (${duration}ms)`, 'success');
+      this.emit('config:reloaded', { path, duration });
 
       if (this.options.notifyOnReload) {
-        this._notify(`Configuration reloaded`, "success");
+        this._notify(`Configuration reloaded`, 'success');
       }
 
       // Reinitialize pipeline if provided
@@ -102,31 +102,31 @@ class DevServer extends EventEmitter {
     });
 
     // Config reload failed
-    this.hotReload.on("config:reload-failed", ({ path, error }) => {
-      this._log(`✗ Configuration reload failed: ${path} - ${error}`, "error");
-      this.emit("config:reload-failed", { path, error });
+    this.hotReload.on('config:reload-failed', ({ path, error }) => {
+      this._log(`✗ Configuration reload failed: ${path} - ${error}`, 'error');
+      this.emit('config:reload-failed', { path, error });
 
       if (this.options.notifyOnReload) {
-        this._notify(`Configuration reload failed`, "error");
+        this._notify(`Configuration reload failed`, 'error');
       }
     });
 
     // Plugin added
-    this.hotReload.on("plugin:added", ({ path }) => {
-      this._log(`+ New plugin detected: ${path}`, "info");
-      this.emit("plugin:added", { path });
+    this.hotReload.on('plugin:added', ({ path }) => {
+      this._log(`+ New plugin detected: ${path}`, 'info');
+      this.emit('plugin:added', { path });
     });
 
     // Plugin removed
-    this.hotReload.on("plugin:removed", ({ path }) => {
-      this._log(`- Plugin removed: ${path}`, "info");
-      this.emit("plugin:removed", { path });
+    this.hotReload.on('plugin:removed', ({ path }) => {
+      this._log(`- Plugin removed: ${path}`, 'info');
+      this.emit('plugin:removed', { path });
     });
 
     // Error
-    this.hotReload.on("error", ({ message, error }) => {
-      this._log(`ERROR: ${message} - ${error}`, "error");
-      this.emit("error", { message, error });
+    this.hotReload.on('error', ({ message, error }) => {
+      this._log(`ERROR: ${message} - ${error}`, 'error');
+      this.emit('error', { message, error });
     });
   }
 
@@ -137,11 +137,11 @@ class DevServer extends EventEmitter {
    */
   async start() {
     if (this.isRunning) {
-      this._log("Development server is already running", "warn");
+      this._log('Development server is already running', 'warn');
       return;
     }
 
-    this._log("Starting development server...", "info");
+    this._log('Starting development server...', 'info');
     this.startTime = Date.now();
 
     // Start hot reload
@@ -151,16 +151,16 @@ class DevServer extends EventEmitter {
 
     this._log(
       `Development server started on ${this.options.host}:${this.options.port}`,
-      "success",
+      'success',
     );
-    this._log(`Watching: ${this.options.watchPaths.join(", ")}`, "info");
+    this._log(`Watching: ${this.options.watchPaths.join(', ')}`, 'info');
     this._log(
-      "Hot reload enabled - changes will be applied automatically",
-      "info",
+      'Hot reload enabled - changes will be applied automatically',
+      'info',
     );
-    this._log("Press Ctrl+C to stop", "info");
+    this._log('Press Ctrl+C to stop', 'info');
 
-    this.emit("started");
+    this.emit('started');
   }
 
   /**
@@ -173,7 +173,7 @@ class DevServer extends EventEmitter {
       return;
     }
 
-    this._log("Stopping development server...", "info");
+    this._log('Stopping development server...', 'info');
 
     // Stop hot reload
     await this.hotReload.stop();
@@ -183,10 +183,10 @@ class DevServer extends EventEmitter {
     const uptime = this.startTime ? Date.now() - this.startTime : 0;
     this._log(
       `Development server stopped (uptime: ${this._formatDuration(uptime)})`,
-      "info",
+      'info',
     );
 
-    this.emit("stopped");
+    this.emit('stopped');
   }
 
   /**
@@ -225,7 +225,7 @@ class DevServer extends EventEmitter {
 ╔════════════════════════════════════════════════════════════════╗
 ║                   Development Server Statistics                ║
 ╠════════════════════════════════════════════════════════════════╣
-║ Status:              ${this.isRunning ? "Running" : "Stopped"}                              ║
+║ Status:              ${this.isRunning ? 'Running' : 'Stopped'}                              ║
 ║ Uptime:              ${this._formatDuration(uptime).padEnd(39)}║
 ║                                                                ║
 ║ Hot Reload:                                                    ║
@@ -234,10 +234,10 @@ class DevServer extends EventEmitter {
 ║   Failed:            ${String(stats.failedReloads).padEnd(39)}║
 ║   Plugin Reloads:    ${String(stats.pluginReloads).padEnd(39)}║
 ║   Config Reloads:    ${String(stats.configReloads).padEnd(39)}║
-║   Avg Reload Time:   ${String(Math.round(stats.averageReloadTime) + "ms").padEnd(39)}║
+║   Avg Reload Time:   ${String(Math.round(stats.averageReloadTime) + 'ms').padEnd(39)}║
 ║                                                                ║
 ║ Watching:                                                      ║
-${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join("\n")}
+${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
 ╚════════════════════════════════════════════════════════════════╝
     `.trim();
   }
@@ -249,8 +249,8 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join("\n")}
    * @param {string} type - Type ('plugin' or 'config')
    * @returns {Promise<void>}
    */
-  async triggerReload(filePath, type = "plugin") {
-    this._log(`Manually triggering reload: ${filePath}`, "info");
+  async triggerReload(filePath, type = 'plugin') {
+    this._log(`Manually triggering reload: ${filePath}`, 'info');
     await this.hotReload.triggerReload(filePath, type);
   }
 
@@ -281,24 +281,24 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join("\n")}
    * @param {string} message - Log message
    * @param {string} level - Log level
    */
-  _log(message, level = "info") {
-    if (!this.options.verbose && level === "info") {
+  _log(message, level = 'info') {
+    if (!this.options.verbose && level === 'info') {
       return;
     }
 
-    const prefix = "[DevServer]";
+    const prefix = '[DevServer]';
 
     switch (level) {
-      case "success":
+      case 'success':
         console.log(`${prefix} ✓ ${message}`);
         break;
-      case "error":
+      case 'error':
         console.error(`${prefix} ✗ ${message}`);
         break;
-      case "warn":
+      case 'warn':
         console.warn(`${prefix} ⚠ ${message}`);
         break;
-      case "info":
+      case 'info':
       default:
         console.log(`${prefix} ${message}`);
         break;
@@ -312,10 +312,10 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join("\n")}
    * @param {string} message - Notification message
    * @param {string} type - Notification type
    */
-  _notify(message, type = "info") {
+  _notify(message, type = 'info') {
     // In a real implementation, this could send desktop notifications
     // or WebSocket messages to connected clients
-    this.emit("notification", { message, type, timestamp: new Date() });
+    this.emit('notification', { message, type, timestamp: new Date() });
   }
 
   /**
