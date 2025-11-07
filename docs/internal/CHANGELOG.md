@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2025-11-08
+
+### Fixed
+
+- **Package Publishing**: Resolved npm publishing conflict by updating version to 2.3.1
+- **Documentation**: Updated all version references in README.md and documentation files
+- **Roadmap**: Corrected release dates and version numbers to reflect accurate timeline
+
+### Notes
+
+This is a patch release that republishes the security enhancements from v2.3.0 with corrected version metadata. All features and security improvements from v2.3.0 are included in this release.
+
 ## [2.3.0] - 2025-11-07
 
 **Version Numbering:** This release bumps from 2.2.1 → 2.3.0 (MINOR version) because:

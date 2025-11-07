@@ -61,7 +61,7 @@ Install with:
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-### What's New in v2.3.0 (Released November 7, 2025)
+### What's New in v2.3.1 (Released November 8, 2025)
 
 **Major Security Enhancements:**
 
@@ -176,7 +176,7 @@ Security isn't optional. This toolkit is built with defense in depth:
 - **Plugin Sandboxing** – Third-party plugins run with declared permissions and resource limits
 - **Supply Chain Security** – All GitHub Actions pinned to commit SHAs, SBOM generation available
 
-### Recent Security Enhancements (v2.3.0)
+### Recent Security Enhancements (v2.3.1)
 
 #### Hardened JWT Validation
 
@@ -323,7 +323,7 @@ npm run benchmark       # Performance benchmarks
 
 ## Roadmap
 
-### v2.3.0 (Released November 7, 2025) ✅
+### v2.3.1 (Released November 8, 2025) ✅
 
 - ✅ **Enhanced CLI** – Interactive wizard for pipeline setup, validation commands, and migration tools
 - ✅ **Plugin Marketplace** – Curated registry of community-contributed plugins with ratings and verification
@@ -357,7 +357,7 @@ npm run benchmark       # Performance benchmarks
 
 ## Upgrading from v2.2.x
 
-The v2.3.0 release includes important security enhancements that are **100% backward compatible** for most use cases. However, there are a few behavioral changes to be aware of:
+The v2.3.1 release includes important security enhancements that are **100% backward compatible** for most use cases. However, there are a few behavioral changes to be aware of:
 
 ### JWT Validator Changes
 

@@ -54,7 +54,7 @@ This roadmap guides the feature evolution, developer tooling, CI/CD automation, 
 | CLI for roadmap issue tagging                | ✅ Done        | v2.1.1         | cli, roadmap  |
 | Status badge: Release Review Passed          | ✅ Done        | v2.1.1         | badge, ci     |
 | Kanban sync for roadmap issues               | ✅ Done        | v2.1.1         | roadmap, ci   |
-| Custom VS Code snippets & workspace          | 🔜             | v2.3.0         | devx          |
+| Custom VS Code snippets & workspace          | 🔜             | v2.4.0         | devx          |
 
 ---
 
@@ -63,11 +63,11 @@ This roadmap guides the feature evolution, developer tooling, CI/CD automation, 
 | Feature                             | Status  | Target Version | Tags            |
 | ----------------------------------- | ------- | -------------- | --------------- |
 | Blog subscribe + RSS                | ✅ Done | v2.1.1         | blog            |
-| i18n translation support            | 🔜      | v2.3.0         | i18n            |
+| i18n translation support            | 🔜      | v2.4.0         | i18n            |
 | SEO optimization + open graph cards | ✅ Done | v2.1.1         | seo, meta       |
-| Comment system on blog posts        | 🔜      | v2.3.0         | blog, community |
+| Comment system on blog posts        | 🔜      | v2.4.0         | blog, community |
 | Performance tuning + SSR check      | ✅ Done | v2.1.0         | perf, ssr       |
-| Multilingual toggle in header       | 🔜      | v2.3.0         | i18n, ui        |
+| Multilingual toggle in header       | 🔜      | v2.4.0         | i18n, ui        |
 
 ---
 
@@ -77,9 +77,9 @@ This roadmap guides the feature evolution, developer tooling, CI/CD automation, 
 | ----------------------------------- | ------ | -------------- | -------------- |
 | Plugin support via CLI              | 🔜     | v2.4.0         | cli, plugin    |
 | Graph-based pipeline UI             | 🔜     | v2.5.0         | ux, devx       |
-| Real-world RAG examples + use cases | 🔜     | v2.3.0         | docs, showcase |
+| Real-world RAG examples + use cases | 🔜     | v2.4.0         | docs, showcase |
 | Prebuilt Docker image               | 🔜     | v2.4.0         | infra, deploy  |
-| Slack/Discord webhook for releases  | 🔜     | v2.3.0         | infra, notify  |
+| Slack/Discord webhook for releases  | 🔜     | v2.4.0         | infra, notify  |
 
 ---
 
