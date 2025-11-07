@@ -323,25 +323,33 @@ npm run benchmark       # Performance benchmarks
 
 ## Roadmap
 
-### v2.3.0 (Q2 2025)
+### v2.3.0 (Released November 7, 2025) ✅
 
-- **Enhanced CLI** – Interactive wizard for pipeline setup, validation commands, and migration tools
-- **Plugin Marketplace** – Curated registry of community-contributed plugins with ratings and verification
+- ✅ **Enhanced CLI** – Interactive wizard for pipeline setup, validation commands, and migration tools
+- ✅ **Plugin Marketplace** – Curated registry of community-contributed plugins with ratings and verification
+- ✅ **Multi-Tenant Support** – Workspace isolation, resource quotas, and tenant-specific configurations
+- ✅ **Advanced Security** – JWT replay protection and hardened path traversal defense
+
+### v2.4.0 (Q1 2026)
+
 - **Streaming Embeddings** – Real-time embedding generation with backpressure control
-- **Multi-Tenant Support** – Workspace isolation, resource quotas, and tenant-specific configurations
-
-### v2.4.0 (Q3 2025)
-
 - **GraphRAG Support** – Native knowledge graph integration for entity-relationship retrieval
-- **Federated Learning** – Privacy-preserving model training across distributed datasets
 - **Advanced Reranking** – Cross-encoder models and learned ranking functions
 - **Performance Dashboard** – Web UI for monitoring pipeline health and cost metrics
 
-### Beyond
+### v2.5.0 (Q2 2026)
+
+- **Federated Learning** – Privacy-preserving model training across distributed datasets
+- **Advanced Caching** – Intelligent embedding cache with TTL and invalidation strategies
+- **Multi-Modal Processing** – Native image and audio embedding support
+- **Cost Optimization** – Automatic provider selection based on cost and performance
+
+### Beyond 2026
 
 - Native Rust bindings for performance-critical paths
 - Kubernetes operator for production deployments
 - Real-time collaboration features for team-based pipelines
+- Edge deployment support for latency-sensitive applications
 
 **Vote on features:** Share your priorities in [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/roadmap).
 
