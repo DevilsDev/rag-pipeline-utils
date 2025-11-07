@@ -31,15 +31,7 @@ PR_DESCRIPTION.md
 TECHNICAL_DEBT_CHECKLIST.md
 TEST_STABILIZATION_REPORT*.md
 
-# Internal release documentation (NOT for npm users)
-CHANGELOG.md
-PUBLISHING_GUIDE.md
-RELEASE_CHECKLIST.md
-CONTRIBUTING.md
-CODE_OF_CONDUCT.md
-SECURITY.md
-
-# Internal documentation (now in docs/internal/)
+# Internal documentation (moved to docs/internal/)
 docs/internal/
 docs/VERSIONING.md
 docs/migrations/

@@ -441,11 +441,11 @@ npm unpublish @devilsdev/rag-pipeline-utils@2.3.0
 
 ## Sign-off
 
-**Release Manager:** ********\_\_\_******** Date: ****\_\_\_****
+**Release Manager:** **\*\*\*\***\_\_\_**\*\*\*\*** Date: \***\*\_\_\_\*\***
 
-**QA Verification:** ********\_\_\_******** Date: ****\_\_\_****
+**QA Verification:** **\*\*\*\***\_\_\_**\*\*\*\*** Date: \***\*\_\_\_\*\***
 
-**Security Review:** ********\_\_\_******** Date: ****\_\_\_****
+**Security Review:** **\*\*\*\***\_\_\_**\*\*\*\*** Date: \***\*\_\_\_\*\***
 
 ---
 
@@ -481,4 +481,4 @@ None identified in pre-release testing.
 ---
 
 **Release Completed:** **\_** / **\_** / **\_**
-**Released by:** **********\_**********
+**Released by:** ****\*\*****\_****\*\*****
