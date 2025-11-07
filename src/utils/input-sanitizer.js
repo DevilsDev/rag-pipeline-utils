@@ -556,17 +556,30 @@ class InputSanitizer {
    * @private
    */
   _sanitizePath(str) {
-    // First decode any URL encoding
-    let decoded = str;
-    try {
-      decoded = decodeURIComponent(str);
-    } catch (e) {
-      // If decoding fails, use original
+    // Iteratively decode URL encoding to catch double/triple encoded attacks
+    // e.g., %252e%252e%252f -> %2e%2e%2f -> ../
+    let current = str;
+    let previous = '';
+    let iterations = 0;
+    const MAX_DECODE_ITERATIONS = 5;
+
+    while (current !== previous && iterations < MAX_DECODE_ITERATIONS) {
+      previous = current;
+      try {
+        current = decodeURIComponent(current);
+      } catch (e) {
+        // Malformed URL encoding might indicate attack - log and block
+        this.stats.blocked++;
+        throw new Error(
+          'Potential path traversal detected (malformed encoding)',
+        );
+      }
+      iterations++;
     }
 
-    // Check for path traversal patterns in both original and decoded
+    // Check for path traversal patterns in both original and fully decoded versions
     for (const pattern of DangerousPatterns.pathTraversal) {
-      if (pattern.test(str) || pattern.test(decoded)) {
+      if (pattern.test(str) || pattern.test(current)) {
         this.stats.blocked++;
         // SECURITY: Always throw on path traversal - it should never be silently sanitized
         // Empty paths could resolve to application root, creating security vulnerabilities
@@ -575,12 +588,12 @@ class InputSanitizer {
     }
 
     // Remove leading/trailing slashes
-    str = str.replace(/^[/\\]+|[/\\]+$/g, '');
+    current = current.replace(/^[/\\]+|[/\\]+$/g, '');
 
     // Normalize path separators
-    str = str.replace(/\\/g, '/');
+    current = current.replace(/\\/g, '/');
 
-    return str;
+    return current;
   }
 
   /**

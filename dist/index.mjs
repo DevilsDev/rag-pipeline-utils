@@ -25,6 +25,7 @@ import pluginRegistry from '../src/core/plugin-registry.js';
 
 // Utilities
 import logger from '../src/utils/logger.js';
+import errorFormatter from '../src/utils/error-formatter.js';
 
 // AI/ML capabilities
 import MultiModalProcessor from '../src/ai/multimodal.js';
@@ -45,6 +46,14 @@ const { AuditLogger  } = auditloggingModule;
 import datagovernanceModule from '../src/enterprise/data-governance.js';
 const { DataGovernance  } = datagovernanceModule;
 
+// Development tools
+import hotreloadModule from '../src/dev/hot-reload.js';
+const { HotReloadManager,
+  createHotReloadManager,
+ } = hotreloadModule;
+import devserverModule from '../src/dev/dev-server.js';
+const { DevServer, createDevServer  } = devserverModule;
+
 export {
   createRagPipeline,
   loadConfig,
@@ -52,6 +61,7 @@ export {
   normalizeConfig,
   pluginRegistry,
   logger,
+  errorFormatter,
   MultiModalProcessor,
   AdaptiveRetrievalEngine,
   DAGEngine,
@@ -59,7 +69,11 @@ export {
   eventLogger,
   metrics,
   AuditLogger,
-  DataGovernance
+  DataGovernance,
+  HotReloadManager,
+  createHotReloadManager,
+  DevServer,
+  createDevServer
 };
 
 // Backward compatibility aliases

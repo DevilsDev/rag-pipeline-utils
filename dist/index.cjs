@@ -4,34 +4,42 @@
  */
 
 // Core pipeline functionality
-const { createRagPipeline } = require('../src/core/create-pipeline');
+const { createRagPipeline } = require("./core/create-pipeline");
 
 // Configuration utilities
-const { loadConfig } = require('../src/config/load-config');
-const { validateRagrc } = require('../src/config/enhanced-ragrc-schema');
-const { normalizeConfig } = require('../src/config/normalize-config');
+const { loadConfig } = require("./config/load-config");
+const { validateRagrc } = require("./config/enhanced-ragrc-schema");
+const { normalizeConfig } = require("./config/normalize-config");
 
 // Plugin system
-const pluginRegistry = require('../src/core/plugin-registry');
+const pluginRegistry = require("./core/plugin-registry");
 
 // Utilities
-const logger = require('../src/utils/logger');
+const logger = require("./utils/logger");
+const errorFormatter = require("./utils/error-formatter");
 
 // AI/ML capabilities
-const MultiModalProcessor = require('../src/ai/multimodal');
-const AdaptiveRetrievalEngine = require('../src/ai/retrieval-engine');
+const MultiModalProcessor = require("./ai/multimodal");
+const AdaptiveRetrievalEngine = require("./ai/retrieval-engine");
 
 // DAG engine for complex workflows
-const { DAGEngine } = require('../src/dag/dag-engine');
+const { DAGEngine } = require("./dag/dag-engine");
 
 // Performance and observability
-const ParallelProcessor = require('../src/core/performance/parallel-processor');
-const eventLogger = require('../src/core/observability/event-logger');
-const metrics = require('../src/core/observability/metrics');
+const ParallelProcessor = require("./core/performance/parallel-processor");
+const eventLogger = require("./core/observability/event-logger");
+const metrics = require("./core/observability/metrics");
 
 // Enterprise features
-const { AuditLogger } = require('../src/enterprise/audit-logging');
-const { DataGovernance } = require('../src/enterprise/data-governance');
+const { AuditLogger } = require("./enterprise/audit-logging");
+const { DataGovernance } = require("./enterprise/data-governance");
+
+// Development tools
+const {
+  HotReloadManager,
+  createHotReloadManager,
+} = require("./dev/hot-reload");
+const { DevServer, createDevServer } = require("./dev/dev-server");
 
 module.exports = {
   // Core API
@@ -48,6 +56,11 @@ module.exports = {
 
   // Utilities
   logger,
+  errorFormatter,
+  // Error handling utilities
+  createError: errorFormatter.createError,
+  wrapError: errorFormatter.wrapError,
+  ERROR_CODES: errorFormatter.ERROR_CODES,
 
   // AI/ML
   MultiModalProcessor,
@@ -64,4 +77,10 @@ module.exports = {
   // Enterprise
   AuditLogger,
   DataGovernance,
+
+  // Development tools
+  HotReloadManager,
+  createHotReloadManager,
+  DevServer,
+  createDevServer,
 };
