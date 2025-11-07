@@ -226,6 +226,62 @@ class AuthenticationManager {
 }
 ```
 
+### **JWT Replay Protection** (v2.3.1+)
+
+The `JWTValidator` class includes **advanced replay protection** that distinguishes between self-signed tokens (reusable) and external tokens (single-use):
+
+**Setup:**
+
+```javascript
+const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
+
+const validator = new JWTValidator({
+  secret: process.env.JWT_SECRET,
+  algorithm: "HS256",
+  issuer: "my-app",
+  audience: "api-users",
+  strictValidation: true, // Enforces iss/aud validation
+  enableJtiTracking: true, // Prevents replay attacks
+});
+```
+
+**Self-Signed Tokens (Reusable):**
+
+```javascript
+// Generate a token that can be verified multiple times
+const token = validator.sign({ sub: "user-123" });
+
+// First verification - works
+const decoded1 = validator.verify(token);
+
+// Second verification - still works! (for refresh flows)
+const decoded2 = validator.verify(token);
+```
+
+**External Tokens (Single-Use):**
+
+```javascript
+// External tokens from third parties
+const externalToken = getTokenFromOAuthProvider();
+
+// First use - works
+validator.verify(externalToken);
+
+// Second use - throws "Token replay detected"
+try {
+  validator.verify(externalToken);
+} catch (error) {
+  console.log("Replay attack prevented:", error.message);
+}
+```
+
+**Key Features:**
+
+- ✅ **Race Condition Mitigation**: Optimized check-then-set pattern prevents concurrent replay attacks
+- ✅ **Separate Tracking**: Self-signed and external tokens tracked independently
+- ✅ **Consistent Validation**: `strictValidation` flag now properly controls iss/aud checks
+- ✅ **Audit Logging**: All replay attempts logged for security monitoring
+
 ---
 
 ## 🛡️ **Data Protection**
@@ -417,6 +473,101 @@ class OutputFilter {
   }
 }
 ```
+
+### **Path Traversal Defense** (v2.3.1+)
+
+The `InputSanitizer` class includes **multi-layer path traversal protection** with iterative URL decoding to catch sophisticated encoding attacks:
+
+**Key Features:**
+
+- ✅ **Iterative URL Decoding**: Up to 5 passes to detect multi-encoded attack vectors
+- ✅ **Attack Vector Detection**: Blocks standard traversal, Windows paths, URL encoded, and double-encoded paths
+- ✅ **Defense-in-Depth**: Critical security violations always throw errors regardless of configuration
+- ✅ **Comprehensive Validation**: Multiple validation layers for maximum security
+
+**Protected Attack Vectors:**
+
+```javascript
+const { sanitizePath } = require("@devilsdev/rag-pipeline-utils");
+
+// ✅ Safe paths are normalized
+sanitizePath("docs/README.md"); // Returns: "docs/README.md"
+sanitizePath("./config/settings.json"); // Returns: "config/settings.json"
+
+// ❌ Dangerous paths throw errors
+sanitizePath("../../../etc/passwd"); // Throws: Path traversal detected
+sanitizePath("..\\..\\windows\\system32"); // Throws: Path traversal detected (Windows)
+sanitizePath("%2e%2e%2f%2e%2e%2fpasswd"); // Throws: Path traversal detected (URL encoded)
+sanitizePath("%252e%252e%252fconfig"); // Throws: Path traversal detected (double-encoded!)
+```
+
+**Attack Vectors Blocked:**
+
+1. **Standard Traversal**: `../../../etc/passwd`
+2. **Windows Paths**: `..\\..\\windows\\system32`
+3. **URL Encoded**: `%2e%2e%2f` (decodes to `../`)
+4. **Double Encoded**: `%252e%252e%252f` → `%2e%2e%2f` → `../`
+5. **Mixed Encoding**: Combinations of encoding techniques
+6. **Malformed Encoding**: Invalid URL encoding treated as attack indicators
+
+**Critical Security Behavior:**
+
+Path traversal violations **always throw errors**, even when `throwOnInvalid=false`:
+
+```javascript
+const { InputSanitizer } = require("@devilsdev/rag-pipeline-utils");
+
+const sanitizer = new InputSanitizer({ throwOnInvalid: false });
+
+try {
+  // Path traversal ALWAYS throws, regardless of throwOnInvalid setting
+  const safePath = sanitizer.sanitizePath(userInput);
+
+  // Use safePath safely
+  const fileContent = fs.readFileSync(path.join(baseDir, safePath));
+} catch (error) {
+  if (error.message.includes("path traversal")) {
+    // Handle attack attempt
+    logger.warn("Path traversal attack blocked", {
+      input: userInput,
+      ip: req.ip,
+    });
+    return res.status(400).json({ error: "Invalid path" });
+  }
+  throw error;
+}
+```
+
+**Security Monitoring:**
+
+```javascript
+const sanitizer = new InputSanitizer({
+  enableMetrics: true,
+  auditLog: true,
+});
+
+// All blocked attempts tracked
+console.log(sanitizer.getStats().blocked); // Counter of blocked attacks
+
+// Audit events emitted for security monitoring
+sanitizer.on("security_violation", (event) => {
+  logger.security({
+    type: "path_traversal",
+    severity: "critical",
+    input: event.input,
+    detectionMethod: event.method, // "pattern" or "encoding"
+    timestamp: new Date().toISOString(),
+  });
+});
+```
+
+**Best Practices:**
+
+1. **Always wrap in try-catch**: Path traversal throws are intentional for security
+2. **Log blocked attempts**: Track patterns for security monitoring
+3. **Never disable validation**: Critical security checks cannot be disabled
+4. **Use with base directory**: Combine with path.join() and base directory validation
+5. **Monitor statistics**: Track blocked attempts for anomaly detection
 
 ---
 

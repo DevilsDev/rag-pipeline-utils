@@ -56,3 +56,31 @@ hello:
 docusaurus:
   label: Docusaurus
   permalink: /blog/tags/docusaurus
+
+enterprise:
+  label: Enterprise
+  permalink: /blog/tags/enterprise
+
+ai:
+  label: AI
+  permalink: /blog/tags/ai
+
+observability:
+  label: Observability
+  permalink: /blog/tags/observability
+
+security:
+  label: Security
+  permalink: /blog/tags/security
+
+jwt:
+  label: JWT
+  permalink: /blog/tags/jwt
+
+path-traversal:
+  label: Path Traversal
+  permalink: /blog/tags/path-traversal
+
+defense-in-depth:
+  label: Defense-in-Depth
+  permalink: /blog/tags/defense-in-depth

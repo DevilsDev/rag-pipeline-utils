@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils-docs",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "private": true,
   "description": "Enterprise-grade RAG Pipeline Utils documentation site",
   "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
