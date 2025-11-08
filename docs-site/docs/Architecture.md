@@ -4,7 +4,7 @@ This comprehensive guide outlines the internal architecture of @DevilsDev/rag-pi
 
 ---
 
-## 🏗️ Core Design Philosophy
+## Core Design Philosophy
 
 The architecture is built on proven software engineering principles that ensure scalability, maintainability, and extensibility:
 
@@ -51,7 +51,7 @@ The architecture is built on proven software engineering principles that ensure 
 
 ---
 
-## 🔧 System Architecture Overview
+## System Architecture Overview
 
 ### **High-Level Component Diagram**
 
@@ -141,7 +141,7 @@ sequenceDiagram
 
 ---
 
-## 🔌 Plugin System Architecture
+## Plugin System Architecture
 
 ### **Plugin Registry Implementation**
 
@@ -279,7 +279,7 @@ interface PluginMetadata {
 
 ---
 
-## 🏭 Pipeline Factory Pattern
+## Pipeline Factory Pattern
 
 The `createRagPipeline` function implements the Factory pattern to create configured pipeline instances:
 
@@ -326,7 +326,7 @@ export function createRagPipeline(config: PipelineConfig): RagPipeline {
 
 ---
 
-## 🔄 Middleware Architecture
+## Middleware Architecture
 
 The middleware system allows for cross-cutting concerns like retry logic, caching, and monitoring:
 
@@ -402,7 +402,7 @@ class CachingMiddleware implements Middleware {
 
 ---
 
-## 📊 Event System & Observability
+## Event System & Observability
 
 The architecture includes a comprehensive event system for monitoring, debugging, and analytics:
 
@@ -466,7 +466,7 @@ class MetricsCollector {
 
 ---
 
-## 🔒 Security Architecture
+## Security Architecture
 
 Security is built into the architecture at multiple levels:
 
@@ -490,7 +490,7 @@ Security is built into the architecture at multiple levels:
 
 ---
 
-## 🏢 Enterprise Architecture Components
+## Enterprise Architecture Components
 
 ### **Dependency Injection Container**
 
@@ -622,7 +622,7 @@ class ExternalAPIMocker {
 
 ---
 
-## 🚀 Advanced AI Architecture
+## Advanced AI Architecture
 
 ### **Multi-Modal Processing Engine**
 
@@ -695,7 +695,7 @@ class AdaptiveRetrievalEngine {
 
 ---
 
-## 🔧 Enhanced Developer Tools
+## Enhanced Developer Tools
 
 ### **CLI Doctor Diagnostics**
 

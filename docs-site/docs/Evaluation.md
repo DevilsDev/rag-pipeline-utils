@@ -4,7 +4,7 @@ The **@DevilsDev/rag-pipeline-utils** evaluation framework provides a comprehens
 
 ---
 
-## 📊 **Core Evaluation Metrics**
+## **Core Evaluation Metrics**
 
 ### **1. BLEU Score (Bilingual Evaluation Understudy)**
 
@@ -170,7 +170,7 @@ console.log(`Context Precision: ${precision.score}`);
 
 ---
 
-## 🔬 **Evaluation Methodologies**
+## **Evaluation Methodologies**
 
 ### **1. Batch Evaluation**
 
@@ -268,7 +268,7 @@ evaluationPipeline.start();
 
 ---
 
-## 🛠️ **CLI Evaluation Tools**
+## **CLI Evaluation Tools**
 
 ### **Basic Evaluation**
 
@@ -325,7 +325,7 @@ rag-pipeline evaluate ./queries.json \
 
 ---
 
-## 📈 **Performance Benchmarking**
+## **Performance Benchmarking**
 
 ### **Component Benchmarking**
 
@@ -372,7 +372,7 @@ rag-pipeline benchmark --stress \
 
 ---
 
-## 📊 **Dataset Format & Management**
+## **Dataset Format & Management**
 
 ### **Standard Dataset Format**
 
@@ -429,7 +429,7 @@ console.log(`Generated ${syntheticData.length} synthetic query-answer pairs`);
 
 ---
 
-## 📊 **Dashboard Visualization**
+## **Dashboard Visualization**
 
 ### **Interactive Dashboard**
 
@@ -475,7 +475,7 @@ app.get("/api/metrics-summary", dashboardAPI.getMetricsSummary);
 
 ---
 
-## 🎯 **Best Practices**
+## **Best Practices**
 
 ### **1. Test Data Quality**
 
@@ -507,7 +507,7 @@ app.get("/api/metrics-summary", dashboardAPI.getMetricsSummary);
 
 ---
 
-## 🔧 **Configuration Examples**
+## **Configuration Examples**
 
 ### **Comprehensive Evaluation Config**
 

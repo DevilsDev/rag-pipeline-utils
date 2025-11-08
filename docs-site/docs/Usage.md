@@ -4,7 +4,7 @@ This comprehensive guide covers how to use **@DevilsDev/rag-pipeline-utils** pro
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### **NPM Installation**
 
@@ -52,7 +52,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 
 ---
 
-## 🔧 Programmatic API Usage
+## Programmatic API Usage
 
 ### **Basic Pipeline Setup**
 
@@ -198,7 +198,7 @@ const localConfig: PipelineConfig = {
 
 ---
 
-## 🔄 Pipeline Methods & Operations
+## Pipeline Methods & Operations
 
 ### **Document Ingestion**
 
@@ -315,7 +315,7 @@ await pipeline.import(importData);
 
 ---
 
-## 🖥️ Command Line Interface (CLI)
+## Command Line Interface (CLI)
 
 ### **Global CLI Installation**
 
@@ -453,7 +453,7 @@ rag-pipeline plugins validate ./my-plugin
 
 ---
 
-## 🔧 Configuration File (.ragrc.json)
+## Configuration File (.ragrc.json)
 
 Create a `.ragrc.json` file in your project root for persistent configuration:
 
@@ -499,7 +499,7 @@ Create a `.ragrc.json` file in your project root for persistent configuration:
 
 ---
 
-## 🚀 Advanced Usage Patterns
+## Advanced Usage Patterns
 
 ### **Error Handling & Resilience**
 

@@ -42,7 +42,7 @@ const sidebars = {
     },
     {
       type: "link",
-      label: "📰 Blog",
+      label: "Blog",
       href: "/blog",
     },
   ],

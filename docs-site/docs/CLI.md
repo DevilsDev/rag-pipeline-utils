@@ -4,7 +4,7 @@ The **@DevilsDev/rag-pipeline-utils** CLI provides a powerful command-line inter
 
 ---
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### **Global Installation**
 
@@ -48,7 +48,7 @@ rag-pipeline completion fish > ~/.config/fish/completions/rag-pipeline.fish
 
 ---
 
-## 🏗️ Project Management Commands
+## Project Management Commands
 
 ### **`init` - Initialize New Project**
 
@@ -127,7 +127,7 @@ rag-pipeline config import config-backup.json
 
 ---
 
-## 📚 Document Management Commands
+## Document Management Commands
 
 ### **`ingest` - Document Ingestion**
 
@@ -209,7 +209,7 @@ rag-pipeline status --component llm
 
 ---
 
-## 🔍 Query & Interaction Commands
+## Query & Interaction Commands
 
 ### **`query` - Interactive Querying**
 
@@ -289,7 +289,7 @@ rag-pipeline chat --system "You are a helpful RAG expert assistant."
 
 ---
 
-## 📊 Evaluation & Testing Commands
+## Evaluation & Testing Commands
 
 ### **`evaluate` - Performance Evaluation**
 
@@ -400,7 +400,7 @@ rag-pipeline dashboard --data ./evaluation-results.json
 
 ---
 
-## 🔌 Plugin Management Commands
+## Plugin Management Commands
 
 ### **`plugins` - Plugin Operations**
 
@@ -443,7 +443,7 @@ rag-pipeline plugins uninstall my-custom-plugin
 
 ---
 
-## 🛠️ Maintenance Commands
+## Maintenance Commands
 
 ### **`clear` - Clear Data**
 
@@ -520,7 +520,7 @@ rag-pipeline export --components embeddings,config --output partial-backup.json
 
 ---
 
-## 🔧 Global Options
+## Global Options
 
 These options are available for all commands:
 
@@ -534,7 +534,7 @@ These options are available for all commands:
 
 ---
 
-## 📝 Configuration File Integration
+## Configuration File Integration
 
 The CLI automatically reads configuration from `.ragrc.json` in the current directory or user home directory. You can override settings using command-line options:
 
@@ -551,7 +551,7 @@ OPENAI_API_KEY=sk-new-key rag-pipeline query "test"
 
 ---
 
-## 🚀 Advanced Usage Examples
+## Advanced Usage Examples
 
 ### **Complete Workflow Example**
 
@@ -594,7 +594,7 @@ rag-pipeline evaluate ./all-queries.json --metrics all --detailed --output final
 
 ---
 
-## 🏥 Enterprise Commands
+## Enterprise Commands
 
 ### **`doctor` - System Diagnostics**
 
@@ -672,7 +672,7 @@ rag-pipeline ai-ml optimize-retrieval \
 
 ---
 
-## 🔧 Enhanced Configuration
+## Enhanced Configuration
 
 ### **Enterprise `.ragrc.json` Schema**
 
@@ -758,7 +758,7 @@ rag-pipeline ai-ml optimize-retrieval \
 
 ---
 
-## 🐳 Enterprise Docker Usage
+## Enterprise Docker Usage
 
 ### **Production Deployment**
 
@@ -819,7 +819,7 @@ services:
 
 ---
 
-## 🚀 CI/CD Integration
+## CI/CD Integration
 
 ### **GitHub Actions Workflow**
 

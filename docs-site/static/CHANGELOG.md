@@ -1,25 +1,25 @@
 # Changelog
 
-All notable changes to the RAG Pipeline Utils project will be documented in this file.
+All notable changes to the RAG Pipeline Utils project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Versioning adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.3.1] - 2025-11-08
 
 ### Fixed
 
-- **Package Publishing**: Resolved npm publishing conflict by updating version to 2.3.1
-- **Documentation**: Updated all version references in README.md and documentation files
-- **Roadmap**: Corrected release dates and version numbers to reflect accurate timeline
+- Package Publishing: Resolved npm publishing conflict by updating version to 2.3.1
+- Documentation: Updated all version references in README.md and documentation files
+- Roadmap: Corrected release dates and version numbers to reflect accurate timeline
 
 ### Notes
 
-This is a patch release that republishes the security enhancements from v2.3.0 with corrected version metadata. All features and security improvements from v2.3.0 are included in this release.
+Patch release republishing security enhancements from v2.3.0 with corrected version metadata. All features and security improvements from v2.3.0 are included.
 
 ## [2.3.0] - 2025-11-07
 
-### 🔒 Security
+### Security
 
 #### Fixed - Critical Security Issues
 
@@ -46,7 +46,7 @@ This is a patch release that republishes the security enhancements from v2.3.0 w
 - `strictValidation=false` now truly disables issuer/audience validation as intended
 - Improved code clarity with explicit delegation to jsonwebtoken for cryptographic validation
 
-### ✨ Added
+### Added
 
 **JWT Validator Enhancements**
 
@@ -70,7 +70,7 @@ This is a patch release that republishes the security enhancements from v2.3.0 w
 - `strictValidation=false` now properly disables issuer/audience validation (previously validated anyway)
 - Self-signed tokens can now be verified multiple times (previously blocked as replay)
 
-### 📊 Testing
+### Testing
 
 - JWT Validator: 44 tests passing (98% suite coverage)
 - Input Sanitizer: 69 tests passing (100% suite coverage)

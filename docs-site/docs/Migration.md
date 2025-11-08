@@ -4,7 +4,7 @@ This comprehensive migration guide helps you upgrade between versions of **@Devi
 
 ---
 
-## 🔄 **Version Migration**
+## **Version Migration**
 
 ### **Upgrading from v2.0.x to v2.1.x**
 
@@ -164,7 +164,7 @@ class MyLoader extends BaseLoader {
 
 ---
 
-## 🔀 **Framework Migration**
+## **Framework Migration**
 
 ### **Migrating from LangChain**
 
@@ -337,7 +337,7 @@ class CustomLoader extends BaseLoader {
 
 ---
 
-## 📊 **Data Migration**
+## **Data Migration**
 
 ### **Vector Store Migration**
 
@@ -422,7 +422,7 @@ fs.writeFileSync("./.ragrc.json", JSON.stringify(newConfig, null, 2));
 
 ---
 
-## 🧪 **Testing Migration**
+## **Testing Migration**
 
 ### **Validation Strategy**
 
@@ -483,7 +483,7 @@ npm install @DevilsDev/rag-pipeline-utils@1.9.0
 
 ---
 
-## 🔧 **Migration Tools & Utilities**
+## **Migration Tools & Utilities**
 
 ### **Built-in Migration Commands**
 
@@ -546,7 +546,7 @@ migrateProject().catch(console.error);
 
 ---
 
-## 📋 **Migration Checklist**
+## **Migration Checklist**
 
 ### **Pre-Migration**
 
@@ -575,7 +575,7 @@ migrateProject().catch(console.error);
 
 ---
 
-## 🆘 **Migration Support**
+## **Migration Support**
 
 ### **Common Migration Issues**
 

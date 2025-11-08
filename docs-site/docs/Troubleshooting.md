@@ -4,7 +4,7 @@ This comprehensive troubleshooting guide helps you diagnose and resolve common i
 
 ---
 
-## 🔧 **Installation & Setup Issues**
+## **Installation & Setup Issues**
 
 ### **1. Package Installation Failures**
 
@@ -53,12 +53,12 @@ rag-pipeline config init --force
 **Common Configuration Errors**:
 
 ```json
-// ❌ Invalid: Missing required fields
+// Invalid: Missing required fields
 {
   "embedder": "openai"
 }
 
-// ✅ Valid: Complete configuration
+// Valid: Complete configuration
 {
   "plugins": {
     "embedder": {
@@ -100,7 +100,7 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 
 ---
 
-## 🔌 **Plugin & Integration Issues**
+## **Plugin & Integration Issues**
 
 ### **1. Plugin Loading Failures**
 
@@ -182,7 +182,7 @@ rag-pipeline status --component retriever --detailed
 
 ---
 
-## 📊 **Performance & Memory Issues**
+## **Performance & Memory Issues**
 
 ### **1. Slow Embedding Generation**
 
@@ -268,7 +268,7 @@ rag-pipeline optimize --component retriever
 
 ---
 
-## 🔍 **Query & Retrieval Issues**
+## **Query & Retrieval Issues**
 
 ### **1. Poor Retrieval Quality**
 
@@ -338,7 +338,7 @@ const pipeline = createRagPipeline({
 
 ---
 
-## 🧪 **Evaluation & Testing Issues**
+## **Evaluation & Testing Issues**
 
 ### **1. Evaluation Metric Failures**
 
@@ -395,7 +395,7 @@ rag-pipeline dashboard --sample-data --port 3000
 
 ---
 
-## 🛠️ **CLI & Command Issues**
+## **CLI & Command Issues**
 
 ### **1. Command Not Found**
 
@@ -437,7 +437,7 @@ sudo rag-pipeline clear --all --confirm
 
 ---
 
-## 📝 **Logging & Debugging**
+## **Logging & Debugging**
 
 ### **Enable Debug Logging**
 
@@ -477,7 +477,7 @@ const pipeline = createRagPipeline({
 
 ---
 
-## 🔄 **Recovery & Maintenance**
+## **Recovery & Maintenance**
 
 ### **Reset Pipeline State**
 
@@ -507,7 +507,7 @@ rag-pipeline doctor --comprehensive
 
 ---
 
-## 📞 **Getting Help**
+## **Getting Help**
 
 ### **Built-in Diagnostics**
 

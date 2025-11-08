@@ -4,7 +4,7 @@ This comprehensive security guide covers best practices, threat mitigation, and 
 
 ---
 
-## 🔐 **Security Overview**
+## **Security Overview**
 
 ### **Security Principles**
 
@@ -27,7 +27,7 @@ This comprehensive security guide covers best practices, threat mitigation, and 
 
 ---
 
-## 🔑 **Authentication & Authorization**
+## **Authentication & Authorization**
 
 ### **API Key Management**
 
@@ -277,14 +277,14 @@ try {
 
 **Key Features:**
 
-- ✅ **Race Condition Mitigation**: Optimized check-then-set pattern prevents concurrent replay attacks
-- ✅ **Separate Tracking**: Self-signed and external tokens tracked independently
-- ✅ **Consistent Validation**: `strictValidation` flag now properly controls iss/aud checks
-- ✅ **Audit Logging**: All replay attempts logged for security monitoring
+- **Race Condition Mitigation**: Optimized check-then-set pattern prevents concurrent replay attacks
+- **Separate Tracking**: Self-signed and external tokens tracked independently
+- **Consistent Validation**: `strictValidation` flag now properly controls iss/aud checks
+- **Audit Logging**: All replay attempts logged for security monitoring
 
 ---
 
-## 🛡️ **Data Protection**
+## **Data Protection**
 
 ### **Encryption**
 
@@ -480,21 +480,21 @@ The `InputSanitizer` class includes **multi-layer path traversal protection** wi
 
 **Key Features:**
 
-- ✅ **Iterative URL Decoding**: Up to 5 passes to detect multi-encoded attack vectors
-- ✅ **Attack Vector Detection**: Blocks standard traversal, Windows paths, URL encoded, and double-encoded paths
-- ✅ **Defense-in-Depth**: Critical security violations always throw errors regardless of configuration
-- ✅ **Comprehensive Validation**: Multiple validation layers for maximum security
+- **Iterative URL Decoding**: Up to 5 passes to detect multi-encoded attack vectors
+- **Attack Vector Detection**: Blocks standard traversal, Windows paths, URL encoded, and double-encoded paths
+- **Defense-in-Depth**: Critical security violations always throw errors regardless of configuration
+- **Comprehensive Validation**: Multiple validation layers for maximum security
 
 **Protected Attack Vectors:**
 
 ```javascript
 const { sanitizePath } = require("@devilsdev/rag-pipeline-utils");
 
-// ✅ Safe paths are normalized
+// Safe paths are normalized
 sanitizePath("docs/README.md"); // Returns: "docs/README.md"
 sanitizePath("./config/settings.json"); // Returns: "config/settings.json"
 
-// ❌ Dangerous paths throw errors
+// Dangerous paths throw errors
 sanitizePath("../../../etc/passwd"); // Throws: Path traversal detected
 sanitizePath("..\\..\\windows\\system32"); // Throws: Path traversal detected (Windows)
 sanitizePath("%2e%2e%2f%2e%2e%2fpasswd"); // Throws: Path traversal detected (URL encoded)
@@ -571,7 +571,7 @@ sanitizer.on("security_violation", (event) => {
 
 ---
 
-## 🔒 **Plugin Security**
+## **Plugin Security**
 
 ### **Plugin Sandboxing**
 
@@ -710,7 +710,7 @@ class PluginVerifier {
 
 ---
 
-## 🔍 **Monitoring & Auditing**
+## **Monitoring & Auditing**
 
 ### **Security Logging**
 
@@ -856,7 +856,7 @@ class AnomalyDetector {
 
 ---
 
-## 🛠️ **Security Configuration**
+## **Security Configuration**
 
 ### **Secure Defaults**
 
@@ -943,7 +943,7 @@ const prodSecurityConfig = {
 
 ---
 
-## 🚨 **Incident Response**
+## **Incident Response**
 
 ### **Security Incident Handling**
 
@@ -1006,7 +1006,7 @@ class IncidentResponse {
 
 ---
 
-## ✅ **Security Checklist**
+## **Security Checklist**
 
 ### **Deployment Security**
 
@@ -1033,7 +1033,7 @@ class IncidentResponse {
 
 ---
 
-## 📞 **Security Support**
+## **Security Support**
 
 ### **Reporting Security Issues**
 

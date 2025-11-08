@@ -4,7 +4,7 @@ The **@DevilsDev/rag-pipeline-utils** toolkit is built on a fully modular plugin
 
 ---
 
-## 🏗️ **Plugin Architecture Overview**
+## **Plugin Architecture Overview**
 
 The plugin system follows SOLID principles with a registry-based architecture that supports:
 
@@ -43,7 +43,7 @@ const result = await loader.load("./document.pdf");
 
 ---
 
-## 📋 **Plugin Contracts & Interfaces**
+## **Plugin Contracts & Interfaces**
 
 ### **1. Loader Plugin Contract**
 
@@ -322,7 +322,7 @@ class CustomOpenAILLM extends BaseLLM {
 
 ---
 
-## 🔧 **Plugin Registration & Management**
+## **Plugin Registration & Management**
 
 ### **Dynamic Plugin Loading**
 
@@ -386,7 +386,7 @@ if (!validation.isValid) {
 
 ---
 
-## 🚀 **CLI Plugin Development Tools**
+## **CLI Plugin Development Tools**
 
 ### **Plugin Scaffolding**
 
@@ -431,7 +431,7 @@ rag-pipeline plugins publish ./my-plugin --registry https://my-registry.com
 
 ---
 
-## ⚙️ **Configuration & Runtime**
+## **Configuration & Runtime**
 
 ### **Plugin Configuration in .ragrc.json**
 
@@ -503,7 +503,7 @@ const prodConfig = {
 
 ---
 
-## 🎯 **Best Practices**
+## **Best Practices**
 
 ### **1. Error Handling**
 

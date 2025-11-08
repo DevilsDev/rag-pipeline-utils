@@ -4,7 +4,7 @@ This comprehensive performance guide helps you optimize **@DevilsDev/rag-pipelin
 
 ---
 
-## 🚀 **Performance Overview**
+## **Performance Overview**
 
 ### **Key Performance Metrics**
 
@@ -29,7 +29,7 @@ rag-pipeline monitor --metrics throughput,latency,memory --interval 5s
 
 ---
 
-## 📊 **Component-Specific Optimization**
+## **Component-Specific Optimization**
 
 ### **1. Embedding Performance**
 
@@ -284,7 +284,7 @@ class TokenOptimizer {
 
 ---
 
-## 🔄 **Pipeline-Level Optimization**
+## **Pipeline-Level Optimization**
 
 ### **Streaming Architecture**
 
@@ -425,7 +425,7 @@ class CacheManager {
 
 ---
 
-## 📈 **Monitoring & Profiling**
+## **Monitoring & Profiling**
 
 ### **Performance Metrics Collection**
 
@@ -523,7 +523,7 @@ class CustomMetrics {
 
 ---
 
-## ⚡ **Production Optimization**
+## **Production Optimization**
 
 ### **Deployment Configuration**
 
@@ -626,7 +626,7 @@ class AutoScaler {
 
 ---
 
-## 🎯 **Performance Best Practices**
+## **Performance Best Practices**
 
 ### **1. Configuration Optimization**
 
@@ -676,7 +676,7 @@ class AutoScaler {
 
 ---
 
-## 📊 **Performance Benchmarks**
+## **Performance Benchmarks**
 
 ### **Reference Performance**
 

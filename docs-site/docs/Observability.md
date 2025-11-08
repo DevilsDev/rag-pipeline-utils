@@ -4,7 +4,7 @@ Comprehensive observability is essential for production RAG systems. @DevilsDev/
 
 ---
 
-## 📊 Monitoring Architecture
+## Monitoring Architecture
 
 ### **Multi-Layer Observability Stack**
 
@@ -61,7 +61,7 @@ graph TB
 
 ---
 
-## 🔍 Structured Logging
+## Structured Logging
 
 ### **Logger Configuration**
 
@@ -202,7 +202,7 @@ auditLogger.warn("config.changed", {
 
 ---
 
-## 📈 Metrics Collection
+## Metrics Collection
 
 ### **Performance Metrics**
 
@@ -288,7 +288,7 @@ const documentFreshness = metrics.gauge("document_freshness_hours", {
 
 ---
 
-## 🔗 Distributed Tracing
+## Distributed Tracing
 
 ### **Trace Configuration**
 
@@ -417,7 +417,7 @@ class OpenAIEmbedder {
 
 ---
 
-## 🚨 Alerting & Incident Response
+## Alerting & Incident Response
 
 ### **Alert Configuration**
 
@@ -512,7 +512,7 @@ alertManager.on("alert:triggered", async (alert) => {
 
 ---
 
-## 📊 Grafana Dashboards
+## Grafana Dashboards
 
 ### **Operational Dashboard**
 
@@ -628,7 +628,7 @@ alertManager.on("alert:triggered", async (alert) => {
 
 ---
 
-## 🔧 Health Checks & Readiness Probes
+## Health Checks & Readiness Probes
 
 ### **Health Check Implementation**
 

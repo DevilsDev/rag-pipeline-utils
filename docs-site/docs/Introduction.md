@@ -8,7 +8,7 @@ Welcome to **@DevilsDev/rag-pipeline-utils**, a production-ready, modular Node.j
 
 ---
 
-## 🎯 What is RAG?
+## What is RAG?
 
 Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines information retrieval with large language models to enhance text generation with factual, contextual grounding. Unlike traditional LLMs that rely solely on training data, RAG systems dynamically retrieve relevant information to inform responses.
 
@@ -32,9 +32,9 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ---
 
-## 🚀 Why Choose @DevilsDev/rag-pipeline-utils?
+## Why Choose @DevilsDev/rag-pipeline-utils?
 
-### **🏢 Enterprise-Grade Architecture**
+### **Enterprise-Grade Architecture**
 
 - **Dependency Injection Container**: IoC pattern with singleton/factory support for modular, testable code
 - **SLO Monitoring System**: Built-in Service Level Objectives tracking with error budgets and alerting
@@ -42,7 +42,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **External API Mocking**: Deterministic test infrastructure with network simulation for reliable CI/CD
 - **Production Observability**: Structured logging with correlation IDs and comprehensive metrics
 
-### **🤖 Advanced AI Capabilities**
+### **Advanced AI Capabilities**
 
 - **Multi-Modal Processing**: Handle text, images, and structured data in unified pipelines
 - **Federated Learning**: Distributed model training with privacy-preserving aggregation
@@ -50,7 +50,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Model Training Orchestrator**: End-to-end training workflows with hyperparameter tuning
 - **Intelligent Reranking**: Context-aware reranking with multiple scoring algorithms
 
-### **⚡ Developer Experience Excellence**
+### **Developer Experience Excellence**
 
 - **Enhanced CLI Suite**: Interactive wizards, doctor diagnostics, and plugin management
 - **Streaming Evaluation**: Real-time dashboard with live metrics and performance monitoring
@@ -58,7 +58,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Configuration Schema**: Validated `.ragrc.json` with IntelliSense and error checking
 - **Hot Module Reloading**: Dynamic plugin updates without pipeline restarts
 
-### **📊 Production Monitoring & Analytics**
+### **Production Monitoring & Analytics**
 
 - **SLO Dashboard**: Real-time service health with error budget tracking and alerting
 - **Performance Profiling**: Built-in performance monitoring with bottleneck identification
@@ -68,7 +68,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ---
 
-## 🏗️ Core Architecture
+## Core Architecture
 
 The toolkit follows a modular, plugin-based architecture where each component has a specific responsibility:
 
@@ -132,7 +132,7 @@ Generate responses using language models:
 
 ---
 
-## 📦 Quick Start Example
+## Quick Start Example
 
 Here's a complete example showing how to set up and use a RAG pipeline:
 
@@ -194,11 +194,11 @@ rag-pipeline dashboard --port 3000
 
 ---
 
-## 🎯 Project Status & Roadmap
+## Project Status & Roadmap
 
 ### **Current Status: Enterprise Ready v2.2.0**
 
-✅ **Production Features:**
+**Production Features:**
 
 - **Enterprise Architecture**: Dependency injection, SLO monitoring, semantic release automation
 - **Advanced AI**: Multi-modal processing, federated learning, adaptive retrieval engines
@@ -208,14 +208,14 @@ rag-pipeline dashboard --port 3000
 - **Security & Compliance**: Audit logging, vulnerability scanning, enterprise authentication
 - **Deployment**: Kubernetes templates, Helm charts, Prometheus/Grafana monitoring
 
-🚧 **Active Development:**
+**Active Development:**
 
 - **GraphRAG Implementation**: Knowledge graph-based retrieval with entity linking
 - **Agentic Workflows**: Tool calling and autonomous agent capabilities
 - **Advanced Caching**: Multi-tier caching with intelligent invalidation strategies
 - **Fine-tuning Integration**: Custom model training with pipeline-specific optimization
 
-🔮 **Enterprise Roadmap:**
+**Enterprise Roadmap:**
 
 - **Multi-tenant Architecture**: Isolated workspaces with RBAC and resource quotas
 - **Advanced Security**: Zero-trust networking, encryption at rest, compliance reporting
@@ -224,7 +224,7 @@ rag-pipeline dashboard --port 3000
 
 ---
 
-## 🤝 Community & Support
+## Community & Support
 
 - **GitHub Repository**: [DevilsDev/rag-pipeline-utils](https://github.com/DevilsDev/rag-pipeline-utils)
 - **Documentation**: [https://devilsdev.github.io/rag-pipeline-utils](https://devilsdev.github.io/rag-pipeline-utils)
