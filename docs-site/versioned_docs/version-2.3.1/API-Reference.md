@@ -12,6 +12,9 @@ Comprehensive reference documentation for RAG Pipeline Utils v2.3.1.
 
 Creates a RAG pipeline instance with the specified plugins.
 
+> **Since:** v2.0.0
+> **Behavior:** Factory function that initializes a complete RAG pipeline by composing loader, embedder, retriever, and LLM components. Supports both plugin instances and string references to registered plugins.
+
 **Signature:**
 
 ```typescript
@@ -35,6 +38,7 @@ function createRagPipeline(config: PipelineConfig): Pipeline;
 **Example:**
 
 ```javascript
+// 📦 Available since v2.0.0
 const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
 
 const pipeline = createRagPipeline({
@@ -49,6 +53,8 @@ const pipeline = createRagPipeline({
 
 - `createPipeline` - Backward compatibility alias
 
+  > ⚠️ **Deprecated in v2.3.0:** Use `createRagPipeline` instead. `createPipeline` will be removed in v3.0.0.
+
 ---
 
 ### Pipeline Methods
@@ -56,6 +62,9 @@ const pipeline = createRagPipeline({
 #### pipeline.query()
 
 Executes a query against the RAG pipeline.
+
+> **Since:** v2.0.0
+> **Behavior:** Processes natural language queries through the complete RAG flow: embeds query → retrieves relevant documents → generates contextual response using LLM. Supports both standard and streaming response modes.
 
 **Signature:**
 
@@ -101,6 +110,7 @@ console.log(result.sources);
 **Streaming Example:**
 
 ```javascript
+// 🌊 Streaming support added in v2.0.0
 const stream = await pipeline.query("Explain the benefits", {
   stream: true,
 });
@@ -115,6 +125,9 @@ for await (const chunk of stream) {
 #### pipeline.ingest()
 
 Ingests documents into the RAG pipeline.
+
+> **Since:** v2.0.0
+> **Behavior:** Loads documents from file paths or directories, chunks content, generates embeddings, and stores them in the vector database. Supports batch processing with configurable concurrency and retry logic.
 
 **Signature:**
 
@@ -202,6 +215,9 @@ function normalizeConfig(config: Partial<RagConfig>): RagConfig;
 
 Enterprise-grade JWT validation with replay protection.
 
+> **Since:** v2.2.0
+> **Behavior:** Provides cryptographically secure JWT signing and verification with built-in replay attack detection, algorithm confusion prevention, and race condition mitigation. Supports both self-signed (reusable) and external (single-use) token validation.
+
 **Constructor:**
 
 ```typescript
@@ -234,6 +250,7 @@ sign(payload: object, options?: SignOptions): string
 **Example:**
 
 ```javascript
+// 🔒 Security features added in v2.2.0 (Enterprise Edition)
 const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
 
 const validator = new JWTValidator({
@@ -242,7 +259,7 @@ const validator = new JWTValidator({
   issuer: "my-app",
   audience: "api-users",
   strictValidation: true,
-  enableJtiTracking: true,
+  enableJtiTracking: true, // ✨ Replay protection (v2.3.1)
 });
 
 const token = validator.sign({
@@ -290,6 +307,9 @@ try {
 ### InputSanitizer
 
 Multi-layer input sanitization with path traversal defense.
+
+> **Since:** v2.2.0
+> **Behavior:** Protects against XSS, SQL injection, command injection, and path traversal attacks through multi-layer validation. Uses iterative URL decoding (up to 5 iterations) to detect sophisticated encoding-based attacks.
 
 **Constructor:**
 
@@ -365,6 +385,9 @@ try {
 
 Process text, images, audio, and video content with unified embedding pipelines.
 
+> **Since:** v2.2.0 (Enterprise Edition)
+> **Behavior:** Handles multi-modal content (text, images, audio, video) through unified embedding generation. Automatically selects appropriate models based on content type and normalizes embeddings for cross-modal retrieval.
+
 **Constructor:**
 
 ```typescript
@@ -438,6 +461,9 @@ await engine.learn({
 
 Execute complex RAG workflows as directed acyclic graphs.
 
+> **Since:** v2.1.0
+> **Behavior:** Orchestrates complex multi-step workflows as directed acyclic graphs with automatic dependency resolution, parallel execution of independent tasks, and comprehensive error handling with retry logic.
+
 **Constructor:**
 
 ```typescript
@@ -467,6 +493,7 @@ async execute(input?: any): Promise<DAGResult>
 **Example:**
 
 ```javascript
+// 🔀 DAG workflow engine added in v2.1.0
 const { DAGEngine } = require("@devilsdev/rag-pipeline-utils");
 
 const dag = new DAGEngine();
