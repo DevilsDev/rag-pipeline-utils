@@ -50,7 +50,7 @@
     "watch:lqip": "node docs-site/scripts/watch-images.js",
     "docs:clear": "docusaurus clear --site-dir docs-site",
     "docs:start": "docusaurus start docs-site",
-    "docs:build": "docusaurus build docs-site",
+    "docs:build": "cd docs-site && npm run build",
     "docs:serve": "docusaurus serve docs-site",
     "docs:deploy": "docusaurus deploy docs-site",
     "roadmap:close": "node scripts/close-done-roadmap-issues.js",
