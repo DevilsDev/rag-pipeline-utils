@@ -182,7 +182,7 @@ const config = {
       {
         docs: {
           sidebarPath: "./sidebars.js",
-          lastVersion: "current",
+          lastVersion: "2.3.1",
           versions: {
             current: {
               label: "2.4.0-dev (Next)",
