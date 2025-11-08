@@ -1,0 +1,198 @@
+.calculator {
+  margin: 2rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.header {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.header h2 {
+  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.inputs h3,
+.results h3 {
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--ifm-color-primary);
+}
+
+.inputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.inputGroup input[type="number"],
+.inputGroup select {
+  padding: 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  transition: border-color 0.2s;
+}
+
+.inputGroup input[type="number"]:focus,
+.inputGroup select:focus {
+  outline: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.inputGroup input[type="range"] {
+  padding: 0;
+}
+
+.inputGroup label span {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.results {
+  background: var(--ifm-background-surface-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--ifm-background-color);
+  border-radius: 6px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.metricLabel {
+  font-weight: 500;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.metricValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+}
+
+.metricValue.highlight {
+  font-size: 2rem;
+  color: var(--ifm-color-success);
+}
+
+.divider {
+  height: 1px;
+  background: var(--ifm-color-emphasis-200);
+  margin: 1.5rem 0;
+}
+
+.breakdown {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--ifm-color-primary-lightest);
+  border-radius: 6px;
+}
+
+.breakdownItem {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+.breakdownLabel {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.breakdownValue {
+  font-weight: 600;
+  color: var(--ifm-color-primary-dark);
+}
+
+.recommendations {
+  padding: 2rem;
+  background: var(--ifm-color-warning-lightest);
+  border-top: 1px solid var(--ifm-color-warning-light);
+}
+
+.recommendations h3 {
+  margin: 0 0 1rem 0;
+  color: var(--ifm-color-warning-darkest);
+}
+
+.recommendations ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.recommendations li {
+  margin: 0.75rem 0;
+  color: var(--ifm-color-warning-darkest);
+  line-height: 1.6;
+}
+
+.recommendations li::marker {
+  color: var(--ifm-color-warning-dark);
+}
+
+@media (max-width: 968px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .recommendations {
+    padding: 1rem;
+  }
+
+  .metricValue {
+    font-size: 1.25rem;
+  }
+
+  .metricValue.highlight {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,148 @@
+.playground {
+  margin: 2rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.header h2 {
+  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.exampleSelector {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  overflow-x: auto;
+}
+
+.exampleButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.exampleButton:hover {
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-primary);
+}
+
+.exampleButton.active {
+  background: var(--ifm-color-primary);
+  color: white;
+  border-color: var(--ifm-color-primary);
+}
+
+.editorContainer {
+  background: var(--ifm-background-color);
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.filename {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  padding: 0.4rem 1rem;
+  background: var(--ifm-color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.actionButton:hover {
+  background: var(--ifm-color-primary-dark);
+}
+
+.editor {
+  width: 100%;
+  min-height: 400px;
+  padding: 1rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  background: var(--ifm-code-background);
+  color: var(--ifm-code-color);
+  border: none;
+  resize: vertical;
+  outline: none;
+}
+
+.info {
+  padding: 1.5rem;
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.info h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.info ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.info li {
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .exampleSelector {
+    flex-wrap: wrap;
+  }
+
+  .editorHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actionButton {
+    flex: 1;
+  }
+}
