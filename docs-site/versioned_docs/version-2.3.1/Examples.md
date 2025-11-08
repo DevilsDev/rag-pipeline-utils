@@ -11,8 +11,7 @@ Real-world examples demonstrating common RAG Pipeline Utils use cases.
 Build a complete document question-answering system with PDF support.
 
 ```javascript
-// 📚 Complete RAG workflow (v2.0.0+)
-// Demonstrates: Ingest → Embed → Retrieve → Generate
+// Complete RAG workflow: Ingest, Embed, Retrieve, Generate
 const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
 const PDFLoader = require("./plugins/pdf-loader");
 const OpenAIEmbedder = require("./plugins/openai-embedder");
