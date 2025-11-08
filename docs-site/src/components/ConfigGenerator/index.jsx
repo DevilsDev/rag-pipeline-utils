@@ -57,7 +57,7 @@ export default function ConfigGenerator() {
   const [config, setConfig] = useState({
     embedder: {
       type: "openai",
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
     },
     retriever: {
       type: "pinecone",
@@ -89,78 +89,194 @@ export default function ConfigGenerator() {
   const generateCode = () => {
     let code = `const { createRagPipeline } = require('@devilsdev/rag-pipeline-utils');\n\n`;
 
-    // Embedder config
-    code += `// Embedder Configuration\n`;
+    // Embedder plugin
+    code += `// Embedder Plugin\n`;
     if (config.embedder.type === "custom") {
+      code += `class CustomEmbedder {\n`;
+      code += `  async embed(text) {\n`;
+      code += `    // Implement your custom embedding logic\n`;
+      code += `    return embedding;\n`;
+      code += `  }\n`;
+      code += `}\n`;
       code += `const embedder = new CustomEmbedder();\n\n`;
+    } else if (config.embedder.type === "openai") {
+      code += `class OpenAIEmbedder {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `    this.model = options.model || '${config.embedder.model}';\n`;
+      code += `  }\n`;
+      code += `  async embed(text) {\n`;
+      code += `    const response = await fetch('https://api.openai.com/v1/embeddings', {\n`;
+      code += `      method: 'POST',\n`;
+      code += `      headers: {\n`;
+      code += `        'Authorization': \`Bearer \${this.apiKey}\`,\n`;
+      code += `        'Content-Type': 'application/json'\n`;
+      code += `      },\n`;
+      code += `      body: JSON.stringify({ input: text, model: this.model })\n`;
+      code += `    });\n`;
+      code += `    const data = await response.json();\n`;
+      code += `    return data.data[0].embedding;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const embedder = new OpenAIEmbedder({\n`;
+      code += `  apiKey: process.env.OPENAI_API_KEY,\n`;
+      code += `  model: '${config.embedder.model}'\n`;
+      code += `});\n\n`;
+    } else if (config.embedder.type === "cohere") {
+      code += `class CohereEmbedder {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `  }\n`;
+      code += `  async embed(text) {\n`;
+      code += `    // Implement Cohere embedding API call\n`;
+      code += `    return embedding;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const embedder = new CohereEmbedder({ apiKey: process.env.COHERE_API_KEY });\n\n`;
     } else {
-      code += `const embedder = {\n`;
-      code += `  type: '${config.embedder.type}',\n`;
-      if (config.embedder.type === "openai") {
-        code += `  apiKey: process.env.OPENAI_API_KEY,\n`;
-        code += `  model: '${config.embedder.model}'\n`;
-      }
-      code += `};\n\n`;
+      code += `class HuggingFaceEmbedder {\n`;
+      code += `  async embed(text) {\n`;
+      code += `    // Implement HuggingFace model embedding\n`;
+      code += `    return embedding;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const embedder = new HuggingFaceEmbedder();\n\n`;
     }
 
-    // Retriever config
-    code += `// Retriever Configuration\n`;
+    // Retriever plugin
+    code += `// Retriever Plugin\n`;
     if (config.retriever.type === "custom") {
+      code += `class CustomRetriever {\n`;
+      code += `  async retrieve({ query, queryVector, topK }) {\n`;
+      code += `    // Implement your custom retrieval logic\n`;
+      code += `    return results;\n`;
+      code += `  }\n`;
+      code += `}\n`;
       code += `const retriever = new CustomRetriever();\n\n`;
-    } else {
-      code += `const retriever = {\n`;
-      code += `  type: '${config.retriever.type}',\n`;
-      if (config.retriever.type === "pinecone") {
-        code += `  apiKey: process.env.PINECONE_API_KEY,\n`;
-      }
+    } else if (config.retriever.type === "pinecone") {
+      code += `class PineconeRetriever {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `    this.indexName = options.indexName;\n`;
+      code += `    this.topK = options.topK || 5;\n`;
+      code += `  }\n`;
+      code += `  async retrieve({ queryVector, topK }) {\n`;
+      code += `    // Use Pinecone SDK to query vector database\n`;
+      code += `    const index = pinecone.index(this.indexName);\n`;
+      code += `    const results = await index.query({ vector: queryVector, topK });\n`;
+      code += `    return results.matches;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const retriever = new PineconeRetriever({\n`;
+      code += `  apiKey: process.env.PINECONE_API_KEY,\n`;
       code += `  indexName: '${config.retriever.indexName}',\n`;
       code += `  topK: ${config.retriever.topK}\n`;
-      code += `};\n\n`;
+      code += `});\n\n`;
+    } else if (config.retriever.type === "qdrant") {
+      code += `class QdrantRetriever {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.url = options.url;\n`;
+      code += `    this.collectionName = options.collectionName || '${config.retriever.indexName}';\n`;
+      code += `  }\n`;
+      code += `  async retrieve({ queryVector, topK }) {\n`;
+      code += `    // Use Qdrant client to search vectors\n`;
+      code += `    return results;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const retriever = new QdrantRetriever({ url: process.env.QDRANT_URL });\n\n`;
+    } else {
+      code += `class WeaviateRetriever {\n`;
+      code += `  async retrieve({ queryVector, topK }) {\n`;
+      code += `    // Use Weaviate client to search vectors\n`;
+      code += `    return results;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const retriever = new WeaviateRetriever();\n\n`;
     }
 
-    // LLM config
-    code += `// LLM Configuration\n`;
+    // LLM plugin
+    code += `// LLM Plugin\n`;
     if (config.llm.type === "custom") {
+      code += `class CustomLLM {\n`;
+      code += `  async generate(query, context, options) {\n`;
+      code += `    // Implement your custom LLM logic\n`;
+      code += `    return answer;\n`;
+      code += `  }\n`;
+      code += `}\n`;
       code += `const llm = new CustomLLM();\n\n`;
-    } else {
-      code += `const llm = {\n`;
-      code += `  type: '${config.llm.type}',\n`;
-      if (config.llm.type === "openai") {
-        code += `  apiKey: process.env.OPENAI_API_KEY,\n`;
-      }
+    } else if (config.llm.type === "openai") {
+      code += `class OpenAILLM {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `    this.model = options.model || '${config.llm.model}';\n`;
+      code += `    this.temperature = options.temperature || ${config.llm.temperature};\n`;
+      code += `  }\n`;
+      code += `  async generate(query, context, options) {\n`;
+      code += `    const prompt = \`Context: \${JSON.stringify(context)}\\n\\nQuestion: \${query}\`;\n`;
+      code += `    const response = await fetch('https://api.openai.com/v1/chat/completions', {\n`;
+      code += `      method: 'POST',\n`;
+      code += `      headers: {\n`;
+      code += `        'Authorization': \`Bearer \${this.apiKey}\`,\n`;
+      code += `        'Content-Type': 'application/json'\n`;
+      code += `      },\n`;
+      code += `      body: JSON.stringify({\n`;
+      code += `        model: this.model,\n`;
+      code += `        messages: [{ role: 'user', content: prompt }],\n`;
+      code += `        temperature: this.temperature\n`;
+      code += `      })\n`;
+      code += `    });\n`;
+      code += `    const data = await response.json();\n`;
+      code += `    return data.choices[0].message.content;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const llm = new OpenAILLM({\n`;
+      code += `  apiKey: process.env.OPENAI_API_KEY,\n`;
       code += `  model: '${config.llm.model}',\n`;
       code += `  temperature: ${config.llm.temperature}\n`;
-      code += `};\n\n`;
+      code += `});\n\n`;
+    } else if (config.llm.type === "anthropic") {
+      code += `class ClaudeLLM {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `  }\n`;
+      code += `  async generate(query, context, options) {\n`;
+      code += `    // Implement Anthropic Claude API call\n`;
+      code += `    return answer;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const llm = new ClaudeLLM({ apiKey: process.env.ANTHROPIC_API_KEY });\n\n`;
+    } else {
+      code += `class CohereLLM {\n`;
+      code += `  constructor(options) {\n`;
+      code += `    this.apiKey = options.apiKey;\n`;
+      code += `  }\n`;
+      code += `  async generate(query, context, options) {\n`;
+      code += `    // Implement Cohere API call\n`;
+      code += `    return answer;\n`;
+      code += `  }\n`;
+      code += `}\n`;
+      code += `const llm = new CohereLLM({ apiKey: process.env.COHERE_API_KEY });\n\n`;
     }
 
     // Create pipeline
-    code += `// Create Pipeline\n`;
+    code += `// Create Pipeline with Custom Plugins\n`;
     code += `const pipeline = createRagPipeline({\n`;
     code += `  embedder,\n`;
     code += `  retriever,\n`;
-    code += `  llm`;
-
-    // Advanced options
-    if (config.advanced.caching || config.advanced.rateLimit) {
-      code += `,\n  options: {\n`;
-      if (config.advanced.caching) {
-        code += `    caching: true,\n`;
-      }
-      if (config.advanced.rateLimit) {
-        code += `    rateLimit: ${config.advanced.rateLimit},\n`;
-      }
-      if (config.advanced.timeout) {
-        code += `    timeout: ${config.advanced.timeout}\n`;
-      }
-      code += `  }\n`;
-    } else {
-      code += `\n`;
-    }
-
+    code += `  llm\n`;
     code += `});\n\n`;
-    code += `// Query the pipeline\n`;
-    code += `const result = await pipeline.query('Your question here');\n`;
-    code += `console.log(result.answer);\n`;
+
+    // Usage example
+    code += `// Use the Pipeline\n`;
+    code += `const result = await pipeline.run({\n`;
+    code += `  query: 'Your question here',\n`;
+    code += `  options: { topK: ${config.retriever.topK}`;
+    if (config.advanced.timeout) {
+      code += `, timeout: ${config.advanced.timeout}`;
+    }
+    code += ` }\n`;
+    code += `});\n`;
+    code += `console.log(result);\n`;
 
     return code;
   };

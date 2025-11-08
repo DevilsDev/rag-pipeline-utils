@@ -3,73 +3,142 @@ import styles from "./styles.module.css";
 
 const EXAMPLES = {
   basic: {
-    title: "Basic RAG Pipeline",
-    code: `const { createRagPipeline } = require('@devilsdev/rag-pipeline-utils');
+    title: "Basic Custom Plugins",
+    code: `const { createRagPipeline, pluginRegistry } = require('@devilsdev/rag-pipeline-utils');
 
-// Initialize pipeline
-const pipeline = createRagPipeline({
-  embedder: {
-    type: 'openai',
-    apiKey: process.env.OPENAI_API_KEY
-  },
-  retriever: {
-    type: 'pinecone',
-    apiKey: process.env.PINECONE_API_KEY,
-    indexName: 'docs'
-  },
-  llm: {
-    type: 'openai',
-    model: 'gpt-3.5-turbo'
-  }
-});
-
-// Ingest documents
-await pipeline.ingest('./documents');
-
-// Query the pipeline
-const result = await pipeline.query('How does authentication work?');
-console.log(result.answer);`,
-  },
-  customEmbedder: {
-    title: "Custom Embedder",
-    code: `const { createRagPipeline } = require('@devilsdev/rag-pipeline-utils');
-
-// Define custom embedder
-class CustomEmbedder {
+// Define custom embedder plugin
+class MyEmbedder {
   async embed(text) {
-    // Your custom embedding logic
-    const embedding = await this.computeEmbedding(text);
-    return embedding;
-  }
-
-  async embedBatch(texts) {
-    // Batch processing for efficiency
-    return Promise.all(texts.map(t => this.embed(t)));
-  }
-
-  async computeEmbedding(text) {
-    // Example: Use a local model or API
-    const response = await fetch('http://localhost:8080/embed', {
+    // Call your embedding service (OpenAI, Cohere, local model, etc.)
+    const response = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
-      body: JSON.stringify({ text }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Authorization': \`Bearer \${process.env.OPENAI_API_KEY}\`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        input: text,
+        model: 'text-embedding-3-small'
+      })
     });
-    return response.json();
+    const data = await response.json();
+    return data.data[0].embedding;
   }
 }
 
-// Use custom embedder in pipeline
+// Define custom retriever plugin
+class MyRetriever {
+  async retrieve({ query, queryVector, topK }) {
+    // Perform similarity search in your vector DB
+    // This is a simplified example
+    const results = await yourVectorDB.search({
+      vector: queryVector,
+      limit: topK
+    });
+    return results;
+  }
+}
+
+// Define custom LLM plugin
+class MyLLM {
+  async generate(query, context, options) {
+    // Call your LLM (OpenAI, Anthropic, local model, etc.)
+    const prompt = \`Context: \${JSON.stringify(context)}\\n\\nQuestion: \${query}\`;
+    // Return generated answer
+    return "Answer based on context...";
+  }
+}
+
+// Create pipeline with custom plugins
 const pipeline = createRagPipeline({
-  embedder: new CustomEmbedder(),
-  retriever: myRetriever,
-  llm: myLLM
-});`,
+  embedder: new MyEmbedder(),
+  retriever: new MyRetriever(),
+  llm: new MyLLM()
+});
+
+// Use the pipeline
+const result = await pipeline.run({
+  query: 'How does authentication work?',
+  options: { topK: 5 }
+});
+console.log(result);`,
+  },
+  registered: {
+    title: "Using Plugin Registry",
+    code: `const { createRagPipeline, pluginRegistry } = require('@devilsdev/rag-pipeline-utils');
+
+// Define your plugins
+class OpenAIEmbedder {
+  constructor(options) {
+    this.apiKey = options.apiKey;
+    this.model = options.model || 'text-embedding-3-small';
+  }
+  async embed(text) {
+    // Implementation details...
+    return embedding;
+  }
+}
+
+class PineconeRetriever {
+  constructor(options) {
+    this.apiKey = options.apiKey;
+    this.indexName = options.indexName;
+  }
+  async retrieve({ queryVector, topK }) {
+    // Implementation details...
+    return results;
+  }
+}
+
+class OpenAILLM {
+  constructor(options) {
+    this.apiKey = options.apiKey;
+    this.model = options.model || 'gpt-3.5-turbo';
+  }
+  async generate(query, context, options) {
+    // Implementation details...
+    return answer;
+  }
+}
+
+// Register plugins
+await pluginRegistry.register(
+  'embedder',
+  'openai',
+  new OpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY })
+);
+
+await pluginRegistry.register(
+  'retriever',
+  'pinecone',
+  new PineconeRetriever({
+    apiKey: process.env.PINECONE_API_KEY,
+    indexName: 'docs'
+  })
+);
+
+await pluginRegistry.register(
+  'llm',
+  'openai',
+  new OpenAILLM({ apiKey: process.env.OPENAI_API_KEY })
+);
+
+// Use registered plugins by name
+const pipeline = createRagPipeline({
+  registry: pluginRegistry,
+  embedder: 'openai',    // String reference to registered plugin
+  retriever: 'pinecone',
+  llm: 'openai'
+});
+
+const result = await pipeline.run({ query: 'Your question here' });`,
   },
   caching: {
-    title: "Caching Strategy",
+    title: "Caching Wrapper Plugin",
     code: `const { createRagPipeline } = require('@devilsdev/rag-pipeline-utils');
 const NodeCache = require('node-cache');
 
+// Wrapper plugin that adds caching to any embedder
 class CachedEmbedder {
   constructor(baseEmbedder) {
     this.baseEmbedder = baseEmbedder;
@@ -84,7 +153,10 @@ class CachedEmbedder {
 
     // Check cache
     const cached = this.cache.get(key);
-    if (cached) return cached;
+    if (cached) {
+      console.log('Cache hit for:', text.substring(0, 50));
+      return cached;
+    }
 
     // Compute and cache
     const embedding = await this.baseEmbedder.embed(text);
@@ -100,59 +172,84 @@ class CachedEmbedder {
   }
 }
 
+// Your base embedder
+class OpenAIEmbedder {
+  async embed(text) {
+    // API call to OpenAI
+    return embedding;
+  }
+}
+
+// Wrap with caching
+const baseEmbedder = new OpenAIEmbedder();
+const cachedEmbedder = new CachedEmbedder(baseEmbedder);
+
 const pipeline = createRagPipeline({
-  embedder: new CachedEmbedder(baseEmbedder),
+  embedder: cachedEmbedder,
   retriever: myRetriever,
   llm: myLLM
 });`,
   },
-  security: {
-    title: "Security & Authentication",
-    code: `const {
-  createRagPipeline,
-  JwtValidator,
-  InputSanitizer,
-  RateLimiter
-} = require('@devilsdev/rag-pipeline-utils');
+  dagWorkflow: {
+    title: "DAG-Based Workflow",
+    code: `const { DAGEngine, pluginRegistry } = require('@devilsdev/rag-pipeline-utils');
 
-// Setup security components
-const jwtValidator = new JwtValidator({
-  issuer: 'https://auth.example.com',
-  audience: 'rag-api'
-});
-
-const sanitizer = new InputSanitizer({
-  maxLength: 2000,
-  blockPatterns: [/ignore.*previous/i]
-});
-
-const limiter = new RateLimiter({
-  capacity: 100,
-  refillRate: 10
-});
-
-// Protected endpoint
-app.post('/api/query', async (req, res) => {
-  try {
-    // Authenticate
-    const user = await jwtValidator.validate(
-      req.headers.authorization
-    );
-
-    // Rate limit
-    await limiter.checkLimit(user.id);
-
-    // Sanitize input
-    const query = sanitizer.sanitize(req.body.query);
-
-    // Query pipeline
-    const result = await pipeline.query(query);
-
-    res.json(result);
-  } catch (error) {
-    res.status(401).json({ error: error.message });
+// Define custom plugins
+class PDFLoader {
+  async load(filePath) {
+    // Load and parse PDF
+    return { content: "...", metadata: {...} };
   }
-});`,
+}
+
+class TextChunker {
+  async chunk(document) {
+    // Split into chunks
+    return chunks;
+  }
+}
+
+// Register plugins
+pluginRegistry.register('loader', 'pdf', new PDFLoader());
+pluginRegistry.register('chunker', 'text', new TextChunker());
+
+// Create DAG workflow
+const dag = new DAGEngine({
+  timeout: 30000,
+  continueOnError: false
+});
+
+// Define pipeline steps
+dag.addNode('load', async (input) => {
+  const loader = pluginRegistry.get('loader', 'pdf');
+  return loader.load(input.filePath);
+});
+
+dag.addNode('chunk', async (document) => {
+  const chunker = pluginRegistry.get('chunker', 'text');
+  return chunker.chunk(document);
+});
+
+dag.addNode('embed', async (chunks) => {
+  const embedder = pluginRegistry.get('embedder', 'openai');
+  return await Promise.all(
+    chunks.map(chunk => embedder.embed(chunk.text))
+  );
+});
+
+dag.addNode('store', async (embeddings) => {
+  const retriever = pluginRegistry.get('retriever', 'pinecone');
+  return retriever.upsert(embeddings);
+});
+
+// Connect workflow: load -> chunk -> embed -> store
+dag.connect('load', 'chunk');
+dag.connect('chunk', 'embed');
+dag.connect('embed', 'store');
+
+// Execute
+const results = await dag.execute({ filePath: './document.pdf' });
+console.log('Pipeline completed:', results);`,
   },
 };
 
