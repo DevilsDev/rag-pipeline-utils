@@ -32,7 +32,7 @@ const config = {
         content: "rag, llm, langchain, pipeline, openai, nodejs",
       },
       { name: "author", content: "Ali Kahwaji" },
-      { name: "theme-color", content: "#3EF4B6" },
+      { name: "theme-color", content: "#2563EB" },
     ],
     // ✅ OpenGraph / Twitter image
     image: "img/social-card.jpg",
@@ -83,6 +83,24 @@ const config = {
         },
       ],
     },
+
+    // Algolia DocSearch configuration
+    // To enable search:
+    // 1. Apply at https://docsearch.algolia.com/apply/
+    // 2. Uncomment the configuration below
+    // 3. Replace with your API keys
+    /*
+    algolia: {
+      appId: 'YOUR_APP_ID',
+      apiKey: 'YOUR_SEARCH_API_KEY',
+      indexName: 'rag-pipeline-utils',
+      contextualSearch: true,
+      searchParameters: {
+        facetFilters: ['language:en', 'version:2.3.1'],
+      },
+      searchPagePath: 'search',
+    },
+    */
 
     footer: {
       style: "dark",
@@ -140,6 +158,18 @@ const config = {
       copyright: `© ${new Date().getFullYear()} Ali Kahwaji. Built with Docusaurus.`,
     },
   },
+
+  // Google Analytics configuration
+  // To enable analytics:
+  // 1. Create GA4 property at https://analytics.google.com/
+  // 2. Uncomment the configuration below
+  // 3. Replace with your measurement ID
+  /*
+  gtag: {
+    trackingID: 'G-XXXXXXXXXX',
+    anonymizeIP: true,
+  },
+  */
 
   presets: [
     [

@@ -20,4 +20,236 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Stats Section */
+.statsSection {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+}
+
+.statCard {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.statValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.statLabel {
+  font-size: 1rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* Quick Start Section */
+.quickStartSection {
+  padding: 4rem 0;
+  background-color: var(--ifm-background-color);
+}
+
+.quickStartDesc {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: var(--ifm-font-color-secondary);
+}
+
+.quickStartButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.codeExample {
+  background-color: #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.codeExample pre {
+  margin: 0;
+  padding: 1.5rem;
+  background-color: transparent;
+}
+
+.codeExample code {
+  color: #e2e8f0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Key Features Section */
+.keyFeaturesSection {
+  padding: 4rem 0;
+  background-color: var(--ifm-background-surface-color);
+}
+
+.keyFeaturesSection h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+}
+
+.featureCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  height: 100%;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  transition: all 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1);
+  border-color: var(--ifm-color-primary);
+}
+
+.featureCard h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--ifm-heading-color);
+}
+
+.featureCard p {
+  color: var(--ifm-font-color-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.featureLink {
+  color: var(--ifm-color-primary);
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.featureLink:hover {
+  color: var(--ifm-color-primary-dark);
+  text-decoration: none;
+  transform: translateX(4px);
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.ctaSection h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.ctaDesc {
+  font-size: 1.25rem;
+  color: var(--ifm-font-color-secondary);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .featureCard {
+  background: var(--ifm-background-surface-color);
+  border-color: var(--ifm-color-emphasis-300);
+}
+
+[data-theme="dark"] .codeExample {
+  background-color: #0f172a;
+}
+
+[data-theme="dark"] .ctaSection {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .statsSection {
+    padding: 2rem 0;
+  }
+
+  .statValue {
+    font-size: 2rem;
+  }
+
+  .quickStartSection {
+    padding: 3rem 0;
+  }
+
+  .quickStartSection .row {
+    flex-direction: column-reverse;
+  }
+
+  .quickStartSection .col {
+    max-width: 100%;
+  }
+
+  .codeExample {
+    margin-bottom: 2rem;
+  }
+
+  .keyFeaturesSection h2 {
+    font-size: 1.875rem;
+  }
+
+  .ctaSection h2 {
+    font-size: 2rem;
+  }
+
+  .ctaDesc {
+    font-size: 1.1rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .statCard {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .statValue {
+    font-size: 1.75rem;
+  }
+
+  .statLabel {
+    font-size: 0.875rem;
+  }
+
+  .quickStartButtons,
+  .ctaButtons {
+    flex-direction: column;
+  }
+
+  .quickStartButtons .button,
+  .ctaButtons .button {
+    width: 100%;
+  }
+
+  .codeExample code {
+    font-size: 0.75rem;
+  }
 }

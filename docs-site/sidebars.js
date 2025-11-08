@@ -20,7 +20,7 @@ const sidebars = {
       type: "category",
       label: "Developer Guide",
       collapsed: false,
-      items: ["Usage", "CLI", "Plugins"],
+      items: ["Usage", "CLI", "API-Reference", "Examples", "Plugins"],
     },
     {
       type: "category",
