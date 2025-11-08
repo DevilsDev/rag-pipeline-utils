@@ -182,8 +182,6 @@ const config = {
       {
         docs: {
           sidebarPath: "./sidebars.js",
-          editUrl:
-            "https://github.com/DevilsDev/rag-pipeline-utils/edit/develop/docs-site/",
           lastVersion: "current",
           versions: {
             current: {
@@ -201,8 +199,6 @@ const config = {
           blogSidebarTitle: "All Posts",
           blogSidebarCount: "ALL",
           onUntruncatedBlogPosts: "ignore",
-          editUrl:
-            "https://github.com/DevilsDev/rag-pipeline-utils/edit/develop/docs-site/blog/",
         },
         theme: {
           customCss: "./src/css/custom.css",
