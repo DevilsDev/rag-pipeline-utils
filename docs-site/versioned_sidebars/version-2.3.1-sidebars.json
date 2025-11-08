@@ -1,0 +1,39 @@
+{
+  "tutorialSidebar": [
+    {
+      "type": "category",
+      "label": "Overview",
+      "collapsed": false,
+      "items": ["Introduction", "Architecture", "Tutorials", "Use-Cases"]
+    },
+    {
+      "type": "category",
+      "label": "Developer Guide",
+      "collapsed": false,
+      "items": ["Usage", "CLI", "API-Reference", "Examples", "Plugins"]
+    },
+    {
+      "type": "category",
+      "label": "Enterprise",
+      "collapsed": false,
+      "items": ["Enterprise", "Observability", "Security"]
+    },
+    {
+      "type": "category",
+      "label": "Advanced",
+      "collapsed": true,
+      "items": [
+        "Evaluation",
+        "Performance",
+        "Migration",
+        "Troubleshooting",
+        "FAQ"
+      ]
+    },
+    {
+      "type": "link",
+      "label": "Blog",
+      "href": "/blog"
+    }
+  ]
+}

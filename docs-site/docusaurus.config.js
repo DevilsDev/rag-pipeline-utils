@@ -59,6 +59,11 @@ const config = {
           position: "left",
           label: "Documentation",
         },
+        {
+          type: "docsVersionDropdown",
+          position: "left",
+          dropdownActiveClassDisabled: true,
+        },
         { to: "/blog", label: "Blog", position: "left" },
         {
           type: "dropdown",
@@ -179,6 +184,17 @@ const config = {
           sidebarPath: "./sidebars.js",
           editUrl:
             "https://github.com/DevilsDev/rag-pipeline-utils/edit/develop/docs-site/",
+          lastVersion: "current",
+          versions: {
+            current: {
+              label: "2.4.0-dev (Next)",
+              banner: "unreleased",
+            },
+            "2.3.1": {
+              label: "2.3.1 (Latest)",
+              banner: "none",
+            },
+          },
         },
         blog: {
           showReadingTime: true,

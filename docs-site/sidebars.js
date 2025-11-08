@@ -30,6 +30,18 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Deployment",
+      collapsed: true,
+      items: [
+        "Deployment-Docker",
+        "Deployment-Kubernetes",
+        "Deployment-AWS",
+        "Deployment-Azure",
+        "Deployment-GCP",
+      ],
+    },
+    {
+      type: "category",
       label: "Advanced",
       collapsed: true,
       items: [
