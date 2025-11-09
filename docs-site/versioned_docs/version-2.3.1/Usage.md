@@ -107,24 +107,27 @@ const pipeline = createRagPipeline(config);
 // Use the pipeline
 async function main() {
   try {
-    // Ingest documents
-    console.log("Ingesting documents...");
-    await pipeline.ingest("./docs/**/*.md");
-
-    // Query the pipeline
+    // Run a query through the pipeline
     console.log("Querying pipeline...");
-    const response = await pipeline.query(
-      "How do I implement custom plugins in the RAG pipeline?",
-    );
+    const result = await pipeline.run({
+      query: "How do I implement custom plugins in the RAG pipeline?",
+      options: {
+        topK: 5,
+        timeout: 10000,
+      },
+    });
 
-    console.log("Answer:", response.answer);
-    console.log("Sources:", response.sources.length);
-    console.log("Confidence:", response.confidence);
+    if (result.success) {
+      console.log("Query:", result.query);
+      console.log("Results:", result.results);
+    } else {
+      console.error("Query failed:", result.error);
+    }
   } catch (error) {
     console.error("Pipeline error:", error);
   } finally {
     // Clean up resources
-    await pipeline.destroy();
+    await pipeline.cleanup();
   }
 }
 
@@ -200,72 +203,62 @@ const localConfig: PipelineConfig = {
 
 ## Pipeline Methods & Operations
 
-### **Document Ingestion**
+:::info Document Ingestion
+The base `createRagPipeline` returns a pipeline with `run()` method for queries. Document ingestion is handled by your retriever plugin's storage methods. Use your retriever directly to load and index documents before running queries.
+:::
+
+### **Running Queries**
 
 ```typescript
-// Single file ingestion
-await pipeline.ingest("./document.pdf");
+// Basic query with the run() method
+const result = await pipeline.run({
+  query: "What is RAG?",
+  options: { topK: 3 },
+});
 
-// Multiple files with glob patterns
-await pipeline.ingest("./docs/**/*.{md,txt,pdf}");
-
-// Batch ingestion with progress tracking
-const files = ["doc1.pdf", "doc2.md", "doc3.txt"];
-for (const file of files) {
-  console.log(`Processing ${file}...`);
-  await pipeline.ingest(file);
+if (result.success) {
+  console.log("Results:", result.results);
 }
 
-// Ingestion with custom options
-await pipeline.ingest("./docs", {
-  chunkSize: 1500,
-  chunkOverlap: 300,
-  metadata: {
-    source: "documentation",
-    version: "2.1.8",
-    category: "technical",
+// Query with advanced options
+const detailedResult = await pipeline.run({
+  query: "Explain the plugin architecture",
+  options: {
+    topK: 5,
+    timeout: 15000,
   },
 });
-```
 
-### **Querying & Response Generation**
+if (detailedResult.success) {
+  console.log("Query:", detailedResult.query);
+  console.log("Retrieved documents:", detailedResult.results);
+}
 
-```typescript
-// Basic query
-const response = await pipeline.query("What is RAG?");
-console.log(response.answer);
+// Using pre-computed query vector
+const queryVector = await embedder.embed("How does caching work?");
+const vectorResult = await pipeline.run({
+  queryVector,
+  options: { topK: 3 },
+});
 
-// Query with options
-const detailedResponse = await pipeline.query(
-  "Explain the plugin architecture",
-  {
-    maxTokens: 2000,
-    temperature: 0.3,
-    includeMetadata: true,
-    minConfidence: 0.7,
-  },
-);
+// Streaming responses (if your LLM plugin supports generateStream)
+const stream = await pipeline.run({
+  query: "How do I optimize performance?",
+  options: { stream: true },
+});
 
-console.log("Answer:", detailedResponse.answer);
-console.log("Sources:", detailedResponse.sources);
-console.log("Metadata:", detailedResponse.metadata);
-console.log("Processing time:", detailedResponse.processingTime);
-
-// Streaming responses
-const stream = pipeline.queryStream("How do I optimize performance?");
 for await (const chunk of stream) {
-  process.stdout.write(chunk.token);
-
-  // Access metadata during streaming
-  if (chunk.metadata) {
-    console.log("\nSources found:", chunk.metadata.sources.length);
+  if (!chunk.done) {
+    process.stdout.write(chunk.token);
   }
 }
 ```
 
-### **Batch Processing**
+### **Batch Processing with ParallelProcessor**
 
 ```typescript
+const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
+
 // Process multiple queries efficiently
 const queries = [
   "What is the plugin system?",
@@ -273,27 +266,30 @@ const queries = [
   "What are the supported vector stores?",
 ];
 
-const responses = await pipeline.batchQuery(queries, {
-  maxConcurrency: 3,
-  includeMetadata: true,
+const processor = new ParallelProcessor({
+  concurrency: 3,
+  retryAttempts: 2,
 });
 
-responses.forEach((response, index) => {
-  console.log(`Query ${index + 1}:`, queries[index]);
-  console.log(`Answer:`, response.answer);
-  console.log(`Confidence:`, response.confidence);
-  console.log("---");
+const results = await processor.process(
+  queries,
+  async (query) => await pipeline.run({ query, options: { topK: 3 } }),
+);
+
+results.forEach((result, index) => {
+  if (result.success) {
+    console.log(`Query ${index + 1}:`, queries[index]);
+    console.log(`Results found:`, result.results.length);
+    console.log("---");
+  }
 });
 ```
 
-### **Pipeline Management**
+### **Pipeline Cleanup**
 
 ```typescript
-// Get pipeline statistics
-const stats = await pipeline.getStats();
-console.log("Documents indexed:", stats.documentsCount);
-console.log("Total chunks:", stats.chunksCount);
-console.log("Index size:", stats.indexSize);
+// Clean up pipeline resources
+await pipeline.cleanup();
 console.log("Last updated:", stats.lastUpdated);
 
 // Clear the vector store

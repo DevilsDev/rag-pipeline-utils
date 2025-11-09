@@ -34,37 +34,46 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ## Why Choose @DevilsDev/rag-pipeline-utils?
 
+:::info Feature Availability
+Features are marked with accessibility indicators:
+
+- ✅ **Public API** - Available via `require('@devilsdev/rag-pipeline-utils')`
+- 🔧 **CLI Tool** - Available through the `rag-pipeline` command-line interface
+- 📦 **CLI/Internal** - Internal implementation not exported in public API
+  :::
+
 ### **Enterprise-Grade Architecture**
 
-- **Dependency Injection Container**: IoC pattern with singleton/factory support for modular, testable code
-- **SLO Monitoring System**: Built-in Service Level Objectives tracking with error budgets and alerting
-- **Semantic Release Automation**: Automated versioning, changelog generation, and NPM publishing
-- **External API Mocking**: Deterministic test infrastructure with network simulation for reliable CI/CD
-- **Production Observability**: Structured logging with correlation IDs and comprehensive metrics
+- **Plugin Registry System**: ✅ Public API - Register and manage custom plugins with type-safe contracts
+- **Semantic Release Automation**: ✅ Public API - Automated versioning via npm scripts
+- **External API Mocking**: 🔧 Testing Infrastructure - Deterministic test infrastructure with network simulation
+- **Production Observability**: ✅ Public API - Structured logging with `logger`, `eventLogger`, and `metrics` exports
+- **SLO Monitoring System**: 📦 CLI/Internal - Service Level Objectives tracking (not in public API)
 
 ### **Advanced AI Capabilities**
 
-- **Multi-Modal Processing**: Handle text, images, and structured data in unified pipelines
-- **Federated Learning**: Distributed model training with privacy-preserving aggregation
-- **Adaptive Retrieval Engine**: Dynamic retrieval strategies with performance optimization
-- **Model Training Orchestrator**: End-to-end training workflows with hyperparameter tuning
-- **Intelligent Reranking**: Context-aware reranking with multiple scoring algorithms
+- **Multi-Modal Processing**: ✅ Public API - `MultiModalProcessor` for text, images, and structured data
+- **Adaptive Retrieval Engine**: ✅ Public API - `AdaptiveRetrievalEngine` with learning-based optimization
+- **Plugin-Based Architecture**: ✅ Public API - Custom embedders, retrievers, LLMs, and rerankers
+- **Federated Learning**: 📦 CLI/Internal - Distributed model training (not in public API)
+- **Model Training Orchestrator**: 📦 CLI/Internal - Training workflows (not in public API)
 
 ### **Developer Experience Excellence**
 
-- **Enhanced CLI Suite**: Interactive wizards, doctor diagnostics, and plugin management
-- **Streaming Evaluation**: Real-time dashboard with live metrics and performance monitoring
-- **Plugin Marketplace**: Certified plugin ecosystem with discovery and installation workflows
-- **Configuration Schema**: Validated `.ragrc.json` with IntelliSense and error checking
-- **Hot Module Reloading**: Dynamic plugin updates without pipeline restarts
+- **Enhanced CLI Suite**: 🔧 CLI Tool - Interactive wizards, doctor diagnostics, and plugin management
+- **Configuration Schema**: ✅ Public API - `loadConfig`, `validateRagrc`, `normalizeConfig` for `.ragrc.json`
+- **Hot Module Reloading**: ✅ Public API - `HotReloadManager` and `createHotReloadManager` for development
+- **Dev Server**: ✅ Public API - `DevServer` and `createDevServer` with debugging support
+- **Plugin Marketplace**: 📦 CLI/Internal - Plugin discovery system (not in public API)
 
 ### **Production Monitoring & Analytics**
 
-- **SLO Dashboard**: Real-time service health with error budget tracking and alerting
-- **Performance Profiling**: Built-in performance monitoring with bottleneck identification
-- **Audit Logging**: Comprehensive security and compliance logging for enterprise deployments
-- **Metrics Collection**: Prometheus-compatible metrics with Grafana dashboard templates
-- **Distributed Tracing**: Request correlation across microservices and external APIs
+- **Audit Logging**: ✅ Public API - `AuditLogger` for compliance and security logging
+- **Data Governance**: ✅ Public API - `DataGovernance` for multi-tenant isolation and quotas
+- **Metrics Collection**: ✅ Public API - `metrics` module with Prometheus-compatible exports
+- **Event Logging**: ✅ Public API - `eventLogger` for structured event tracking
+- **Parallel Processing**: ✅ Public API - `ParallelProcessor` for concurrent document processing
+- **SLO Dashboard**: 📦 CLI/Internal - Service health monitoring (not in public API)
 
 ---
 

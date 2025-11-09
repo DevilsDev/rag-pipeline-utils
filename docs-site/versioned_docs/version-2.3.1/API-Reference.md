@@ -32,7 +32,7 @@ function createRagPipeline(config: PipelineConfig): Pipeline;
 | `config.llm`       | `LLM \| string`       | No       | Language model plugin or plugin name                  |
 | `config.reranker`  | `Reranker \| string`  | No       | Result reranking plugin or plugin name                |
 
-**Returns:** `Pipeline` - Pipeline instance with `query()` and `ingest()` methods
+**Returns:** `Pipeline` - Pipeline instance with `run()` and `cleanup()` methods
 
 **Example:**
 
@@ -40,7 +40,6 @@ function createRagPipeline(config: PipelineConfig): Pipeline;
 const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
 
 const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
   embedder: new OpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY }),
   retriever: new PineconeRetriever({ apiKey: process.env.PINECONE_API_KEY }),
   llm: new OpenAILLM({ model: "gpt-4" }),
@@ -55,97 +54,69 @@ const pipeline = createRagPipeline({
 
 ### Pipeline Methods
 
-#### pipeline.query()
+#### pipeline.run()
 
-Executes a query against the RAG pipeline.
+Executes the RAG pipeline with the provided query.
 
-**Behavior:** Processes natural language queries through the complete RAG flow: embeds query, retrieves relevant documents, and generates contextual response using LLM. Supports both standard and streaming response modes.
+**Behavior:** Processes queries through the complete RAG flow: embeds query (if embedder provided), retrieves relevant documents using the retriever, optionally reranks results, and generates a response using the LLM. Supports both standard and streaming response modes.
 
 **Signature:**
 
 ```typescript
-async query(
-  query: string,
-  options?: QueryOptions
-): Promise<QueryResult>
+async run(options: RunOptions): Promise<RunResult>
 ```
 
 **Parameters:**
 
 | Parameter             | Type       | Required | Description                                  |
 | --------------------- | ---------- | -------- | -------------------------------------------- |
-| `query`               | `string`   | Yes      | Natural language query                       |
+| `options.query`       | `string`   | No       | Natural language query text                  |
+| `options.queryVector` | `number[]` | No       | Pre-computed query embedding vector          |
 | `options.topK`        | `number`   | No       | Number of documents to retrieve (default: 3) |
 | `options.timeout`     | `number`   | No       | Timeout in milliseconds                      |
 | `options.stream`      | `boolean`  | No       | Enable streaming response (default: false)   |
-| `options.queryVector` | `number[]` | No       | Pre-computed query embedding                 |
 
-**Returns:** `Promise<QueryResult>`
+**Note:** Either `query` or `queryVector` must be provided.
+
+**Returns:** `Promise<RunResult>`
 
 ```typescript
-interface QueryResult {
-  text: string;
-  sources: Document[];
-  metadata?: Record<string, any>;
+interface RunResult {
+  success: boolean;
+  query: string;
+  results: Document[];
+  error?: string; // Only present when success is false
 }
 ```
 
 **Example:**
 
 ```javascript
-const result = await pipeline.query("What is the vacation policy?", {
-  topK: 5,
-  timeout: 10000,
+const result = await pipeline.run({
+  query: "What is the vacation policy?",
+  options: { topK: 5, timeout: 10000 },
 });
 
-console.log(result.text);
-console.log(result.sources);
+if (result.success) {
+  console.log("Query:", result.query);
+  console.log("Results:", result.results);
+}
 ```
 
 **Streaming Example:**
 
 ```javascript
-const stream = await pipeline.query("Explain the benefits", {
-  stream: true,
+const stream = await pipeline.run({
+  query: "Explain the benefits",
+  options: { stream: true },
 });
 
+// Stream is an async generator
 for await (const chunk of stream) {
   if (!chunk.done) {
     process.stdout.write(chunk.token);
   }
 }
-```
-
-#### pipeline.ingest()
-
-Ingests documents into the RAG pipeline.
-
-**Behavior:** Loads documents from file paths or directories, chunks content, generates embeddings, and stores them in the vector database. Supports batch processing with configurable concurrency and retry logic.
-
-**Signature:**
-
-```typescript
-async ingest(
-  source: string | string[],
-  options?: IngestOptions
-): Promise<IngestResult>
-```
-
-**Parameters:**
-
-| Parameter           | Type                 | Required | Description                              |
-| ------------------- | -------------------- | -------- | ---------------------------------------- |
-| `source`            | `string \| string[]` | Yes      | File path(s) or directory to ingest      |
-| `options.batchSize` | `number`             | No       | Batch size for processing (default: 100) |
-| `options.timeout`   | `number`             | No       | Timeout per document in milliseconds     |
-
-**Returns:** `Promise<IngestResult>`
-
-**Example:**
-
-```javascript
-await pipeline.ingest("./documents");
-await pipeline.ingest(["file1.pdf", "file2.txt"]);
 ```
 
 ---
@@ -204,9 +175,13 @@ function normalizeConfig(config: Partial<RagConfig>): RagConfig;
 
 ## Security
 
+:::warning Not Available in Public API
+The security utilities `JWTValidator` and `InputSanitizer` exist in the codebase but are **not exported** in the public API (src/index.js). They are available only through CLI commands or by directly requiring internal modules. If you need these features, please open an issue requesting they be added to the public API.
+:::
+
 ### JWTValidator
 
-Enterprise-grade JWT validation with replay protection.
+Enterprise-grade JWT validation with replay protection (CLI/Internal use only).
 
 **Behavior:** Provides cryptographically secure JWT signing and verification with built-in replay attack detection, algorithm confusion prevention, and race condition mitigation. Supports both self-signed (reusable) and external (single-use) token validation.
 
@@ -297,7 +272,7 @@ try {
 
 ### InputSanitizer
 
-Multi-layer input sanitization with path traversal defense.
+Multi-layer input sanitization with path traversal defense (CLI/Internal use only).
 
 **Behavior:** Protects against XSS, SQL injection, command injection, and path traversal attacks through multi-layer validation. Uses iterative URL decoding (up to 5 iterations) to detect sophisticated encoding-based attacks.
 
