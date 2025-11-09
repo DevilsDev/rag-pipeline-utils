@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
+import Tooltip from "../Tooltip";
 
 const EMBEDDER_LATENCY = {
   openai: 120,
@@ -119,7 +120,13 @@ export default function PerformanceCalculator() {
   return (
     <div className={styles.calculator}>
       <div className={styles.header}>
-        <h2>Performance Calculator</h2>
+        <h2>
+          Performance Calculator
+          <Tooltip
+            content="Calculate estimated performance metrics and costs based on your RAG pipeline configuration. Adjust parameters to see real-time impact on latency and expenses."
+            educationalMode={true}
+          />
+        </h2>
         <p>Estimate throughput, latency, and costs for your RAG pipeline</p>
       </div>
 

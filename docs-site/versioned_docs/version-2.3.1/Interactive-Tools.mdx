@@ -4,35 +4,89 @@ sidebar_position: 8
 
 # Interactive Tools
 
+import TourGuide from "@site/src/components/TourGuide";
+import InteractiveBadge from "@site/src/components/InteractiveBadge";
+import CodePlayground from "@site/src/components/CodePlayground";
+import ConfigGenerator from "@site/src/components/ConfigGenerator";
+import PerformanceCalculator from "@site/src/components/PerformanceCalculator";
+
 :::info Version 2.3.1 Features
 All examples and tools on this page demonstrate features available in **RAG Pipeline Utils v2.3.1**. The code examples use the stable v2.3.1 API and are ready to use in production.
 :::
 
-Explore RAG Pipeline Utils with our interactive tools designed to help you build, configure, and optimize your RAG applications.
+<TourGuide />
+
+Explore RAG Pipeline Utils with our interactive tools designed to help you build, configure, and optimize your RAG applications. These tools provide hands-on experience with the library's features.
+
+:::tip Playground Tour Available
+Look for the **?** help icons throughout the tools for detailed explanations. If you see an **INTERACTIVE** badge, you can modify and interact with that component!
+:::
+
+---
 
 ## Code Playground
 
-Try RAG Pipeline Utils directly in your browser with live code examples.
+<InteractiveBadge type="interactive" />
 
-import CodePlayground from "@site/src/components/CodePlayground";
+Try RAG Pipeline Utils directly in your browser with live code examples. Modify the code and run it in StackBlitz.
+
+**What you can do:**
+
+- Edit code examples in real-time
+- Switch between different plugin patterns
+- Open examples in StackBlitz to run them
+- Copy code to use in your projects
 
 <CodePlayground />
 
+---
+
 ## Configuration Generator
 
-Build your RAG pipeline configuration step-by-step with our interactive wizard.
+<InteractiveBadge type="interactive" />
 
-import ConfigGenerator from "@site/src/components/ConfigGenerator";
+Build your RAG pipeline configuration step-by-step with our interactive wizard. Select your components and generate production-ready code.
+
+**What you can do:**
+
+- Choose embedder, retriever, and LLM providers
+- Configure advanced options like caching and timeouts
+- Preview generated code in real-time
+- Copy complete configuration code
 
 <ConfigGenerator />
 
+---
+
 ## Performance Calculator
 
-Estimate throughput, latency, and costs for your RAG pipeline based on your configuration.
+<InteractiveBadge type="interactive" />
 
-import PerformanceCalculator from "@site/src/components/PerformanceCalculator";
+Estimate throughput, latency, and costs for your RAG pipeline based on your configuration. Adjust parameters to see real-time impact on performance and costs.
+
+**What you can do:**
+
+- Input your expected query volume
+- Select your component choices
+- Adjust caching and optimization settings
+- See estimated latency (P50, P95, P99)
+- Calculate monthly costs
+- Get optimization recommendations
 
 <PerformanceCalculator />
+
+---
+
+## Educational Mode
+
+All interactive tools include built-in help:
+
+- **Help Icons (?)**: Hover over help icons to see detailed explanations
+- **Interactive Badges**: Visual indicators show what's interactive vs static
+- **Recommendations**: Tools provide context-aware optimization suggestions
+- **Live Preview**: See changes immediately as you adjust settings
+
+---
 
 ## Additional Resources
 
@@ -40,3 +94,7 @@ import PerformanceCalculator from "@site/src/components/PerformanceCalculator";
 - [API Reference](/docs/API-Reference)
 - [Deployment Guides](/docs/Deployment-Docker)
 - [Performance Optimization](/docs/Performance)
+
+:::note Need Help?
+If you have questions about these tools or need assistance, check our [FAQ](/docs/FAQ) or [open a discussion](https://github.com/DevilsDev/rag-pipeline-utils/discussions).
+:::

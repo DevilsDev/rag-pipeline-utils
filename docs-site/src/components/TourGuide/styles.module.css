@@ -1,0 +1,176 @@
+.tourOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tourModal {
+  background: var(--ifm-background-color);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.tourHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.tourHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--ifm-color-primary);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ifm-color-emphasis-600);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+.tourBody {
+  padding: 24px;
+}
+
+.tourBody p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: var(--ifm-font-color-base);
+}
+
+.tourProgress {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.progressDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--ifm-color-emphasis-300);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.progressDot:hover {
+  transform: scale(1.2);
+}
+
+.progressDot.active {
+  background-color: var(--ifm-color-primary);
+  transform: scale(1.3);
+}
+
+.progressDot.completed {
+  background-color: var(--ifm-color-success);
+}
+
+.tourFooter {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.navigationButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.primaryButton,
+.secondaryButton,
+.navButton {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.primaryButton {
+  background-color: var(--ifm-color-primary);
+  color: white;
+}
+
+.primaryButton:hover {
+  background-color: var(--ifm-color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: var(--ifm-color-emphasis-700);
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.secondaryButton:hover {
+  background-color: var(--ifm-color-emphasis-100);
+}
+
+.navButton {
+  background-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-800);
+}
+
+.navButton:hover:not(:disabled) {
+  background-color: var(--ifm-color-emphasis-300);
+}
+
+.navButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./styles.module.css";
+import Tooltip from "../Tooltip";
 
 const EXAMPLES = {
   basic: {
@@ -263,38 +264,60 @@ export default function CodePlayground() {
   };
 
   const openInStackBlitz = () => {
-    const project = {
-      title: "RAG Pipeline Utils Example",
-      description: "Interactive example using RAG Pipeline Utils",
-      template: "node",
-      files: {
-        "index.js": code,
-        "package.json": JSON.stringify(
-          {
-            name: "rag-pipeline-example",
-            version: "1.0.0",
-            dependencies: {
-              "@devilsdev/rag-pipeline-utils": "^2.3.1",
-            },
+    // Create project files
+    const files = {
+      "index.js": code,
+      "package.json": JSON.stringify(
+        {
+          name: "rag-pipeline-example",
+          version: "1.0.0",
+          main: "index.js",
+          dependencies: {
+            "@devilsdev/rag-pipeline-utils": "^2.3.1",
           },
-          null,
-          2,
-        ),
-        "README.md":
-          "# RAG Pipeline Utils Example\n\nRun `node index.js` to execute.",
-      },
+        },
+        null,
+        2,
+      ),
+      "README.md":
+        "# RAG Pipeline Utils Example\n\nThis example demonstrates RAG Pipeline Utils v2.3.1 features.\n\n## Run\n\n```bash\nnode index.js\n```",
     };
 
+    // Create form with proper StackBlitz API format
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = "https://stackblitz.com/run";
+    form.action = "https://stackblitz.com/run?file=index.js";
     form.target = "_blank";
+    form.style.display = "none";
 
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "project[files]";
-    input.value = JSON.stringify(project);
-    form.appendChild(input);
+    // Add project files
+    Object.keys(files).forEach((filename) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = `project[files][${filename}]`;
+      input.value = files[filename];
+      form.appendChild(input);
+    });
+
+    // Add project metadata
+    const titleInput = document.createElement("input");
+    titleInput.type = "hidden";
+    titleInput.name = "project[title]";
+    titleInput.value =
+      "RAG Pipeline Utils - " + EXAMPLES[selectedExample].title;
+    form.appendChild(titleInput);
+
+    const descInput = document.createElement("input");
+    descInput.type = "hidden";
+    descInput.name = "project[description]";
+    descInput.value = "Interactive example using RAG Pipeline Utils v2.3.1";
+    form.appendChild(descInput);
+
+    const templateInput = document.createElement("input");
+    templateInput.type = "hidden";
+    templateInput.name = "project[template]";
+    templateInput.value = "node";
+    form.appendChild(templateInput);
 
     document.body.appendChild(form);
     form.submit();
@@ -309,7 +332,13 @@ export default function CodePlayground() {
   return (
     <div className={styles.playground}>
       <div className={styles.header}>
-        <h2>Interactive Code Playground</h2>
+        <h2>
+          Interactive Code Playground
+          <Tooltip
+            content="Try live code examples. You can edit the code directly and run it in StackBlitz!"
+            educationalMode={true}
+          />
+        </h2>
         <p>Explore RAG Pipeline Utils with live examples</p>
       </div>
 
@@ -329,14 +358,33 @@ export default function CodePlayground() {
 
       <div className={styles.editorContainer}>
         <div className={styles.editorHeader}>
-          <span className={styles.filename}>index.js</span>
+          <span className={styles.filename}>
+            index.js
+            <Tooltip
+              content="This is an editable code editor. You can modify the code to experiment with different configurations."
+              educationalMode={true}
+            />
+          </span>
           <div className={styles.actions}>
-            <button onClick={copyToClipboard} className={styles.actionButton}>
-              Copy
-            </button>
-            <button onClick={openInStackBlitz} className={styles.actionButton}>
-              Open in StackBlitz
-            </button>
+            <Tooltip
+              content="Copy this code to your clipboard to use in your own project"
+              educationalMode={true}
+            >
+              <button onClick={copyToClipboard} className={styles.actionButton}>
+                Copy
+              </button>
+            </Tooltip>
+            <Tooltip
+              content="Opens this example in StackBlitz, an online IDE where you can run and test the code in a real Node.js environment"
+              educationalMode={true}
+            >
+              <button
+                onClick={openInStackBlitz}
+                className={styles.actionButton}
+              >
+                Open in StackBlitz
+              </button>
+            </Tooltip>
           </div>
         </div>
         <textarea
@@ -348,7 +396,14 @@ export default function CodePlayground() {
       </div>
 
       <div className={styles.info}>
-        <h3>Try it yourself:</h3>
+        <h3>
+          Try it yourself
+          <Tooltip
+            content="Follow these steps to get the most out of the playground"
+            educationalMode={true}
+          />
+          :
+        </h3>
         <ol>
           <li>Modify the code above to experiment</li>
           <li>Click "Open in StackBlitz" to run in a live environment</li>

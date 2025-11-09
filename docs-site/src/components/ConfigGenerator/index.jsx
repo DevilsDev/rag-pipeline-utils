@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./styles.module.css";
+import Tooltip from "../Tooltip";
 
 const STEPS = ["Embedder", "Retriever", "LLM", "Advanced"];
 
@@ -511,7 +512,13 @@ export default function ConfigGenerator() {
   return (
     <div className={styles.generator}>
       <div className={styles.header}>
-        <h2>Pipeline Configuration Generator</h2>
+        <h2>
+          Pipeline Configuration Generator
+          <Tooltip
+            content="Build your custom RAG pipeline by selecting components step-by-step. The generator creates production-ready code you can copy and use."
+            educationalMode={true}
+          />
+        </h2>
         <p>Build your RAG pipeline configuration step-by-step</p>
       </div>
 
