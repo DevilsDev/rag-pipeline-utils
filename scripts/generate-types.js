@@ -22,18 +22,36 @@ export interface RagPipelineConfig {
   retriever?: string | RetrieverPlugin;
   llm?: string | LLMPlugin;
   reranker?: string | RerankerPlugin;
+  registry?: PluginRegistry;
   [key: string]: any;
+}
+
+export interface PipelineRunOptions {
+  query?: string;
+  queryVector?: number[];
+  options?: {
+    timeout?: number;
+    stream?: boolean;
+    topK?: number;
+    [key: string]: any;
+  };
+}
+
+export interface PipelineRunResult {
+  success: boolean;
+  query?: string;
+  results?: any;
+  error?: string;
+}
+
+export interface Pipeline {
+  run(options: PipelineRunOptions): Promise<PipelineRunResult>;
+  cleanup(): void;
 }
 
 export interface LoadConfigOptions {
   configPath?: string;
   validate?: boolean;
-}
-
-export interface PipelineExecuteOptions {
-  query?: string;
-  documents?: string[];
-  [key: string]: any;
 }
 
 // =============================================================================
@@ -75,69 +93,23 @@ export interface LLMResponse {
 // Plugin Contract Interfaces
 // =============================================================================
 
-/**
- * Loader plugin interface for loading documents from various sources
- */
 export interface LoaderPlugin {
-  /**
-   * Load documents from a source
-   * @param source - Path or identifier of the source
-   * @param options - Optional loading parameters
-   * @returns Promise resolving to array of documents
-   */
   load(source: string, options?: any): Promise<Document[]>;
 }
 
-/**
- * Embedder plugin interface for generating vector embeddings
- */
 export interface EmbedderPlugin {
-  /**
-   * Generate embedding vector for text
-   * @param text - Input text to embed
-   * @param options - Optional embedding parameters
-   * @returns Promise resolving to embedding vector
-   */
   embed(text: string, options?: any): Promise<number[]>;
 }
 
-/**
- * Retriever plugin interface for vector search and document retrieval
- */
 export interface RetrieverPlugin {
-  /**
-   * Retrieve relevant documents based on query
-   * @param query - Search query (text or embedding)
-   * @param options - Retrieval options (topK, filters, etc.)
-   * @returns Promise resolving to search results
-   */
   retrieve(query: string | { embedding: number[] }, options?: RetrieveOptions): Promise<SearchResult[]>;
 }
 
-/**
- * LLM plugin interface for text generation
- */
 export interface LLMPlugin {
-  /**
-   * Generate text response based on prompt
-   * @param prompt - Input prompt for generation
-   * @param options - Generation parameters (temperature, maxTokens, etc.)
-   * @returns Promise resolving to LLM response
-   */
   generate(prompt: string, options?: any): Promise<LLMResponse>;
 }
 
-/**
- * Reranker plugin interface for improving retrieval relevance
- */
 export interface RerankerPlugin {
-  /**
-   * Rerank search results based on query
-   * @param results - Initial search results
-   * @param query - Original query
-   * @param options - Reranking parameters
-   * @returns Promise resolving to reranked results
-   */
   rerank(results: SearchResult[], query: string, options?: any): Promise<SearchResult[]>;
 }
 
@@ -170,7 +142,7 @@ export interface DAGOptions {
 // =============================================================================
 
 export interface PluginRegistry {
-  register(type: string, name: string, implementation: any): void;
+  register(type: string, name: string, implementation: any, contract?: any): void;
   get(type: string, name: string): any;
   has(type: string, name: string): boolean;
   list(type: string): any[];
@@ -183,8 +155,31 @@ export interface Logger {
   debug(message: string, meta?: any): void;
 }
 
+export interface ErrorFormatter {
+  formatError(error: Error): string;
+  createError(code: string, message: string, details?: any): Error;
+  wrapError(error: Error, context: string): Error;
+  ERROR_CODES: Record<string, string>;
+}
+
+// =============================================================================
+// Evaluation Types
+// =============================================================================
+
+export interface EvalResult {
+  question: string;
+  expected: string;
+  actual: string;
+  score: number;
+  bleu?: number;
+  rouge?: number;
+}
+
+// =============================================================================
 // Core API
-export function createRagPipeline(config: RagPipelineConfig): any;
+// =============================================================================
+
+export function createRagPipeline(config: RagPipelineConfig): Pipeline;
 export { createRagPipeline as createPipeline };
 
 // Configuration
@@ -197,8 +192,137 @@ export const pluginRegistry: PluginRegistry;
 
 // Utilities
 export const logger: Logger;
+export const errorFormatter: ErrorFormatter;
+export function createError(code: string, message: string, details?: any): Error;
+export function wrapError(error: Error, context: string): Error;
+export const ERROR_CODES: Record<string, string>;
 
-// DAG Engine
+// =============================================================================
+// Utility Classes
+// =============================================================================
+
+export class BatchProcessor {
+  constructor(options?: {
+    batchSize?: number;
+    maxConcurrent?: number;
+    retryAttempts?: number;
+    onProgress?: (progress: any) => void;
+    [key: string]: any;
+  });
+  process(items: any[], handler: (batch: any[]) => Promise<any[]>): Promise<any[]>;
+  cancel(): void;
+}
+
+export class RateLimiter {
+  constructor(options?: {
+    maxRequests?: number;
+    windowMs?: number;
+    [key: string]: any;
+  });
+  tryAcquire(identifier?: string): boolean;
+  reset(identifier?: string): void;
+}
+
+export function retry<T>(fn: () => Promise<T>, options?: {
+  maxAttempts?: number;
+  delay?: number;
+  backoff?: number;
+  retryIf?: (error: Error) => boolean;
+}): Promise<T>;
+
+export function withRetry<T>(fn: () => Promise<T>, options?: {
+  maxAttempts?: number;
+  delay?: number;
+  backoff?: number;
+}): Promise<T>;
+
+export class ConnectionPoolManager {
+  constructor(options?: {
+    maxSockets?: number;
+    maxFreeSockets?: number;
+    timeout?: number;
+    [key: string]: any;
+  });
+  getPool(hostname: string): any;
+  getMetrics(): any;
+  destroy(): void;
+}
+
+// =============================================================================
+// Security
+// =============================================================================
+
+export class JWTValidator {
+  constructor(options?: {
+    secret?: string;
+    algorithms?: string[];
+    issuer?: string;
+    audience?: string;
+    clockTolerance?: number;
+    maxAge?: string;
+    [key: string]: any;
+  });
+  sign(payload: any, options?: any): string;
+  verify(token: string, options?: any): any;
+}
+
+export class PluginSandbox {
+  constructor(options?: {
+    memoryLimit?: number;
+    timeout?: number;
+    permissions?: string[];
+    [key: string]: any;
+  });
+  execute(code: string, context?: any): Promise<any>;
+}
+
+export class PluginSignatureVerifier {
+  constructor(options?: {
+    trustedKeysPath?: string;
+    failClosed?: boolean;
+    [key: string]: any;
+  });
+  verify(pluginPath: string): Promise<boolean>;
+}
+
+export function validateInput(input: string, options?: any): { valid: boolean; errors?: string[] };
+
+// =============================================================================
+// AI/ML
+// =============================================================================
+
+export class MultiModalProcessor {
+  constructor(options?: any);
+  processContent(tenantId: string, content: any): Promise<any>;
+  generateEmbeddings(tenantId: string, content: any): Promise<any>;
+  crossModalSearch(tenantId: string, query: any): Promise<any>;
+}
+
+export class AdaptiveRetrievalEngine {
+  constructor(options?: any);
+  retrieveDocuments(tenantId: string, query: string, options?: any): Promise<any>;
+  optimizeRetrieval(tenantId: string, performanceData: any): Promise<any>;
+}
+
+export class FederatedLearningCoordinator {
+  constructor(options?: any);
+  createSession(config: any): Promise<any>;
+  submitUpdate(sessionId: string, update: any): Promise<any>;
+  aggregate(sessionId: string): Promise<any>;
+}
+
+export class ModelTrainingOrchestrator {
+  constructor(options?: any);
+  createTrainingJob(tenantId: string, config: any): Promise<any>;
+  getJobStatus(jobId: string): Promise<any>;
+  optimizeModel(config: any): Promise<any>;
+  deployModel(jobId: string, deployConfig: any): Promise<any>;
+}
+
+// =============================================================================
+// Workflow Engine
+// =============================================================================
+
 export class DAGEngine {
   constructor(options?: DAGOptions);
   addNode(id: string, fn: (input: any) => Promise<any>, options?: Partial<DAGNode>): void;
@@ -207,26 +331,33 @@ export class DAGEngine {
   validate(): void;
 }
 
-// AI/ML
-export class MultiModalProcessor {
-  constructor(options?: any);
-  process(input: any): Promise<any>;
-}
+// =============================================================================
+// Evaluation
+// =============================================================================
 
-export class AdaptiveRetrievalEngine {
-  constructor(options?: any);
-  retrieve(query: string, options?: any): Promise<any>;
-}
+export function evaluateRagDataset(dataset: Array<{
+  question: string;
+  expected: string;
+  actual: string;
+}>): EvalResult[];
 
-// Performance
+export function scoreAnswer(expected: string, actual: string): number;
+export function computeBLEU(reference: string, hypothesis: string): number;
+export function computeROUGE(reference: string, hypothesis: string): number;
+
+// =============================================================================
+// Performance & Observability
+// =============================================================================
+
 export class ParallelProcessor {
   constructor(options?: any);
   process(items: any[], handler: (item: any) => Promise<any>): Promise<any[]>;
 }
 
-// Observability
 export const eventLogger: {
   log(event: string, data?: any): void;
+  info(event: string, data?: any): void;
+  error(event: string, data?: any): void;
 };
 
 export const metrics: {
@@ -234,16 +365,110 @@ export const metrics: {
   timer(name: string): { end(): void };
 };
 
+// =============================================================================
 // Enterprise
+// =============================================================================
+
 export class AuditLogger {
   constructor(options?: any);
-  log(event: string, data?: any): void;
+  logAuthentication(event: any): Promise<void>;
+  logDataAccess(event: any): Promise<void>;
+  logDataModification(event: any): Promise<void>;
 }
 
 export class DataGovernance {
   constructor(options?: any);
-  enforce(policy: any): void;
+  classifyData(data: any): any;
+  enforceRetention(policy: any): Promise<void>;
 }
+
+export class TenantManager {
+  constructor(options?: any);
+  createTenant(config: any): Promise<any>;
+  getTenant(tenantId: string): any;
+  deleteTenant(tenantId: string): Promise<void>;
+}
+
+export class ResourceMonitor {
+  constructor(options?: any);
+  getUsage(tenantId: string): any;
+  checkQuota(tenantId: string): boolean;
+}
+
+export class SSOManager {
+  constructor(options?: any);
+  authenticate(provider: string, credentials: any): Promise<any>;
+  getSession(sessionId: string): any;
+}
+
+export class SAMLProvider {
+  constructor(options?: any);
+  authenticate(request: any): Promise<any>;
+}
+
+export class OAuth2Provider {
+  constructor(options?: any);
+  authenticate(request: any): Promise<any>;
+}
+
+export class ActiveDirectoryProvider {
+  constructor(options?: any);
+  authenticate(request: any): Promise<any>;
+}
+
+export class OIDCProvider {
+  constructor(options?: any);
+  authenticate(request: any): Promise<any>;
+}
+
+// =============================================================================
+// Ecosystem
+// =============================================================================
+
+export class PluginHub {
+  constructor(options?: any);
+  search(query: string, options?: any): Promise<any[]>;
+  install(pluginName: string, options?: any): Promise<any>;
+  publish(pluginPath: string, options?: any): Promise<any>;
+}
+
+export class PluginAnalytics {
+  constructor(options?: any);
+  trackDownload(pluginName: string): void;
+  getStats(pluginName: string): any;
+}
+
+export class PluginCertification {
+  constructor(options?: any);
+  certify(pluginName: string): Promise<any>;
+  verify(pluginName: string): Promise<boolean>;
+}
+
+export class PluginAnalyticsDashboard {
+  constructor(options?: any);
+  generateReport(options?: any): Promise<any>;
+  getMetrics(): any;
+}
+
+// =============================================================================
+// Development Tools
+// =============================================================================
+
+export class HotReloadManager {
+  constructor(options?: any);
+  watch(paths: string[]): void;
+  stop(): void;
+}
+
+export function createHotReloadManager(options?: any): HotReloadManager;
+
+export class DevServer {
+  constructor(options?: any);
+  start(port?: number): Promise<void>;
+  stop(): Promise<void>;
+}
+
+export function createDevServer(options?: any): DevServer;
 `;
 
 const distDir = path.join(__dirname, "..", "dist");
@@ -255,4 +480,4 @@ if (!fs.existsSync(distDir)) {
 }
 
 fs.writeFileSync(outputPath, typeDefinitions.trim());
-console.log("✅ TypeScript definitions generated: dist/index.d.ts");
+console.log("TypeScript definitions generated: dist/index.d.ts");

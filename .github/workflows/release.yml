@@ -22,6 +22,11 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
@@ -40,5 +45,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Publish to npm via Trusted Publishers
+      - name: Verify package
+        run: npm run verify:pack --if-present
+
+      - name: Publish to npm
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

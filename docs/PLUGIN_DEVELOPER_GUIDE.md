@@ -339,7 +339,7 @@ test("should work in pipeline", async () => {
     llm: "my-plugin",
   });
 
-  const result = await pipeline.query("test query");
+  const result = await pipeline.run({ query: "test query" });
   expect(result).toBeDefined();
 });
 ```

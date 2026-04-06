@@ -20,8 +20,8 @@ Current stable release of RAG Pipeline Utils.
 **Core Pipeline:**
 
 - `createRagPipeline` - Factory function for creating RAG pipelines
-- `pipeline.query()` - Execute queries against the pipeline
-- `pipeline.ingest()` - Ingest and index documents
+- `pipeline.run()` - Execute queries against the pipeline (accepts `{ query, queryVector, options }`)
+- Document loading is handled by the loader plugin configured in `createRagPipeline()`
 - Plugin-based architecture for loaders, embedders, retrievers, and LLMs
 
 **AI/ML Capabilities:**

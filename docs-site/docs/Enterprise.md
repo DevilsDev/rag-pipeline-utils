@@ -338,7 +338,7 @@ test("handles API rate limiting gracefully", async () => {
   const pipeline = createRagPipeline(testConfig);
 
   // Should retry and eventually succeed
-  const result = await pipeline.query("test query");
+  const result = await pipeline.run({ query: "test query" });
   expect(result).toBeDefined();
 
   // Verify retry behavior
@@ -354,7 +354,7 @@ test("handles poor network conditions", async () => {
   });
 
   const startTime = Date.now();
-  const result = await pipeline.query("test query");
+  const result = await pipeline.run({ query: "test query" });
   const duration = Date.now() - startTime;
 
   expect(duration).toBeGreaterThan(2000);

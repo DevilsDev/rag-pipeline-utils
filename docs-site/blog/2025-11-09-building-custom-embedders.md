@@ -351,11 +351,10 @@ const pipeline = createRagPipeline({
   llm: myLLM,
 });
 
-// Embed documents
-await pipeline.ingest("./documents");
+// Documents are loaded via the loader plugin configured in createRagPipeline()
 
 // Query uses same embedder
-const result = await pipeline.query("How does authentication work?");
+const result = await pipeline.run({ query: "How does authentication work?" });
 ```
 
 ## Performance Benchmarks

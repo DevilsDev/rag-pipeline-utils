@@ -222,13 +222,13 @@ comprehensive-security-reports/
 pipelines/
 
 # Root-level test/debug scripts
-test-*.js
-debug-*.js
-quick-test.js
-validate-*.js
-comprehensive-test-verification.js
+/test-*.js
+/debug-*.js
+/quick-test.js
+/validate-*.js
+/comprehensive-test-verification.js
 
-# Development documentation
+# Development documentation (root-level review/audit files)
 ANTI_PATTERN_REVIEW.md
 CODEBASE_REVIEW_ANALYSIS.md
 COMPREHENSIVE_CODEBASE_REVIEW.md
@@ -237,6 +237,22 @@ PRODUCTION_READINESS_REPORT.md
 PR_DESCRIPTION.md
 TECHNICAL_DEBT_CHECKLIST.md
 TEST_STABILIZATION_REPORT*.md
+DOCUMENTATION_ACCURACY_AUDIT.md
+
+# Internal documentation (not for public consumption)
+docs/internal/
+docs/*_AUDIT*.md
+docs/*_REPORT*.md
+docs/*_FIX_REPORT*.md
+docs/SECURITY_AUDIT.md
+docs/GHA_AUDIT.md
+docs/PERF_OBS_AUDIT.md
+
+# Profiling and performance reports
+profiling-reports/
+
+# Build output (generated via npm run build)
+dist/
 
 # Local IDE/editor settings
 .claude/

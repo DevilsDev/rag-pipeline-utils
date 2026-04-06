@@ -53,56 +53,57 @@ const pipeline = createRagPipeline({
 
 ### Pipeline Methods
 
-#### pipeline.query()
+#### pipeline.run()
 
-Executes a query against the RAG pipeline.
+Executes a query against the RAG pipeline. Documents are loaded automatically via the loader plugin configured in `createRagPipeline()`.
 
 **Signature:**
 
 ```typescript
-async query(
-  query: string,
-  options?: QueryOptions
-): Promise<QueryResult>
+async run(params: {
+  query: string;
+  queryVector?: number[];
+  options?: RunOptions;
+}): Promise<RunResult>
 ```
 
 **Parameters:**
 
-| Parameter             | Type       | Required | Description                                  |
-| --------------------- | ---------- | -------- | -------------------------------------------- |
-| `query`               | `string`   | Yes      | Natural language query                       |
-| `options.topK`        | `number`   | No       | Number of documents to retrieve (default: 3) |
-| `options.timeout`     | `number`   | No       | Timeout in milliseconds                      |
-| `options.stream`      | `boolean`  | No       | Enable streaming response (default: false)   |
-| `options.queryVector` | `number[]` | No       | Pre-computed query embedding                 |
+| Parameter         | Type       | Required | Description                                  |
+| ----------------- | ---------- | -------- | -------------------------------------------- |
+| `query`           | `string`   | Yes      | Natural language query                       |
+| `queryVector`     | `number[]` | No       | Pre-computed query embedding                 |
+| `options.topK`    | `number`   | No       | Number of documents to retrieve (default: 3) |
+| `options.timeout` | `number`   | No       | Timeout in milliseconds                      |
+| `options.stream`  | `boolean`  | No       | Enable streaming response (default: false)   |
 
-**Returns:** `Promise<QueryResult>`
+**Returns:** `Promise<RunResult>`
 
 ```typescript
-interface QueryResult {
-  text: string;
-  sources: Document[];
-  metadata?: Record<string, any>;
+interface RunResult {
+  success: boolean;
+  query: string;
+  results: Document[];
 }
 ```
 
 **Example:**
 
 ```javascript
-const result = await pipeline.query("What is the vacation policy?", {
-  topK: 5,
-  timeout: 10000,
+const result = await pipeline.run({
+  query: "What is the vacation policy?",
+  options: { topK: 5, timeout: 10000 },
 });
 
-console.log(result.text);
-console.log(result.sources);
+console.log(result.results);
 ```
 
 **Streaming Example:**
 
 ```javascript
-const stream = await pipeline.query("Explain the benefits", {
-  stream: true,
+const stream = await pipeline.run({
+  query: "Explain the benefits",
+  options: { stream: true },
 });
 
 for await (const chunk of stream) {
@@ -112,35 +113,7 @@ for await (const chunk of stream) {
 }
 ```
 
-#### pipeline.ingest()
-
-Ingests documents into the RAG pipeline.
-
-**Signature:**
-
-```typescript
-async ingest(
-  source: string | string[],
-  options?: IngestOptions
-): Promise<IngestResult>
-```
-
-**Parameters:**
-
-| Parameter           | Type                 | Required | Description                              |
-| ------------------- | -------------------- | -------- | ---------------------------------------- |
-| `source`            | `string \| string[]` | Yes      | File path(s) or directory to ingest      |
-| `options.batchSize` | `number`             | No       | Batch size for processing (default: 100) |
-| `options.timeout`   | `number`             | No       | Timeout per document in milliseconds     |
-
-**Returns:** `Promise<IngestResult>`
-
-**Example:**
-
-```javascript
-await pipeline.ingest("./documents");
-await pipeline.ingest(["file1.pdf", "file2.txt"]);
-```
+> **Note:** There is no separate `ingest()` method. Document loading is handled automatically by the loader plugin configured in `createRagPipeline()`.
 
 ---
 

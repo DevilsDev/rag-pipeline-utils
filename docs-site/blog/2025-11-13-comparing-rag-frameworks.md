@@ -81,8 +81,9 @@ const pipeline = createRagPipeline({
 });
 
 // Query
-const result = await pipeline.query("How does authentication work?", {
-  topK: 5,
+const result = await pipeline.run({
+  query: "How does authentication work?",
+  options: { topK: 5 },
 });
 ```
 
@@ -336,7 +337,7 @@ app.post("/query", async (req, res) => {
   await limiter.checkLimit(user.id);
 
   const query = sanitizer.sanitize(req.body.query);
-  const result = await pipeline.query(query);
+  const result = await pipeline.run({ query });
 
   res.json(result);
 });
@@ -405,21 +406,24 @@ qa = ConversationalRetrievalChain.from_llm(
 
 ```javascript
 // Simple query stays simple
-const result = await pipeline.query(text, {
-  topK: 5,
-  temperature: 0.7,
+const result = await pipeline.run({
+  query: text,
+  options: { topK: 5, temperature: 0.7 },
 });
 
 // Advanced features remain explicit
-const result = await pipeline.query(text, {
-  topK: 5,
-  retrieverOptions: {
-    scoreThreshold: 0.7,
-    diversityPenalty: 0.3,
-  },
-  llmOptions: {
-    maxTokens: 500,
-    stopSequences: ["\n\n"],
+const result = await pipeline.run({
+  query: text,
+  options: {
+    topK: 5,
+    retrieverOptions: {
+      scoreThreshold: 0.7,
+      diversityPenalty: 0.3,
+    },
+    llmOptions: {
+      maxTokens: 500,
+      stopSequences: ["\n\n"],
+    },
   },
 });
 ```
@@ -475,7 +479,7 @@ const pipeline = createRagPipeline({
   llm: yourLLM,
 });
 
-const result = await pipeline.query(query);
+const result = await pipeline.run({ query });
 ```
 
 **Migration Steps**:
@@ -538,7 +542,7 @@ app.post("/api/query", async (req, res) => {
 
     // Query with monitoring
     const startTime = Date.now();
-    const result = await pipeline.query(query, { topK: 5 });
+    const result = await pipeline.run({ query, options: { topK: 5 } });
 
     // Logging
     logger.info("Query completed", {

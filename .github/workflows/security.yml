@@ -46,9 +46,7 @@ jobs:
         shell: bash
 
       - name: Run npm audit
-        run: |
-          npm audit fix --force || true
-          npm audit --audit-level=high --production
+        run: npm audit --audit-level=high --production
         shell: bash
         continue-on-error: true
 
