@@ -2,111 +2,59 @@
 
 /**
  * Build Script for RAG Pipeline Utils
- * Creates CommonJS and ESM builds for npm distribution
- *
- * CJS: Simple path fixup
- * ESM: Manual conversion with proper import syntax
+ * Creates CommonJS and ESM builds using esbuild
  */
 
+const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 
-const srcPath = path.resolve(__dirname, "../src/index.js");
 const distDir = path.resolve(__dirname, "../dist");
-const cjsPath = path.join(distDir, "index.cjs");
-const mjsPath = path.join(distDir, "index.mjs");
+const entryPoint = path.resolve(__dirname, "../src/index.js");
 
 // Ensure dist directory exists
 if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Read source file
-const sourceCode = fs.readFileSync(srcPath, "utf8");
-
-// Fix relative paths for dist build (they need to point to src from dist)
-const fixedSourceCode = sourceCode.replace(
-  /require\('\.\/([^']+)'\)/g,
-  "require('../src/$1')",
+// All runtime dependencies should be external (not bundled)
+const pkg = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8"),
 );
+const external = [
+  ...Object.keys(pkg.dependencies || {}),
+  ...Object.keys(pkg.devDependencies || {}).filter((d) =>
+    ["isolated-vm"].includes(d),
+  ),
+];
 
-// Create CommonJS build with fixed paths
-fs.writeFileSync(cjsPath, fixedSourceCode);
+// CommonJS build
+esbuild.buildSync({
+  entryPoints: [entryPoint],
+  bundle: true,
+  format: "cjs",
+  platform: "node",
+  target: "node18",
+  outfile: path.join(distDir, "index.cjs"),
+  external,
+  logLevel: "warning",
+});
 
-// Create ESM build by converting require/module.exports to import/export
-// and adding .js extensions for ESM compatibility
-// Use CJS interop pattern for proper ESM compatibility
-let esmCode = sourceCode
-  // Convert destructured require to CJS interop pattern
-  .replace(
-    /const\s+{\s*([^}]+)\s*}\s*=\s*require\(['"]\.\/([^'"]+)['"]\);/g,
-    (match, names, modulePath) => {
-      // Generate unique module name from path
-      const moduleName =
-        modulePath.split("/").pop().replace(/-/g, "") + "Module";
-      return `import ${moduleName} from '../src/${modulePath}.js';\nconst { ${names} } = ${moduleName};`;
-    },
-  )
-  // Convert default require to default import with .js extension
-  .replace(
-    /const\s+(\w+)\s*=\s*require\(['"]\.\/([^'"]+)['"]\);/g,
-    (match, varName, modulePath) => {
-      return `import ${varName} from '../src/${modulePath}.js';`;
-    },
-  )
-  // Convert module.exports object to named exports
-  .replace(
-    /module\.exports\s*=\s*\{([\s\S]+?)\};/m,
-    (match, exportsContent) => {
-      // Extract all property names, handling both shorthand and key:value patterns
-      const exports = [];
-      const aliases = [];
+// ESM build
+esbuild.buildSync({
+  entryPoints: [entryPoint],
+  bundle: true,
+  format: "esm",
+  platform: "node",
+  target: "node18",
+  outfile: path.join(distDir, "index.mjs"),
+  external,
+  banner: {
+    js: "import { createRequire } from 'module';\nconst require = createRequire(import.meta.url);",
+  },
+  logLevel: "warning",
+});
 
-      // Split by newlines and filter out empty/comment-only lines
-      const lines = exportsContent
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line && !line.startsWith("//"));
-
-      for (const line of lines) {
-        // Remove trailing comma and inline comments
-        const cleanLine = line.replace(/,?\s*(\/\/.*)?$/, "");
-
-        // Check for alias pattern "newName: originalName"
-        const aliasMatch = cleanLine.match(/^(\w+):\s*(\w+)$/);
-        if (aliasMatch && aliasMatch[1] !== aliasMatch[2]) {
-          // This is an alias - export separately
-          aliases.push(`export const ${aliasMatch[1]} = ${aliasMatch[2]};`);
-          continue;
-        }
-
-        // Regular export (shorthand or same name)
-        const identifierMatch = cleanLine.match(/^(\w+)(?::\s*\1)?$/);
-        if (identifierMatch) {
-          exports.push(identifierMatch[1]);
-        }
-      }
-
-      let result = `export {\n  ${exports.join(",\n  ")}\n};`;
-      if (aliases.length > 0) {
-        result +=
-          "\n\n// Backward compatibility aliases\n" + aliases.join("\n");
-      }
-      return result;
-    },
-  );
-
-// Add ESM header
-esmCode =
-  `/**
- * RAG Pipeline Utils - ESM Build
- * Main entry point for ES module consumers
- */
-
-` + esmCode;
-
-fs.writeFileSync(mjsPath, esmCode);
-
-console.log("✅ Build completed successfully!");
-console.log(`📦 CommonJS: ${cjsPath}`);
-console.log(`📦 ESM: ${mjsPath}`);
+console.log("Build completed successfully!");
+console.log(`  CommonJS: ${path.join(distDir, "index.cjs")}`);
+console.log(`  ESM:      ${path.join(distDir, "index.mjs")}`);

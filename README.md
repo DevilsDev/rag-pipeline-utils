@@ -44,12 +44,11 @@ const pipeline = createRagPipeline({
   llm: new MyLLMConnector({ model: "gpt-4" }),
 });
 
-// Ingest documents
-await pipeline.ingest("./company-docs.pdf");
-
 // Query with natural language
-const answer = await pipeline.query("What is the vacation policy?");
-console.log(answer.text);
+const result = await pipeline.run({
+  query: "What is the vacation policy?",
+});
+console.log(result.results);
 // Output: "Based on the company handbook, employees receive 20 days of vacation per year..."
 ```
 

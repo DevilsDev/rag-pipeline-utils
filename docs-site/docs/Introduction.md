@@ -159,11 +159,12 @@ const pipeline = createRagPipeline({
   },
 });
 
-// Ingest documents
-await pipeline.ingest("./docs/**/*.md");
+// Documents are loaded via the loader plugin configured in createRagPipeline()
 
 // Query the pipeline
-const response = await pipeline.query("How do I implement custom plugins?");
+const response = await pipeline.run({
+  query: "How do I implement custom plugins?",
+});
 
 console.log(response.answer);
 console.log(`Sources: ${response.sources.length} documents`);

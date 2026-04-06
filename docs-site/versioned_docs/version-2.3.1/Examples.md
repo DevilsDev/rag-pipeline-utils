@@ -41,13 +41,7 @@ async function createDocumentQA() {
     }),
   });
 
-  // Ingest company documents
-  console.log("Ingesting documents...");
-  await pipeline.ingest([
-    "./docs/employee-handbook.pdf",
-    "./docs/benefits-guide.pdf",
-    "./docs/company-policies.pdf",
-  ]);
+  // Documents are loaded via the loader plugin configured in createRagPipeline()
 
   // Query the system
   const questions = [
@@ -58,7 +52,10 @@ async function createDocumentQA() {
 
   for (const question of questions) {
     console.log(`\nQ: ${question}`);
-    const result = await pipeline.query(question, { topK: 3 });
+    const result = await pipeline.run({
+      query: question,
+      options: { topK: 3 },
+    });
     console.log(`A: ${result.text}`);
     console.log(
       `Sources: ${result.sources.map((s) => s.metadata.filename).join(", ")}`,
@@ -116,10 +113,13 @@ async function streamingChatbot() {
     process.stdout.write("Assistant: ");
 
     // Query with streaming enabled
-    const stream = await pipeline.query(userMessage, {
-      stream: true,
-      topK: 5,
-      context: conversationHistory,
+    const stream = await pipeline.run({
+      query: userMessage,
+      options: {
+        stream: true,
+        topK: 5,
+        context: conversationHistory,
+      },
     });
 
     let fullResponse = "";
@@ -271,9 +271,12 @@ class SecureKnowledgeBase {
     await this.governance.checkQuota(organizationId, "queries");
 
     // Execute query
-    const result = await this.pipeline.query(sanitizedQuestion, {
-      topK: 5,
-      filters: { organizationId }, // Tenant isolation
+    const result = await this.pipeline.run({
+      query: sanitizedQuestion,
+      options: {
+        topK: 5,
+        filters: { organizationId }, // Tenant isolation
+      },
     });
 
     // Log access
@@ -304,13 +307,10 @@ class SecureKnowledgeBase {
       this.sanitizer.sanitizePath(doc.path),
     );
 
-    // Ingest with tenant metadata
-    await this.pipeline.ingest(sanitizedPaths, {
-      metadata: { organizationId },
-    });
+    // Documents are loaded via the loader plugin configured in createRagPipeline()
 
     await this.auditLogger.log({
-      action: "documents.ingested",
+      action: "documents.loaded",
       userId: user.sub,
       organizationId,
       documentCount: documents.length,
@@ -404,11 +404,12 @@ async function batchProcessDocuments() {
     const docStartTime = Date.now();
 
     try {
-      await pipeline.ingest(file);
+      // Documents are loaded automatically via the loader plugin
+      // configured in createRagPipeline(). No manual ingest needed.
 
       const duration = Date.now() - docStartTime;
-      metrics.timing("document.ingest.duration", duration);
-      metrics.counter("document.ingest.success");
+      metrics.timing("document.load.duration", duration);
+      metrics.counter("document.load.success");
 
       return { file, status: "success", duration };
     } catch (error) {

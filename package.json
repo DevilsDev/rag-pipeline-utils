@@ -7,9 +7,9 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./cli": "./bin/cli.js"
   },
@@ -22,7 +22,8 @@
   "scripts": {
     "build": "node scripts/build.js && node scripts/generate-types.js",
     "prepack": "npm run build",
-    "prepublishOnly": "npm run lint && npm test",
+    "docs:validate": "node scripts/validate-docs-examples.js",
+    "prepublishOnly": "npm run lint && npm test && npm run docs:validate",
     "guard:cjs": "node scripts/guard-cjs.js",
     "pretest": "npm run guard:cjs && node scripts/setup.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --config jest.config.js",

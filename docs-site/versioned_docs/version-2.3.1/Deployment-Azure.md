@@ -227,9 +227,9 @@ module.exports = async function (context, req) {
 
     const { query } = req.body;
 
-    const result = await pipeline.query(query, {
-      topK: 5,
-      timeout: 25000,
+    const result = await pipeline.run({
+      query,
+      options: { topK: 5, timeout: 25000 },
     });
 
     context.res = {

@@ -107,15 +107,13 @@ const pipeline = createRagPipeline(config);
 // Use the pipeline
 async function main() {
   try {
-    // Ingest documents
-    console.log("Ingesting documents...");
-    await pipeline.ingest("./docs/**/*.md");
+    // Documents are loaded via the loader plugin configured in createRagPipeline()
 
     // Query the pipeline
     console.log("Querying pipeline...");
-    const response = await pipeline.query(
-      "How do I implement custom plugins in the RAG pipeline?",
-    );
+    const response = await pipeline.run({
+      query: "How do I implement custom plugins in the RAG pipeline?",
+    });
 
     console.log("Answer:", response.answer);
     console.log("Sources:", response.sources.length);
@@ -200,31 +198,14 @@ const localConfig: PipelineConfig = {
 
 ## Pipeline Methods & Operations
 
-### **Document Ingestion**
+### **Document Loading**
+
+Document loading is handled automatically by the loader plugin configured in `createRagPipeline()`. There is no separate `ingest()` method. Configure your loader when creating the pipeline:
 
 ```typescript
-// Single file ingestion
-await pipeline.ingest("./document.pdf");
-
-// Multiple files with glob patterns
-await pipeline.ingest("./docs/**/*.{md,txt,pdf}");
-
-// Batch ingestion with progress tracking
-const files = ["doc1.pdf", "doc2.md", "doc3.txt"];
-for (const file of files) {
-  console.log(`Processing ${file}...`);
-  await pipeline.ingest(file);
-}
-
-// Ingestion with custom options
-await pipeline.ingest("./docs", {
-  chunkSize: 1500,
-  chunkOverlap: 300,
-  metadata: {
-    source: "documentation",
-    version: "2.1.8",
-    category: "technical",
-  },
+const pipeline = createRagPipeline({
+  loader: new PDFLoader({ source: "./docs" }),
+  // ... other plugins
 });
 ```
 
@@ -232,19 +213,19 @@ await pipeline.ingest("./docs", {
 
 ```typescript
 // Basic query
-const response = await pipeline.query("What is RAG?");
-console.log(response.answer);
+const response = await pipeline.run({ query: "What is RAG?" });
+console.log(response.results);
 
 // Query with options
-const detailedResponse = await pipeline.query(
-  "Explain the plugin architecture",
-  {
+const detailedResponse = await pipeline.run({
+  query: "Explain the plugin architecture",
+  options: {
     maxTokens: 2000,
     temperature: 0.3,
     includeMetadata: true,
     minConfidence: 0.7,
   },
-);
+});
 
 console.log("Answer:", detailedResponse.answer);
 console.log("Sources:", detailedResponse.sources);
@@ -511,7 +492,7 @@ import {
 } from "@DevilsDev/rag-pipeline-utils";
 
 try {
-  const response = await pipeline.query("Complex query");
+  const response = await pipeline.run({ query: "Complex query" });
 } catch (error) {
   if (error instanceof PluginError) {
     console.error("Plugin error:", error.pluginName, error.message);

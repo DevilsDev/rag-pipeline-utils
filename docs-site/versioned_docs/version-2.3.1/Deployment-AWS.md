@@ -450,9 +450,9 @@ exports.handler = async (event) => {
 
     const { query } = JSON.parse(event.body);
 
-    const result = await pipeline.query(query, {
-      topK: 5,
-      timeout: 25000, // Lambda 30s limit
+    const result = await pipeline.run({
+      query,
+      options: { topK: 5, timeout: 25000 }, // Lambda 30s limit
     });
 
     return {

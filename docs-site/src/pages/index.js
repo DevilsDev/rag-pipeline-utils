@@ -75,8 +75,8 @@ const pipeline = createRagPipeline({
   llm: new OpenAILLM()
 });
 
-await pipeline.ingest('./docs');
-const result = await pipeline.query('What is the vacation policy?');`}
+// Documents are loaded via the loader plugin configured above
+const result = await pipeline.run({ query: 'What is the vacation policy?' });`}
                 </code>
               </pre>
             </div>

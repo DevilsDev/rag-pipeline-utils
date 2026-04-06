@@ -507,7 +507,7 @@ import {
 } from "@DevilsDev/rag-pipeline-utils";
 
 try {
-  const response = await pipeline.query("Complex query");
+  const response = await pipeline.run({ query: "Complex query" });
 } catch (error) {
   if (error instanceof PluginError) {
     console.error("Plugin error:", error.pluginName, error.message);
