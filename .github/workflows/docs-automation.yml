@@ -95,7 +95,7 @@ jobs:
 
       - name: Setup Pages (main branch only)
         if: github.ref == 'refs/heads/main'
-        uses: actions/configure-pages@983d7736d9b0ae47b0855d21e3378f24ee2f0d00 # v4.0.0
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
       - name: Upload to GitHub Pages (main branch only)
         if: github.ref == 'refs/heads/main'
