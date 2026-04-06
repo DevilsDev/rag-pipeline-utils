@@ -2,9 +2,7 @@ name: Enhanced CI
 
 on:
   push:
-    branches: [main, develop, workflow/*, feat/*]
-  pull_request:
-    branches: [main, develop, workflow/*]
+    branches: [main, develop]
   workflow_dispatch:
 
 concurrency:
@@ -13,10 +11,6 @@ concurrency:
 
 permissions:
   contents: read
-  actions: read
-  security-events: write
-  checks: write
-  pull-requests: write
 
 env:
   FORCE_COLOR: 1

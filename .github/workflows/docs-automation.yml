@@ -22,18 +22,21 @@ on:
         default: false
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   generate-docs:
     name: Generate API Documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -44,7 +47,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: 18
+          node-version: 20
           cache: "npm"
 
       - name: Install dependencies
@@ -67,21 +70,21 @@ jobs:
         run: |
           # Check if documentation files were generated
           if [ ! -f "docs/api.html" ]; then
-            echo "❌ HTML documentation not generated"
+            echo "HTML documentation not generated"
             exit 1
           fi
 
           if [ ! -f "docs/api.md" ]; then
-            echo "❌ Markdown documentation not generated"
+            echo "Markdown documentation not generated"
             exit 1
           fi
 
           if [ ! -f "docs/api.json" ]; then
-            echo "❌ JSON documentation not generated"
+            echo "JSON documentation not generated"
             exit 1
           fi
 
-          echo "✅ All documentation files generated successfully"
+          echo "All documentation files generated successfully"
 
       - name: Upload documentation artifacts
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -108,6 +111,11 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: generate-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
@@ -123,6 +131,10 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: generate-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -134,7 +146,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: 18
+          node-version: 20
           cache: "npm"
 
       - name: Install dependencies
@@ -170,12 +182,15 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '📚 API documentation has been automatically updated based on code changes.'
+              body: 'API documentation has been automatically updated based on code changes.'
             });
 
   doc-health-check:
     name: Documentation Health Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -184,7 +199,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
-          node-version: 18
+          node-version: 20
           cache: "npm"
 
       - name: Install dependencies
@@ -192,7 +207,7 @@ jobs:
 
       - name: Check JSDoc coverage
         run: |
-          echo "🔍 Analyzing JSDoc coverage..."
+          echo "Analyzing JSDoc coverage..."
 
           # Count total functions/classes
           total_items=$(find src -name "*.js" -exec grep -l "function\|class\|=>" {} \; | wc -l)
@@ -200,69 +215,61 @@ jobs:
           # Count documented items
           documented_items=$(find src -name "*.js" -exec grep -l "/\*\*" {} \; | wc -l)
 
-          if [ $total_items -gt 0 ]; then
+          if [ "$total_items" -gt 0 ]; then
             coverage=$((documented_items * 100 / total_items))
-            echo "📊 Documentation coverage: $coverage% ($documented_items/$total_items files)"
+            echo "Documentation coverage: $coverage% ($documented_items/$total_items files)"
 
-            if [ $coverage -lt 80 ]; then
-              echo "⚠️ Documentation coverage is below 80%"
+            if [ "$coverage" -lt 80 ]; then
+              echo "Documentation coverage is below 80%"
               echo "Consider adding JSDoc comments to improve documentation coverage"
             else
-              echo "✅ Documentation coverage is good!"
+              echo "Documentation coverage is good!"
             fi
           fi
 
       - name: Validate documentation quality
         run: |
-          echo "🔍 Validating documentation quality..."
-
-          # Check for common documentation issues
+          echo "Validating documentation quality..."
           issues=0
 
           # Check for TODO/FIXME in documentation
           if grep -r "TODO\|FIXME" docs/ > /dev/null 2>&1; then
-            echo "⚠️ Found TODO/FIXME comments in documentation"
+            echo "Found TODO/FIXME comments in documentation"
             issues=$((issues + 1))
           fi
 
           # Check for broken internal links (basic check)
           if find docs -name "*.md" -exec grep -l "](\./" {} \; > /dev/null 2>&1; then
-            echo "🔗 Found internal links in documentation - manual verification recommended"
+            echo "Found internal links in documentation - manual verification recommended"
           fi
 
-          if [ $issues -eq 0 ]; then
-            echo "✅ Documentation quality check passed"
+          if [ "$issues" -eq 0 ]; then
+            echo "Documentation quality check passed"
           else
-            echo "⚠️ Found $issues documentation quality issues"
+            echo "Found $issues documentation quality issues"
           fi
 
       - name: Generate documentation metrics
         run: |
-          echo "📈 Generating documentation metrics..."
+          echo "Generating documentation metrics..."
 
-          # Count lines of documentation
           doc_lines=$(find docs -name "*.md" -exec wc -l {} \; | awk '{sum += $1} END {print sum}' || echo "0")
-
-          # Count API endpoints documented
           api_endpoints=$(grep -r "@param\|@returns" src/ | wc -l || echo "0")
-
-          # Count examples
           examples=$(grep -r "@example" src/ | wc -l || echo "0")
 
-          echo "📝 Total documentation lines: $doc_lines"
-          echo "🔧 API endpoints documented: $api_endpoints"
-          echo "💡 Code examples: $examples"
+          echo "Total documentation lines: $doc_lines"
+          echo "API endpoints documented: $api_endpoints"
+          echo "Code examples: $examples"
 
-          # Create metrics file
-          cat > docs-metrics.json << EOF
-          {
-            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "documentation_lines": $doc_lines,
-            "api_endpoints": $api_endpoints,
-            "examples": $examples,
-            "workflow_run": "${{ github.run_number }}"
-          }
-          EOF
+          # Create metrics file using jq for safe JSON generation
+          jq -n \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson dl "${doc_lines:-0}" \
+            --argjson ae "${api_endpoints:-0}" \
+            --argjson ex "${examples:-0}" \
+            --arg run "${{ github.run_number }}" \
+            '{timestamp: $ts, documentation_lines: $dl, api_endpoints: $ae, examples: $ex, workflow_run: $run}' \
+            > docs-metrics.json
 
       - name: Upload documentation metrics
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
