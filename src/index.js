@@ -118,6 +118,25 @@ const { OpenAIConnector } = require("./connectors/openai-connector");
 const { AnthropicConnector } = require("./connectors/anthropic-connector");
 const { CohereConnector } = require("./connectors/cohere-connector");
 
+// Streaming Embeddings
+const { StreamingEmbedder } = require("./streaming/streaming-embedder");
+const { createEmbeddingStream } = require("./streaming/embedding-stream");
+
+// Advanced Reranking
+const { ScoringReranker } = require("./reranker/scoring-reranker");
+const { EmbeddingReranker } = require("./reranker/embedding-reranker");
+const { CascadeReranker } = require("./reranker/cascade-reranker");
+
+// GraphRAG
+const { KnowledgeGraph } = require("./graph/knowledge-graph");
+const { EntityExtractor } = require("./graph/entity-extractor");
+const { GraphRetriever } = require("./graph/graph-retriever");
+const { GraphIndex } = require("./graph/graph-index");
+
+// Performance Dashboard
+const { DashboardGenerator } = require("./dashboard/dashboard-generator");
+const { MetricsAggregator } = require("./dashboard/metrics-aggregator");
+
 // Performance and observability
 const ParallelProcessor = require("./core/performance/parallel-processor");
 const eventLogger = require("./core/observability/event-logger");
@@ -262,6 +281,25 @@ module.exports = {
   OpenAIConnector,
   AnthropicConnector,
   CohereConnector,
+
+  // Streaming Embeddings
+  StreamingEmbedder,
+  createEmbeddingStream,
+
+  // Advanced Reranking
+  ScoringReranker,
+  EmbeddingReranker,
+  CascadeReranker,
+
+  // GraphRAG
+  KnowledgeGraph,
+  EntityExtractor,
+  GraphRetriever,
+  GraphIndex,
+
+  // Performance Dashboard
+  DashboardGenerator,
+  MetricsAggregator,
 
   // Performance & Observability
   ParallelProcessor,

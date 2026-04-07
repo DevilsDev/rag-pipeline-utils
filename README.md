@@ -338,31 +338,20 @@ npm run verify:esm        # Validate ESM build
 
 ## Roadmap
 
-### Current Release: v2.3.1
+### v2.4.0 (Current)
 
-The latest published npm release. All features documented in this README are available on the `main` branch and will ship in the next npm release.
-
-**Included in current main (upcoming release):**
-
-- 93 public exports (up from 22 in v2.3.1)
-- Smart chunking engine with 5 strategies
-- Citation tracking and hallucination detection
-- RAG evaluation framework (faithfulness, relevance, groundedness)
-- Agentic RAG with query planning and self-critique
-- Hybrid retrieval (BM25 + vector + Reciprocal Rank Fusion)
-- 3-layer guardrails (injection detection, ACL filtering, PII detection)
-- Cost management with token budgets and provider pricing
-- Pipeline debugger with execution tracing
-- MCP integration for tool exposure
-- Streaming adapters (SSE, WebSocket)
+- 104 public exports
+- Streaming embeddings with backpressure control
+- GraphRAG -- knowledge graph construction, entity extraction, graph-based retrieval
+- Advanced reranking -- BM25 scoring, embedding-based, cascade rerankers
+- Performance dashboard -- HTML dashboard generator, metrics aggregation
+- Smart chunking, citation tracking, RAG evaluation, agentic RAG, hybrid retrieval
+- 3-layer guardrails, cost management, MCP integration, streaming adapters
 - 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, LocalEmbedder, MemoryRetriever)
-- Quick start templates (4 project scaffolds)
 - 92 test suites, 2050+ tests
 
-### What's Next
+### What's Next (v3.0.0)
 
-- **GraphRAG** -- knowledge graph integration for entity-relationship retrieval
-- **Advanced Reranking** -- cross-encoder models and learned ranking functions
 - **Intelligent Caching** -- embedding cache with TTL and invalidation strategies
 - **Native Rust Bindings** -- performance-critical paths compiled to native code
 - **Kubernetes Operator** -- production deployments with auto-scaling
