@@ -63,6 +63,12 @@ scripts/audit/
 __tests__/
 __mocks__/
 
+# Internal source files not needed by consumers
+src/mocks/
+src/ai/module-template.js
+src/dev/examples/
+src/utils/examples/
+
 # Build artifacts
 *.log
 npm-debug.log*

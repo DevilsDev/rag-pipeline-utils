@@ -123,6 +123,10 @@
   "files": [
     "dist/",
     "src/",
+    "!src/mocks/",
+    "!src/ai/module-template.js",
+    "!src/dev/examples/",
+    "!src/utils/examples/",
     "bin/",
     "contracts/",
     ".ragrc.schema.json",
