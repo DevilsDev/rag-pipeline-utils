@@ -50,6 +50,25 @@ const {
   computeBLEU,
   computeROUGE,
 } = require("./evaluate/scoring");
+const { computeFaithfulness } = require("./evaluate/faithfulness");
+const { computeAnswerRelevance } = require("./evaluate/relevance");
+const {
+  computeContextPrecision,
+  computeContextRecall,
+} = require("./evaluate/context-metrics");
+const { computeGroundedness } = require("./evaluate/groundedness");
+const { PipelineEvaluator } = require("./evaluate/pipeline-evaluator");
+
+// Chunking
+const { ChunkingEngine } = require("./chunking/chunking-engine");
+
+// Citation & Grounding
+const { CitationTracker } = require("./citation/citation-tracker");
+const {
+  mapSentenceToSources,
+  buildIDFWeights,
+} = require("./citation/source-mapper");
+const { detectHallucinations } = require("./citation/hallucination-detector");
 
 // Performance and observability
 const ParallelProcessor = require("./core/performance/parallel-processor");
@@ -132,6 +151,21 @@ module.exports = {
   scoreAnswer,
   computeBLEU,
   computeROUGE,
+  computeFaithfulness,
+  computeAnswerRelevance,
+  computeContextPrecision,
+  computeContextRecall,
+  computeGroundedness,
+  PipelineEvaluator,
+
+  // Chunking
+  ChunkingEngine,
+
+  // Citation & Grounding
+  CitationTracker,
+  mapSentenceToSources,
+  buildIDFWeights,
+  detectHallucinations,
 
   // Performance & Observability
   ParallelProcessor,

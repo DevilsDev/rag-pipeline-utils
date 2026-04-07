@@ -13,7 +13,7 @@
 function tokenize(text) {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/[^a-z0-9 ]/g, "")
     .split(/\s+/)
     .filter(Boolean);
 }
@@ -83,9 +83,36 @@ function scoreAnswer(_actual, _expected) {
   };
 }
 
+/**
+ * Split text into sentences on sentence-ending punctuation
+ * @param {string} text
+ * @returns {string[]}
+ */
+function splitSentences(text) {
+  if (!text || typeof text !== "string") return [];
+  return text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+}
+
+/**
+ * Compute Jaccard similarity between two token arrays
+ * @param {string[]} tokensA
+ * @param {string[]} tokensB
+ * @returns {number} Similarity score between 0 and 1
+ */
+function computeJaccardSimilarity(tokensA, tokensB) {
+  if (!tokensA.length || !tokensB.length) return 0;
+  const setA = new Set(tokensA);
+  const setB = new Set(tokensB);
+  const intersection = new Set([...setA].filter((x) => setB.has(x)));
+  const union = new Set([...setA, ...setB]);
+  return intersection.size / union.size;
+}
+
 module.exports = {
   scoreAnswer,
   tokenize,
   computeBLEU,
   computeROUGE,
+  splitSentences,
+  computeJaccardSimilarity,
 };
