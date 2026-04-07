@@ -10,6 +10,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { logger } = require("../utils/logger");
 
 /**
  * Plugin signature verification with Ed25519
@@ -285,9 +286,9 @@ class PluginSignatureVerifier {
 
     // In production, this should write to secure audit log
     if (process.env.NODE_ENV === "production") {
-      console.warn("[AUDIT]", JSON.stringify(auditEntry));
+      logger.warn("[AUDIT]", JSON.stringify(auditEntry));
     } else {
-      console.log("[AUDIT]", auditEntry);
+      logger.info("[AUDIT]", auditEntry);
     }
   }
 
@@ -301,7 +302,7 @@ class PluginSignatureVerifier {
       this.auditLogger(result, manifest);
     } catch (error) {
       // Audit logging failure should not break verification
-      console.error("Audit logging failed:", error.message);
+      logger.error("Audit logging failed:", error.message);
     }
   }
 

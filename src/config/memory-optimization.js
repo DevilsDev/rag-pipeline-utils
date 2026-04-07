@@ -10,6 +10,8 @@
  * @since 2.3.0
  */
 
+const { logger } = require("../utils/logger");
+
 /**
  * Light Profile
  *
@@ -248,9 +250,7 @@ function selectProfileByEnvironment() {
       case "standard":
         return STANDARD_PROFILE;
       default:
-        console.warn(
-          `Unknown MEMORY_PROFILE: ${memoryProfile}, using STANDARD`,
-        );
+        logger.warn(`Unknown MEMORY_PROFILE: ${memoryProfile}, using STANDARD`);
         return STANDARD_PROFILE;
     }
   }

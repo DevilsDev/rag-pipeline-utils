@@ -4,6 +4,7 @@
  */
 
 const { DAG, DAGNode } = require("../../../src/dag/dag-engine.js");
+const { logger: structuredLogger } = require("../../../src/utils/logger");
 
 describe("DAGNode", () => {
   describe("constructor", () => {
@@ -368,7 +369,9 @@ describe("DAG", () => {
       const mockA = jest.fn().mockResolvedValue("A-result");
       const mockB = jest.fn().mockResolvedValue("B-result");
       const mockC = jest.fn().mockRejectedValue(new Error("C failed"));
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const loggerSpy = jest
+        .spyOn(structuredLogger, "warn")
+        .mockImplementation();
 
       dag.addNode("A", mockA);
       dag.addNode("B", mockB);
@@ -379,11 +382,11 @@ describe("DAG", () => {
       const result = await dag.execute("seed");
 
       expect(result).toBe("B-result"); // B is the only sink node that succeeded
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         "Non-critical node failure: Node C execution failed: C failed",
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it("should handle input node failure propagation", async () => {

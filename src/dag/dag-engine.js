@@ -15,6 +15,7 @@ const {
 } = require("./core/topology-validation.js");
 const ExecutionScheduler = require("./core/execution-scheduler.js");
 const ErrorContext = require("./core/error-context.js");
+const { logger } = require("../utils/logger");
 
 class DAG {
   constructor() {
@@ -458,14 +459,12 @@ class DAG {
               continue; // no error recorded yet
             }
             // FINAL failure path - warn EXACT string and keep going
-            // eslint-disable-next-line no-console
-            console.warn(`Node ${node.id} failed during resume: ${e.message}`);
+            logger.warn(`Node ${node.id} failed during resume: ${e.message}`);
             keepRetrying = false; // Don't throw, just continue
           }
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.warn(`Node ${node.id} failed during resume: ${error.message}`);
+        logger.warn(`Node ${node.id} failed during resume: ${error.message}`);
         continue;
       }
     }
