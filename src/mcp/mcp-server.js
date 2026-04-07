@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
 /**
  * @module mcp/mcp-server
  * @description Wraps a RAG pipeline as an MCP-compatible tool handler.
  */
 
-const { EventEmitter } = require("events");
-const { MCPToolBuilder } = require("./mcp-tool-builder");
+const { EventEmitter } = require('events');
+const { MCPToolBuilder } = require('./mcp-tool-builder');
 
 /** @type {Object} Default configuration for the MCP server */
 const DEFAULT_CONFIG = {
@@ -49,11 +49,11 @@ class MCPServer extends EventEmitter {
    * @returns {void}
    */
   registerPipeline(name, pipeline, config = {}) {
-    if (!name || typeof name !== "string") {
-      throw new TypeError("Pipeline name must be a non-empty string");
+    if (!name || typeof name !== 'string') {
+      throw new TypeError('Pipeline name must be a non-empty string');
     }
-    if (!pipeline || typeof pipeline.run !== "function") {
-      throw new TypeError("Pipeline must have a run() method");
+    if (!pipeline || typeof pipeline.run !== 'function') {
+      throw new TypeError('Pipeline must have a run() method');
     }
 
     const builder = new MCPToolBuilder({
@@ -100,27 +100,27 @@ class MCPServer extends EventEmitter {
 
     if (
       !toolInput ||
-      typeof toolInput.query !== "string" ||
+      typeof toolInput.query !== 'string' ||
       !toolInput.query.trim()
     ) {
       throw new Error(
-        "toolInput.query is required and must be a non-empty string",
+        'toolInput.query is required and must be a non-empty string',
       );
     }
 
     const { pipeline } = entry;
     const options = {};
 
-    if (typeof toolInput.topK === "number") {
+    if (typeof toolInput.topK === 'number') {
       options.topK = toolInput.topK;
     }
-    if (typeof toolInput.stream === "boolean") {
+    if (typeof toolInput.stream === 'boolean') {
       options.stream = toolInput.stream;
     }
-    if (typeof toolInput.citations === "boolean") {
+    if (typeof toolInput.citations === 'boolean') {
       options.citations = toolInput.citations;
     }
-    if (typeof toolInput.evaluate === "boolean") {
+    if (typeof toolInput.evaluate === 'boolean') {
       options.evaluate = toolInput.evaluate;
     }
 
@@ -143,7 +143,7 @@ class MCPServer extends EventEmitter {
       responseText = JSON.stringify(payload);
     } else {
       responseText =
-        typeof result.answer === "string"
+        typeof result.answer === 'string'
           ? result.answer
           : JSON.stringify(result);
     }
@@ -156,7 +156,7 @@ class MCPServer extends EventEmitter {
     }
 
     const response = {
-      type: "text",
+      type: 'text',
       text: responseText,
     };
 
@@ -167,7 +167,7 @@ class MCPServer extends EventEmitter {
      * @property {Object} toolInput - Original input parameters
      * @property {number} responseLength - Length of the response text
      */
-    this.emit("tool_use", {
+    this.emit('tool_use', {
       toolName,
       toolInput,
       responseLength: responseText.length,
@@ -188,7 +188,7 @@ class MCPServer extends EventEmitter {
   static fromPipeline(pipeline, options = {}) {
     const server = new MCPServer(options);
     server.registerPipeline(
-      options.name || "rag_query",
+      options.name || 'rag_query',
       pipeline,
       options.config || {},
     );

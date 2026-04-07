@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { tokenize } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { tokenize } = require('../evaluate/scoring');
 
 const DEFAULT_CONFIG = { k1: 1.2, b: 0.75 };
 
@@ -32,7 +32,7 @@ class BM25Search extends EventEmitter {
 
     for (let docIndex = 0; docIndex < documents.length; docIndex++) {
       const doc = documents[docIndex];
-      const text = doc.content || doc.text || "";
+      const text = doc.content || doc.text || '';
       const tokens = tokenize(text);
 
       totalLength += tokens.length;
@@ -54,7 +54,7 @@ class BM25Search extends EventEmitter {
 
     this.avgDocLength = this.docCount > 0 ? totalLength / this.docCount : 0;
 
-    this.emit("indexed", {
+    this.emit('indexed', {
       docCount: this.docCount,
       uniqueTerms: this.invertedIndex.size,
     });
@@ -95,7 +95,7 @@ class BM25Search extends EventEmitter {
 
       for (const { docIndex, tf } of postings) {
         const doc = this.documents[docIndex];
-        const docText = doc.content || doc.text || "";
+        const docText = doc.content || doc.text || '';
         const docLen = tokenize(docText).length;
 
         const numerator = tf * (k1 + 1);
@@ -114,7 +114,7 @@ class BM25Search extends EventEmitter {
       results.push({
         id: doc.id,
         score,
-        content: doc.content || doc.text || "",
+        content: doc.content || doc.text || '',
         metadata: doc.metadata || {},
       });
     }
@@ -122,7 +122,7 @@ class BM25Search extends EventEmitter {
     results.sort((a, b) => b.score - a.score);
     const topResults = results.slice(0, k);
 
-    this.emit("searched", {
+    this.emit('searched', {
       query,
       resultCount: topResults.length,
       totalMatches: results.length,

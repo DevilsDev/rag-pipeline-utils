@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 function validateInput(input, opts = {}) {
   const maxLength = opts.maxLength || 20000;
@@ -12,7 +12,7 @@ function validateInput(input, opts = {}) {
   }
 
   // Disallowed tokens (case-insensitive)
-  const disallowedTokens = ["```", "${", "</script", "--", ";", "||", "&&"];
+  const disallowedTokens = ['```', '${', '</script', '--', ';', '||', '&&'];
   const lowerInput = inputStr.toLowerCase();
 
   for (const token of disallowedTokens) {

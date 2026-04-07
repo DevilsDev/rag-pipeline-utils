@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const { computeFaithfulness } = require("./faithfulness");
+const { computeFaithfulness } = require('./faithfulness');
 const {
   computeContextPrecision,
   computeContextRecall,
-} = require("./context-metrics");
+} = require('./context-metrics');
 
 /**
  * Default weights for the groundedness composite score.

@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { recursiveChunk } = require("./recursive");
+const { recursiveChunk } = require('./recursive');
 
 /**
  * Tokenize text for Jaccard similarity computation.
@@ -63,7 +63,7 @@ function semanticChunk(text, options = {}) {
     minChunkSize = 50,
   } = options;
 
-  if (!text || typeof text !== "string") {
+  if (!text || typeof text !== 'string') {
     return [];
   }
 
@@ -95,7 +95,7 @@ function semanticChunk(text, options = {}) {
 
     if (similarity < similarityThreshold) {
       // Topic boundary detected; flush current segment
-      segments.push(currentSegment.join(" "));
+      segments.push(currentSegment.join(' '));
       currentSegment = [sentences[i]];
     } else {
       currentSegment.push(sentences[i]);
@@ -104,7 +104,7 @@ function semanticChunk(text, options = {}) {
 
   // Flush the last segment
   if (currentSegment.length > 0) {
-    segments.push(currentSegment.join(" "));
+    segments.push(currentSegment.join(' '));
   }
 
   // Apply chunkSize limit: oversized segments fall back to recursive splitting

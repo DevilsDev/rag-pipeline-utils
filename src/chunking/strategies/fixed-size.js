@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Fixed-size chunking strategy.
@@ -15,13 +15,13 @@
 function fixedSizeChunk(text, options = {}) {
   const { chunkSize = 512, chunkOverlap = 50, minChunkSize = 50 } = options;
 
-  if (!text || typeof text !== "string") {
+  if (!text || typeof text !== 'string') {
     return [];
   }
 
   const step = chunkSize - chunkOverlap;
   if (step <= 0) {
-    throw new Error("chunkSize must be greater than chunkOverlap");
+    throw new Error('chunkSize must be greater than chunkOverlap');
   }
 
   const chunks = [];
@@ -34,7 +34,7 @@ function fixedSizeChunk(text, options = {}) {
     if (end < text.length) {
       const lookbackStart = Math.max(end - 20, pos);
       const segment = text.slice(lookbackStart, end);
-      const lastSpace = segment.lastIndexOf(" ");
+      const lastSpace = segment.lastIndexOf(' ');
       if (lastSpace !== -1) {
         end = lookbackStart + lastSpace;
       }

@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Built-in pricing table for common LLM and embedding models.
@@ -8,18 +8,18 @@ const { EventEmitter } = require("events");
  * @type {Record<string, {input: number, output: number, unit: number}>}
  */
 const PRICING = {
-  "gpt-4": { input: 0.03, output: 0.06, unit: 1000 },
-  "gpt-4-turbo": { input: 0.01, output: 0.03, unit: 1000 },
-  "gpt-4o": { input: 0.005, output: 0.015, unit: 1000 },
-  "gpt-4o-mini": { input: 0.00015, output: 0.0006, unit: 1000 },
-  "gpt-3.5-turbo": { input: 0.0005, output: 0.0015, unit: 1000 },
-  "claude-3-opus": { input: 0.015, output: 0.075, unit: 1000 },
-  "claude-3-sonnet": { input: 0.003, output: 0.015, unit: 1000 },
-  "claude-3-haiku": { input: 0.00025, output: 0.00125, unit: 1000 },
-  "claude-3.5-sonnet": { input: 0.003, output: 0.015, unit: 1000 },
-  "cohere-command": { input: 0.001, output: 0.002, unit: 1000 },
-  "text-embedding-3-small": { input: 0.00002, output: 0, unit: 1000 },
-  "text-embedding-3-large": { input: 0.00013, output: 0, unit: 1000 },
+  'gpt-4': { input: 0.03, output: 0.06, unit: 1000 },
+  'gpt-4-turbo': { input: 0.01, output: 0.03, unit: 1000 },
+  'gpt-4o': { input: 0.005, output: 0.015, unit: 1000 },
+  'gpt-4o-mini': { input: 0.00015, output: 0.0006, unit: 1000 },
+  'gpt-3.5-turbo': { input: 0.0005, output: 0.0015, unit: 1000 },
+  'claude-3-opus': { input: 0.015, output: 0.075, unit: 1000 },
+  'claude-3-sonnet': { input: 0.003, output: 0.015, unit: 1000 },
+  'claude-3-haiku': { input: 0.00025, output: 0.00125, unit: 1000 },
+  'claude-3.5-sonnet': { input: 0.003, output: 0.015, unit: 1000 },
+  'cohere-command': { input: 0.001, output: 0.002, unit: 1000 },
+  'text-embedding-3-small': { input: 0.00002, output: 0, unit: 1000 },
+  'text-embedding-3-large': { input: 0.00013, output: 0, unit: 1000 },
 };
 
 /**
@@ -83,8 +83,8 @@ class CostCalculator extends EventEmitter {
         model,
         inputTokens,
         outputTokens,
-        currency: "USD",
-        warning: "Unknown model",
+        currency: 'USD',
+        warning: 'Unknown model',
       };
     }
 
@@ -100,7 +100,7 @@ class CostCalculator extends EventEmitter {
       model: resolvedKey,
       inputTokens,
       outputTokens,
-      currency: "USD",
+      currency: 'USD',
     };
   }
 
@@ -113,8 +113,8 @@ class CostCalculator extends EventEmitter {
   addModel(model, pricing) {
     if (
       !pricing ||
-      typeof pricing.input !== "number" ||
-      typeof pricing.output !== "number"
+      typeof pricing.input !== 'number' ||
+      typeof pricing.output !== 'number'
     ) {
       throw new Error(
         'Pricing must include numeric "input" and "output" fields',

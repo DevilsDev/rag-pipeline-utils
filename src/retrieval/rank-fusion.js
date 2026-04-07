@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const DEFAULT_CONFIG = { k: 60 };
 

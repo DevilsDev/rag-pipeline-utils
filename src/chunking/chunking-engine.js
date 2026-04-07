@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { sentenceChunk } = require("./strategies/sentence");
-const { fixedSizeChunk } = require("./strategies/fixed-size");
-const { recursiveChunk } = require("./strategies/recursive");
-const { semanticChunk } = require("./strategies/semantic");
-const { structureAwareChunk } = require("./strategies/structure-aware");
+const { EventEmitter } = require('events');
+const { sentenceChunk } = require('./strategies/sentence');
+const { fixedSizeChunk } = require('./strategies/fixed-size');
+const { recursiveChunk } = require('./strategies/recursive');
+const { semanticChunk } = require('./strategies/semantic');
+const { structureAwareChunk } = require('./strategies/structure-aware');
 
 /**
  * Default configuration for the chunking engine.
  * @type {object}
  */
 const DEFAULT_CONFIG = {
-  strategy: "recursive",
+  strategy: 'recursive',
   chunkSize: 512,
   chunkOverlap: 50,
   minChunkSize: 50,
-  separators: ["\n\n", "\n", ". ", " "],
+  separators: ['\n\n', '\n', '. ', ' '],
   similarityThreshold: 0.3,
 };
 
@@ -44,11 +44,11 @@ class ChunkingEngine extends EventEmitter {
     this._strategies = new Map();
 
     // Register built-in strategies
-    this._strategies.set("sentence", sentenceChunk);
-    this._strategies.set("fixed-size", fixedSizeChunk);
-    this._strategies.set("recursive", recursiveChunk);
-    this._strategies.set("semantic", semanticChunk);
-    this._strategies.set("structure-aware", structureAwareChunk);
+    this._strategies.set('sentence', sentenceChunk);
+    this._strategies.set('fixed-size', fixedSizeChunk);
+    this._strategies.set('recursive', recursiveChunk);
+    this._strategies.set('semantic', semanticChunk);
+    this._strategies.set('structure-aware', structureAwareChunk);
   }
 
   /**
@@ -63,8 +63,8 @@ class ChunkingEngine extends EventEmitter {
    * @fires ChunkingEngine#chunk
    */
   chunk(text, options = {}) {
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
-      throw new Error("text must be a non-empty string");
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      throw new Error('text must be a non-empty string');
     }
 
     const mergedOptions = { ...this._config, ...options };
@@ -73,7 +73,7 @@ class ChunkingEngine extends EventEmitter {
     const strategyFn = this._strategies.get(strategyName);
     if (!strategyFn) {
       throw new Error(
-        `Unknown chunking strategy "${strategyName}". Available strategies: ${this.listStrategies().join(", ")}`,
+        `Unknown chunking strategy "${strategyName}". Available strategies: ${this.listStrategies().join(', ')}`,
       );
     }
 
@@ -91,7 +91,7 @@ class ChunkingEngine extends EventEmitter {
      * @property {number} inputLength - Character length of the input text.
      * @property {number} chunkCount - Number of resulting chunks.
      */
-    this.emit("chunk", {
+    this.emit('chunk', {
       strategy: strategyName,
       inputLength: text.length,
       chunkCount: chunks.length,
@@ -109,12 +109,12 @@ class ChunkingEngine extends EventEmitter {
    * @throws {Error} If fn is not a function.
    */
   registerStrategy(name, fn) {
-    if (!name || typeof name !== "string") {
-      throw new Error("Strategy name must be a non-empty string");
+    if (!name || typeof name !== 'string') {
+      throw new Error('Strategy name must be a non-empty string');
     }
-    if (typeof fn !== "function") {
+    if (typeof fn !== 'function') {
       throw new Error(
-        "Strategy must be a function with signature (text, options) => string[]",
+        'Strategy must be a function with signature (text, options) => string[]',
       );
     }
     this._strategies.set(name, fn);

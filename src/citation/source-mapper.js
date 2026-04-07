@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { tokenize, computeJaccardSimilarity } = require("../evaluate/scoring");
+const { tokenize, computeJaccardSimilarity } = require('../evaluate/scoring');
 
 /**
  * Build IDF (Inverse Document Frequency) weights from a collection of documents.
@@ -15,7 +15,7 @@ function buildIDFWeights(docs) {
   const docFrequency = new Map();
 
   for (const doc of docs) {
-    const text = doc.content || doc.text || "";
+    const text = doc.content || doc.text || '';
     const tokens = new Set(tokenize(text));
     for (const token of tokens) {
       docFrequency.set(token, (docFrequency.get(token) || 0) + 1);
@@ -50,7 +50,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
 
   for (let i = 0; i < docs.length; i++) {
     const doc = docs[i];
-    const docText = doc.content || doc.text || "";
+    const docText = doc.content || doc.text || '';
     const docTokens = tokenize(docText);
     if (!docTokens.length) continue;
 

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Fast entity lookup index for the knowledge graph.
@@ -58,7 +58,7 @@ class GraphIndex {
    * @returns {string[]} Array of matching entity IDs
    */
   searchByName(query) {
-    if (!query || typeof query !== "string") {
+    if (!query || typeof query !== 'string') {
       return [];
     }
 

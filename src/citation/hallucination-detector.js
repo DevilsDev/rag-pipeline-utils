@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Detect hallucinations by analyzing citation results and classifying each sentence.
@@ -46,11 +46,11 @@ function detectHallucinations(citationResults, options = {}) {
 
     let classification;
     if (bestScore === 0) {
-      classification = "definite_hallucination";
+      classification = 'definite_hallucination';
     } else if (bestScore < threshold) {
-      classification = "likely_hallucination";
+      classification = 'likely_hallucination';
     } else {
-      classification = "grounded";
+      classification = 'grounded';
     }
 
     summary[classification]++;

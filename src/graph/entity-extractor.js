@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { tokenize } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { tokenize } = require('../evaluate/scoring');
 
 /**
  * Default regex patterns for heuristic entity extraction.
@@ -50,7 +50,7 @@ class EntityExtractor extends EventEmitter {
    * @returns {Array<{name: string, type: string, positions: Array<{start: number, end: number}>, frequency: number}>}
    */
   extract(text) {
-    if (!text || typeof text !== "string") {
+    if (!text || typeof text !== 'string') {
       return [];
     }
 
@@ -85,7 +85,7 @@ class EntityExtractor extends EventEmitter {
     }
 
     const entities = [...entityMap.values()];
-    this.emit("extracted", { count: entities.length, entities });
+    this.emit('extracted', { count: entities.length, entities });
     return entities;
   }
 
@@ -118,7 +118,7 @@ class EntityExtractor extends EventEmitter {
           relationships.push({
             from: present[i].name,
             to: present[j].name,
-            type: "co-occurs",
+            type: 'co-occurs',
             context: sentence,
           });
         }
@@ -147,7 +147,7 @@ class EntityExtractor extends EventEmitter {
     const allRelationships = [];
 
     for (const doc of documents) {
-      const text = doc.content || "";
+      const text = doc.content || '';
       const entities = this.extract(text);
 
       for (const entity of entities) {

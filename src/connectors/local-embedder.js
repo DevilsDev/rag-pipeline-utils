@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { BaseConnector } = require("./base-connector");
-const { tokenize } = require("../evaluate/scoring");
+const { BaseConnector } = require('./base-connector');
+const { tokenize } = require('../evaluate/scoring');
 
 /**
  * Default configuration for the local TF-IDF embedder.
@@ -25,7 +25,7 @@ class LocalEmbedder extends BaseConnector {
    * @param {number} [options.minDocFrequency=1] - Minimum document frequency for a token to be included
    */
   constructor(options = {}) {
-    super({ name: "local-embedder", ...options });
+    super({ name: 'local-embedder', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     /** @type {Map<string, number>} token -> vocabulary index */
     this.vocabulary = new Map();
@@ -42,7 +42,7 @@ class LocalEmbedder extends BaseConnector {
    */
   train(documents) {
     const docs = documents.map((doc) => {
-      if (typeof doc === "string") return doc;
+      if (typeof doc === 'string') return doc;
       return doc.content || doc.text || String(doc);
     });
 
@@ -78,7 +78,7 @@ class LocalEmbedder extends BaseConnector {
       this.idf.set(token, idfValue);
     }
 
-    this.emit("trained", {
+    this.emit('trained', {
       vocabSize: this.vocabulary.size,
       docCount: this.docCount,
     });
@@ -94,8 +94,8 @@ class LocalEmbedder extends BaseConnector {
     const vocabSize = this.vocabulary.size;
 
     if (vocabSize === 0) {
-      this.emit("warning", {
-        message: "LocalEmbedder has not been trained yet",
+      this.emit('warning', {
+        message: 'LocalEmbedder has not been trained yet',
       });
       return new Array(1).fill(0);
     }

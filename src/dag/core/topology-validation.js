@@ -157,7 +157,7 @@ function topologicalSort(nodes) {
         const restNodes = cyclePath.slice(1, -1).reverse();
         cyclePath = [startNode, ...restNodes, startNode];
       }
-      const cyclePathString = cyclePath.join(" -> ");
+      const cyclePathString = cyclePath.join(' -> ');
       const error = new Error(
         `Cycle detected involving node: ${cyclePathString}`,
       );
@@ -173,7 +173,7 @@ function topologicalSort(nodes) {
     try {
       node.inputs.forEach((input) => visit(input, newPath));
     } catch (error) {
-      if (error.message.includes("Cycle detected")) {
+      if (error.message.includes('Cycle detected')) {
         throw error; // Preserve original message and cycle property
       }
       throw error;
@@ -189,7 +189,7 @@ function topologicalSort(nodes) {
       visit(node);
     }
   } catch (error) {
-    if (error.message.includes("Cycle detected")) {
+    if (error.message.includes('Cycle detected')) {
       throw error;
     }
     throw new Error(`DAG topological sort failed: ${error.message}`);
@@ -252,28 +252,28 @@ function topologicalSort(nodes) {
  */
 function validateDAG(nodes) {
   if (nodes.size === 0) {
-    throw new Error("DAG is empty - no nodes to execute");
+    throw new Error('DAG is empty - no nodes to execute');
   }
 
   // Check for cycles using topological sort
   try {
     topologicalSort(nodes);
   } catch (error) {
-    if (error.message.includes("Cycle detected")) {
+    if (error.message.includes('Cycle detected')) {
       // Extract cycle information from error message or use error.cycle if available
       let cycleNodes = error.cycle;
-      if (!cycleNodes && error.message.includes("involving node:")) {
+      if (!cycleNodes && error.message.includes('involving node:')) {
         // Parse cycle from message if cycle array not available
         const match = error.message.match(/involving node: (.+)/);
         if (match) {
-          cycleNodes = match[1].split(" -> ");
+          cycleNodes = match[1].split(' -> ');
         }
       }
       if (!cycleNodes) {
-        cycleNodes = ["unknown"];
+        cycleNodes = ['unknown'];
       }
 
-      const pretty = cycleNodes.join(" -> ");
+      const pretty = cycleNodes.join(' -> ');
       const err = new Error(
         `DAG validation failed: DAG topological sort failed: Cycle detected involving node: ${pretty}`,
       );
@@ -352,13 +352,13 @@ function validateTopology(nodes, options = {}) {
 
   // Check for empty DAG
   if (nodes.size === 0) {
-    throw new Error("DAG cannot be empty");
+    throw new Error('DAG cannot be empty');
   }
 
   // Check for self-loops
   for (const node of nodes.values()) {
     if (node.outputs.includes(node)) {
-      throw new Error("Self-loop detected");
+      throw new Error('Self-loop detected');
     }
   }
 
@@ -366,21 +366,21 @@ function validateTopology(nodes, options = {}) {
   try {
     topologicalSort(nodes);
   } catch (error) {
-    if (error.message.includes("Cycle detected")) {
+    if (error.message.includes('Cycle detected')) {
       // Extract cycle information from error message or use error.cycle if available
       let cycleNodes = error.cycle;
-      if (!cycleNodes && error.message.includes("involving node:")) {
+      if (!cycleNodes && error.message.includes('involving node:')) {
         // Parse cycle from message if cycle array not available
         const match = error.message.match(/involving node: (.+)/);
         if (match) {
-          cycleNodes = match[1].split(" -> ");
+          cycleNodes = match[1].split(' -> ');
         }
       }
       if (!cycleNodes) {
-        cycleNodes = ["unknown"];
+        cycleNodes = ['unknown'];
       }
 
-      const err = new Error("Cycle detected in DAG");
+      const err = new Error('Cycle detected in DAG');
       err.cycle = cycleNodes;
       throw err;
     }

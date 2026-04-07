@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * SSE (Server-Sent Events) Adapter
@@ -10,7 +10,7 @@
  * @since 2.4.0
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for SSE streaming
@@ -18,9 +18,9 @@ const { EventEmitter } = require("events");
  */
 const DEFAULT_CONFIG = {
   /** @type {string} SSE event name for token events */
-  eventName: "token",
+  eventName: 'token',
   /** @type {string} Sentinel value indicating stream completion */
-  doneEvent: "[DONE]",
+  doneEvent: '[DONE]',
   /** @type {number} Interval in ms between heartbeat comments */
   heartbeatIntervalMs: 15000,
 };
@@ -75,15 +75,15 @@ class SSEAdapter extends EventEmitter {
 
     // --- 1. SSE headers -------------------------------------------------
     httpResponse.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
     });
 
     // --- 2. Heartbeat keep-alive ----------------------------------------
     heartbeatTimer = setInterval(() => {
       if (!clientDisconnected) {
-        httpResponse.write(": heartbeat\n\n");
+        httpResponse.write(': heartbeat\n\n');
       }
     }, this.config.heartbeatIntervalMs);
 
@@ -91,13 +91,13 @@ class SSEAdapter extends EventEmitter {
     const onClose = () => {
       clientDisconnected = true;
       cleanup();
-      this.emit("disconnect");
+      this.emit('disconnect');
     };
-    httpResponse.on("close", onClose);
+    httpResponse.on('close', onClose);
 
     // --- 4. Iterate over the generator ----------------------------------
     try {
-      this.emit("started");
+      this.emit('started');
 
       for await (const value of asyncGenerator) {
         if (clientDisconnected) {
@@ -107,33 +107,33 @@ class SSEAdapter extends EventEmitter {
         if (value && value.done) {
           // Final frame
           httpResponse.write(`data: ${this.config.doneEvent}\n\n`);
-          this.emit("done");
+          this.emit('done');
           break;
         }
 
         const token = value && value.token !== undefined ? value.token : value;
         const frame = this.formatEvent(this.config.eventName, { token });
         httpResponse.write(frame);
-        this.emit("token", token);
+        this.emit('token', token);
       }
 
       // If the generator is exhausted without an explicit done flag, send DONE
       if (!clientDisconnected && !httpResponse.writableEnded) {
         httpResponse.write(`data: ${this.config.doneEvent}\n\n`);
-        this.emit("done");
+        this.emit('done');
       }
     } catch (err) {
-      this.emit("error", err);
+      this.emit('error', err);
 
       if (!clientDisconnected && !httpResponse.writableEnded) {
-        const errorFrame = this.formatEvent("error", {
-          message: err.message || "Internal streaming error",
+        const errorFrame = this.formatEvent('error', {
+          message: err.message || 'Internal streaming error',
         });
         httpResponse.write(errorFrame);
       }
     } finally {
       cleanup();
-      httpResponse.removeListener("close", onClose);
+      httpResponse.removeListener('close', onClose);
 
       if (!httpResponse.writableEnded) {
         httpResponse.end();
@@ -153,13 +153,13 @@ class SSEAdapter extends EventEmitter {
    */
   formatEvent(eventName, data) {
     const json = JSON.stringify(data);
-    const lines = json.split("\n");
+    const lines = json.split('\n');
 
     let frame = `event: ${eventName}\n`;
     for (const line of lines) {
       frame += `data: ${line}\n`;
     }
-    frame += "\n";
+    frame += '\n';
 
     return frame;
   }

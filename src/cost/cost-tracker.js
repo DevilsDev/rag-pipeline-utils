@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { CostCalculator } = require("./cost-calculator");
-const { TokenBudget } = require("./token-budget");
+const { EventEmitter } = require('events');
+const { CostCalculator } = require('./cost-calculator');
+const { TokenBudget } = require('./token-budget');
 
 /**
  * Default tracker configuration.
  * @type {{model: string, embeddingModel: string, enableBudget: boolean, budgetOptions: object}}
  */
 const DEFAULT_CONFIG = {
-  model: "gpt-3.5-turbo",
-  embeddingModel: "text-embedding-3-small",
+  model: 'gpt-3.5-turbo',
+  embeddingModel: 'text-embedding-3-small',
   enableBudget: false,
   budgetOptions: {},
 };
@@ -78,8 +78,8 @@ class CostTracker extends EventEmitter {
     }
 
     // Estimate from content length
-    const inputText = result.input || result.query || result.prompt || "";
-    const outputText = result.output || result.answer || result.response || "";
+    const inputText = result.input || result.query || result.prompt || '';
+    const outputText = result.output || result.answer || result.response || '';
     return {
       inputTokens: Math.ceil(String(inputText).length / CHARS_PER_TOKEN),
       outputTokens: Math.ceil(String(outputText).length / CHARS_PER_TOKEN),
@@ -126,7 +126,7 @@ class CostTracker extends EventEmitter {
           );
           if (!budgetCheck.allowed) {
             const err = new Error(`Budget exceeded: ${budgetCheck.reason}`);
-            err.code = "BUDGET_EXCEEDED";
+            err.code = 'BUDGET_EXCEEDED';
             err.budgetCheck = budgetCheck;
             throw err;
           }
@@ -142,7 +142,7 @@ class CostTracker extends EventEmitter {
           outputTokens,
           estimatedCost: costEstimate.totalCost,
           model: costEstimate.model,
-          currency: "USD",
+          currency: 'USD',
         };
 
         // Record in session
@@ -160,7 +160,7 @@ class CostTracker extends EventEmitter {
           tracker.currentSession.totalCost += costEstimate.totalCost;
         }
 
-        tracker.emit("tracked", entry);
+        tracker.emit('tracked', entry);
 
         return result;
       },

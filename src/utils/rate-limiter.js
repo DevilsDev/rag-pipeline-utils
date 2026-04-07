@@ -9,7 +9,7 @@
  * - Configurable thresholds and windows
  */
 
-const crypto = require("crypto");
+const crypto = require('crypto');
 
 class RateLimiter {
   /**
@@ -221,7 +221,7 @@ class RateLimiter {
    * @private
    */
   _hashIdentifier(identifier) {
-    return crypto.createHash("sha256").update(identifier).digest("hex");
+    return crypto.createHash('sha256').update(identifier).digest('hex');
   }
 
   /**

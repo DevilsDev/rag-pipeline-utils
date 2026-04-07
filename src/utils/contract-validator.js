@@ -11,11 +11,11 @@
  * @version 1.0.0
  */
 
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const path = require("path");
-const { logger } = require("./logger");
+const fs = require('fs');
+const path = require('path');
+const { logger } = require('./logger');
 
 /**
  * ContractValidator class for validating plugin implementations
@@ -47,7 +47,7 @@ class ContractValidator {
    */
   constructor(options = {}) {
     this.contractsDir =
-      options.contractsDir || path.join(process.cwd(), "contracts");
+      options.contractsDir || path.join(process.cwd(), 'contracts');
   }
 
   /**
@@ -74,7 +74,7 @@ class ContractValidator {
     }
 
     try {
-      const contractData = fs.readFileSync(contractPath, "utf8");
+      const contractData = fs.readFileSync(contractPath, 'utf8');
       return JSON.parse(contractData);
     } catch (error) {
       throw new Error(`Failed to load contract for ${type}: ${error.message}`);
@@ -102,8 +102,8 @@ class ContractValidator {
     const files = fs.readdirSync(this.contractsDir);
 
     for (const file of files) {
-      if (file.endsWith("-contract.json")) {
-        const type = file.replace("-contract.json", "");
+      if (file.endsWith('-contract.json')) {
+        const type = file.replace('-contract.json', '');
         try {
           contracts[type] = this.loadContract(type);
         } catch (error) {
@@ -140,19 +140,19 @@ class ContractValidator {
     const errors = [];
 
     if (!plugin) {
-      errors.push("Plugin is null or undefined");
+      errors.push('Plugin is null or undefined');
       return { valid: false, errors };
     }
 
     // Check name
-    if (typeof plugin.name !== "string" || plugin.name.trim() === "") {
+    if (typeof plugin.name !== 'string' || plugin.name.trim() === '') {
       errors.push(
         'Plugin must have a valid "name" property (non-empty string)',
       );
     }
 
     // Check version
-    if (typeof plugin.version !== "string" || plugin.version.trim() === "") {
+    if (typeof plugin.version !== 'string' || plugin.version.trim() === '') {
       errors.push(
         'Plugin must have a valid "version" property (non-empty string)',
       );
@@ -200,7 +200,7 @@ class ContractValidator {
         continue;
       }
 
-      if (typeof plugin[methodName] !== "function") {
+      if (typeof plugin[methodName] !== 'function') {
         errors.push(`Required property "${methodName}" must be a function`);
       }
     }
@@ -246,7 +246,7 @@ class ContractValidator {
       }
 
       const method = plugin[methodName];
-      if (typeof method !== "function") {
+      if (typeof method !== 'function') {
         continue; // Already caught by validateRequiredMethods
       }
 
@@ -305,12 +305,12 @@ class ContractValidator {
       if (!match) return [];
 
       const params = match[1]
-        .split(",")
+        .split(',')
         .map((p) => p.trim())
-        .filter((p) => p && p !== "");
+        .filter((p) => p && p !== '');
 
       // Extract just the parameter name (before '=' for defaults)
-      return params.map((p) => p.split("=")[0].trim());
+      return params.map((p) => p.split('=')[0].trim());
     } catch (error) {
       return [];
     }
@@ -388,31 +388,31 @@ class ContractValidator {
    *
    * @since 2.2.4
    */
-  formatValidationReport(result, pluginName = "Plugin") {
+  formatValidationReport(result, pluginName = 'Plugin') {
     const lines = [];
 
     lines.push(`Validation Report for: ${pluginName}`);
-    lines.push("=".repeat(50));
-    lines.push(`Status: ${result.valid ? "✓ PASS" : "✗ FAIL"}`);
-    lines.push("");
+    lines.push('='.repeat(50));
+    lines.push(`Status: ${result.valid ? '✓ PASS' : '✗ FAIL'}`);
+    lines.push('');
 
     if (result.errors.length > 0) {
-      lines.push("Errors:");
+      lines.push('Errors:');
       result.errors.forEach((err) => lines.push(`  ✗ ${err}`));
-      lines.push("");
+      lines.push('');
     }
 
     if (result.warnings.length > 0) {
-      lines.push("Warnings:");
+      lines.push('Warnings:');
       result.warnings.forEach((warn) => lines.push(`  ⚠ ${warn}`));
-      lines.push("");
+      lines.push('');
     }
 
     if (result.valid && result.warnings.length === 0) {
-      lines.push("All validation checks passed!");
+      lines.push('All validation checks passed!');
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
   /**
@@ -438,7 +438,7 @@ class ContractValidator {
       const contract = contracts[plugin.type];
       if (!contract) {
         return {
-          plugin: plugin.name || "Unknown",
+          plugin: plugin.name || 'Unknown',
           valid: false,
           errors: [`No contract found for plugin type: ${plugin.type}`],
           warnings: [],
@@ -447,7 +447,7 @@ class ContractValidator {
 
       const result = this.validatePlugin(plugin, contract);
       return {
-        plugin: plugin.name || "Unknown",
+        plugin: plugin.name || 'Unknown',
         type: plugin.type,
         ...result,
       };

@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { retry } = require("../utils/retry");
-const { tokenize, computeJaccardSimilarity } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { retry } = require('../utils/retry');
+const { tokenize, computeJaccardSimilarity } = require('../evaluate/scoring');
 
 /**
  * Default configuration for the IterativeRetriever.
@@ -73,8 +73,8 @@ class IterativeRetriever extends EventEmitter {
 
     // Combine all result content into a single token set
     const resultText = results
-      .map((r) => r?.content || r?.text || r?.chunk || "")
-      .join(" ");
+      .map((r) => r?.content || r?.text || r?.chunk || '')
+      .join(' ');
     const resultTokens = tokenize(resultText);
 
     return computeJaccardSimilarity(queryTokens, resultTokens);
@@ -92,14 +92,14 @@ class IterativeRetriever extends EventEmitter {
   _heuristicRefine(originalQuery, results) {
     const queryTokens = tokenize(originalQuery);
     const resultText = results
-      .map((r) => r?.content || r?.text || r?.chunk || "")
-      .join(" ");
+      .map((r) => r?.content || r?.text || r?.chunk || '')
+      .join(' ');
     const resultTokenSet = new Set(tokenize(resultText));
 
     const missing = queryTokens.filter((t) => !resultTokenSet.has(t));
 
     if (missing.length === 0) return originalQuery;
-    return `${originalQuery} more about ${missing.join(" ")}`;
+    return `${originalQuery} more about ${missing.join(' ')}`;
   }
 
   /**
@@ -115,14 +115,14 @@ class IterativeRetriever extends EventEmitter {
    */
   async retrieve({ query, retriever, llm, queryVector }) {
     // 1. Validate inputs
-    if (!query || typeof query !== "string" || !query.trim()) {
+    if (!query || typeof query !== 'string' || !query.trim()) {
       throw new Error(
-        "IterativeRetriever.retrieve(): query must be a non-empty string",
+        'IterativeRetriever.retrieve(): query must be a non-empty string',
       );
     }
-    if (!retriever || typeof retriever.retrieve !== "function") {
+    if (!retriever || typeof retriever.retrieve !== 'function') {
       throw new Error(
-        "IterativeRetriever.retrieve(): retriever with .retrieve() method is required",
+        'IterativeRetriever.retrieve(): retriever with .retrieve() method is required',
       );
     }
 
@@ -151,7 +151,7 @@ class IterativeRetriever extends EventEmitter {
       coverage = this._computeCoverage(query, accumulatedResults);
 
       // d. Emit 'iteration' event
-      this.emit("iteration", {
+      this.emit('iteration', {
         iteration: iterations,
         coverage,
         resultCount: accumulatedResults.length,
@@ -171,13 +171,13 @@ class IterativeRetriever extends EventEmitter {
         let refined = null;
 
         // Try LLM-based refinement first
-        if (llm && typeof llm.generate === "function") {
+        if (llm && typeof llm.generate === 'function') {
           try {
             refined = await llm.generate(
               `Given the query "${query}" and that current results don't fully cover the topic, generate a refined search query to find missing information.`,
               accumulatedResults,
             );
-            if (refined && typeof refined === "string" && refined.trim()) {
+            if (refined && typeof refined === 'string' && refined.trim()) {
               refined = refined.trim();
             } else {
               refined = null;
@@ -198,7 +198,7 @@ class IterativeRetriever extends EventEmitter {
     }
 
     // 4. Emit 'completed' event
-    this.emit("completed", {
+    this.emit('completed', {
       results: accumulatedResults,
       iterations,
       converged,

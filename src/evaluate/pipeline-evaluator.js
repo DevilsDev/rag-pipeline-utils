@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 const {
   computeFaithfulness,
   computeFaithfulnessFromCitations,
-} = require("./faithfulness");
-const { computeAnswerRelevance } = require("./relevance");
+} = require('./faithfulness');
+const { computeAnswerRelevance } = require('./relevance');
 const {
   computeContextPrecision,
   computeContextRecall,
-} = require("./context-metrics");
-const { computeGroundedness } = require("./groundedness");
-const { scoreAnswer } = require("./scoring");
+} = require('./context-metrics');
+const { computeGroundedness } = require('./groundedness');
+const { scoreAnswer } = require('./scoring');
 
 /**
  * Default configuration for PipelineEvaluator.
@@ -19,11 +19,11 @@ const { scoreAnswer } = require("./scoring");
  */
 const DEFAULT_CONFIG = {
   metrics: [
-    "faithfulness",
-    "relevance",
-    "contextPrecision",
-    "contextRecall",
-    "groundedness",
+    'faithfulness',
+    'relevance',
+    'contextPrecision',
+    'contextRecall',
+    'groundedness',
   ],
   threshold: 0.3,
   includeBLEU: false,
@@ -69,8 +69,8 @@ class PipelineEvaluator extends EventEmitter {
    */
   evaluate(pipelineResult, options = {}) {
     const { citationResult, referenceAnswer } = options;
-    const query = (pipelineResult && pipelineResult.query) || "";
-    const answer = (pipelineResult && pipelineResult.answer) || "";
+    const query = (pipelineResult && pipelineResult.query) || '';
+    const answer = (pipelineResult && pipelineResult.answer) || '';
     const results = (pipelineResult && pipelineResult.results) || [];
 
     const scores = {};
@@ -78,7 +78,7 @@ class PipelineEvaluator extends EventEmitter {
     const metricsComputed = [];
     const { metrics, threshold } = this.config;
 
-    if (metrics.includes("faithfulness")) {
+    if (metrics.includes('faithfulness')) {
       let faithResult;
       if (citationResult) {
         faithResult = computeFaithfulnessFromCitations(citationResult);
@@ -87,52 +87,52 @@ class PipelineEvaluator extends EventEmitter {
       }
       scores.faithfulness = faithResult.score;
       details.faithfulness = faithResult;
-      metricsComputed.push("faithfulness");
+      metricsComputed.push('faithfulness');
     }
 
-    if (metrics.includes("relevance")) {
+    if (metrics.includes('relevance')) {
       const relevanceResult = computeAnswerRelevance(query, answer);
       scores.relevance = relevanceResult.score;
       details.relevance = relevanceResult;
-      metricsComputed.push("relevance");
+      metricsComputed.push('relevance');
     }
 
-    if (metrics.includes("contextPrecision")) {
+    if (metrics.includes('contextPrecision')) {
       const precisionResult = computeContextPrecision(query, results, {
         threshold: threshold * 0.67,
       });
       scores.contextPrecision = precisionResult.score;
       details.contextPrecision = precisionResult;
-      metricsComputed.push("contextPrecision");
+      metricsComputed.push('contextPrecision');
     }
 
-    if (metrics.includes("contextRecall")) {
+    if (metrics.includes('contextRecall')) {
       const recallResult = computeContextRecall(answer, results, { threshold });
       scores.contextRecall = recallResult.score;
       details.contextRecall = recallResult;
-      metricsComputed.push("contextRecall");
+      metricsComputed.push('contextRecall');
     }
 
-    if (metrics.includes("groundedness")) {
+    if (metrics.includes('groundedness')) {
       const groundednessResult = computeGroundedness(query, answer, results, {
         threshold,
       });
       scores.groundedness = groundednessResult.score;
       details.groundedness = groundednessResult;
-      metricsComputed.push("groundedness");
+      metricsComputed.push('groundedness');
     }
 
     // Optional BLEU/ROUGE when reference answer is provided
-    if (referenceAnswer && typeof referenceAnswer === "string") {
+    if (referenceAnswer && typeof referenceAnswer === 'string') {
       if (this.config.includeBLEU || this.config.includeROUGE) {
         const refScores = scoreAnswer(answer, referenceAnswer);
         if (this.config.includeBLEU) {
           scores.bleu = refScores.bleu;
-          metricsComputed.push("bleu");
+          metricsComputed.push('bleu');
         }
         if (this.config.includeROUGE) {
           scores.rouge = refScores.rouge;
-          metricsComputed.push("rouge");
+          metricsComputed.push('rouge');
         }
       }
     }
@@ -147,7 +147,7 @@ class PipelineEvaluator extends EventEmitter {
       },
     };
 
-    this.emit("evaluated", result);
+    this.emit('evaluated', result);
 
     return result;
   }

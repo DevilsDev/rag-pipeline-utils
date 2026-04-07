@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { splitSentences, tokenize } = require("../evaluate/scoring");
-const { mapSentenceToSources, buildIDFWeights } = require("./source-mapper");
-const { detectHallucinations } = require("./hallucination-detector");
+const { EventEmitter } = require('events');
+const { splitSentences, tokenize } = require('../evaluate/scoring');
+const { mapSentenceToSources, buildIDFWeights } = require('./source-mapper');
+const { detectHallucinations } = require('./hallucination-detector');
 
 /**
  * Default configuration for the CitationTracker.
@@ -41,15 +41,15 @@ class CitationTracker extends EventEmitter {
    * @private
    */
   _normalizeDoc(doc) {
-    if (doc.content && typeof doc.content === "string") return doc;
+    if (doc.content && typeof doc.content === 'string') return doc;
 
-    let content = "";
-    if (typeof doc.text === "string") {
+    let content = '';
+    if (typeof doc.text === 'string') {
       content = doc.text;
-    } else if (typeof doc.chunk === "function") {
+    } else if (typeof doc.chunk === 'function') {
       const chunks = doc.chunk();
-      content = Array.isArray(chunks) ? chunks.join(" ") : String(chunks);
-    } else if (typeof doc.chunk === "string") {
+      content = Array.isArray(chunks) ? chunks.join(' ') : String(chunks);
+    } else if (typeof doc.chunk === 'string') {
       content = doc.chunk;
     }
 
@@ -71,14 +71,14 @@ class CitationTracker extends EventEmitter {
    */
   track(answer, retrievedDocs) {
     // 1. Validate inputs
-    if (!answer || typeof answer !== "string") {
+    if (!answer || typeof answer !== 'string') {
       throw new Error(
-        "CitationTracker.track(): answer must be a non-empty string",
+        'CitationTracker.track(): answer must be a non-empty string',
       );
     }
     if (!Array.isArray(retrievedDocs) || retrievedDocs.length === 0) {
       throw new Error(
-        "CitationTracker.track(): retrievedDocs must be a non-empty array",
+        'CitationTracker.track(): retrievedDocs must be a non-empty array',
       );
     }
 
@@ -98,7 +98,7 @@ class CitationTracker extends EventEmitter {
           config: this.config,
         },
       };
-      this.emit("tracked", result);
+      this.emit('tracked', result);
       return result;
     }
 
@@ -151,7 +151,7 @@ class CitationTracker extends EventEmitter {
      * @event CitationTracker#tracked
      * @type {object}
      */
-    this.emit("tracked", result);
+    this.emit('tracked', result);
 
     // 10. Return result
     return result;

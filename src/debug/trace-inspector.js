@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Trace Inspector
@@ -7,7 +7,7 @@
  * Provides summary reports, comparisons, and anomaly detection across traces.
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Trace inspector that analyzes execution traces produced by ExecutionTracer
@@ -43,7 +43,7 @@ class TraceInspector extends EventEmitter {
       0,
     );
     if (steps.length > 0) {
-      timeBreakdown["overhead"] = Math.max(0, totalDuration - stepDurationSum);
+      timeBreakdown['overhead'] = Math.max(0, totalDuration - stepDurationSum);
     }
 
     // Identify bottleneck
@@ -96,11 +96,11 @@ class TraceInspector extends EventEmitter {
     const recommendations = [];
 
     if (totalDuration > 5000) {
-      recommendations.push("Consider caching frequent queries");
+      recommendations.push('Consider caching frequent queries');
     }
     if (resultCount === 0) {
       recommendations.push(
-        "No results retrieved - check retriever configuration",
+        'No results retrieved - check retriever configuration',
       );
     }
     if (
@@ -108,14 +108,14 @@ class TraceInspector extends EventEmitter {
       qualityMetrics.groundedness < 0.5
     ) {
       recommendations.push(
-        "Low groundedness - consider increasing retrieval topK",
+        'Low groundedness - consider increasing retrieval topK',
       );
     }
     if (!metadata.hasCitations) {
-      recommendations.push("Enable citations for source tracking");
+      recommendations.push('Enable citations for source tracking');
     }
     if (!metadata.hasEvaluation) {
-      recommendations.push("Enable evaluation for quality metrics");
+      recommendations.push('Enable evaluation for quality metrics');
     }
 
     const analysis = {
@@ -130,7 +130,7 @@ class TraceInspector extends EventEmitter {
       recommendations,
     };
 
-    this.emit("analyzed", analysis);
+    this.emit('analyzed', analysis);
     return analysis;
   }
 
@@ -169,7 +169,7 @@ class TraceInspector extends EventEmitter {
     for (const trace of traces) {
       const metadata = trace.metadata || {};
       const evaluation = metadata.evaluation || {};
-      for (const key of ["groundedness", "faithfulness", "relevance"]) {
+      for (const key of ['groundedness', 'faithfulness', 'relevance']) {
         if (evaluation[key] !== undefined) {
           if (!metricAccumulators[key]) {
             metricAccumulators[key] = [];
@@ -191,7 +191,7 @@ class TraceInspector extends EventEmitter {
       qualityTrend,
     };
 
-    this.emit("compared", comparison);
+    this.emit('compared', comparison);
     return comparison;
   }
 
@@ -219,7 +219,7 @@ class TraceInspector extends EventEmitter {
     const qualityScores = {};
     for (const trace of traces) {
       const evaluation = (trace.metadata && trace.metadata.evaluation) || {};
-      for (const key of ["groundedness", "faithfulness", "relevance"]) {
+      for (const key of ['groundedness', 'faithfulness', 'relevance']) {
         if (evaluation[key] !== undefined) {
           if (!qualityScores[key]) {
             qualityScores[key] = [];
@@ -246,7 +246,7 @@ class TraceInspector extends EventEmitter {
       if (avgDuration > 0 && duration > 2 * avgDuration) {
         anomalies.push({
           traceId: trace.id,
-          anomalyType: "slow_execution",
+          anomalyType: 'slow_execution',
           details: `Duration ${duration}ms is more than 2x the average ${Math.round(avgDuration)}ms`,
         });
       }
@@ -255,8 +255,8 @@ class TraceInspector extends EventEmitter {
       if (hasResults && resultCount === 0) {
         anomalies.push({
           traceId: trace.id,
-          anomalyType: "no_results",
-          details: "No results retrieved while other traces returned results",
+          anomalyType: 'no_results',
+          details: 'No results retrieved while other traces returned results',
         });
       }
 
@@ -266,14 +266,14 @@ class TraceInspector extends EventEmitter {
         if (evaluation[key] !== undefined && evaluation[key] < avg - 0.3) {
           anomalies.push({
             traceId: trace.id,
-            anomalyType: "low_quality",
+            anomalyType: 'low_quality',
             details: `${key} score ${evaluation[key].toFixed(2)} is significantly below average ${avg.toFixed(2)}`,
           });
         }
       }
     }
 
-    this.emit("anomaliesFound", anomalies);
+    this.emit('anomaliesFound', anomalies);
     return anomalies;
   }
 }

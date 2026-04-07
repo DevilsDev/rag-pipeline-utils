@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for the QueryPlanner.
@@ -12,21 +12,21 @@ const DEFAULT_CONFIG = {
 };
 
 /** Question words that indicate query complexity */
-const QUESTION_WORDS = ["who", "what", "when", "where", "why", "how", "which"];
+const QUESTION_WORDS = ['who', 'what', 'when', 'where', 'why', 'how', 'which'];
 
 /** Conjunctions used for splitting compound queries */
-const CONJUNCTIONS = ["and", "or", "also", "as well as"];
+const CONJUNCTIONS = ['and', 'or', 'also', 'as well as'];
 
 /** Splitter patterns for decomposing compound queries */
 const SPLIT_PATTERNS = [/ and /i, / or /i, /; ?/];
 
 /** Keywords that indicate a comparative strategy */
 const COMPARATIVE_KEYWORDS = [
-  "compare",
-  "contrast",
-  "difference",
-  "versus",
-  "vs",
+  'compare',
+  'contrast',
+  'difference',
+  'versus',
+  'vs',
 ];
 
 /**
@@ -74,7 +74,7 @@ class QueryPlanner extends EventEmitter {
     // +1 per conjunction
     for (const c of CONJUNCTIONS) {
       // "as well as" is multi-word -- use indexOf on the full string
-      if (c.includes(" ")) {
+      if (c.includes(' ')) {
         if (lower.includes(c)) score += 1;
       } else if (words.includes(c)) {
         score += 1;
@@ -108,16 +108,16 @@ class QueryPlanner extends EventEmitter {
 
     // Check comparative keywords first (more specific)
     for (const kw of COMPARATIVE_KEYWORDS) {
-      if (words.includes(kw) || lower.includes(kw)) return "comparative";
+      if (words.includes(kw) || lower.includes(kw)) return 'comparative';
     }
 
     // Check question words
     for (const w of words) {
-      if (["who", "what", "where", "when"].includes(w)) return "factual";
-      if (["why", "how"].includes(w)) return "analytical";
+      if (['who', 'what', 'where', 'when'].includes(w)) return 'factual';
+      if (['why', 'how'].includes(w)) return 'analytical';
     }
 
-    return "general";
+    return 'general';
   }
 
   /**
@@ -134,8 +134,8 @@ class QueryPlanner extends EventEmitter {
    */
   plan(query) {
     // 1. Validate
-    if (!query || typeof query !== "string" || !query.trim()) {
-      throw new Error("QueryPlanner.plan(): query must be a non-empty string");
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      throw new Error('QueryPlanner.plan(): query must be a non-empty string');
     }
 
     const trimmed = query.trim();
@@ -156,7 +156,7 @@ class QueryPlanner extends EventEmitter {
         complexity,
         originalQuery: trimmed,
       };
-      this.emit("planned", result);
+      this.emit('planned', result);
       return result;
     }
 
@@ -200,7 +200,7 @@ class QueryPlanner extends EventEmitter {
       originalQuery: trimmed,
     };
 
-    this.emit("planned", result);
+    this.emit('planned', result);
     return result;
   }
 }

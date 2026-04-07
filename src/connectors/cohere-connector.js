@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-const axios = require("axios");
-const { BaseConnector } = require("./base-connector");
+const axios = require('axios');
+const { BaseConnector } = require('./base-connector');
 
 /**
  * Default configuration for the Cohere connector.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  apiKey: process.env.COHERE_API_KEY || "",
-  baseURL: "https://api.cohere.ai/v1",
-  embeddingModel: "embed-english-v3.0",
-  rerankModel: "rerank-english-v3.0",
-  inputType: "search_document",
-  queryInputType: "search_query",
+  apiKey: process.env.COHERE_API_KEY || '',
+  baseURL: 'https://api.cohere.ai/v1',
+  embeddingModel: 'embed-english-v3.0',
+  rerankModel: 'rerank-english-v3.0',
+  inputType: 'search_document',
+  queryInputType: 'search_query',
 };
 
 /**
@@ -34,13 +34,13 @@ class CohereConnector extends BaseConnector {
    * @param {string} [options.queryInputType='search_query'] - Input type for query embeddings
    */
   constructor(options = {}) {
-    super({ name: "cohere", ...options });
+    super({ name: 'cohere', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     this.client = axios.create({
       baseURL: this.config.baseURL,
       headers: {
         Authorization: `Bearer ${this.config.apiKey}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
   }
@@ -53,7 +53,7 @@ class CohereConnector extends BaseConnector {
   async connect() {
     if (!this.config.apiKey) {
       throw new Error(
-        "Cohere API key required. Set COHERE_API_KEY or pass apiKey option.",
+        'Cohere API key required. Set COHERE_API_KEY or pass apiKey option.',
       );
     }
     await super.connect();
@@ -68,7 +68,7 @@ class CohereConnector extends BaseConnector {
    */
   async embed(text) {
     return this.withRetry(async () => {
-      const response = await this.client.post("/embed", {
+      const response = await this.client.post('/embed', {
         texts: [text],
         model: this.config.embeddingModel,
         input_type: this.config.inputType,
@@ -87,7 +87,7 @@ class CohereConnector extends BaseConnector {
    */
   async embedQuery(query) {
     return this.withRetry(async () => {
-      const response = await this.client.post("/embed", {
+      const response = await this.client.post('/embed', {
         texts: [query],
         model: this.config.embeddingModel,
         input_type: this.config.queryInputType,
@@ -112,7 +112,7 @@ class CohereConnector extends BaseConnector {
         (doc) => doc.content || doc.text || String(doc),
       );
 
-      const response = await this.client.post("/rerank", {
+      const response = await this.client.post('/rerank', {
         model: this.config.rerankModel,
         query,
         documents: docs,
@@ -132,7 +132,7 @@ class CohereConnector extends BaseConnector {
    */
   async isHealthy() {
     try {
-      await this.embed("health check");
+      await this.embed('health check');
       return true;
     } catch {
       return false;

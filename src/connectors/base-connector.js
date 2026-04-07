@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Abstract base class for all connectors.
@@ -26,7 +26,7 @@ class BaseConnector extends EventEmitter {
    */
   async connect() {
     this.connected = true;
-    this.emit("connected", { name: this.name });
+    this.emit('connected', { name: this.name });
   }
 
   /**
@@ -36,7 +36,7 @@ class BaseConnector extends EventEmitter {
    */
   async disconnect() {
     this.connected = false;
-    this.emit("disconnected", { name: this.name });
+    this.emit('disconnected', { name: this.name });
   }
 
   /**
@@ -65,7 +65,7 @@ class BaseConnector extends EventEmitter {
       } catch (err) {
         lastError = err;
         if (attempt < retries) {
-          this.emit("retry", {
+          this.emit('retry', {
             name: this.name,
             attempt: attempt + 1,
             maxRetries: retries,

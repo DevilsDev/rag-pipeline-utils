@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " "];
+const DEFAULT_SEPARATORS = ['\n\n', '\n', '. ', ' '];
 
 /**
  * Recursive text chunking strategy.
@@ -24,7 +24,7 @@ function recursiveChunk(text, options = {}) {
     minChunkSize = 50,
   } = options;
 
-  if (!text || typeof text !== "string") {
+  if (!text || typeof text !== 'string') {
     return [];
   }
 
@@ -70,7 +70,7 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
   }
 
   const chunks = [];
-  let buffer = "";
+  let buffer = '';
 
   for (const piece of pieces) {
     const candidate = buffer ? buffer + separator + piece : piece;
@@ -93,7 +93,7 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
           chunkOverlap,
         );
         chunks.push(...subChunks);
-        buffer = "";
+        buffer = '';
       } else {
         buffer = piece;
       }

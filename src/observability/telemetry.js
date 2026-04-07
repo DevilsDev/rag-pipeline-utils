@@ -7,32 +7,32 @@
  * @version 2.1.0
  */
 
-const { NodeSDK } = require("@opentelemetry/auto-instrumentations-node");
+const { NodeSDK } = require('@opentelemetry/auto-instrumentations-node');
 const {
   getNodeAutoInstrumentations,
-} = require("@opentelemetry/auto-instrumentations-node");
-const { Resource } = require("@opentelemetry/resources");
+} = require('@opentelemetry/auto-instrumentations-node');
+const { Resource } = require('@opentelemetry/resources');
 const {
   SemanticResourceAttributes,
-} = require("@opentelemetry/semantic-conventions");
-const { NodeTracerProvider } = require("@opentelemetry/sdk-node");
-const { JaegerExporter } = require("@opentelemetry/exporter-jaeger");
-const { PrometheusExporter } = require("@opentelemetry/exporter-prometheus");
+} = require('@opentelemetry/semantic-conventions');
+const { NodeTracerProvider } = require('@opentelemetry/sdk-node');
+const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+const { PrometheusExporter } = require('@opentelemetry/exporter-prometheus');
 const {
   MeterProvider,
   PeriodicExportingMetricReader,
-} = require("@opentelemetry/sdk-metrics");
+} = require('@opentelemetry/sdk-metrics');
 const {
   BatchSpanProcessor,
   SimpleSpanProcessor,
-} = require("@opentelemetry/sdk-trace-base");
+} = require('@opentelemetry/sdk-trace-base');
 const {
   trace,
   metrics,
   context,
   SpanStatusCode,
-} = require("@opentelemetry/api");
-const logger = require("../utils/structured-logger");
+} = require('@opentelemetry/api');
+const logger = require('../utils/structured-logger');
 
 /**
  * OpenTelemetry telemetry service for comprehensive observability.
@@ -51,18 +51,18 @@ class TelemetryService {
   constructor(options = {}) {
     this.config = {
       // Service Configuration
-      serviceName: options.serviceName || "@devilsdev/rag-pipeline-utils",
-      serviceVersion: options.serviceVersion || "2.1.0",
-      environment: options.environment || process.env.NODE_ENV || "development",
+      serviceName: options.serviceName || '@devilsdev/rag-pipeline-utils',
+      serviceVersion: options.serviceVersion || '2.1.0',
+      environment: options.environment || process.env.NODE_ENV || 'development',
 
       // Tracing Configuration
       tracing: {
         enabled: options.tracing?.enabled !== false,
         jaegerEndpoint:
           options.tracing?.jaegerEndpoint ||
-          "http://localhost:14268/api/traces",
+          'http://localhost:14268/api/traces',
         samplingRate: options.tracing?.samplingRate || 1.0, // 100% sampling in dev
-        exporterType: options.tracing?.exporterType || "jaeger", // jaeger, console, otlp
+        exporterType: options.tracing?.exporterType || 'jaeger', // jaeger, console, otlp
         batchTimeout: options.tracing?.batchTimeout || 5000,
         maxExportBatchSize: options.tracing?.maxExportBatchSize || 512,
       },
@@ -70,7 +70,7 @@ class TelemetryService {
       // Metrics Configuration
       metrics: {
         enabled: options.metrics?.enabled !== false,
-        prometheusEndpoint: options.metrics?.prometheusEndpoint || "/metrics",
+        prometheusEndpoint: options.metrics?.prometheusEndpoint || '/metrics',
         port: options.metrics?.port || 9090,
         collectInterval: options.metrics?.collectInterval || 10000, // 10 seconds
         exportInterval: options.metrics?.exportInterval || 30000, // 30 seconds
@@ -88,11 +88,11 @@ class TelemetryService {
 
       // Resource Configuration
       resource: {
-        "service.name": options.serviceName || "@devilsdev/rag-pipeline-utils",
-        "service.version": options.serviceVersion || "2.1.0",
-        "service.environment":
-          options.environment || process.env.NODE_ENV || "development",
-        "service.instance.id": process.env.HOSTNAME || require("os").hostname(),
+        'service.name': options.serviceName || '@devilsdev/rag-pipeline-utils',
+        'service.version': options.serviceVersion || '2.1.0',
+        'service.environment':
+          options.environment || process.env.NODE_ENV || 'development',
+        'service.instance.id': process.env.HOSTNAME || require('os').hostname(),
         ...options.resource,
       },
 
@@ -113,12 +113,12 @@ class TelemetryService {
    */
   async initialize() {
     if (this.isInitialized) {
-      logger.warn("Telemetry service already initialized");
+      logger.warn('Telemetry service already initialized');
       return;
     }
 
     try {
-      logger.info("Initializing OpenTelemetry telemetry service", {
+      logger.info('Initializing OpenTelemetry telemetry service', {
         serviceName: this.config.serviceName,
         environment: this.config.environment,
         tracingEnabled: this.config.tracing.enabled,
@@ -146,7 +146,7 @@ class TelemetryService {
 
       this.isInitialized = true;
 
-      logger.info("OpenTelemetry telemetry service initialized successfully", {
+      logger.info('OpenTelemetry telemetry service initialized successfully', {
         tracingEnabled: this.config.tracing.enabled,
         metricsEnabled: this.config.metrics.enabled,
         instrumentations: Object.keys(this.config.instrumentation).filter(
@@ -154,7 +154,7 @@ class TelemetryService {
         ),
       });
     } catch (error) {
-      logger.error("Failed to initialize telemetry service", {
+      logger.error('Failed to initialize telemetry service', {
         error: error.message,
         stack: error.stack,
       });
@@ -169,7 +169,7 @@ class TelemetryService {
    * @param {Resource} resource - OpenTelemetry resource
    */
   async initializeTracing(resource) {
-    logger.debug("Initializing OpenTelemetry tracing");
+    logger.debug('Initializing OpenTelemetry tracing');
 
     // Create tracer provider
     const tracerProvider = new NodeTracerProvider({
@@ -193,7 +193,7 @@ class TelemetryService {
       this.config.serviceVersion,
     );
 
-    logger.debug("OpenTelemetry tracing initialized", {
+    logger.debug('OpenTelemetry tracing initialized', {
       exporterType: this.config.tracing.exporterType,
       samplingRate: this.config.tracing.samplingRate,
     });
@@ -206,7 +206,7 @@ class TelemetryService {
    * @param {Resource} resource - OpenTelemetry resource
    */
   async initializeMetrics(resource) {
-    logger.debug("Initializing OpenTelemetry metrics");
+    logger.debug('Initializing OpenTelemetry metrics');
 
     // Create Prometheus exporter
     const prometheusExporter = new PrometheusExporter({
@@ -234,7 +234,7 @@ class TelemetryService {
       this.config.serviceVersion,
     );
 
-    logger.debug("OpenTelemetry metrics initialized", {
+    logger.debug('OpenTelemetry metrics initialized', {
       prometheusPort: this.config.metrics.port,
       exportInterval: this.config.metrics.exportInterval,
     });
@@ -250,7 +250,7 @@ class TelemetryService {
       return;
     }
 
-    logger.debug("Initializing OpenTelemetry SDK");
+    logger.debug('Initializing OpenTelemetry SDK');
 
     const instrumentations = this.getEnabledInstrumentations();
 
@@ -261,7 +261,7 @@ class TelemetryService {
 
     this.sdk.start();
 
-    logger.debug("OpenTelemetry SDK initialized with instrumentations", {
+    logger.debug('OpenTelemetry SDK initialized with instrumentations', {
       count: instrumentations.length,
     });
   }
@@ -277,7 +277,7 @@ class TelemetryService {
       TraceIdRatioBasedSampler,
       AlwaysOnSampler,
       AlwaysOffSampler,
-    } = require("@opentelemetry/sdk-trace-base");
+    } = require('@opentelemetry/sdk-trace-base');
 
     if (this.config.tracing.samplingRate >= 1.0) {
       return new AlwaysOnSampler();
@@ -296,26 +296,26 @@ class TelemetryService {
    */
   createTraceExporter() {
     switch (this.config.tracing.exporterType) {
-      case "jaeger":
+      case 'jaeger':
         return new JaegerExporter({
           endpoint: this.config.tracing.jaegerEndpoint,
         });
 
-      case "console": {
+      case 'console': {
         const {
           ConsoleSpanExporter,
-        } = require("@opentelemetry/sdk-trace-base");
+        } = require('@opentelemetry/sdk-trace-base');
         return new ConsoleSpanExporter();
       }
 
-      case "otlp": {
+      case 'otlp': {
         const {
           OTLPTraceExporter,
-        } = require("@opentelemetry/exporter-trace-otlp-http");
+        } = require('@opentelemetry/exporter-trace-otlp-http');
         return new OTLPTraceExporter({
           url:
             this.config.tracing.otlpEndpoint ||
-            "http://localhost:4318/v1/traces",
+            'http://localhost:4318/v1/traces',
         });
       }
 
@@ -355,87 +355,87 @@ class TelemetryService {
       return;
     }
 
-    logger.debug("Creating custom metrics for RAG pipeline");
+    logger.debug('Creating custom metrics for RAG pipeline');
 
     // DAG execution metrics
     this.customMetrics.set(
-      "dag_execution_duration",
-      this.meter.createHistogram("dag_execution_duration", {
-        description: "Duration of DAG execution in milliseconds",
-        unit: "ms",
+      'dag_execution_duration',
+      this.meter.createHistogram('dag_execution_duration', {
+        description: 'Duration of DAG execution in milliseconds',
+        unit: 'ms',
       }),
     );
 
     this.customMetrics.set(
-      "dag_node_execution_count",
-      this.meter.createCounter("dag_node_execution_count", {
-        description: "Number of DAG nodes executed",
+      'dag_node_execution_count',
+      this.meter.createCounter('dag_node_execution_count', {
+        description: 'Number of DAG nodes executed',
       }),
     );
 
     this.customMetrics.set(
-      "dag_execution_errors",
-      this.meter.createCounter("dag_execution_errors", {
-        description: "Number of DAG execution errors",
+      'dag_execution_errors',
+      this.meter.createCounter('dag_execution_errors', {
+        description: 'Number of DAG execution errors',
       }),
     );
 
     // Plugin metrics
     this.customMetrics.set(
-      "plugin_execution_duration",
-      this.meter.createHistogram("plugin_execution_duration", {
-        description: "Duration of plugin execution in milliseconds",
-        unit: "ms",
+      'plugin_execution_duration',
+      this.meter.createHistogram('plugin_execution_duration', {
+        description: 'Duration of plugin execution in milliseconds',
+        unit: 'ms',
       }),
     );
 
     this.customMetrics.set(
-      "plugin_sandbox_violations",
-      this.meter.createCounter("plugin_sandbox_violations", {
-        description: "Number of plugin sandbox security violations",
+      'plugin_sandbox_violations',
+      this.meter.createCounter('plugin_sandbox_violations', {
+        description: 'Number of plugin sandbox security violations',
       }),
     );
 
     // RAG pipeline metrics
     this.customMetrics.set(
-      "rag_query_duration",
-      this.meter.createHistogram("rag_query_duration", {
-        description: "Duration of RAG query processing in milliseconds",
-        unit: "ms",
+      'rag_query_duration',
+      this.meter.createHistogram('rag_query_duration', {
+        description: 'Duration of RAG query processing in milliseconds',
+        unit: 'ms',
       }),
     );
 
     this.customMetrics.set(
-      "rag_embedding_count",
-      this.meter.createCounter("rag_embedding_count", {
-        description: "Number of embeddings generated",
+      'rag_embedding_count',
+      this.meter.createCounter('rag_embedding_count', {
+        description: 'Number of embeddings generated',
       }),
     );
 
     this.customMetrics.set(
-      "rag_retrieval_accuracy",
-      this.meter.createHistogram("rag_retrieval_accuracy", {
-        description: "Accuracy score of document retrieval",
+      'rag_retrieval_accuracy',
+      this.meter.createHistogram('rag_retrieval_accuracy', {
+        description: 'Accuracy score of document retrieval',
       }),
     );
 
     // System metrics
     this.customMetrics.set(
-      "memory_usage",
-      this.meter.createUpDownCounter("memory_usage", {
-        description: "Current memory usage in bytes",
-        unit: "bytes",
+      'memory_usage',
+      this.meter.createUpDownCounter('memory_usage', {
+        description: 'Current memory usage in bytes',
+        unit: 'bytes',
       }),
     );
 
     this.customMetrics.set(
-      "active_connections",
-      this.meter.createUpDownCounter("active_connections", {
-        description: "Number of active connections",
+      'active_connections',
+      this.meter.createUpDownCounter('active_connections', {
+        description: 'Number of active connections',
       }),
     );
 
-    logger.debug("Custom metrics created", {
+    logger.debug('Custom metrics created', {
       count: this.customMetrics.size,
       metrics: Array.from(this.customMetrics.keys()),
     });
@@ -462,7 +462,7 @@ class TelemetryService {
 
         // Record success metrics
         span.setStatus({ code: SpanStatusCode.OK });
-        span.setAttribute("execution.duration_ms", Date.now() - startTime);
+        span.setAttribute('execution.duration_ms', Date.now() - startTime);
 
         return result;
       } catch (error) {
@@ -475,8 +475,8 @@ class TelemetryService {
 
         // Add error attributes
         span.setAttributes({
-          "error.type": error.constructor.name,
-          "error.message": error.message,
+          'error.type': error.constructor.name,
+          'error.message': error.message,
         });
 
         throw error;
@@ -500,7 +500,7 @@ class TelemetryService {
 
     const metric = this.customMetrics.get(metricName);
     if (!metric) {
-      logger.warn("Unknown metric name", { metricName });
+      logger.warn('Unknown metric name', { metricName });
       return;
     }
 
@@ -513,7 +513,7 @@ class TelemetryService {
         metric.record(value, attributes);
       }
     } catch (error) {
-      logger.error("Failed to record metric", {
+      logger.error('Failed to record metric', {
         metricName,
         value,
         attributes,
@@ -584,11 +584,11 @@ class TelemetryService {
       initialized: this.isInitialized,
       tracing: {
         enabled: this.config.tracing.enabled,
-        provider: this.tracer ? "active" : "inactive",
+        provider: this.tracer ? 'active' : 'inactive',
       },
       metrics: {
         enabled: this.config.metrics.enabled,
-        provider: this.meter ? "active" : "inactive",
+        provider: this.meter ? 'active' : 'inactive',
         customMetrics: this.customMetrics.size,
       },
       sdk: {
@@ -607,7 +607,7 @@ class TelemetryService {
       return;
     }
 
-    logger.info("Shutting down telemetry service");
+    logger.info('Shutting down telemetry service');
 
     try {
       if (this.sdk) {
@@ -620,9 +620,9 @@ class TelemetryService {
       this.sdk = null;
       this.customMetrics.clear();
 
-      logger.info("Telemetry service shutdown completed");
+      logger.info('Telemetry service shutdown completed');
     } catch (error) {
-      logger.error("Error during telemetry shutdown", {
+      logger.error('Error during telemetry shutdown', {
         error: error.message,
         stack: error.stack,
       });

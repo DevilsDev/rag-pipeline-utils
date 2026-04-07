@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Version: 1.0.0
@@ -7,7 +7,7 @@
  * Author: Ali Kahwaji
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /** @type {object} */
 const DEFAULT_CONFIG = {};
@@ -42,7 +42,7 @@ class CascadeReranker extends EventEmitter {
    */
   async rerank(query, documents, options = {}) {
     if (this.rerankers.length === 0) {
-      throw new Error("CascadeReranker requires at least one reranker");
+      throw new Error('CascadeReranker requires at least one reranker');
     }
 
     if (!Array.isArray(documents) || documents.length === 0) {
@@ -55,13 +55,13 @@ class CascadeReranker extends EventEmitter {
       const reranker = this.rerankers[i];
       currentDocs = await reranker.rerank(query, currentDocs, options);
 
-      this.emit("stage", {
+      this.emit('stage', {
         rerankerIndex: i,
         resultCount: currentDocs.length,
       });
     }
 
-    this.emit("reranked", { count: currentDocs.length });
+    this.emit('reranked', { count: currentDocs.length });
 
     return currentDocs;
   }

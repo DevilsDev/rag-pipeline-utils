@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { BaseConnector } = require("./base-connector");
+const { BaseConnector } = require('./base-connector');
 
 /**
  * Default configuration for the in-memory retriever.
@@ -21,7 +21,7 @@ class MemoryRetriever extends BaseConnector {
    * @param {number} [options.maxDocuments=100000] - Maximum number of documents to store
    */
   constructor(options = {}) {
-    super({ name: "memory-retriever", ...options });
+    super({ name: 'memory-retriever', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     /** @type {Map<string, { vector: number[], metadata?: Object, content?: string }>} */
     this.documents = new Map();
@@ -38,17 +38,17 @@ class MemoryRetriever extends BaseConnector {
       this.documents.set(doc.id, {
         vector: doc.vector,
         metadata: doc.metadata || {},
-        content: doc.content || "",
+        content: doc.content || '',
       });
     }
 
     if (this.documents.size > this.config.maxDocuments) {
-      this.emit("warning", {
+      this.emit('warning', {
         message: `Document count (${this.documents.size}) exceeds maxDocuments (${this.config.maxDocuments})`,
       });
     }
 
-    this.emit("stored", { count: vectors.length, total: this.documents.size });
+    this.emit('stored', { count: vectors.length, total: this.documents.size });
   }
 
   /**

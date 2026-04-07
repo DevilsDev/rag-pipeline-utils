@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Metrics Aggregator
@@ -8,7 +8,7 @@
  * calculations, and time-series data for charting.
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * @typedef {Object} MetricsAggregatorConfig
@@ -82,7 +82,7 @@ class MetricsAggregator extends EventEmitter {
    * @param {QueryData} data
    */
   recordQuery(data) {
-    this._recordOperation("queries", data);
+    this._recordOperation('queries', data);
   }
 
   /**
@@ -90,7 +90,7 @@ class MetricsAggregator extends EventEmitter {
    * @param {QueryData} data
    */
   recordEmbedding(data) {
-    this._recordOperation("embeddings", data);
+    this._recordOperation('embeddings', data);
   }
 
   /**
@@ -98,7 +98,7 @@ class MetricsAggregator extends EventEmitter {
    * @param {QueryData} data
    */
   recordRetrieval(data) {
-    this._recordOperation("retrievals", data);
+    this._recordOperation('retrievals', data);
   }
 
   /**
@@ -106,7 +106,7 @@ class MetricsAggregator extends EventEmitter {
    * @param {QueryData} data
    */
   recordGeneration(data) {
-    this._recordOperation("generations", data);
+    this._recordOperation('generations', data);
   }
 
   /**
@@ -118,18 +118,18 @@ class MetricsAggregator extends EventEmitter {
     this.counters.errors += 1;
 
     const entry = {
-      message: data.message || "Unknown error",
-      code: data.code || "UNKNOWN",
-      source: data.source || "unknown",
+      message: data.message || 'Unknown error',
+      code: data.code || 'UNKNOWN',
+      source: data.source || 'unknown',
       timestamp,
     };
     this.errors.push(entry);
     this._trimArray(this.errors);
 
-    this.history.push({ type: "error", timestamp, duration: 0 });
+    this.history.push({ type: 'error', timestamp, duration: 0 });
     this._trimArray(this.history);
 
-    this.emit("metric", { type: "error", data: entry });
+    this.emit('metric', { type: 'error', data: entry });
   }
 
   /**
@@ -147,7 +147,7 @@ class MetricsAggregator extends EventEmitter {
     this.memory.push(entry);
     this._trimArray(this.memory);
 
-    this.emit("metric", { type: "memory", data: entry });
+    this.emit('metric', { type: 'memory', data: entry });
   }
 
   /**
@@ -170,10 +170,10 @@ class MetricsAggregator extends EventEmitter {
     const windowSec = this.config.windowSize || 1;
 
     const queriesInWindow = recentHistory.filter(
-      (h) => h.type === "queries",
+      (h) => h.type === 'queries',
     ).length;
     const embeddingsInWindow = recentHistory.filter(
-      (h) => h.type === "embeddings",
+      (h) => h.type === 'embeddings',
     ).length;
 
     const totalCost = this.costs.reduce((sum, c) => sum + c.value, 0);
@@ -244,7 +244,7 @@ class MetricsAggregator extends EventEmitter {
       let value = 0;
 
       switch (metric) {
-        case "latency": {
+        case 'latency': {
           const items = this.latencies.filter(
             (l) => l.timestamp >= bucketStart && l.timestamp < bucketEnd,
           );
@@ -254,18 +254,18 @@ class MetricsAggregator extends EventEmitter {
               : 0;
           break;
         }
-        case "throughput": {
+        case 'throughput': {
           value =
             this.history.filter(
               (h) =>
-                h.type === "queries" &&
+                h.type === 'queries' &&
                 h.timestamp >= bucketStart &&
                 h.timestamp < bucketEnd,
             ).length /
             (bucketSize / 1000);
           break;
         }
-        case "cost": {
+        case 'cost': {
           value = this.costs
             .filter(
               (c) => c.timestamp >= bucketStart && c.timestamp < bucketEnd,
@@ -273,14 +273,14 @@ class MetricsAggregator extends EventEmitter {
             .reduce((s, c) => s + c.value, 0);
           break;
         }
-        case "memory": {
+        case 'memory': {
           const items = this.memory.filter(
             (m) => m.timestamp >= bucketStart && m.timestamp < bucketEnd,
           );
           value = items.length > 0 ? items[items.length - 1].heapUsed : 0;
           break;
         }
-        case "errors": {
+        case 'errors': {
           value = this.errors.filter(
             (e) => e.timestamp >= bucketStart && e.timestamp < bucketEnd,
           ).length;
@@ -314,7 +314,7 @@ class MetricsAggregator extends EventEmitter {
     this.history = [];
     this.startTime = Date.now();
 
-    this.emit("reset");
+    this.emit('reset');
   }
 
   /**
@@ -328,12 +328,12 @@ class MetricsAggregator extends EventEmitter {
 
     this.counters[type] = (this.counters[type] || 0) + 1;
 
-    if (typeof data.duration === "number") {
+    if (typeof data.duration === 'number') {
       this.latencies.push({ value: data.duration, timestamp });
       this._trimArray(this.latencies);
     }
 
-    if (typeof data.cost === "number") {
+    if (typeof data.cost === 'number') {
       this.costs.push({ value: data.cost, timestamp });
       this._trimArray(this.costs);
     }
@@ -341,7 +341,7 @@ class MetricsAggregator extends EventEmitter {
     this.history.push({ type, timestamp, duration: data.duration || 0 });
     this._trimArray(this.history);
 
-    this.emit("metric", { type, data: { ...data, timestamp } });
+    this.emit('metric', { type, data: { ...data, timestamp } });
   }
 
   /**
@@ -388,21 +388,21 @@ class MetricsAggregator extends EventEmitter {
    */
   _computeMemoryTrend() {
     if (this.memory.length < 2) {
-      return "stable";
+      return 'stable';
     }
 
     const recent = this.memory.slice(-10);
     if (recent.length < 2) {
-      return "stable";
+      return 'stable';
     }
 
     const first = recent[0].heapUsed;
     const last = recent[recent.length - 1].heapUsed;
     const changePct = ((last - first) / (first || 1)) * 100;
 
-    if (changePct > 5) return "increasing";
-    if (changePct < -5) return "decreasing";
-    return "stable";
+    if (changePct > 5) return 'increasing';
+    if (changePct < -5) return 'decreasing';
+    return 'stable';
   }
 }
 

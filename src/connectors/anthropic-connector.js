@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const axios = require("axios");
-const { BaseConnector } = require("./base-connector");
+const axios = require('axios');
+const { BaseConnector } = require('./base-connector');
 
 /**
  * Default configuration for the Anthropic connector.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  model: "claude-3-5-sonnet-20241022",
-  apiKey: process.env.ANTHROPIC_API_KEY || "",
-  baseURL: "https://api.anthropic.com",
-  apiVersion: "2023-06-01",
+  model: 'claude-3-5-sonnet-20241022',
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+  baseURL: 'https://api.anthropic.com',
+  apiVersion: '2023-06-01',
   maxTokens: 4096,
   temperature: 0.7,
 };
@@ -33,14 +33,14 @@ class AnthropicConnector extends BaseConnector {
    * @param {number} [options.temperature=0.7] - Sampling temperature
    */
   constructor(options = {}) {
-    super({ name: "anthropic", ...options });
+    super({ name: 'anthropic', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     this.client = axios.create({
       baseURL: this.config.baseURL,
       headers: {
-        "x-api-key": this.config.apiKey,
-        "anthropic-version": this.config.apiVersion,
-        "content-type": "application/json",
+        'x-api-key': this.config.apiKey,
+        'anthropic-version': this.config.apiVersion,
+        'content-type': 'application/json',
       },
     });
   }
@@ -53,7 +53,7 @@ class AnthropicConnector extends BaseConnector {
   async connect() {
     if (!this.config.apiKey) {
       throw new Error(
-        "Anthropic API key required. Set ANTHROPIC_API_KEY or pass apiKey option.",
+        'Anthropic API key required. Set ANTHROPIC_API_KEY or pass apiKey option.',
       );
     }
     await super.connect();
@@ -74,7 +74,7 @@ class AnthropicConnector extends BaseConnector {
         max_tokens: options.maxTokens ?? this.config.maxTokens,
         temperature: options.temperature ?? this.config.temperature,
         messages: [
-          { role: "user", content: this._buildPrompt(query, context) },
+          { role: 'user', content: this._buildPrompt(query, context) },
         ],
       };
 
@@ -82,12 +82,12 @@ class AnthropicConnector extends BaseConnector {
       if (context && context.length > 0) {
         const contextText = context
           .map((doc) => doc.content || doc.text || String(doc))
-          .join("\n\n");
+          .join('\n\n');
         body.system = `Use the following context to answer the question:\n\n${contextText}`;
-        body.messages = [{ role: "user", content: query }];
+        body.messages = [{ role: 'user', content: query }];
       }
 
-      const response = await this.client.post("/v1/messages", body);
+      const response = await this.client.post('/v1/messages', body);
       return response.data.content[0].text;
     });
   }
@@ -105,49 +105,49 @@ class AnthropicConnector extends BaseConnector {
       model: options.model || this.config.model,
       max_tokens: options.maxTokens ?? this.config.maxTokens,
       temperature: options.temperature ?? this.config.temperature,
-      messages: [{ role: "user", content: this._buildPrompt(query, context) }],
+      messages: [{ role: 'user', content: this._buildPrompt(query, context) }],
       stream: true,
     };
 
     if (context && context.length > 0) {
       const contextText = context
         .map((doc) => doc.content || doc.text || String(doc))
-        .join("\n\n");
+        .join('\n\n');
       body.system = `Use the following context to answer the question:\n\n${contextText}`;
-      body.messages = [{ role: "user", content: query }];
+      body.messages = [{ role: 'user', content: query }];
     }
 
-    const response = await this.client.post("/v1/messages", body, {
-      responseType: "stream",
+    const response = await this.client.post('/v1/messages', body, {
+      responseType: 'stream',
     });
 
-    let buffer = "";
+    let buffer = '';
 
     for await (const chunk of response.data) {
       buffer += chunk.toString();
-      const lines = buffer.split("\n");
+      const lines = buffer.split('\n');
       // Keep the last incomplete line in the buffer
-      buffer = lines.pop() || "";
+      buffer = lines.pop() || '';
 
       for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
+        if (!line.startsWith('data: ')) continue;
 
         const jsonStr = line.slice(6).trim();
-        if (!jsonStr || jsonStr === "[DONE]") continue;
+        if (!jsonStr || jsonStr === '[DONE]') continue;
 
         try {
           const event = JSON.parse(jsonStr);
 
           if (
-            event.type === "content_block_delta" &&
+            event.type === 'content_block_delta' &&
             event.delta &&
             event.delta.text
           ) {
             yield { token: event.delta.text, done: false };
           }
 
-          if (event.type === "message_stop") {
-            yield { token: "", done: true };
+          if (event.type === 'message_stop') {
+            yield { token: '', done: true };
             return;
           }
         } catch {
@@ -156,7 +156,7 @@ class AnthropicConnector extends BaseConnector {
       }
     }
 
-    yield { token: "", done: true };
+    yield { token: '', done: true };
   }
 
   /**
@@ -171,7 +171,7 @@ class AnthropicConnector extends BaseConnector {
     if (!context || context.length === 0) return query;
     const contextText = context
       .map((doc) => doc.content || doc.text || String(doc))
-      .join("\n\n");
+      .join('\n\n');
     return `Context:\n${contextText}\n\nQuestion: ${query}`;
   }
 }

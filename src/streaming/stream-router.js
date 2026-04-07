@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Stream Router
@@ -10,9 +10,9 @@
  * @since 2.4.0
  */
 
-const { EventEmitter } = require("events");
-const { SSEAdapter } = require("./sse-adapter");
-const { WebSocketAdapter } = require("./websocket-adapter");
+const { EventEmitter } = require('events');
+const { SSEAdapter } = require('./sse-adapter');
+const { WebSocketAdapter } = require('./websocket-adapter');
 
 /**
  * Default configuration for the stream router
@@ -20,11 +20,11 @@ const { WebSocketAdapter } = require("./websocket-adapter");
  */
 const DEFAULT_CONFIG = {
   /** @type {string} Transport to use when auto-detection is inconclusive */
-  defaultTransport: "sse",
+  defaultTransport: 'sse',
   /** @type {boolean} Whether to set CORS headers on responses */
   enableCORS: true,
   /** @type {string} Value for the Access-Control-Allow-Origin header */
-  corsOrigin: "*",
+  corsOrigin: '*',
 };
 
 /**
@@ -83,64 +83,64 @@ class StreamRouter extends EventEmitter {
       try {
         // --- 1. Parse query -----------------------------------------------
         const query =
-          (req.body && req.body.query) || (req.query && req.query.q) || "";
+          (req.body && req.body.query) || (req.query && req.query.q) || '';
 
         if (!query) {
-          res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "Missing query parameter" }));
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing query parameter' }));
           return;
         }
 
         // --- 2. CORS headers ----------------------------------------------
         if (this.config.enableCORS) {
-          res.setHeader("Access-Control-Allow-Origin", this.config.corsOrigin);
-          res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-          res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+          res.setHeader('Access-Control-Allow-Origin', this.config.corsOrigin);
+          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
         }
 
         // Handle CORS preflight
-        if (req.method === "OPTIONS") {
+        if (req.method === 'OPTIONS') {
           res.writeHead(204);
           res.end();
           return;
         }
 
         // --- 3. Detect transport ------------------------------------------
-        const accept = (req.headers && req.headers.accept) || "";
-        const upgrade = (req.headers && req.headers.upgrade) || "";
+        const accept = (req.headers && req.headers.accept) || '';
+        const upgrade = (req.headers && req.headers.upgrade) || '';
 
         let transport = this.config.defaultTransport;
-        if (accept.includes("text/event-stream")) {
-          transport = "sse";
-        } else if (upgrade.toLowerCase() === "websocket") {
-          transport = "ws";
+        if (accept.includes('text/event-stream')) {
+          transport = 'sse';
+        } else if (upgrade.toLowerCase() === 'websocket') {
+          transport = 'ws';
         }
 
         // --- 4. Route to adapter ------------------------------------------
-        if (transport === "sse") {
+        if (transport === 'sse') {
           await this.streamSSE(pipeline, query, res);
-        } else if (transport === "ws") {
+        } else if (transport === 'ws') {
           // WebSocket upgrade is normally handled at the server level;
           // send a hint response when received through a regular handler.
-          res.writeHead(426, { "Content-Type": "application/json" });
+          res.writeHead(426, { 'Content-Type': 'application/json' });
           res.end(
             JSON.stringify({
-              error: "WebSocket upgrade required",
-              hint: "Use the streamWS() method with an upgraded WebSocket connection",
+              error: 'WebSocket upgrade required',
+              hint: 'Use the streamWS() method with an upgraded WebSocket connection',
             }),
           );
         } else {
           await this.streamSSE(pipeline, query, res);
         }
       } catch (err) {
-        this.emit("error", err);
+        this.emit('error', err);
 
         if (!res.headersSent) {
-          res.writeHead(500, { "Content-Type": "application/json" });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
         }
         if (!res.writableEnded) {
           res.end(
-            JSON.stringify({ error: err.message || "Internal server error" }),
+            JSON.stringify({ error: err.message || 'Internal server error' }),
           );
         }
       }
@@ -172,7 +172,7 @@ class StreamRouter extends EventEmitter {
       await this.sseAdapter.stream(result, httpResponse);
     } else {
       // Non-streaming result: send as a single SSE frame then DONE
-      httpResponse.writeHead(200, { "Content-Type": "text/event-stream" });
+      httpResponse.writeHead(200, { 'Content-Type': 'text/event-stream' });
       httpResponse.write(`data: ${JSON.stringify(result)}\n\n`);
       httpResponse.write(`data: [DONE]\n\n`);
       httpResponse.end();
@@ -201,8 +201,8 @@ class StreamRouter extends EventEmitter {
     if (result && Symbol.asyncIterator in Object(result)) {
       await this.wsAdapter.stream(result, wsConnection);
     } else {
-      wsConnection.send(JSON.stringify({ type: "result", data: result }));
-      wsConnection.send(JSON.stringify({ type: "done" }));
+      wsConnection.send(JSON.stringify({ type: 'result', data: result }));
+      wsConnection.send(JSON.stringify({ type: 'done' }));
     }
   }
 }

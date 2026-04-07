@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Dashboard Generator
@@ -8,7 +8,7 @@
  * with inline CSS and SVG charts -- no external dependencies required.
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * @typedef {Object} DashboardGeneratorConfig
@@ -17,9 +17,9 @@ const { EventEmitter } = require("events");
  * @property {'dark'|'light'} theme - Color theme (default: 'dark')
  */
 const DEFAULT_CONFIG = {
-  title: "RAG Pipeline Dashboard",
+  title: 'RAG Pipeline Dashboard',
   refreshInterval: 5000,
-  theme: "dark",
+  theme: 'dark',
 };
 
 /**
@@ -42,151 +42,151 @@ class DashboardGenerator extends EventEmitter {
    */
   generate(metricsSnapshot) {
     const snapshot = metricsSnapshot || this._emptySnapshot();
-    const theme = this.config.theme || "dark";
+    const theme = this.config.theme || 'dark';
     const styles = this._generateStyles(theme);
 
     const cards = [
       this._generateCard(
-        "Total Queries",
+        'Total Queries',
         this._formatNumber(snapshot.counters.queries),
         `${this._formatNumber(snapshot.counters.embeddings)} embeddings | ${this._formatNumber(snapshot.counters.retrievals)} retrievals`,
-        "#4fc3f7",
+        '#4fc3f7',
       ),
       this._generateCard(
-        "Avg Latency",
+        'Avg Latency',
         `${snapshot.latency.avg.toFixed(1)}ms`,
         `p50: ${snapshot.latency.p50.toFixed(1)}ms | p95: ${snapshot.latency.p95.toFixed(1)}ms | p99: ${snapshot.latency.p99.toFixed(1)}ms`,
-        "#81c784",
+        '#81c784',
       ),
       this._generateCard(
-        "Error Rate",
+        'Error Rate',
         `${(snapshot.errorRate * 100).toFixed(2)}%`,
         `${this._formatNumber(snapshot.counters.errors)} total errors`,
-        snapshot.errorRate > 0.05 ? "#ef5350" : "#66bb6a",
+        snapshot.errorRate > 0.05 ? '#ef5350' : '#66bb6a',
       ),
       this._generateCard(
-        "Total Cost",
+        'Total Cost',
         `$${snapshot.cost.total.toFixed(4)}`,
         `Last 24h: $${snapshot.cost.last24h.toFixed(4)} | Avg/query: $${snapshot.cost.avgPerQuery.toFixed(6)}`,
-        "#ffb74d",
+        '#ffb74d',
       ),
       this._generateCard(
-        "Memory Usage",
+        'Memory Usage',
         `${(snapshot.memory.current / 1024 / 1024).toFixed(1)} MB`,
         `Peak: ${(snapshot.memory.peak / 1024 / 1024).toFixed(1)} MB | Trend: ${snapshot.memory.trend}`,
-        "#ce93d8",
+        '#ce93d8',
       ),
       this._generateCard(
-        "Throughput",
+        'Throughput',
         `${snapshot.throughput.queriesPerSec.toFixed(2)} q/s`,
         `${snapshot.throughput.embeddingsPerSec.toFixed(2)} embeddings/s`,
-        "#4dd0e1",
+        '#4dd0e1',
       ),
     ];
 
     const latencyData = [
-      { label: "Min", value: snapshot.latency.min },
-      { label: "p50", value: snapshot.latency.p50 },
-      { label: "Avg", value: snapshot.latency.avg },
-      { label: "p95", value: snapshot.latency.p95 },
-      { label: "p99", value: snapshot.latency.p99 },
-      { label: "Max", value: snapshot.latency.max },
+      { label: 'Min', value: snapshot.latency.min },
+      { label: 'p50', value: snapshot.latency.p50 },
+      { label: 'Avg', value: snapshot.latency.avg },
+      { label: 'p95', value: snapshot.latency.p95 },
+      { label: 'p99', value: snapshot.latency.p99 },
+      { label: 'Max', value: snapshot.latency.max },
     ];
     const chart = this._generateBarChart(latencyData, 600, 200);
 
     const tableRows = [
       {
-        label: "Queries",
+        label: 'Queries',
         value: this._formatNumber(snapshot.counters.queries),
-        unit: "count",
+        unit: 'count',
       },
       {
-        label: "Embeddings",
+        label: 'Embeddings',
         value: this._formatNumber(snapshot.counters.embeddings),
-        unit: "count",
+        unit: 'count',
       },
       {
-        label: "Retrievals",
+        label: 'Retrievals',
         value: this._formatNumber(snapshot.counters.retrievals),
-        unit: "count",
+        unit: 'count',
       },
       {
-        label: "Generations",
+        label: 'Generations',
         value: this._formatNumber(snapshot.counters.generations),
-        unit: "count",
+        unit: 'count',
       },
       {
-        label: "Errors",
+        label: 'Errors',
         value: this._formatNumber(snapshot.counters.errors),
-        unit: "count",
+        unit: 'count',
       },
       {
-        label: "Error Rate",
+        label: 'Error Rate',
         value: (snapshot.errorRate * 100).toFixed(2),
-        unit: "%",
+        unit: '%',
       },
       {
-        label: "Avg Latency",
+        label: 'Avg Latency',
         value: snapshot.latency.avg.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "p50 Latency",
+        label: 'p50 Latency',
         value: snapshot.latency.p50.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "p95 Latency",
+        label: 'p95 Latency',
         value: snapshot.latency.p95.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "p99 Latency",
+        label: 'p99 Latency',
         value: snapshot.latency.p99.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "Min Latency",
+        label: 'Min Latency',
         value: snapshot.latency.min.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "Max Latency",
+        label: 'Max Latency',
         value: snapshot.latency.max.toFixed(2),
-        unit: "ms",
+        unit: 'ms',
       },
       {
-        label: "Total Cost",
+        label: 'Total Cost',
         value: snapshot.cost.total.toFixed(6),
-        unit: "USD",
+        unit: 'USD',
       },
       {
-        label: "Cost (24h)",
+        label: 'Cost (24h)',
         value: snapshot.cost.last24h.toFixed(6),
-        unit: "USD",
+        unit: 'USD',
       },
       {
-        label: "Avg Cost/Query",
+        label: 'Avg Cost/Query',
         value: snapshot.cost.avgPerQuery.toFixed(6),
-        unit: "USD",
+        unit: 'USD',
       },
       {
-        label: "Memory (Current)",
+        label: 'Memory (Current)',
         value: (snapshot.memory.current / 1024 / 1024).toFixed(2),
-        unit: "MB",
+        unit: 'MB',
       },
       {
-        label: "Memory (Peak)",
+        label: 'Memory (Peak)',
         value: (snapshot.memory.peak / 1024 / 1024).toFixed(2),
-        unit: "MB",
+        unit: 'MB',
       },
-      { label: "Memory Trend", value: snapshot.memory.trend, unit: "" },
+      { label: 'Memory Trend', value: snapshot.memory.trend, unit: '' },
       {
-        label: "Throughput",
+        label: 'Throughput',
         value: snapshot.throughput.queriesPerSec.toFixed(3),
-        unit: "q/s",
+        unit: 'q/s',
       },
-      { label: "Uptime", value: this._formatUptime(snapshot.uptime), unit: "" },
+      { label: 'Uptime', value: this._formatUptime(snapshot.uptime), unit: '' },
     ];
     const table = this._generateTable(tableRows);
 
@@ -208,7 +208,7 @@ class DashboardGenerator extends EventEmitter {
 
   <main class="dashboard-main">
     <section class="cards-grid">
-      ${cards.join("\n      ")}
+      ${cards.join('\n      ')}
     </section>
 
     <section class="chart-section">
@@ -231,7 +231,7 @@ class DashboardGenerator extends EventEmitter {
 </body>
 </html>`;
 
-    this.emit("generated", { html, timestamp: snapshot.timestamp });
+    this.emit('generated', { html, timestamp: snapshot.timestamp });
     return html;
   }
 
@@ -260,7 +260,7 @@ class DashboardGenerator extends EventEmitter {
    */
   _generateBarChart(data, width, height) {
     if (!data || data.length === 0) {
-      return "<svg></svg>";
+      return '<svg></svg>';
     }
 
     const maxVal = Math.max(...data.map((d) => d.value), 1);
@@ -269,17 +269,17 @@ class DashboardGenerator extends EventEmitter {
     const chartHeight = height - padding.top - padding.bottom;
     const barWidth = Math.floor(chartWidth / data.length) - 4;
     const colors = [
-      "#4fc3f7",
-      "#81c784",
-      "#ffb74d",
-      "#ef5350",
-      "#ce93d8",
-      "#4dd0e1",
+      '#4fc3f7',
+      '#81c784',
+      '#ffb74d',
+      '#ef5350',
+      '#ce93d8',
+      '#4dd0e1',
     ];
 
-    let bars = "";
-    let labels = "";
-    let valueLabels = "";
+    let bars = '';
+    let labels = '';
+    let valueLabels = '';
 
     data.forEach((d, i) => {
       const barHeight = maxVal > 0 ? (d.value / maxVal) * chartHeight : 0;
@@ -296,7 +296,7 @@ class DashboardGenerator extends EventEmitter {
     });
 
     // Y-axis grid lines
-    let gridLines = "";
+    let gridLines = '';
     const gridCount = 4;
     for (let i = 0; i <= gridCount; i++) {
       const y = padding.top + (chartHeight / gridCount) * i;
@@ -326,16 +326,16 @@ class DashboardGenerator extends EventEmitter {
    * @returns {string} CSS string
    */
   _generateStyles(theme) {
-    const isDark = theme === "dark";
-    const bg = isDark ? "#1a1a2e" : "#f5f5f5";
-    const cardBg = isDark ? "#16213e" : "#ffffff";
-    const textPrimary = isDark ? "#e0e0e0" : "#212121";
-    const textSecondary = isDark ? "#9e9e9e" : "#757575";
-    const headerBg = isDark ? "#0f3460" : "#1565c0";
-    const footerBg = isDark ? "#0a0a1a" : "#e0e0e0";
-    const footerText = isDark ? "#666" : "#999";
-    const tableBorder = isDark ? "#2a2a4a" : "#e0e0e0";
-    const tableStripe = isDark ? "#1e1e3a" : "#fafafa";
+    const isDark = theme === 'dark';
+    const bg = isDark ? '#1a1a2e' : '#f5f5f5';
+    const cardBg = isDark ? '#16213e' : '#ffffff';
+    const textPrimary = isDark ? '#e0e0e0' : '#212121';
+    const textSecondary = isDark ? '#9e9e9e' : '#757575';
+    const headerBg = isDark ? '#0f3460' : '#1565c0';
+    const footerBg = isDark ? '#0a0a1a' : '#e0e0e0';
+    const footerText = isDark ? '#666' : '#999';
+    const tableBorder = isDark ? '#2a2a4a' : '#e0e0e0';
+    const tableStripe = isDark ? '#1e1e3a' : '#fafafa';
 
     return `
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -453,7 +453,7 @@ class DashboardGenerator extends EventEmitter {
         border-bottom: 1px solid ${tableBorder};
       }
       .metrics-table th {
-        background: ${isDark ? "#1e1e3e" : "#eeeeee"};
+        background: ${isDark ? '#1e1e3e' : '#eeeeee'};
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -493,7 +493,7 @@ class DashboardGenerator extends EventEmitter {
         (r) =>
           `<tr><td>${this._escapeHtml(r.label)}</td><td>${this._escapeHtml(String(r.value))}</td><td>${this._escapeHtml(r.unit)}</td></tr>`,
       )
-      .join("\n        ");
+      .join('\n        ');
 
     return `<table class="metrics-table">
       <thead>
@@ -512,24 +512,24 @@ class DashboardGenerator extends EventEmitter {
    */
   generateReport(metricsSnapshot) {
     const s = metricsSnapshot || this._emptySnapshot();
-    const divider = "=".repeat(52);
-    const line = "-".repeat(52);
+    const divider = '='.repeat(52);
+    const line = '-'.repeat(52);
 
     const lines = [
       divider,
       `  ${this.config.title} - Report`,
       `  ${new Date(s.timestamp).toISOString()}`,
       divider,
-      "",
-      "  COUNTERS",
+      '',
+      '  COUNTERS',
       line,
       `  Queries:       ${this._padLeft(s.counters.queries, 12)}`,
       `  Embeddings:    ${this._padLeft(s.counters.embeddings, 12)}`,
       `  Retrievals:    ${this._padLeft(s.counters.retrievals, 12)}`,
       `  Generations:   ${this._padLeft(s.counters.generations, 12)}`,
       `  Errors:        ${this._padLeft(s.counters.errors, 12)}`,
-      "",
-      "  LATENCY (ms)",
+      '',
+      '  LATENCY (ms)',
       line,
       `  Average:       ${this._padLeft(s.latency.avg.toFixed(2), 12)}`,
       `  p50:           ${this._padLeft(s.latency.p50.toFixed(2), 12)}`,
@@ -537,27 +537,27 @@ class DashboardGenerator extends EventEmitter {
       `  p99:           ${this._padLeft(s.latency.p99.toFixed(2), 12)}`,
       `  Min:           ${this._padLeft(s.latency.min.toFixed(2), 12)}`,
       `  Max:           ${this._padLeft(s.latency.max.toFixed(2), 12)}`,
-      "",
-      "  COST (USD)",
+      '',
+      '  COST (USD)',
       line,
-      `  Total:         ${this._padLeft("$" + s.cost.total.toFixed(6), 12)}`,
-      `  Last 24h:      ${this._padLeft("$" + s.cost.last24h.toFixed(6), 12)}`,
-      `  Avg/Query:     ${this._padLeft("$" + s.cost.avgPerQuery.toFixed(6), 12)}`,
-      "",
-      "  SYSTEM",
+      `  Total:         ${this._padLeft('$' + s.cost.total.toFixed(6), 12)}`,
+      `  Last 24h:      ${this._padLeft('$' + s.cost.last24h.toFixed(6), 12)}`,
+      `  Avg/Query:     ${this._padLeft('$' + s.cost.avgPerQuery.toFixed(6), 12)}`,
+      '',
+      '  SYSTEM',
       line,
-      `  Memory:        ${this._padLeft((s.memory.current / 1024 / 1024).toFixed(2) + " MB", 12)}`,
-      `  Memory Peak:   ${this._padLeft((s.memory.peak / 1024 / 1024).toFixed(2) + " MB", 12)}`,
+      `  Memory:        ${this._padLeft((s.memory.current / 1024 / 1024).toFixed(2) + ' MB', 12)}`,
+      `  Memory Peak:   ${this._padLeft((s.memory.peak / 1024 / 1024).toFixed(2) + ' MB', 12)}`,
       `  Memory Trend:  ${this._padLeft(s.memory.trend, 12)}`,
-      `  Throughput:    ${this._padLeft(s.throughput.queriesPerSec.toFixed(3) + " q/s", 12)}`,
-      `  Error Rate:    ${this._padLeft((s.errorRate * 100).toFixed(2) + "%", 12)}`,
+      `  Throughput:    ${this._padLeft(s.throughput.queriesPerSec.toFixed(3) + ' q/s', 12)}`,
+      `  Error Rate:    ${this._padLeft((s.errorRate * 100).toFixed(2) + '%', 12)}`,
       `  Uptime:        ${this._padLeft(this._formatUptime(s.uptime), 12)}`,
-      "",
+      '',
       divider,
     ];
 
-    const report = lines.join("\n");
-    this.emit("report", { report, timestamp: s.timestamp });
+    const report = lines.join('\n');
+    this.emit('report', { report, timestamp: s.timestamp });
     return report;
   }
 
@@ -578,7 +578,7 @@ class DashboardGenerator extends EventEmitter {
       latency: { avg: 0, p50: 0, p95: 0, p99: 0, min: 0, max: 0 },
       throughput: { queriesPerSec: 0, embeddingsPerSec: 0 },
       cost: { total: 0, last24h: 0, avgPerQuery: 0 },
-      memory: { current: 0, peak: 0, trend: "stable" },
+      memory: { current: 0, peak: 0, trend: 'stable' },
       errorRate: 0,
       uptime: 0,
       timestamp: Date.now(),
@@ -593,10 +593,10 @@ class DashboardGenerator extends EventEmitter {
    */
   _escapeHtml(str) {
     return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   /**
@@ -606,7 +606,7 @@ class DashboardGenerator extends EventEmitter {
    * @private
    */
   _formatNumber(n) {
-    return Number(n).toLocaleString("en-US");
+    return Number(n).toLocaleString('en-US');
   }
 
   /**

@@ -13,7 +13,7 @@
 function tokenize(text) {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/[^a-z0-9 ]/g, '')
     .split(/\s+/)
     .filter(Boolean);
 }
@@ -89,7 +89,7 @@ function scoreAnswer(_actual, _expected) {
  * @returns {string[]}
  */
 function splitSentences(text) {
-  if (!text || typeof text !== "string") return [];
+  if (!text || typeof text !== 'string') return [];
   return text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
 }
 

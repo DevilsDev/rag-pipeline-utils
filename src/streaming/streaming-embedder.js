@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Streaming Embedder
@@ -16,8 +16,8 @@
  * @since 2.5.0
  */
 
-const { EventEmitter } = require("events");
-const { createEmbeddingStream } = require("./embedding-stream");
+const { EventEmitter } = require('events');
+const { createEmbeddingStream } = require('./embedding-stream');
 
 /**
  * Default configuration for the StreamingEmbedder
@@ -62,11 +62,11 @@ class StreamingEmbedder extends EventEmitter {
 
     if (
       !embedder ||
-      (typeof embedder.embed !== "function" &&
-        typeof embedder.embedQuery !== "function")
+      (typeof embedder.embed !== 'function' &&
+        typeof embedder.embedQuery !== 'function')
     ) {
       throw new TypeError(
-        "Embedder must expose an .embed() or .embedQuery() method",
+        'Embedder must expose an .embed() or .embedQuery() method',
       );
     }
 
@@ -95,7 +95,7 @@ class StreamingEmbedder extends EventEmitter {
    */
   async *embedStream(documents) {
     if (!Array.isArray(documents)) {
-      throw new TypeError("documents must be an array");
+      throw new TypeError('documents must be an array');
     }
 
     const startTime = Date.now();
@@ -105,7 +105,7 @@ class StreamingEmbedder extends EventEmitter {
      * @event StreamingEmbedder#start
      * @type {{ documentCount: number }}
      */
-    this.emit("start", { documentCount });
+    this.emit('start', { documentCount });
 
     let batchCount = 0;
     let itemsInCurrentBatch = 0;
@@ -124,7 +124,7 @@ class StreamingEmbedder extends EventEmitter {
            * @event StreamingEmbedder#backpressure
            * @type {{ index: number, progress: number }}
            */
-          this.emit("backpressure", {
+          this.emit('backpressure', {
             index: embedding.index,
             progress: embedding.progress,
           });
@@ -137,7 +137,7 @@ class StreamingEmbedder extends EventEmitter {
            * @event StreamingEmbedder#error
            * @type {{ id: string, error: Error, index: number }}
            */
-          this.emit("error", {
+          this.emit('error', {
             id: embedding.id,
             error: embedding.error,
             index: embedding.index,
@@ -150,7 +150,7 @@ class StreamingEmbedder extends EventEmitter {
          * @event StreamingEmbedder#embedding
          * @type {{ id: string, vector?: number[], index: number, progress: number }}
          */
-        this.emit("embedding", embedding);
+        this.emit('embedding', embedding);
 
         // Emit batch event every batchSize items
         itemsInCurrentBatch += 1;
@@ -160,7 +160,7 @@ class StreamingEmbedder extends EventEmitter {
            * @event StreamingEmbedder#batch
            * @type {{ batchNumber: number, processedSoFar: number, progress: number }}
            */
-          this.emit("batch", {
+          this.emit('batch', {
             batchNumber: batchCount,
             processedSoFar: embedding.index + 1,
             progress: embedding.progress,
@@ -174,7 +174,7 @@ class StreamingEmbedder extends EventEmitter {
       // Emit a final batch event for any remaining items
       if (itemsInCurrentBatch > 0) {
         batchCount += 1;
-        this.emit("batch", {
+        this.emit('batch', {
           batchNumber: batchCount,
           processedSoFar: documentCount,
           progress: 1,
@@ -188,7 +188,7 @@ class StreamingEmbedder extends EventEmitter {
        * @event StreamingEmbedder#done
        * @type {{ processed: number, failed: number, totalTime: number, documentCount: number }}
        */
-      this.emit("done", {
+      this.emit('done', {
         processed: this.stats.processed,
         failed: this.stats.failed,
         totalTime: this.stats.totalTime,

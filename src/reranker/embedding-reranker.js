@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Version: 1.0.0
@@ -7,7 +7,7 @@
  * Author: Ali Kahwaji
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /** @type {object} */
 const DEFAULT_CONFIG = {};
@@ -27,7 +27,7 @@ class EmbeddingReranker extends EventEmitter {
   constructor(embedder, options = {}) {
     super();
     if (!embedder) {
-      throw new Error("EmbeddingReranker requires an embedder instance");
+      throw new Error('EmbeddingReranker requires an embedder instance');
     }
     this.embedder = embedder;
     this.config = { ...DEFAULT_CONFIG, ...options };
@@ -77,12 +77,12 @@ class EmbeddingReranker extends EventEmitter {
 
     const results = scored.slice(0, topK).map(({ doc, similarity }) => {
       const result =
-        typeof doc === "object" ? { ...doc } : { text: String(doc) };
+        typeof doc === 'object' ? { ...doc } : { text: String(doc) };
       result.relevanceScore = similarity;
       return result;
     });
 
-    this.emit("reranked", { count: results.length, topK });
+    this.emit('reranked', { count: results.length, topK });
 
     return results;
   }

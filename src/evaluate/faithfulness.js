@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
 const {
   splitSentences,
   tokenize,
   computeJaccardSimilarity,
-} = require("./scoring");
-const { mapSentenceToSources } = require("../citation/source-mapper");
+} = require('./scoring');
+const { mapSentenceToSources } = require('../citation/source-mapper');
 
 /**
  * Compute faithfulness score for an answer against retrieved documents.
@@ -20,7 +20,7 @@ const { mapSentenceToSources } = require("../citation/source-mapper");
 function computeFaithfulness(answer, retrievedDocs, options = {}) {
   const { threshold = 0.3 } = options;
 
-  if (!answer || typeof answer !== "string" || answer.trim().length === 0) {
+  if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
   }
 
@@ -53,7 +53,7 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
 
     for (let i = 0; i < retrievedDocs.length; i++) {
       const doc = retrievedDocs[i];
-      const docContent = doc && (doc.content || doc.text || "");
+      const docContent = doc && (doc.content || doc.text || '');
 
       if (!docContent) {
         continue;
@@ -93,18 +93,18 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
  * @returns {{ score: number, details: Array }}
  */
 function computeFaithfulnessFromCitations(citationResult) {
-  if (!citationResult || typeof citationResult !== "object") {
+  if (!citationResult || typeof citationResult !== 'object') {
     return { score: 0, details: [] };
   }
 
   const score =
-    typeof citationResult.groundednessScore === "number"
+    typeof citationResult.groundednessScore === 'number'
       ? citationResult.groundednessScore
       : 0;
 
   const details = Array.isArray(citationResult.citations)
     ? citationResult.citations.map((c) => ({
-        sentence: c.sentence || c.text || "",
+        sentence: c.sentence || c.text || '',
         score: c.score || c.similarity || 0,
         isFaithful: (c.score || c.similarity || 0) > 0,
         bestSource: c.sourceIndex != null ? c.sourceIndex : -1,

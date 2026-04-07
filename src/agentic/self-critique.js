@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for the SelfCritiqueChecker.
@@ -42,19 +42,19 @@ class SelfCritiqueChecker extends EventEmitter {
    */
   check(answer, retrievedDocs) {
     // 1. Validate inputs
-    if (!answer || typeof answer !== "string" || !answer.trim()) {
+    if (!answer || typeof answer !== 'string' || !answer.trim()) {
       throw new Error(
-        "SelfCritiqueChecker.check(): answer must be a non-empty string",
+        'SelfCritiqueChecker.check(): answer must be a non-empty string',
       );
     }
     if (!Array.isArray(retrievedDocs) || retrievedDocs.length === 0) {
       throw new Error(
-        "SelfCritiqueChecker.check(): retrievedDocs must be a non-empty array",
+        'SelfCritiqueChecker.check(): retrievedDocs must be a non-empty array',
       );
     }
 
     // 2. Lazy-require CitationTracker (not loaded at module level)
-    const { CitationTracker } = require("../citation/citation-tracker");
+    const { CitationTracker } = require('../citation/citation-tracker');
 
     // 3. Create tracker instance
     const tracker = new CitationTracker();
@@ -73,11 +73,11 @@ class SelfCritiqueChecker extends EventEmitter {
     if (hallucinationReport && Array.isArray(hallucinationReport.sentences)) {
       for (const s of hallucinationReport.sentences) {
         if (
-          s.classification === "definite_hallucination" ||
-          s.classification === "likely_hallucination"
+          s.classification === 'definite_hallucination' ||
+          s.classification === 'likely_hallucination'
         ) {
           issues.push({
-            sentence: s.sentence || s.text || "",
+            sentence: s.sentence || s.text || '',
             classification: s.classification,
           });
         }
@@ -92,7 +92,7 @@ class SelfCritiqueChecker extends EventEmitter {
       citationResult,
     };
 
-    this.emit("checked", result);
+    this.emit('checked', result);
 
     // 9. Return
     return result;

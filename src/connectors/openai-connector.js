@@ -1,17 +1,17 @@
-"use strict";
+'use strict';
 
-const { BaseConnector } = require("./base-connector");
+const { BaseConnector } = require('./base-connector');
 
 /**
  * Default configuration for the OpenAI connector.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  model: "gpt-4o-mini",
-  embeddingModel: "text-embedding-3-small",
+  model: 'gpt-4o-mini',
+  embeddingModel: 'text-embedding-3-small',
   temperature: 0.7,
   maxTokens: 4096,
-  apiKey: process.env.OPENAI_API_KEY || "",
+  apiKey: process.env.OPENAI_API_KEY || '',
 };
 
 /**
@@ -30,7 +30,7 @@ class OpenAIConnector extends BaseConnector {
    * @param {string} [options.apiKey] - OpenAI API key
    */
   constructor(options = {}) {
-    super({ name: "openai", ...options });
+    super({ name: 'openai', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     this._client = null; // lazy-loaded
   }
@@ -42,7 +42,7 @@ class OpenAIConnector extends BaseConnector {
    */
   _getClient() {
     if (!this._client) {
-      const OpenAI = require("openai");
+      const OpenAI = require('openai');
       this._client = new OpenAI({ apiKey: this.config.apiKey });
     }
     return this._client;
@@ -56,7 +56,7 @@ class OpenAIConnector extends BaseConnector {
   async connect() {
     if (!this.config.apiKey) {
       throw new Error(
-        "OpenAI API key required. Set OPENAI_API_KEY or pass apiKey option.",
+        'OpenAI API key required. Set OPENAI_API_KEY or pass apiKey option.',
       );
     }
     await super.connect();
@@ -107,11 +107,11 @@ class OpenAIConnector extends BaseConnector {
     });
 
     for await (const chunk of stream) {
-      const token = chunk.choices[0]?.delta?.content || "";
+      const token = chunk.choices[0]?.delta?.content || '';
       yield { token, done: false };
     }
 
-    yield { token: "", done: true };
+    yield { token: '', done: true };
   }
 
   /**
@@ -158,14 +158,14 @@ class OpenAIConnector extends BaseConnector {
     if (context && context.length > 0) {
       const contextText = context
         .map((doc) => doc.content || doc.text || String(doc))
-        .join("\n\n");
+        .join('\n\n');
       messages.push({
-        role: "system",
+        role: 'system',
         content: `Use the following context to answer the question:\n\n${contextText}`,
       });
     }
 
-    messages.push({ role: "user", content: query });
+    messages.push({ role: 'user', content: query });
     return messages;
   }
 }

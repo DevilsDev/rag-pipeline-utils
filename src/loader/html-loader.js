@@ -2,9 +2,9 @@
  * Loader for HTML (.html) documents
  */
 
-const fs = require("fs/promises");
-const path = require("path");
-const { JSDOM } = require("jsdom");
+const fs = require('fs/promises');
+const path = require('path');
+const { JSDOM } = require('jsdom');
 
 /**
  * HTMLLoader reads HTML files and extracts visible text.
@@ -18,12 +18,12 @@ class HTMLLoader {
    */
   async load(filePath) {
     const absPath = path.resolve(filePath);
-    const raw = await fs.readFile(absPath, "utf-8");
+    const raw = await fs.readFile(absPath, 'utf-8');
     const dom = new JSDOM(raw);
-    let text = dom.window.document.body.textContent || "";
+    let text = dom.window.document.body.textContent || '';
 
     const MAX_LEN = 1_000_000;
-    text = String(text).replace(/\s+/g, " ").trim();
+    text = String(text).replace(/\s+/g, ' ').trim();
     if (text.length > MAX_LEN) text = text.slice(0, MAX_LEN);
 
     return [
@@ -40,8 +40,8 @@ class HTMLLoader {
    * @returns {string[]}
    */
   _chunkText(input, maxLen = 500) {
-    const { ChunkingEngine } = require("../chunking/chunking-engine");
-    const engine = new ChunkingEngine({ strategy: "sentence", maxLen });
+    const { ChunkingEngine } = require('../chunking/chunking-engine');
+    const engine = new ChunkingEngine({ strategy: 'sentence', maxLen });
     return engine.chunk(input);
   }
 }

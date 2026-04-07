@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { reciprocalRankFusion } = require("./rank-fusion");
+const { EventEmitter } = require('events');
+const { reciprocalRankFusion } = require('./rank-fusion');
 
 const DEFAULT_CONFIG = {
   topK: 10,
@@ -38,9 +38,9 @@ class HybridRetriever extends EventEmitter {
     // Run all retrievers in parallel
     const promises = this.retrievers.map(({ retriever, name }) => {
       const fn =
-        typeof retriever.retrieve === "function"
+        typeof retriever.retrieve === 'function'
           ? retriever.retrieve.bind(retriever)
-          : typeof retriever.search === "function"
+          : typeof retriever.search === 'function'
             ? retriever.search.bind(retriever)
             : null;
 
@@ -51,7 +51,7 @@ class HybridRetriever extends EventEmitter {
       }
 
       // Pass query string or the full query object depending on method
-      const arg = typeof query === "string" ? query : query.query || query;
+      const arg = typeof query === 'string' ? query : query.query || query;
       return fn(arg);
     });
 
@@ -63,14 +63,14 @@ class HybridRetriever extends EventEmitter {
 
     for (let i = 0; i < settled.length; i++) {
       const outcome = settled[i];
-      if (outcome.status === "fulfilled") {
+      if (outcome.status === 'fulfilled') {
         const results = Array.isArray(outcome.value) ? outcome.value : [];
         resultSets.push(results);
         weights.push(this.retrievers[i].weight);
         successCount++;
       } else {
         // Graceful degradation: log warning and continue
-        this.emit("retrieverError", {
+        this.emit('retrieverError', {
           name: this.retrievers[i].name,
           error: outcome.reason,
         });
@@ -84,7 +84,7 @@ class HybridRetriever extends EventEmitter {
 
     const topResults = fused.slice(0, topK);
 
-    this.emit("retrieved", {
+    this.emit('retrieved', {
       totalRetrievers: this.retrievers.length,
       successfulRetrievers: successCount,
       resultCount: topResults.length,
@@ -99,7 +99,7 @@ class HybridRetriever extends EventEmitter {
    * @param {number} weight - Weight for rank fusion
    * @param {string} name - Name for this retriever
    */
-  addRetriever(retriever, weight = 1.0, name = "") {
+  addRetriever(retriever, weight = 1.0, name = '') {
     this.retrievers.push({
       retriever,
       weight,

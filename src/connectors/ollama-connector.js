@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-const axios = require("axios");
-const { BaseConnector } = require("./base-connector");
+const axios = require('axios');
+const { BaseConnector } = require('./base-connector');
 
 /**
  * Default configuration for the Ollama connector.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  baseURL: "http://localhost:11434",
-  model: "llama3",
-  embeddingModel: "nomic-embed-text",
+  baseURL: 'http://localhost:11434',
+  model: 'llama3',
+  embeddingModel: 'nomic-embed-text',
   timeout: 60000,
   temperature: 0.7,
 };
@@ -30,7 +30,7 @@ class OllamaConnector extends BaseConnector {
    * @param {number} [options.temperature=0.7] - Generation temperature
    */
   constructor(options = {}) {
-    super({ name: "ollama", ...options });
+    super({ name: 'ollama', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
     this.client = axios.create({
       baseURL: this.config.baseURL,
@@ -45,7 +45,7 @@ class OllamaConnector extends BaseConnector {
    */
   async connect() {
     try {
-      await this.client.get("/api/tags");
+      await this.client.get('/api/tags');
       await super.connect();
     } catch (err) {
       throw new Error(
@@ -60,7 +60,7 @@ class OllamaConnector extends BaseConnector {
    */
   async isHealthy() {
     try {
-      await this.client.get("/api/tags");
+      await this.client.get('/api/tags');
       return true;
     } catch {
       return false;
@@ -82,7 +82,7 @@ class OllamaConnector extends BaseConnector {
     const prompt = this._buildPrompt(query, context);
 
     const result = await this.withRetry(async () => {
-      const response = await this.client.post("/api/generate", {
+      const response = await this.client.post('/api/generate', {
         model,
         prompt,
         stream: false,
@@ -111,32 +111,32 @@ class OllamaConnector extends BaseConnector {
     let response;
     try {
       response = await this.client.post(
-        "/api/generate",
+        '/api/generate',
         {
           model,
           prompt,
           stream: true,
           options: { temperature },
         },
-        { responseType: "stream" },
+        { responseType: 'stream' },
       );
     } catch (err) {
       throw new Error(`Ollama streaming request failed: ${err.message}`);
     }
 
-    let buffer = "";
+    let buffer = '';
     for await (const chunk of response.data) {
       buffer += chunk.toString();
-      const lines = buffer.split("\n");
+      const lines = buffer.split('\n');
       // Keep the last potentially incomplete line in the buffer
-      buffer = lines.pop() || "";
+      buffer = lines.pop() || '';
 
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed) continue;
         try {
           const parsed = JSON.parse(trimmed);
-          yield { token: parsed.response || "", done: !!parsed.done };
+          yield { token: parsed.response || '', done: !!parsed.done };
         } catch {
           // Skip malformed lines
         }
@@ -147,7 +147,7 @@ class OllamaConnector extends BaseConnector {
     if (buffer.trim()) {
       try {
         const parsed = JSON.parse(buffer.trim());
-        yield { token: parsed.response || "", done: !!parsed.done };
+        yield { token: parsed.response || '', done: !!parsed.done };
       } catch {
         // Skip malformed trailing data
       }
@@ -161,7 +161,7 @@ class OllamaConnector extends BaseConnector {
    */
   async embed(text) {
     const result = await this.withRetry(async () => {
-      const response = await this.client.post("/api/embeddings", {
+      const response = await this.client.post('/api/embeddings', {
         model: this.config.embeddingModel,
         prompt: text,
       });
@@ -196,7 +196,7 @@ class OllamaConnector extends BaseConnector {
         const text = doc.content || doc.text || String(doc);
         return text;
       })
-      .join("\n\n");
+      .join('\n\n');
 
     return `Context:\n${contextText}\n\nQuestion: ${query}\n\nAnswer:`;
   }

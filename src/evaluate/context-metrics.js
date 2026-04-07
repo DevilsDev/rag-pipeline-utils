@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
 const {
   tokenize,
   splitSentences,
   computeJaccardSimilarity,
-} = require("./scoring");
+} = require('./scoring');
 
 /**
  * Compute context precision: the fraction of retrieved documents that are relevant to the query.
@@ -18,7 +18,7 @@ const {
 function computeContextPrecision(query, retrievedDocs, options = {}) {
   const { threshold = 0.2 } = options;
 
-  if (!query || typeof query !== "string" || query.trim().length === 0) {
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
     return { score: 0, relevantDocs: 0, totalDocs: 0, perDocScores: [] };
   }
 
@@ -31,7 +31,7 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
 
   for (let i = 0; i < retrievedDocs.length; i++) {
     const doc = retrievedDocs[i];
-    const docContent = doc && (doc.content || doc.text || "");
+    const docContent = doc && (doc.content || doc.text || '');
 
     if (!docContent) {
       perDocScores.push({ index: i, score: 0, isRelevant: false });
@@ -62,7 +62,7 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
 function computeContextRecall(answer, retrievedDocs, options = {}) {
   const { threshold = 0.3 } = options;
 
-  if (!answer || typeof answer !== "string" || answer.trim().length === 0) {
+  if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, supportedClaims: 0, totalClaims: 0, details: [] };
   }
 
@@ -94,7 +94,7 @@ function computeContextRecall(answer, retrievedDocs, options = {}) {
 
     for (let i = 0; i < retrievedDocs.length; i++) {
       const doc = retrievedDocs[i];
-      const docContent = doc && (doc.content || doc.text || "");
+      const docContent = doc && (doc.content || doc.text || '');
 
       if (!docContent) {
         continue;

@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for the RetrievalGuard.
@@ -47,7 +47,7 @@ class RetrievalGuard extends EventEmitter {
   filter(results, context = {}) {
     if (!Array.isArray(results)) {
       const output = { results: [], removed: [], metadata: { reasons: {} } };
-      this.emit("filtered", output);
+      this.emit('filtered', output);
       return output;
     }
 
@@ -118,7 +118,7 @@ class RetrievalGuard extends EventEmitter {
       metadata: { reasons },
     };
 
-    this.emit("filtered", { original: results, filtered: kept, removed });
+    this.emit('filtered', { original: results, filtered: kept, removed });
     return output;
   }
 }

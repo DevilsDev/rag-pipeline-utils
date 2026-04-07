@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
 /**
  * @module templates/scaffold
  * @description Creates complete project directories from templates.
  */
 
-const { EventEmitter } = require("events");
-const fs = require("fs");
-const path = require("path");
-const { TemplateRegistry } = require("./template-registry");
+const { EventEmitter } = require('events');
+const fs = require('fs');
+const path = require('path');
+const { TemplateRegistry } = require('./template-registry');
 
 /** @type {Object} Default configuration for the project scaffolder */
 const DEFAULT_CONFIG = {
@@ -75,22 +75,22 @@ class ProjectScaffolder extends EventEmitter {
     const projectName = path.basename(resolvedDir);
     const packageJson = {
       name: projectName,
-      version: "1.0.0",
+      version: '1.0.0',
       description: template.description,
-      main: "index.js",
+      main: 'index.js',
       scripts: {
-        start: "node index.js",
+        start: 'node index.js',
       },
       dependencies: template.dependencies || {},
       devDependencies: template.devDependencies || {},
     };
 
-    const packageJsonPath = path.join(resolvedDir, "package.json");
+    const packageJsonPath = path.join(resolvedDir, 'package.json');
     fs.writeFileSync(
       packageJsonPath,
-      JSON.stringify(packageJson, null, 2) + "\n",
+      JSON.stringify(packageJson, null, 2) + '\n',
     );
-    createdFiles.push("package.json");
+    createdFiles.push('package.json');
 
     // Write template files
     const files = template.files || {};
@@ -102,18 +102,18 @@ class ProjectScaffolder extends EventEmitter {
         fs.mkdirSync(fileDir, { recursive: true });
       }
 
-      fs.writeFileSync(filePath, content + "\n");
+      fs.writeFileSync(filePath, content + '\n');
       createdFiles.push(fileName);
     }
 
     // Write .ragrc.json from template config
     if (template.config) {
-      const ragrcPath = path.join(resolvedDir, ".ragrc.json");
+      const ragrcPath = path.join(resolvedDir, '.ragrc.json');
       fs.writeFileSync(
         ragrcPath,
-        JSON.stringify(template.config, null, 2) + "\n",
+        JSON.stringify(template.config, null, 2) + '\n',
       );
-      createdFiles.push(".ragrc.json");
+      createdFiles.push('.ragrc.json');
     }
 
     const result = {
@@ -129,7 +129,7 @@ class ProjectScaffolder extends EventEmitter {
      * @property {string[]} files - List of created file names
      * @property {string} template - Template key that was used
      */
-    this.emit("created", result);
+    this.emit('created', result);
 
     return result;
   }

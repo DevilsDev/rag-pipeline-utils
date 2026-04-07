@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * WebSocket Adapter
@@ -10,7 +10,7 @@
  * @since 2.4.0
  */
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for WebSocket streaming
@@ -18,11 +18,11 @@ const { EventEmitter } = require("events");
  */
 const DEFAULT_CONFIG = {
   /** @type {string} Message type identifier for token payloads */
-  messageType: "token",
+  messageType: 'token',
   /** @type {string} Message type identifier for stream completion */
-  doneType: "done",
+  doneType: 'done',
   /** @type {string} Message type identifier for error payloads */
-  errorType: "error",
+  errorType: 'error',
 };
 
 /**
@@ -76,8 +76,8 @@ class WebSocketAdapter extends EventEmitter {
    */
   async stream(asyncGenerator, wsConnection) {
     // --- 1. Validate connection -----------------------------------------
-    if (!wsConnection || typeof wsConnection.send !== "function") {
-      throw new TypeError("wsConnection must have a send() method");
+    if (!wsConnection || typeof wsConnection.send !== 'function') {
+      throw new TypeError('wsConnection must have a send() method');
     }
 
     let connectionClosed = false;
@@ -88,17 +88,17 @@ class WebSocketAdapter extends EventEmitter {
     };
     const onError = (err) => {
       connectionClosed = true;
-      this.emit("error", err);
+      this.emit('error', err);
     };
 
-    if (typeof wsConnection.on === "function") {
-      wsConnection.on("close", onClose);
-      wsConnection.on("error", onError);
+    if (typeof wsConnection.on === 'function') {
+      wsConnection.on('close', onClose);
+      wsConnection.on('error', onError);
     }
 
     // --- 3. Iterate and send --------------------------------------------
     try {
-      this.emit("started");
+      this.emit('started');
 
       for await (const value of asyncGenerator) {
         if (connectionClosed || !this._isOpen(wsConnection)) {
@@ -107,7 +107,7 @@ class WebSocketAdapter extends EventEmitter {
 
         if (value && value.done) {
           this._send(wsConnection, { type: this.config.doneType });
-          this.emit("done");
+          this.emit('done');
           break;
         }
 
@@ -116,27 +116,27 @@ class WebSocketAdapter extends EventEmitter {
           type: this.config.messageType,
           data: { token },
         });
-        this.emit("token", token);
+        this.emit('token', token);
       }
 
       // Generator exhausted without explicit done flag
       if (!connectionClosed && this._isOpen(wsConnection)) {
         this._send(wsConnection, { type: this.config.doneType });
-        this.emit("done");
+        this.emit('done');
       }
     } catch (err) {
-      this.emit("error", err);
+      this.emit('error', err);
 
       if (!connectionClosed && this._isOpen(wsConnection)) {
         this._send(wsConnection, {
           type: this.config.errorType,
-          data: { message: err.message || "Internal streaming error" },
+          data: { message: err.message || 'Internal streaming error' },
         });
       }
     } finally {
-      if (typeof wsConnection.removeListener === "function") {
-        wsConnection.removeListener("close", onClose);
-        wsConnection.removeListener("error", onError);
+      if (typeof wsConnection.removeListener === 'function') {
+        wsConnection.removeListener('close', onClose);
+        wsConnection.removeListener('error', onError);
       }
     }
   }
@@ -149,7 +149,7 @@ class WebSocketAdapter extends EventEmitter {
    * @private
    */
   _isOpen(wsConnection) {
-    if (typeof wsConnection.readyState === "number") {
+    if (typeof wsConnection.readyState === 'number') {
       return wsConnection.readyState === WS_READY_STATE.OPEN;
     }
     // If readyState is not available, assume open

@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { recursiveChunk } = require("./recursive");
+const { recursiveChunk } = require('./recursive');
 
 /**
  * Detect document format from content.
@@ -12,13 +12,13 @@ const { recursiveChunk } = require("./recursive");
 function _detectFormat(text) {
   // Check for Markdown headers
   if (/^#{1,6}\s/m.test(text)) {
-    return "markdown";
+    return 'markdown';
   }
   // Check for HTML heading or section tags
   if (/<h[1-6][^>]*>/i.test(text) || /<section[^>]*>/i.test(text)) {
-    return "html";
+    return 'html';
   }
-  return "plain";
+  return 'plain';
 }
 
 /**
@@ -40,15 +40,15 @@ function _splitMarkdown(text) {
 
   // Split on header lines
   const sections = [];
-  const lines = withPlaceholders.split("\n");
-  let currentSection = "";
+  const lines = withPlaceholders.split('\n');
+  let currentSection = '';
 
   for (const line of lines) {
     if (/^#{1,6}\s/.test(line) && currentSection.trim()) {
       sections.push(currentSection.trim());
-      currentSection = line + "\n";
+      currentSection = line + '\n';
     } else {
-      currentSection += line + "\n";
+      currentSection += line + '\n';
     }
   }
 
@@ -95,7 +95,7 @@ function _splitHtml(text) {
 function structureAwareChunk(text, options = {}) {
   const { chunkSize = 512, chunkOverlap = 50, format } = options;
 
-  if (!text || typeof text !== "string") {
+  if (!text || typeof text !== 'string') {
     return [];
   }
 
@@ -104,13 +104,13 @@ function structureAwareChunk(text, options = {}) {
   let sections;
 
   switch (detectedFormat) {
-    case "markdown":
+    case 'markdown':
       sections = _splitMarkdown(text);
       break;
-    case "html":
+    case 'html':
       sections = _splitHtml(text);
       break;
-    case "plain":
+    case 'plain':
     default:
       sections = [text];
       break;

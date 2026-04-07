@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { PreRetrievalGuard } = require("./pre-retrieval-guard");
-const { RetrievalGuard } = require("./retrieval-guard");
-const { PostGenerationGuard } = require("./post-generation-guard");
+const { EventEmitter } = require('events');
+const { PreRetrievalGuard } = require('./pre-retrieval-guard');
+const { RetrievalGuard } = require('./retrieval-guard');
+const { PostGenerationGuard } = require('./post-generation-guard');
 
 /**
  * Default configuration for the GuardrailsPipeline.
@@ -36,9 +36,9 @@ class GuardrailsPipeline extends EventEmitter {
   constructor(pipeline, options = {}) {
     super();
 
-    if (!pipeline || typeof pipeline.run !== "function") {
+    if (!pipeline || typeof pipeline.run !== 'function') {
       throw new Error(
-        "GuardrailsPipeline requires a pipeline with a .run() method",
+        'GuardrailsPipeline requires a pipeline with a .run() method',
       );
     }
 
@@ -80,12 +80,12 @@ class GuardrailsPipeline extends EventEmitter {
     let query = input.query;
     if (this.preGuard) {
       guardrails.preRetrieval = this.preGuard.check(query);
-      this.emit("preRetrieval", guardrails.preRetrieval);
+      this.emit('preRetrieval', guardrails.preRetrieval);
 
       if (!guardrails.preRetrieval.safe && this.config.strict) {
         return {
           success: false,
-          error: "Pre-retrieval guard blocked query",
+          error: 'Pre-retrieval guard blocked query',
           guardrails,
         };
       }
@@ -105,7 +105,7 @@ class GuardrailsPipeline extends EventEmitter {
         result.results,
         input.context,
       );
-      this.emit("retrieval", guardrails.retrieval);
+      this.emit('retrieval', guardrails.retrieval);
       result.results = guardrails.retrieval.results;
     }
 
@@ -115,13 +115,13 @@ class GuardrailsPipeline extends EventEmitter {
         result.answer,
         result.results,
       );
-      this.emit("postGeneration", guardrails.postGeneration);
+      this.emit('postGeneration', guardrails.postGeneration);
 
       if (!guardrails.postGeneration.safe && this.config.strict) {
         return {
           ...result,
           success: false,
-          error: "Post-generation guard flagged output",
+          error: 'Post-generation guard flagged output',
           guardrails,
         };
       }

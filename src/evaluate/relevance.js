@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { tokenize, computeJaccardSimilarity } = require("./scoring");
+const { tokenize, computeJaccardSimilarity } = require('./scoring');
 
 /**
  * Common English stopwords to skip when measuring query token coverage.
@@ -9,45 +9,45 @@ const { tokenize, computeJaccardSimilarity } = require("./scoring");
  * @type {Set<string>}
  */
 const STOPWORDS = new Set([
-  "the",
-  "that",
-  "this",
-  "with",
-  "from",
-  "have",
-  "been",
-  "will",
-  "would",
-  "could",
-  "should",
-  "does",
-  "what",
-  "when",
-  "where",
-  "which",
-  "their",
-  "there",
-  "they",
-  "them",
-  "then",
-  "than",
-  "these",
-  "those",
-  "your",
-  "about",
-  "into",
-  "each",
-  "also",
-  "more",
-  "some",
-  "such",
-  "only",
-  "over",
-  "very",
-  "just",
-  "being",
-  "were",
-  "here",
+  'the',
+  'that',
+  'this',
+  'with',
+  'from',
+  'have',
+  'been',
+  'will',
+  'would',
+  'could',
+  'should',
+  'does',
+  'what',
+  'when',
+  'where',
+  'which',
+  'their',
+  'there',
+  'they',
+  'them',
+  'then',
+  'than',
+  'these',
+  'those',
+  'your',
+  'about',
+  'into',
+  'each',
+  'also',
+  'more',
+  'some',
+  'such',
+  'only',
+  'over',
+  'very',
+  'just',
+  'being',
+  'were',
+  'here',
 ]);
 
 /**
@@ -64,7 +64,7 @@ const STOPWORDS = new Set([
 function computeAnswerRelevance(query, answer, options = {}) {
   const { jaccardWeight = 0.5, coverageWeight = 0.5 } = options;
 
-  if (!query || typeof query !== "string" || query.trim().length === 0) {
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
     return {
       score: 0,
       jaccardSimilarity: 0,
@@ -74,7 +74,7 @@ function computeAnswerRelevance(query, answer, options = {}) {
     };
   }
 
-  if (!answer || typeof answer !== "string" || answer.trim().length === 0) {
+  if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     const significantQueryTokens = tokenize(query).filter(
       (t) => t.length > 3 && !STOPWORDS.has(t),
     );

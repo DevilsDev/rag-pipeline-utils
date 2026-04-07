@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Sentence-based chunking strategy.
@@ -15,14 +15,14 @@ function sentenceChunk(text, options = {}) {
 
   const sentences = text.split(/(?<=[.!?])\s+/);
   const chunks = [];
-  let buffer = "";
+  let buffer = '';
 
   for (const sentence of sentences) {
     if ((buffer + sentence).length <= maxLen) {
-      buffer += sentence + " ";
+      buffer += sentence + ' ';
     } else {
       chunks.push(buffer.trim());
-      buffer = sentence + " ";
+      buffer = sentence + ' ';
     }
   }
   if (buffer.trim()) chunks.push(buffer.trim());

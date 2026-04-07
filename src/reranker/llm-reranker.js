@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 class LLMReranker {
   constructor(options = {}) {
@@ -26,16 +26,16 @@ class LLMReranker {
 
         // Security validation: ensure parsed result is an array
         if (!Array.isArray(parsed)) {
-          throw new Error("LLM response is not an array");
+          throw new Error('LLM response is not an array');
         }
 
         // Security validation: ensure all elements are valid numbers
         if (
           !parsed.every(
-            (item) => typeof item === "number" && Number.isInteger(item),
+            (item) => typeof item === 'number' && Number.isInteger(item),
           )
         ) {
-          throw new Error("LLM response contains non-integer values");
+          throw new Error('LLM response contains non-integer values');
         }
 
         // Security validation: ensure all indices are within valid bounds
@@ -45,7 +45,7 @@ class LLMReranker {
         rankingOrder = [...new Set(validIndices)];
 
         if (rankingOrder.length === 0) {
-          throw new Error("No valid indices in LLM response");
+          throw new Error('No valid indices in LLM response');
         }
       } catch (parseErr) {
         // Fallback: use simple overlap scoring if parsing fails
@@ -73,7 +73,7 @@ class LLMReranker {
       .filter((t) => t.length > 0);
 
     const scored = docs.map((doc, originalIndex) => {
-      const text = doc.text || doc.content || "";
+      const text = doc.text || doc.content || '';
       const docTokens = text
         .toLowerCase()
         .split(/\s+/)

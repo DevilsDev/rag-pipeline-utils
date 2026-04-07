@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default budget configuration.
@@ -160,7 +160,7 @@ class TokenBudget extends EventEmitter {
     this.usage.cost += cost;
     this.usage.operations += 1;
 
-    this.emit("usage", entry);
+    this.emit('usage', entry);
 
     // Soft-limit warnings
     if (isFinite(this.config.maxTokens)) {
@@ -170,7 +170,7 @@ class TokenBudget extends EventEmitter {
         this.usage.tokens <= this.config.maxTokens
       ) {
         this.emit(
-          "warning",
+          'warning',
           `Token usage at ${((this.usage.tokens / this.config.maxTokens) * 100).toFixed(1)}% of limit`,
         );
       }
@@ -183,7 +183,7 @@ class TokenBudget extends EventEmitter {
         this.usage.cost <= this.config.maxCost
       ) {
         this.emit(
-          "warning",
+          'warning',
           `Cost usage at ${((this.usage.cost / this.config.maxCost) * 100).toFixed(1)}% of limit`,
         );
       }
@@ -192,14 +192,14 @@ class TokenBudget extends EventEmitter {
     // Hard-limit exceeded
     if (this.usage.tokens > this.config.maxTokens) {
       this.emit(
-        "exceeded",
+        'exceeded',
         `Token limit exceeded: ${this.usage.tokens} > ${this.config.maxTokens}`,
       );
     }
 
     if (this.usage.cost > this.config.maxCost) {
       this.emit(
-        "exceeded",
+        'exceeded',
         `Cost limit exceeded: ${this.usage.cost.toFixed(4)} > ${this.config.maxCost}`,
       );
     }

@@ -24,8 +24,8 @@ class DAGNode {
    * @param {DAGNode} node - Target node to connect to
    */
   addOutput(node) {
-    if (!node || typeof node !== "object" || !node.inputs) {
-      throw new Error("Invalid output node");
+    if (!node || typeof node !== 'object' || !node.inputs) {
+      throw new Error('Invalid output node');
     }
     // Allow self-loops during construction - they will be detected during validation
     if (!this.outputs.includes(node)) {

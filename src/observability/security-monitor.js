@@ -7,12 +7,12 @@
  * @version 2.1.0
  */
 
-const { EventEmitter } = require("events");
-const fs = require("fs").promises;
-const path = require("path");
-const crypto = require("crypto");
-const logger = require("../utils/structured-logger");
-const { getTelemetryService } = require("./telemetry");
+const { EventEmitter } = require('events');
+const fs = require('fs').promises;
+const path = require('path');
+const crypto = require('crypto');
+const logger = require('../utils/structured-logger');
+const { getTelemetryService } = require('./telemetry');
 
 /**
  * Security monitoring service for threat detection and incident response.
@@ -61,14 +61,14 @@ class SecurityMonitor extends EventEmitter {
       // Alerting Configuration
       alerting: {
         enabled: options.alerting?.enabled !== false,
-        channels: options.alerting?.channels || ["log"], // log, webhook, email
+        channels: options.alerting?.channels || ['log'], // log, webhook, email
         webhookUrl: options.alerting?.webhookUrl,
         emailConfig: options.alerting?.emailConfig,
         severity: {
-          low: options.alerting?.severity?.low || "info",
-          medium: options.alerting?.severity?.medium || "warn",
-          high: options.alerting?.severity?.high || "error",
-          critical: options.alerting?.severity?.critical || "error",
+          low: options.alerting?.severity?.low || 'info',
+          medium: options.alerting?.severity?.medium || 'warn',
+          high: options.alerting?.severity?.high || 'error',
+          critical: options.alerting?.severity?.critical || 'error',
         },
         ...options.alerting,
       },
@@ -84,8 +84,8 @@ class SecurityMonitor extends EventEmitter {
 
       // Storage Configuration
       storage: {
-        type: options.storage?.type || "file", // file, database, s3
-        location: options.storage?.location || "./security-logs",
+        type: options.storage?.type || 'file', // file, database, s3
+        location: options.storage?.location || './security-logs',
         maxFileSize: options.storage?.maxFileSize || 100 * 1024 * 1024, // 100MB
         compression: options.storage?.compression !== false,
         ...options.storage,
@@ -118,17 +118,17 @@ class SecurityMonitor extends EventEmitter {
    */
   async start() {
     if (this.isRunning) {
-      logger.warn("Security monitor already running");
+      logger.warn('Security monitor already running');
       return;
     }
 
     if (!this.config.enabled) {
-      logger.info("Security monitoring is disabled");
+      logger.info('Security monitoring is disabled');
       return;
     }
 
     try {
-      logger.info("Starting security monitoring service", {
+      logger.info('Starting security monitoring service', {
         checkInterval: this.config.checkInterval,
         threatDetection: this.config.threatDetection.enabled,
         anomalyDetection: this.config.anomalyDetection.enabled,
@@ -150,13 +150,13 @@ class SecurityMonitor extends EventEmitter {
       this.isRunning = true;
 
       // Record telemetry
-      this.telemetry.recordMetric("security_monitor_started", 1, {
-        service: "security-monitor",
+      this.telemetry.recordMetric('security_monitor_started', 1, {
+        service: 'security-monitor',
       });
 
-      logger.info("Security monitoring service started successfully");
+      logger.info('Security monitoring service started successfully');
     } catch (error) {
-      logger.error("Failed to start security monitoring service", {
+      logger.error('Failed to start security monitoring service', {
         error: error.message,
         stack: error.stack,
       });
@@ -174,7 +174,7 @@ class SecurityMonitor extends EventEmitter {
       return;
     }
 
-    logger.info("Stopping security monitoring service");
+    logger.info('Stopping security monitoring service');
 
     try {
       // Stop monitoring loop
@@ -191,9 +191,9 @@ class SecurityMonitor extends EventEmitter {
 
       this.isRunning = false;
 
-      logger.info("Security monitoring service stopped successfully");
+      logger.info('Security monitoring service stopped successfully');
     } catch (error) {
-      logger.error("Error stopping security monitoring service", {
+      logger.error('Error stopping security monitoring service', {
         error: error.message,
       });
       throw error;
@@ -222,7 +222,7 @@ class SecurityMonitor extends EventEmitter {
         id: eventId,
         timestamp,
         type: event.type,
-        severity: event.severity || "medium",
+        severity: event.severity || 'medium',
         source: event.source,
         details: event.details || {},
         ...event,
@@ -245,7 +245,7 @@ class SecurityMonitor extends EventEmitter {
 
       // Log event with correlation
       await logger.withCorrelation(eventId, async () => {
-        logger.security("Security event recorded", {
+        logger.security('Security event recorded', {
           eventId,
           type: securityEvent.type,
           severity: securityEvent.severity,
@@ -254,15 +254,15 @@ class SecurityMonitor extends EventEmitter {
       });
 
       // Record telemetry
-      this.telemetry.recordMetric("security_events_total", 1, {
+      this.telemetry.recordMetric('security_events_total', 1, {
         type: securityEvent.type,
         severity: securityEvent.severity,
       });
 
       // Emit event for external handlers
-      this.emit("securityEvent", securityEvent);
+      this.emit('securityEvent', securityEvent);
     } catch (error) {
-      logger.error("Failed to record security event", {
+      logger.error('Failed to record security event', {
         event,
         error: error.message,
       });
@@ -325,8 +325,8 @@ class SecurityMonitor extends EventEmitter {
 
     if (sourceEvents.length > rateLimitThreshold) {
       return {
-        type: "rate_limit_violation",
-        severity: "high",
+        type: 'rate_limit_violation',
+        severity: 'high',
         source: event.source,
         details: {
           eventCount: sourceEvents.length,
@@ -348,7 +348,7 @@ class SecurityMonitor extends EventEmitter {
    * @returns {Object|null} Threat detection result
    */
   detectBruteForce(event) {
-    if (event.type !== "auth_failure") {
+    if (event.type !== 'auth_failure') {
       return null;
     }
 
@@ -359,15 +359,15 @@ class SecurityMonitor extends EventEmitter {
     // Count authentication failures from the same source
     const authFailures = Array.from(this.securityEvents.values()).filter(
       (e) =>
-        e.type === "auth_failure" &&
+        e.type === 'auth_failure' &&
         e.source === event.source &&
         e.timestamp >= windowStart,
     );
 
     if (authFailures.length >= bruteForceThreshold) {
       return {
-        type: "brute_force_attack",
-        severity: "critical",
+        type: 'brute_force_attack',
+        severity: 'critical',
         source: event.source,
         details: {
           failureCount: authFailures.length,
@@ -398,11 +398,11 @@ class SecurityMonitor extends EventEmitter {
       const match = this.matchPattern(event, pattern);
       if (match) {
         return {
-          type: "suspicious_pattern",
-          severity: pattern.severity || "medium",
+          type: 'suspicious_pattern',
+          severity: pattern.severity || 'medium',
           source: event.source,
           details: {
-            pattern: pattern.name || "unnamed",
+            pattern: pattern.name || 'unnamed',
             match: match,
             event: event,
           },
@@ -439,7 +439,7 @@ class SecurityMonitor extends EventEmitter {
 
     if (anomaly) {
       await this.handleAnomaly({
-        type: "anomaly_detected",
+        type: 'anomaly_detected',
         severity: anomaly.severity,
         eventType: event.type,
         details: {
@@ -467,7 +467,7 @@ class SecurityMonitor extends EventEmitter {
       id: incidentId,
       timestamp: Date.now(),
       threat,
-      status: "active",
+      status: 'active',
       responseActions: [],
     };
 
@@ -475,7 +475,7 @@ class SecurityMonitor extends EventEmitter {
     this.activeIncidents.set(incidentId, incident);
 
     // Log threat detection
-    logger.security("Threat detected", {
+    logger.security('Threat detected', {
       incidentId,
       threatType: threat.type,
       severity: threat.severity,
@@ -491,13 +491,13 @@ class SecurityMonitor extends EventEmitter {
     }
 
     // Record telemetry
-    this.telemetry.recordMetric("threats_detected", 1, {
+    this.telemetry.recordMetric('threats_detected', 1, {
       type: threat.type,
       severity: threat.severity,
     });
 
     // Emit threat event
-    this.emit("threatDetected", { threat, incident });
+    this.emit('threatDetected', { threat, incident });
   }
 
   /**
@@ -513,14 +513,14 @@ class SecurityMonitor extends EventEmitter {
     try {
       // Block suspicious IP/source
       if (this.config.autoResponse.blockSuspiciousIPs && threat.source) {
-        await this.blockEntity(threat.source, "Automated threat response");
+        await this.blockEntity(threat.source, 'Automated threat response');
         actions.push(`Blocked entity: ${threat.source}`);
       }
 
       // Rate limit violators
       if (
         this.config.autoResponse.rateLimitViolators &&
-        threat.type === "rate_limit_violation"
+        threat.type === 'rate_limit_violation'
       ) {
         await this.applyRateLimit(threat.source);
         actions.push(`Applied rate limit to: ${threat.source}`);
@@ -529,22 +529,22 @@ class SecurityMonitor extends EventEmitter {
       // Quarantine threats
       if (
         this.config.autoResponse.quarantineThreats &&
-        threat.severity === "critical"
+        threat.severity === 'critical'
       ) {
         await this.quarantineThreat(threat);
-        actions.push("Threat quarantined");
+        actions.push('Threat quarantined');
       }
 
       // Update incident with response actions
       incident.responseActions = actions;
       this.activeIncidents.set(incident.id, incident);
 
-      logger.info("Automated threat response executed", {
+      logger.info('Automated threat response executed', {
         incidentId: incident.id,
         actions,
       });
     } catch (error) {
-      logger.error("Failed to execute automated response", {
+      logger.error('Failed to execute automated response', {
         incidentId: incident.id,
         error: error.message,
       });
@@ -578,20 +578,20 @@ class SecurityMonitor extends EventEmitter {
     for (const channel of channels) {
       try {
         switch (channel) {
-          case "log":
+          case 'log':
             await this.sendLogAlert(alert);
             break;
-          case "webhook":
+          case 'webhook':
             await this.sendWebhookAlert(alert);
             break;
-          case "email":
+          case 'email':
             await this.sendEmailAlert(alert);
             break;
           default:
-            logger.warn("Unknown alert channel", { channel });
+            logger.warn('Unknown alert channel', { channel });
         }
       } catch (error) {
-        logger.error("Failed to send alert", {
+        logger.error('Failed to send alert', {
           channel,
           alertId: alert.id,
           error: error.message,
@@ -610,14 +610,14 @@ class SecurityMonitor extends EventEmitter {
   async blockEntity(entity, reason) {
     this.blockedEntities.add(entity);
 
-    logger.security("Entity blocked", {
+    logger.security('Entity blocked', {
       entity,
       reason,
       timestamp: Date.now(),
     });
 
     // Emit block event for external handlers
-    this.emit("entityBlocked", { entity, reason });
+    this.emit('entityBlocked', { entity, reason });
   }
 
   /**
@@ -689,13 +689,13 @@ class SecurityMonitor extends EventEmitter {
    * @private
    */
   async initializeStorage() {
-    if (this.config.storage.type === "file") {
+    if (this.config.storage.type === 'file') {
       const storageDir = this.config.storage.location;
       try {
         await fs.mkdir(storageDir, { recursive: true });
-        logger.debug("Security storage initialized", { storageDir });
+        logger.debug('Security storage initialized', { storageDir });
       } catch (error) {
-        logger.error("Failed to initialize security storage", {
+        logger.error('Failed to initialize security storage', {
           storageDir,
           error: error.message,
         });
@@ -716,7 +716,7 @@ class SecurityMonitor extends EventEmitter {
         this.lastCheckTime = Date.now();
         await this.performPeriodicChecks();
       } catch (error) {
-        logger.error("Error in monitoring loop", {
+        logger.error('Error in monitoring loop', {
           error: error.message,
         });
       }
@@ -739,7 +739,7 @@ class SecurityMonitor extends EventEmitter {
     await this.checkIncidentStatus();
 
     // Emit health check event
-    this.emit("healthCheck", this.getHealth());
+    this.emit('healthCheck', this.getHealth());
   }
 
   /**
@@ -760,7 +760,7 @@ class SecurityMonitor extends EventEmitter {
     }
 
     if (cleanedCount > 0) {
-      logger.debug("Cleaned up old security events", { cleanedCount });
+      logger.debug('Cleaned up old security events', { cleanedCount });
     }
   }
 
@@ -773,18 +773,18 @@ class SecurityMonitor extends EventEmitter {
     const metrics = this.getMetrics();
 
     // Record telemetry metrics
-    this.telemetry.recordMetric("security_events_active", metrics.totalEvents);
+    this.telemetry.recordMetric('security_events_active', metrics.totalEvents);
     this.telemetry.recordMetric(
-      "security_incidents_active",
+      'security_incidents_active',
       metrics.activeIncidents,
     );
     this.telemetry.recordMetric(
-      "security_entities_blocked",
+      'security_entities_blocked',
       metrics.blockedEntities,
     );
 
     // Update threat metrics
-    this.threatMetrics.set("current", metrics);
+    this.threatMetrics.set('current', metrics);
   }
 
   // Additional helper methods would be implemented here...

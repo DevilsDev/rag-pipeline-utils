@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { DAG } = require("../dag/dag-engine");
-const { QueryPlanner } = require("./query-planner");
-const { IterativeRetriever } = require("./iterative-retriever");
-const { SelfCritiqueChecker } = require("./self-critique");
+const { EventEmitter } = require('events');
+const { DAG } = require('../dag/dag-engine');
+const { QueryPlanner } = require('./query-planner');
+const { IterativeRetriever } = require('./iterative-retriever');
+const { SelfCritiqueChecker } = require('./self-critique');
 
 /**
  * Default configuration for the AgenticPipeline.
@@ -76,19 +76,19 @@ class AgenticPipeline extends EventEmitter {
    */
   async run({ query, retriever, llm, queryVector, options = {} }) {
     // 1. Validate inputs
-    if (!retriever || typeof retriever.retrieve !== "function") {
+    if (!retriever || typeof retriever.retrieve !== 'function') {
       throw new Error(
-        "AgenticPipeline.run(): retriever with .retrieve() method is required",
+        'AgenticPipeline.run(): retriever with .retrieve() method is required',
       );
     }
-    if (!llm || typeof llm.generate !== "function") {
+    if (!llm || typeof llm.generate !== 'function') {
       throw new Error(
-        "AgenticPipeline.run(): llm with .generate() method is required",
+        'AgenticPipeline.run(): llm with .generate() method is required',
       );
     }
-    if (!query || typeof query !== "string" || !query.trim()) {
+    if (!query || typeof query !== 'string' || !query.trim()) {
       throw new Error(
-        "AgenticPipeline.run(): query must be a non-empty string",
+        'AgenticPipeline.run(): query must be a non-empty string',
       );
     }
 
@@ -97,9 +97,9 @@ class AgenticPipeline extends EventEmitter {
     if (this.config.enablePlanning) {
       const plan = this.planner.plan(query);
       subQueries = plan.subQueries;
-      this.emit("planned", plan);
+      this.emit('planned', plan);
     } else {
-      subQueries = [{ subQuery: query, strategy: "general", priority: 0 }];
+      subQueries = [{ subQuery: query, strategy: 'general', priority: 0 }];
     }
 
     // Phase 2: Build and execute DAG
@@ -131,7 +131,7 @@ class AgenticPipeline extends EventEmitter {
     }
 
     // Add merge node
-    dag.addNode("merge", async (inputs) => {
+    dag.addNode('merge', async (inputs) => {
       const allResults = Array.isArray(inputs)
         ? inputs.flat()
         : [inputs].flat();
@@ -149,24 +149,24 @@ class AgenticPipeline extends EventEmitter {
 
     // Connect retrieve nodes to merge
     for (let i = 0; i < subQueries.length; i++) {
-      dag.connect(`retrieve-${i}`, "merge");
+      dag.connect(`retrieve-${i}`, 'merge');
     }
 
     // Add critique + generate nodes
     if (this.config.enableCritique) {
-      dag.addNode("pre-generate", async (mergedResults) => {
+      dag.addNode('pre-generate', async (mergedResults) => {
         // Generate initial answer for critique
         const answer = await llm.generate(query, mergedResults, options);
         const critique = this.critiqueChecker.check(
           String(answer),
           mergedResults,
         );
-        this.emit("critiqued", critique);
+        this.emit('critiqued', critique);
         return { answer: String(answer), mergedResults, critique };
       });
-      dag.connect("merge", "pre-generate");
+      dag.connect('merge', 'pre-generate');
 
-      dag.addNode("generate", async ({ answer, mergedResults, critique }) => {
+      dag.addNode('generate', async ({ answer, mergedResults, critique }) => {
         if (critique.approved) {
           return { answer, results: mergedResults, critique };
         }
@@ -174,7 +174,7 @@ class AgenticPipeline extends EventEmitter {
         const issueTexts = critique.issues.map(
           (i) => i.sentence || i.text || String(i),
         );
-        const refinedPrompt = `${query}\n\nPrevious answer had issues: ${issueTexts.join("; ")}. Please provide a more grounded answer.`;
+        const refinedPrompt = `${query}\n\nPrevious answer had issues: ${issueTexts.join('; ')}. Please provide a more grounded answer.`;
         const refinedAnswer = await llm.generate(
           refinedPrompt,
           mergedResults,
@@ -186,19 +186,19 @@ class AgenticPipeline extends EventEmitter {
           critique,
         };
       });
-      dag.connect("pre-generate", "generate");
+      dag.connect('pre-generate', 'generate');
     } else {
-      dag.addNode("generate", async (mergedResults) => {
+      dag.addNode('generate', async (mergedResults) => {
         const answer = await llm.generate(query, mergedResults, options);
         return { answer: String(answer), results: mergedResults };
       });
-      dag.connect("merge", "generate");
+      dag.connect('merge', 'generate');
     }
 
     // Execute DAG
     const nodeCount =
       subQueries.length + 2 + (this.config.enableCritique ? 1 : 0);
-    this.emit("executing", { nodeCount });
+    this.emit('executing', { nodeCount });
 
     const dagResult = await dag.execute(query, {
       concurrency: this.config.maxConcurrency,
@@ -211,15 +211,15 @@ class AgenticPipeline extends EventEmitter {
     const output = dagResult?.answer
       ? dagResult
       : dagResult?.get
-        ? dagResult.get("generate")
+        ? dagResult.get('generate')
         : dagResult;
 
-    this.emit("completed", output);
+    this.emit('completed', output);
 
     return {
       success: true,
       query,
-      answer: output?.answer || "",
+      answer: output?.answer || '',
       results: output?.results || [],
       critique: output?.critique || null,
       subQueries,

@@ -6,9 +6,9 @@
  * @since 2.1.8
  */
 
-const { AsyncLocalStorage } = require("async_hooks");
-const crypto = require("crypto");
-const { redactLogData } = require("./secure-logging");
+const { AsyncLocalStorage } = require('async_hooks');
+const crypto = require('crypto');
+const { redactLogData } = require('./secure-logging');
 
 /**
  * Async local storage for correlation context
@@ -31,14 +31,14 @@ const LOG_LEVELS = {
  */
 class StructuredLogger {
   constructor(options = {}) {
-    this.serviceName = options.serviceName || "rag-pipeline-utils";
+    this.serviceName = options.serviceName || 'rag-pipeline-utils';
     this.environment =
-      options.environment || process.env.NODE_ENV || "development";
-    this.logLevel = options.logLevel || process.env.LOG_LEVEL || "info";
+      options.environment || process.env.NODE_ENV || 'development';
+    this.logLevel = options.logLevel || process.env.LOG_LEVEL || 'info';
     this.enableCorrelation = options.enableCorrelation !== false;
     this.enableMetrics = options.enableMetrics !== false;
     this.enableSecureLogging = options.enableSecureLogging !== false; // Default enabled for security
-    this.outputFormat = options.outputFormat || "json"; // json, console
+    this.outputFormat = options.outputFormat || 'json'; // json, console
 
     // Performance tracking
     this.metrics = {
@@ -75,7 +75,7 @@ class StructuredLogger {
    * @returns {string} Correlation ID
    */
   generateCorrelationId() {
-    return crypto.randomBytes(16).toString("hex");
+    return crypto.randomBytes(16).toString('hex');
   }
 
   /**
@@ -104,7 +104,7 @@ class StructuredLogger {
       service: this.serviceName,
       environment: this.environment,
       pid: process.pid,
-      hostname: require("os").hostname(),
+      hostname: require('os').hostname(),
       ...meta,
     };
 
@@ -123,7 +123,7 @@ class StructuredLogger {
     }
 
     // Add stack trace for errors
-    if (level === "error" && meta.error) {
+    if (level === 'error' && meta.error) {
       if (meta.error instanceof Error) {
         baseEntry.error = {
           name: meta.error.name,
@@ -156,15 +156,15 @@ class StructuredLogger {
     const startTime = performance.now();
 
     try {
-      if (this.outputFormat === "json") {
+      if (this.outputFormat === 'json') {
         // Production JSON format
         console.log(JSON.stringify(entry));
       } else {
         // Development console format
         const { timestamp, level, message, correlationId, ...meta } = entry;
-        const prefix = correlationId ? `[${correlationId.slice(0, 8)}]` : "";
+        const prefix = correlationId ? `[${correlationId.slice(0, 8)}]` : '';
         const metaStr =
-          Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : "";
+          Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
 
         console.log(
           `${timestamp} [${level.toUpperCase()}] ${prefix} ${message}${metaStr}`,
@@ -174,8 +174,8 @@ class StructuredLogger {
       // Update metrics
       if (this.enableMetrics) {
         this.metrics.logsWritten++;
-        if (entry.level === "error") this.metrics.errorCount++;
-        if (entry.level === "warn") this.metrics.warnCount++;
+        if (entry.level === 'error') this.metrics.errorCount++;
+        if (entry.level === 'warn') this.metrics.warnCount++;
 
         const latency = Math.max(0.001, performance.now() - startTime); // Ensure minimum latency for tests
         // Calculate running average properly
@@ -190,8 +190,8 @@ class StructuredLogger {
       }
     } catch (writeError) {
       // Fallback to console.error if structured logging fails
-      console.error("Logger write failed:", writeError.message);
-      console.error("Original message:", entry.message);
+      console.error('Logger write failed:', writeError.message);
+      console.error('Original message:', entry.message);
     }
   }
 
@@ -201,14 +201,14 @@ class StructuredLogger {
    * @param {object} meta - Additional metadata
    */
   error(message, meta = {}) {
-    if (!this.shouldLog("error")) return;
+    if (!this.shouldLog('error')) return;
 
     // Redact sensitive information if secure logging is enabled
     const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
       ? redactLogData(message, meta)
       : { message, meta };
 
-    const entry = this.createLogEntry("error", safeMessage, safeMeta);
+    const entry = this.createLogEntry('error', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -218,14 +218,14 @@ class StructuredLogger {
    * @param {object} meta - Additional metadata
    */
   warn(message, meta = {}) {
-    if (!this.shouldLog("warn")) return;
+    if (!this.shouldLog('warn')) return;
 
     // Redact sensitive information if secure logging is enabled
     const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
       ? redactLogData(message, meta)
       : { message, meta };
 
-    const entry = this.createLogEntry("warn", safeMessage, safeMeta);
+    const entry = this.createLogEntry('warn', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -235,14 +235,14 @@ class StructuredLogger {
    * @param {object} meta - Additional metadata
    */
   info(message, meta = {}) {
-    if (!this.shouldLog("info")) return;
+    if (!this.shouldLog('info')) return;
 
     // Redact sensitive information if secure logging is enabled
     const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
       ? redactLogData(message, meta)
       : { message, meta };
 
-    const entry = this.createLogEntry("info", safeMessage, safeMeta);
+    const entry = this.createLogEntry('info', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -252,14 +252,14 @@ class StructuredLogger {
    * @param {object} meta - Additional metadata
    */
   debug(message, meta = {}) {
-    if (!this.shouldLog("debug")) return;
+    if (!this.shouldLog('debug')) return;
 
     // Redact sensitive information if secure logging is enabled
     const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
       ? redactLogData(message, meta)
       : { message, meta };
 
-    const entry = this.createLogEntry("debug", safeMessage, safeMeta);
+    const entry = this.createLogEntry('debug', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -269,14 +269,14 @@ class StructuredLogger {
    * @param {object} meta - Additional metadata
    */
   trace(message, meta = {}) {
-    if (!this.shouldLog("trace")) return;
+    if (!this.shouldLog('trace')) return;
 
     // Redact sensitive information if secure logging is enabled
     const { message: safeMessage, meta: safeMeta } = this.enableSecureLogging
       ? redactLogData(message, meta)
       : { message, meta };
 
-    const entry = this.createLogEntry("trace", safeMessage, safeMeta);
+    const entry = this.createLogEntry('trace', safeMessage, safeMeta);
     this.writeLog(entry);
   }
 
@@ -370,10 +370,10 @@ function createLogger(options = {}) {
 
 // Default logger instance
 const defaultLogger = createLogger({
-  serviceName: "rag-pipeline-utils",
-  environment: process.env.NODE_ENV || "development",
-  logLevel: process.env.LOG_LEVEL || "info",
-  outputFormat: process.env.NODE_ENV === "production" ? "json" : "console",
+  serviceName: 'rag-pipeline-utils',
+  environment: process.env.NODE_ENV || 'development',
+  logLevel: process.env.LOG_LEVEL || 'info',
+  outputFormat: process.env.NODE_ENV === 'production' ? 'json' : 'console',
 });
 
 module.exports = {

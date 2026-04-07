@@ -4,172 +4,172 @@
  */
 
 // Core pipeline functionality
-const { createRagPipeline } = require("./core/create-pipeline");
+const { createRagPipeline } = require('./core/create-pipeline');
 
 // Configuration utilities
-const { loadRagConfig } = require("./config/load-config");
-const { validateRagrc } = require("./config/enhanced-ragrc-schema");
-const { normalizeConfig } = require("./config/normalize-config");
+const { loadRagConfig } = require('./config/load-config');
+const { validateRagrc } = require('./config/enhanced-ragrc-schema');
+const { normalizeConfig } = require('./config/normalize-config');
 
 // Plugin system
-const pluginRegistry = require("./core/plugin-registry");
+const pluginRegistry = require('./core/plugin-registry');
 
 // Utilities
-const logger = require("./utils/logger");
-const errorFormatter = require("./utils/error-formatter");
-const { BatchProcessor } = require("./utils/batch-processor");
-const RateLimiter = require("./utils/rate-limiter");
-const { retry, withRetry } = require("./utils/retry");
-const { ConnectionPoolManager } = require("./utils/connection-pool");
+const logger = require('./utils/logger');
+const errorFormatter = require('./utils/error-formatter');
+const { BatchProcessor } = require('./utils/batch-processor');
+const RateLimiter = require('./utils/rate-limiter');
+const { retry, withRetry } = require('./utils/retry');
+const { ConnectionPoolManager } = require('./utils/connection-pool');
 
 // Security
-const { JWTValidator } = require("./security/jwt-validator");
-const { PluginSandbox } = require("./security/plugin-sandbox");
+const { JWTValidator } = require('./security/jwt-validator');
+const { PluginSandbox } = require('./security/plugin-sandbox');
 const {
   PluginSignatureVerifier,
-} = require("./security/plugin-signature-verifier");
-const { validateInput } = require("./security/validator");
+} = require('./security/plugin-signature-verifier');
+const { validateInput } = require('./security/validator');
 
 // AI/ML capabilities
-const { MultiModalProcessor } = require("./ai/multimodal");
-const { AdaptiveRetrievalEngine } = require("./ai/retrieval-engine");
+const { MultiModalProcessor } = require('./ai/multimodal');
+const { AdaptiveRetrievalEngine } = require('./ai/retrieval-engine');
 const {
   FederatedLearningCoordinator,
-} = require("./ai/federation/federated-learning-coordinator");
+} = require('./ai/federation/federated-learning-coordinator');
 const {
   ModelTrainingOrchestrator,
-} = require("./ai/training/model-training-orchestrator");
+} = require('./ai/training/model-training-orchestrator');
 
 // DAG engine for complex workflows
-const { DAG } = require("./dag/dag-engine");
+const { DAG } = require('./dag/dag-engine');
 
 // Evaluation
-const { evaluateRagDataset } = require("./evaluate/evaluator");
+const { evaluateRagDataset } = require('./evaluate/evaluator');
 const {
   scoreAnswer,
   computeBLEU,
   computeROUGE,
-} = require("./evaluate/scoring");
-const { computeFaithfulness } = require("./evaluate/faithfulness");
-const { computeAnswerRelevance } = require("./evaluate/relevance");
+} = require('./evaluate/scoring');
+const { computeFaithfulness } = require('./evaluate/faithfulness');
+const { computeAnswerRelevance } = require('./evaluate/relevance');
 const {
   computeContextPrecision,
   computeContextRecall,
-} = require("./evaluate/context-metrics");
-const { computeGroundedness } = require("./evaluate/groundedness");
-const { PipelineEvaluator } = require("./evaluate/pipeline-evaluator");
+} = require('./evaluate/context-metrics');
+const { computeGroundedness } = require('./evaluate/groundedness');
+const { PipelineEvaluator } = require('./evaluate/pipeline-evaluator');
 
 // Chunking
-const { ChunkingEngine } = require("./chunking/chunking-engine");
+const { ChunkingEngine } = require('./chunking/chunking-engine');
 
 // Citation & Grounding
-const { CitationTracker } = require("./citation/citation-tracker");
+const { CitationTracker } = require('./citation/citation-tracker');
 const {
   mapSentenceToSources,
   buildIDFWeights,
-} = require("./citation/source-mapper");
-const { detectHallucinations } = require("./citation/hallucination-detector");
+} = require('./citation/source-mapper');
+const { detectHallucinations } = require('./citation/hallucination-detector');
 
 // Hybrid Retrieval
-const { BM25Search } = require("./retrieval/bm25-search");
-const { reciprocalRankFusion } = require("./retrieval/rank-fusion");
-const { HybridRetriever } = require("./retrieval/hybrid-retriever");
+const { BM25Search } = require('./retrieval/bm25-search');
+const { reciprocalRankFusion } = require('./retrieval/rank-fusion');
+const { HybridRetriever } = require('./retrieval/hybrid-retriever');
 
 // Guardrails
-const { PreRetrievalGuard } = require("./guardrails/pre-retrieval-guard");
-const { RetrievalGuard } = require("./guardrails/retrieval-guard");
-const { PostGenerationGuard } = require("./guardrails/post-generation-guard");
-const { GuardrailsPipeline } = require("./guardrails/guardrails-pipeline");
+const { PreRetrievalGuard } = require('./guardrails/pre-retrieval-guard');
+const { RetrievalGuard } = require('./guardrails/retrieval-guard');
+const { PostGenerationGuard } = require('./guardrails/post-generation-guard');
+const { GuardrailsPipeline } = require('./guardrails/guardrails-pipeline');
 
 // Agentic RAG
-const { QueryPlanner } = require("./agentic/query-planner");
-const { IterativeRetriever } = require("./agentic/iterative-retriever");
-const { SelfCritiqueChecker } = require("./agentic/self-critique");
-const { AgenticPipeline } = require("./agentic/agentic-pipeline");
+const { QueryPlanner } = require('./agentic/query-planner');
+const { IterativeRetriever } = require('./agentic/iterative-retriever');
+const { SelfCritiqueChecker } = require('./agentic/self-critique');
+const { AgenticPipeline } = require('./agentic/agentic-pipeline');
 
 // Cost Management
-const { CostCalculator } = require("./cost/cost-calculator");
-const { CostTracker } = require("./cost/cost-tracker");
-const { TokenBudget } = require("./cost/token-budget");
+const { CostCalculator } = require('./cost/cost-calculator');
+const { CostTracker } = require('./cost/cost-tracker');
+const { TokenBudget } = require('./cost/token-budget');
 
 // Pipeline Debugger
-const { ExecutionTracer } = require("./debug/execution-tracer");
-const { TraceInspector } = require("./debug/trace-inspector");
+const { ExecutionTracer } = require('./debug/execution-tracer');
+const { TraceInspector } = require('./debug/trace-inspector');
 
 // MCP Integration
-const { MCPServer } = require("./mcp/mcp-server");
-const { MCPToolBuilder } = require("./mcp/mcp-tool-builder");
+const { MCPServer } = require('./mcp/mcp-server');
+const { MCPToolBuilder } = require('./mcp/mcp-tool-builder');
 
 // Quick Start Templates
-const { ProjectScaffolder } = require("./templates/scaffold");
-const { TemplateRegistry } = require("./templates/template-registry");
+const { ProjectScaffolder } = require('./templates/scaffold');
+const { TemplateRegistry } = require('./templates/template-registry');
 
 // Streaming Adapters
-const { SSEAdapter } = require("./streaming/sse-adapter");
-const { WebSocketAdapter } = require("./streaming/websocket-adapter");
-const { StreamRouter } = require("./streaming/stream-router");
+const { SSEAdapter } = require('./streaming/sse-adapter');
+const { WebSocketAdapter } = require('./streaming/websocket-adapter');
+const { StreamRouter } = require('./streaming/stream-router');
 
 // Connectors
-const { BaseConnector } = require("./connectors/base-connector");
-const { OllamaConnector } = require("./connectors/ollama-connector");
-const { LocalEmbedder } = require("./connectors/local-embedder");
-const { MemoryRetriever } = require("./connectors/memory-retriever");
-const { OpenAIConnector } = require("./connectors/openai-connector");
-const { AnthropicConnector } = require("./connectors/anthropic-connector");
-const { CohereConnector } = require("./connectors/cohere-connector");
+const { BaseConnector } = require('./connectors/base-connector');
+const { OllamaConnector } = require('./connectors/ollama-connector');
+const { LocalEmbedder } = require('./connectors/local-embedder');
+const { MemoryRetriever } = require('./connectors/memory-retriever');
+const { OpenAIConnector } = require('./connectors/openai-connector');
+const { AnthropicConnector } = require('./connectors/anthropic-connector');
+const { CohereConnector } = require('./connectors/cohere-connector');
 
 // Streaming Embeddings
-const { StreamingEmbedder } = require("./streaming/streaming-embedder");
-const { createEmbeddingStream } = require("./streaming/embedding-stream");
+const { StreamingEmbedder } = require('./streaming/streaming-embedder');
+const { createEmbeddingStream } = require('./streaming/embedding-stream');
 
 // Advanced Reranking
-const { ScoringReranker } = require("./reranker/scoring-reranker");
-const { EmbeddingReranker } = require("./reranker/embedding-reranker");
-const { CascadeReranker } = require("./reranker/cascade-reranker");
+const { ScoringReranker } = require('./reranker/scoring-reranker');
+const { EmbeddingReranker } = require('./reranker/embedding-reranker');
+const { CascadeReranker } = require('./reranker/cascade-reranker');
 
 // GraphRAG
-const { KnowledgeGraph } = require("./graph/knowledge-graph");
-const { EntityExtractor } = require("./graph/entity-extractor");
-const { GraphRetriever } = require("./graph/graph-retriever");
-const { GraphIndex } = require("./graph/graph-index");
+const { KnowledgeGraph } = require('./graph/knowledge-graph');
+const { EntityExtractor } = require('./graph/entity-extractor');
+const { GraphRetriever } = require('./graph/graph-retriever');
+const { GraphIndex } = require('./graph/graph-index');
 
 // Performance Dashboard
-const { DashboardGenerator } = require("./dashboard/dashboard-generator");
-const { MetricsAggregator } = require("./dashboard/metrics-aggregator");
+const { DashboardGenerator } = require('./dashboard/dashboard-generator');
+const { MetricsAggregator } = require('./dashboard/metrics-aggregator');
 
 // Performance and observability
-const ParallelProcessor = require("./core/performance/parallel-processor");
-const eventLogger = require("./core/observability/event-logger");
-const metrics = require("./core/observability/metrics");
+const ParallelProcessor = require('./core/performance/parallel-processor');
+const eventLogger = require('./core/observability/event-logger');
+const metrics = require('./core/observability/metrics');
 
 // Enterprise features
-const { AuditLogger } = require("./enterprise/audit-logging");
-const { DataGovernanceManager } = require("./enterprise/data-governance");
+const { AuditLogger } = require('./enterprise/audit-logging');
+const { DataGovernanceManager } = require('./enterprise/data-governance');
 const {
   TenantManager,
   ResourceMonitor,
-} = require("./enterprise/multi-tenancy");
+} = require('./enterprise/multi-tenancy');
 const {
   SSOManager,
   SAMLProvider,
   OAuth2Provider,
   ActiveDirectoryProvider,
   OIDCProvider,
-} = require("./enterprise/sso-integration");
+} = require('./enterprise/sso-integration');
 
 // Ecosystem
-const { PluginHub, PluginAnalytics } = require("./ecosystem/plugin-hub");
-const { PluginCertification } = require("./ecosystem/plugin-certification");
+const { PluginHub, PluginAnalytics } = require('./ecosystem/plugin-hub');
+const { PluginCertification } = require('./ecosystem/plugin-certification');
 const {
   PluginAnalyticsDashboard,
-} = require("./ecosystem/plugin-analytics-dashboard");
+} = require('./ecosystem/plugin-analytics-dashboard');
 
 // Development tools
 const {
   HotReloadManager,
   createHotReloadManager,
-} = require("./dev/hot-reload");
-const { DevServer, createDevServer } = require("./dev/dev-server");
+} = require('./dev/hot-reload');
+const { DevServer, createDevServer } = require('./dev/dev-server');
 
 module.exports = {
   // Core API

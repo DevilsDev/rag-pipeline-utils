@@ -6,54 +6,54 @@
  * @since 2.2.1
  */
 
-"use strict";
+'use strict';
 
 /**
  * Sensitive field names that should be redacted
  */
 const SENSITIVE_FIELD_NAMES = new Set([
-  "password",
-  "passwd",
-  "pwd",
-  "secret",
-  "api_key",
-  "apiKey",
-  "apikey",
-  "api-key",
-  "token",
-  "accessToken",
-  "access_token",
-  "refreshToken",
-  "refresh_token",
-  "auth",
-  "authorization",
-  "authtoken",
-  "sessionid",
-  "session_id",
-  "sessionId",
-  "jwt",
-  "bearer",
-  "private_key",
-  "privatekey", // Added lowercase variant
-  "privateKey",
-  "private-key",
-  "client_secret",
-  "clientSecret",
-  "client-secret",
-  "encryption_key",
-  "encryptionKey",
-  "signing_key",
-  "signingKey",
-  "oauth_token",
-  "oauthToken",
-  "credentials",
-  "credential",
-  "ssn",
-  "credit_card",
-  "creditCard",
-  "cvv",
-  "pin",
-  "salt",
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'api_key',
+  'apiKey',
+  'apikey',
+  'api-key',
+  'token',
+  'accessToken',
+  'access_token',
+  'refreshToken',
+  'refresh_token',
+  'auth',
+  'authorization',
+  'authtoken',
+  'sessionid',
+  'session_id',
+  'sessionId',
+  'jwt',
+  'bearer',
+  'private_key',
+  'privatekey', // Added lowercase variant
+  'privateKey',
+  'private-key',
+  'client_secret',
+  'clientSecret',
+  'client-secret',
+  'encryption_key',
+  'encryptionKey',
+  'signing_key',
+  'signingKey',
+  'oauth_token',
+  'oauthToken',
+  'credentials',
+  'credential',
+  'ssn',
+  'credit_card',
+  'creditCard',
+  'cvv',
+  'pin',
+  'salt',
 ]);
 
 /**
@@ -90,7 +90,7 @@ const SECRET_PATTERNS = [
 /**
  * Redaction marker
  */
-const REDACTED = "[REDACTED]";
+const REDACTED = '[REDACTED]';
 
 /**
  * Check if a field name is sensitive
@@ -98,7 +98,7 @@ const REDACTED = "[REDACTED]";
  * @returns {boolean} True if sensitive
  */
 function isSensitiveFieldName(fieldName) {
-  if (typeof fieldName !== "string") return false;
+  if (typeof fieldName !== 'string') return false;
 
   const lowerFieldName = fieldName.toLowerCase();
   return SENSITIVE_FIELD_NAMES.has(lowerFieldName);
@@ -110,7 +110,7 @@ function isSensitiveFieldName(fieldName) {
  * @returns {boolean} True if matches secret pattern
  */
 function matchesSecretPattern(value) {
-  if (typeof value !== "string") return false;
+  if (typeof value !== 'string') return false;
 
   // Skip short values to avoid false positives
   if (value.length < 8) return false;
@@ -134,7 +134,7 @@ function matchesSecretPattern(value) {
  * @returns {string} Redacted value if sensitive, original otherwise
  */
 function redactStringValue(value) {
-  if (typeof value !== "string") return value;
+  if (typeof value !== 'string') return value;
 
   // Short strings are unlikely to be secrets
   if (value.length < 8) return value;
@@ -163,12 +163,12 @@ function redactStringValue(value) {
  */
 function redactObject(obj, depth = 0, maxDepth = 10) {
   // Prevent infinite recursion
-  if (depth > maxDepth) return "[MAX_DEPTH_EXCEEDED]";
+  if (depth > maxDepth) return '[MAX_DEPTH_EXCEEDED]';
 
   // Handle primitives
   if (obj === null || obj === undefined) return obj;
-  if (typeof obj === "string") return redactStringValue(obj);
-  if (typeof obj === "number" || typeof obj === "boolean") return obj;
+  if (typeof obj === 'string') return redactStringValue(obj);
+  if (typeof obj === 'number' || typeof obj === 'boolean') return obj;
 
   // Handle Date objects
   if (obj instanceof Date) return obj;
@@ -183,7 +183,7 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
 
     // Include any other enumerable properties (like code)
     for (const [key, value] of Object.entries(obj)) {
-      if (!["name", "message", "stack"].includes(key)) {
+      if (!['name', 'message', 'stack'].includes(key)) {
         errorObj[key] = redactObject(value, depth + 1, maxDepth);
       }
     }
@@ -197,7 +197,7 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
   }
 
   // Handle objects
-  if (typeof obj === "object") {
+  if (typeof obj === 'object') {
     const redacted = {};
 
     for (const [key, value] of Object.entries(obj)) {
@@ -205,7 +205,7 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
       if (isSensitiveFieldName(key)) {
         // If value is an object, still traverse it to redact nested sensitive fields
         if (
-          typeof value === "object" &&
+          typeof value === 'object' &&
           value !== null &&
           !Array.isArray(value)
         ) {
@@ -214,10 +214,10 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
           // For primitives and arrays, redact the entire value
           redacted[key] = REDACTED;
         }
-      } else if (typeof value === "string") {
+      } else if (typeof value === 'string') {
         // Redact string values that match patterns
         redacted[key] = redactStringValue(value);
-      } else if (typeof value === "object" && value !== null) {
+      } else if (typeof value === 'object' && value !== null) {
         // Recursively redact nested objects
         redacted[key] = redactObject(value, depth + 1, maxDepth);
       } else {
@@ -241,7 +241,7 @@ function redactObject(obj, depth = 0, maxDepth = 10) {
  */
 function redactLogData(message, meta = {}) {
   const redactedMessage =
-    typeof message === "string" ? redactStringValue(message) : message;
+    typeof message === 'string' ? redactStringValue(message) : message;
 
   const redactedMeta = redactObject(meta);
 

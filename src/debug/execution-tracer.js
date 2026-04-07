@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Execution Tracer
@@ -7,8 +7,8 @@
  * Records timing, inputs, outputs, and metadata for each pipeline run.
  */
 
-const { EventEmitter } = require("events");
-const { randomBytes } = require("crypto");
+const { EventEmitter } = require('events');
+const { randomBytes } = require('crypto');
 
 /**
  * Default tracer configuration
@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
  * @returns {string} 16-character hex trace ID
  */
 function generateTraceId() {
-  return randomBytes(8).toString("hex");
+  return randomBytes(8).toString('hex');
 }
 
 /**
@@ -41,12 +41,12 @@ function truncatePayload(value, maxSize) {
   try {
     serialized = JSON.stringify(value);
   } catch {
-    return "[unserializable]";
+    return '[unserializable]';
   }
   if (serialized.length <= maxSize) {
     return value;
   }
-  return serialized.slice(0, maxSize) + "...[truncated]";
+  return serialized.slice(0, maxSize) + '...[truncated]';
 }
 
 /**
@@ -101,7 +101,7 @@ class ExecutionTracer extends EventEmitter {
 
       // Record the retrieval step (wraps the full pipeline.run call)
       const stepRecord = {
-        step: "pipeline.run",
+        step: 'pipeline.run',
         startTime: Date.now(),
       };
 
@@ -156,7 +156,7 @@ class ExecutionTracer extends EventEmitter {
       traceRecord.totalDurationMs = traceRecord.endTime - traceRecord.startTime;
 
       tracer.traces.push(traceRecord);
-      tracer.emit("traced", traceRecord);
+      tracer.emit('traced', traceRecord);
 
       if (error) {
         throw error;
@@ -199,8 +199,8 @@ class ExecutionTracer extends EventEmitter {
    * @param {string} [format='json'] - Export format (currently only 'json')
    * @returns {string} Serialized traces
    */
-  exportTraces(format = "json") {
-    if (format === "json") {
+  exportTraces(format = 'json') {
+    if (format === 'json') {
       return JSON.stringify(this.traces, null, 2);
     }
     throw new Error(`Unsupported export format: ${format}`);

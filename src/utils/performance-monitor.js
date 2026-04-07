@@ -6,7 +6,7 @@
  * @since 2.1.8
  */
 
-const { logger } = require("./structured-logger.js");
+const { logger } = require('./structured-logger.js');
 
 /**
  * @typedef {Object} PerformanceMetric
@@ -31,7 +31,7 @@ const { logger } = require("./structured-logger.js");
  */
 class PerformanceMonitor {
   constructor(options = {}) {
-    this.serviceName = options.serviceName || "rag-pipeline-utils";
+    this.serviceName = options.serviceName || 'rag-pipeline-utils';
     this.enableMemoryTracking = options.enableMemoryTracking !== false;
     this.enableCpuTracking = options.enableCpuTracking !== false;
     this.metricsRetentionMs = options.metricsRetentionMs || 24 * 60 * 60 * 1000; // 24 hours
@@ -55,11 +55,11 @@ class PerformanceMonitor {
     this.startSystemMonitoring();
 
     this.logger = logger.child({
-      component: "performance-monitor",
+      component: 'performance-monitor',
       service: this.serviceName,
     });
 
-    this.logger.info("Performance monitoring initialized", {
+    this.logger.info('Performance monitoring initialized', {
       memoryTracking: this.enableMemoryTracking,
       cpuTracking: this.enableCpuTracking,
       retentionMs: this.metricsRetentionMs,
@@ -124,7 +124,7 @@ class PerformanceMonitor {
 
     // Update gauges
     for (const [key, value] of Object.entries(memoryMetrics)) {
-      this.gauge(`memory.${key}`, value, { unit: "bytes" });
+      this.gauge(`memory.${key}`, value, { unit: 'bytes' });
     }
 
     // Cleanup old memory metrics
@@ -147,8 +147,8 @@ class PerformanceMonitor {
       system: cpuUsage.system,
     });
 
-    this.gauge("cpu.user", cpuUsage.user, { unit: "microseconds" });
-    this.gauge("cpu.system", cpuUsage.system, { unit: "microseconds" });
+    this.gauge('cpu.user', cpuUsage.user, { unit: 'microseconds' });
+    this.gauge('cpu.system', cpuUsage.system, { unit: 'microseconds' });
 
     // Cleanup old CPU metrics
     const cutoff = timestamp - this.metricsRetentionMs;
@@ -171,7 +171,7 @@ class PerformanceMonitor {
         lag,
       });
 
-      this.gauge("eventloop.lag", lag, { unit: "ms" });
+      this.gauge('eventloop.lag', lag, { unit: 'ms' });
 
       // Cleanup old lag metrics
       const cutoff = timestamp - this.metricsRetentionMs;
@@ -207,7 +207,7 @@ class PerformanceMonitor {
   endTimer(timerId) {
     const timer = this.timers.get(timerId);
     if (!timer) {
-      this.logger.warn("Timer not found", { timerId });
+      this.logger.warn('Timer not found', { timerId });
       return 0;
     }
 
@@ -218,12 +218,12 @@ class PerformanceMonitor {
     timer.duration = duration;
 
     // Record as histogram
-    this.histogram(timer.name, duration, { ...timer.tags, unit: "ms" });
+    this.histogram(timer.name, duration, { ...timer.tags, unit: 'ms' });
 
     // Remove timer from active timers
     this.timers.delete(timerId);
 
-    this.logger.debug("Timer completed", {
+    this.logger.debug('Timer completed', {
       name: timer.name,
       duration,
       tags: timer.tags,
@@ -246,7 +246,7 @@ class PerformanceMonitor {
       const result = await fn();
       const duration = this.endTimer(timerId);
 
-      this.logger.debug("Function execution timed", {
+      this.logger.debug('Function execution timed', {
         name,
         duration,
         success: true,
@@ -257,7 +257,7 @@ class PerformanceMonitor {
     } catch (error) {
       const duration = this.endTimer(timerId);
 
-      this.logger.warn("Function execution failed", {
+      this.logger.warn('Function execution failed', {
         name,
         duration,
         success: false,
@@ -282,9 +282,9 @@ class PerformanceMonitor {
     this.recordMetric({
       name,
       value: current + value,
-      unit: "count",
+      unit: 'count',
       timestamp: new Date(),
-      tags: { ...tags, type: "counter" },
+      tags: { ...tags, type: 'counter' },
     });
   }
 
@@ -300,9 +300,9 @@ class PerformanceMonitor {
     this.recordMetric({
       name,
       value,
-      unit: tags.unit || "value",
+      unit: tags.unit || 'value',
       timestamp: new Date(),
-      tags: { ...tags, type: "gauge" },
+      tags: { ...tags, type: 'gauge' },
     });
   }
 
@@ -330,9 +330,9 @@ class PerformanceMonitor {
     this.recordMetric({
       name,
       value,
-      unit: tags.unit || "value",
+      unit: tags.unit || 'value',
       timestamp: new Date(),
-      tags: { ...tags, type: "histogram" },
+      tags: { ...tags, type: 'histogram' },
     });
   }
 
@@ -349,7 +349,7 @@ class PerformanceMonitor {
     metricArray.push(metric);
 
     // Emit to logger for observability
-    this.logger.debug("Metric recorded", {
+    this.logger.debug('Metric recorded', {
       metricName: metric.name,
       value: metric.value,
       unit: metric.unit,
@@ -470,7 +470,7 @@ class PerformanceMonitor {
       }
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
   /**
@@ -501,7 +501,7 @@ class PerformanceMonitor {
       }
     }
 
-    this.logger.debug("Old metrics cleaned up", {
+    this.logger.debug('Old metrics cleaned up', {
       activeMetrics: this.metrics.size,
       activeHistograms: this.histograms.size,
       cutoffTime: new Date(cutoff).toISOString(),
@@ -523,7 +523,7 @@ class PerformanceMonitor {
       eventLoopLag: [],
     };
 
-    this.logger.info("Performance metrics reset");
+    this.logger.info('Performance metrics reset');
   }
 
   /**
@@ -531,7 +531,7 @@ class PerformanceMonitor {
    */
   shutdown() {
     this.stopSystemMonitoring();
-    this.logger.info("Performance monitoring shutdown");
+    this.logger.info('Performance monitoring shutdown');
   }
 }
 
@@ -546,7 +546,7 @@ function createPerformanceMonitor(options = {}) {
 
 // Default monitor instance
 const defaultMonitor = createPerformanceMonitor({
-  serviceName: "rag-pipeline-utils",
+  serviceName: 'rag-pipeline-utils',
   enableMemoryTracking: true,
   enableCpuTracking: true,
 });

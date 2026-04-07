@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { validateInput } = require("../security/validator");
-const { tokenize } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { validateInput } = require('../security/validator');
+const { tokenize } = require('../evaluate/scoring');
 
 /**
  * Default configuration for the PreRetrievalGuard.
@@ -73,12 +73,12 @@ class PreRetrievalGuard extends EventEmitter {
     // 1. Validate query is a non-empty string
     if (
       query == null ||
-      typeof query !== "string" ||
+      typeof query !== 'string' ||
       query.trim().length === 0
     ) {
-      issues.push("Query must be a non-empty string");
-      const result = { safe: false, issues, sanitizedQuery: "" };
-      this.emit("checked", result);
+      issues.push('Query must be a non-empty string');
+      const result = { safe: false, issues, sanitizedQuery: '' };
+      this.emit('checked', result);
       return result;
     }
 
@@ -128,7 +128,7 @@ class PreRetrievalGuard extends EventEmitter {
           allowedLower.includes(token),
         );
         if (!hasAllowedTopic) {
-          issues.push("Query does not match any allowed topics");
+          issues.push('Query does not match any allowed topics');
         }
       }
     }
@@ -137,14 +137,14 @@ class PreRetrievalGuard extends EventEmitter {
     if (matchedPatterns.length > 0) {
       for (const pattern of matchedPatterns) {
         // Create a global version of the pattern for replacement
-        const flags = pattern.flags.includes("g")
+        const flags = pattern.flags.includes('g')
           ? pattern.flags
-          : pattern.flags + "g";
+          : pattern.flags + 'g';
         const globalPattern = new RegExp(pattern.source, flags);
-        sanitizedQuery = sanitizedQuery.replace(globalPattern, "").trim();
+        sanitizedQuery = sanitizedQuery.replace(globalPattern, '').trim();
       }
       // Collapse multiple spaces left after stripping
-      sanitizedQuery = sanitizedQuery.replace(/\s{2,}/g, " ").trim();
+      sanitizedQuery = sanitizedQuery.replace(/\s{2,}/g, ' ').trim();
     }
 
     const result = {
@@ -153,7 +153,7 @@ class PreRetrievalGuard extends EventEmitter {
       sanitizedQuery,
     };
 
-    this.emit("checked", result);
+    this.emit('checked', result);
     return result;
   }
 }

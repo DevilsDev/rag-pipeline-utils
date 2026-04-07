@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Version: 1.0.0
@@ -7,8 +7,8 @@
  * Author: Ali Kahwaji
  */
 
-const { EventEmitter } = require("events");
-const { tokenize } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { tokenize } = require('../evaluate/scoring');
 
 /** @type {{ k1: number, b: number }} */
 const DEFAULT_CONFIG = { k1: 1.2, b: 0.75 };
@@ -109,12 +109,12 @@ class ScoringReranker extends EventEmitter {
 
     const results = scored.slice(0, topK).map(({ doc, score }) => {
       const result =
-        typeof doc === "object" ? { ...doc } : { text: String(doc) };
+        typeof doc === 'object' ? { ...doc } : { text: String(doc) };
       result.relevanceScore = score;
       return result;
     });
 
-    this.emit("reranked", { count: results.length, topK });
+    this.emit('reranked', { count: results.length, topK });
 
     return results;
   }

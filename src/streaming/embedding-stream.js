@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Streaming Embeddings Generator
@@ -64,11 +64,11 @@ function heapUsedMB() {
 function validateEmbedder(embedder) {
   if (
     !embedder ||
-    (typeof embedder.embed !== "function" &&
-      typeof embedder.embedQuery !== "function")
+    (typeof embedder.embed !== 'function' &&
+      typeof embedder.embedQuery !== 'function')
   ) {
     throw new TypeError(
-      "Embedder must expose an .embed() or .embedQuery() method",
+      'Embedder must expose an .embed() or .embedQuery() method',
     );
   }
 }
@@ -85,7 +85,7 @@ function validateEmbedder(embedder) {
  * @private
  */
 async function embedOne(embedder, content) {
-  if (typeof embedder.embed === "function") {
+  if (typeof embedder.embed === 'function') {
     const result = await embedder.embed([content]);
     return Array.isArray(result) ? result[0] : result;
   }
@@ -122,7 +122,7 @@ async function embedOne(embedder, content) {
 async function* createEmbeddingStream(documents, embedder, options = {}) {
   // --- Validate inputs ---
   if (!Array.isArray(documents)) {
-    throw new TypeError("documents must be an array");
+    throw new TypeError('documents must be an array');
   }
   validateEmbedder(embedder);
 
@@ -150,8 +150,8 @@ async function* createEmbeddingStream(documents, embedder, options = {}) {
     // --- Embed the batch (isolate errors per batch) ---
     try {
       // Attempt bulk embed if the embedder supports arrays natively
-      if (typeof embedder.embed === "function") {
-        const contents = batch.map((doc) => doc.content || "");
+      if (typeof embedder.embed === 'function') {
+        const contents = batch.map((doc) => doc.content || '');
         const vectors = await embedder.embed(contents);
         const vectorArray = Array.isArray(vectors) ? vectors : [vectors];
 
@@ -169,7 +169,7 @@ async function* createEmbeddingStream(documents, embedder, options = {}) {
         // Fall back to embedQuery one at a time
         for (let j = 0; j < batch.length; j++) {
           const globalIndex = batchStart + j;
-          const vector = await embedder.embedQuery(batch[j].content || "");
+          const vector = await embedder.embedQuery(batch[j].content || '');
           yield {
             id: batch[j].id,
             vector,

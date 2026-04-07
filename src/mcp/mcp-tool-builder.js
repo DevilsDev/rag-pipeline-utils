@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * @module mcp/mcp-tool-builder
@@ -7,8 +7,8 @@
 
 /** @type {Object} Default configuration for the MCP tool builder */
 const DEFAULT_CONFIG = {
-  toolName: "rag_pipeline_query",
-  toolDescription: "Query a RAG pipeline with natural language",
+  toolName: 'rag_pipeline_query',
+  toolDescription: 'Query a RAG pipeline with natural language',
 };
 
 /**
@@ -44,40 +44,40 @@ class MCPToolBuilder {
 
     const properties = {
       query: {
-        type: "string",
-        description: "The search query or question",
+        type: 'string',
+        description: 'The search query or question',
       },
       topK: {
-        type: "number",
-        description: "Number of results to retrieve",
+        type: 'number',
+        description: 'Number of results to retrieve',
         default: 5,
       },
     };
 
-    if (typeof capabilities.maxTopK === "number") {
+    if (typeof capabilities.maxTopK === 'number') {
       properties.topK.maximum = capabilities.maxTopK;
     }
 
     if (capabilities.stream !== false) {
       properties.stream = {
-        type: "boolean",
-        description: "Enable streaming response",
+        type: 'boolean',
+        description: 'Enable streaming response',
         default: false,
       };
     }
 
     if (capabilities.citations !== false) {
       properties.citations = {
-        type: "boolean",
-        description: "Include source citations",
+        type: 'boolean',
+        description: 'Include source citations',
         default: false,
       };
     }
 
     if (capabilities.evaluate !== false) {
       properties.evaluate = {
-        type: "boolean",
-        description: "Include quality evaluation metrics",
+        type: 'boolean',
+        description: 'Include quality evaluation metrics',
         default: false,
       };
     }
@@ -86,9 +86,9 @@ class MCPToolBuilder {
       name: this.config.toolName,
       description: this.config.toolDescription,
       input_schema: {
-        type: "object",
+        type: 'object',
         properties,
-        required: ["query"],
+        required: ['query'],
       },
     };
   }
@@ -105,7 +105,7 @@ class MCPToolBuilder {
    */
   buildMultipleTools(pipelines) {
     if (!Array.isArray(pipelines)) {
-      throw new TypeError("pipelines must be an array");
+      throw new TypeError('pipelines must be an array');
     }
 
     return pipelines.map((entry) => {

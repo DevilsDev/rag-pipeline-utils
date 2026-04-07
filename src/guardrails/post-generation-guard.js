@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * Default configuration for the PostGenerationGuard.
@@ -65,10 +65,10 @@ class PostGenerationGuard extends EventEmitter {
     const issues = [];
 
     // 1. Validate output is a string
-    if (output == null || typeof output !== "string") {
-      issues.push("Output must be a string");
-      const result = { safe: false, issues, sanitizedOutput: "" };
-      this.emit("checked", result);
+    if (output == null || typeof output !== 'string') {
+      issues.push('Output must be a string');
+      const result = { safe: false, issues, sanitizedOutput: '' };
+      this.emit('checked', result);
       return result;
     }
 
@@ -115,7 +115,7 @@ class PostGenerationGuard extends EventEmitter {
     ) {
       try {
         // Lazy-require CitationTracker to avoid circular dependencies
-        const { CitationTracker } = require("../citation/citation-tracker");
+        const { CitationTracker } = require('../citation/citation-tracker');
         const tracker = new CitationTracker();
         const tracking = tracker.track(output, retrievedDocs);
         groundednessScore = tracking.groundednessScore;
@@ -136,7 +136,7 @@ class PostGenerationGuard extends EventEmitter {
     if (Object.keys(piiMatches).length > 0) {
       for (const [, matches] of Object.entries(piiMatches)) {
         for (const match of matches) {
-          sanitizedOutput = sanitizedOutput.split(match).join("[REDACTED]");
+          sanitizedOutput = sanitizedOutput.split(match).join('[REDACTED]');
         }
       }
     }
@@ -162,7 +162,7 @@ class PostGenerationGuard extends EventEmitter {
       result.groundednessScore = groundednessScore;
     }
 
-    this.emit("checked", result);
+    this.emit('checked', result);
     return result;
   }
 }

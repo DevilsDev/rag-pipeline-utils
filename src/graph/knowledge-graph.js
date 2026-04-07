@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 
 /**
  * In-memory knowledge graph with entities and relationships.
@@ -44,7 +44,7 @@ class KnowledgeGraph extends EventEmitter {
       this.adjacency.set(id, new Set());
     }
 
-    this.emit("entityAdded", entity);
+    this.emit('entityAdded', entity);
     return entity;
   }
 
@@ -87,7 +87,7 @@ class KnowledgeGraph extends EventEmitter {
     this.adjacency.get(fromId).add(id);
     this.adjacency.get(toId).add(id);
 
-    this.emit("relationshipAdded", relationship);
+    this.emit('relationshipAdded', relationship);
     return relationship;
   }
 
@@ -109,7 +109,7 @@ class KnowledgeGraph extends EventEmitter {
    * @returns {Array<{id: string, from: string, to: string, type: string, properties: Object}>}
    */
   getRelationships(entityId, options = {}) {
-    const { type, direction = "both" } = options;
+    const { type, direction = 'both' } = options;
     const relIds = this.adjacency.get(entityId);
     if (!relIds) {
       return [];
@@ -122,8 +122,8 @@ class KnowledgeGraph extends EventEmitter {
 
       if (type && rel.type !== type) continue;
 
-      if (direction === "outgoing" && rel.from !== entityId) continue;
-      if (direction === "incoming" && rel.to !== entityId) continue;
+      if (direction === 'outgoing' && rel.from !== entityId) continue;
+      if (direction === 'incoming' && rel.to !== entityId) continue;
 
       results.push(rel);
     }

@@ -1,11 +1,11 @@
-"use strict";
-const { PluginRegistry } = require("./plugin-registry.js");
+'use strict';
+const { PluginRegistry } = require('./plugin-registry.js');
 
 const defaultRegistry = new PluginRegistry();
 
 function resolve(registry, type, value) {
   const reg = registry || defaultRegistry;
-  return typeof value === "string" ? reg.get(type, value) : value;
+  return typeof value === 'string' ? reg.get(type, value) : value;
 }
 
 function withTimeout(promise, ms) {
@@ -13,7 +13,7 @@ function withTimeout(promise, ms) {
   return Promise.race([
     promise,
     new Promise((_, rej) =>
-      setTimeout(() => rej(new Error("Execution timeout")), ms),
+      setTimeout(() => rej(new Error('Execution timeout')), ms),
     ),
   ]);
 }
@@ -27,23 +27,23 @@ module.exports.createRagPipeline = function createRagPipeline({
   reranker,
 } = {}) {
   const reg = registry || defaultRegistry;
-  const loaderI = loader ? resolve(reg, "loader", loader) : null;
-  const embedderI = embedder ? resolve(reg, "embedder", embedder) : null;
+  const loaderI = loader ? resolve(reg, 'loader', loader) : null;
+  const embedderI = embedder ? resolve(reg, 'embedder', embedder) : null;
   const retrieverI = retriever
-    ? resolve(reg, "retriever", retriever)
+    ? resolve(reg, 'retriever', retriever)
     : {
         async retrieve() {
           return [];
         },
       };
   const llmI = llm
-    ? resolve(reg, "llm", llm)
+    ? resolve(reg, 'llm', llm)
     : {
         async generate() {
-          return "ok";
+          return 'ok';
         },
       };
-  const rerankerI = reranker ? resolve(reg, "reranker", reranker) : null;
+  const rerankerI = reranker ? resolve(reg, 'reranker', reranker) : null;
 
   async function runOnce({ query, queryVector, options = {} }) {
     const { timeout, stream } = options || {};
@@ -58,7 +58,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       });
       let results = docs;
       if (rerankerI?.rerank && Array.isArray(docs) && docs.length) {
-        results = await rerankerI.rerank(query || "", docs, {
+        results = await rerankerI.rerank(query || '', docs, {
           topK: options.topK ?? docs.length,
         });
       }
@@ -70,33 +70,33 @@ module.exports.createRagPipeline = function createRagPipeline({
           return streamResult;
         } else if (llmI.generate) {
           // Fallback: simulate streaming from regular generate
-          const answer = (await llmI.generate(query, results, options)) ?? "";
+          const answer = (await llmI.generate(query, results, options)) ?? '';
           async function* gen() {
-            const chunks = String(answer || "").length
+            const chunks = String(answer || '').length
               ? [String(answer)]
-              : [""];
+              : [''];
             for (const c of chunks) yield { token: c, done: false };
-            yield { token: "", done: true };
+            yield { token: '', done: true };
           }
           return gen();
         }
       }
 
-      const answer = (await llmI.generate?.(query, results, options)) ?? "";
+      const answer = (await llmI.generate?.(query, results, options)) ?? '';
       // tiny delay so durations > 0 in timing tests
       await new Promise((r) => setTimeout(r, 5));
 
       const result = { success: true, query, results };
 
       if (options.citations) {
-        const { CitationTracker } = require("../citation/citation-tracker");
+        const { CitationTracker } = require('../citation/citation-tracker');
         const tracker = new CitationTracker(options.citationOptions || {});
         result.answer = String(answer);
         result.citations = tracker.track(String(answer), results);
       }
 
       if (options.evaluate) {
-        const { PipelineEvaluator } = require("../evaluate/pipeline-evaluator");
+        const { PipelineEvaluator } = require('../evaluate/pipeline-evaluator');
         const evaluator = new PipelineEvaluator(options.evaluateOptions || {});
         result.answer = result.answer || String(answer);
         result.evaluation = evaluator.evaluate(

@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 
-const { EventEmitter } = require("events");
-const { KnowledgeGraph } = require("./knowledge-graph");
-const { EntityExtractor } = require("./entity-extractor");
-const { GraphIndex } = require("./graph-index");
-const { tokenize } = require("../evaluate/scoring");
+const { EventEmitter } = require('events');
+const { KnowledgeGraph } = require('./knowledge-graph');
+const { EntityExtractor } = require('./entity-extractor');
+const { GraphIndex } = require('./graph-index');
+const { tokenize } = require('../evaluate/scoring');
 
 /**
  * Default configuration for the GraphRetriever.
@@ -55,7 +55,7 @@ class GraphRetriever extends EventEmitter {
       const id = doc.id || `doc_${this.documents.size + 1}`;
       this.documents.set(id, {
         id,
-        content: doc.content || "",
+        content: doc.content || '',
         metadata: doc.metadata || {},
       });
     }
@@ -63,13 +63,13 @@ class GraphRetriever extends EventEmitter {
     const { entities, relationships } = this.extractor.extractFromDocuments(
       documents.map((doc) => ({
         id: doc.id || `doc_${this.documents.size}`,
-        content: doc.content || "",
+        content: doc.content || '',
         metadata: doc.metadata || {},
       })),
     );
 
     for (const entity of entities) {
-      const entityId = entity.name.toLowerCase().trim().replace(/\s+/g, "_");
+      const entityId = entity.name.toLowerCase().trim().replace(/\s+/g, '_');
       this.graph.addEntity(entityId, entity.type, {
         name: entity.name,
         frequency: entity.frequency,
@@ -87,8 +87,8 @@ class GraphRetriever extends EventEmitter {
     }
 
     for (const rel of relationships) {
-      const fromId = rel.from.toLowerCase().trim().replace(/\s+/g, "_");
-      const toId = rel.to.toLowerCase().trim().replace(/\s+/g, "_");
+      const fromId = rel.from.toLowerCase().trim().replace(/\s+/g, '_');
+      const toId = rel.to.toLowerCase().trim().replace(/\s+/g, '_');
 
       if (this.graph.getEntity(fromId) && this.graph.getEntity(toId)) {
         this.graph.addRelationship(fromId, toId, rel.type, {
@@ -98,7 +98,7 @@ class GraphRetriever extends EventEmitter {
       }
     }
 
-    this.emit("stored", {
+    this.emit('stored', {
       documentCount: documents.length,
       stats: this.graph.getStats(),
     });
@@ -113,10 +113,10 @@ class GraphRetriever extends EventEmitter {
    */
   async retrieve(queryOrObj, k) {
     const query =
-      typeof queryOrObj === "string" ? queryOrObj : queryOrObj.query;
+      typeof queryOrObj === 'string' ? queryOrObj : queryOrObj.query;
     const topK =
       k ||
-      (typeof queryOrObj === "object" && queryOrObj.topK) ||
+      (typeof queryOrObj === 'object' && queryOrObj.topK) ||
       this.config.maxResults;
 
     // Extract entities from query
