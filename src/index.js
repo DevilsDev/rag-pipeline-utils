@@ -104,6 +104,20 @@ const { MCPToolBuilder } = require("./mcp/mcp-tool-builder");
 const { ProjectScaffolder } = require("./templates/scaffold");
 const { TemplateRegistry } = require("./templates/template-registry");
 
+// Streaming Adapters
+const { SSEAdapter } = require("./streaming/sse-adapter");
+const { WebSocketAdapter } = require("./streaming/websocket-adapter");
+const { StreamRouter } = require("./streaming/stream-router");
+
+// Connectors
+const { BaseConnector } = require("./connectors/base-connector");
+const { OllamaConnector } = require("./connectors/ollama-connector");
+const { LocalEmbedder } = require("./connectors/local-embedder");
+const { MemoryRetriever } = require("./connectors/memory-retriever");
+const { OpenAIConnector } = require("./connectors/openai-connector");
+const { AnthropicConnector } = require("./connectors/anthropic-connector");
+const { CohereConnector } = require("./connectors/cohere-connector");
+
 // Performance and observability
 const ParallelProcessor = require("./core/performance/parallel-processor");
 const eventLogger = require("./core/observability/event-logger");
@@ -234,6 +248,20 @@ module.exports = {
   // Quick Start Templates
   ProjectScaffolder,
   TemplateRegistry,
+
+  // Streaming Adapters
+  SSEAdapter,
+  WebSocketAdapter,
+  StreamRouter,
+
+  // Connectors
+  BaseConnector,
+  OllamaConnector,
+  LocalEmbedder,
+  MemoryRetriever,
+  OpenAIConnector,
+  AnthropicConnector,
+  CohereConnector,
 
   // Performance & Observability
   ParallelProcessor,
