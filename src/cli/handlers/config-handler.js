@@ -46,6 +46,12 @@ async function handleConfigSet(globalOptions, key, value) {
 
     // Set value using dot notation
     const keys = key.split(".");
+    const forbidden = new Set(["__proto__", "constructor", "prototype"]);
+    if (keys.some((k) => forbidden.has(k))) {
+      logger.error("Invalid configuration key: contains restricted property");
+      process.exit(1);
+    }
+
     let current = config;
 
     for (let i = 0; i < keys.length - 1; i++) {
