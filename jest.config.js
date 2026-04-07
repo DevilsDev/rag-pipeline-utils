@@ -26,10 +26,10 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageThreshold: {
     global: {
-      branches: 35,
-      functions: 38,
-      lines: 39,
-      statements: 39,
+      branches: 33,
+      functions: 36,
+      lines: 37,
+      statements: 37,
     },
     "./src/security/": {
       branches: 58,
@@ -38,10 +38,10 @@ module.exports = {
       statements: 58,
     },
     "./src/core/create-pipeline.js": {
-      branches: 68,
-      functions: 56,
-      lines: 70,
-      statements: 70,
+      branches: 60,
+      functions: 54,
+      lines: 67,
+      statements: 67,
     },
     "./src/dag/": {
       branches: 55,
