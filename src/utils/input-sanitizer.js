@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Input Sanitizer
@@ -22,27 +22,27 @@
  * Sanitization rules enum
  */
 const SanitizationRules = {
-  NONE: 'none', // No sanitization
-  HTML: 'html', // HTML escape
-  HTML_STRICT: 'html_strict', // Remove all HTML tags
-  XSS: 'xss', // XSS prevention (aggressive)
-  SQL: 'sql', // SQL injection prevention
-  COMMAND: 'command', // Command injection prevention
-  PATH: 'path', // Path traversal prevention
-  URL: 'url', // URL validation and sanitization
-  EMAIL: 'email', // Email validation
-  ALPHANUMERIC: 'alphanumeric', // Only letters and numbers
-  UUID: 'uuid', // UUID validation
-  INTEGER: 'integer', // Integer validation
-  FLOAT: 'float', // Float validation
-  BOOLEAN: 'boolean', // Boolean validation
-  JSON: 'json', // JSON validation
-  BASE64: 'base64', // Base64 validation
-  HEX: 'hex', // Hexadecimal validation
-  SLUG: 'slug', // Slug format (URL-friendly)
-  DOMAIN: 'domain', // Domain name validation
-  IPV4: 'ipv4', // IPv4 address validation
-  IPV6: 'ipv6', // IPv6 address validation
+  NONE: "none", // No sanitization
+  HTML: "html", // HTML escape
+  HTML_STRICT: "html_strict", // Remove all HTML tags
+  XSS: "xss", // XSS prevention (aggressive)
+  SQL: "sql", // SQL injection prevention
+  COMMAND: "command", // Command injection prevention
+  PATH: "path", // Path traversal prevention
+  URL: "url", // URL validation and sanitization
+  EMAIL: "email", // Email validation
+  ALPHANUMERIC: "alphanumeric", // Only letters and numbers
+  UUID: "uuid", // UUID validation
+  INTEGER: "integer", // Integer validation
+  FLOAT: "float", // Float validation
+  BOOLEAN: "boolean", // Boolean validation
+  JSON: "json", // JSON validation
+  BASE64: "base64", // Base64 validation
+  HEX: "hex", // Hexadecimal validation
+  SLUG: "slug", // Slug format (URL-friendly)
+  DOMAIN: "domain", // Domain name validation
+  IPV4: "ipv4", // IPv4 address validation
+  IPV6: "ipv6", // IPv6 address validation
 };
 
 /**
@@ -131,12 +131,12 @@ const DangerousPatterns = {
  * HTML entity map for escaping
  */
 const HtmlEntityMap = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  '\'': '&#x27;',
-  '/': '&#x2F;',
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#x27;",
+  "/": "&#x2F;",
 };
 
 /**
@@ -211,11 +211,11 @@ class InputSanitizer {
   sanitize(input, rules = null) {
     // Use high-resolution timing
     let startTime;
-    if (typeof process !== 'undefined' && process.hrtime) {
+    if (typeof process !== "undefined" && process.hrtime) {
       startTime = process.hrtime.bigint();
     } else if (
-      typeof performance !== 'undefined' &&
-      typeof performance.now === 'function'
+      typeof performance !== "undefined" &&
+      typeof performance.now === "function"
     ) {
       startTime = performance.now();
     } else {
@@ -231,14 +231,14 @@ class InputSanitizer {
       // Determine sanitization strategy
       let result;
 
-      if (typeof input === 'string') {
+      if (typeof input === "string") {
         result = this._sanitizeString(
           input,
           rules || this.options.defaultStringRule,
         );
       } else if (Array.isArray(input)) {
         result = this._sanitizeArray(input, rules);
-      } else if (typeof input === 'object') {
+      } else if (typeof input === "object") {
         result = this._sanitizeObject(input, rules, 0);
       } else {
         // Primitives (number, boolean, etc.)
@@ -249,7 +249,7 @@ class InputSanitizer {
       if (this.options.trackStats) {
         let duration;
         if (
-          typeof process !== 'undefined' &&
+          typeof process !== "undefined" &&
           process.hrtime &&
           process.hrtime.bigint
         ) {
@@ -262,8 +262,8 @@ class InputSanitizer {
             duration = 0.001; // Minimum 1 microsecond
           }
         } else if (
-          typeof performance !== 'undefined' &&
-          typeof performance.now === 'function'
+          typeof performance !== "undefined" &&
+          typeof performance.now === "function"
         ) {
           duration = performance.now() - startTime;
         } else {
@@ -285,11 +285,11 @@ class InputSanitizer {
       // Always throw critical security errors regardless of throwOnInvalid setting
       if (error.message) {
         // Path traversal is a critical security violation - always throw
-        if (error.message.includes('Potential path traversal detected')) {
+        if (error.message.includes("Potential path traversal detected")) {
           throw error;
         }
         // Depth errors should also always throw
-        if (error.message.includes('Maximum object depth exceeded')) {
+        if (error.message.includes("Maximum object depth exceeded")) {
           throw error;
         }
       }
@@ -308,115 +308,17 @@ class InputSanitizer {
    * @private
    */
   _sanitizeString(str, rule) {
-    if (typeof str !== 'string') {
+    if (typeof str !== "string") {
       return str;
     }
 
     // Check cache
-    if (this.options.enableCache) {
-      const cacheKey = `${rule}:${str}`;
-      if (this.cache.has(cacheKey)) {
-        this.cacheAccessTimes.set(cacheKey, Date.now());
-        this.stats.cached++;
-        return this.cache.get(cacheKey);
-      }
+    const cached = this._getCachedResult(rule, str);
+    if (cached !== undefined) {
+      return cached;
     }
 
-    let result;
-
-    switch (rule) {
-      case SanitizationRules.NONE:
-        result = str;
-        break;
-
-      case SanitizationRules.HTML:
-        result = this._escapeHtml(str);
-        break;
-
-      case SanitizationRules.HTML_STRICT:
-        result = this._stripHtml(str);
-        break;
-
-      case SanitizationRules.XSS:
-        result = this._sanitizeXss(str);
-        break;
-
-      case SanitizationRules.SQL:
-        result = this._sanitizeSql(str);
-        break;
-
-      case SanitizationRules.COMMAND:
-        result = this._sanitizeCommand(str);
-        break;
-
-      case SanitizationRules.PATH:
-        result = this._sanitizePath(str);
-        break;
-
-      case SanitizationRules.URL:
-        result = this._validateAndSanitizeUrl(str);
-        break;
-
-      case SanitizationRules.EMAIL:
-        result = this._validateEmail(str);
-        break;
-
-      case SanitizationRules.ALPHANUMERIC:
-        result = this._validateAlphanumeric(str);
-        break;
-
-      case SanitizationRules.UUID:
-        result = this._validateUuid(str);
-        break;
-
-      case SanitizationRules.INTEGER:
-        result = this._validateInteger(str);
-        break;
-
-      case SanitizationRules.FLOAT:
-        result = this._validateFloat(str);
-        break;
-
-      case SanitizationRules.BOOLEAN:
-        result = this._validateBoolean(str);
-        break;
-
-      case SanitizationRules.JSON:
-        result = this._validateJson(str);
-        break;
-
-      case SanitizationRules.BASE64:
-        result = this._validateBase64(str);
-        break;
-
-      case SanitizationRules.HEX:
-        result = this._validateHex(str);
-        break;
-
-      case SanitizationRules.SLUG:
-        result = this._validateSlug(str);
-        break;
-
-      case SanitizationRules.DOMAIN:
-        result = this._validateDomain(str);
-        break;
-
-      case SanitizationRules.IPV4:
-        result = this._validateIpv4(str);
-        break;
-
-      case SanitizationRules.IPV6:
-        result = this._validateIpv6(str);
-        break;
-
-      default:
-        // Check custom rules
-        if (this.options.customRules[rule]) {
-          result = this.options.customRules[rule](str);
-        } else {
-          result = this._escapeHtml(str); // Default to HTML escape
-        }
-    }
+    const result = this._applyRule(str, rule);
 
     // Cache result
     if (this.options.enableCache) {
@@ -425,6 +327,85 @@ class InputSanitizer {
     }
 
     return result;
+  }
+
+  /**
+   * Retrieve a previously cached sanitization result.
+   * @param {string} rule - The sanitization rule that was applied
+   * @param {string} str - The original input string
+   * @returns {*} The cached result, or undefined if not cached
+   * @private
+   */
+  _getCachedResult(rule, str) {
+    if (!this.options.enableCache) {
+      return undefined;
+    }
+
+    const cacheKey = `${rule}:${str}`;
+    if (this.cache.has(cacheKey)) {
+      this.cacheAccessTimes.set(cacheKey, Date.now());
+      this.stats.cached++;
+      return this.cache.get(cacheKey);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Apply a sanitization or validation rule to an input string.
+   * Dispatches to the appropriate handler based on the rule name.
+   * @param {string} str - The input string to sanitize
+   * @param {string} rule - The sanitization rule to apply
+   * @returns {*} The sanitized or validated result
+   * @private
+   */
+  _applyRule(str, rule) {
+    const ruleHandlers = this._getRuleHandlers();
+    const handler = ruleHandlers[rule];
+
+    if (handler) {
+      return handler(str);
+    }
+
+    // Check custom rules
+    if (this.options.customRules[rule]) {
+      return this.options.customRules[rule](str);
+    }
+
+    // Default to HTML escape
+    return this._escapeHtml(str);
+  }
+
+  /**
+   * Build the mapping from sanitization rule names to their handler functions.
+   * @returns {Object.<string, Function>} Map of rule name to handler function
+   * @private
+   */
+  _getRuleHandlers() {
+    return {
+      [SanitizationRules.NONE]: (str) => str,
+      [SanitizationRules.HTML]: (str) => this._escapeHtml(str),
+      [SanitizationRules.HTML_STRICT]: (str) => this._stripHtml(str),
+      [SanitizationRules.XSS]: (str) => this._sanitizeXss(str),
+      [SanitizationRules.SQL]: (str) => this._sanitizeSql(str),
+      [SanitizationRules.COMMAND]: (str) => this._sanitizeCommand(str),
+      [SanitizationRules.PATH]: (str) => this._sanitizePath(str),
+      [SanitizationRules.URL]: (str) => this._validateAndSanitizeUrl(str),
+      [SanitizationRules.EMAIL]: (str) => this._validateEmail(str),
+      [SanitizationRules.ALPHANUMERIC]: (str) =>
+        this._validateAlphanumeric(str),
+      [SanitizationRules.UUID]: (str) => this._validateUuid(str),
+      [SanitizationRules.INTEGER]: (str) => this._validateInteger(str),
+      [SanitizationRules.FLOAT]: (str) => this._validateFloat(str),
+      [SanitizationRules.BOOLEAN]: (str) => this._validateBoolean(str),
+      [SanitizationRules.JSON]: (str) => this._validateJson(str),
+      [SanitizationRules.BASE64]: (str) => this._validateBase64(str),
+      [SanitizationRules.HEX]: (str) => this._validateHex(str),
+      [SanitizationRules.SLUG]: (str) => this._validateSlug(str),
+      [SanitizationRules.DOMAIN]: (str) => this._validateDomain(str),
+      [SanitizationRules.IPV4]: (str) => this._validateIpv4(str),
+      [SanitizationRules.IPV6]: (str) => this._validateIpv6(str),
+    };
   }
 
   /**
@@ -453,14 +434,14 @@ class InputSanitizer {
       const safeKey = this._sanitizeString(key, SanitizationRules.ALPHANUMERIC);
 
       // Determine rule for this field
-      const fieldRule = rules && typeof rules === 'object' ? rules[key] : rules;
+      const fieldRule = rules && typeof rules === "object" ? rules[key] : rules;
 
       // Sanitize value
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         sanitized[safeKey] = this._sanitizeString(value, fieldRule);
       } else if (Array.isArray(value)) {
         sanitized[safeKey] = this._sanitizeArray(value, fieldRule);
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         sanitized[safeKey] = this._sanitizeObject(value, fieldRule, depth + 1);
       } else {
         sanitized[safeKey] = value;
@@ -483,7 +464,7 @@ class InputSanitizer {
    * @private
    */
   _stripHtml(str) {
-    return str.replace(/<[^>]*>/g, '');
+    return str.replace(/<[^>]*>/g, "");
   }
 
   /**
@@ -497,7 +478,7 @@ class InputSanitizer {
     for (const pattern of DangerousPatterns.xss) {
       if (pattern.test(sanitized)) {
         this.stats.blocked++;
-        sanitized = sanitized.replace(pattern, '');
+        sanitized = sanitized.replace(pattern, "");
       }
     }
 
@@ -519,15 +500,15 @@ class InputSanitizer {
       if (pattern.test(sanitized)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
-          throw new Error('Potential SQL injection detected');
+          throw new Error("Potential SQL injection detected");
         }
         // Remove dangerous patterns
-        sanitized = sanitized.replace(pattern, '');
+        sanitized = sanitized.replace(pattern, "");
       }
     }
 
     // Escape single quotes (basic SQL escaping)
-    sanitized = sanitized.replace(/'/g, '\'\'');
+    sanitized = sanitized.replace(/'/g, "''");
 
     return sanitized;
   }
@@ -542,9 +523,9 @@ class InputSanitizer {
       if (pattern.test(str)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
-          throw new Error('Potential command injection detected');
+          throw new Error("Potential command injection detected");
         }
-        return '';
+        return "";
       }
     }
 
@@ -559,7 +540,7 @@ class InputSanitizer {
     // Iteratively decode URL encoding to catch double/triple encoded attacks
     // e.g., %252e%252e%252f -> %2e%2e%2f -> ../
     let current = str;
-    let previous = '';
+    let previous = "";
     let iterations = 0;
     const MAX_DECODE_ITERATIONS = 5;
 
@@ -571,7 +552,7 @@ class InputSanitizer {
         // Malformed URL encoding might indicate attack - log and block
         this.stats.blocked++;
         throw new Error(
-          'Potential path traversal detected (malformed encoding)',
+          "Potential path traversal detected (malformed encoding)",
         );
       }
       iterations++;
@@ -583,15 +564,15 @@ class InputSanitizer {
         this.stats.blocked++;
         // SECURITY: Always throw on path traversal - it should never be silently sanitized
         // Empty paths could resolve to application root, creating security vulnerabilities
-        throw new Error('Potential path traversal detected');
+        throw new Error("Potential path traversal detected");
       }
     }
 
     // Remove leading/trailing slashes
-    current = current.replace(/^[/\\]+|[/\\]+$/g, '');
+    current = current.replace(/^[/\\]+|[/\\]+$/g, "");
 
     // Normalize path separators
-    current = current.replace(/\\/g, '/');
+    current = current.replace(/\\/g, "/");
 
     return current;
   }
@@ -604,17 +585,17 @@ class InputSanitizer {
     // Check against URL pattern
     if (!ValidationPatterns.url.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid URL format');
+        throw new Error("Invalid URL format");
       }
-      return '';
+      return "";
     }
 
     // Only allow http and https protocols
-    if (!str.startsWith('http://') && !str.startsWith('https://')) {
+    if (!str.startsWith("http://") && !str.startsWith("https://")) {
       if (this.options.throwOnInvalid) {
-        throw new Error('URL must use http or https protocol');
+        throw new Error("URL must use http or https protocol");
       }
-      return '';
+      return "";
     }
 
     return str;
@@ -627,9 +608,9 @@ class InputSanitizer {
   _validateEmail(str) {
     if (!ValidationPatterns.email.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid email format');
+        throw new Error("Invalid email format");
       }
-      return '';
+      return "";
     }
     return str.toLowerCase();
   }
@@ -641,9 +622,9 @@ class InputSanitizer {
   _validateAlphanumeric(str) {
     if (!ValidationPatterns.alphanumeric.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Must contain only alphanumeric characters');
+        throw new Error("Must contain only alphanumeric characters");
       }
-      return str.replace(/[^a-zA-Z0-9]/g, '');
+      return str.replace(/[^a-zA-Z0-9]/g, "");
     }
     return str;
   }
@@ -655,9 +636,9 @@ class InputSanitizer {
   _validateUuid(str) {
     if (!ValidationPatterns.uuid.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid UUID format');
+        throw new Error("Invalid UUID format");
       }
-      return '';
+      return "";
     }
     return str.toLowerCase();
   }
@@ -669,9 +650,9 @@ class InputSanitizer {
   _validateInteger(str) {
     if (!ValidationPatterns.integer.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid integer format');
+        throw new Error("Invalid integer format");
       }
-      return '';
+      return "";
     }
     return str;
   }
@@ -683,9 +664,9 @@ class InputSanitizer {
   _validateFloat(str) {
     if (!ValidationPatterns.float.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid float format');
+        throw new Error("Invalid float format");
       }
-      return '';
+      return "";
     }
     return str;
   }
@@ -696,16 +677,16 @@ class InputSanitizer {
    */
   _validateBoolean(str) {
     const lower = str.toLowerCase();
-    if (lower === 'true' || lower === '1' || lower === 'yes') {
-      return 'true';
-    } else if (lower === 'false' || lower === '0' || lower === 'no') {
-      return 'false';
+    if (lower === "true" || lower === "1" || lower === "yes") {
+      return "true";
+    } else if (lower === "false" || lower === "0" || lower === "no") {
+      return "false";
     }
 
     if (this.options.throwOnInvalid) {
-      throw new Error('Invalid boolean value');
+      throw new Error("Invalid boolean value");
     }
-    return '';
+    return "";
   }
 
   /**
@@ -718,9 +699,9 @@ class InputSanitizer {
       return str;
     } catch (error) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid JSON format');
+        throw new Error("Invalid JSON format");
       }
-      return '';
+      return "";
     }
   }
 
@@ -731,9 +712,9 @@ class InputSanitizer {
   _validateBase64(str) {
     if (!ValidationPatterns.base64.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid base64 format');
+        throw new Error("Invalid base64 format");
       }
-      return '';
+      return "";
     }
     return str;
   }
@@ -745,9 +726,9 @@ class InputSanitizer {
   _validateHex(str) {
     if (!ValidationPatterns.hex.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid hexadecimal format');
+        throw new Error("Invalid hexadecimal format");
       }
-      return '';
+      return "";
     }
     return str.toLowerCase();
   }
@@ -759,13 +740,13 @@ class InputSanitizer {
   _validateSlug(str) {
     if (!ValidationPatterns.slug.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid slug format');
+        throw new Error("Invalid slug format");
       }
       // Convert to slug
       return str
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
     }
     return str;
   }
@@ -777,9 +758,9 @@ class InputSanitizer {
   _validateDomain(str) {
     if (!ValidationPatterns.domain.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid domain format');
+        throw new Error("Invalid domain format");
       }
-      return '';
+      return "";
     }
     return str.toLowerCase();
   }
@@ -791,9 +772,9 @@ class InputSanitizer {
   _validateIpv4(str) {
     if (!ValidationPatterns.ipv4.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid IPv4 address');
+        throw new Error("Invalid IPv4 address");
       }
-      return '';
+      return "";
     }
     return str;
   }
@@ -805,9 +786,9 @@ class InputSanitizer {
   _validateIpv6(str) {
     if (!ValidationPatterns.ipv6.test(str)) {
       if (this.options.throwOnInvalid) {
-        throw new Error('Invalid IPv6 address');
+        throw new Error("Invalid IPv6 address");
       }
-      return '';
+      return "";
     }
     return str.toLowerCase();
   }

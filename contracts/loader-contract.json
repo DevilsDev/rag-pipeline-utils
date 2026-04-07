@@ -14,13 +14,13 @@
   "properties": {
     "load": {
       "type": "function",
-      "description": "Load documents from source",
+      "description": "Load and parse a document from the given file path",
       "parameters": {
         "type": "object",
         "properties": {
           "source": {
             "type": "string",
-            "description": "Source path or identifier"
+            "description": "File path to the document to load"
           }
         },
         "required": ["source"]
@@ -30,11 +30,16 @@
         "items": {
           "type": "object",
           "properties": {
-            "id": { "type": "string" },
-            "content": { "type": "string" },
-            "metadata": { "type": "object" }
+            "chunk": {
+              "type": "function",
+              "description": "Split the document into text chunks",
+              "returns": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
           },
-          "required": ["id", "content"]
+          "required": ["chunk"]
         }
       }
     }

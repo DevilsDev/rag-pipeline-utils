@@ -7,60 +7,52 @@
   "methods": [
     {
       "name": "rerank",
-      "parameters": ["results", "query", "options"],
-      "returns": "rankedResults"
+      "parameters": ["query", "documents"],
+      "returns": "documents"
     }
   ],
   "properties": {
     "rerank": {
       "type": "function",
-      "description": "Rerank search results based on relevance to query",
+      "description": "Rerank documents based on relevance to query",
       "parameters": {
         "type": "object",
         "properties": {
-          "results": {
+          "query": {
+            "type": "string",
+            "description": "The search query to rank documents against"
+          },
+          "documents": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "string" },
-                "content": { "type": "string" },
-                "score": { "type": "number" }
-              },
-              "required": ["id", "content"]
-            }
-          },
-          "query": {
-            "type": "string",
-            "description": "The original search query"
+                "text": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            },
+            "description": "Array of retrieved documents to rerank"
           },
           "options": {
             "type": "object",
             "properties": {
               "topK": {
                 "type": "number",
-                "description": "Number of top results to return"
-              },
-              "threshold": {
-                "type": "number",
-                "description": "Minimum relevance score threshold"
+                "description": "Maximum number of top documents to return"
               }
             }
           }
         },
-        "required": ["results", "query"]
+        "required": ["query", "documents"]
       },
       "returns": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "id": { "type": "string" },
-            "content": { "type": "string" },
-            "score": { "type": "number" },
-            "relevanceScore": { "type": "number" }
-          },
-          "required": ["id", "content", "relevanceScore"]
+            "text": { "type": "string" },
+            "content": { "type": "string" }
+          }
         }
       }
     }

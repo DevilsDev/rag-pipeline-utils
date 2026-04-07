@@ -589,108 +589,36 @@ class EnhancedDAGEngine {
         // Validate DAG before execution
         this.validate();
 
-        // Initialize execution state
+        // Initialize execution state and context
         const results = new Map();
         const errors = new Map();
         const order = this.getTopologicalOrder();
-
-        // Create execution context
-        const context = {
+        const context = this._buildExecutionContext(
           results,
           errors,
           seed,
-          continueOnError: config.continueOnError,
-          gracefulDegradation: config.gracefulDegradation,
-          retryFailedNodes: config.retryFailedNodes,
-          maxRetries: config.maxRetries,
-        };
-
-        // Execute nodes with concurrency control
-        const semaphore = new Semaphore(config.concurrency);
-        const nodePromises = new Map();
-
-        for (const node of order) {
-          const promise = semaphore.acquire().then(async (release) => {
-            try {
-              // Wait for dependencies to complete
-              const depPromises = node.inputs
-                .map((dep) => nodePromises.get(dep.id))
-                .filter(Boolean);
-
-              await Promise.all(depPromises);
-
-              // Execute the node
-              const result = await this.executeNode(node, context);
-
-              if (
-                typeof result !== "symbol" ||
-                result.description !== "failed-optional-node"
-              ) {
-                results.set(node.id, result);
-              }
-
-              return result;
-            } finally {
-              release();
-            }
-          });
-
-          nodePromises.set(node.id, promise);
-        }
-
-        // Wait for all nodes to complete
-        const allResults = await Promise.allSettled(
-          Array.from(nodePromises.values()),
+          config,
         );
+
+        // Schedule and run all nodes with concurrency control
+        await this._scheduleNodes(order, context, config);
 
         const executionTime = Date.now() - startTime;
 
         // Update engine metrics
-        if (this.enableMetrics) {
-          this.engineMetrics.totalExecutions++;
-          this.engineMetrics.totalExecutionTime += executionTime;
-          this.engineMetrics.avgExecutionTime =
-            this.engineMetrics.totalExecutionTime /
-            this.engineMetrics.totalExecutions;
+        this._recordExecutionMetrics(executionTime, errors.size === 0);
 
-          if (errors.size === 0) {
-            this.engineMetrics.successfulExecutions++;
-          } else {
-            this.engineMetrics.failedExecutions++;
-          }
-        }
-
-        // Create execution summary
-        const summary = {
+        // Build and store execution summary
+        const summary = this._buildExecutionSummary(
           executionId,
-          success: errors.size === 0,
           executionTime,
-          nodesExecuted: results.size,
-          totalNodes: this.nodes.size,
-          errors: Array.from(errors.entries()).map(([id, error]) => ({
-            nodeId: id,
-            message: error.message,
-            code: error.code,
-          })),
-        };
-
-        // Store execution history
-        if (this.enableTracing) {
-          this.executionHistory.push({
-            ...summary,
-            timestamp: new Date().toISOString(),
-            results: Object.fromEntries(results),
-          });
-
-          // Keep only last 100 executions
-          if (this.executionHistory.length > 100) {
-            this.executionHistory.shift();
-          }
-        }
+          results,
+          errors,
+        );
+        this._storeExecutionHistory(summary, results);
 
         this.logger.info("DAG execution completed", summary);
 
-        // Return results
         return {
           results: Object.fromEntries(results),
           errors: Object.fromEntries(errors),
@@ -699,21 +627,168 @@ class EnhancedDAGEngine {
         };
       } catch (error) {
         const executionTime = Date.now() - startTime;
-
-        if (this.enableMetrics) {
-          this.engineMetrics.totalExecutions++;
-          this.engineMetrics.failedExecutions++;
-        }
-
-        this.logger.error("DAG execution failed", {
-          executionId,
-          error: error.message,
-          executionTime,
-          stack: error.stack,
-        });
-
+        this._recordExecutionFailure(executionId, error, executionTime);
         throw error;
       }
+    });
+  }
+
+  /**
+   * Build the execution context passed to each node during DAG execution.
+   * @param {Map} results - Map to store completed node results
+   * @param {Map} errors - Map to store node execution errors
+   * @param {any} seed - Initial seed value for source nodes
+   * @param {Object} config - Merged execution configuration
+   * @returns {ExecutionContext} Execution context object
+   * @private
+   */
+  _buildExecutionContext(results, errors, seed, config) {
+    return {
+      results,
+      errors,
+      seed,
+      continueOnError: config.continueOnError,
+      gracefulDegradation: config.gracefulDegradation,
+      retryFailedNodes: config.retryFailedNodes,
+      maxRetries: config.maxRetries,
+    };
+  }
+
+  /**
+   * Schedule and execute all nodes in topological order with concurrency control.
+   * Each node waits for its dependencies before executing.
+   * @param {EnhancedDAGNode[]} order - Nodes in topological execution order
+   * @param {ExecutionContext} context - Execution context with results and errors maps
+   * @param {Object} config - Execution configuration including concurrency limit
+   * @returns {Promise<void>} Resolves when all nodes have settled
+   * @private
+   */
+  async _scheduleNodes(order, context, config) {
+    const { results } = context;
+    const semaphore = new Semaphore(config.concurrency);
+    const nodePromises = new Map();
+
+    for (const node of order) {
+      const promise = semaphore.acquire().then(async (release) => {
+        try {
+          // Wait for dependencies to complete
+          const depPromises = node.inputs
+            .map((dep) => nodePromises.get(dep.id))
+            .filter(Boolean);
+
+          await Promise.all(depPromises);
+
+          // Execute the node
+          const result = await this.executeNode(node, context);
+
+          if (
+            typeof result !== "symbol" ||
+            result.description !== "failed-optional-node"
+          ) {
+            results.set(node.id, result);
+          }
+
+          return result;
+        } finally {
+          release();
+        }
+      });
+
+      nodePromises.set(node.id, promise);
+    }
+
+    await Promise.allSettled(Array.from(nodePromises.values()));
+  }
+
+  /**
+   * Record engine-level metrics after a completed execution.
+   * @param {number} executionTime - Total execution time in milliseconds
+   * @param {boolean} success - Whether the execution completed without errors
+   * @private
+   */
+  _recordExecutionMetrics(executionTime, success) {
+    if (!this.enableMetrics) {
+      return;
+    }
+
+    this.engineMetrics.totalExecutions++;
+    this.engineMetrics.totalExecutionTime += executionTime;
+    this.engineMetrics.avgExecutionTime =
+      this.engineMetrics.totalExecutionTime /
+      this.engineMetrics.totalExecutions;
+
+    if (success) {
+      this.engineMetrics.successfulExecutions++;
+    } else {
+      this.engineMetrics.failedExecutions++;
+    }
+  }
+
+  /**
+   * Build a summary object describing the outcome of a DAG execution.
+   * @param {string} executionId - Unique execution identifier
+   * @param {number} executionTime - Total execution time in milliseconds
+   * @param {Map} results - Map of successful node results
+   * @param {Map} errors - Map of node execution errors
+   * @returns {Object} Execution summary
+   * @private
+   */
+  _buildExecutionSummary(executionId, executionTime, results, errors) {
+    return {
+      executionId,
+      success: errors.size === 0,
+      executionTime,
+      nodesExecuted: results.size,
+      totalNodes: this.nodes.size,
+      errors: Array.from(errors.entries()).map(([id, error]) => ({
+        nodeId: id,
+        message: error.message,
+        code: error.code,
+      })),
+    };
+  }
+
+  /**
+   * Store an execution summary in the tracing history buffer.
+   * Keeps only the most recent 100 entries.
+   * @param {Object} summary - Execution summary to store
+   * @param {Map} results - Map of node results to include in history
+   * @private
+   */
+  _storeExecutionHistory(summary, results) {
+    if (!this.enableTracing) {
+      return;
+    }
+
+    this.executionHistory.push({
+      ...summary,
+      timestamp: new Date().toISOString(),
+      results: Object.fromEntries(results),
+    });
+
+    if (this.executionHistory.length > 100) {
+      this.executionHistory.shift();
+    }
+  }
+
+  /**
+   * Record metrics and log details when a DAG execution fails with an exception.
+   * @param {string} executionId - Unique execution identifier
+   * @param {Error} error - The error that caused the failure
+   * @param {number} executionTime - Time elapsed before the failure
+   * @private
+   */
+  _recordExecutionFailure(executionId, error, executionTime) {
+    if (this.enableMetrics) {
+      this.engineMetrics.totalExecutions++;
+      this.engineMetrics.failedExecutions++;
+    }
+
+    this.logger.error("DAG execution failed", {
+      executionId,
+      error: error.message,
+      executionTime,
+      stack: error.stack,
     });
   }
 
