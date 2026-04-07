@@ -89,9 +89,9 @@ async function handleConfigSet(globalOptions, key, value) {
 
     // Save configuration
     await fs.writeFile(globalOptions.config, JSON.stringify(config, null, 2));
-    console.log("Configuration updated");
+    console.log("✅ Configuration updated");
   } catch (error) {
-    logger.error("Failed to set configuration:", error.message);
+    logger.error("❌ Failed to set configuration:", error.message);
     process.exit(1);
   }
 }
