@@ -63,9 +63,4 @@ class MultiModalProcessor {
   }
 }
 
-// Create and export singleton instance
-const processor = new MultiModalProcessor();
-
-module.exports = processor;
-module.exports.MultiModalProcessor = MultiModalProcessor;
-module.exports.default = module.exports;
+module.exports = { MultiModalProcessor };

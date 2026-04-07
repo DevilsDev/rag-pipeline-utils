@@ -209,6 +209,3 @@ const federatedLearningCoordinator = {
 
 // Export singleton as default
 module.exports = federatedLearningCoordinator;
-
-// CJS+ESM interop pattern
-module.exports.default = module.exports;

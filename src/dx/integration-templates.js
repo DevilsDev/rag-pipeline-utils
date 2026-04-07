@@ -660,6 +660,3 @@ module.exports._config = _config;
 module.exports.generateIntegration = generateIntegration;
 module.exports.getTemplateStats = getTemplateStats;
 module.exports.addTemplate = addTemplate;
-
-// CJS+ESM interop pattern
-module.exports.default = module.exports;

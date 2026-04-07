@@ -186,6 +186,3 @@ const adaptiveRetrievalEngine = {
 };
 
 module.exports = adaptiveRetrievalEngine;
-
-// CJS+ESM interop pattern
-module.exports.default = module.exports;

@@ -61,9 +61,4 @@ class AdaptiveRetrievalEngine {
   }
 }
 
-// Create and export singleton instance
-const engine = new AdaptiveRetrievalEngine();
-
-module.exports = engine;
-module.exports.AdaptiveRetrievalEngine = AdaptiveRetrievalEngine;
-module.exports.default = module.exports;
+module.exports = { AdaptiveRetrievalEngine };
