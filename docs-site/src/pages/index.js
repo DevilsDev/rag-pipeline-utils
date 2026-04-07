@@ -9,8 +9,8 @@ import styles from "./index.module.css";
 
 function HomepageStats() {
   const stats = [
-    { value: "90%+", label: "Test Coverage" },
-    { value: "500+", label: "Texts/sec" },
+    { value: "104", label: "Exports" },
+    { value: "2050+", label: "Tests" },
     { value: "<200ms", label: "Retrieval Latency" },
     { value: "Zero", label: "Production Vulnerabilities" },
   ];
@@ -92,38 +92,56 @@ function HomepageKeyFeatures() {
     {
       title: "Modular Plugin Architecture",
       description:
-        "Swap any component without rewriting your pipeline. Choose from built-in plugins or create custom loaders, embedders, retrievers, and LLMs.",
+        "5 plugin types with JSON Schema contracts and 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, and more).",
       link: "/docs/Plugins",
+    },
+    {
+      title: "Smart Chunking & Retrieval",
+      description:
+        "5 chunking strategies, hybrid vector + BM25 search, and reciprocal rank fusion for highly relevant context retrieval.",
+      link: "/docs/Architecture",
+    },
+    {
+      title: "RAG Evaluation",
+      description:
+        "Faithfulness, relevance, context precision/recall, and groundedness metrics to measure and improve pipeline quality.",
+      link: "/docs/Evaluation",
+    },
+    {
+      title: "Citation & Grounding",
+      description:
+        "Source attribution, hallucination detection, and groundedness scoring to ensure trustworthy AI-generated answers.",
+      link: "/docs/Evaluation",
+    },
+    {
+      title: "Agentic RAG & GraphRAG",
+      description:
+        "Query planning, iterative retrieval, self-critique loops, and knowledge graph traversal for complex multi-hop questions.",
+      link: "/docs/Architecture",
+    },
+    {
+      title: "3-Layer Guardrails",
+      description:
+        "Prompt injection detection, ACL filtering, and PII detection to protect your pipeline at input, retrieval, and output stages.",
+      link: "/docs/Security",
+    },
+    {
+      title: "Streaming & Connectors",
+      description:
+        "SSE/WebSocket streaming plus built-in OpenAI, Anthropic, Cohere, and Ollama connectors for flexible deployment.",
+      link: "/docs/Performance",
+    },
+    {
+      title: "Cost & Debugging",
+      description:
+        "Token tracking, budget enforcement, execution tracing, and bottleneck detection for full pipeline observability.",
+      link: "/docs/Performance",
     },
     {
       title: "Enterprise Security",
       description:
-        "Advanced JWT validation with replay protection, multi-layer input sanitization, path traversal defense, and comprehensive audit logging.",
+        "JWT replay protection, plugin sandboxing, audit logging, and multi-tenancy support for production deployments.",
       link: "/docs/Security",
-    },
-    {
-      title: "Production Observability",
-      description:
-        "SLO monitoring, metrics collection, distributed tracing, structured logging, and error budget tracking for mission-critical deployments.",
-      link: "/docs/Observability",
-    },
-    {
-      title: "AI/ML Capabilities",
-      description:
-        "Multi-modal processing for text, images, audio, and video. Adaptive retrieval with reinforcement learning and federated learning support.",
-      link: "/docs/Enterprise",
-    },
-    {
-      title: "DAG Workflow Engine",
-      description:
-        "Execute complex multi-stage RAG workflows as directed acyclic graphs with parallel processing and conditional logic.",
-      link: "/docs/API-Reference",
-    },
-    {
-      title: "Developer Experience",
-      description:
-        "Enhanced CLI with diagnostics, hot module reloading, interactive configuration wizards, and real-time debugging capabilities.",
-      link: "/docs/CLI",
     },
   ];
 

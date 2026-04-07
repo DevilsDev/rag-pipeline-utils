@@ -166,9 +166,9 @@ const response = await pipeline.run({
   query: "How do I implement custom plugins?",
 });
 
-console.log(response.answer);
-console.log(`Sources: ${response.sources.length} documents`);
-console.log(`Confidence: ${response.confidence}`);
+console.log("Success:", response.success);
+console.log("Query:", response.query);
+console.log("Results:", response.results.length);
 ```
 
 ### CLI Usage
@@ -197,7 +197,7 @@ rag-pipeline dashboard --port 3000
 
 ## Project Status & Roadmap
 
-### **Current Status: Enterprise Ready v2.2.0**
+### **Current Status: Enterprise Ready v2.4.0 — 104 Exports**
 
 **Production Features:**
 
@@ -208,11 +208,20 @@ rag-pipeline dashboard --port 3000
 - **Testing Infrastructure**: External API mocking, deterministic test environments
 - **Security & Compliance**: Audit logging, vulnerability scanning, enterprise authentication
 - **Deployment**: Kubernetes templates, Helm charts, Prometheus/Grafana monitoring
+- **GraphRAG Implementation**: Knowledge graph-based retrieval with entity linking
+- **Agentic Workflows**: Tool calling and autonomous agent capabilities
+- **Citation & Grounding**: Source attribution and factual grounding for generated responses
+- **3-Layer Guardrails**: Input validation, output filtering, and content safety checks
+- **Hybrid Retrieval (BM25 + RRF)**: Combined sparse and dense retrieval with reciprocal rank fusion
+- **Streaming Embeddings**: Real-time streaming embedding generation for large document sets
+- **Cost Management**: Token usage tracking and cost optimization across providers
+- **Performance Dashboard**: Real-time metrics visualization and pipeline monitoring
+- **MCP Integration**: Model Context Protocol support for tool-augmented generation
+- **Provider Connectors**: OpenAI, Anthropic, Cohere, and Ollama provider integrations
+- **Quick Start Templates**: Pre-configured project templates for common RAG use cases
 
 **Active Development:**
 
-- **GraphRAG Implementation**: Knowledge graph-based retrieval with entity linking
-- **Agentic Workflows**: Tool calling and autonomous agent capabilities
 - **Advanced Caching**: Multi-tier caching with intelligent invalidation strategies
 - **Fine-tuning Integration**: Custom model training with pipeline-specific optimization
 

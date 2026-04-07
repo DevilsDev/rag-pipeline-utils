@@ -12,19 +12,19 @@ import FeatureImage from "@site/static/img/logo.svg";
 
 const features = [
   {
-    title: "Enterprise-Grade Architecture",
+    title: "Modular Plugin Architecture",
     description:
-      "Production-ready with dependency injection, SLO monitoring, semantic release automation, and comprehensive observability for mission-critical deployments.",
+      "5 plugin types with JSON Schema contracts and 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, and more). Swap any component without rewriting your pipeline.",
   },
   {
-    title: "Advanced AI Capabilities",
+    title: "Smart Chunking & Retrieval",
     description:
-      "Multi-modal processing, federated learning, adaptive retrieval engines, and model training orchestration with external API mocking for reliable testing.",
+      "5 chunking strategies, hybrid vector + BM25 search, and reciprocal rank fusion for highly relevant context retrieval across large document sets.",
   },
   {
-    title: "Developer Experience Excellence",
+    title: "RAG Evaluation",
     description:
-      "Enhanced CLI with doctor diagnostics, interactive wizards, streaming evaluation dashboards, and plugin marketplace with certification workflows.",
+      "Faithfulness, relevance, context precision/recall, and groundedness metrics to measure and improve RAG pipeline quality.",
   },
 ];
 

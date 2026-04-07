@@ -19,9 +19,9 @@ The **@DevilsDev/rag-pipeline-utils** evaluation framework provides a comprehens
 **Implementation**:
 
 ```javascript
-import { calculateBLEU } from "@DevilsDev/rag-pipeline-utils";
+import { computeBLEU } from "@DevilsDev/rag-pipeline-utils";
 
-const bleuScore = calculateBLEU({
+const bleuScore = computeBLEU({
   candidate: "The system uses vector embeddings for retrieval",
   reference: "Vector embeddings are used by the system for retrieval",
   nGrams: [1, 2, 3, 4], // BLEU-1 through BLEU-4
@@ -47,9 +47,9 @@ console.log(`BLEU-4: ${bleuScore.bleu4}`);
 **Implementation**:
 
 ```javascript
-import { calculateROUGE } from "@DevilsDev/rag-pipeline-utils";
+import { computeROUGE } from "@DevilsDev/rag-pipeline-utils";
 
-const rougeScores = calculateROUGE({
+const rougeScores = computeROUGE({
   candidate:
     "RAG systems combine retrieval with generation for better accuracy",
   reference:
@@ -562,6 +562,83 @@ app.get("/api/metrics-summary", dashboardAPI.getMetricsSummary);
   }
 }
 ```
+
+---
+
+## **PipelineEvaluator**
+
+The `PipelineEvaluator` class provides a unified interface for evaluating RAG pipeline outputs against multiple quality dimensions in a single call:
+
+```javascript
+const { PipelineEvaluator } = require("@devilsdev/rag-pipeline-utils");
+
+const evaluator = new PipelineEvaluator();
+const metrics = evaluator.evaluate({ query, answer, results: retrievedDocs });
+// metrics.scores.faithfulness, metrics.scores.relevance, etc.
+```
+
+The returned `metrics` object contains:
+
+- **`scores.faithfulness`** -- how well the answer is grounded in the retrieved documents
+- **`scores.relevance`** -- how directly the answer addresses the original query
+- **`scores.contextPrecision`** -- proportion of retrieved chunks that are actually relevant
+- **`scores.contextRecall`** -- proportion of relevant information that was retrieved
+- **`scores.groundedness`** -- composite score (see `computeGroundedness` below)
+
+---
+
+## **computeGroundedness**
+
+`computeGroundedness` is a composite metric that combines three sub-scores into a single groundedness rating:
+
+1. **Faithfulness** -- every claim in the answer can be traced to the retrieved context
+2. **Context Precision** -- the retrieved chunks are relevant rather than noisy
+3. **Context Recall** -- the retrieval step captured all the information needed to answer
+
+The final groundedness score is the weighted harmonic mean of these three values, giving a single number that reflects how well the generated answer is supported by evidence. A high groundedness score means the answer is both accurate and well-sourced.
+
+```javascript
+const { computeGroundedness } = require("@devilsdev/rag-pipeline-utils");
+
+const score = computeGroundedness({
+  faithfulness: 0.9,
+  contextPrecision: 0.85,
+  contextRecall: 0.8,
+});
+// score ≈ 0.849
+```
+
+---
+
+## **Inline Evaluation**
+
+You can enable evaluation directly inside a pipeline run without creating a separate evaluator instance. Pass `evaluate: true` in the run options and the pipeline will automatically score the response before returning it:
+
+```javascript
+const result = await pipeline.run({ query, options: { evaluate: true } });
+// result.evaluation contains faithfulness, relevance, groundedness, etc.
+```
+
+This is useful for development and debugging workflows where you want immediate quality feedback on every query.
+
+---
+
+## **Citation & Grounding**
+
+The `CitationTracker` maps each claim in a generated answer back to the source chunk that supports it. This provides verifiable references and enables downstream groundedness checks:
+
+```javascript
+const { CitationTracker } = require("@devilsdev/rag-pipeline-utils");
+
+const tracker = new CitationTracker();
+const cited = tracker.track({ answer, retrievedChunks });
+
+// cited.citations -- array of { claim, sourceChunkId, score }
+// cited.groundednessScore -- fraction of claims with supporting evidence
+// cited.unsupportedClaims -- claims that could not be mapped to any source
+```
+
+Use `CitationTracker` alongside `PipelineEvaluator` to get both quantitative scores and per-claim traceability.
 
 ---
 

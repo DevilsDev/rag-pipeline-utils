@@ -115,14 +115,14 @@ async function main() {
       query: "How do I implement custom plugins in the RAG pipeline?",
     });
 
-    console.log("Answer:", response.answer);
-    console.log("Sources:", response.sources.length);
-    console.log("Confidence:", response.confidence);
+    console.log("Success:", response.success);
+    console.log("Query:", response.query);
+    console.log("Results:", response.results.length);
   } catch (error) {
     console.error("Pipeline error:", error);
   } finally {
     // Clean up resources
-    await pipeline.destroy();
+    await pipeline.cleanup();
   }
 }
 
@@ -220,78 +220,33 @@ console.log(response.results);
 const detailedResponse = await pipeline.run({
   query: "Explain the plugin architecture",
   options: {
-    maxTokens: 2000,
-    temperature: 0.3,
-    includeMetadata: true,
-    minConfidence: 0.7,
+    topK: 5,
+    timeout: 10000,
   },
 });
 
-console.log("Answer:", detailedResponse.answer);
-console.log("Sources:", detailedResponse.sources);
-console.log("Metadata:", detailedResponse.metadata);
-console.log("Processing time:", detailedResponse.processingTime);
+console.log("Success:", detailedResponse.success);
+console.log("Query:", detailedResponse.query);
+console.log("Results:", detailedResponse.results);
 
-// Streaming responses
-const stream = pipeline.queryStream("How do I optimize performance?");
+// Streaming responses (returns async generator when stream: true)
+const stream = await pipeline.run({
+  query: "How do I optimize performance?",
+  options: { stream: true },
+});
+
 for await (const chunk of stream) {
-  process.stdout.write(chunk.token);
-
-  // Access metadata during streaming
-  if (chunk.metadata) {
-    console.log("\nSources found:", chunk.metadata.sources.length);
+  if (!chunk.done) {
+    process.stdout.write(chunk.token);
   }
 }
 ```
 
-### **Batch Processing**
+### **Pipeline Cleanup**
 
 ```typescript
-// Process multiple queries efficiently
-const queries = [
-  "What is the plugin system?",
-  "How do I configure embeddings?",
-  "What are the supported vector stores?",
-];
-
-const responses = await pipeline.batchQuery(queries, {
-  maxConcurrency: 3,
-  includeMetadata: true,
-});
-
-responses.forEach((response, index) => {
-  console.log(`Query ${index + 1}:`, queries[index]);
-  console.log(`Answer:`, response.answer);
-  console.log(`Confidence:`, response.confidence);
-  console.log("---");
-});
-```
-
-### **Pipeline Management**
-
-```typescript
-// Get pipeline statistics
-const stats = await pipeline.getStats();
-console.log("Documents indexed:", stats.documentsCount);
-console.log("Total chunks:", stats.chunksCount);
-console.log("Index size:", stats.indexSize);
-console.log("Last updated:", stats.lastUpdated);
-
-// Clear the vector store
-await pipeline.clear();
-
-// Rebuild the index
-await pipeline.rebuild();
-
-// Export pipeline data
-const exportData = await pipeline.export();
-fs.writeFileSync("./pipeline-backup.json", JSON.stringify(exportData));
-
-// Import pipeline data
-const importData = JSON.parse(
-  fs.readFileSync("./pipeline-backup.json", "utf8"),
-);
-await pipeline.import(importData);
+// Clean up resources when done
+await pipeline.cleanup();
 ```
 
 ---
@@ -397,25 +352,6 @@ rag-pipeline evaluate ./queries.json \
 rag-pipeline dashboard --port 3000 --host 0.0.0.0
 ```
 
-### **Pipeline Management via CLI**
-
-```bash
-# View pipeline status
-rag-pipeline status
-
-# Clear vector store
-rag-pipeline clear --confirm
-
-# Rebuild index
-rag-pipeline rebuild --force
-
-# Export pipeline data
-rag-pipeline export --output backup.json
-
-# Import pipeline data
-rag-pipeline import backup.json
-```
-
 ### **Plugin Management**
 
 ```bash
@@ -440,7 +376,7 @@ Create a `.ragrc.json` file in your project root for persistent configuration:
 
 ```json
 {
-  "version": "2.1.8",
+  "version": "2.4.0",
   "pipeline": {
     "loader": "markdown",
     "embedder": "openai",

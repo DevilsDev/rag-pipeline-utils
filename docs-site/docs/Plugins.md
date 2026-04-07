@@ -611,4 +611,50 @@ console.log("Plugin test results:", report);
 
 ---
 
+## **Provider Connectors (v2.4.0)**
+
+Starting with v2.4.0, the toolkit ships with **7 built-in provider connectors** that cover both cloud and local inference scenarios. These connectors implement the standard plugin contracts and can be used directly or composed into pipelines.
+
+### **Available Connectors**
+
+```javascript
+const {
+  OpenAIConnector, // GPT-4, text-embedding-3
+  AnthropicConnector, // Claude 3 Opus, Sonnet, Haiku
+  CohereConnector, // Embed + Rerank
+  OllamaConnector, // Llama 3, Mistral (local)
+  LocalEmbedder, // TF-IDF (offline, no API)
+  MemoryRetriever, // In-memory cosine similarity
+} = require("@devilsdev/rag-pipeline-utils");
+
+// Local model
+const ollama = new OllamaConnector({
+  model: "llama3",
+  baseURL: "http://localhost:11434",
+});
+
+// Cloud providers
+const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = new AnthropicConnector({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
+```
+
+### **Connector Summary**
+
+| Connector              | Type                | Use Case                                   |
+| ---------------------- | ------------------- | ------------------------------------------ |
+| `OpenAIConnector`      | LLM + Embedder      | GPT-4 generation, text-embedding-3 vectors |
+| `AnthropicConnector`   | LLM                 | Claude 3 Opus, Sonnet, Haiku generation    |
+| `CohereConnector`      | Embedder + Reranker | Embed v3 vectors, reranking                |
+| `OllamaConnector`      | LLM + Embedder      | Local Llama 3, Mistral inference           |
+| `LocalEmbedder`        | Embedder            | Offline TF-IDF embeddings (no API key)     |
+| `MemoryRetriever`      | Retriever           | In-memory cosine similarity search         |
+| `HuggingFaceConnector` | LLM + Embedder      | Hosted Inference API models                |
+
+All connectors support the standard plugin lifecycle (registration, validation, hot-swapping) and can be configured through `.ragrc.json` or passed directly to `createRagPipeline()`.
+
+---
+
 _This comprehensive plugin development guide enables you to build production-ready extensions for @DevilsDev/rag-pipeline-utils. For usage examples, see the [Usage Guide](./Usage.md), or explore [CLI Reference](./CLI.md) for plugin management commands._

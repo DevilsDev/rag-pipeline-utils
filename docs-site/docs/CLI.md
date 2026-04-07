@@ -1,6 +1,6 @@
 # CLI Reference
 
-The **@DevilsDev/rag-pipeline-utils** CLI provides a powerful command-line interface for managing RAG pipelines, ingesting documents, running queries, and evaluating performance. This comprehensive reference covers all available commands, options, and usage patterns.
+The **@devilsdev/rag-pipeline-utils** CLI provides a powerful command-line interface for managing RAG pipelines, ingesting documents, running queries, and evaluating performance. This comprehensive reference covers all available commands, options, and usage patterns.
 
 ---
 
@@ -10,7 +10,7 @@ The **@DevilsDev/rag-pipeline-utils** CLI provides a powerful command-line inter
 
 ```bash
 # Install globally for system-wide access
-npm install -g @DevilsDev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 
 # Verify installation
 rag-pipeline --version
@@ -24,10 +24,10 @@ rag-pipeline --help
 
 ```bash
 # Run without global installation
-npx @DevilsDev/rag-pipeline-utils <command>
+npx @devilsdev/rag-pipeline-utils <command>
 
 # Or install as dev dependency
-npm install --save-dev @DevilsDev/rag-pipeline-utils
+npm install --save-dev @devilsdev/rag-pipeline-utils
 npx rag-pipeline <command>
 ```
 
@@ -863,4 +863,4 @@ jobs:
 
 ---
 
-_This comprehensive CLI reference covers all available commands and enterprise features in @DevilsDev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), explore [Enterprise Features](./Enterprise.md) for production deployments, or check [Observability](./Observability.md) for monitoring and alerting._
+_This comprehensive CLI reference covers all available commands and enterprise features in @devilsdev/rag-pipeline-utils. For programmatic usage, see the [Usage Guide](./Usage.md), explore [Enterprise Features](./Enterprise.md) for production deployments, or check [Observability](./Observability.md) for monitoring and alerting._

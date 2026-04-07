@@ -4,7 +4,7 @@ sidebar_position: 15
 
 # API Reference
 
-Comprehensive reference documentation for RAG Pipeline Utils v2.3.1.
+Comprehensive reference documentation for RAG Pipeline Utils v2.4.0.
 
 ## Core API
 
@@ -30,7 +30,7 @@ function createRagPipeline(config: PipelineConfig): Pipeline;
 | `config.llm`       | `LLM \| string`       | No       | Language model plugin or plugin name                  |
 | `config.reranker`  | `Reranker \| string`  | No       | Result reranking plugin or plugin name                |
 
-**Returns:** `Pipeline` - Pipeline instance with `query()` and `ingest()` methods
+**Returns:** `Pipeline` - Pipeline instance with `run()` and `cleanup()` methods
 
 **Example:**
 
@@ -881,7 +881,7 @@ interface StreamChunk {
 
 ## Version Information
 
-Current version: **2.3.1**
+Current version: **2.4.0**
 
 Supported Node.js versions:
 

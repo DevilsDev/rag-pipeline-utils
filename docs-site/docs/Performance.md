@@ -697,4 +697,47 @@ class AutoScaler {
 
 ---
 
+## **Streaming Embeddings (v2.4.0)**
+
+The `StreamingEmbedder` wrapper enables real-time embedding of large document sets with built-in backpressure control, memory management, and progress tracking. Instead of embedding an entire corpus in one blocking call, documents flow through an async iterator that yields results as they become available.
+
+```javascript
+const { StreamingEmbedder } = require("@devilsdev/rag-pipeline-utils");
+
+const streamer = new StreamingEmbedder(myEmbedder, {
+  batchSize: 50,
+  maxMemoryMB: 512,
+});
+
+for await (const { id, vector, progress } of streamer.embedStream(documents)) {
+  console.log(`${(progress * 100).toFixed(0)}% complete`);
+}
+```
+
+**Key capabilities:**
+
+- **Backpressure control** -- the stream pauses automatically when the consumer falls behind, preventing unbounded memory growth.
+- **Memory management** -- the `maxMemoryMB` option caps heap usage; when the threshold is reached the stream throttles until memory is freed.
+- **Progress tracking** -- every yielded result includes a `progress` value (0-1) so callers can render progress bars or log completion percentage.
+
+### **Performance Dashboard**
+
+The `MetricsAggregator` and `DashboardGenerator` pair provides a turnkey performance dashboard for monitoring query latency, cost, and success rates across your RAG pipeline.
+
+```javascript
+const {
+  MetricsAggregator,
+  DashboardGenerator,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const aggregator = new MetricsAggregator();
+aggregator.recordQuery({ duration: 250, cost: 0.003, success: true });
+
+const html = new DashboardGenerator().generate(aggregator.getSnapshot());
+```
+
+The generated HTML dashboard includes latency histograms, cost-over-time charts, success/failure ratios, and P95/P99 breakdowns. Write the output to a file or serve it from an Express route for live monitoring.
+
+---
+
 _This performance guide provides comprehensive optimization strategies for @DevilsDev/rag-pipeline-utils. For troubleshooting performance issues, see the [Troubleshooting Guide](./Troubleshooting.md)._

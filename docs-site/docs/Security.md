@@ -1049,4 +1049,48 @@ class IncidentResponse {
 
 ---
 
+## **3-Layer Guardrails (v2.4.0)**
+
+Version 2.4.0 introduces a structured guardrails system that wraps any existing pipeline with pre-retrieval, retrieval-time, and post-generation safety checks:
+
+```javascript
+const { GuardrailsPipeline } = require("@devilsdev/rag-pipeline-utils");
+
+const safePipeline = new GuardrailsPipeline(pipeline, {
+  preRetrieval: { enableInjectionDetection: true },
+  retrieval: { minRelevanceScore: 0.6 },
+  postGeneration: { enablePIIDetection: true, enableGroundednessCheck: true },
+});
+```
+
+### **Layer 1 -- Pre-Retrieval**
+
+Runs before any documents are fetched:
+
+- **Prompt injection detection**: Scans incoming queries against 10 known injection patterns (role hijacking, instruction override, system-prompt leakage, delimiter attacks, etc.) and blocks or flags suspicious inputs.
+- **Topic filtering**: Rejects queries that fall outside configured topic boundaries, preventing misuse of the pipeline for unrelated content.
+- **Query validation**: Enforces length limits, character-set restrictions, and structural checks to ensure queries are well-formed before they reach the retriever.
+
+### **Layer 2 -- Retrieval-Time**
+
+Applied while retrieving and scoring candidate documents:
+
+- **Relevance threshold**: Discards any retrieved chunk whose similarity score falls below `minRelevanceScore`, reducing noise in the context window.
+- **Freshness filtering**: Optionally filters out documents older than a configured age, ensuring answers reflect up-to-date information.
+- **ACL-based access control**: Checks per-document access-control lists so that users only see content they are authorized to access.
+
+### **Layer 3 -- Post-Generation**
+
+Validates the LLM output before it reaches the user:
+
+- **PII detection**: Scans the generated response for email addresses, phone numbers, Social Security numbers, and credit card numbers. Detected PII is redacted or the response is blocked.
+- **Groundedness check**: Verifies that claims in the generated answer are supported by the retrieved context, preventing hallucinated or unsupported statements.
+- **Length validation**: Ensures the response stays within configured minimum and maximum token limits.
+
+### **Combining Guardrails with Existing Security**
+
+The guardrails layer complements (and does not replace) the existing security infrastructure described above. Use `GuardrailsPipeline` together with authentication, RBAC, plugin sandboxing, and audit logging for defense in depth.
+
+---
+
 _This security guide provides comprehensive protection strategies for @DevilsDev/rag-pipeline-utils deployments. For additional security concerns, consult our security team or review the latest security advisories._

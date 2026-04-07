@@ -744,4 +744,40 @@ class PluginMarketplace {
 
 ---
 
+## Modern Pipeline Architecture (v2.4.0)
+
+The v2.4.0 release introduces an expanded pipeline flow that integrates guardrails, hybrid retrieval, reranking, citation tracking, and evaluation directly into the query path:
+
+### **Updated Pipeline Flow**
+
+```
+Documents → Chunking Engine → Embedder → Vector Store
+```
+
+```
+Query → Guardrails → Query Planner → Retriever + BM25 → Reranker → LLM → Citation Tracker → Evaluator → Response
+```
+
+**Ingestion path**: Documents are split by the Chunking Engine, converted to vectors by the Embedder, and persisted in the Vector Store.
+
+**Query path**: Incoming queries pass through the Guardrails layer (prompt-injection detection, topic filtering, query validation), then the Query Planner selects a retrieval strategy. The Retriever performs vector search while BM25 handles keyword matching; their results are merged and scored by the Reranker. The top-ranked context is sent to the LLM for generation. The Citation Tracker maps each claim in the response back to its source chunk, and the Evaluator produces faithfulness, relevance, and groundedness scores before the final response is returned.
+
+### **GraphRAG Architecture**
+
+GraphRAG adds a knowledge-graph layer on top of the standard vector retrieval pipeline:
+
+- **KnowledgeGraph**: Stores entities (people, organizations, concepts, locations) and the relationships between them as a directed graph. Entities are deduplicated and merged across documents.
+- **EntityExtractor**: Finds entities in source documents using heuristic NER (named-entity recognition). It applies pattern-based and dictionary-based extraction to identify entity types and their spans.
+- **GraphRetriever**: Combines graph traversal with text matching. Given a query, it identifies relevant entities, traverses their relationships in the knowledge graph, and merges graph-sourced context with traditional vector search results for richer answers.
+
+```javascript
+const { GraphRetriever } = require("@devilsdev/rag-pipeline-utils");
+
+const retriever = new GraphRetriever();
+await retriever.store(docs);
+const results = await retriever.retrieve(query);
+```
+
+---
+
 _This enterprise-grade architecture enables @DevilsDev/rag-pipeline-utils to scale from simple prototypes to mission-critical production systems while maintaining flexibility, security, and observability. Continue to [Usage](./Usage.md) for practical implementation examples, or explore [Plugins](./Plugins.md) to learn about creating custom components._
