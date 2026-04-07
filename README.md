@@ -519,10 +519,10 @@ Split documents using five strategies: `sentence`, `fixed-size`, `recursive`, `s
 const engine = new ChunkingEngine({
   strategy: "recursive",
   chunkSize: 512,
-  overlap: 50,
+  chunkOverlap: 50,
 });
 const chunks = engine.chunk(documentText);
-// chunks: [{ text, metadata, index }, ...]
+// chunks: ["First chunk of text...", "Second chunk...", ...]
 ```
 
 ---
@@ -574,12 +574,11 @@ Combine vector similarity search with BM25 keyword search using reciprocal rank 
 const bm25 = new BM25Search();
 bm25.index(documents);
 
-const hybrid = new HybridRetriever({
-  vectorRetriever: myVectorRetriever,
-  keywordRetriever: bm25,
-  weights: { vector: 0.7, keyword: 0.3 },
-});
-const results = await hybrid.retrieve(query);
+const hybrid = new HybridRetriever([
+  { retriever: myVectorRetriever, weight: 0.7, name: "vector" },
+  { retriever: bm25, weight: 0.3, name: "keyword" },
+]);
+const results = await hybrid.retrieve({ query });
 ```
 
 ---
@@ -590,9 +589,9 @@ Wrap any pipeline with pre-retrieval, retrieval-time, and post-generation safety
 
 ```javascript
 const safePipeline = new GuardrailsPipeline(pipeline, {
-  preRetrieval: { blockInjection: true, maxQueryLength: 500 },
-  retrieval: { minScore: 0.6 },
-  postGeneration: { toxicity: true, pii: true },
+  preRetrieval: { enableInjectionDetection: true, maxQueryLength: 500 },
+  retrieval: { minRelevanceScore: 0.6 },
+  postGeneration: { enablePIIDetection: true, enableGroundednessCheck: true },
 });
 const result = await safePipeline.run({ query });
 ```
@@ -605,16 +604,17 @@ Multi-step retrieval with automatic query planning, iterative search, and self-c
 
 ```javascript
 const agent = new AgenticPipeline({
-  retriever: myRetriever,
-  llm: myLLM,
-  maxIterations: 3,
-  selfCritique: true,
+  maxConcurrency: 3,
+  enableCritique: true,
+  enablePlanning: true,
 });
 const result = await agent.run({
   query: "Compare the pricing tiers across all three competitors",
+  retriever: myRetriever,
+  llm: myLLM,
 });
-// result.plan – decomposed sub-queries
-// result.iterations – retrieval rounds with critique notes
+// result.subQueries – decomposed sub-queries
+// result.critique – answer verification result
 ```
 
 ---
@@ -625,15 +625,13 @@ Track and control token spend across providers. Set budgets, estimate costs befo
 
 ```javascript
 const calculator = new CostCalculator();
-const estimate = calculator.estimate({
-  model: "gpt-4",
-  inputTokens: 2000,
-  outputTokens: 500,
-});
+const estimate = calculator.estimate("gpt-4", 2000, 500);
+// estimate.inputCost, estimate.outputCost, estimate.totalCost
 
-const budget = new TokenBudget({ maxTokens: 100000, period: "daily" });
-budget.consume(estimate.totalTokens);
-// budget.remaining, budget.isExhausted
+const budget = new TokenBudget({ maxTokens: 100000 });
+budget.record(2500);
+const status = budget.check(1000);
+// status.allowed, status.remaining, status.warnings
 ```
 
 ---
@@ -644,11 +642,11 @@ Trace every step of pipeline execution with timing, input/output snapshots, and 
 
 ```javascript
 const tracer = new ExecutionTracer();
-const result = await pipeline.run({ query, tracer });
+const traced = tracer.trace(pipeline);
+const result = await traced.run({ query });
 
-const trace = tracer.getTrace();
-// trace.steps – [{name, duration, input, output}, ...]
-// trace.totalDuration, trace.bottleneck
+const traces = tracer.getTraces();
+// traces[0].steps, traces[0].totalDuration, traces[0].metadata
 ```
 
 ---
@@ -658,33 +656,31 @@ const trace = tracer.getTrace();
 Expose your RAG pipeline as a Model Context Protocol (MCP) tool, making it callable from any MCP-compatible client (Claude Desktop, IDE extensions, etc.).
 
 ```javascript
-const server = new MCPServer({
-  pipeline,
+const server = MCPServer.fromPipeline(pipeline, {
   name: "knowledge-base",
-  description: "Search internal documentation",
 });
-server.listen({ port: 3001 });
+const tools = server.getToolDefinitions();
+const result = await server.handleToolUse("knowledge-base", {
+  query: "How does auth work?",
+});
 ```
 
 ---
 
 ### Quick Start Templates
 
-Scaffold new RAG projects from four built-in templates: `basic`, `conversational`, `multi-doc`, and `enterprise`. Each template includes working configuration, example data, and tests.
+Scaffold new RAG projects from four built-in templates: `document-qa`, `chatbot`, `code-search`, and `customer-support`. Each template includes working configuration, example data, and tests.
 
 ```javascript
 const scaffolder = new ProjectScaffolder();
-await scaffolder.create({
-  template: "conversational",
-  directory: "./my-chatbot",
-  name: "support-bot",
-});
+scaffolder.create("chatbot", "./my-chatbot");
+// Creates: package.json, index.js, .ragrc.json, README.md
 ```
 
 Or from the CLI:
 
 ```bash
-npx rag-pipeline-utils init --template enterprise
+npx rag-pipeline-utils init --template chatbot
 ```
 
 ---
@@ -694,13 +690,11 @@ npx rag-pipeline-utils init --template enterprise
 Stream LLM responses to clients in real-time via Server-Sent Events or WebSockets. The `StreamRouter` multiplexes multiple concurrent streams with backpressure handling.
 
 ```javascript
-const sse = new SSEAdapter();
 const router = new StreamRouter();
 
 // Express example
-app.get("/api/stream", (req, res) => {
-  sse.connect(res);
-  router.pipe(pipeline.stream({ query: req.query.q }), sse);
+app.get("/api/stream", async (req, res) => {
+  await router.streamSSE(pipeline, req.query.q, res);
 });
 ```
 
@@ -714,7 +708,7 @@ Connect to local or cloud LLM providers with zero-config defaults. Each connecto
 // Local models via Ollama
 const ollama = new OllamaConnector({
   model: "llama3",
-  baseUrl: "http://localhost:11434",
+  baseURL: "http://localhost:11434",
 });
 
 // Cloud providers
