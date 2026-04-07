@@ -338,18 +338,28 @@ npm run verify:esm        # Validate ESM build
 
 ## Roadmap
 
-### Delivered
+### Current Release: v2.3.1
 
-| Version | Highlights                                                                    |
-| ------- | ----------------------------------------------------------------------------- |
-| v2.3.1  | JWT replay protection, path traversal defense, 113 security tests             |
-| v2.4.0  | API surface expansion (93 exports), esbuild bundler, ESM verification         |
-| v2.5.0  | Smart chunking (5 strategies), citation tracking, evaluation framework        |
-| v2.6.0  | Agentic RAG, hybrid retrieval (BM25 + RRF), 3-layer guardrails                |
-| v2.7.0  | Cost management, pipeline debugger, MCP integration, quick start templates    |
-| v2.8.0  | Streaming adapters (SSE/WebSocket), Ollama/OpenAI/Anthropic/Cohere connectors |
+The latest published npm release. All features documented in this README are available on the `main` branch and will ship in the next npm release.
 
-### What's Next (v3.0.0+)
+**Included in current main (upcoming release):**
+
+- 93 public exports (up from 22 in v2.3.1)
+- Smart chunking engine with 5 strategies
+- Citation tracking and hallucination detection
+- RAG evaluation framework (faithfulness, relevance, groundedness)
+- Agentic RAG with query planning and self-critique
+- Hybrid retrieval (BM25 + vector + Reciprocal Rank Fusion)
+- 3-layer guardrails (injection detection, ACL filtering, PII detection)
+- Cost management with token budgets and provider pricing
+- Pipeline debugger with execution tracing
+- MCP integration for tool exposure
+- Streaming adapters (SSE, WebSocket)
+- 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, LocalEmbedder, MemoryRetriever)
+- Quick start templates (4 project scaffolds)
+- 92 test suites, 2050+ tests
+
+### What's Next
 
 - **GraphRAG** -- knowledge graph integration for entity-relationship retrieval
 - **Advanced Reranking** -- cross-encoder models and learned ranking functions
@@ -360,20 +370,6 @@ npm run verify:esm        # Validate ESM build
 - **Real-time Collaboration** -- team-based pipeline editing and sharing
 
 **Vote on features:** [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/roadmap)
-
----
-
-## Upgrading from v2.3.x
-
-All changes since v2.3.1 are **backward compatible**. The `pipeline.run()` API is unchanged -- new features (citations, evaluation) are opt-in via the `options` parameter.
-
-**Key changes:**
-
-- `pipeline.run({ query, options: { citations: true } })` -- adds `result.citations`
-- `pipeline.run({ query, options: { evaluate: true } })` -- adds `result.evaluation`
-- Default return shape `{ success, query, results }` is identical to v2.3.1
-
-If upgrading from v2.2.x, see the [JWT validation changes](#security) -- `strictValidation` behavior was corrected for consistency.
 
 ---
 
