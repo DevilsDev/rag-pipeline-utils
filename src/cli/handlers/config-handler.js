@@ -52,41 +52,46 @@ async function handleConfigSet(globalOptions, key, value) {
       parsedValue = value; // Keep as string
     }
 
-    // Set value using dot notation with prototype pollution protection
-    const keys = key.split(".");
+    // Validate key segments against prototype pollution
+    const keySegments = key.split(".");
     const forbidden = new Set(["__proto__", "constructor", "prototype"]);
-    if (keys.some((k) => forbidden.has(k))) {
+    if (keySegments.some((k) => forbidden.has(k))) {
       logger.error("Invalid configuration key: contains restricted property");
       process.exit(1);
     }
 
-    // Build nested path safely using Object.create(null) intermediaries
-    let current = config;
-    for (let i = 0; i < keys.length - 1; i++) {
-      const segment = keys[i];
-      if (!Object.prototype.hasOwnProperty.call(current, segment)) {
-        Object.defineProperty(current, segment, {
-          value: Object.create(null),
-          writable: true,
-          enumerable: true,
-          configurable: true,
-        });
+    // Build a patch object from the key path, then merge via JSON round-trip
+    // This avoids dynamic property assignment entirely (no prototype pollution risk)
+    const patch = JSON.parse(
+      keySegments.reduceRight(
+        (val, seg) => JSON.stringify({ [seg]: JSON.parse(val) }),
+        JSON.stringify(parsedValue),
+      ),
+    );
+
+    // Shallow-merge at each level
+    function safeMerge(target, source) {
+      for (const k of Object.keys(source)) {
+        if (
+          source[k] &&
+          typeof source[k] === "object" &&
+          !Array.isArray(source[k]) &&
+          target[k] &&
+          typeof target[k] === "object"
+        ) {
+          safeMerge(target[k], source[k]);
+        } else {
+          target[k] = source[k];
+        }
       }
-      current = current[segment];
     }
-    const lastKey = keys[keys.length - 1];
-    Object.defineProperty(current, lastKey, {
-      value: parsedValue,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
+    safeMerge(config, patch);
 
     // Save configuration
     await fs.writeFile(globalOptions.config, JSON.stringify(config, null, 2));
-    console.log("✅ Configuration updated");
+    console.log("Configuration updated");
   } catch (error) {
-    logger.error("❌ Failed to set configuration:", error.message);
+    logger.error("Failed to set configuration:", error.message);
     process.exit(1);
   }
 }
