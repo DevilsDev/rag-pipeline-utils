@@ -70,6 +70,23 @@ const {
 } = require("./citation/source-mapper");
 const { detectHallucinations } = require("./citation/hallucination-detector");
 
+// Hybrid Retrieval
+const { BM25Search } = require("./retrieval/bm25-search");
+const { reciprocalRankFusion } = require("./retrieval/rank-fusion");
+const { HybridRetriever } = require("./retrieval/hybrid-retriever");
+
+// Guardrails
+const { PreRetrievalGuard } = require("./guardrails/pre-retrieval-guard");
+const { RetrievalGuard } = require("./guardrails/retrieval-guard");
+const { PostGenerationGuard } = require("./guardrails/post-generation-guard");
+const { GuardrailsPipeline } = require("./guardrails/guardrails-pipeline");
+
+// Agentic RAG
+const { QueryPlanner } = require("./agentic/query-planner");
+const { IterativeRetriever } = require("./agentic/iterative-retriever");
+const { SelfCritiqueChecker } = require("./agentic/self-critique");
+const { AgenticPipeline } = require("./agentic/agentic-pipeline");
+
 // Performance and observability
 const ParallelProcessor = require("./core/performance/parallel-processor");
 const eventLogger = require("./core/observability/event-logger");
@@ -166,6 +183,23 @@ module.exports = {
   mapSentenceToSources,
   buildIDFWeights,
   detectHallucinations,
+
+  // Hybrid Retrieval
+  BM25Search,
+  reciprocalRankFusion,
+  HybridRetriever,
+
+  // Guardrails
+  PreRetrievalGuard,
+  RetrievalGuard,
+  PostGenerationGuard,
+  GuardrailsPipeline,
+
+  // Agentic RAG
+  QueryPlanner,
+  IterativeRetriever,
+  SelfCritiqueChecker,
+  AgenticPipeline,
 
   // Performance & Observability
   ParallelProcessor,

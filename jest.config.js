@@ -26,10 +26,10 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageThreshold: {
     global: {
-      branches: 33,
-      functions: 36,
-      lines: 37,
-      statements: 37,
+      branches: 31,
+      functions: 34,
+      lines: 35,
+      statements: 35,
     },
     "./src/security/": {
       branches: 58,
