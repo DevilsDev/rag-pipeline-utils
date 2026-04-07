@@ -44,23 +44,6 @@ async function handleConfigSet(globalOptions, key, value) {
   try {
     const config = JSON.parse(await fs.readFile(globalOptions.config, "utf-8"));
 
-    // Set value using dot notation
-    const keys = key.split(".");
-    const forbidden = new Set(["__proto__", "constructor", "prototype"]);
-    if (keys.some((k) => forbidden.has(k))) {
-      logger.error("Invalid configuration key: contains restricted property");
-      process.exit(1);
-    }
-
-    let current = config;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]]) {
-        current[keys[i]] = {};
-      }
-      current = current[keys[i]];
-    }
-
     // Parse value
     let parsedValue;
     try {
@@ -69,7 +52,35 @@ async function handleConfigSet(globalOptions, key, value) {
       parsedValue = value; // Keep as string
     }
 
-    current[keys[keys.length - 1]] = parsedValue;
+    // Set value using dot notation with prototype pollution protection
+    const keys = key.split(".");
+    const forbidden = new Set(["__proto__", "constructor", "prototype"]);
+    if (keys.some((k) => forbidden.has(k))) {
+      logger.error("Invalid configuration key: contains restricted property");
+      process.exit(1);
+    }
+
+    // Build nested path safely using Object.create(null) intermediaries
+    let current = config;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const segment = keys[i];
+      if (!Object.prototype.hasOwnProperty.call(current, segment)) {
+        Object.defineProperty(current, segment, {
+          value: Object.create(null),
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      current = current[segment];
+    }
+    const lastKey = keys[keys.length - 1];
+    Object.defineProperty(current, lastKey, {
+      value: parsedValue,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
 
     // Save configuration
     await fs.writeFile(globalOptions.config, JSON.stringify(config, null, 2));
