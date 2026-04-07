@@ -18,7 +18,7 @@ const QUESTION_WORDS = ["who", "what", "when", "where", "why", "how", "which"];
 const CONJUNCTIONS = ["and", "or", "also", "as well as"];
 
 /** Splitter patterns for decomposing compound queries */
-const SPLIT_PATTERNS = [/\s+and\s+/i, /\s+or\s+/i, /;\s*/];
+const SPLIT_PATTERNS = [/ and /i, / or /i, /; ?/];
 
 /** Keywords that indicate a comparative strategy */
 const COMPARATIVE_KEYWORDS = [
