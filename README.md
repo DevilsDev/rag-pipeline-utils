@@ -288,6 +288,67 @@ scaffolder.create("chatbot", "./my-chatbot");
 // Creates: package.json, index.js, .ragrc.json, README.md
 ```
 
+### Streaming Embeddings
+
+Generate embeddings in real-time with backpressure control and memory management. Process millions of documents without running out of memory.
+
+```javascript
+const { StreamingEmbedder } = require("@devilsdev/rag-pipeline-utils");
+const streamer = new StreamingEmbedder(myEmbedder, {
+  batchSize: 50,
+  maxMemoryMB: 512,
+});
+for await (const { id, vector, progress } of streamer.embedStream(documents)) {
+  console.log(`${(progress * 100).toFixed(0)}% — embedded ${id}`);
+}
+```
+
+### GraphRAG
+
+Build knowledge graphs from documents and retrieve using entity-relationship traversal. Combines graph-based scoring with text matching for superior retrieval on entity-heavy content.
+
+```javascript
+const { GraphRetriever } = require("@devilsdev/rag-pipeline-utils");
+const retriever = new GraphRetriever({ traversalDepth: 2 });
+await retriever.store(documents); // Extracts entities + builds graph
+const results = await retriever.retrieve("Who founded OpenAI?", 5);
+// Results ranked by entity graph traversal + text relevance
+```
+
+### Advanced Reranking
+
+Three reranking strategies beyond LLM-based: BM25 scoring, embedding cosine similarity, and cascaded multi-stage reranking.
+
+```javascript
+const {
+  ScoringReranker,
+  EmbeddingReranker,
+  CascadeReranker,
+} = require("@devilsdev/rag-pipeline-utils");
+const cascade = new CascadeReranker([
+  new ScoringReranker(), // Stage 1: BM25 keyword scoring
+  new EmbeddingReranker(embedder), // Stage 2: semantic similarity
+]);
+const ranked = await cascade.rerank(query, documents);
+```
+
+### Performance Dashboard
+
+Generate standalone HTML dashboards from pipeline metrics. No external dependencies — open in any browser.
+
+```javascript
+const {
+  MetricsAggregator,
+  DashboardGenerator,
+} = require("@devilsdev/rag-pipeline-utils");
+const aggregator = new MetricsAggregator();
+aggregator.recordQuery({ duration: 250, cost: 0.003, success: true });
+
+const dashboard = new DashboardGenerator();
+const html = dashboard.generate(aggregator.getSnapshot());
+// Write to file: fs.writeFileSync('dashboard.html', html);
+```
+
 ### Enterprise
 
 Multi-tenant isolation, SSO integration (SAML, OAuth2, Active Directory, OIDC), compliance-grade audit logging, and data governance with classification and retention policies.
