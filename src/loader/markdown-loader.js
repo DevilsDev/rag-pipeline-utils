@@ -6,11 +6,11 @@ const fs = require('fs');
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs/promises');
+const fs = require("fs/promises");
 // eslint-disable-line global-require
-const path = require('path');
+const path = require("path");
 // eslint-disable-line global-require
-const { marked } = require('marked');
+const { marked } = require("marked");
 // eslint-disable-line global-require
 
 /**
@@ -25,9 +25,9 @@ class MarkdownLoader {
    */
   async load(_filePath) {
     const absPath = path.resolve(_filePath);
-    const raw = await fs.readFile(absPath, 'utf-8');
+    const raw = await fs.readFile(absPath, "utf-8");
     const html = marked(raw);
-    const text = html.replace(/<[^>]+>/g, ''); // strip tags
+    const text = html.replace(/<[^>]+>/g, ""); // strip tags
 
     return [
       {
@@ -37,26 +37,15 @@ class MarkdownLoader {
   }
 
   /**
-   * Simple sentence-based chunking strategy
+   * Chunk text using the ChunkingEngine
    * @param {string} input
    * @param {number} maxLen
    * @returns {string[]}
    */
   _chunkText(input, maxLen = 500) {
-    const sentences = input.split(/(?<=[.!?])\s+/);
-    const chunks = [];
-    let buffer = '';
-
-    for (const sentence of sentences) {
-      if ((buffer + sentence).length <= maxLen) {
-        buffer += sentence + ' ';
-      } else {
-        chunks.push(buffer.trim());
-        buffer = sentence + ' ';
-      }
-    }
-    if (buffer.trim()) chunks.push(buffer.trim());
-    return chunks;
+    const { ChunkingEngine } = require("../chunking/chunking-engine");
+    const engine = new ChunkingEngine({ strategy: "sentence", maxLen });
+    return engine.chunk(input);
   }
 }
 
