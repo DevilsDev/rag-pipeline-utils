@@ -9,27 +9,28 @@
  */
 
 const { PluginRegistry } = require("../../src/core/plugin-registry");
+const { logger } = require("../../src/utils/logger");
 const fs = require("fs");
 const path = require("path");
 
 describe("Plugin Registry Contract Warnings", () => {
   let originalEnv;
-  let consoleWarnSpy;
+  let loggerWarnSpy;
 
   beforeEach(() => {
     // Save original environment
     originalEnv = process.env.NODE_ENV;
 
-    // Spy on console.warn
-    consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+    // Spy on logger.warn (source now uses structured logger, not console.warn)
+    loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation();
   });
 
   afterEach(() => {
     // Restore original environment
     process.env.NODE_ENV = originalEnv;
 
-    // Restore console.warn
-    consoleWarnSpy.mockRestore();
+    // Restore logger.warn
+    loggerWarnSpy.mockRestore();
   });
 
   describe("checkContractExists", () => {
@@ -70,10 +71,10 @@ describe("Plugin Registry Contract Warnings", () => {
       new PluginRegistry({ disableContractWarnings: false });
 
       // Loader, embedder, retriever, llm, reranker should all exist
-      expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect(loggerWarnSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'loader'"),
       );
-      expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect(loggerWarnSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'embedder'"),
       );
     });
@@ -95,7 +96,7 @@ describe("Plugin Registry Contract Warnings", () => {
       fs.existsSync.mockRestore();
 
       // Should not warn for existing contracts
-      expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect(loggerWarnSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'loader'"),
       );
     });
@@ -105,40 +106,40 @@ describe("Plugin Registry Contract Warnings", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
       // Clear previous warnings
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // First call should warn
       registry._warnMissingContract("testtype", "load");
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+      expect(loggerWarnSpy).toHaveBeenCalledTimes(1);
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Subsequent calls should not warn (already shown for 'testtype:load')
       registry._warnMissingContract("testtype", "load");
       registry._warnMissingContract("testtype", "load");
 
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
     });
 
     it("should warn separately for different contexts", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Warn for different context
       registry._warnMissingContract("testtype", "load");
 
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledTimes(1);
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'testtype'"),
       );
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Different context should trigger new warning
       registry._warnMissingContract("testtype", "register");
 
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+      expect(loggerWarnSpy).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -151,7 +152,7 @@ describe("Plugin Registry Contract Warnings", () => {
       new PluginRegistry({ disableContractWarnings: false });
 
       // No warnings should be logged in production
-      expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect(loggerWarnSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract"),
       );
     });
@@ -159,13 +160,13 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should not call _warnMissingContract in production", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Manually call warning method
       registry._warnMissingContract("testtype", "load");
 
       // Should not log in production
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(loggerWarnSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -178,7 +179,7 @@ describe("Plugin Registry Contract Warnings", () => {
       new PluginRegistry({ disableContractWarnings: true });
 
       // No warnings should be logged
-      expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+      expect(loggerWarnSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract"),
       );
     });
@@ -198,7 +199,7 @@ describe("Plugin Registry Contract Warnings", () => {
       fs.existsSync.mockRestore();
 
       // Should warn for missing loader contract
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'loader'"),
       );
     });
@@ -230,11 +231,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include contract type in warning message", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("testtype"),
       );
     });
@@ -242,11 +243,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include benefits of contracts", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       expect(warningMessage).toContain("Benefits of using contracts");
       expect(warningMessage).toContain("compatibility");
@@ -258,11 +259,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include instructions for adding contracts", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       expect(warningMessage).toContain("To add a contract");
       expect(warningMessage).toContain("contracts/testtype-contract.json");
@@ -273,11 +274,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include example contract structure", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       expect(warningMessage).toContain("Example contract structure");
       expect(warningMessage).toContain('"type": "testtype"');
@@ -289,11 +290,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include documentation references", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       expect(warningMessage).toContain("docs/error-context-guide.md");
       expect(warningMessage).toContain("__tests__/contracts/README.md");
@@ -302,11 +303,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should include instructions to disable warnings", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       expect(warningMessage).toContain("To disable these warnings");
       expect(warningMessage).toContain("disableContractWarnings: true");
@@ -315,11 +316,11 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should use formatted box for readability", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
-      const warningMessage = consoleWarnSpy.mock.calls[0][0];
+      const warningMessage = loggerWarnSpy.mock.calls[0][0];
 
       // Check for box drawing characters
       expect(warningMessage).toContain("╔");
@@ -348,7 +349,7 @@ describe("Plugin Registry Contract Warnings", () => {
 
       fs.existsSync.mockRestore();
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Try to register evaluator plugin (no contract exists)
       try {
@@ -365,7 +366,7 @@ describe("Plugin Registry Contract Warnings", () => {
       }
 
       // Should warn about missing contract during registration
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'evaluator'"),
       );
     });
@@ -384,11 +385,11 @@ describe("Plugin Registry Contract Warnings", () => {
 
       fs.existsSync.mockRestore();
 
-      const loadWarnings = consoleWarnSpy.mock.calls.filter((call) =>
+      const loadWarnings = loggerWarnSpy.mock.calls.filter((call) =>
         call[0].includes("evaluator"),
       ).length;
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       // Try to register evaluator plugin
       try {
@@ -404,7 +405,7 @@ describe("Plugin Registry Contract Warnings", () => {
         // Ignore
       }
 
-      const registerWarnings = consoleWarnSpy.mock.calls.filter((call) =>
+      const registerWarnings = loggerWarnSpy.mock.calls.filter((call) =>
         call[0].includes("evaluator"),
       ).length;
 
@@ -423,12 +424,12 @@ describe("Plugin Registry Contract Warnings", () => {
 
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
       // Should warn when NODE_ENV is undefined (treated as non-production)
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract"),
       );
     });
@@ -438,12 +439,12 @@ describe("Plugin Registry Contract Warnings", () => {
 
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("testtype", "load");
 
       // Should warn in test environment (non-production)
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract"),
       );
     });
@@ -451,12 +452,12 @@ describe("Plugin Registry Contract Warnings", () => {
     it("should handle empty contract type", () => {
       const registry = new PluginRegistry({ disableContractWarnings: false });
 
-      consoleWarnSpy.mockClear();
+      loggerWarnSpy.mockClear();
 
       registry._warnMissingContract("", "load");
 
       // Should still warn with empty type
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract"),
       );
     });

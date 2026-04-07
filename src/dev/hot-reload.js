@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Hot Reload Manager for Development
@@ -17,15 +17,16 @@
  * @since 2.4.0
  */
 
-const { EventEmitter } = require('events');
-const chokidar = require('chokidar');
-const path = require('path');
-const fs = require('fs');
+const { EventEmitter } = require("events");
+const chokidar = require("chokidar");
+const path = require("path");
+const fs = require("fs");
 const {
   createError,
   wrapError,
   ERROR_CODES,
-} = require('../utils/error-formatter');
+} = require("../utils/error-formatter");
+const { logger } = require("../utils/logger");
 
 /**
  * Hot Reload Manager
@@ -38,16 +39,16 @@ class HotReloadManager extends EventEmitter {
 
     this.options = {
       enabled: options.enabled !== false,
-      watchPaths: options.watchPaths || ['./src/plugins', './src/mocks'],
-      configPath: options.configPath || '.ragrc.json',
+      watchPaths: options.watchPaths || ["./src/plugins", "./src/mocks"],
+      configPath: options.configPath || ".ragrc.json",
       debounceDelay: options.debounceDelay || 300,
       preserveState: options.preserveState !== false,
       verbose: options.verbose || false,
       ignorePatterns: options.ignorePatterns || [
-        '**/node_modules/**',
-        '**/*.test.js',
-        '**/*.spec.js',
-        '**/.git/**',
+        "**/node_modules/**",
+        "**/*.test.js",
+        "**/*.spec.js",
+        "**/.git/**",
       ],
       ...options,
     };
@@ -81,7 +82,7 @@ class HotReloadManager extends EventEmitter {
     };
 
     if (this.options.enabled) {
-      this._log('Hot reload manager initialized');
+      this._log("Hot reload manager initialized");
     }
   }
 
@@ -92,11 +93,11 @@ class HotReloadManager extends EventEmitter {
    */
   async start() {
     if (!this.options.enabled) {
-      this._log('Hot reload is disabled');
+      this._log("Hot reload is disabled");
       return;
     }
 
-    this._log('Starting hot reload manager...');
+    this._log("Starting hot reload manager...");
 
     // Watch plugin files
     await this._watchPlugins();
@@ -104,8 +105,8 @@ class HotReloadManager extends EventEmitter {
     // Watch configuration file
     await this._watchConfig();
 
-    this.emit('started');
-    this._log('Hot reload manager started successfully');
+    this.emit("started");
+    this._log("Hot reload manager started successfully");
   }
 
   /**
@@ -114,7 +115,7 @@ class HotReloadManager extends EventEmitter {
    * @returns {Promise<void>}
    */
   async stop() {
-    this._log('Stopping hot reload manager...');
+    this._log("Stopping hot reload manager...");
 
     // Close all watchers
     for (const watcher of this.watchers) {
@@ -122,8 +123,8 @@ class HotReloadManager extends EventEmitter {
     }
 
     this.watchers = [];
-    this.emit('stopped');
-    this._log('Hot reload manager stopped');
+    this.emit("stopped");
+    this._log("Hot reload manager stopped");
   }
 
   /**
@@ -143,27 +144,27 @@ class HotReloadManager extends EventEmitter {
       },
     });
 
-    watcher.on('change', (filePath) => {
+    watcher.on("change", (filePath) => {
       this._handlePluginChange(filePath);
     });
 
-    watcher.on('add', (filePath) => {
+    watcher.on("add", (filePath) => {
       this._log(`New plugin detected: ${filePath}`);
-      this.emit('plugin:added', { path: filePath });
+      this.emit("plugin:added", { path: filePath });
     });
 
-    watcher.on('unlink', (filePath) => {
+    watcher.on("unlink", (filePath) => {
       this._log(`Plugin removed: ${filePath}`);
-      this.emit('plugin:removed', { path: filePath });
+      this.emit("plugin:removed", { path: filePath });
       this._handlePluginRemoval(filePath);
     });
 
-    watcher.on('error', (error) => {
-      this._handleError('Plugin watcher error', error);
+    watcher.on("error", (error) => {
+      this._handleError("Plugin watcher error", error);
     });
 
     this.watchers.push(watcher);
-    this._log(`Watching plugins in: ${this.options.watchPaths.join(', ')}`);
+    this._log(`Watching plugins in: ${this.options.watchPaths.join(", ")}`);
   }
 
   /**
@@ -186,12 +187,12 @@ class HotReloadManager extends EventEmitter {
       },
     });
 
-    watcher.on('change', () => {
+    watcher.on("change", () => {
       this._handleConfigChange();
     });
 
-    watcher.on('error', (error) => {
-      this._handleError('Config watcher error', error);
+    watcher.on("error", (error) => {
+      this._handleError("Config watcher error", error);
     });
 
     this.watchers.push(watcher);
@@ -226,19 +227,19 @@ class HotReloadManager extends EventEmitter {
    * @private
    */
   _handleConfigChange() {
-    this._log('Configuration changed');
+    this._log("Configuration changed");
 
     // Debounce config changes
-    if (this.debounceTimers.has('config')) {
-      clearTimeout(this.debounceTimers.get('config'));
+    if (this.debounceTimers.has("config")) {
+      clearTimeout(this.debounceTimers.get("config"));
     }
 
     const timer = setTimeout(() => {
       this._reloadConfig();
-      this.debounceTimers.delete('config');
+      this.debounceTimers.delete("config");
     }, this.options.debounceDelay);
 
-    this.debounceTimers.set('config', timer);
+    this.debounceTimers.set("config", timer);
   }
 
   /**
@@ -250,7 +251,7 @@ class HotReloadManager extends EventEmitter {
    */
   async _reloadPlugin(filePath) {
     if (this.isReloading) {
-      this.reloadQueue.set(filePath, 'plugin');
+      this.reloadQueue.set(filePath, "plugin");
       return;
     }
 
@@ -261,8 +262,8 @@ class HotReloadManager extends EventEmitter {
       this._log(`Reloading plugin: ${filePath}`);
 
       // Execute before reload hooks
-      await this._executeHooks('beforeReload', {
-        type: 'plugin',
+      await this._executeHooks("beforeReload", {
+        type: "plugin",
         path: filePath,
       });
 
@@ -299,7 +300,7 @@ class HotReloadManager extends EventEmitter {
 
       // Record reload
       this._recordReload({
-        type: 'plugin',
+        type: "plugin",
         path: filePath,
         success: true,
         duration: reloadTime,
@@ -307,14 +308,14 @@ class HotReloadManager extends EventEmitter {
       });
 
       // Execute after reload hooks
-      await this._executeHooks('afterReload', {
-        type: 'plugin',
+      await this._executeHooks("afterReload", {
+        type: "plugin",
         path: filePath,
         plugin,
         duration: reloadTime,
       });
 
-      this.emit('plugin:reloaded', {
+      this.emit("plugin:reloaded", {
         path: filePath,
         plugin,
         duration: reloadTime,
@@ -326,7 +327,7 @@ class HotReloadManager extends EventEmitter {
       this.stats.failedReloads++;
 
       this._recordReload({
-        type: 'plugin',
+        type: "plugin",
         path: filePath,
         success: false,
         error: error.message,
@@ -336,12 +337,12 @@ class HotReloadManager extends EventEmitter {
       const enhancedError = wrapError(error, ERROR_CODES.HOT_RELOAD_FAILED, {
         path: filePath,
         reason: error.message,
-        watchPaths: this.options.watchPaths.join(', '),
+        watchPaths: this.options.watchPaths.join(", "),
       });
 
       this._handleError(`Failed to reload plugin: ${filePath}`, enhancedError);
 
-      this.emit('plugin:reload-failed', {
+      this.emit("plugin:reload-failed", {
         path: filePath,
         error: enhancedError.message,
         suggestions: enhancedError.suggestions,
@@ -362,7 +363,7 @@ class HotReloadManager extends EventEmitter {
    */
   async _reloadConfig() {
     if (this.isReloading) {
-      this.reloadQueue.set('config', 'config');
+      this.reloadQueue.set("config", "config");
       return;
     }
 
@@ -373,13 +374,13 @@ class HotReloadManager extends EventEmitter {
       this._log(`Reloading configuration: ${this.options.configPath}`);
 
       // Execute before reload hooks
-      await this._executeHooks('beforeReload', {
-        type: 'config',
+      await this._executeHooks("beforeReload", {
+        type: "config",
         path: this.options.configPath,
       });
 
       // Read and parse configuration
-      const configContent = fs.readFileSync(this.options.configPath, 'utf-8');
+      const configContent = fs.readFileSync(this.options.configPath, "utf-8");
       const config = JSON.parse(configContent);
 
       // Validate configuration (if validator provided)
@@ -387,7 +388,7 @@ class HotReloadManager extends EventEmitter {
         const validation = this.options.configValidator(config);
         if (!validation.valid) {
           throw new Error(
-            `Invalid configuration: ${validation.errors?.map((e) => e.message).join(', ')}`,
+            `Invalid configuration: ${validation.errors?.map((e) => e.message).join(", ")}`,
           );
         }
       }
@@ -402,7 +403,7 @@ class HotReloadManager extends EventEmitter {
 
       // Record reload
       this._recordReload({
-        type: 'config',
+        type: "config",
         path: this.options.configPath,
         success: true,
         duration: reloadTime,
@@ -410,14 +411,14 @@ class HotReloadManager extends EventEmitter {
       });
 
       // Execute after reload hooks
-      await this._executeHooks('afterReload', {
-        type: 'config',
+      await this._executeHooks("afterReload", {
+        type: "config",
         path: this.options.configPath,
         config,
         duration: reloadTime,
       });
 
-      this.emit('config:reloaded', {
+      this.emit("config:reloaded", {
         path: this.options.configPath,
         config,
         duration: reloadTime,
@@ -431,7 +432,7 @@ class HotReloadManager extends EventEmitter {
       this.stats.failedReloads++;
 
       this._recordReload({
-        type: 'config',
+        type: "config",
         path: this.options.configPath,
         success: false,
         error: error.message,
@@ -441,7 +442,7 @@ class HotReloadManager extends EventEmitter {
       const enhancedError = wrapError(error, ERROR_CODES.HOT_RELOAD_FAILED, {
         path: this.options.configPath,
         reason: error.message,
-        watchPaths: this.options.watchPaths.join(', '),
+        watchPaths: this.options.watchPaths.join(", "),
       });
 
       this._handleError(
@@ -449,7 +450,7 @@ class HotReloadManager extends EventEmitter {
         enhancedError,
       );
 
-      this.emit('config:reload-failed', {
+      this.emit("config:reload-failed", {
         path: this.options.configPath,
         error: enhancedError.message,
         suggestions: enhancedError.suggestions,
@@ -483,7 +484,7 @@ class HotReloadManager extends EventEmitter {
     // Notify plugin registry
     if (this.pluginRegistry) {
       // Plugin registry should handle removal
-      this.emit('plugin:removed:registry', { path: filePath });
+      this.emit("plugin:removed:registry", { path: filePath });
     }
   }
 
@@ -506,7 +507,7 @@ class HotReloadManager extends EventEmitter {
       let state = null;
 
       // Try to get state from plugin
-      if (typeof plugin.getState === 'function') {
+      if (typeof plugin.getState === "function") {
         state = await plugin.getState();
       } else if (plugin.state) {
         state = { ...plugin.state };
@@ -515,7 +516,7 @@ class HotReloadManager extends EventEmitter {
       if (state) {
         this.pluginState.set(filePath, state);
 
-        await this._executeHooks('onStatePreserve', {
+        await this._executeHooks("onStatePreserve", {
           path: filePath,
           state,
         });
@@ -554,18 +555,18 @@ class HotReloadManager extends EventEmitter {
 
     try {
       // Try to restore state to plugin
-      if (typeof plugin.setState === 'function') {
+      if (typeof plugin.setState === "function") {
         await plugin.setState(state);
       } else if (plugin.state !== undefined) {
         plugin.state = { ...state };
       }
 
-      await this._executeHooks('onStateRestore', {
+      await this._executeHooks("onStateRestore", {
         plugin,
         state,
       });
 
-      this._log('State restored successfully');
+      this._log("State restored successfully");
     } catch (error) {
       const enhancedError = wrapError(
         error,
@@ -591,7 +592,7 @@ class HotReloadManager extends EventEmitter {
     const pluginName = path.basename(filePath, path.extname(filePath));
 
     // Notify registry of updated plugin
-    if (typeof this.pluginRegistry.updatePlugin === 'function') {
+    if (typeof this.pluginRegistry.updatePlugin === "function") {
       await this.pluginRegistry.updatePlugin(pluginName, plugin);
     }
 
@@ -612,9 +613,9 @@ class HotReloadManager extends EventEmitter {
     const [[key, type]] = this.reloadQueue.entries();
     this.reloadQueue.delete(key);
 
-    if (type === 'plugin') {
+    if (type === "plugin") {
       await this._reloadPlugin(key);
-    } else if (type === 'config') {
+    } else if (type === "config") {
       await this._reloadConfig();
     }
   }
@@ -677,13 +678,13 @@ class HotReloadManager extends EventEmitter {
   _handleError(message, error) {
     this._log(`ERROR: ${message}: ${error.message}`, true);
 
-    this._executeHooks('onError', {
+    this._executeHooks("onError", {
       message,
       error,
       stack: error.stack,
     });
 
-    this.emit('error', {
+    this.emit("error", {
       message,
       error: error.message,
       stack: error.stack,
@@ -699,11 +700,11 @@ class HotReloadManager extends EventEmitter {
    */
   _log(message, isError = false) {
     if (this.options.verbose || isError) {
-      const prefix = '[HotReload]';
+      const prefix = "[HotReload]";
       if (isError) {
-        console.error(`${prefix} ${message}`);
+        logger.error(`${prefix} ${message}`);
       } else {
-        console.log(`${prefix} ${message}`);
+        logger.info(`${prefix} ${message}`);
       }
     }
   }
@@ -770,7 +771,7 @@ class HotReloadManager extends EventEmitter {
    */
   clearHistory() {
     this.reloadHistory = [];
-    this._log('Reload history cleared');
+    this._log("Reload history cleared");
   }
 
   /**
@@ -780,10 +781,10 @@ class HotReloadManager extends EventEmitter {
    * @param {string} type - Type ('plugin' or 'config')
    * @returns {Promise<void>}
    */
-  async triggerReload(filePath, type = 'plugin') {
-    if (type === 'plugin') {
+  async triggerReload(filePath, type = "plugin") {
+    if (type === "plugin") {
       await this._reloadPlugin(filePath);
-    } else if (type === 'config') {
+    } else if (type === "config") {
       await this._reloadConfig();
     } else {
       throw new Error(`Unknown reload type: ${type}`);

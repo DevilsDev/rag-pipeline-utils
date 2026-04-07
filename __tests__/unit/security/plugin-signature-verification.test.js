@@ -11,6 +11,7 @@ const {
   createPluginVerifier,
 } = require("../../../src/security/plugin-signature-verifier.js");
 const { PluginRegistry } = require("../../../src/core/plugin-registry.js");
+const { logger: structuredLogger } = require("../../../src/utils/logger");
 
 describe("Plugin Signature Verification", () => {
   let verifier;
@@ -388,8 +389,8 @@ describe("Plugin Signature Verification", () => {
     });
 
     test("should emit audit entries for plugin registration", async () => {
-      const consoleSpy = jest
-        .spyOn(console, "log")
+      const loggerSpy = jest
+        .spyOn(structuredLogger, "info")
         .mockImplementation(() => {});
 
       const manifest = {
@@ -410,7 +411,7 @@ describe("Plugin Signature Verification", () => {
 
       await registry.register("loader", "test", mockPlugin, manifest);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         "[AUDIT]",
         expect.objectContaining({
           action: "plugin_verified",
@@ -419,7 +420,7 @@ describe("Plugin Signature Verification", () => {
         }),
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 

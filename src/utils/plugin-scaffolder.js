@@ -5,18 +5,19 @@
  * Author: Ali Kahwaji
  */
 
-const fs = require('fs');
+const fs = require("fs");
 // eslint-disable-line global-require
-const path = require('path');
+const path = require("path");
 // eslint-disable-line global-require
-const { pluginContracts } = require('../core/plugin-contracts.js');
+const { pluginContracts } = require("../core/plugin-contracts.js");
 // eslint-disable-line global-require
+const { logger } = require("./logger");
 
 class PluginScaffolder {
   constructor(_options = {}) {
     this.outputDir = _options.outputDir || process.cwd();
-    this.author = _options.author || 'Your Name';
-    this.namespace = _options.namespace || 'your-namespace';
+    this.author = _options.author || "Your Name";
+    this.namespace = _options.namespace || "your-namespace";
   }
 
   /**
@@ -28,7 +29,7 @@ class PluginScaffolder {
   async scaffoldPlugin(pluginType, pluginName, _options = {}) {
     if (!pluginContracts[pluginType]) {
       throw new Error(
-        `Unknown plugin _type: ${pluginType}. Available types: ${Object.keys(pluginContracts).join(', ')}`,
+        `Unknown plugin _type: ${pluginType}. Available types: ${Object.keys(pluginContracts).join(", ")}`,
       );
     }
 
@@ -47,24 +48,16 @@ class PluginScaffolder {
     await this.generateReadme(pluginDir, pluginType, pluginName, _options);
     await this.generatePackageJson(pluginDir, pluginType, pluginName, _options);
 
-    console.log(`✅ Plugin scaffolded successfully at: ${pluginDir}`);
-    // eslint-disable-line no-console
-    console.log('📁 Generated files:');
-    // eslint-disable-line no-console
-    console.log(`   - src/${pluginName}-${pluginType}.js (main plugin)`);
-    // eslint-disable-line no-console
-    console.log(`   - __tests__/${pluginName}-${pluginType}.test.js (tests)`);
-    // eslint-disable-line no-console
-    console.log(
+    logger.info(`Plugin scaffolded successfully at: ${pluginDir}`);
+    logger.info("Generated files:");
+    logger.info(`   - src/${pluginName}-${pluginType}.js (main plugin)`);
+    logger.info(`   - __tests__/${pluginName}-${pluginType}.test.js (tests)`);
+    logger.info(
       `   - mocks/${pluginName}-${pluginType}-mock.js (mock implementation)`,
     );
-    // eslint-disable-line no-console
-    console.log('   - .ragrc.example.json (configuration example)');
-    // eslint-disable-line no-console
-    console.log('   - README.md (documentation)');
-    // eslint-disable-line no-console
-    console.log('   - package.json (npm package)');
-    // eslint-disable-line no-console
+    logger.info("   - .ragrc.example.json (configuration example)");
+    logger.info("   - README.md (documentation)");
+    logger.info("   - package.json (npm package)");
   }
 
   /**
@@ -73,7 +66,7 @@ class PluginScaffolder {
   async generatePluginFile(pluginDir, pluginType, pluginName, _options) {
     const contract = pluginContracts[pluginType];
     const className = this.toPascalCase(`${pluginName}_${pluginType}`);
-    const srcDir = path.join(pluginDir, 'src');
+    const srcDir = path.join(pluginDir, "src");
 
     if (!fs.existsSync(srcDir)) {
       fs.mkdirSync(srcDir, { recursive: true });
@@ -84,7 +77,7 @@ class PluginScaffolder {
         const signature = contract.methodSignatures?.[methodName];
         return this.generateMethodStub(methodName, signature);
       })
-      .join('\n\n');
+      .join("\n\n");
 
     const optionalMethods =
       contract.optionalMethods
@@ -92,12 +85,12 @@ class PluginScaffolder {
           const signature = contract.methodSignatures?.[methodName];
           return this.generateMethodStub(methodName, signature, true);
         })
-        .join('\n\n') || '';
+        .join("\n\n") || "";
 
     const kebabName = pluginName
-      .replace(/([A-Z])/g, '-$1')
+      .replace(/([A-Z])/g, "-$1")
       .toLowerCase()
-      .replace(/^-/, '');
+      .replace(/^-/, "");
 
     const content = `/**
  * ${className} - ${pluginType} plugin implementation
@@ -115,7 +108,7 @@ class ${className} {
     // Example: this.endpoint = options.endpoint || 'https://api.example.com';
   }
 
-${methods}${optionalMethods ? '\n\n  // Optional methods\n' + optionalMethods : ''}
+${methods}${optionalMethods ? "\n\n  // Optional methods\n" + optionalMethods : ""}
 }
 
 module.exports = ${className};
@@ -129,17 +122,17 @@ module.exports = ${className};
    * Generate method stub with proper signature
    */
   generateMethodStub(methodName, signature, isOptional = false) {
-    const params = signature?.params || ['input'];
-    const paramTypes = signature?.paramTypes || ['any'];
-    const returnType = signature?.returnType || 'Promise<any>';
+    const params = signature?.params || ["input"];
+    const paramTypes = signature?.paramTypes || ["any"];
+    const returnType = signature?.returnType || "Promise<any>";
     const description =
       signature?.description ||
-      `${isOptional ? 'Optional: ' : ''}Implement ${methodName} functionality`;
+      `${isOptional ? "Optional: " : ""}Implement ${methodName} functionality`;
 
-    const paramList = params.map((param, _i) => `${param}`).join(', ');
+    const paramList = params.map((param, _i) => `${param}`).join(", ");
     const paramDocs = params
       .map((param, _i) => `   * @param {${paramTypes[_i]}} ${param}`)
-      .join('\n');
+      .join("\n");
 
     return `  /**
    * ${description}
@@ -157,7 +150,7 @@ ${paramDocs}
    */
   async generateTestFile(pluginDir, pluginType, pluginName) {
     const className = this.toPascalCase(`${pluginName}_${pluginType}`);
-    const testDir = path.join(pluginDir, '__tests__');
+    const testDir = path.join(pluginDir, "__tests__");
 
     if (!fs.existsSync(testDir)) {
       fs.mkdirSync(testDir, { recursive: true });
@@ -178,7 +171,7 @@ ${paramDocs}
     });
   });`;
       })
-      .join('\n\n');
+      .join("\n\n");
 
     const content = `/**
  * Tests for ${className}
@@ -229,7 +222,7 @@ ${testCases}
    */
   async generateMockFile(pluginDir, pluginType, pluginName) {
     const className = this.toPascalCase(`${pluginName}_${pluginType}`);
-    const mockDir = path.join(pluginDir, 'mocks');
+    const mockDir = path.join(pluginDir, "mocks");
 
     if (!fs.existsSync(mockDir)) {
       fs.mkdirSync(mockDir, { recursive: true });
@@ -245,7 +238,7 @@ ${testCases}
     return \`Mock result from ${methodName}\`;
   }`;
       })
-      .join('\n\n');
+      .join("\n\n");
 
     const content = `/**
  * Mock implementation of ${className}
@@ -279,11 +272,11 @@ ${mockMethods}
         [pluginName]: `./src/${pluginName}-${pluginType}.js`,
       },
       namespace: `${pluginName}-namespace`,
-      pipeline: ['loader', 'embedder', 'retriever'],
+      pipeline: ["loader", "embedder", "retriever"],
     };
 
     const content = JSON.stringify(_config, null, 2);
-    const _filePath = path.join(pluginDir, '.ragrc.example.json');
+    const _filePath = path.join(pluginDir, ".ragrc.example.json");
     fs.writeFileSync(_filePath, content);
   }
 
@@ -297,16 +290,16 @@ ${mockMethods}
     const methodDocs = contract.requiredMethods
       .map((method) => {
         const signature = contract.methodSignatures?.[method];
-        return `### \`${method}(${signature?.params?.join(', ') || '...args'})\`
+        return `### \`${method}(${signature?.params?.join(", ") || "...args"})\`
 
 ${signature?.description || `Implements ${method} functionality`}
 
 **Parameters:**
-${signature?.params?.map((param, _i) => `- \`${param}\` (${signature.paramTypes?.[_i] || 'any'})`).join('\n') || '- TBD'}
+${signature?.params?.map((param, _i) => `- \`${param}\` (${signature.paramTypes?.[_i] || "any"})`).join("\n") || "- TBD"}
 
-**Returns:** \`${signature?.returnType || 'Promise<any>'}\``;
+**Returns:** \`${signature?.returnType || "Promise<any>"}\``;
       })
-      .join('\n\n');
+      .join("\n\n");
 
     const content = `# ${className}
 
@@ -388,7 +381,7 @@ MIT
 ${this.author}
 `;
 
-    const _filePath = path.join(pluginDir, 'README.md');
+    const _filePath = path.join(pluginDir, "README.md");
     fs.writeFileSync(_filePath, content);
   }
 
@@ -400,32 +393,32 @@ ${this.author}
 
     const packageJson = {
       name: packageName,
-      version: '1.0.0',
+      version: "1.0.0",
       description:
         _options.description || `A ${pluginType} plugin for RAG Pipeline Utils`,
       main: `src/${pluginName}-${pluginType}.js`,
-      _type: 'module',
+      _type: "module",
       scripts: {
-        test: 'jest',
-        'test:watch': 'jest --watch',
-        lint: 'eslint src/ __tests__/',
-        'lint:fix': 'eslint src/ __tests__/ --fix',
+        test: "jest",
+        "test:watch": "jest --watch",
+        lint: "eslint src/ __tests__/",
+        "lint:fix": "eslint src/ __tests__/ --fix",
       },
-      keywords: ['rag', 'pipeline', 'plugin', pluginType, 'ai', 'ml'],
+      keywords: ["rag", "pipeline", "plugin", pluginType, "ai", "ml"],
       author: this.author,
-      license: 'MIT',
+      license: "MIT",
       peerDependencies: {
-        '@devilsdev/rag-pipeline-utils': '^2.0.0',
+        "@devilsdev/rag-pipeline-utils": "^2.0.0",
       },
       devDependencies: {
-        jest: '^29.7.0',
-        eslint: '^8.57.1',
+        jest: "^29.7.0",
+        eslint: "^8.57.1",
       },
-      files: ['src/', 'mocks/', 'README.md', '.ragrc.example.json'],
+      files: ["src/", "mocks/", "README.md", ".ragrc.example.json"],
     };
 
     const content = JSON.stringify(packageJson, null, 2);
-    const _filePath = path.join(pluginDir, 'package.json');
+    const _filePath = path.join(pluginDir, "package.json");
     fs.writeFileSync(_filePath, content);
   }
 
@@ -436,7 +429,7 @@ ${this.author}
     return str
       .split(/[-_\s]/)
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join('');
+      .join("");
   }
 }
 

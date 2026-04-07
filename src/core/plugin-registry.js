@@ -6,6 +6,7 @@ const Ajv = require("ajv");
 const {
   createPluginVerifier,
 } = require("../security/plugin-signature-verifier.js");
+const { logger } = require("../utils/logger");
 
 class PluginRegistry {
   constructor(options = {}) {
@@ -46,9 +47,9 @@ class PluginRegistry {
           process.env.NODE_ENV !== "production" &&
           !this._disableContractWarnings
         ) {
-          console.warn(
+          logger.warn(
             `[PLUGIN_REGISTRY] Warning: Failed to compile contract schema: ${error.message}`,
-          ); // eslint-disable-line no-console
+          );
         }
         this._contractSchema = null;
       }
@@ -93,9 +94,9 @@ class PluginRegistry {
         process.env.NODE_ENV !== "production" &&
         !this._disableContractWarnings
       ) {
-        console.warn(
+        logger.warn(
           `[PLUGIN_REGISTRY] Warning: Failed to load contract schema: ${error.message}`,
-        ); // eslint-disable-line no-console
+        );
       }
     }
     return null;
@@ -218,7 +219,7 @@ class PluginRegistry {
 
     this._contractWarningsShown.add(warningKey);
 
-    console.warn(
+    logger.warn(
       `
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║ [PLUGIN_REGISTRY] Missing Contract for '${type}' plugins                       ║
@@ -251,7 +252,7 @@ class PluginRegistry {
 ║  new PluginRegistry({ disableContractWarnings: true })                    ║
 ╚════════════════════════════════════════════════════════════════════════════╝
     `.trim(),
-    ); // eslint-disable-line no-console
+    );
   }
 
   _loadContracts() {
@@ -289,7 +290,7 @@ class PluginRegistry {
 
               if (process.env.NODE_ENV === "production") {
                 // In production, log error but continue (fail open)
-                console.error(`[PLUGIN_REGISTRY] ERROR: ${error.message}`); // eslint-disable-line no-console
+                logger.error(`[PLUGIN_REGISTRY] ERROR: ${error.message}`);
               } else {
                 // In development, throw to fail fast
                 throw error;
@@ -312,9 +313,9 @@ class PluginRegistry {
             process.env.NODE_ENV !== "production" &&
             !this._disableContractWarnings
           ) {
-            console.warn(
+            logger.warn(
               `[PLUGIN_REGISTRY] Warning: Failed to load contract for '${type}': ${error.message}`,
-            ); // eslint-disable-line no-console
+            );
           }
         }
       }
@@ -329,9 +330,9 @@ class PluginRegistry {
         process.env.NODE_ENV !== "production" &&
         !this._disableContractWarnings
       ) {
-        console.warn(
+        logger.warn(
           `[PLUGIN_REGISTRY] Warning: Contracts directory not accessible: ${error.message}`,
-        ); // eslint-disable-line no-console
+        );
       }
     }
   }
@@ -487,9 +488,9 @@ class PluginRegistry {
 
     // In production, this should go to a secure audit log
     if (process.env.NODE_ENV === "production") {
-      console.warn("[AUDIT]", JSON.stringify(auditEntry)); // eslint-disable-line no-console
+      logger.warn("[AUDIT]", JSON.stringify(auditEntry));
     } else {
-      console.log("[AUDIT]", auditEntry); // eslint-disable-line no-console
+      logger.info("[AUDIT]", auditEntry);
     }
   }
 

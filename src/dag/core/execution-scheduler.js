@@ -11,9 +11,10 @@
  * @version 1.0.0
  */
 
-'use strict';
+"use strict";
 
-const ErrorContext = require('./error-context.js');
+const ErrorContext = require("./error-context.js");
+const { logger } = require("../../utils/logger");
 
 /**
  * ExecutionScheduler class for managing DAG node execution
@@ -106,8 +107,8 @@ class ExecutionScheduler {
         const result = await this.executeNode(node, context);
         // Only set result if it's not the special failed-optional-node symbol
         if (
-          typeof result !== 'symbol' ||
-          result.description !== 'failed-optional-node'
+          typeof result !== "symbol" ||
+          result.description !== "failed-optional-node"
         ) {
           results.set(node.id, result);
         }
@@ -179,7 +180,7 @@ class ExecutionScheduler {
     } = context;
 
     // Handle undefined node.run function
-    if (typeof node.run !== 'function') {
+    if (typeof node.run !== "function") {
       throw new Error(`Node ${node.id} has no run function`);
     }
 
@@ -251,10 +252,10 @@ class ExecutionScheduler {
 
         // Handle non-critical failures with warnings and no result nullification
         if (isNonCritical || (continueOnError && !requiredIds.has(node.id))) {
-          console.warn(`Non-critical node failure: ${nodeErr.message}`);
+          logger.warn(`Non-critical node failure: ${nodeErr.message}`);
           errors.set(node.id, nodeErr);
           // Don't set result for failed optional nodes - return special symbol so they don't appear in results
-          return Symbol('failed-optional-node');
+          return Symbol("failed-optional-node");
         }
         errors.set(node.id, nodeErr);
         throw nodeErr;
@@ -288,7 +289,7 @@ class ExecutionScheduler {
       await Promise.race([
         runFn(),
         new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Execution timeout')), timeout);
+          setTimeout(() => reject(new Error("Execution timeout")), timeout);
         }),
       ]);
     } else {

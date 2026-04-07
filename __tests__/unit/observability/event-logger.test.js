@@ -9,6 +9,7 @@ const {
   EventSeverity,
   eventLogger,
 } = require("../../../src/observability/event-logger.js");
+const { logger: structuredLogger } = require("../../../src/utils/logger");
 
 describe("PipelineEventLogger", () => {
   let logger;
@@ -251,7 +252,9 @@ describe("PipelineEventLogger", () => {
     });
 
     it("should handle listener errors gracefully", () => {
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const loggerSpy = jest
+        .spyOn(structuredLogger, "warn")
+        .mockImplementation();
       const faultyListener = jest.fn().mockImplementation(() => {
         throw new Error("Listener error");
       });
@@ -259,11 +262,11 @@ describe("PipelineEventLogger", () => {
       logger.addEventListener(EventTypes.PLUGIN_START, faultyListener);
       logger.logEvent(EventTypes.PLUGIN_START, EventSeverity.INFO, {}, "Test");
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         "Event listener error:",
         expect.any(Error),
       );
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 
