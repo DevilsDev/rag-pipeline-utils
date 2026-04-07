@@ -1,6 +1,6 @@
 # rag-pipeline-utils
 
-**Modular toolkit for building production-ready RAG pipelines in Node.js**
+**The comprehensive Node.js toolkit for building production-ready RAG pipelines — with built-in evaluation, citation tracking, agentic reasoning, guardrails, and 7 provider connectors.**
 
 [![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions)
 [![npm version](https://badge.fury.io/js/%40devilsdev%2Frag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
@@ -8,688 +8,197 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 [![Node.js Version](https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg)](https://nodejs.org/)
 [![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
-[![GitHub Discussions](https://img.shields.io/github/discussions/DevilsDev/rag-pipeline-utils)](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
 
 ---
 
 ## Why This Exists
 
-Building Retrieval-Augmented Generation (RAG) systems is harder than it should be. Most solutions lock you into specific vendors, force opinionated architectures, or sacrifice observability for simplicity.
+Building RAG systems in Node.js shouldn't require stitching together Python tools or reinventing every component. **rag-pipeline-utils** gives you the complete stack in one package: loaders, embedders, retrievers, LLM connectors, rerankers, evaluation, citation tracking, guardrails, and agentic reasoning.
 
-**rag-pipeline-utils** takes a different approach: it provides the building blocks—loaders, embedders, retrievers, LLM connectors, and rerankers—that you compose into pipelines that fit your needs. Every component follows clear contracts. Every integration is optional. Every decision is yours.
+Every component follows clear contracts. Every integration is optional. Every decision is yours.
 
-We built this toolkit because we believe infrastructure should be:
-
-- **Modular** – swap any component without rewriting your pipeline
-- **Observable** – metrics, tracing, and audit logs built in from day one
-- **Secure** – hardened JWT validation with replay protection, multi-layer path traversal defense, and enterprise-grade defaults
-- **Open** – no vendor lock-in, no proprietary APIs, just JavaScript
-
-Whether you're prototyping a document Q&A system or scaling a production knowledge base, this toolkit grows with you.
+- **Modular** -- swap any component without rewriting your pipeline
+- **Evaluated** -- built-in faithfulness, relevance, and groundedness metrics on every run
+- **Safe** -- 3-layer guardrails with prompt injection detection, PII filtering, and source grounding
+- **Observable** -- OpenTelemetry tracing, Prometheus metrics, and compliance-grade audit logs
+- **Connected** -- OpenAI, Anthropic, Cohere, Ollama, or bring your own
 
 ---
 
 ## Quick Start
 
-Here's a complete RAG pipeline in 15 lines:
-
-```javascript
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
-
-// Implement your plugins (or use existing ones)
-const pipeline = createRagPipeline({
-  loader: new MyPDFLoader(),
-  embedder: new MyOpenAIEmbedder({ apiKey: process.env.OPENAI_API_KEY }),
-  retriever: new MyVectorDBRetriever({ url: "http://localhost:8000" }),
-  llm: new MyLLMConnector({ model: "gpt-4" }),
-});
-
-// Query with natural language
-const result = await pipeline.run({
-  query: "What is the vacation policy?",
-});
-console.log(result.results);
-// Output: "Based on the company handbook, employees receive 20 days of vacation per year..."
-```
-
-**Requirements:** Node.js >= 18.0.0
-
-Install with:
-
 ```bash
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-### What's New in v2.3.1 (Released November 8, 2025)
+Build a RAG pipeline with built-in connectors:
 
-**Major Security Enhancements:**
+```javascript
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-- **Advanced JWT replay protection** with self-signed token reusability
-- **Hardened path traversal defense** with iterative URL decoding
-- **Consistent validation behavior** eliminating duplicate checks
-- **Race condition mitigation** in concurrent token verification
+const llm = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+const retriever = new MemoryRetriever();
 
-**All security tests passing:** 113 security-focused tests with 100% coverage on critical paths.
+const pipeline = createRagPipeline({ retriever, llm });
 
-[See full security details below](#security-and-quality) | [Migration guide](#upgrading-from-v22x)
+const result = await pipeline.run({
+  query: "What is the vacation policy?",
+  options: { citations: true, evaluate: true },
+});
+
+console.log(result.results);
+// Retrieved documents
+console.log(result.citations?.groundednessScore);
+// 0.85 -- how well the answer is grounded in sources
+console.log(result.evaluation?.scores);
+// { faithfulness: 0.9, relevance: 0.8, contextPrecision: 0.7, ... }
+```
+
+**Requirements:** Node.js >= 18.0.0
 
 ---
 
-## How It Works
-
-**rag-pipeline-utils** orchestrates data through a clear, predictable flow:
+## Architecture
 
 ```mermaid
 graph LR
-    A[Documents] --> B[Loader]
+    A[Documents] --> B[Chunking Engine]
     B --> C[Embedder]
     C --> D[Vector Store]
-    D --> E[Retriever]
-    F[User Query] --> C
-    F --> E
-    E --> G[Reranker]
-    G --> H[LLM]
-    H --> I[Response]
+
+    F[User Query] --> G{Guardrails}
+    G --> H[Query Planner]
+    H --> E[Retriever + BM25]
+    E --> I[Reranker]
+    I --> J[LLM]
+    J --> K{Citation Tracker}
+    K --> L{Evaluator}
+    L --> M[Response]
 
     style B fill:#e1f5e1
-    style C fill:#e1f5e1
     style E fill:#e1f5e1
     style G fill:#fff4e1
-    style H fill:#e1f5e1
-    style I fill:#e3f2fd
+    style H fill:#fff4e1
+    style K fill:#e3f2fd
+    style L fill:#e3f2fd
 ```
 
-1. **Loader** – Parse documents (PDF, HTML, Markdown, etc.)
-2. **Embedder** – Convert text to vector embeddings
-3. **Vector Store** – Index and persist embeddings
-4. **Retriever** – Find semantically similar content
-5. **Reranker** (optional) – Refine retrieval results
-6. **LLM** – Generate contextual responses
+**Pipeline stages:** Chunk --> Embed --> Store --> Retrieve --> Rerank --> Generate --> Cite --> Evaluate
 
-Every component is replaceable. Every step is observable.
+Each stage is optional, pluggable, and observable. Enable citation tracking and evaluation with a single option flag.
 
 ---
 
 ## Features
 
-### Modular Plugin Architecture
+### Plugin Architecture
 
-Swap any component without rewriting your pipeline. Use OpenAI embeddings with Pinecone storage, or mix Hugging Face models with PostgreSQL—your choice.
-
-### Enterprise Observability
-
-Built-in structured logging, Prometheus metrics, OpenTelemetry tracing, and audit logs for compliance-grade transparency.
-
-### DAG Workflow Engine
-
-Chain complex multi-step operations with retry logic, parallel execution, and graceful error handling. Perfect for batch ingestion or multi-stage transformations.
-
-### Type-Safe Contracts
-
-Complete TypeScript interfaces for all plugin types. Full IDE autocomplete and compile-time validation.
-
-### Production-Ready Security
-
-Hardened security with defense-in-depth: JWT replay protection with race condition mitigation, multi-layer path traversal defense with iterative URL decoding, validated JSON parsing, algorithm whitelisting, automatic secret redaction, and comprehensive audit logging.
-
-### Streaming & Batching
-
-Stream LLM responses in real-time. Batch embed thousands of documents efficiently with parallel processing and backpressure control.
-
-### Framework Agnostic
-
-Works with Express, Fastify, Next.js, or any Node.js runtime. Deploy to AWS Lambda, Vercel, Docker, or bare metal.
-
----
-
-## Join the Community
-
-We're building this together.
-
-Whether you're implementing a new retriever, writing documentation, reporting bugs, or sharing ideas—every contribution makes this toolkit better for everyone.
-
-**Getting Started:**
-
-- [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) – Ask questions, share use cases, propose features
-- [Issue Tracker](https://github.com/DevilsDev/rag-pipeline-utils/issues) – Report bugs or request features
-- [Contributing Guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md) – Learn how to submit pull requests
-- [Code of Conduct](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CODE_OF_CONDUCT.md) – Our community standards
-
-**Good First Issues:** Look for issues tagged `good first issue` to find beginner-friendly contributions.
-
-**Office Hours:** Join our monthly community calls to discuss roadmap priorities and architectural decisions.
-
----
-
-## Security and Quality
-
-Security isn't optional. This toolkit is built with defense in depth:
-
-### Core Security Features
-
-- **Validated Inputs** – All JSON parsed through schema validation (AJV)
-- **Secure Logging** – Automatic redaction of 36 sensitive field patterns (API keys, JWTs, tokens)
-- **JWT Best Practices** – Algorithm whitelisting, issuer/audience validation, expiration enforcement
-- **Dependency Scanning** – Weekly Dependabot updates, CI blocks on critical vulnerabilities
-- **Audit Trail** – Immutable compliance-grade logs for all security-sensitive operations
-- **Plugin Sandboxing** – Third-party plugins run with declared permissions and resource limits
-- **Supply Chain Security** – All GitHub Actions pinned to commit SHAs, SBOM generation available
-
-### Recent Security Enhancements (v2.3.1)
-
-#### Hardened JWT Validation
-
-**Advanced Replay Protection:**
-
-- Self-signed tokens can be verified multiple times (essential for refresh flows and load balancer retries)
-- External tokens are tracked and blocked on replay attempts
-- Race condition mitigation with optimized check-then-set pattern
-- Separate tracking for reusable vs. single-use tokens
-
-**Consistent Validation Behavior:**
-
-- `strictValidation` flag now consistently controls issuer/audience validation
-- Eliminated duplicate validation logic to prevent configuration confusion
-- Clear separation of concerns: jsonwebtoken handles cryptographic validation, custom logic handles business rules
-
-**Example:**
+Five plugin types with JSON Schema contracts: **loader**, **embedder**, **retriever**, **llm**, and **reranker**. Register, validate, and swap components at runtime.
 
 ```javascript
-const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
-
-const validator = new JWTValidator({
-  secret: process.env.JWT_SECRET,
-  algorithm: "HS256",
-  issuer: "my-app",
-  audience: "api-users",
-  strictValidation: true, // Enforces iss/aud validation
-  enableJtiTracking: true, // Prevents replay attacks
-});
-
-// Self-signed tokens can be verified multiple times
-const token = validator.sign({ sub: "user-123" });
-validator.verify(token); // First verification
-validator.verify(token); // Still works (refresh flow)
-
-// External tokens are blocked on replay
-const externalToken = getTokenFromThirdParty();
-validator.verify(externalToken); // First use
-validator.verify(externalToken); // Throws "Token replay detected"
+const { pluginRegistry } = require("@devilsdev/rag-pipeline-utils");
+pluginRegistry.register("llm", "my-model", MyCustomLLM);
 ```
 
-#### Path Traversal Defense
+### Smart Chunking
 
-**Multi-Layer Protection:**
-
-- Iterative URL decoding (up to 5 passes) to catch sophisticated encoding attacks
-- Detects double-encoded paths: `%252e%252e%252f` → `%2e%2e%2f` → `../`
-- Malformed encoding treated as attack indicator (throws error)
-- Critical security violations always throw, regardless of configuration
-
-**Attack Vectors Blocked:**
-
-- Standard traversal: `../../../etc/passwd`
-- Windows paths: `..\..\windows\system32`
-- URL encoded: `%2e%2e%2f`, `%2e%2e%5c`
-- Double encoded: `%252e%252e%252f`
-- Mixed encoding: combinations of above
-
-**Example:**
+Five built-in strategies for document splitting: `sentence`, `fixed-size`, `recursive` (default, 512 chars), `semantic` (topic-boundary detection), and `structure-aware` (respects Markdown headers, HTML sections, code blocks).
 
 ```javascript
-const { sanitizePath } = require("@devilsdev/rag-pipeline-utils");
-
-// Safe paths are normalized
-sanitizePath("docs/README.md"); // Returns: "docs/README.md"
-
-// Dangerous paths throw errors
-sanitizePath("../../../etc/passwd"); // Throws
-sanitizePath("%2e%2e%2f%2e%2e%2fpasswd"); // Throws
-sanitizePath("%252e%252e%252fconfig"); // Throws (double-encoded)
-```
-
-#### Defense-in-Depth Architecture
-
-**Critical Security Errors:**
-
-- Path traversal violations **always throw**, even if `throwOnInvalid=false`
-- Object depth limit violations **always throw** to prevent DoS
-- Security-critical operations are prioritized over configuration flexibility
-
-**Security Monitoring:**
-
-- All blocked attempts tracked in `stats.blocked` counter
-- Audit events emitted for replay detection, algorithm mismatches, and validation failures
-- Structured logging with security event correlation
-
-### Quality Metrics
-
-**Zero Production Vulnerabilities:** `npm audit --production` returns clean on every release.
-
-**Test Coverage:** 113 security-focused tests across 2 dedicated security suites:
-
-- JWT Validator: 44 tests covering algorithm confusion, replay attacks, and validation edge cases
-- Input Sanitizer: 69 tests covering XSS, SQL injection, command injection, and path traversal
-
-**Supported Node Versions:** 18.x, 20.x, 22.x (tested in CI)
-
----
-
-## Installation & Development
-
-### Install
-
-```bash
-npm install @devilsdev/rag-pipeline-utils
-```
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/DevilsDev/rag-pipeline-utils.git
-cd rag-pipeline-utils
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Run linter
-npm run lint
-
-# Build distribution
-npm run build
-
-# Run development tools
-npm run dev
-```
-
-### Common Commands
-
-```bash
-npm test                # Run test suite
-npm run test:watch      # Watch mode for TDD
-npm run lint            # Check code style
-npm run lint:fix        # Auto-fix linting issues
-npm run security:audit  # Scan dependencies
-npm run docs:api        # Generate API documentation
-npm run benchmark       # Performance benchmarks
-```
-
----
-
-## Roadmap
-
-### v2.3.1 (Released November 8, 2025) ✅
-
-- ✅ **Enhanced CLI** – Interactive wizard for pipeline setup, validation commands, and migration tools
-- ✅ **Plugin Marketplace** – Curated registry of community-contributed plugins with ratings and verification
-- ✅ **Multi-Tenant Support** – Workspace isolation, resource quotas, and tenant-specific configurations
-- ✅ **Advanced Security** – JWT replay protection and hardened path traversal defense
-
-### v2.4.0 (Q1 2026)
-
-- **Streaming Embeddings** – Real-time embedding generation with backpressure control
-- **GraphRAG Support** – Native knowledge graph integration for entity-relationship retrieval
-- **Advanced Reranking** – Cross-encoder models and learned ranking functions
-- **Performance Dashboard** – Web UI for monitoring pipeline health and cost metrics
-
-### v2.5.0 (Q2 2026)
-
-- **Federated Learning** – Privacy-preserving model training across distributed datasets
-- **Advanced Caching** – Intelligent embedding cache with TTL and invalidation strategies
-- **Multi-Modal Processing** – Native image and audio embedding support
-- **Cost Optimization** – Automatic provider selection based on cost and performance
-
-### Beyond 2026
-
-- Native Rust bindings for performance-critical paths
-- Kubernetes operator for production deployments
-- Real-time collaboration features for team-based pipelines
-- Edge deployment support for latency-sensitive applications
-
-**Vote on features:** Share your priorities in [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/roadmap).
-
----
-
-## Upgrading from v2.2.x
-
-The v2.3.1 release includes important security enhancements that are **100% backward compatible** for most use cases. However, there are a few behavioral changes to be aware of:
-
-### JWT Validator Changes
-
-#### No Action Required (Recommended Use Case)
-
-If you're using the default configuration with `strictValidation: true` (the default), everything works the same:
-
-```javascript
-const validator = new JWTValidator({
-  secret: process.env.JWT_SECRET,
-  algorithm: "HS256",
-  issuer: "my-app",
-  audience: "api-users",
-  // strictValidation defaults to true
-});
-
-// Behavior unchanged - tokens validated correctly
-```
-
-#### Behavior Change (Advanced Use Case)
-
-If you explicitly set `strictValidation: false`, the behavior has changed for consistency:
-
-**Before v2.3.0:**
-
-```javascript
-const validator = new JWTValidator({
-  secret: process.env.JWT_SECRET,
-  strictValidation: false,
-  issuer: "my-app", // These were still validated
-  audience: "api-users", // even with strictValidation=false
-});
-```
-
-**After v2.3.0:**
-
-```javascript
-const validator = new JWTValidator({
-  secret: process.env.JWT_SECRET,
-  strictValidation: false,
-  issuer: "my-app", // Now properly ignored
-  audience: "api-users", // when strictValidation=false
-});
-// issuer/audience validation is now truly disabled
-```
-
-**Migration:** If you were relying on the old inconsistent behavior, set `strictValidation: true` explicitly.
-
-#### Enhanced Behavior (Self-Signed Tokens)
-
-Self-signed tokens can now be verified multiple times, which is essential for:
-
-- Refresh token flows
-- Load balancer retries
-- Distributed systems with eventual consistency
-
-```javascript
-const token = validator.sign({ sub: "user-123" });
-
-// Before v2.3.0: Second verification would throw "replay detected"
-// After v2.3.0: Works correctly for self-signed tokens
-validator.verify(token); // Works
-validator.verify(token); // Now works!
-```
-
-External tokens (not signed by your validator) are still correctly blocked on replay.
-
-### Input Sanitizer Changes
-
-#### Path Traversal Now Always Throws
-
-Path traversal attempts now **always throw errors**, even with `throwOnInvalid: false`:
-
-**Before v2.3.0:**
-
-```javascript
-const sanitizer = new InputSanitizer({ throwOnInvalid: false });
-const result = sanitizePath("../../../etc/passwd");
-// Returned: null (silent failure)
-```
-
-**After v2.3.0:**
-
-```javascript
-const sanitizer = new InputSanitizer({ throwOnInvalid: false });
-const result = sanitizePath("../../../etc/passwd");
-// Throws: "Potential path traversal detected"
-```
-
-**Rationale:** Path traversal is a critical security violation that should never be silently ignored.
-
-**Migration:** Wrap path sanitization in try-catch if you need to handle errors gracefully:
-
-```javascript
-try {
-  const safePath = sanitizePath(userInput);
-  // Use safePath
-} catch (error) {
-  if (error.message.includes("path traversal")) {
-    // Handle attack attempt
-    logger.warn("Path traversal blocked", { input: userInput });
-    return res.status(400).json({ error: "Invalid path" });
-  }
-  throw error;
-}
-```
-
-### Breaking Changes
-
-**None.** All changes are security enhancements that improve correctness without breaking existing valid use cases.
-
-### Testing Your Upgrade
-
-Run your test suite after upgrading:
-
-```bash
-npm test
-```
-
-If you encounter issues, please [open an issue](https://github.com/DevilsDev/rag-pipeline-utils/issues) with details about your configuration.
-
----
-
-## Advanced Features (Phases 3-6)
-
-The following features ship with the library and are available via the main import:
-
-```javascript
-const {
-  ChunkingEngine,
-  CitationTracker,
-  PipelineEvaluator,
-  BM25Search,
-  HybridRetriever,
-  GuardrailsPipeline,
-  AgenticPipeline,
-  CostCalculator,
-  TokenBudget,
-  ExecutionTracer,
-  MCPServer,
-  ProjectScaffolder,
-  SSEAdapter,
-  StreamRouter,
-  OllamaConnector,
-  OpenAIConnector,
-  AnthropicConnector,
-  CohereConnector,
-  LocalEmbedder,
-  MemoryRetriever,
-} = require("@devilsdev/rag-pipeline-utils");
-```
-
----
-
-### Smart Chunking Engine
-
-Split documents using five strategies: `sentence`, `fixed-size`, `recursive`, `semantic`, and `structure-aware`. Each strategy handles overlap, metadata propagation, and boundary detection automatically.
-
-```javascript
+const { ChunkingEngine } = require("@devilsdev/rag-pipeline-utils");
 const engine = new ChunkingEngine({
   strategy: "recursive",
   chunkSize: 512,
   chunkOverlap: 50,
 });
 const chunks = engine.chunk(documentText);
-// chunks: ["First chunk of text...", "Second chunk...", ...]
 ```
-
----
-
-### Citation & Grounding
-
-Track exactly which source documents support each claim in a generated answer. The `CitationTracker` maps sentences back to retrieved passages and flags unsupported statements.
-
-```javascript
-const tracker = new CitationTracker();
-const result = tracker.track(answer, retrievedDocs);
-// result.groundednessScore  – 0-1 coverage ratio
-// result.citations          – per-sentence source mappings
-// result.hallucinationReport – unsupported claims
-```
-
----
-
-### RAG Evaluation Framework
-
-Measure pipeline quality with built-in metrics: faithfulness, answer relevance, context precision, context recall, and groundedness.
-
-```javascript
-const evaluator = new PipelineEvaluator();
-const metrics = evaluator.evaluate({
-  query,
-  answer,
-  results: retrievedDocs,
-});
-// metrics.scores.faithfulness, metrics.scores.relevance, etc.
-```
-
-Enable evaluation inline during pipeline runs:
-
-```javascript
-const result = await pipeline.run({
-  query: "What is the refund policy?",
-  options: { evaluate: true, citations: true },
-});
-```
-
----
 
 ### Hybrid Retrieval
 
-Combine vector similarity search with BM25 keyword search using reciprocal rank fusion for better recall on both semantic and lexical queries.
+Combine vector similarity with BM25 keyword search using Reciprocal Rank Fusion. Run multiple retrievers in parallel with graceful degradation.
 
 ```javascript
+const {
+  BM25Search,
+  HybridRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 const bm25 = new BM25Search();
 bm25.index(documents);
 
 const hybrid = new HybridRetriever([
-  { retriever: myVectorRetriever, weight: 0.7, name: "vector" },
+  { retriever: vectorRetriever, weight: 0.7, name: "vector" },
   { retriever: bm25, weight: 0.3, name: "keyword" },
 ]);
 const results = await hybrid.retrieve({ query });
 ```
 
----
+### RAG Evaluation
+
+Measure pipeline quality with five built-in metrics: **faithfulness**, **answer relevance**, **context precision**, **context recall**, and **groundedness**. Run automatically on every pipeline execution or standalone.
+
+```javascript
+const { PipelineEvaluator } = require("@devilsdev/rag-pipeline-utils");
+const evaluator = new PipelineEvaluator();
+const metrics = evaluator.evaluate({ query, answer, results: retrievedDocs });
+// metrics.scores.faithfulness, metrics.scores.relevance, etc.
+```
+
+Or inline: `pipeline.run({ query, options: { evaluate: true } })`
+
+### Citation & Grounding
+
+Track which source documents support each claim. Detect hallucinations automatically. Get a groundedness score for every answer.
+
+```javascript
+const { CitationTracker } = require("@devilsdev/rag-pipeline-utils");
+const tracker = new CitationTracker();
+const result = tracker.track(answer, retrievedDocs);
+// result.groundednessScore, result.citations, result.hallucinationReport
+```
+
+### Agentic RAG
+
+Multi-step retrieval with query decomposition, iterative search, and self-critique. The agent splits complex questions into sub-queries, retrieves evidence in parallel via the DAG engine, and validates its own answer before returning.
+
+```javascript
+const { AgenticPipeline } = require("@devilsdev/rag-pipeline-utils");
+const agent = new AgenticPipeline({
+  enableCritique: true,
+  enablePlanning: true,
+});
+const result = await agent.run({
+  query: "Compare all three competitors",
+  retriever,
+  llm,
+});
+// result.subQueries, result.critique, result.answer
+```
 
 ### 3-Layer Guardrails
 
-Wrap any pipeline with pre-retrieval, retrieval-time, and post-generation safety guards. Block prompt injection, filter low-quality context, and validate output before it reaches users.
+Wrap any pipeline with production safety: **pre-retrieval** (prompt injection detection, topic filtering), **retrieval-time** (relevance threshold, ACL filtering, freshness), and **post-generation** (PII detection, groundedness check, length validation).
 
 ```javascript
+const { GuardrailsPipeline } = require("@devilsdev/rag-pipeline-utils");
 const safePipeline = new GuardrailsPipeline(pipeline, {
-  preRetrieval: { enableInjectionDetection: true, maxQueryLength: 500 },
+  preRetrieval: { enableInjectionDetection: true },
   retrieval: { minRelevanceScore: 0.6 },
   postGeneration: { enablePIIDetection: true, enableGroundednessCheck: true },
 });
 const result = await safePipeline.run({ query });
 ```
 
----
+### Streaming
 
-### Agentic RAG
-
-Multi-step retrieval with automatic query planning, iterative search, and self-critique. The agent decomposes complex questions, retrieves evidence for each sub-query, and validates its own answer before returning.
+Stream LLM responses in real-time via Server-Sent Events or WebSocket. The `StreamRouter` auto-detects transport and handles backpressure.
 
 ```javascript
-const agent = new AgenticPipeline({
-  maxConcurrency: 3,
-  enableCritique: true,
-  enablePlanning: true,
-});
-const result = await agent.run({
-  query: "Compare the pricing tiers across all three competitors",
-  retriever: myRetriever,
-  llm: myLLM,
-});
-// result.subQueries – decomposed sub-queries
-// result.critique – answer verification result
-```
-
----
-
-### Cost Management
-
-Track and control token spend across providers. Set budgets, estimate costs before execution, and get alerts when approaching limits.
-
-```javascript
-const calculator = new CostCalculator();
-const estimate = calculator.estimate("gpt-4", 2000, 500);
-// estimate.inputCost, estimate.outputCost, estimate.totalCost
-
-const budget = new TokenBudget({ maxTokens: 100000 });
-budget.record(2500);
-const status = budget.check(1000);
-// status.allowed, status.remaining, status.warnings
-```
-
----
-
-### Pipeline Debugger
-
-Trace every step of pipeline execution with timing, input/output snapshots, and error context. Essential for diagnosing slow retrievals or unexpected results.
-
-```javascript
-const tracer = new ExecutionTracer();
-const traced = tracer.trace(pipeline);
-const result = await traced.run({ query });
-
-const traces = tracer.getTraces();
-// traces[0].steps, traces[0].totalDuration, traces[0].metadata
-```
-
----
-
-### MCP Integration
-
-Expose your RAG pipeline as a Model Context Protocol (MCP) tool, making it callable from any MCP-compatible client (Claude Desktop, IDE extensions, etc.).
-
-```javascript
-const server = MCPServer.fromPipeline(pipeline, {
-  name: "knowledge-base",
-});
-const tools = server.getToolDefinitions();
-const result = await server.handleToolUse("knowledge-base", {
-  query: "How does auth work?",
-});
-```
-
----
-
-### Quick Start Templates
-
-Scaffold new RAG projects from four built-in templates: `document-qa`, `chatbot`, `code-search`, and `customer-support`. Each template includes working configuration, example data, and tests.
-
-```javascript
-const scaffolder = new ProjectScaffolder();
-scaffolder.create("chatbot", "./my-chatbot");
-// Creates: package.json, index.js, .ragrc.json, README.md
-```
-
-Or from the CLI:
-
-```bash
-npx rag-pipeline-utils init --template chatbot
-```
-
----
-
-### Streaming Adapters
-
-Stream LLM responses to clients in real-time via Server-Sent Events or WebSockets. The `StreamRouter` multiplexes multiple concurrent streams with backpressure handling.
-
-```javascript
+const { StreamRouter } = require("@devilsdev/rag-pipeline-utils");
 const router = new StreamRouter();
 
 // Express example
@@ -698,30 +207,173 @@ app.get("/api/stream", async (req, res) => {
 });
 ```
 
----
-
 ### Provider Connectors
 
-Connect to local or cloud LLM providers with zero-config defaults. Each connector implements the standard embedder/LLM interface, so they drop into any pipeline.
+Seven built-in connectors -- drop into any pipeline with zero configuration:
 
 ```javascript
-// Local models via Ollama
+const {
+  OpenAIConnector, // GPT-4, GPT-3.5, text-embedding-3
+  AnthropicConnector, // Claude 3 Opus, Sonnet, Haiku
+  CohereConnector, // Embed + Rerank
+  OllamaConnector, // Llama 3, Mistral (local)
+  LocalEmbedder, // TF-IDF (offline, no API)
+  MemoryRetriever, // In-memory cosine similarity
+} = require("@devilsdev/rag-pipeline-utils");
+
 const ollama = new OllamaConnector({
   model: "llama3",
   baseURL: "http://localhost:11434",
 });
-
-// Cloud providers
 const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
-const anthropic = new AnthropicConnector({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
-
-// Lightweight in-process alternatives (no external services)
-const embedder = new LocalEmbedder(); // TF-IDF based embeddings
-const retriever = new MemoryRetriever(); // In-memory vector store
 ```
+
+### Cost Management
+
+Track token spend per provider, estimate costs before execution, and enforce budgets with hard and soft limits.
+
+```javascript
+const {
+  CostCalculator,
+  TokenBudget,
+} = require("@devilsdev/rag-pipeline-utils");
+const calc = new CostCalculator();
+const cost = calc.estimate("gpt-4", 2000, 500);
+// cost.totalCost = 0.09 (USD)
+
+const budget = new TokenBudget({ maxTokens: 100000 });
+budget.record(2500);
+budget.check(1000); // { allowed: true, remaining: { tokens: 96500 } }
+```
+
+### Pipeline Debugging
+
+Trace every execution step with timing, bottleneck detection, and optimization recommendations.
+
+```javascript
+const {
+  ExecutionTracer,
+  TraceInspector,
+} = require("@devilsdev/rag-pipeline-utils");
+const tracer = new ExecutionTracer();
+const traced = tracer.trace(pipeline);
+const result = await traced.run({ query });
+
+const inspector = new TraceInspector();
+const analysis = inspector.analyze(tracer.getTraces()[0]);
+// analysis.bottleneck, analysis.recommendations
+```
+
+### MCP Integration
+
+Expose any pipeline as a Model Context Protocol tool, callable from Claude Desktop, IDE extensions, or any MCP-compatible client.
+
+```javascript
+const { MCPServer } = require("@devilsdev/rag-pipeline-utils");
+const server = MCPServer.fromPipeline(pipeline, { name: "knowledge-base" });
+const tools = server.getToolDefinitions();
+const result = await server.handleToolUse("knowledge-base", {
+  query: "How does auth work?",
+});
+```
+
+### Quick Start Templates
+
+Scaffold complete projects from four built-in templates: `document-qa`, `chatbot`, `code-search`, and `customer-support`.
+
+```javascript
+const { ProjectScaffolder } = require("@devilsdev/rag-pipeline-utils");
+const scaffolder = new ProjectScaffolder();
+scaffolder.create("chatbot", "./my-chatbot");
+// Creates: package.json, index.js, .ragrc.json, README.md
+```
+
+### Enterprise
+
+Multi-tenant isolation, SSO integration (SAML, OAuth2, Active Directory, OIDC), compliance-grade audit logging, and data governance with classification and retention policies.
+
+### DAG Workflow Engine
+
+Chain complex multi-step operations with topological execution, retry logic, parallel processing via semaphore-based concurrency, graceful degradation, and checkpoint/resume.
+
+### Security
+
+Defense-in-depth: JWT replay protection, algorithm whitelisting, plugin sandboxing with isolated-vm, multi-layer path traversal defense (5-pass iterative URL decoding), input validation, and automatic secret redaction (36+ patterns).
+
+### Observability
+
+OpenTelemetry distributed tracing, Prometheus metrics export, structured Pino logging, SLO monitoring, and security event tracking.
+
+---
+
+## Installation
+
+```bash
+npm install @devilsdev/rag-pipeline-utils
+```
+
+### Development
+
+```bash
+git clone https://github.com/DevilsDev/rag-pipeline-utils.git
+cd rag-pipeline-utils
+npm install
+npm test          # 92 suites, 2050+ tests
+npm run build     # CJS + ESM + TypeScript definitions
+npm run lint      # ESLint
+npm run dev       # Interactive development tools
+```
+
+### Useful Commands
+
+```bash
+npm run benchmark         # Performance benchmarks
+npm run security:audit    # Dependency scanning
+npm run docs:api          # Generate API documentation
+npm run docs:validate     # Verify README code examples
+npm run verify:esm        # Validate ESM build
+```
+
+---
+
+## Roadmap
+
+### Delivered
+
+| Version | Highlights                                                                    |
+| ------- | ----------------------------------------------------------------------------- |
+| v2.3.1  | JWT replay protection, path traversal defense, 113 security tests             |
+| v2.4.0  | API surface expansion (93 exports), esbuild bundler, ESM verification         |
+| v2.5.0  | Smart chunking (5 strategies), citation tracking, evaluation framework        |
+| v2.6.0  | Agentic RAG, hybrid retrieval (BM25 + RRF), 3-layer guardrails                |
+| v2.7.0  | Cost management, pipeline debugger, MCP integration, quick start templates    |
+| v2.8.0  | Streaming adapters (SSE/WebSocket), Ollama/OpenAI/Anthropic/Cohere connectors |
+
+### What's Next (v3.0.0+)
+
+- **GraphRAG** -- knowledge graph integration for entity-relationship retrieval
+- **Advanced Reranking** -- cross-encoder models and learned ranking functions
+- **Intelligent Caching** -- embedding cache with TTL and invalidation strategies
+- **Native Rust Bindings** -- performance-critical paths compiled to native code
+- **Kubernetes Operator** -- production deployments with auto-scaling
+- **Edge Deployment** -- Cloudflare Workers, Deno Deploy, Vercel Edge
+- **Real-time Collaboration** -- team-based pipeline editing and sharing
+
+**Vote on features:** [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/roadmap)
+
+---
+
+## Upgrading from v2.3.x
+
+All changes since v2.3.1 are **backward compatible**. The `pipeline.run()` API is unchanged -- new features (citations, evaluation) are opt-in via the `options` parameter.
+
+**Key changes:**
+
+- `pipeline.run({ query, options: { citations: true } })` -- adds `result.citations`
+- `pipeline.run({ query, options: { evaluate: true } })` -- adds `result.evaluation`
+- Default return shape `{ success, query, results }` is identical to v2.3.1
+
+If upgrading from v2.2.x, see the [JWT validation changes](#security) -- `strictValidation` behavior was corrected for consistency.
 
 ---
 
@@ -729,43 +381,25 @@ const retriever = new MemoryRetriever(); // In-memory vector store
 
 We welcome contributions of all kinds:
 
-- **Code** – Fix bugs, add features, improve performance
-- **Documentation** – Write guides, improve examples, clarify concepts
-- **Testing** – Expand test coverage, add integration tests, report edge cases
-- **Design** – Propose API improvements, suggest architectural patterns
-- **Community** – Answer questions, review pull requests, mentor new contributors
+- **Code** -- fix bugs, add features, improve performance
+- **Documentation** -- write guides, improve examples, clarify concepts
+- **Testing** -- expand test coverage, add integration tests, report edge cases
+- **Design** -- propose API improvements, suggest architectural patterns
+- **Community** -- answer questions, review pull requests, mentor new contributors
 
-**Before You Start:**
+**Before you start:**
 
 1. Read the [Contributing Guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md)
 2. Check existing [Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues) and [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
 3. Open an issue to discuss major changes before coding
 4. Follow our [Code of Conduct](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CODE_OF_CONDUCT.md)
 
-**Pull Request Checklist:**
-
-- [ ] Tests pass (`npm test`)
-- [ ] Linter passes (`npm run lint`)
-- [ ] Documentation updated
-- [ ] Changelog entry added
-- [ ] Type definitions updated (if applicable)
-
 ---
 
 ## License
 
-**GPL-3.0** – See [LICENSE](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE) for full terms.
-
-This is free software: you are free to change and redistribute it under the terms of the GNU General Public License version 3.
+**GPL-3.0** -- See [LICENSE](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE) for full terms.
 
 ---
 
-## What's Next?
-
-**Star this repository** if you find it useful—it helps others discover the project.
-
-**Share your use case** in [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/show-and-tell) to inspire the community.
-
-**Contribute** your first pull request—check out issues tagged [good first issue](https://github.com/DevilsDev/rag-pipeline-utils/labels/good%20first%20issue).
-
-Happy building.
+**Star this repo** if you find it useful. **Share your use case** in [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/show-and-tell). **Contribute** your first PR -- check [good first issues](https://github.com/DevilsDev/rag-pipeline-utils/labels/good%20first%20issue).
