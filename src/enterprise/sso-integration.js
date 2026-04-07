@@ -15,7 +15,26 @@ class SSOManager extends EventEmitter {
   constructor(_options = {}) {
     super();
 
-    this._config = {
+    this._config = this._buildConfig(_options);
+
+    this.sessions = new Map();
+    this.providers = new Map();
+    this.userCache = new Map();
+
+    this._initializeRateLimiter();
+    this._initializeJWTValidator(_options);
+    this._wireJWTEvents();
+    this._initializeProviders();
+  }
+
+  /**
+   * Build the full SSO configuration from user-supplied options.
+   * @param {Object} _options - User-supplied configuration options
+   * @returns {Object} Complete SSO configuration
+   * @private
+   */
+  _buildConfig(_options) {
+    return {
       providers: {
         saml: {
           enabled: false,
@@ -69,12 +88,13 @@ class SSOManager extends EventEmitter {
       },
       ..._options,
     };
+  }
 
-    this.sessions = new Map();
-    this.providers = new Map();
-    this.userCache = new Map();
-
-    // Initialize rate limiter for login attempts
+  /**
+   * Create and configure the rate limiter for login attempt throttling.
+   * @private
+   */
+  _initializeRateLimiter() {
     if (this._config.rateLimit.enabled) {
       this.rateLimiter = new RateLimiter({
         maxAttempts: this._config.rateLimit.maxLoginAttempts,
@@ -82,8 +102,14 @@ class SSOManager extends EventEmitter {
         blockDurationMs: this._config.rateLimit.blockDurationMs,
       });
     }
+  }
 
-    // Initialize hardened JWT validator
+  /**
+   * Create and configure the hardened JWT validator for token operations.
+   * @param {Object} _options - Original user-supplied options for JWT settings
+   * @private
+   */
+  _initializeJWTValidator(_options) {
     this.jwtValidator = new JWTValidator(
       createJWTConfig({
         secret: this._config.security.jwtSecret,
@@ -99,29 +125,26 @@ class SSOManager extends EventEmitter {
         enableAuditLog: _options.jwtEnableAuditLog !== false,
       }),
     );
+  }
 
-    // Subscribe to JWT validator events for audit logging
-    this.jwtValidator.on("token_generated", (event) => {
-      this.emit("jwt_token_generated", event);
-    });
+  /**
+   * Forward JWT validator events to the SSOManager for audit logging.
+   * @private
+   */
+  _wireJWTEvents() {
+    const eventMappings = [
+      ["token_generated", "jwt_token_generated"],
+      ["token_validated", "jwt_token_validated"],
+      ["validation_failed", "jwt_validation_failed"],
+      ["algorithm_mismatch", "jwt_algorithm_mismatch"],
+      ["replay_detected", "jwt_replay_detected"],
+    ];
 
-    this.jwtValidator.on("token_validated", (event) => {
-      this.emit("jwt_token_validated", event);
-    });
-
-    this.jwtValidator.on("validation_failed", (event) => {
-      this.emit("jwt_validation_failed", event);
-    });
-
-    this.jwtValidator.on("algorithm_mismatch", (event) => {
-      this.emit("jwt_algorithm_mismatch", event);
-    });
-
-    this.jwtValidator.on("replay_detected", (event) => {
-      this.emit("jwt_replay_detected", event);
-    });
-
-    this._initializeProviders();
+    for (const [sourceEvent, targetEvent] of eventMappings) {
+      this.jwtValidator.on(sourceEvent, (event) => {
+        this.emit(targetEvent, event);
+      });
+    }
   }
 
   /**

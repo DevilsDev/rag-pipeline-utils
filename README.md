@@ -480,6 +480,257 @@ If you encounter issues, please [open an issue](https://github.com/DevilsDev/rag
 
 ---
 
+## Advanced Features (Phases 3-6)
+
+The following features ship with the library and are available via the main import:
+
+```javascript
+const {
+  ChunkingEngine,
+  CitationTracker,
+  PipelineEvaluator,
+  BM25Search,
+  HybridRetriever,
+  GuardrailsPipeline,
+  AgenticPipeline,
+  CostCalculator,
+  TokenBudget,
+  ExecutionTracer,
+  MCPServer,
+  ProjectScaffolder,
+  SSEAdapter,
+  StreamRouter,
+  OllamaConnector,
+  OpenAIConnector,
+  AnthropicConnector,
+  CohereConnector,
+  LocalEmbedder,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
+```
+
+---
+
+### Smart Chunking Engine
+
+Split documents using five strategies: `sentence`, `fixed-size`, `recursive`, `semantic`, and `structure-aware`. Each strategy handles overlap, metadata propagation, and boundary detection automatically.
+
+```javascript
+const engine = new ChunkingEngine({
+  strategy: "recursive",
+  chunkSize: 512,
+  overlap: 50,
+});
+const chunks = engine.chunk(documentText);
+// chunks: [{ text, metadata, index }, ...]
+```
+
+---
+
+### Citation & Grounding
+
+Track exactly which source documents support each claim in a generated answer. The `CitationTracker` maps sentences back to retrieved passages and flags unsupported statements.
+
+```javascript
+const tracker = new CitationTracker();
+const result = tracker.track(answer, retrievedDocs);
+// result.groundednessScore  – 0-1 coverage ratio
+// result.citations          – per-sentence source mappings
+// result.hallucinationReport – unsupported claims
+```
+
+---
+
+### RAG Evaluation Framework
+
+Measure pipeline quality with built-in metrics: faithfulness, answer relevance, context precision, context recall, and groundedness.
+
+```javascript
+const evaluator = new PipelineEvaluator();
+const metrics = evaluator.evaluate({
+  query,
+  answer,
+  results: retrievedDocs,
+});
+// metrics.scores.faithfulness, metrics.scores.relevance, etc.
+```
+
+Enable evaluation inline during pipeline runs:
+
+```javascript
+const result = await pipeline.run({
+  query: "What is the refund policy?",
+  options: { evaluate: true, citations: true },
+});
+```
+
+---
+
+### Hybrid Retrieval
+
+Combine vector similarity search with BM25 keyword search using reciprocal rank fusion for better recall on both semantic and lexical queries.
+
+```javascript
+const bm25 = new BM25Search();
+bm25.index(documents);
+
+const hybrid = new HybridRetriever({
+  vectorRetriever: myVectorRetriever,
+  keywordRetriever: bm25,
+  weights: { vector: 0.7, keyword: 0.3 },
+});
+const results = await hybrid.retrieve(query);
+```
+
+---
+
+### 3-Layer Guardrails
+
+Wrap any pipeline with pre-retrieval, retrieval-time, and post-generation safety guards. Block prompt injection, filter low-quality context, and validate output before it reaches users.
+
+```javascript
+const safePipeline = new GuardrailsPipeline(pipeline, {
+  preRetrieval: { blockInjection: true, maxQueryLength: 500 },
+  retrieval: { minScore: 0.6 },
+  postGeneration: { toxicity: true, pii: true },
+});
+const result = await safePipeline.run({ query });
+```
+
+---
+
+### Agentic RAG
+
+Multi-step retrieval with automatic query planning, iterative search, and self-critique. The agent decomposes complex questions, retrieves evidence for each sub-query, and validates its own answer before returning.
+
+```javascript
+const agent = new AgenticPipeline({
+  retriever: myRetriever,
+  llm: myLLM,
+  maxIterations: 3,
+  selfCritique: true,
+});
+const result = await agent.run({
+  query: "Compare the pricing tiers across all three competitors",
+});
+// result.plan – decomposed sub-queries
+// result.iterations – retrieval rounds with critique notes
+```
+
+---
+
+### Cost Management
+
+Track and control token spend across providers. Set budgets, estimate costs before execution, and get alerts when approaching limits.
+
+```javascript
+const calculator = new CostCalculator();
+const estimate = calculator.estimate({
+  model: "gpt-4",
+  inputTokens: 2000,
+  outputTokens: 500,
+});
+
+const budget = new TokenBudget({ maxTokens: 100000, period: "daily" });
+budget.consume(estimate.totalTokens);
+// budget.remaining, budget.isExhausted
+```
+
+---
+
+### Pipeline Debugger
+
+Trace every step of pipeline execution with timing, input/output snapshots, and error context. Essential for diagnosing slow retrievals or unexpected results.
+
+```javascript
+const tracer = new ExecutionTracer();
+const result = await pipeline.run({ query, tracer });
+
+const trace = tracer.getTrace();
+// trace.steps – [{name, duration, input, output}, ...]
+// trace.totalDuration, trace.bottleneck
+```
+
+---
+
+### MCP Integration
+
+Expose your RAG pipeline as a Model Context Protocol (MCP) tool, making it callable from any MCP-compatible client (Claude Desktop, IDE extensions, etc.).
+
+```javascript
+const server = new MCPServer({
+  pipeline,
+  name: "knowledge-base",
+  description: "Search internal documentation",
+});
+server.listen({ port: 3001 });
+```
+
+---
+
+### Quick Start Templates
+
+Scaffold new RAG projects from four built-in templates: `basic`, `conversational`, `multi-doc`, and `enterprise`. Each template includes working configuration, example data, and tests.
+
+```javascript
+const scaffolder = new ProjectScaffolder();
+await scaffolder.create({
+  template: "conversational",
+  directory: "./my-chatbot",
+  name: "support-bot",
+});
+```
+
+Or from the CLI:
+
+```bash
+npx rag-pipeline-utils init --template enterprise
+```
+
+---
+
+### Streaming Adapters
+
+Stream LLM responses to clients in real-time via Server-Sent Events or WebSockets. The `StreamRouter` multiplexes multiple concurrent streams with backpressure handling.
+
+```javascript
+const sse = new SSEAdapter();
+const router = new StreamRouter();
+
+// Express example
+app.get("/api/stream", (req, res) => {
+  sse.connect(res);
+  router.pipe(pipeline.stream({ query: req.query.q }), sse);
+});
+```
+
+---
+
+### Provider Connectors
+
+Connect to local or cloud LLM providers with zero-config defaults. Each connector implements the standard embedder/LLM interface, so they drop into any pipeline.
+
+```javascript
+// Local models via Ollama
+const ollama = new OllamaConnector({
+  model: "llama3",
+  baseUrl: "http://localhost:11434",
+});
+
+// Cloud providers
+const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = new AnthropicConnector({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
+
+// Lightweight in-process alternatives (no external services)
+const embedder = new LocalEmbedder(); // TF-IDF based embeddings
+const retriever = new MemoryRetriever(); // In-memory vector store
+```
+
+---
+
 ## Contributing
 
 We welcome contributions of all kinds:

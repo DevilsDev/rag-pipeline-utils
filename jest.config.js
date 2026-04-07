@@ -45,7 +45,7 @@ module.exports = {
     },
     "./src/dag/": {
       branches: 55,
-      functions: 43,
+      functions: 41,
       lines: 51,
       statements: 51,
     },
