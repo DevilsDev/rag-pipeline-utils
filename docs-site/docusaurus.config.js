@@ -182,15 +182,15 @@ const config = {
       {
         docs: {
           sidebarPath: "./sidebars.js",
-          lastVersion: "2.3.1",
+          lastVersion: "current",
           versions: {
             current: {
-              label: "2.4.0-dev (Next)",
-              banner: "unreleased",
+              label: "2.4.0 (Latest)",
+              banner: "none",
             },
             "2.3.1": {
-              label: "2.3.1 (Latest)",
-              banner: "none",
+              label: "2.3.1",
+              banner: "unmaintained",
             },
           },
         },
