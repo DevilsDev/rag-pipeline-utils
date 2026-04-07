@@ -87,6 +87,23 @@ const { IterativeRetriever } = require("./agentic/iterative-retriever");
 const { SelfCritiqueChecker } = require("./agentic/self-critique");
 const { AgenticPipeline } = require("./agentic/agentic-pipeline");
 
+// Cost Management
+const { CostCalculator } = require("./cost/cost-calculator");
+const { CostTracker } = require("./cost/cost-tracker");
+const { TokenBudget } = require("./cost/token-budget");
+
+// Pipeline Debugger
+const { ExecutionTracer } = require("./debug/execution-tracer");
+const { TraceInspector } = require("./debug/trace-inspector");
+
+// MCP Integration
+const { MCPServer } = require("./mcp/mcp-server");
+const { MCPToolBuilder } = require("./mcp/mcp-tool-builder");
+
+// Quick Start Templates
+const { ProjectScaffolder } = require("./templates/scaffold");
+const { TemplateRegistry } = require("./templates/template-registry");
+
 // Performance and observability
 const ParallelProcessor = require("./core/performance/parallel-processor");
 const eventLogger = require("./core/observability/event-logger");
@@ -200,6 +217,23 @@ module.exports = {
   IterativeRetriever,
   SelfCritiqueChecker,
   AgenticPipeline,
+
+  // Cost Management
+  CostCalculator,
+  CostTracker,
+  TokenBudget,
+
+  // Pipeline Debugger
+  ExecutionTracer,
+  TraceInspector,
+
+  // MCP Integration
+  MCPServer,
+  MCPToolBuilder,
+
+  // Quick Start Templates
+  ProjectScaffolder,
+  TemplateRegistry,
 
   // Performance & Observability
   ParallelProcessor,
