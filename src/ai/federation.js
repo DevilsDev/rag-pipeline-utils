@@ -68,9 +68,4 @@ class FederatedLearningCoordinator {
   }
 }
 
-// Create and export singleton instance
-const coordinator = new FederatedLearningCoordinator();
-
-module.exports = coordinator;
-module.exports.FederatedLearningCoordinator = FederatedLearningCoordinator;
-module.exports.default = module.exports;
+module.exports = { FederatedLearningCoordinator };

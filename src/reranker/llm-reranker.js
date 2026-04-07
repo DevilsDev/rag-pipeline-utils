@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 class LLMReranker {
   constructor(options = {}) {
@@ -26,22 +26,26 @@ class LLMReranker {
 
         // Security validation: ensure parsed result is an array
         if (!Array.isArray(parsed)) {
-          throw new Error('LLM response is not an array');
+          throw new Error("LLM response is not an array");
         }
 
         // Security validation: ensure all elements are valid numbers
-        if (!parsed.every(item => typeof item === 'number' && Number.isInteger(item))) {
-          throw new Error('LLM response contains non-integer values');
+        if (
+          !parsed.every(
+            (item) => typeof item === "number" && Number.isInteger(item),
+          )
+        ) {
+          throw new Error("LLM response contains non-integer values");
         }
 
         // Security validation: ensure all indices are within valid bounds
-        const validIndices = parsed.filter(i => i >= 0 && i < docs.length);
+        const validIndices = parsed.filter((i) => i >= 0 && i < docs.length);
 
         // Security validation: remove duplicates to prevent manipulation
         rankingOrder = [...new Set(validIndices)];
 
         if (rankingOrder.length === 0) {
-          throw new Error('No valid indices in LLM response');
+          throw new Error("No valid indices in LLM response");
         }
       } catch (parseErr) {
         // Fallback: use simple overlap scoring if parsing fails
@@ -69,7 +73,7 @@ class LLMReranker {
       .filter((t) => t.length > 0);
 
     const scored = docs.map((doc, originalIndex) => {
-      const text = doc.text || doc.content || '';
+      const text = doc.text || doc.content || "";
       const docTokens = text
         .toLowerCase()
         .split(/\s+/)
@@ -108,4 +112,3 @@ const defaultInstance = new LLMReranker();
 // CJS+ESM interop pattern
 module.exports = defaultInstance;
 module.exports.LLMReranker = LLMReranker;
-module.exports.default = module.exports;

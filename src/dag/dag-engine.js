@@ -5,16 +5,16 @@
  * Author: Ali Kahwaji
  */
 
-const DAGNode = require('./dag-node.js');
+const DAGNode = require("./dag-node.js");
 const {
   buildAdjacency,
   getSinkIds,
   topologicalSort,
   validateDAG,
   validateTopology,
-} = require('./core/topology-validation.js');
-const ExecutionScheduler = require('./core/execution-scheduler.js');
-const ErrorContext = require('./core/error-context.js');
+} = require("./core/topology-validation.js");
+const ExecutionScheduler = require("./core/execution-scheduler.js");
+const ErrorContext = require("./core/error-context.js");
 
 class DAG {
   constructor() {
@@ -53,18 +53,18 @@ class DAG {
     let seed, options;
     if (
       seedOrOptions &&
-      typeof seedOrOptions === 'object' &&
+      typeof seedOrOptions === "object" &&
       !Array.isArray(seedOrOptions) &&
-      ('concurrency' in seedOrOptions ||
-        'timeout' in seedOrOptions ||
-        'continueOnError' in seedOrOptions ||
-        'enableCheckpoints' in seedOrOptions ||
-        'checkpointId' in seedOrOptions ||
-        'requiredNodes' in seedOrOptions ||
-        'returnFormat' in seedOrOptions ||
-        'retryFailedNodes' in seedOrOptions ||
-        'maxRetries' in seedOrOptions ||
-        'gracefulDegradation' in seedOrOptions)
+      ("concurrency" in seedOrOptions ||
+        "timeout" in seedOrOptions ||
+        "continueOnError" in seedOrOptions ||
+        "enableCheckpoints" in seedOrOptions ||
+        "checkpointId" in seedOrOptions ||
+        "requiredNodes" in seedOrOptions ||
+        "returnFormat" in seedOrOptions ||
+        "retryFailedNodes" in seedOrOptions ||
+        "maxRetries" in seedOrOptions ||
+        "gracefulDegradation" in seedOrOptions)
     ) {
       // First parameter is options
       options = seedOrOptions;
@@ -84,7 +84,7 @@ class DAG {
       enableCheckpoints: false,
       checkpointId: null,
       requiredNodes: [],
-      returnFormat: 'auto',
+      returnFormat: "auto",
       retryFailedNodes: false,
       maxRetries: 3,
       ...options,
@@ -179,7 +179,7 @@ class DAG {
       if (errors.size === 1) {
         throw [...errors.values()][0];
       }
-      throw new Error('DAG has no sink nodes - no final output available');
+      throw new Error("DAG has no sink nodes - no final output available");
     }
 
     const successfulSinks = sinkIds.filter((id) => results.has(id));
@@ -189,7 +189,7 @@ class DAG {
       if (errors.size === 1) {
         throw [...errors.values()][0];
       }
-      throw new Error('DAG has no sink nodes - no final output available');
+      throw new Error("DAG has no sink nodes - no final output available");
     }
 
     // Save checkpoint if enabled
@@ -204,15 +204,15 @@ class DAG {
       const obj = Object.fromEntries(sinkEntries);
 
       // Attach non-enumerable helpers backed by ALL results
-      Object.defineProperty(obj, '__allResults', {
+      Object.defineProperty(obj, "__allResults", {
         value: new Map(results),
         enumerable: false,
       });
-      Object.defineProperty(obj, 'get', {
+      Object.defineProperty(obj, "get", {
         value: (k) => obj.__allResults.get(k),
         enumerable: false,
       });
-      Object.defineProperty(obj, 'has', {
+      Object.defineProperty(obj, "has", {
         value: (k) => obj.__allResults.has(k),
         enumerable: false,
       });
@@ -293,7 +293,7 @@ class DAG {
       run,
       new Promise((_, reject) => {
         const t = setTimeout(
-          () => reject(new Error('Execution timeout')),
+          () => reject(new Error("Execution timeout")),
           timeout,
         );
         run.finally(() => clearTimeout(t));
@@ -425,7 +425,7 @@ class DAG {
 
       try {
         // Handle undefined node.run function
-        if (typeof node.run !== 'function') {
+        if (typeof node.run !== "function") {
           throw new Error(`Node ${node.id} has no run function`);
         }
 
@@ -553,4 +553,3 @@ class DAG {
 
 // Export classes
 module.exports = { DAG, DAGNode };
-module.exports.default = module.exports;

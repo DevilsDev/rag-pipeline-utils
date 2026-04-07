@@ -7,7 +7,7 @@
 const { createRagPipeline } = require("./core/create-pipeline");
 
 // Configuration utilities
-const { loadConfig } = require("./config/load-config");
+const { loadRagConfig } = require("./config/load-config");
 const { validateRagrc } = require("./config/enhanced-ragrc-schema");
 const { normalizeConfig } = require("./config/normalize-config");
 
@@ -31,8 +31,8 @@ const {
 const { validateInput } = require("./security/validator");
 
 // AI/ML capabilities
-const MultiModalProcessor = require("./ai/multimodal");
-const AdaptiveRetrievalEngine = require("./ai/retrieval-engine");
+const { MultiModalProcessor } = require("./ai/multimodal");
+const { AdaptiveRetrievalEngine } = require("./ai/retrieval-engine");
 const {
   FederatedLearningCoordinator,
 } = require("./ai/federation/federated-learning-coordinator");
@@ -41,7 +41,7 @@ const {
 } = require("./ai/training/model-training-orchestrator");
 
 // DAG engine for complex workflows
-const { DAGEngine } = require("./dag/dag-engine");
+const { DAG } = require("./dag/dag-engine");
 
 // Evaluation
 const { evaluateRagDataset } = require("./evaluate/evaluator");
@@ -58,7 +58,7 @@ const metrics = require("./core/observability/metrics");
 
 // Enterprise features
 const { AuditLogger } = require("./enterprise/audit-logging");
-const { DataGovernance } = require("./enterprise/data-governance");
+const { DataGovernanceManager } = require("./enterprise/data-governance");
 const {
   TenantManager,
   ResourceMonitor,
@@ -91,7 +91,8 @@ module.exports = {
   createPipeline: createRagPipeline, // Alias for backward compatibility
 
   // Configuration
-  loadConfig,
+  loadConfig: loadRagConfig,
+  loadRagConfig,
   validateRagrc,
   normalizeConfig,
 
@@ -123,7 +124,8 @@ module.exports = {
   ModelTrainingOrchestrator,
 
   // Workflow engine
-  DAGEngine,
+  DAGEngine: DAG,
+  DAG,
 
   // Evaluation
   evaluateRagDataset,
@@ -138,7 +140,8 @@ module.exports = {
 
   // Enterprise
   AuditLogger,
-  DataGovernance,
+  DataGovernance: DataGovernanceManager,
+  DataGovernanceManager,
   TenantManager,
   ResourceMonitor,
   SSOManager,

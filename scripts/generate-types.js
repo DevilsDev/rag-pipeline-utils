@@ -184,6 +184,7 @@ export { createRagPipeline as createPipeline };
 
 // Configuration
 export function loadConfig(options?: LoadConfigOptions): Promise<RagPipelineConfig>;
+export { loadConfig as loadRagConfig };
 export function validateRagrc(config: any): boolean;
 export function normalizeConfig(config: any): RagPipelineConfig;
 
@@ -331,6 +332,8 @@ export class DAGEngine {
   validate(): void;
 }
 
+export { DAGEngine as DAG };
+
 // =============================================================================
 // Evaluation
 // =============================================================================
@@ -381,6 +384,8 @@ export class DataGovernance {
   classifyData(data: any): any;
   enforceRetention(policy: any): Promise<void>;
 }
+
+export { DataGovernance as DataGovernanceManager };
 
 export class TenantManager {
   constructor(options?: any);

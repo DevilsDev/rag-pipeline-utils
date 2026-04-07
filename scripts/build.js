@@ -28,7 +28,7 @@ const external = [
   ),
 ];
 
-// CommonJS build
+// CommonJS build — self-contained bundle
 esbuild.buildSync({
   entryPoints: [entryPoint],
   bundle: true,
@@ -40,20 +40,29 @@ esbuild.buildSync({
   logLevel: "warning",
 });
 
-// ESM build
-esbuild.buildSync({
-  entryPoints: [entryPoint],
-  bundle: true,
-  format: "esm",
-  platform: "node",
-  target: "node18",
-  outfile: path.join(distDir, "index.mjs"),
-  external,
-  banner: {
-    js: "import { createRequire } from 'module';\nconst require = createRequire(import.meta.url);",
-  },
-  logLevel: "warning",
-});
+// ESM build — thin wrapper that re-exports named exports from CJS bundle
+// This is the standard pattern used by most npm packages (axios, chalk, etc.)
+const cjsModule = require(path.join(distDir, "index.cjs"));
+const exportNames = Object.keys(cjsModule);
+
+const esmWrapper = [
+  "import { createRequire } from 'module';",
+  "import { fileURLToPath } from 'url';",
+  "import { dirname } from 'path';",
+  "",
+  "const __filename = fileURLToPath(import.meta.url);",
+  "const __dirname = dirname(__filename);",
+  "const require = createRequire(import.meta.url);",
+  "",
+  "const mod = require('./index.cjs');",
+  "",
+  `export const { ${exportNames.join(", ")} } = mod;`,
+  "",
+  "export default mod;",
+  "",
+].join("\n");
+
+fs.writeFileSync(path.join(distDir, "index.mjs"), esmWrapper);
 
 console.log("Build completed successfully!");
 console.log(`  CommonJS: ${path.join(distDir, "index.cjs")}`);

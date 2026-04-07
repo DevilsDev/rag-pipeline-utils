@@ -62,9 +62,4 @@ class ModelTrainingOrchestrator {
   }
 }
 
-// Create and export singleton instance
-const orchestrator = new ModelTrainingOrchestrator();
-
-module.exports = orchestrator;
-module.exports.ModelTrainingOrchestrator = ModelTrainingOrchestrator;
-module.exports.default = module.exports;
+module.exports = { ModelTrainingOrchestrator };

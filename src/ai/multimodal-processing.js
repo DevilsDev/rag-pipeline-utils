@@ -263,6 +263,3 @@ const multiModalProcessor = {
 
 // Export singleton as default
 module.exports = multiModalProcessor;
-
-// CJS+ESM interop pattern
-module.exports.default = module.exports;

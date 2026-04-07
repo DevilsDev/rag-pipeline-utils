@@ -200,6 +200,3 @@ const modelTrainingOrchestrator = {
 
 // Export singleton as default
 module.exports = modelTrainingOrchestrator;
-
-// CJS+ESM interop pattern
-module.exports.default = module.exports;
