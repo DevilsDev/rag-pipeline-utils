@@ -2,12 +2,14 @@
 
 **The comprehensive Node.js toolkit for building production-ready RAG pipelines — with built-in evaluation, citation tracking, agentic reasoning, guardrails, and 7 provider connectors.**
 
-[![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions)
-[![npm version](https://badge.fury.io/js/%40devilsdev%2Frag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
-[![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
+[![npm version](https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+[![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+[![Install size](https://packagephobia.com/badge?p=@devilsdev/rag-pipeline-utils)](https://packagephobia.com/result?p=@devilsdev/rag-pipeline-utils)
+[![Types](https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 [![Node.js Version](https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg)](https://nodejs.org/)
-[![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+[![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/DevilsDev/rag-pipeline-utils/actions)
+[![codecov](https://codecov.io/gh/DevilsDev/rag-pipeline-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/DevilsDev/rag-pipeline-utils)
 
 ---
 
@@ -64,32 +66,39 @@ console.log(result.evaluation?.scores);
 
 ## Architecture
 
-```mermaid
-graph LR
-    A[Documents] --> B[Chunking Engine]
-    B --> C[Embedder]
-    C --> D[Vector Store]
+**Ingestion pipeline**
 
-    F[User Query] --> G{Guardrails}
-    G --> H[Query Planner]
-    H --> E[Retriever + BM25]
-    E --> I[Reranker]
-    I --> J[LLM]
-    J --> K{Citation Tracker}
-    K --> L{Evaluator}
-    L --> M[Response]
-
-    style B fill:#e1f5e1
-    style E fill:#e1f5e1
-    style G fill:#fff4e1
-    style H fill:#fff4e1
-    style K fill:#e3f2fd
-    style L fill:#e3f2fd
+```
+Documents → Chunking Engine → Embedder → Vector Store
 ```
 
-**Pipeline stages:** Chunk --> Embed --> Store --> Retrieve --> Rerank --> Generate --> Cite --> Evaluate
+**Query pipeline**
 
-Each stage is optional, pluggable, and observable. Enable citation tracking and evaluation with a single option flag.
+```
+User Query
+   ↓
+Guardrails (pre-retrieval)       → blocks prompt injection, filters topics
+   ↓
+Query Planner                    → decomposes complex queries into sub-queries
+   ↓
+Retriever + BM25 (hybrid)        → vector similarity + keyword search with RRF
+   ↓
+Reranker                         → reorders by relevance (BM25 / embedding / cascade)
+   ↓
+LLM                              → generates answer from retrieved context
+   ↓
+Citation Tracker                 → maps sentences to sources, detects hallucinations
+   ↓
+Evaluator                        → scores faithfulness, relevance, groundedness
+   ↓
+Response { answer, citations, evaluation }
+```
+
+Each stage is optional, pluggable, and observable. Enable citation tracking and evaluation with a single option flag:
+
+```javascript
+await pipeline.run({ query, options: { citations: true, evaluate: true } });
+```
 
 ---
 
