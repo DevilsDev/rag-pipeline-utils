@@ -52,7 +52,7 @@ jobs:
         run: |
           set -e
           echo "Running security audit..."
-          npm audit --audit-level=high --production
+          npm audit --audit-level=high --omit=dev
           echo "Security audit passed"
 
       - name: Generate audit report
@@ -93,9 +93,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline
 
-      - name: Check licenses
+      - name: Check licenses (production only)
+        # Only check runtime dependencies — these are what ships to consumers.
+        # Dev-only deps (test tooling, docs, bundlers) are not part of the
+        # published tarball and can include legitimate licenses like Unlicense.
         run: |
-          npx license-checker --onlyAllow 'MIT;MIT*;MIT-0;Apache-2.0;Apache 2.0;BSD;BSD*;BSD-2-Clause;BSD-3-Clause;0BSD;ISC;GPL-2.0;GPL-3.0;LGPL-2.1;LGPL-3.0;Python-2.0;CC-BY-3.0;CC-BY-4.0;CC0-1.0;BlueOak-1.0.0;Artistic-2.0;WTFPL;AFL-2.1'
+          npx license-checker --production --onlyAllow 'MIT;MIT*;MIT-0;Apache-2.0;Apache 2.0;BSD;BSD*;BSD-2-Clause;BSD-3-Clause;0BSD;ISC;GPL-2.0;GPL-3.0;LGPL-2.1;LGPL-3.0;Python-2.0;CC-BY-3.0;CC-BY-4.0;CC0-1.0;BlueOak-1.0.0;Artistic-2.0;WTFPL;AFL-2.1;Unlicense;CC-PDDC'
 
       - name: Generate license report
         run: |
