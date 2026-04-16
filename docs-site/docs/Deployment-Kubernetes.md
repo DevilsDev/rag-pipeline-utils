@@ -60,7 +60,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: rag-app
-          image: your-registry.com/rag-pipeline-utils:2.3.1
+          image: your-registry.com/rag-pipeline-utils:2.4.2
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -262,8 +262,8 @@ helm/rag-pipeline/
 apiVersion: v2
 name: rag-pipeline
 description: RAG Pipeline Utils Helm Chart
-version: 2.3.1
-appVersion: "2.3.1"
+version: 2.4.2
+appVersion: "2.4.2"
 keywords:
   - rag
   - ai
@@ -282,7 +282,7 @@ replicaCount: 3
 
 image:
   repository: your-registry.com/rag-pipeline-utils
-  tag: "2.3.1"
+  tag: "2.4.2"
   pullPolicy: IfNotPresent
 
 service:
@@ -645,7 +645,7 @@ spec:
     spec:
       containers:
         - name: rag-app
-          image: rag-pipeline:2.3.1
+          image: rag-pipeline:2.4.2
 ---
 # Service switches between blue and green
 apiVersion: v1
@@ -668,7 +668,7 @@ helm install rag-pipeline ./helm/rag-pipeline \
   --namespace production \
   --create-namespace \
   --values values-production.yaml \
-  --set image.tag=2.3.1 \
+  --set image.tag=2.4.2 \
   --set secrets.openaiApiKey=$OPENAI_API_KEY
 
 # Dry run first

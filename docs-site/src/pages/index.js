@@ -9,9 +9,9 @@ import styles from "./index.module.css";
 
 function HomepageStats() {
   const stats = [
-    { value: "104", label: "Exports" },
+    { value: "3", label: "Core Primitives" },
     { value: "2050+", label: "Tests" },
-    { value: "<200ms", label: "Retrieval Latency" },
+    { value: "MIT", label: "License" },
     { value: "Zero", label: "Production Vulnerabilities" },
   ];
 
@@ -66,17 +66,21 @@ function HomepageQuickStart() {
                 <code>
                   {`npm install @devilsdev/rag-pipeline-utils
 
-const { createRagPipeline } = require('@devilsdev/rag-pipeline-utils');
+import {
+  createRagPipeline,
+  OpenAIConnector,
+  MemoryRetriever,
+} from '@devilsdev/rag-pipeline-utils';
 
 const pipeline = createRagPipeline({
-  loader: new PDFLoader(),
-  embedder: new OpenAIEmbedder(),
-  retriever: new PineconeRetriever(),
-  llm: new OpenAILLM()
+  retriever: new MemoryRetriever(),
+  llm: new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY }),
 });
 
-// Documents are loaded via the loader plugin configured above
-const result = await pipeline.run({ query: 'What is the vacation policy?' });`}
+const result = await pipeline.run({
+  query: 'What is the vacation policy?',
+  options: { citations: true, evaluate: true },
+});`}
                 </code>
               </pre>
             </div>
