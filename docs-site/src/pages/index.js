@@ -91,6 +91,87 @@ const result = await pipeline.run({
   );
 }
 
+function HomepageUseCases() {
+  const cases = [
+    {
+      tag: "Document Q&A",
+      title: "Answer questions with citations",
+      description:
+        "Return grounded answers where every sentence links back to the source chunk. Per-sentence citation tracking and groundedness scoring built in.",
+      code: `const result = await pipeline.run({
+  query: "Which policy covers remote work?",
+  options: { citations: true },
+});
+// result.citations maps each answer
+// sentence to its source documents`,
+      link: "/docs/Evaluation",
+      linkLabel: "Citation & grounding docs",
+    },
+    {
+      tag: "Internal knowledge",
+      title: "Assistants with faithfulness guarantees",
+      description:
+        "Score every answer on faithfulness, relevance, context precision, and recall. Alert when quality drops below your production threshold.",
+      code: `const result = await pipeline.run({
+  query: userQuestion,
+  options: { evaluate: true },
+});
+// result.evaluation.scores
+//   = { faithfulness, relevance, ... }`,
+      link: "/docs/Evaluation",
+      linkLabel: "Evaluation harness docs",
+    },
+    {
+      tag: "Enterprise service",
+      title: "Pipelines with production guardrails",
+      description:
+        "Three-layer defense: prompt-injection detection pre-retrieval, relevance thresholds during retrieval, and PII + groundedness checks post-generation.",
+      code: `const safePipeline = new GuardrailsPipeline(
+  createRagPipeline({ ... }),
+  {
+    preRetrieval:  { enableInjectionDetection: true },
+    retrieval:     { minRelevanceScore: 0.6 },
+    postGeneration:{ enablePIIDetection: true },
+  }
+);`,
+      link: "/docs/Security",
+      linkLabel: "Guardrails docs",
+    },
+  ];
+
+  return (
+    <section className={styles.useCasesSection}>
+      <div className="container">
+        <h2 className="text--center margin-bottom--sm">
+          Three Paths, One Pipeline
+        </h2>
+        <p className={styles.useCasesLead}>
+          Start with retrieval. Add evaluation when quality matters. Add
+          guardrails when you ship. Each primitive is optional — pick what your
+          team actually needs.
+        </p>
+        <div className="row">
+          {cases.map((c, idx) => (
+            <div key={idx} className="col col--4 margin-bottom--lg">
+              <div className={styles.useCaseCard}>
+                <span className={styles.useCaseTag}>{c.tag}</span>
+                <h3>{c.title}</h3>
+                <p>{c.description}</p>
+                <pre className={styles.useCaseCode}>
+                  <code>{c.code}</code>
+                </pre>
+                <Link to={c.link} className={styles.featureLink}>
+                  {c.linkLabel} →
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomepageKeyFeatures() {
   const features = [
     {
@@ -212,6 +293,7 @@ export default function Home() {
         <HomepageStats />
         <HomepageFeatures />
         <HomepageQuickStart />
+        <HomepageUseCases />
         <HomepageKeyFeatures />
         <HomepageCTA />
       </main>

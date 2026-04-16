@@ -233,7 +233,7 @@ The `JWTValidator` class includes **advanced replay protection** that distinguis
 **Setup:**
 
 ```javascript
-const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
+import { JWTValidator } from "@devilsdev/rag-pipeline-utils";
 
 const validator = new JWTValidator({
   secret: process.env.JWT_SECRET,
@@ -488,7 +488,7 @@ The `InputSanitizer` class includes **multi-layer path traversal protection** wi
 **Protected Attack Vectors:**
 
 ```javascript
-const { sanitizePath } = require("@devilsdev/rag-pipeline-utils");
+import { sanitizePath } from "@devilsdev/rag-pipeline-utils";
 
 // Safe paths are normalized
 sanitizePath("docs/README.md"); // Returns: "docs/README.md"
@@ -515,7 +515,7 @@ sanitizePath("%252e%252e%252fconfig"); // Throws: Path traversal detected (doubl
 Path traversal violations **always throw errors**, even when `throwOnInvalid=false`:
 
 ```javascript
-const { InputSanitizer } = require("@devilsdev/rag-pipeline-utils");
+import { InputSanitizer } from "@devilsdev/rag-pipeline-utils";
 
 const sanitizer = new InputSanitizer({ throwOnInvalid: false });
 
@@ -1054,7 +1054,7 @@ class IncidentResponse {
 Version 2.4.0 introduces a structured guardrails system that wraps any existing pipeline with pre-retrieval, retrieval-time, and post-generation safety checks:
 
 ```javascript
-const { GuardrailsPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { GuardrailsPipeline } from "@devilsdev/rag-pipeline-utils";
 
 const safePipeline = new GuardrailsPipeline(pipeline, {
   preRetrieval: { enableInjectionDetection: true },

@@ -771,7 +771,7 @@ GraphRAG adds a knowledge-graph layer on top of the standard vector retrieval pi
 - **GraphRetriever**: Combines graph traversal with text matching. Given a query, it identifies relevant entities, traverses their relationships in the knowledge graph, and merges graph-sourced context with traditional vector search results for richer answers.
 
 ```javascript
-const { GraphRetriever } = require("@devilsdev/rag-pipeline-utils");
+import { GraphRetriever } from "@devilsdev/rag-pipeline-utils";
 
 const retriever = new GraphRetriever();
 await retriever.store(docs);

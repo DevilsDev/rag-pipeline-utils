@@ -570,7 +570,7 @@ app.get("/api/metrics-summary", dashboardAPI.getMetricsSummary);
 The `PipelineEvaluator` class provides a unified interface for evaluating RAG pipeline outputs against multiple quality dimensions in a single call:
 
 ```javascript
-const { PipelineEvaluator } = require("@devilsdev/rag-pipeline-utils");
+import { PipelineEvaluator } from "@devilsdev/rag-pipeline-utils";
 
 const evaluator = new PipelineEvaluator();
 const metrics = evaluator.evaluate({ query, answer, results: retrievedDocs });
@@ -598,7 +598,7 @@ The returned `metrics` object contains:
 The final groundedness score is the weighted harmonic mean of these three values, giving a single number that reflects how well the generated answer is supported by evidence. A high groundedness score means the answer is both accurate and well-sourced.
 
 ```javascript
-const { computeGroundedness } = require("@devilsdev/rag-pipeline-utils");
+import { computeGroundedness } from "@devilsdev/rag-pipeline-utils";
 
 const score = computeGroundedness({
   faithfulness: 0.9,
@@ -628,7 +628,7 @@ This is useful for development and debugging workflows where you want immediate 
 The `CitationTracker` maps each claim in a generated answer back to the source chunk that supports it. This provides verifiable references and enables downstream groundedness checks:
 
 ```javascript
-const { CitationTracker } = require("@devilsdev/rag-pipeline-utils");
+import { CitationTracker } from "@devilsdev/rag-pipeline-utils";
 
 const tracker = new CitationTracker();
 const cited = tracker.track({ answer, retrievedChunks });

@@ -206,7 +206,7 @@ spec:
 
 ```javascript
 // function-app/index.js
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 
 let pipeline;
 

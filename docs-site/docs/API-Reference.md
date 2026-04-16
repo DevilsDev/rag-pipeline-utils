@@ -35,7 +35,7 @@ function createRagPipeline(config: PipelineConfig): Pipeline;
 **Example:**
 
 ```javascript
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 
 const pipeline = createRagPipeline({
   loader: new PDFLoader(),
@@ -140,7 +140,7 @@ function loadConfig(path?: string): Promise<RagConfig>;
 **Example:**
 
 ```javascript
-const { loadConfig } = require("@devilsdev/rag-pipeline-utils");
+import { loadConfig } from "@devilsdev/rag-pipeline-utils";
 
 const config = await loadConfig("./config/.ragrc.json");
 ```
@@ -207,7 +207,7 @@ sign(payload: object, options?: SignOptions): string
 **Example:**
 
 ```javascript
-const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
+import { JWTValidator } from "@devilsdev/rag-pipeline-utils";
 
 const validator = new JWTValidator({
   secret: process.env.JWT_SECRET,
@@ -291,7 +291,7 @@ sanitize(input: string): string
 **Example:**
 
 ```javascript
-const { InputSanitizer } = require("@devilsdev/rag-pipeline-utils");
+import { InputSanitizer } from "@devilsdev/rag-pipeline-utils";
 
 const sanitizer = new InputSanitizer({
   throwOnInvalid: true,
@@ -353,7 +353,7 @@ async process(content: MultiModalContent): Promise<ProcessedContent>
 **Example:**
 
 ```javascript
-const { MultiModalProcessor } = require("@devilsdev/rag-pipeline-utils");
+import { MultiModalProcessor } from "@devilsdev/rag-pipeline-utils";
 
 const processor = new MultiModalProcessor({
   textModel: "text-embedding-ada-002",
@@ -386,7 +386,7 @@ async learn(feedback: RelevanceFeedback): Promise<void>
 **Example:**
 
 ```javascript
-const { AdaptiveRetrievalEngine } = require("@devilsdev/rag-pipeline-utils");
+import { AdaptiveRetrievalEngine } from "@devilsdev/rag-pipeline-utils";
 
 const engine = new AdaptiveRetrievalEngine({
   baseRetriever: myRetriever,
@@ -440,7 +440,7 @@ async execute(input?: any): Promise<DAGResult>
 **Example:**
 
 ```javascript
-const { DAGEngine } = require("@devilsdev/rag-pipeline-utils");
+import { DAGEngine } from "@devilsdev/rag-pipeline-utils";
 
 const dag = new DAGEngine();
 
@@ -474,7 +474,7 @@ metrics.timing(name: string, duration: number, tags?: object): void
 **Example:**
 
 ```javascript
-const { metrics } = require("@devilsdev/rag-pipeline-utils");
+import { metrics } from "@devilsdev/rag-pipeline-utils";
 
 metrics.counter("pipeline.queries");
 metrics.timing("retrieval.latency", 150);
@@ -495,7 +495,7 @@ eventLogger.query(filters: EventFilters): Promise<Event[]>
 **Example:**
 
 ```javascript
-const { eventLogger } = require("@devilsdev/rag-pipeline-utils");
+import { eventLogger } from "@devilsdev/rag-pipeline-utils";
 
 eventLogger.log({
   type: "security.jwt_validation",
@@ -522,7 +522,7 @@ new AuditLogger(options: AuditLoggerOptions)
 **Example:**
 
 ```javascript
-const { AuditLogger } = require("@devilsdev/rag-pipeline-utils");
+import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const auditLogger = new AuditLogger({
   backend: "s3",
@@ -551,7 +551,7 @@ new DataGovernance(options: DataGovernanceOptions)
 **Example:**
 
 ```javascript
-const { DataGovernance } = require("@devilsdev/rag-pipeline-utils");
+import { DataGovernance } from "@devilsdev/rag-pipeline-utils";
 
 const governance = new DataGovernance({
   tenantIdField: "orgId",
@@ -578,7 +578,7 @@ new HotReloadManager(options: HotReloadOptions)
 **Example:**
 
 ```javascript
-const { createHotReloadManager } = require("@devilsdev/rag-pipeline-utils");
+import { createHotReloadManager } from "@devilsdev/rag-pipeline-utils";
 
 const hotReload = createHotReloadManager({
   watchPaths: ["./plugins/**/*.js"],
@@ -601,7 +601,7 @@ new DevServer(options: DevServerOptions)
 **Example:**
 
 ```javascript
-const { createDevServer } = require("@devilsdev/rag-pipeline-utils");
+import { createDevServer } from "@devilsdev/rag-pipeline-utils";
 
 const server = createDevServer({
   port: 3000,
@@ -633,7 +633,7 @@ logger.error(message: string, meta?: object): void
 **Example:**
 
 ```javascript
-const { logger } = require("@devilsdev/rag-pipeline-utils");
+import { logger } from "@devilsdev/rag-pipeline-utils";
 
 logger.info("Pipeline initialized", {
   plugins: ["loader", "embedder", "retriever"],
@@ -673,11 +673,11 @@ wrapError(
 **Example:**
 
 ```javascript
-const {
+import {
   createError,
   wrapError,
   ERROR_CODES,
-} = require("@devilsdev/rag-pipeline-utils");
+} from "@devilsdev/rag-pipeline-utils";
 
 throw createError(
   ERROR_CODES.PLUGIN_NOT_FOUND,
@@ -738,7 +738,7 @@ list(type?: PluginType): string[]
 **Example:**
 
 ```javascript
-const { pluginRegistry } = require("@devilsdev/rag-pipeline-utils");
+import { pluginRegistry } from "@devilsdev/rag-pipeline-utils";
 
 pluginRegistry.register("embedder", "my-embedder", new MyEmbedder());
 
@@ -774,7 +774,7 @@ async process(
 **Example:**
 
 ```javascript
-const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
+import { ParallelProcessor } from "@devilsdev/rag-pipeline-utils";
 
 const processor = new ParallelProcessor({
   concurrency: 10,

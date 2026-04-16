@@ -230,7 +230,7 @@ kubectl annotate serviceaccount rag-pipeline-sa \
 ```javascript
 // index.js
 const functions = require("@google-cloud/functions-framework");
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 
 let pipeline;
 

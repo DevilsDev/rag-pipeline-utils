@@ -618,14 +618,12 @@ Starting with v2.4.0, the toolkit ships with **7 built-in provider connectors** 
 ### **Available Connectors**
 
 ```javascript
-const {
-  OpenAIConnector, // GPT-4, text-embedding-3
+import { OpenAIConnector, // GPT-4, text-embedding-3
   AnthropicConnector, // Claude 3 Opus, Sonnet, Haiku
   CohereConnector, // Embed + Rerank
   OllamaConnector, // Llama 3, Mistral (local)
   LocalEmbedder, // TF-IDF (offline, no API)
-  MemoryRetriever, // In-memory cosine similarity
-} = require("@devilsdev/rag-pipeline-utils");
+  MemoryRetriever, // In-memory cosine similarity } from "@devilsdev/rag-pipeline-utils";
 
 // Local model
 const ollama = new OllamaConnector({

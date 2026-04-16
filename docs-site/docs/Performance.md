@@ -702,7 +702,7 @@ class AutoScaler {
 The `StreamingEmbedder` wrapper enables real-time embedding of large document sets with built-in backpressure control, memory management, and progress tracking. Instead of embedding an entire corpus in one blocking call, documents flow through an async iterator that yields results as they become available.
 
 ```javascript
-const { StreamingEmbedder } = require("@devilsdev/rag-pipeline-utils");
+import { StreamingEmbedder } from "@devilsdev/rag-pipeline-utils";
 
 const streamer = new StreamingEmbedder(myEmbedder, {
   batchSize: 50,
@@ -725,10 +725,10 @@ for await (const { id, vector, progress } of streamer.embedStream(documents)) {
 The `MetricsAggregator` and `DashboardGenerator` pair provides a turnkey performance dashboard for monitoring query latency, cost, and success rates across your RAG pipeline.
 
 ```javascript
-const {
+import {
   MetricsAggregator,
   DashboardGenerator,
-} = require("@devilsdev/rag-pipeline-utils");
+} from "@devilsdev/rag-pipeline-utils";
 
 const aggregator = new MetricsAggregator();
 aggregator.recordQuery({ duration: 250, cost: 0.003, success: true });

@@ -11,7 +11,7 @@ Real-world examples demonstrating common RAG Pipeline Utils use cases.
 Build a complete document question-answering system with PDF support.
 
 ```javascript
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 const PDFLoader = require("./plugins/pdf-loader");
 const OpenAIEmbedder = require("./plugins/openai-embedder");
 const PineconeRetriever = require("./plugins/pinecone-retriever");
@@ -87,7 +87,7 @@ Sources: employee-handbook.pdf, company-policies.pdf
 Implement a streaming chatbot with context awareness.
 
 ```javascript
-const { createRagPipeline } = require("@devilsdev/rag-pipeline-utils");
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
 
 async function streamingChatbot() {
   const pipeline = createRagPipeline({
@@ -179,13 +179,13 @@ Assistant: The security features include advanced JWT validation with replay pro
 Implement a multi-tenant knowledge base with security and governance.
 
 ```javascript
-const {
+import {
   createRagPipeline,
   JWTValidator,
   InputSanitizer,
   AuditLogger,
   DataGovernance,
-} = require("@devilsdev/rag-pipeline-utils");
+} from "@devilsdev/rag-pipeline-utils";
 
 class SecureKnowledgeBase {
   constructor() {
@@ -359,11 +359,11 @@ main().catch(console.error);
 Process large document collections with parallel processing and caching.
 
 ```javascript
-const {
+import {
   createRagPipeline,
   ParallelProcessor,
   metrics,
-} = require("@devilsdev/rag-pipeline-utils");
+} from "@devilsdev/rag-pipeline-utils";
 
 async function batchProcessDocuments() {
   const pipeline = createRagPipeline({
@@ -471,11 +471,11 @@ document.ingest.error: 5
 Build a complex multi-stage RAG workflow with conditional logic.
 
 ```javascript
-const {
+import {
   DAGEngine,
   createRagPipeline,
   MultiModalProcessor,
-} = require("@devilsdev/rag-pipeline-utils");
+} from "@devilsdev/rag-pipeline-utils";
 
 async function advancedWorkflow() {
   const dag = new DAGEngine({

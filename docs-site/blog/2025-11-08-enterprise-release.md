@@ -40,8 +40,8 @@ RAG Pipeline Utils v2.2.0 Enterprise Edition delivers production-ready infrastru
 
 ## Quality Metrics
 
-- **Test Coverage**: 90%+ code coverage with enterprise-grade reliability testing suite
-- **Performance**: 500+ texts per second embedding throughput, sub-200ms retrieval latency
+- **Test Coverage**: 2,050+ unit, integration, and contract tests cover the public API surface
+- **Performance**: Benchmarking harness ships in `scripts/benchmark.js` — run against your own hardware and provider mix for representative numbers
 - **Scalability**: Kubernetes-ready deployment with Helm charts and production monitoring
 - **Documentation**: Comprehensive technical documentation for enterprise deployment scenarios
 
