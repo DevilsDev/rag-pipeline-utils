@@ -1,7 +1,7 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
   "version": "2.4.3",
-  "description": "A comprehensive enterprise-grade toolkit for building RAG (Retrieval-Augmented Generation) pipelines with advanced AI/ML capabilities",
+  "description": "Composable RAG for Node.js — with built-in evaluation, citations, guardrails, and observability.",
   "main": "dist/index.cjs",
   "type": "commonjs",
   "types": "dist/index.d.ts",
@@ -151,7 +151,9 @@
     "contracts/",
     ".ragrc.schema.json",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public"
