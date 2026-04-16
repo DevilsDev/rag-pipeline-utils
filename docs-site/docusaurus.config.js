@@ -101,7 +101,7 @@ const config = {
       indexName: 'rag-pipeline-utils',
       contextualSearch: true,
       searchParameters: {
-        facetFilters: ['language:en', 'version:2.3.1'],
+        facetFilters: ['language:en', 'version:2.4.0'],
       },
       searchPagePath: 'search',
     },

@@ -41,7 +41,7 @@ metadata:
   namespace: production
   labels:
     app: rag-pipeline
-    version: v2.3.1
+    version: v2.4.0
 spec:
   replicas: 3
   selector:
@@ -51,7 +51,7 @@ spec:
     metadata:
       labels:
         app: rag-pipeline
-        version: v2.3.1
+        version: v2.4.0
     spec:
       serviceAccountName: rag-pipeline
       securityContext:
