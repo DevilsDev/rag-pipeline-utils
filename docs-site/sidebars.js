@@ -14,7 +14,24 @@ const sidebars = {
       type: "category",
       label: "Overview",
       collapsed: false,
-      items: ["Introduction", "Architecture", "Tutorials", "Use-Cases"],
+      items: [
+        "Introduction",
+        "Architecture",
+        "Tutorials",
+        "Use-Cases",
+        "Comparison",
+      ],
+    },
+    {
+      type: "category",
+      label: "Concepts",
+      collapsed: false,
+      items: [
+        "Concepts-Core",
+        "Concepts-Connectors",
+        "Concepts-Evaluation",
+        "Concepts-Guardrails",
+      ],
     },
     {
       type: "category",
@@ -26,7 +43,12 @@ const sidebars = {
       type: "category",
       label: "Enterprise",
       collapsed: false,
-      items: ["Enterprise", "Observability", "Security"],
+      items: [
+        "Enterprise",
+        "Observability",
+        "Security",
+        "Security-Capabilities",
+      ],
     },
     {
       type: "category",
@@ -47,6 +69,7 @@ const sidebars = {
       items: [
         "Evaluation",
         "Performance",
+        "Benchmarks",
         "Migration",
         "Troubleshooting",
         "FAQ",

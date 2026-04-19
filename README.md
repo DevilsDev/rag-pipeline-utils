@@ -157,6 +157,13 @@ import {
 - **[Architecture](https://devilsdev.github.io/rag-pipeline-utils/docs/Architecture)** — plugin contracts, pipeline internals
 - **[API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/API-Reference)** — complete export index
 - **[Examples](https://devilsdev.github.io/rag-pipeline-utils/docs/Examples)** — chatbot, Q&A, code search, support
+- **[Comparison vs LangChain.js / LlamaIndex.TS](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison)** — honest decision framework
+- **[Runnable demo](examples/fastify-rag-demo)** — Fastify + OpenAI + guardrails, deployable in one command
+- **[Benchmarks & methodology](BENCHMARKS.md)** — how we measure, how you reproduce
+- **[Security policy](SECURITY.md)** — responsible disclosure, supported versions
+- **[Security capability matrix](https://devilsdev.github.io/rag-pipeline-utils/docs/Security-Capabilities)** — what's battle-tested vs. recommended vs. example
+- **[API stability policy (SEMVER.md)](SEMVER.md)** — what counts as breaking, deprecation windows
+- **[Changelog](CHANGELOG.md)** — release history
 
 ## Roadmap
 

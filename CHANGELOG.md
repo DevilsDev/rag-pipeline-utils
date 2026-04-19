@@ -9,6 +9,52 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [2.4.4] - 2026-04-16
+
+### Added
+
+- **`BENCHMARKS.md`** (root, ships in tarball) — methodology-first
+  benchmarks doc covering what we measure, what we don't, how to
+  run the suite, environment disclosure template, JSON report schema,
+  end-to-end harness template for benchmarking your own stack,
+  interpretation guide (percentiles, throughput, memory), common
+  pitfalls, and a CI regression pattern.
+- **`SEMVER.md`** (root, ships in tarball) — API stability policy.
+  Defines public surface, what counts as breaking, deprecation
+  process (one-minor warning window minimum), supported runtimes,
+  TypeScript and ESM/CJS commitments.
+- **`docs-site/docs/Security-Capabilities.md`** — capability matrix
+  distinguishing what's battle-tested (🟢) vs. recommended practice
+  (🟡) vs. example code requiring hardening (🟠) vs. out of scope
+  (🔴), across pre-retrieval, retrieval-time, and post-generation
+  guardrails plus supply-chain, auth, logging, input validation, and
+  data governance.
+- **`docs-site/docs/Concepts-Core.md`**,
+  `Concepts-Connectors.md`, `Concepts-Evaluation.md`,
+  `Concepts-Guardrails.md` — four conceptual-module overviews mapped
+  to a future `rag-core` / `rag-connectors` / `rag-eval` /
+  `rag-guardrails` package boundary, so reviewers can reason about
+  blast radius without us splitting the codebase.
+- **`docs-site/docs/Comparison.md`** — honest comparison vs.
+  LangChain.js and LlamaIndex.TS, including where we lose and a
+  decision framework. Currency dated to April 2026.
+- **`examples/fastify-rag-demo/`** — runnable end-to-end RAG service:
+  Fastify 5 + OpenAI + in-memory retriever + 3-layer guardrails
+  - citations + evaluation. Ships with Dockerfile, Fly.io `fly.toml`,
+    Railway `railway.json`, ingest + smoke-test scripts, and a complete
+    README. ~150 lines of `server.js`.
+- **`examples/README.md`** — index of runnable examples with
+  contribution guidance.
+
+### Changed
+
+- README "Documentation" section now links to BENCHMARKS, SECURITY,
+  CHANGELOG (added in 2.4.3) plus SEMVER, the Security Capabilities
+  matrix, the Comparison page, and the runnable demo.
+- Sidebar adds two new categories: "Concepts" (4 pages) and a
+  Comparison page under Overview. Security-Capabilities slotted under
+  Enterprise.
+
 ## [2.4.3] - 2026-04-16
 
 ### Security
@@ -78,6 +124,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.4.4]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.4
 [2.4.3]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.3
 [2.4.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.2
 [2.4.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.1
