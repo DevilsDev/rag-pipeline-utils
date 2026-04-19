@@ -101,7 +101,7 @@ const config = {
       indexName: 'rag-pipeline-utils',
       contextualSearch: true,
       searchParameters: {
-        facetFilters: ['language:en', 'version:2.4.2'],
+        facetFilters: ['language:en', 'version:2.4.5'],
       },
       searchPagePath: 'search',
     },
@@ -185,7 +185,7 @@ const config = {
           lastVersion: "current",
           versions: {
             current: {
-              label: "2.4.2 (Latest)",
+              label: "2.4.5 (Latest)",
               banner: "none",
             },
             "2.3.1": {

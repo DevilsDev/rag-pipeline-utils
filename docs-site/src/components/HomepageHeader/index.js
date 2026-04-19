@@ -1,5 +1,5 @@
 /**
- * Version: 2.4.2
+ * Version: 2.4.5
  * Description: Crash-proof homepage header with full fallback safety
  * Author: Ali Kahwaji
  */
