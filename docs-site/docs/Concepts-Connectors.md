@@ -25,10 +25,10 @@ defined as a JSON schema in `contracts/`.
 
 ### Retrievers / Vector stores
 
-| Connector                            | Notes                                                                                                                                 |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `MemoryRetriever`                    | In-process cosine-similarity store. Honors `tenantId` for multi-tenant scoping. Production-suitable for small corpora (<100k chunks). |
-| Pinecone, Weaviate, Qdrant, pgvector | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                          |
+| Connector                            | Notes                                                                                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MemoryRetriever`                    | In-process cosine-similarity store. Honors `tenantId` for multi-tenant scoping. Production-suitable for small corpora (under 100k chunks). |
+| Pinecone, Weaviate, Qdrant, pgvector | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                               |
 
 ### LLMs
 
