@@ -1,5 +1,20 @@
 name: Release
 
+# Publishes @devilsdev/rag-pipeline-utils to npm using OIDC trusted publishing.
+#
+# Auth model: no long-lived NPM_TOKEN. The workflow obtains a short-lived
+# OIDC token from GitHub's identity provider, exchanges it with npm for a
+# scoped publish credential, and emits provenance attestation alongside
+# the tarball. Requires a one-time Trusted Publisher configuration on
+# https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils/access
+# linking this workflow file + environment as the trusted source.
+#
+# Triggers:
+#   - GitHub Release published (the canonical path)
+#   - Manual workflow_dispatch (for re-publishing if a release is edited)
+#
+# Concurrency: one release at a time, no cancellation (npm publish is not idempotent).
+
 on:
   release:
     types: [published]
@@ -14,12 +29,14 @@ concurrency:
 
 jobs:
   publish:
-    name: NPM Release
+    name: NPM Release (OIDC + provenance)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
+      # id-token: write is required for OIDC trusted publishing.
+      # Without it, npm CLI falls back to NODE_AUTH_TOKEN.
       id-token: write
     steps:
       - name: Harden runner
@@ -36,19 +53,45 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
-      - name: Install
+      # OIDC trusted publishing requires npm CLI 11.5.1+. Node 22 ships with
+      # an older npm; upgrade in-place. Pinned to avoid surprises.
+      - name: Upgrade npm to OIDC-capable version
+        run: npm install -g npm@11.5.1
+
+      - name: Verify npm version
+        run: npm --version
+
+      - name: Install dependencies
         run: CI=true npm ci --prefer-offline
 
-      - name: Test
+      - name: Run tests
         run: npm test -- --ci --passWithNoTests
 
       - name: Build
         run: npm run build
 
-      - name: Verify package
+      - name: Verify package contents
         run: npm run verify:pack --if-present
 
-      - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # --provenance attaches a SLSA build provenance attestation to the
+      # tarball, signed via Sigstore. Visible on the npm package page as
+      # a "provenance" badge. Requires id-token: write.
+      #
+      # --ignore-scripts skips lifecycle hooks (prepublishOnly, etc.) at
+      # publish time. Test/Build above already covered them; running them
+      # twice wastes CI minutes and risks env divergence.
+      #
+      # No NODE_AUTH_TOKEN: npm CLI 11.5+ detects id-token: write and
+      # negotiates OIDC trusted-publisher exchange with the registry.
+      - name: Publish to npm with provenance (OIDC)
+        run: npm publish --access public --provenance --ignore-scripts
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "## ✅ Published @devilsdev/rag-pipeline-utils" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Version: $(node -p "require('./package.json').version")" >> $GITHUB_STEP_SUMMARY
+          echo "Provenance: attached via OIDC + Sigstore" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils" >> $GITHUB_STEP_SUMMARY
