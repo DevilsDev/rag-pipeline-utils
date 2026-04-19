@@ -1,11 +1,21 @@
 /**
- * Version: 0.4.0
  * Path: /docs-site/docusaurus.config.js
  * Description: Tailwind integration, sticky navbar, and dark/light toggle support
  * Author: Ali Kahwaji
+ *
+ * Version source of truth: the root /package.json. Anywhere on this page
+ * that needs to display the package version (dropdown label, Algolia
+ * facet filter, etc.) reads from PKG_VERSION below — never hardcode.
  */
 
 // @ts-check
+
+const path = require("path");
+// Read once at config-load. Docusaurus invokes this file at build time,
+// so picking up the version from the root package.json is fine here.
+const PKG_VERSION = require(
+  path.resolve(__dirname, "..", "package.json"),
+).version;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -101,7 +111,7 @@ const config = {
       indexName: 'rag-pipeline-utils',
       contextualSearch: true,
       searchParameters: {
-        facetFilters: ['language:en', 'version:2.4.5'],
+        facetFilters: ['language:en', `version:${PKG_VERSION}`],
       },
       searchPagePath: 'search',
     },
@@ -185,7 +195,7 @@ const config = {
           lastVersion: "current",
           versions: {
             current: {
-              label: "2.4.5 (Latest)",
+              label: `${PKG_VERSION} (Latest)`,
               banner: "none",
             },
             "2.3.1": {

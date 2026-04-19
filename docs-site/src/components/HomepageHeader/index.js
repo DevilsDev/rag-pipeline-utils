@@ -1,7 +1,10 @@
 /**
- * Version: 2.4.5
  * Description: Crash-proof homepage header with full fallback safety
  * Author: Ali Kahwaji
+ *
+ * Note: do not put a version number in this header. The package version
+ * is sourced from the root package.json at build time — see
+ * docusaurus.config.js (PKG_VERSION).
  */
 
 import React from "react";
