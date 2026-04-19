@@ -9,6 +9,21 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [2.4.5] - 2026-04-19
+
+### Changed
+
+- **Supply chain**: first release published via GitHub Actions OIDC trusted
+  publishing with `--provenance` attached. Tarball now ships with a SLSA
+  build provenance attestation signed via Sigstore; consumers can verify
+  the git-commit → tarball-bytes chain with `npm audit signatures`. No
+  long-lived `NPM_TOKEN` involved.
+- Publish workflow (`.github/workflows/release.yml`): switched from
+  `NODE_AUTH_TOKEN` to OIDC, upgraded npm CLI to 11.5.1+ at job start,
+  added `--provenance` and `--ignore-scripts` to the publish step.
+
+No API, behavior, or documented-surface changes from 2.4.4.
+
 ## [2.4.4] - 2026-04-16
 
 ### Added
@@ -124,6 +139,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.4.5]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.5
 [2.4.4]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.4
 [2.4.3]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.3
 [2.4.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.2
