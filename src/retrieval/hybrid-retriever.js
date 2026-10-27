@@ -33,26 +33,23 @@ class HybridRetriever extends EventEmitter {
       return [];
     }
 
-    const topK = (query && query.topK) || this.config.topK;
+    const request = typeof query === 'string' ? { query } : { ...query };
+    const topK = request.topK || this.config.topK;
+    request.topK = topK;
 
-    // Run all retrievers in parallel
-    const promises = this.retrievers.map(({ retriever, name }) => {
-      const fn =
-        typeof retriever.retrieve === 'function'
-          ? retriever.retrieve.bind(retriever)
-          : typeof retriever.search === 'function'
-            ? retriever.search.bind(retriever)
-            : null;
-
-      if (!fn) {
-        return Promise.reject(
-          new Error(`Retriever "${name}" has no retrieve() or search() method`),
-        );
+    // Run all retrievers in parallel. retrieve() follows the retriever
+    // contract and gets the full request (so vector retrievers receive
+    // queryVector); search() is the BM25-style (text, { k }) signature.
+    const promises = this.retrievers.map(async ({ retriever, name }) => {
+      if (typeof retriever.retrieve === 'function') {
+        return retriever.retrieve(request);
       }
-
-      // Pass query string or the full query object depending on method
-      const arg = typeof query === 'string' ? query : query.query || query;
-      return fn(arg);
+      if (typeof retriever.search === 'function') {
+        return retriever.search(request.query, { k: topK });
+      }
+      throw new Error(
+        `Retriever "${name}" has no retrieve() or search() method`,
+      );
     });
 
     const settled = await Promise.allSettled(promises);
@@ -77,6 +74,11 @@ class HybridRetriever extends EventEmitter {
       }
     }
 
+    if (successCount === 0) {
+      const reasons = settled.map((o) => o.reason?.message).join('; ');
+      throw new Error(`HybridRetriever: all retrievers failed (${reasons})`);
+    }
+
     const fused = reciprocalRankFusion(resultSets, {
       k: this.config.fusionK,
       weights,
@@ -87,6 +89,7 @@ class HybridRetriever extends EventEmitter {
     this.emit('retrieved', {
       totalRetrievers: this.retrievers.length,
       successfulRetrievers: successCount,
+      failedRetrievers: this.retrievers.length - successCount,
       resultCount: topResults.length,
     });
 

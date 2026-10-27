@@ -76,9 +76,11 @@ class CitationTracker extends EventEmitter {
         'CitationTracker.track(): answer must be a non-empty string',
       );
     }
-    if (!Array.isArray(retrievedDocs) || retrievedDocs.length === 0) {
+    // An empty array is valid (retrieval found nothing): every sentence is
+    // then reported as unsupported rather than failing the whole run.
+    if (!Array.isArray(retrievedDocs)) {
       throw new Error(
-        'CitationTracker.track(): retrievedDocs must be a non-empty array',
+        'CitationTracker.track(): retrievedDocs must be an array',
       );
     }
 

@@ -1,7 +1,7 @@
 'use strict';
-const { PluginRegistry } = require('./plugin-registry.js');
-
-const defaultRegistry = new PluginRegistry();
+// Share the exported singleton so plugins registered via
+// `pluginRegistry.register()` are resolvable by name here.
+const defaultRegistry = require('./plugin-registry.js');
 
 function resolve(registry, type, value) {
   const reg = registry || defaultRegistry;
@@ -10,12 +10,28 @@ function resolve(registry, type, value) {
 
 function withTimeout(promise, ms) {
   if (!ms) return promise;
-  return Promise.race([
-    promise,
-    new Promise((_, rej) =>
-      setTimeout(() => rej(new Error('Execution timeout')), ms),
-    ),
-  ]);
+  let timer;
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => rej(new Error('Execution timeout')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+/**
+ * Embed the query text, preferring embedQuery() and accepting the common
+ * return shapes: a vector, a list of vectors, or [{ values|vector|embedding }].
+ */
+async function embedQuery(embedder, query) {
+  const raw = embedder.embedQuery
+    ? await embedder.embedQuery(query)
+    : await embedder.embed(query);
+  const first = Array.isArray(raw) && !isNumeric(raw[0]) ? raw[0] : raw;
+  if (Array.isArray(first)) return first;
+  return first?.values || first?.vector || first?.embedding;
+}
+
+function isNumeric(value) {
+  return typeof value === 'number';
 }
 
 module.exports.createRagPipeline = function createRagPipeline({
@@ -49,11 +65,14 @@ module.exports.createRagPipeline = function createRagPipeline({
     const { timeout, stream } = options || {};
     const doWork = (async () => {
       if (loaderI?.load) await loaderI.load();
-      if (embedderI?.embed && query) await embedderI.embed(query);
+      let vector = queryVector;
+      if (!vector && query && (embedderI?.embedQuery || embedderI?.embed)) {
+        vector = await embedQuery(embedderI, query);
+      }
 
       const docs = await retrieverI.retrieve({
         query,
-        queryVector,
+        queryVector: vector,
         topK: options.topK ?? 3,
       });
       let results = docs;
