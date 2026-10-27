@@ -73,6 +73,9 @@ jobs:
       - name: Verify package contents
         run: npm run verify:pack --if-present
 
+      - name: Smoke test packed tarball
+        run: npm run smoke:pack
+
       # --provenance attaches a SLSA build provenance attestation to the
       # tarball, signed via Sigstore. Visible on the npm package page as
       # a "provenance" badge. Requires id-token: write.

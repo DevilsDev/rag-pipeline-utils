@@ -54,6 +54,11 @@ jobs:
       - name: Test
         run: npm test -- --ci --coverage --passWithNoTests
 
+      # Installs the packed tarball into a clean project with production deps
+      # only, so a dependency that is missing from package.json fails here.
+      - name: Smoke test packed tarball
+        run: npm run smoke:pack
+
       - name: Audit (non-blocking)
         run: npm audit --audit-level=moderate || echo "::warning::audit issues found"
         continue-on-error: true
