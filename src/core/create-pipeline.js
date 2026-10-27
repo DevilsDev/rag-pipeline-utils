@@ -2,6 +2,7 @@
 // Share the exported singleton so plugins registered via
 // `pluginRegistry.register()` are resolvable by name here.
 const defaultRegistry = require('./plugin-registry.js');
+const { embedQuery, canEmbed } = require('../utils/embed-query');
 
 function resolve(registry, type, value) {
   const reg = registry || defaultRegistry;
@@ -15,23 +16,6 @@ function withTimeout(promise, ms) {
     timer = setTimeout(() => rej(new Error('Execution timeout')), ms);
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-}
-
-/**
- * Embed the query text, preferring embedQuery() and accepting the common
- * return shapes: a vector, a list of vectors, or [{ values|vector|embedding }].
- */
-async function embedQuery(embedder, query) {
-  const raw = embedder.embedQuery
-    ? await embedder.embedQuery(query)
-    : await embedder.embed(query);
-  const first = Array.isArray(raw) && !isNumeric(raw[0]) ? raw[0] : raw;
-  if (Array.isArray(first)) return first;
-  return first?.values || first?.vector || first?.embedding;
-}
-
-function isNumeric(value) {
-  return typeof value === 'number';
 }
 
 module.exports.createRagPipeline = function createRagPipeline({
@@ -66,7 +50,7 @@ module.exports.createRagPipeline = function createRagPipeline({
     const doWork = (async () => {
       if (loaderI?.load) await loaderI.load();
       let vector = queryVector;
-      if (!vector && query && (embedderI?.embedQuery || embedderI?.embed)) {
+      if (!vector && query && canEmbed(embedderI)) {
         vector = await embedQuery(embedderI, query);
       }
 

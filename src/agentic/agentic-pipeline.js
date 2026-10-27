@@ -5,6 +5,7 @@ const { DAG } = require('../dag/dag-engine');
 const { QueryPlanner } = require('./query-planner');
 const { IterativeRetriever } = require('./iterative-retriever');
 const { SelfCritiqueChecker } = require('./self-critique');
+const { embedQuery, canEmbed } = require('../utils/embed-query');
 
 /**
  * Default configuration for the AgenticPipeline.
@@ -62,6 +63,8 @@ class AgenticPipeline extends EventEmitter {
    * @param {object} params.retriever - Retriever instance with .retrieve() method
    * @param {object} params.llm - LLM instance with .generate() method
    * @param {Array<number>} [params.queryVector] - Optional pre-computed query vector
+   * @param {object} [params.embedder] - Optional embedder; when given, each
+   *   sub-query is embedded on its own instead of reusing queryVector
    * @param {object} [params.options={}] - Extra options passed to llm.generate()
    * @returns {Promise<{
    *   success: boolean,
@@ -74,7 +77,7 @@ class AgenticPipeline extends EventEmitter {
    * }>}
    * @throws {Error} If retriever or llm is missing
    */
-  async run({ query, retriever, llm, queryVector, options = {} }) {
+  async run({ query, retriever, llm, queryVector, embedder, options = {} }) {
     // 1. Validate inputs
     if (!retriever || typeof retriever.retrieve !== 'function') {
       throw new Error(
@@ -111,18 +114,26 @@ class AgenticPipeline extends EventEmitter {
       dag.addNode(
         `retrieve-${i}`,
         async () => {
+          // queryVector belongs to the original query; a decomposed
+          // sub-query needs its own embedding when an embedder is available.
+          const needsOwnVector =
+            canEmbed(embedder) && (sq.subQuery !== query || !queryVector);
+          const subQueryVector = needsOwnVector
+            ? await embedQuery(embedder, sq.subQuery)
+            : queryVector;
           if (this.iterativeRetriever) {
             const result = await this.iterativeRetriever.retrieve({
               query: sq.subQuery,
               retriever,
               llm,
-              queryVector,
+              queryVector: subQueryVector,
+              embedder,
             });
             return result.results;
           }
           return await retriever.retrieve({
             query: sq.subQuery,
-            queryVector,
+            queryVector: subQueryVector,
             topK: 10,
           });
         },

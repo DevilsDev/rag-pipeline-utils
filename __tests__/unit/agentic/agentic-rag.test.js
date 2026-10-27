@@ -496,3 +496,69 @@ describe("AgenticPipeline", () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// Query vectors for sub-queries and refined queries
+// ---------------------------------------------------------------------------
+describe("per-query embeddings", () => {
+  const vectorFor = (text) => [text.length, 1];
+  let embedder;
+
+  beforeEach(() => {
+    embedder = { embedQuery: async (text) => vectorFor(text) };
+  });
+
+  test("AgenticPipeline embeds each planned sub-query", async () => {
+    const retriever = mockRetriever();
+    const pipeline = new AgenticPipeline({ enableCritique: false });
+    const query = "What is RAG and how does BM25 work?";
+
+    const result = await pipeline.run({
+      query,
+      retriever,
+      llm: mockLLM("Answer."),
+      embedder,
+    });
+
+    expect(result.subQueries.length).toBeGreaterThan(1);
+    for (const [request] of retriever.retrieve.mock.calls) {
+      expect(request.queryVector).toEqual(vectorFor(request.query));
+    }
+  });
+
+  test("AgenticPipeline keeps the caller's vector without an embedder", async () => {
+    const retriever = mockRetriever();
+    const pipeline = new AgenticPipeline({
+      enablePlanning: false,
+      enableCritique: false,
+    });
+
+    await pipeline.run({
+      query: "What is RAG?",
+      retriever,
+      llm: mockLLM("Answer."),
+      queryVector: [9, 9],
+    });
+
+    expect(retriever.retrieve.mock.calls[0][0].queryVector).toEqual([9, 9]);
+  });
+
+  test("IterativeRetriever re-embeds refined queries", async () => {
+    const retriever = mockRetriever([
+      { id: "1", content: "unrelated content", score: 0.5 },
+    ]);
+    const iterative = new IterativeRetriever({ maxIterations: 2 });
+
+    await iterative.retrieve({
+      query: "quantum entanglement basics",
+      retriever,
+      queryVector: [1, 1],
+      embedder,
+    });
+
+    const [first, second] = retriever.retrieve.mock.calls.map((c) => c[0]);
+    expect(first.queryVector).toEqual([1, 1]);
+    expect(second.query).not.toBe(first.query);
+    expect(second.queryVector).toEqual(vectorFor(second.query));
+  });
+});
