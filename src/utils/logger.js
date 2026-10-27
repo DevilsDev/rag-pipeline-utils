@@ -5,34 +5,34 @@
  * Author: Ali Kahwaji
  */
 
-const pino = require("pino"); // eslint-disable-line global-require
-const crypto = require("crypto"); // eslint-disable-line global-require
+const pino = require('pino'); // eslint-disable-line global-require
+const crypto = require('crypto'); // eslint-disable-line global-require
 
 // Determine log level with environment override
 const getLogLevel = () => {
   if (process.env.LOG_LEVEL) {
     const level = process.env.LOG_LEVEL.toLowerCase();
     const validLevels = [
-      "trace",
-      "debug",
-      "info",
-      "warn",
-      "error",
-      "fatal",
-      "silent",
+      'trace',
+      'debug',
+      'info',
+      'warn',
+      'error',
+      'fatal',
+      'silent',
     ];
     if (validLevels.includes(level)) {
       return level;
     }
   }
-  return process.env.NODE_ENV === "test" ? "silent" : "info";
+  return process.env.NODE_ENV === 'test' ? 'silent' : 'info';
 };
 
 // Determine if pretty printing should be enabled
 const shouldUsePrettyPrint = () => {
   // Enable pretty print in development or when explicitly requested
   const requested =
-    process.env.NODE_ENV === "development" || process.env.LOG_PRETTY === "true";
+    process.env.NODE_ENV === 'development' || process.env.LOG_PRETTY === 'true';
   return requested && isPinoPrettyAvailable();
 };
 
@@ -40,7 +40,7 @@ const shouldUsePrettyPrint = () => {
 // transport target cannot be resolved, so fall back to JSON output instead.
 const isPinoPrettyAvailable = () => {
   try {
-    require.resolve("pino-pretty");
+    require.resolve('pino-pretty');
     return true;
   } catch {
     return false;
@@ -52,7 +52,7 @@ const isPinoPrettyAvailable = () => {
  * Supports distributed tracing, tenant isolation, and security audit logging.
  */
 const baseLogger = pino({
-  name: "rag-pipeline-utils",
+  name: 'rag-pipeline-utils',
   level: getLogLevel(),
   formatters: {
     level: (label) => {
@@ -69,15 +69,34 @@ const baseLogger = pino({
   // Pretty print in development or when LOG_PRETTY=true
   ...(shouldUsePrettyPrint() && {
     transport: {
-      target: "pino-pretty",
+      target: 'pino-pretty',
       options: {
         colorize: true,
-        translateTime: "HH:MM:ss",
-        ignore: "pid,hostname",
+        translateTime: 'HH:MM:ss',
+        ignore: 'pid,hostname',
       },
     },
   }),
 });
+
+/**
+ * Coerce the meta argument into an object. Callers often pass
+ * console-style extras such as `logger.error("Failed:", error.message)`;
+ * spreading a string would log one key per character.
+ *
+ * @param {*} meta
+ * @returns {object}
+ */
+function normalizeMeta(meta) {
+  if (meta == null) return {};
+  if (meta instanceof Error) {
+    return { error: meta.message, stack: meta.stack };
+  }
+  if (typeof meta !== 'object' || Array.isArray(meta)) {
+    return { detail: meta };
+  }
+  return meta;
+}
 
 /**
  * Enhanced logger with correlation ID support and structured context
@@ -129,37 +148,37 @@ class StructuredLogger {
       ...this.context,
       correlationId: this.correlationId || crypto.randomUUID(),
       timestamp: new Date().toISOString(),
-      ...meta,
+      ...normalizeMeta(meta),
     };
 
     this.logger[level](logData, message);
   }
 
   info(message, meta) {
-    this._log("info", message, meta);
+    this._log('info', message, meta);
   }
 
   error(message, meta) {
-    this._log("error", message, meta);
+    this._log('error', message, meta);
   }
 
   warn(message, meta) {
-    this._log("warn", message, meta);
+    this._log('warn', message, meta);
   }
 
   debug(message, meta) {
-    this._log("debug", message, meta);
+    this._log('debug', message, meta);
   }
 
   /**
    * Security audit logging with enhanced metadata
    */
   audit(action, meta = {}) {
-    this._log("info", `AUDIT: ${action}`, {
+    this._log('info', `AUDIT: ${action}`, {
       ...meta,
       audit: true,
       action,
-      severity: meta.severity || "medium",
+      severity: meta.severity || 'medium',
     });
   }
 
@@ -167,12 +186,12 @@ class StructuredLogger {
    * Performance logging with timing information
    */
   performance(operation, duration, meta = {}) {
-    this._log("info", `PERFORMANCE: ${operation}`, {
+    this._log('info', `PERFORMANCE: ${operation}`, {
       ...meta,
       performance: true,
       operation,
       duration,
-      unit: "ms",
+      unit: 'ms',
     });
   }
 
@@ -180,7 +199,7 @@ class StructuredLogger {
    * Tenant-specific logging for multi-tenant applications
    */
   tenant(tenantId, message, meta = {}) {
-    this._log("info", message, {
+    this._log('info', message, {
       ...meta,
       tenantId,
       tenant: true,
@@ -202,15 +221,15 @@ function createLogger(correlationId, context = {}) {
  * Middleware function for Express.js to add correlation IDs to requests
  */
 function correlationMiddleware(req, res, next) {
-  const correlationId = req.headers["x-correlation-id"] || crypto.randomUUID();
+  const correlationId = req.headers['x-correlation-id'] || crypto.randomUUID();
   req.correlationId = correlationId;
   req.logger = createLogger(correlationId, {
     method: req.method,
     url: req.url,
-    userAgent: req.headers["user-agent"],
+    userAgent: req.headers['user-agent'],
   });
 
-  res.setHeader("x-correlation-id", correlationId);
+  res.setHeader('x-correlation-id', correlationId);
   next();
 }
 
