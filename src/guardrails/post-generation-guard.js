@@ -165,6 +165,25 @@ class PostGenerationGuard extends EventEmitter {
     this.emit('checked', result);
     return result;
   }
+
+  /**
+   * Replace PII matches in arbitrary text with [REDACTED], using the same
+   * patterns as check(). Used to scrub text derived from the answer, such as
+   * citation sentences.
+   *
+   * @param {string} text
+   * @returns {string}
+   */
+  redact(text) {
+    if (typeof text !== 'string' || !this.config.enablePIIDetection) {
+      return text;
+    }
+    let redacted = text;
+    for (const pattern of Object.values(this.config.piiPatterns)) {
+      redacted = redacted.replace(pattern, '[REDACTED]');
+    }
+    return redacted;
+  }
 }
 
 module.exports = { PostGenerationGuard, DEFAULT_CONFIG };

@@ -10,6 +10,7 @@ const {
 const {
   GuardrailsPipeline,
 } = require("../../../src/guardrails/guardrails-pipeline");
+const { createRagPipeline } = require("../../../src/core/create-pipeline");
 
 // ---------------------------------------------------------------------------
 // PreRetrievalGuard
@@ -188,6 +189,17 @@ describe("RetrievalGuard", () => {
       ];
       const output = guard.filter(results, { userPermissions: ["admin"] });
       expect(output.results.length).toBe(1);
+    });
+
+    test("fails closed when userPermissions is missing", () => {
+      const guard = new RetrievalGuard({ enforceACL: true });
+      const results = [
+        { id: "1", score: 0.9, metadata: { requiredRole: "admin" } },
+        { id: "2", score: 0.8, metadata: {} },
+      ];
+      const output = guard.filter(results, {});
+      expect(output.results.map((r) => r.id)).toEqual(["2"]);
+      expect(output.metadata.reasons.acl).toBe(1);
     });
   });
 
@@ -427,5 +439,108 @@ describe("GuardrailsPipeline", () => {
     await gp.run({ query: "hello" });
     expect(preHandler).toHaveBeenCalledTimes(1);
     expect(postHandler).toHaveBeenCalledTimes(1);
+  });
+
+  describe("data leakage regressions", () => {
+    beforeAll(() => jest.useRealTimers());
+
+    const docs = [
+      {
+        id: "salary",
+        score: 0.9,
+        content: "The CEO salary is 2 million.",
+        metadata: { requiredRole: "exec" },
+      },
+      {
+        id: "handbook",
+        score: 0.8,
+        content: "The handbook covers vacation.",
+        metadata: {},
+      },
+    ];
+
+    test("ACL filtering happens before the LLM sees the documents", async () => {
+      const llm = {
+        generate: jest.fn(async (_q, ctx) =>
+          ctx.map((d) => d.content).join(" "),
+        ),
+      };
+      const pipeline = createRagPipeline({
+        retriever: { retrieve: async () => docs },
+        llm,
+      });
+      const gp = new GuardrailsPipeline(pipeline, {
+        retrieval: { enforceACL: true },
+        postGeneration: { enableGroundednessCheck: false },
+      });
+
+      const result = await gp.run({
+        query: "What does the CEO earn?",
+        context: { userPermissions: ["intern"] },
+      });
+
+      const seenByLlm = llm.generate.mock.calls[0][1].map((d) => d.id);
+      expect(seenByLlm).toEqual(["handbook"]);
+      expect(result.guardrails.retrieval.metadata.reasons.acl).toBe(1);
+      expect(result.guardrails.retrieval.removed).toEqual([{ id: "salary" }]);
+      expect(JSON.stringify(result)).not.toContain("CEO salary");
+    });
+
+    test("withholds the answer when a pipeline without the hook leaked ACL docs", async () => {
+      const inner = {
+        run: jest.fn(async () => ({
+          success: true,
+          answer: "The CEO salary is 2 million.",
+          results: docs,
+        })),
+      };
+      const gp = new GuardrailsPipeline(inner, {
+        retrieval: { enforceACL: true },
+        postGeneration: { enableGroundednessCheck: false },
+      });
+
+      const result = await gp.run({
+        query: "q",
+        context: { userPermissions: ["intern"] },
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.answer).toBeUndefined();
+      expect(JSON.stringify(result)).not.toContain("CEO salary");
+    });
+
+    test("strict block does not return the raw answer or citations", async () => {
+      const pipeline = createRagPipeline({
+        llm: { generate: async () => "Email ceo@corp.com for details." },
+      });
+      const gp = new GuardrailsPipeline(pipeline, {
+        strict: true,
+        postGeneration: { enableGroundednessCheck: false },
+      });
+
+      const result = await gp.run({ query: "Who do I contact?" });
+
+      expect(result.success).toBe(false);
+      expect(JSON.stringify(result)).not.toContain("ceo@corp.com");
+    });
+
+    test("non-strict mode redacts PII in citations and evaluation too", async () => {
+      const pipeline = createRagPipeline({
+        retriever: { retrieve: async () => [docs[1]] },
+        llm: { generate: async () => "Email ceo@corp.com for details." },
+      });
+      const gp = new GuardrailsPipeline(pipeline, {
+        postGeneration: { enableGroundednessCheck: false },
+      });
+
+      const result = await gp.run({
+        query: "Who do I contact?",
+        options: { evaluate: true },
+      });
+
+      expect(result.answer).toContain("[REDACTED]");
+      expect(result.citations.citations[0].sentence).toContain("[REDACTED]");
+      expect(JSON.stringify(result)).not.toContain("ceo@corp.com");
+    });
   });
 });

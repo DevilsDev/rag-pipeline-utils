@@ -17,6 +17,20 @@ const DEFAULT_CONFIG = {
 };
 
 /**
+ * Reduce removed documents to their ids so filtered-out (possibly
+ * access-controlled) content is never returned to the caller.
+ *
+ * @param {{results: Array, removed: Array, metadata: object}} filterOutput
+ * @returns {{results: Array, removed: Array<{id: *}>, metadata: object}}
+ */
+function summarizeFilter(filterOutput) {
+  return {
+    ...filterOutput,
+    removed: filterOutput.removed.map((doc) => ({ id: doc.id })),
+  };
+}
+
+/**
  * Pipeline wrapper that applies all three guardrail layers (pre-retrieval,
  * retrieval, and post-generation) around an existing RAG pipeline. In strict
  * mode, any guard failure aborts the pipeline; otherwise issues are collected
@@ -92,21 +106,49 @@ class GuardrailsPipeline extends EventEmitter {
       query = guardrails.preRetrieval.sanitizedQuery;
     }
 
-    // 2. Run the underlying pipeline with (possibly sanitized) query
+    // 2. Run the underlying pipeline with (possibly sanitized) query. The
+    // retrieval guard is passed in as options.filterResults so it runs
+    // between retrieval and generation (supported by createRagPipeline).
+    let preGenerationFilter = null;
+    const filterOptions = this.retrievalGuard
+      ? {
+          filterResults: (docs) => {
+            preGenerationFilter = this.retrievalGuard.filter(
+              docs,
+              input.context,
+            );
+            return preGenerationFilter.results;
+          },
+        }
+      : {};
     const result = await this.pipeline.run({
       ...input,
       query,
-      options: { ...input.options, citations: true },
+      options: { ...input.options, citations: true, ...filterOptions },
     });
 
     // 3. Retrieval guard on results
-    if (this.retrievalGuard && result.results) {
-      guardrails.retrieval = this.retrievalGuard.filter(
-        result.results,
-        input.context,
+    if (this.retrievalGuard && preGenerationFilter) {
+      guardrails.retrieval = summarizeFilter(preGenerationFilter);
+      this.emit('retrieval', guardrails.retrieval);
+    } else if (this.retrievalGuard && result.results) {
+      // The wrapped pipeline ignored options.filterResults, so it generated
+      // from unfiltered documents. Filtering now only fixes result.results;
+      // if ACL removed anything the answer may contain restricted content.
+      guardrails.retrieval = summarizeFilter(
+        this.retrievalGuard.filter(result.results, input.context),
       );
       this.emit('retrieval', guardrails.retrieval);
       result.results = guardrails.retrieval.results;
+
+      if (guardrails.retrieval.metadata.reasons.acl) {
+        return {
+          success: false,
+          error:
+            'Retrieval guard removed access-controlled documents after generation; answer withheld',
+          guardrails,
+        };
+      }
     }
 
     // 4. Post-generation guard on answer
@@ -118,18 +160,38 @@ class GuardrailsPipeline extends EventEmitter {
       this.emit('postGeneration', guardrails.postGeneration);
 
       if (!guardrails.postGeneration.safe && this.config.strict) {
+        // Do not spread result: it carries the raw answer and citations.
         return {
-          ...result,
           success: false,
           error: 'Post-generation guard flagged output',
           guardrails,
         };
       }
       result.answer = guardrails.postGeneration.sanitizedOutput;
+      this._redactDeep(result.citations);
+      this._redactDeep(result.evaluation);
     }
 
     result.guardrails = guardrails;
     return result;
+  }
+
+  /**
+   * Citations and evaluation details copy sentences from the raw answer, so
+   * scrub every string in them with the same PII patterns as the answer.
+   *
+   * @param {*} value - Object, array or string to redact in place
+   * @returns {*} The redacted value
+   * @private
+   */
+  _redactDeep(value) {
+    if (typeof value === 'string') return this.postGuard.redact(value);
+    if (value && typeof value === 'object') {
+      for (const key of Object.keys(value)) {
+        value[key] = this._redactDeep(value[key]);
+      }
+    }
+    return value;
   }
 }
 

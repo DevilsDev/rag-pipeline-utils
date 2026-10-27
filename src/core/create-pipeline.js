@@ -70,11 +70,16 @@ module.exports.createRagPipeline = function createRagPipeline({
         vector = await embedQuery(embedderI, query);
       }
 
-      const docs = await retrieverI.retrieve({
+      let docs = await retrieverI.retrieve({
         query,
         queryVector: vector,
         topK: options.topK ?? 3,
       });
+      // Hook for filtering (e.g. ACL guardrails) before anything downstream,
+      // including the LLM, sees the retrieved documents.
+      if (typeof options.filterResults === 'function' && Array.isArray(docs)) {
+        docs = await options.filterResults(docs);
+      }
       let results = docs;
       if (rerankerI?.rerank && Array.isArray(docs) && docs.length) {
         results = await rerankerI.rerank(query || '', docs, {
