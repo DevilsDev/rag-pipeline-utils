@@ -189,6 +189,28 @@ describe("Input Sanitizer Security Suite", () => {
 
       expect(safe).not.toMatch(/>\s*\/dev\//);
     });
+
+    // Regression: the shared /g patterns kept lastIndex between calls, so a
+    // short payload after a long blocked input was returned unchanged.
+    it("should block a short payload right after a long blocked input", () => {
+      const long = `${"a".repeat(40)}; rm -rf /`;
+      expect(sanitizer.sanitize(long, SanitizationRules.COMMAND)).toBe("");
+
+      const short = "a | rm -rf x";
+      expect(sanitizer.sanitize(short, SanitizationRules.COMMAND)).toBe("");
+    });
+
+    it("should block repeated payloads through the cached default sanitizer", () => {
+      const payloads = [
+        `${"b".repeat(40)}; whoami`,
+        "c | id",
+        "d; id",
+        "e`id`",
+      ];
+      for (const payload of payloads) {
+        expect(sanitizeCommand(payload)).toBe("");
+      }
+    });
   });
 
   describe("Path Traversal Prevention", () => {
@@ -217,6 +239,18 @@ describe("Input Sanitizer Security Suite", () => {
       expect(() => {
         sanitizer.sanitize(malicious, SanitizationRules.PATH);
       }).toThrow("Potential path traversal detected");
+    });
+
+    it("should block traversal after a previous blocked path", () => {
+      expect(() =>
+        sanitizer.sanitize(
+          `${"x".repeat(40)}/../../etc/passwd`,
+          SanitizationRules.PATH,
+        ),
+      ).toThrow("Potential path traversal detected");
+      expect(() =>
+        sanitizer.sanitize("../etc/shadow", SanitizationRules.PATH),
+      ).toThrow("Potential path traversal detected");
     });
 
     it("should normalize path separators", () => {

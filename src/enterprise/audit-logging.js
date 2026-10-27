@@ -13,6 +13,9 @@ const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 const { logger } = require('../utils/logger');
 
+const INTEGRITY_VERSION = 2;
+const ENCRYPTION_VERSION = 2;
+
 class AuditLogger extends EventEmitter {
   constructor(_options = {}) {
     super();
@@ -355,6 +358,7 @@ class AuditLogger extends EventEmitter {
   async _writeAuditLog(auditEvent) {
     // Add sequence number for integrity chain
     auditEvent.sequence = ++this.sequenceNumber;
+    auditEvent.integrityVersion = INTEGRITY_VERSION;
 
     // Calculate integrity hash
     auditEvent.integrity = await this._calculateIntegrityHash(auditEvent);
@@ -384,9 +388,9 @@ class AuditLogger extends EventEmitter {
 
     this.emit('audit_logged', {
       _category: auditEvent._category,
-      _action: auditEvent._action,
+      _action: auditEvent.action,
       _severity: auditEvent.metadata._severity,
-      _correlationId: auditEvent.metadata._correlationId,
+      _correlationId: auditEvent.metadata.correlationId,
     });
 
     return auditEvent.metadata.correlationId;
@@ -490,12 +494,12 @@ class AuditLogger extends EventEmitter {
    */
   async generateComplianceReport(_options) {
     const {
-      _tenantId,
       standard, // GDPR, HIPAA, SOC2, PCI-DSS
       startDate,
       endDate,
       includeEvidence = false,
     } = _options;
+    const _tenantId = _options.tenantId ?? _options._tenantId;
 
     const query = {
       _tenantId,
@@ -566,7 +570,8 @@ class AuditLogger extends EventEmitter {
    * Verify log integrity
    */
   async verifyIntegrity(_options = {}) {
-    const { startDate, endDate, _tenantId } = _options;
+    const { startDate, endDate } = _options;
+    const _tenantId = _options.tenantId ?? _options._tenantId;
 
     const integrityFile = path.join(
       this._config.logDir,
@@ -604,7 +609,7 @@ class AuditLogger extends EventEmitter {
         const expectedHash = await this._calculateIntegrityHash(log);
         if (log.integrity !== expectedHash) {
           verification.tamperedLogs.push({
-            _correlationId: log.metadata._correlationId,
+            _correlationId: log.metadata.correlationId,
             sequence: log.sequence,
             file: file,
           });
@@ -616,7 +621,7 @@ class AuditLogger extends EventEmitter {
         // Verify digital signature if present
         if (log.signature && !(await this._verifySignature(log))) {
           verification.tamperedLogs.push({
-            _correlationId: log.metadata._correlationId,
+            _correlationId: log.metadata.correlationId,
             reason: 'invalid_signature',
             file: file,
           });
@@ -630,11 +635,14 @@ class AuditLogger extends EventEmitter {
 
   // Private helper methods
   async _calculateIntegrityHash(auditEvent) {
+    // Records written before integrityVersion 2 hashed the non-existent
+    // _action/_tenantId fields (always undefined); keep verifying them as-is.
+    const isV2 = auditEvent.integrityVersion === INTEGRITY_VERSION;
     const data = {
       sequence: auditEvent.sequence,
       category: auditEvent._category,
-      action: auditEvent._action,
-      tenantId: auditEvent._tenantId,
+      action: isV2 ? auditEvent.action : auditEvent._action,
+      tenantId: isV2 ? auditEvent.tenantId : auditEvent._tenantId,
       timestamp: auditEvent.metadata.timestamp,
     };
 
@@ -649,7 +657,13 @@ class AuditLogger extends EventEmitter {
 
     for (const field of sensitiveFields) {
       if (auditEvent[field]) {
-        const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
+        // Fresh 96-bit IV per field: GCM must never reuse a (key, IV) pair.
+        const iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv(
+          'aes-256-gcm',
+          this._getCipherKey(),
+          iv,
+        );
         let encrypted = cipher.update(
           JSON.stringify(auditEvent[field]),
           'utf8',
@@ -659,6 +673,8 @@ class AuditLogger extends EventEmitter {
 
         auditEvent[field] = {
           encrypted: true,
+          v: ENCRYPTION_VERSION,
+          iv: iv.toString('hex'),
           data: encrypted,
           authTag: cipher.getAuthTag().toString('hex'),
         };
@@ -674,10 +690,7 @@ class AuditLogger extends EventEmitter {
     for (const field of sensitiveFields) {
       if (auditEvent[field] && auditEvent[field].encrypted) {
         try {
-          const decipher = crypto.createDecipher(
-            'aes-256-gcm',
-            this.encryptionKey,
-          );
+          const decipher = this._createDecipher(auditEvent[field]);
           decipher.setAuthTag(Buffer.from(auditEvent[field].authTag, 'hex'));
 
           let decrypted = decipher.update(
@@ -774,6 +787,34 @@ class AuditLogger extends EventEmitter {
 
   _generateEncryptionKey() {
     return crypto.randomBytes(32);
+  }
+
+  /**
+   * AES-256 needs exactly 32 key bytes. A 32-byte Buffer is used as-is; any
+   * other key (e.g. a passphrase string) is reduced with SHA-256.
+   */
+  _getCipherKey() {
+    const key = this.encryptionKey;
+    if (Buffer.isBuffer(key) && key.length === 32) return key;
+    return crypto.createHash('sha256').update(key).digest();
+  }
+
+  _createDecipher(encryptedField) {
+    if (encryptedField.v === ENCRYPTION_VERSION) {
+      return crypto.createDecipheriv(
+        'aes-256-gcm',
+        this._getCipherKey(),
+        Buffer.from(encryptedField.iv, 'hex'),
+      );
+    }
+    // Legacy records were written with crypto.createCipher, which was
+    // removed in Node 22; they can only be read on older runtimes.
+    if (typeof crypto.createDecipher !== 'function') {
+      throw new Error(
+        'Legacy audit record encryption is not supported on this Node.js version',
+      );
+    }
+    return crypto.createDecipher('aes-256-gcm', this.encryptionKey);
   }
 
   _generateSigningKey() {
@@ -873,17 +914,20 @@ class AuditLogger extends EventEmitter {
   }
 
   _matchesQuery(log, query) {
-    if (query.tenantId && log._tenantId !== query._tenantId) return false;
-    if (query.userId && log._userId !== query._userId) return false;
-    if (query.category && log._category !== query._category) return false;
-    if (query.action && log._action !== query._action) return false;
-    if (query.severity && log.metadata._severity !== query._severity)
-      return false;
-    if (
-      query.correlationId &&
-      log.metadata._correlationId !== query._correlationId
-    )
-      return false;
+    // Accept both plain (tenantId) and underscore (_tenantId) query keys; the
+    // underscore form matches the event input names used by the log* methods.
+    const pick = (key) => query[key] ?? query[`_${key}`];
+    const filters = [
+      [pick('tenantId'), log.tenantId],
+      [pick('userId'), log.userId],
+      [pick('category'), log._category],
+      [pick('action'), log.action],
+      [pick('severity'), log.metadata?._severity],
+      [pick('correlationId'), log.metadata?.correlationId],
+    ];
+    for (const [wanted, actual] of filters) {
+      if (wanted !== undefined && wanted !== actual) return false;
+    }
 
     const logTime = new Date(log.metadata.timestamp);
     if (query.startDate && logTime < new Date(query.startDate)) return false;
