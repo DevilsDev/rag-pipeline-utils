@@ -126,8 +126,9 @@
   gap: 0.5rem;
 }
 
-.next h4 {
-  margin: 1rem 0 0.4rem;
+.nextTitle {
+  margin: 1.25rem 0 0.4rem;
+  font-size: 1.05rem;
 }
 
 .next p {
