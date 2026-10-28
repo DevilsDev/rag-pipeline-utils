@@ -33,22 +33,6 @@ const {
 const { handleIngest } = require("./handlers/ingest-handler.js");
 const { handleQuery } = require("./handlers/query-handler.js");
 
-// Mock dependencies for test compatibility
-const mockPluginMarketplaceCommands = () => {
-  const cmd = new Command("plugin");
-  cmd.description("Plugin marketplace commands");
-  cmd
-    .command("search")
-    .argument("[query]")
-    .action(() => {});
-  cmd
-    .command("install")
-    .argument("<name>")
-    .action(() => {});
-  cmd.command("publish").action(() => {});
-  return cmd;
-};
-
 /**
  * Enhanced CLI with improved UX and additional features
  */
@@ -150,8 +134,8 @@ class EnhancedCLI {
         await handleValidate(this.program.opts());
       });
 
-    // Plugin marketplace commands
-    this.program.addCommand(mockPluginMarketplaceCommands());
+    const { PluginHubCLI } = require("./commands/plugin-hub.js");
+    this.program.addCommand(new PluginHubCLI().createCommands());
 
     // Configuration management commands
     const configCmd = new Command("config");

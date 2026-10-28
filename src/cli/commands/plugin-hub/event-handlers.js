@@ -6,6 +6,12 @@
 const chalk = require("chalk");
 
 function setupEventListeners(hub, certification) {
+  // The hub emits 'error' and then throws a descriptive error that each
+  // command reports. Without a listener, EventEmitter would throw its own
+  // "Unhandled error" first and hide that message.
+  hub.on("error", () => {});
+  certification.on("error", () => {});
+
   // Hub events
   hub.on("install_start", (data) => {
     console.log(

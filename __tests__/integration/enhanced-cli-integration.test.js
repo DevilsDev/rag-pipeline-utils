@@ -547,9 +547,16 @@ describe("Enhanced CLI Integration Tests", () => {
       expect(result.stdout).toContain("publish");
     });
 
-    it("should handle plugin search dry-run", async () => {
-      const result = await runCLI(["--dry-run", "plugin", "search", "openai"]);
-      expect(result.success).toBe(true);
+    it("should require a registry for plugin search", async () => {
+      const result = await runCLI(["plugin", "search", "openai"]);
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain("No plugin registry configured");
+    });
+
+    it("should refuse plugin install", async () => {
+      const result = await runCLI(["plugin", "install", "anything"]);
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain("hub install is disabled");
     });
   });
 });
