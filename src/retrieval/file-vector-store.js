@@ -85,7 +85,7 @@ class FileVectorStore {
         );
       }
       documents[doc.id] = {
-        vector: doc.vector,
+        vector: encodeVector(doc.vector),
         content: doc.content || '',
         metadata: doc.metadata || {},
       };
@@ -150,9 +150,12 @@ class FileVectorStore {
       );
     }
 
+    const queryMagnitude = Math.sqrt(
+      queryVector.reduce((sum, x) => sum + x * x, 0),
+    );
     const results = Object.entries(this.load().documents).map(([id, doc]) => ({
       id,
-      score: cosine(queryVector, doc.vector),
+      score: cosine(queryVector, queryMagnitude, doc.vector),
       content: doc.content,
       metadata: doc.metadata,
     }));
@@ -161,17 +164,48 @@ class FileVectorStore {
   }
 }
 
-function cosine(a, b) {
-  if (a.length !== b.length) return 0;
-  let dot = 0;
-  let magA = 0;
-  let magB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    magA += a[i] * a[i];
-    magB += b[i] * b[i];
+// Stored vectors keep ~7 significant digits; more only inflates the file.
+const round = (x) => Number(x.toPrecision(7));
+
+/**
+ * Mostly-zero vectors (e.g. LocalEmbedder's TF-IDF over a large vocabulary)
+ * are stored sparsely as { n, i, v }; dense ones as plain arrays.
+ */
+function encodeVector(vector) {
+  const indices = [];
+  const values = [];
+  for (let i = 0; i < vector.length; i++) {
+    if (vector[i] !== 0) {
+      indices.push(i);
+      values.push(round(vector[i]));
+    }
   }
-  const magnitude = Math.sqrt(magA) * Math.sqrt(magB);
+  if (indices.length < vector.length / 4) {
+    return { n: vector.length, i: indices, v: values };
+  }
+  return vector.map(round);
+}
+
+/** Cosine similarity between a dense query and a stored (dense or sparse) vector. */
+function cosine(query, magQuery, stored) {
+  const sparse = !Array.isArray(stored);
+  const length = sparse ? stored.n : stored.length;
+  if (query.length !== length) return 0;
+
+  let dot = 0;
+  let magStored = 0;
+  if (sparse) {
+    for (let k = 0; k < stored.i.length; k++) {
+      dot += query[stored.i[k]] * stored.v[k];
+      magStored += stored.v[k] * stored.v[k];
+    }
+  } else {
+    for (let k = 0; k < length; k++) {
+      dot += query[k] * stored[k];
+      magStored += stored[k] * stored[k];
+    }
+  }
+  const magnitude = Math.sqrt(magQuery) * Math.sqrt(magStored);
   return magnitude === 0 ? 0 : dot / magnitude;
 }
 

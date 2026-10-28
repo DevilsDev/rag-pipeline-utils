@@ -130,6 +130,8 @@ rag-pipeline ingest ./docs --rebuild
 | ----------- | ------------------------------------------- |
 | `--rebuild` | Discard the existing index before ingesting |
 
+**Scale.** `file-store` is a single JSON file loaded into memory and searched linearly, meant for local use up to tens of thousands of chunks. As a reference point, 300 files (about 3,000 chunks) with the `local` embedder index in about 3 seconds and produce a 5 MB index. The `local` embedder is fitted to the whole corpus, so every `ingest` re-embeds everything already in the index.
+
 ---
 
 ## `query`
@@ -177,7 +179,7 @@ curl -s -X POST localhost:3000/query \
 | `GET /health` | –                         | `{ "status": "ok", "uptime": <ms> }`   |
 | `POST /query` | `{ "question", "topK"? }` | `{ "answer", "results", "citations" }` |
 
-It is meant for local development: it binds to `127.0.0.1` by default, accepts JSON bodies up to 64 KB, sends no CORS headers and has no authentication. The config is re-read on every request, and custom plugin modules are reloaded when they change.
+It is meant for local development: it binds to `127.0.0.1` by default, accepts JSON bodies up to 64 KB, sends no CORS headers and has no authentication. While bound to loopback it only answers requests addressed to `127.0.0.1`, `localhost` or `[::1]`, which blocks DNS-rebinding attacks from web pages. Binding another `--host` prints a warning. The config is re-read on every request, and custom plugin modules are reloaded when they change.
 
 | Option          | Description                               |
 | --------------- | ----------------------------------------- |

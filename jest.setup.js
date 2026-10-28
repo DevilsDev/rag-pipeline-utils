@@ -15,9 +15,11 @@ function prettyUrl(target) {
   }
 }
 
-// Loopback is allowed: tests may start their own local servers (e.g.
-// DevServer). Everything else is external network and is blocked.
+// Loopback is allowed only for tests that opt in by setting
+// globalThis.__ALLOW_LOOPBACK_HTTP__ (they start their own local server).
+// Otherwise a test could silently reach a real local service, e.g. Ollama.
 function isLoopback(target) {
+  if (!globalThis.__ALLOW_LOOPBACK_HTTP__) return false;
   try {
     const host =
       typeof target === "string" || target instanceof URL

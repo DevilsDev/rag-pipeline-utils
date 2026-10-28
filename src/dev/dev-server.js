@@ -24,6 +24,8 @@ const { EventEmitter } = require('events');
 const { createHotReloadManager } = require('./hot-reload');
 const { logger } = require('../utils/logger');
 
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
+
 /**
  * Development Server
  *
@@ -282,6 +284,16 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
    * @private
    */
   async _handleRequest(req, res) {
+    // DNS rebinding: a web page can point its own domain at 127.0.0.1 and
+    // then call this server same-origin. When bound to loopback, only accept
+    // requests addressed to a loopback name.
+    if (
+      LOOPBACK_HOSTS.has(this.options.host) &&
+      !this._isLoopbackHostHeader(req)
+    ) {
+      return this._send(res, 403, { error: 'Forbidden host' });
+    }
+
     const { pathname } = new URL(req.url, 'http://localhost');
 
     if (pathname === '/health') {
@@ -321,6 +333,15 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
     }
 
     return this._send(res, 404, { error: 'Not found' });
+  }
+
+  /** @private */
+  _isLoopbackHostHeader(req) {
+    const header = req.headers.host || '';
+    const hostname = header.startsWith('[')
+      ? header.slice(0, header.indexOf(']') + 1)
+      : header.split(':')[0];
+    return LOOPBACK_HOSTS.has(hostname.toLowerCase());
   }
 
   /**

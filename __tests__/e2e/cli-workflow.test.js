@@ -187,7 +187,14 @@ describe("rag-pipeline serve", () => {
   let dir;
   let child;
 
-  beforeAll(() => jest.useRealTimers());
+  beforeAll(() => {
+    jest.useRealTimers();
+    globalThis.__ALLOW_LOOPBACK_HTTP__ = true; // talks to the server it spawns
+  });
+
+  afterAll(() => {
+    globalThis.__ALLOW_LOOPBACK_HTTP__ = false;
+  });
 
   afterEach(async () => {
     if (child && child.exitCode === null) {

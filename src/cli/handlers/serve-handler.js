@@ -34,6 +34,13 @@ async function handleServe(globalOptions, options = {}) {
     console.log(`🚀 Serving ${path.basename(configPath)} at ${server.url}`);
     console.log(`   GET  ${server.url}/health`);
     console.log(`   POST ${server.url}/query  {"question": "...", "topK": 3}`);
+    if (
+      !["127.0.0.1", "localhost", "::1"].includes(options.host || "127.0.0.1")
+    ) {
+      console.warn(
+        `⚠️  Listening on ${options.host}: the API has no authentication and anyone who can reach this address can query your index.`,
+      );
+    }
     console.log("Press Ctrl+C to stop.");
 
     const shutdown = async () => {

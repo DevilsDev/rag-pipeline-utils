@@ -64,8 +64,11 @@ class PluginHubCLI {
         "Plugin registry URL (or RAG_PLUGIN_REGISTRY)",
       )
       .hook("preAction", (_hubCommand, actionCommand) => {
-        // requirements is local; install is disabled and explains why
-        if (["requirements", "install"].includes(actionCommand.name())) return;
+        // requirements is local; install and submit are disabled and explain why
+        if (
+          ["requirements", "install", "submit"].includes(actionCommand.name())
+        )
+          return;
         this.registryUrl = this.registryUrl || program.opts().registry;
         try {
           this._resolveRegistryUrl();
@@ -183,18 +186,15 @@ class PluginHubCLI {
 
     certifyCmd
       .command("submit <plugin>")
-      .description("Submit plugin for certification")
-      .option(
-        "-l, --level <level>",
-        "Certification level: BASIC, VERIFIED, ENTERPRISE",
-        "BASIC",
-      )
-      .action(async (plugin, _options) => {
-        await certificationCommands.submitForCertification(
-          this.certification,
-          plugin,
-          _options,
+      .description("Not available yet (see message)")
+      .action(() => {
+        // PluginCertification's automated checks return fixed scores (code
+        // quality 85, security 90, ...) without examining the plugin, so a
+        // BASIC "certificate" would be issued for anything.
+        console.error(
+          "❌ hub certify submit is disabled: its automated checks are placeholders that do not inspect the plugin.",
         );
+        process.exitCode = 1;
       });
 
     certifyCmd

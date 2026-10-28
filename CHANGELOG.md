@@ -103,6 +103,21 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Changed
 
+- **`DevServer`** now really listens: `start()` binds port 3000 by default
+  (pass `port: 0` for a free port), so existing callers may see
+  `EADDRINUSE`. Default host is `127.0.0.1` (was `localhost`), default
+  `watchPaths` is `[]` (was `./src/plugins`, `./src/mocks`), and requests
+  must use a loopback `Host` header while bound to loopback.
+- **`loadRagConfig()`** error messages now include details
+  (`Config validation failed: ...`, `Invalid JSON in config file <path>: ...`)
+  and it no longer logs.
+- **`rag-pipeline plugin` / `hub`** require `--registry <url>` or
+  `RAG_PLUGIN_REGISTRY`; `hub install` and `hub certify submit` are disabled
+  (`certify submit` issued certificates from fixed placeholder scores).
+- **`FileVectorStore`** index files store mostly-zero vectors sparsely and
+  round values to 7 significant digits (about 10x smaller for the `local`
+  embedder).
+
 - **Grounding scores** (citations, faithfulness, context precision/recall,
   groundedness, `PostGenerationGuard`, `SelfCritiqueChecker`) now measure the
   share of a sentence's content words found in a document, optionally

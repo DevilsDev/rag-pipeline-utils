@@ -63,4 +63,27 @@ describe("FileVectorStore", () => {
     expect(store.size()).toBe(0);
     expect(store.getEmbedderInfo()).toBeNull();
   });
+
+  test("stores mostly-zero vectors sparsely and still ranks them", async () => {
+    const store = new FileVectorStore({ path: indexPath });
+    const sparse = new Array(1000).fill(0);
+    sparse[3] = 0.6;
+    sparse[700] = 0.8;
+    await store.store([{ id: "s", vector: sparse, content: "S" }]);
+    store.save();
+
+    const raw = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+    expect(raw.documents.s.vector).toEqual({
+      n: 1000,
+      i: [3, 700],
+      v: [0.6, 0.8],
+    });
+
+    const query = new Array(1000).fill(0);
+    query[700] = 1;
+    const [hit] = await new FileVectorStore({ path: indexPath }).retrieve({
+      queryVector: query,
+    });
+    expect(hit.score).toBeCloseTo(0.8);
+  });
 });

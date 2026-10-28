@@ -29,6 +29,7 @@ describe("DevServer HTTP API", () => {
 
   beforeAll(async () => {
     jest.useRealTimers();
+    globalThis.__ALLOW_LOOPBACK_HTTP__ = true; // talks to its own server
     server = new DevServer({
       port: 0,
       query,
@@ -39,6 +40,7 @@ describe("DevServer HTTP API", () => {
   });
 
   afterAll(async () => {
+    globalThis.__ALLOW_LOOPBACK_HTTP__ = false;
     await server.stop();
   });
 
@@ -104,5 +106,19 @@ describe("DevServer HTTP API", () => {
   test("sends no CORS headers", async () => {
     const res = await request(server, "GET", "/health");
     expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  test("rejects a foreign Host header (DNS rebinding)", async () => {
+    const res = await httpRequest(`${server.url}/health`, {
+      headers: { host: "attacker.example:80" },
+    });
+    expect(res.status).toBe(403);
+  });
+
+  test("accepts localhost as the Host header", async () => {
+    const res = await httpRequest(`${server.url}/health`, {
+      headers: { host: `localhost:${server.port}` },
+    });
+    expect(res.status).toBe(200);
   });
 });
