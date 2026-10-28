@@ -2,7 +2,7 @@
 
 _Written 2026-10-29, the day after `@devilsdev/rag-pipeline-utils@2.5.0` was published. Its recommendations are applied in `PROJECT_ROADMAP.md` and `PROJECT_v3_PLAN.md` (2026-10-29); the decisions in section 8 record the defaults that were chosen._
 
-**Contents:** 1. Where things stand · 2. `PROJECT_ROADMAP.md` problems · 3. `PROJECT_v3_PLAN.md` conflicts · 4. Proposed plan · 5. Edits to the two files · 6. Competitive strategy · 7. What was dropped, and what to revive · 8. Decisions needed
+**Contents:** 1. Where things stand · 2. `PROJECT_ROADMAP.md` problems · 3. `PROJECT_v3_PLAN.md` conflicts · 4. Proposed plan · 5. Edits to the two files · 6. Competitive strategy · 7. What was dropped, and what to revive · 8. Decisions needed · 9. Docs site: fixes and redesign
 
 Two roadmap documents exist:
 
@@ -47,7 +47,7 @@ What 2.5.0 did **not** deliver: the caching layer that the v3 plan had assigned 
 | Roadmap item                        | Problem                                                                                                                                                                                    |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | CHANGELOG auto-generation           | semantic-release was removed in 2.5.0; the changelog is now written by hand                                                                                                                |
-| Contributor guide & issue templates | No `CONTRIBUTING.md` and no `.github/ISSUE_TEMPLATE/` (only a PR template)                                                                                                                 |
+| Contributor guide & issue templates | The guide exists as `docs/CONTRIBUTING.md` (GitHub reads it from `docs/`); there is no `.github/ISSUE_TEMPLATE/`, only a PR template                                                       |
 | Blog post sync from changelog       | Only by hand: `npm run release:tag` (`scripts/generate-release-note.js`) writes a blog post from a tag; the `publish-release-blog.yml` workflow named in the test checklist does not exist |
 
 ### Stale or contradictory
@@ -406,3 +406,108 @@ The release column refers to the plan in section 4.
 5. **Competitive strategy:** adopt the position in section 6 (a layer that works with the big frameworks) and the 2.6 / 2.7 additions in section 4?
 6. **Revived features (7.5):** revive the items marked "Revive" and "Revive in a different form" in the releases listed there?
 7. **Deprecated experimental classes:** remove them from the main entry in 3.0 as planned, or first rebuild one of them for real (multi-tenancy or SSO)?
+8. **Docs site (section 9):** fix and redesign the site in the order of section 9.3?
+
+---
+
+## 9. Docs site: fixes and redesign
+
+Site: https://devilsdev.github.io/rag-pipeline-utils/ (Docusaurus, `docs-site/`). I reviewed it on 2026-10-29 from the live URL and from a local build of `main`.
+
+### 9.1 What is wrong today
+
+**The site is down.**
+
+- Every page returns a GitHub Pages 404.
+- Two workflows deploy to Pages on each push to `main`. `docs-automation.yml` uploads the raw `docs/` folder, which has no `index.html`. It finished after the Docusaurus deploy from `docs-build.yml` and replaced the site.
+- **Fixed in PR #94.** After merging, the site needs one manual redeploy (`gh workflow run docs-build.yml --ref main`), because #94 doesn't touch the paths that trigger `docs-build.yml`.
+
+**Content that is wrong:**
+
+| Where                | Problem                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage quick start | The snippet creates a pipeline with no `embedder`, so copying it fails. It also passes `apiKey` explicitly instead of the README's environment-variable pattern |
+| Homepage stats band  | "2050+ Tests" (now 2,381); "Zero production vulnerabilities" needs a date or a link to the audit                                                                |
+| Homepage features    | "7 provider connectors": there are four (OpenAI, Anthropic, Cohere, Ollama) plus the offline `LocalEmbedder`                                                    |
+| Homepage tagline     | "Enterprise-grade composable RAG pipelines with advanced AI capabilities" is vague and differs from the README and npm description                              |
+| Sidebar              | "Core (rag-core)", "Connectors (rag-connectors)", "Evaluation (rag-eval)", "Guardrails (rag-guardrails)" name packages that don't exist until 3.0               |
+| Version menu         | Offers the 2.3.1 snapshot (25 pages, marked unmaintained). It documents APIs that the 2.5.0 docs review removed as never implemented                            |
+
+**Gaps that developers notice first:**
+
+- **No search.** The Algolia block in `docusaurus.config.js` is commented out with placeholder keys.
+- **Homepage code isn't highlighted.** It is raw `<pre>` text, not Docusaurus `CodeBlock`. There are no copy buttons, and wide lines scroll sideways inside fixed-height cards.
+- **Generic look.** It is close to the default Docusaurus template, and its blue (`#2563EB`) doesn't match the README banner (navy with a sky-to-violet accent).
+- **Six components are built but unused:** `CodePlayground`, `ConfigGenerator`, `InteractiveBadge`, `PerformanceCalculator`, `Tooltip`, `TourGuide`.
+- **Maintenance:**
+  - `@docusaurus/*` is pinned to 3.7.0 in `package.json`, and 3.10.2 is available.
+  - The `onBrokenMarkdownLinks` option is deprecated.
+  - During the review, the browser tab froze twice right after the dark-mode toggle. I couldn't reproduce it in a clean tab and found no theme-dependent code, so treat it as something to test, not a known bug.
+
+### 9.2 Direction
+
+Make the site look and read like the README: the same banner identity, honest claims, and only code that runs. Developers should be able to **find** something in one keystroke, **copy** working code, and **try** it without installing anything.
+
+### 9.3 Plan
+
+**Phase A: fix (about 1 day, after #94)**
+
+1. Redeploy, and add a post-deploy check to `docs-build.yml`: after deploying, request the homepage and one docs page, and fail if either is not 200.
+2. Homepage content:
+   - A working quick start, the same offline `LocalEmbedder` + `MemoryRetriever` example as the README.
+   - Accurate stats, connector count and tagline (taken from `package.json` `description`).
+3. Sidebar labels without the 3.0 package names.
+4. Drop the 2.3.1 snapshot from the version menu. Keep the files until 3.0, then remove them.
+5. Upgrade to Docusaurus 3.10.2 and move `onBrokenMarkdownLinks` to `markdown.hooks`.
+6. Delete the six unused components, or revive them per Phase C. Don't ship dead code.
+
+**Phase B: redesign (2 to 3 days)**
+
+1. **Theme:**
+   - Navy and sky-to-violet tokens from `assets/banner.svg`, defined for light and dark mode, with WCAG AA contrast in both.
+   - Inter for text and JetBrains Mono for code, self-hosted through `@fontsource`.
+2. **Hero:**
+   - Name and one-line value.
+   - An `npm install` command with a copy button.
+   - The pipeline diagram (query → retrieve → rerank → generate → answer + citations) as inline SVG, with a subtle animation that respects `prefers-reduced-motion`.
+   - Buttons: "Quick start", "Run it in your browser" (Phase C), GitHub.
+3. **Homepage sections:**
+   - What you get: citations, evaluation, guardrails, CLI.
+   - The recorded CLI demo (`assets/demo.gif`).
+   - Use-case cards with highlighted, tested snippets.
+   - A short comparison linking to the Comparison page.
+   - A "Works with LangChain, the AI SDK and Mastra" strip, once the 2.6 adapters exist.
+4. **Code everywhere through `CodeBlock`:**
+   - Copy buttons, `title=` file names and line highlighting.
+   - Tabs for npm / pnpm / yarn and for ESM / CommonJS.
+5. **Navigation:**
+   - Navbar: Docs · API · CLI · Examples · Blog · version · GitHub stars.
+   - A tidy footer.
+   - Breadcrumbs, "Edit this page", last-updated dates.
+6. A **social card** regenerated from the banner, so links shared on Slack, X and LinkedIn look right.
+7. Check mobile and dark mode on every page template.
+
+**Phase C: features developers will enjoy (3 to 4 days)**
+
+| Feature                  | What it gives developers                                                                            | How                                                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Search (Ctrl/⌘ K)        | Find any API, option or CLI flag instantly                                                          | `@easyops-cn/docusaurus-search-local` now (no account needed); Algolia DocSearch later (free for open source) |
+| Run in the browser       | Run the three examples with no install                                                              | "Open in StackBlitz" buttons (WebContainers run Node)                                                         |
+| `.ragrc.json` builder    | Pick a template, embedder, retriever and LLM, then copy or download a config that passes the schema | Revive `ConfigGenerator`, validated with `.ragrc.schema.json` in the browser                                  |
+| Generated API reference  | Signatures, types and JSDoc that cannot drift from the code                                         | `docusaurus-plugin-typedoc` over the generated `.d.ts`; the hand-written page keeps the guides                |
+| `llms.txt`               | AI coding assistants (Claude, Cursor, Copilot) read the docs as one clean file                      | `docusaurus-plugin-llms`, generating `/llms.txt` and `/llms-full.txt`                                         |
+| Diagrams as code         | Architecture and data-flow diagrams that stay in sync and work in dark mode                         | `@docusaurus/theme-mermaid`                                                                                   |
+| Changelog page           | Release history on the site                                                                         | Render `CHANGELOG.md` as a docs page, linked from each release post                                           |
+| "Was this page helpful?" | A quick way to report a confusing page                                                              | A link to a prefilled GitHub Discussion or issue, with no tracking                                            |
+
+**Phase D: keep it accurate (about 1 day)**
+
+- Extend the README examples test (`__tests__/docs/readme-examples.test.js`) to run the JavaScript blocks on docs-site pages, so documentation examples fail CI when they drift.
+- Run a link checker on the built site in CI (Docusaurus already fails on broken internal links; add external links on a weekly schedule).
+- Add Lighthouse CI on the homepage and one docs page, with targets of at least 90 for performance, accessibility, best practices and SEO.
+
+### 9.4 Where it fits
+
+- Phase A goes with the **2.5.x** items; it's documentation only and can ship any time.
+- Phases B and C can land on `main` between releases, since the site deploys on its own. Ship them before the 2.6.0 announcement, so the new features land on the redesigned site.
+- Phase D goes with **2.6.0**, together with the `/testing` entry.
