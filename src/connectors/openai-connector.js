@@ -42,17 +42,29 @@ class OpenAIConnector extends BaseConnector {
    * @param {string} [options.embeddingModel='text-embedding-3-small'] - Embedding model
    * @param {number} [options.temperature=0.7] - Sampling temperature
    * @param {number} [options.maxTokens=4096] - Max tokens in completion
-   * @param {string} [options.apiKey] - OpenAI API key (defaults to OPENAI_API_KEY at construction)
+   * @param {string} [options.apiKey] - API key. Defaults to OPENAI_API_KEY at
+   *   construction, except when `baseURL` is set (see below)
+   * @param {string} [options.baseURL] - Base URL of an OpenAI-compatible API,
+   *   e.g. Groq, Together, the Hugging Face router, vLLM, LM Studio or
+   *   Ollama's `/v1` endpoint. With a custom base URL the key is never read
+   *   from OPENAI_API_KEY (that would send your OpenAI key to another
+   *   provider): pass `apiKey` explicitly, or omit it for servers that need
+   *   none
    * @param {number} [options.maxRetries=3] - Retries for transient failures (the SDK's own retries are disabled)
    * @param {number} [options.retryDelay=1000] - Base backoff delay in ms
    * @param {string} [options.systemPrompt] - System prompt used when RAG context is supplied
    */
   constructor(options = {}) {
     super({ name: 'openai', ...options });
+    const baseURL = options.baseURL ? String(options.baseURL) : undefined;
     this.config = {
       ...DEFAULT_CONFIG,
       ...options,
-      apiKey: resolveApiKey(options, API_KEY_ENV),
+      baseURL,
+      // A custom endpoint gets only an explicit key, never OPENAI_API_KEY.
+      apiKey: baseURL
+        ? options.apiKey || ''
+        : resolveApiKey(options, API_KEY_ENV),
     };
     this._client = null; // lazy-loaded
   }
@@ -67,7 +79,12 @@ class OpenAIConnector extends BaseConnector {
     if (!this._client) {
       const mod = require('openai');
       const OpenAI = mod.OpenAI || mod.default || mod;
-      this._client = new OpenAI({ apiKey: this.config.apiKey, maxRetries: 0 });
+      this._client = new OpenAI({
+        // Local OpenAI-compatible servers accept any key; the SDK needs one.
+        apiKey: this.config.apiKey || (this.config.baseURL ? 'not-needed' : ''),
+        ...(this.config.baseURL && { baseURL: this.config.baseURL }),
+        maxRetries: 0,
+      });
     }
     return this._client;
   }
@@ -77,7 +94,8 @@ class OpenAIConnector extends BaseConnector {
    * @private
    */
   _requireApiKey() {
-    if (!this.config.apiKey) {
+    // Only the OpenAI API itself requires a key; a custom baseURL may not.
+    if (!this.config.apiKey && !this.config.baseURL) {
       throw missingApiKeyError('OpenAI', API_KEY_ENV);
     }
   }
