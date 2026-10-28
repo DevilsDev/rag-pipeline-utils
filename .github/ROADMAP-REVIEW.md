@@ -506,6 +506,19 @@ Make the site look and read like the README: the same banner identity, honest cl
 - Run a link checker on the built site in CI (Docusaurus already fails on broken internal links; add external links on a weekly schedule).
 - Add Lighthouse CI on the homepage and one docs page, with targets of at least 90 for performance, accessibility, best practices and SEO.
 
+### 9.5 Open item from Phase D
+
+Lighthouse (desktop, in CI) reports a cumulative layout shift of about 0.43 on `/docs/Config-Builder`, which holds its performance score at 78. The homepage and Introduction score 96 to 97.
+
+**Not the cause** (each checked and ruled out):
+
+- the `createdAt` timestamp (fixed; it did cause hydration errors);
+- late-loading styles (the builder's CSS is in the render-blocking stylesheet);
+- the sticky output column;
+- server versus hydrated layout (identical at 1350 px).
+
+In a real browser at Lighthouse's width the shift measures 0, and the Lighthouse filmstrip shows no visible movement. It is deterministic (the same value on every run), so the next step is a Lighthouse trace (`--save-assets`) to see which frame records it. Performance is a warning, not an error, so it does not block pull requests.
+
 ### 9.4 Where it fits
 
 - Phase A goes with the **2.5.x** items; it's documentation only and can ship any time.
