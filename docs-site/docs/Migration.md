@@ -93,10 +93,22 @@ The CLI has no `eval` or `evaluate` command. Run dataset evaluation through
 the library instead (see [Evaluation](./Evaluation.md)):
 
 ```javascript
-const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
+const {
+  createRagPipeline,
+  PipelineEvaluator,
+} = require("@devilsdev/rag-pipeline-utils");
 
-// pipelineConfig: the same object you pass to createRagPipeline
-const results = await evaluateRagDataset("./test-data.json", pipelineConfig);
+const pipeline = createRagPipeline({ embedder, retriever, llm });
+const evaluator = new PipelineEvaluator();
+
+for (const { prompt, expected } of testCases) {
+  const result = await pipeline.run({ query: prompt });
+  const report = evaluator.evaluate(
+    { query: prompt, answer: result.answer, results: result.results },
+    { referenceAnswer: expected },
+  );
+  console.log(prompt, report.scores);
+}
 ```
 
 ### **Upgrading from v1.x to v2.x**
@@ -420,7 +432,7 @@ rag-pipeline --dry-run query "test query"
 rag-pipeline query "test query" --json
 ```
 
-To score sample data, use `evaluateRagDataset` or `PipelineEvaluator` (see
+To score sample data, use `PipelineEvaluator` (see
 [Evaluation](./Evaluation.md)).
 
 3. **Performance Comparison**:

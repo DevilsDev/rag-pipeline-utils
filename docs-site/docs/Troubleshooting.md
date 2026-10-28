@@ -525,16 +525,8 @@ rag-pipeline info
 ### **Community Support**
 
 - **GitHub Issues**: [Report bugs and feature requests](https://github.com/DevilsDev/rag-pipeline-utils/issues)
-- **Documentation**: [Complete documentation](https://docs.rag-pipeline-utils.dev)
-- **Discord**: [Join our community](https://discord.gg/rag-pipeline-utils)
-- **Stack Overflow**: Tag questions with `rag-pipeline-utils`
-
-### **Professional Support**
-
-For enterprise support and consulting:
-
-- **Email**: support@devilsdev.com
-- **Enterprise Portal**: [enterprise.rag-pipeline-utils.dev](https://enterprise.rag-pipeline-utils.dev)
+- **Discussions**: [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
+- **Security issues**: report privately as described in [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md)
 
 ---
 

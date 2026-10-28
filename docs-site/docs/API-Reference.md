@@ -507,7 +507,7 @@ const guard = new RetrievalGuard({
 
 ### PluginSignatureVerifier
 
-Ed25519 verification of plugin manifests. A signed `contentDigest` binds the plugin code and is always enforced when present; `requireContentDigest` and `requireSignedPlugins` make it mandatory. The trust store is empty by default. See [Plugins](./Plugins).
+Ed25519 verification of plugin manifests. A signed `contentDigest` binds the plugin code and is always checked when present. The exported `pluginRegistry` verifies signatures (and fails closed) by default only when `NODE_ENV` is `production`; `requireContentDigest` and `requireSignedPlugins` make signatures and digests mandatory. The trust store is empty by default. See [Plugins](./Plugins).
 
 ---
 

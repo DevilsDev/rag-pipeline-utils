@@ -29,10 +29,13 @@ rag-pipeline --config configs/anthropic.json run --ingest ./docs --query "How do
 **Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents. Evaluation is a library API (there is no CLI command for it):
 
 ```js
-const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
+const { scoreAnswer } = require("@devilsdev/rag-pipeline-utils");
 
-// tests/eval.json: [{ "prompt": "...", "expected": "..." }, ...]
-const results = await evaluateRagDataset("tests/eval.json", pipelineConfig);
+// cases: [{ "prompt": "...", "expected": "..." }, ...]
+for (const { prompt, expected } of cases) {
+  const { answer } = await pipeline.run({ query: prompt });
+  console.log(prompt, scoreAnswer(answer ?? "", expected)); // { bleu, rouge }
+}
 ```
 
 ---

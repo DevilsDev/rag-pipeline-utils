@@ -919,7 +919,7 @@ Runs between retrieval and generation: `GuardrailsPipeline` passes the retrieval
 
 - **Relevance threshold**: drops results whose score is below `minRelevanceScore`.
 - **Freshness filtering**: drops documents older than `maxAgeDays` (0 disables it).
-- **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed.
+- **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed. The guard reads `acl` / `requiredRole` from the top level of each document, not from `metadata`; `MemoryRetriever` and `FileVectorStore` return only `id`, `score`, `content` and `metadata`, so wrap them to copy the ACL field up (see [Examples](./Examples.md)).
 - **Indirect injection scan** (opt-in): `detectInjection: true` scans retrieved document text; `injectionAction: 'remove'` (default) drops flagged documents, `'flag'` keeps and marks them.
 
 ### **Layer 3 -- Post-Generation**

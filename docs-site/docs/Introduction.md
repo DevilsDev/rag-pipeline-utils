@@ -165,8 +165,8 @@ rag-pipeline query "What is the plugin architecture?"
 rag-pipeline serve --port 3000
 ```
 
-Evaluation and dashboards are library APIs (`evaluateRagDataset`,
-`PipelineEvaluator`, `DashboardGenerator`) rather than CLI commands; see
+Evaluation and dashboards are library APIs (`PipelineEvaluator`,
+`DashboardGenerator`) rather than CLI commands; see
 [Evaluation](./Evaluation.md). The full command list is in the
 [CLI Reference](./CLI.md).
 
@@ -180,7 +180,7 @@ Evaluation and dashboards are library APIs (`evaluateRagDataset`,
 - **Provider connectors**: OpenAI, Anthropic, Cohere and Ollama, plus `LocalEmbedder`
 - **Storage**: `MemoryRetriever` and the JSON-file `FileVectorStore`
 - **Citation & Grounding**: source attribution, hallucination detection, numeric consistency
-- **Evaluation**: `PipelineEvaluator`, `evaluateRagDataset` and the `compute*` metric functions
+- **Evaluation**: `PipelineEvaluator` and the `compute*` metric functions
 - **3-Layer Guardrails**: pre-retrieval, retrieval and post-generation guards via `GuardrailsPipeline`
 - **Hybrid Retrieval (BM25 + RRF)**: combined sparse and dense retrieval with reciprocal rank fusion
 - **Agentic RAG**: `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`
