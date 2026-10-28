@@ -80,6 +80,14 @@ These are intentional omissions. Use the
 [end-to-end harness template](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/BENCHMARKS.md#end-to-end-benchmarking-your-pipeline)
 to measure them against your stack.
 
+For a quick measurement against the pipeline in your `.ragrc.json` and its
+ingested index, `rag-pipeline ai benchmark` reports measured p50, p95 and
+mean latency per stage (`--queries <file>`, `--runs <n>`, `--top-k <n>`,
+`--json`). See the [CLI reference](./CLI.md).
+
+The suite accepts a custom iteration count, e.g.
+`node scripts/benchmark.js --iterations=50`, and exits when done.
+
 ## Interpreting results
 
 - **p50** is the typical experience

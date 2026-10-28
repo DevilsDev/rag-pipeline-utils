@@ -6,6 +6,12 @@ sidebar_position: 20
 
 Deploy RAG Pipeline Utils on Microsoft Azure using Container Instances, AKS, or Azure Functions with enterprise-grade security and monitoring.
 
+:::note What you deploy
+
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+
+:::
+
 ## Overview
 
 Deployment options:
@@ -38,8 +44,8 @@ az acr create \
 az acr login --name ragpipelineacr
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.3.1 ragpipelineacr.azurecr.io/rag-pipeline:2.3.1
-docker push ragpipelineacr.azurecr.io/rag-pipeline:2.3.1
+docker tag rag-pipeline-utils:2.5.0 ragpipelineacr.azurecr.io/rag-pipeline:2.5.0
+docker push ragpipelineacr.azurecr.io/rag-pipeline:2.5.0
 ```
 
 ## Azure Container Instances
@@ -51,7 +57,7 @@ docker push ragpipelineacr.azurecr.io/rag-pipeline:2.3.1
 az container create \
   --resource-group rag-pipeline-rg \
   --name rag-pipeline-aci \
-  --image ragpipelineacr.azurecr.io/rag-pipeline:2.3.1 \
+  --image ragpipelineacr.azurecr.io/rag-pipeline:2.5.0 \
   --cpu 2 \
   --memory 4 \
   --registry-login-server ragpipelineacr.azurecr.io \
@@ -82,7 +88,7 @@ az container create \
     },
     "imageName": {
       "type": "string",
-      "defaultValue": "ragpipelineacr.azurecr.io/rag-pipeline:2.3.1"
+      "defaultValue": "ragpipelineacr.azurecr.io/rag-pipeline:2.5.0"
     }
   },
   "resources": [
@@ -206,46 +212,41 @@ spec:
 
 ```javascript
 // function-app/index.js
-import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  FileVectorStore,
+} = require("@devilsdev/rag-pipeline-utils");
 
 let pipeline;
 
 module.exports = async function (context, req) {
-  try {
-    if (!pipeline) {
-      pipeline = createRagPipeline({
-        embedder: {
-          type: "openai",
-          apiKey: process.env.OPENAI_API_KEY,
-        },
-        retriever: {
-          type: "pinecone",
-          apiKey: process.env.PINECONE_API_KEY,
-        },
-      });
-    }
-
-    const { query } = req.body;
-
-    const result = await pipeline.run({
-      query,
-      options: { topK: 5, timeout: 25000 },
+  if (!pipeline) {
+    // OpenAIConnector reads OPENAI_API_KEY. The index is built ahead of time
+    // with `rag-pipeline ingest` (openai embedder) and deployed with the app.
+    const openai = new OpenAIConnector({ model: "gpt-4o-mini" });
+    pipeline = createRagPipeline({
+      embedder: openai,
+      retriever: new FileVectorStore({ path: "./index.json" }),
+      llm: openai,
     });
-
-    context.res = {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: result,
-    };
-  } catch (error) {
-    context.log.error("Error:", error);
-    context.res = {
-      status: 500,
-      body: { error: error.message },
-    };
   }
+
+  const { query } = req.body || {};
+
+  // run() resolves { success: false, error } on failure or timeout
+  const result = await pipeline.run({
+    query,
+    options: { topK: 5, timeout: 25000 },
+  });
+
+  context.res = {
+    status: result.success ? 200 : 500,
+    headers: { "Content-Type": "application/json" },
+    body: result.success
+      ? { answer: result.answer, results: result.results }
+      : { error: result.error },
+  };
 };
 ```
 
@@ -310,7 +311,7 @@ az containerapp create \
   --name rag-pipeline-app \
   --resource-group rag-pipeline-rg \
   --environment rag-pipeline-env \
-  --image ragpipelineacr.azurecr.io/rag-pipeline:2.3.1 \
+  --image ragpipelineacr.azurecr.io/rag-pipeline:2.5.0 \
   --target-port 3000 \
   --ingress external \
   --registry-server ragpipelineacr.azurecr.io \

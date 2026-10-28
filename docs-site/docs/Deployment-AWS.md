@@ -6,6 +6,12 @@ sidebar_position: 19
 
 Deploy RAG Pipeline Utils on AWS using ECS, EKS, or Lambda with production-grade configurations, auto-scaling, and AWS service integrations.
 
+:::note What you deploy
+
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+
+:::
+
 ## Overview
 
 This guide covers:
@@ -41,10 +47,10 @@ aws ecr get-login-password --region us-east-1 | \
   123456789012.dkr.ecr.us-east-1.amazonaws.com
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.3.1 \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.3.1
+docker tag rag-pipeline-utils:2.5.0 \
+  123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0
 
-docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.3.1
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0
 ```
 
 ### ECS Task Definition
@@ -61,7 +67,7 @@ docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.3.
   "containerDefinitions": [
     {
       "name": "rag-app",
-      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.3.1",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0",
       "essential": true,
       "portMappings": [
         {
@@ -419,57 +425,48 @@ spec:
 
 ```javascript
 // lambda/index.js
-import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  FileVectorStore,
+} = require("@devilsdev/rag-pipeline-utils");
 
 let pipeline;
 
-// Initialize pipeline (cold start optimization)
-const initPipeline = async () => {
+// Initialize the pipeline once per container (cold start optimization)
+const initPipeline = () => {
   if (!pipeline) {
+    // OpenAIConnector reads OPENAI_API_KEY. The index is built ahead of time
+    // with `rag-pipeline ingest` (openai embedder) and shipped with the function;
+    // for a hosted vector store, implement the retriever contract instead.
+    const openai = new OpenAIConnector({ model: "gpt-4o-mini" });
     pipeline = createRagPipeline({
-      embedder: {
-        type: "openai",
-        apiKey: process.env.OPENAI_API_KEY,
-      },
-      retriever: {
-        type: "pinecone",
-        apiKey: process.env.PINECONE_API_KEY,
-      },
-      llm: {
-        type: "openai",
-        model: "gpt-4",
-      },
+      embedder: openai,
+      retriever: new FileVectorStore({ path: "./index.json" }),
+      llm: openai,
     });
   }
   return pipeline;
 };
 
 exports.handler = async (event) => {
-  try {
-    const pipeline = await initPipeline();
+  const { query } = JSON.parse(event.body || "{}");
 
-    const { query } = JSON.parse(event.body);
+  // run() resolves { success: false, error } on failure or timeout
+  const result = await initPipeline().run({
+    query,
+    options: { topK: 5, timeout: 25000 }, // Lambda 30s limit
+  });
 
-    const result = await pipeline.run({
-      query,
-      options: { topK: 5, timeout: 25000 }, // Lambda 30s limit
-    });
-
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(result),
-    };
-  } catch (error) {
-    console.error("Error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
-  }
+  return {
+    statusCode: result.success ? 200 : 500,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(
+      result.success
+        ? { answer: result.answer, results: result.results }
+        : { error: result.error },
+    ),
+  };
 };
 ```
 

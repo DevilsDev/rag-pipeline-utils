@@ -1,6 +1,6 @@
 # Usage Guide
 
-This comprehensive guide covers how to use **@DevilsDev/rag-pipeline-utils** programmatically via the JavaScript/TypeScript API and through the command-line interface. Whether you're building a simple Q&A system or a complex enterprise RAG application, this guide provides practical examples and best practices.
+This guide covers how to use **@devilsdev/rag-pipeline-utils** programmatically via the JavaScript/TypeScript API and through the command-line interface.
 
 ---
 
@@ -10,45 +10,40 @@ This comprehensive guide covers how to use **@DevilsDev/rag-pipeline-utils** pro
 
 ```bash
 # Install as a project dependency
-npm install @DevilsDev/rag-pipeline-utils
+npm install @devilsdev/rag-pipeline-utils
 
 # Or install globally for CLI usage
-npm install -g @DevilsDev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 
 # Using Yarn
-yarn add @DevilsDev/rag-pipeline-utils
+yarn add @devilsdev/rag-pipeline-utils
 
 # Using pnpm
-pnpm add @DevilsDev/rag-pipeline-utils
+pnpm add @devilsdev/rag-pipeline-utils
 ```
 
 ### **System Requirements**
 
 - **Node.js**: >= 18.0.0
-- **TypeScript**: >= 4.5.0 (for TypeScript projects)
-- **Memory**: Minimum 2GB RAM (4GB+ recommended for large documents)
-- **Storage**: Varies based on vector store and document size
+- **Memory**: depends on corpus size; the in-memory and file-based retrievers keep the index in memory while running
+- **Storage**: varies with the vector store and document size
 
 ### **Environment Setup**
 
-Create a `.env` file in your project root:
+The built-in connectors read their API key from the environment when they are constructed (or from an `apiKey` option). Calls without a key fail fast with `MISSING_API_KEY`.
 
 ```bash
-# OpenAI Configuration
+# OpenAI (OpenAIConnector)
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_ORG_ID=your_org_id_here
 
-# Pinecone Configuration
-PINCONE_API_KEY=your_pinecone_api_key
-PINCONE_ENVIRONMENT=us-west1-gcp
-PINCONE_INDEX_NAME=rag-documents
-
-# Cohere Configuration (optional)
-COHERE_API_KEY=your_cohere_api_key
-
-# Anthropic Configuration (optional)
+# Anthropic (AnthropicConnector, optional)
 ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# Cohere (CohereConnector, optional)
+COHERE_API_KEY=your_cohere_api_key
 ```
+
+`OllamaConnector` and `LocalEmbedder` need no API key.
 
 ---
 
@@ -56,180 +51,133 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 
 ### **Basic Pipeline Setup**
 
-Here's a complete example showing how to create and use a RAG pipeline:
+`createRagPipeline` takes component instances (or names registered on `pluginRegistry`) for the stages `loader`, `embedder`, `retriever`, `llm` and `reranker`, plus an optional `registry`. It returns `{ run, cleanup }`.
 
-```typescript
-import {
+```javascript
+const {
   createRagPipeline,
-  PipelineConfig,
-} from "@DevilsDev/rag-pipeline-utils";
-import dotenv from "dotenv";
+  OpenAIConnector,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-// Load environment variables
-dotenv.config();
+const openai = new OpenAIConnector({
+  model: "gpt-4o-mini",
+  embeddingModel: "text-embedding-3-small",
+  temperature: 0.1,
+});
+const retriever = new MemoryRetriever();
 
-// Define pipeline configuration
-const config: PipelineConfig = {
-  loader: "markdown",
-  embedder: "openai",
-  retriever: "pinecone",
-  llm: "openai-gpt-4",
-  useReranker: true,
-
-  // Plugin-specific configuration
-  config: {
-    openai: {
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "text-embedding-3-large",
-      maxTokens: 4000,
-      temperature: 0.1,
-    },
-    pinecone: {
-      apiKey: process.env.PINECONE_API_KEY,
-      environment: process.env.PINECONE_ENVIRONMENT,
-      indexName: process.env.PINECONE_INDEX_NAME,
-      topK: 5,
-    },
+// Index a few documents (vectors must come from the same embedder)
+const docs = [
+  {
+    id: "1",
+    content: "Plugins implement one stage method, such as generate().",
   },
+  { id: "2", content: "Register plugins with pluginRegistry.register()." },
+];
+await retriever.store(
+  await Promise.all(
+    docs.map(async (d) => ({ ...d, vector: await openai.embed(d.content) })),
+  ),
+);
 
-  // Pipeline-level configuration
-  pipelineConfig: {
-    chunkSize: 1000,
-    chunkOverlap: 200,
-    maxConcurrency: 3,
-    enableCaching: true,
-  },
-};
+// The embedder turns each query into a queryVector for the retriever
+const pipeline = createRagPipeline({
+  embedder: openai,
+  retriever,
+  llm: openai,
+});
 
-// Create the pipeline
-const pipeline = createRagPipeline(config);
+const response = await pipeline.run({
+  query: "How do I implement custom plugins in the RAG pipeline?",
+});
 
-// Use the pipeline
-async function main() {
-  try {
-    // Documents are loaded via the loader plugin configured in createRagPipeline()
-
-    // Query the pipeline
-    console.log("Querying pipeline...");
-    const response = await pipeline.run({
-      query: "How do I implement custom plugins in the RAG pipeline?",
-    });
-
-    console.log("Success:", response.success);
-    console.log("Query:", response.query);
-    console.log("Results:", response.results.length);
-  } catch (error) {
-    console.error("Pipeline error:", error);
-  } finally {
-    // Clean up resources
-    await pipeline.cleanup();
-  }
+if (response.success) {
+  console.log("Answer:", response.answer);
+  console.log("Sources:", response.results.length);
+} else {
+  console.error("Pipeline error:", response.error);
 }
-
-main();
 ```
+
+`run()` resolves `{ success: false, error }` instead of throwing when a stage fails, times out or is aborted.
 
 ### **Advanced Configuration Examples**
 
-#### **Multi-Model Setup**
+#### **Multi-Provider Setup**
 
-```typescript
-// Use different models for different purposes
-const advancedConfig: PipelineConfig = {
-  loader: "pdf",
-  embedder: "openai",
-  retriever: "chroma",
-  llm: "anthropic-claude",
-  useReranker: true,
-  reranker: "cohere-rerank",
+```javascript
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  AnthropicConnector,
+  CohereConnector,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-  config: {
-    openai: {
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "text-embedding-3-large",
-    },
-    anthropic: {
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      model: "claude-3-sonnet-20240229",
-      maxTokens: 8000,
-    },
-    chroma: {
-      host: "localhost",
-      port: 8000,
-      collection: "documents",
-    },
-    cohere: {
-      apiKey: process.env.COHERE_API_KEY,
-      model: "rerank-english-v2.0",
-    },
-  },
-};
+const pipeline = createRagPipeline({
+  embedder: new OpenAIConnector({ embeddingModel: "text-embedding-3-large" }),
+  retriever: new MemoryRetriever(),
+  reranker: new CohereConnector({ rerankModel: "rerank-english-v3.0" }),
+  llm: new AnthropicConnector({ maxTokens: 4096 }),
+});
 ```
 
 #### **Local-First Setup**
 
-```typescript
-// Use local models for privacy-sensitive applications
-const localConfig: PipelineConfig = {
-  loader: "markdown",
-  embedder: "sentence-transformers",
-  retriever: "chroma",
-  llm: "ollama",
+```javascript
+const {
+  createRagPipeline,
+  LocalEmbedder,
+  MemoryRetriever,
+  OllamaConnector,
+} = require("@devilsdev/rag-pipeline-utils");
 
-  config: {
-    sentenceTransformers: {
-      model: "all-MiniLM-L6-v2",
-      device: "cpu",
-    },
-    ollama: {
-      baseUrl: "http://localhost:11434",
-      model: "llama2:7b",
-      temperature: 0.2,
-    },
-    chroma: {
-      path: "./vector_store",
-      collection: "local_docs",
-    },
-  },
-};
+const embedder = new LocalEmbedder(); // TF-IDF, no network
+embedder.train(corpus); // array of strings or { content } objects
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever: new MemoryRetriever(),
+  llm: new OllamaConnector({
+    baseURL: "http://localhost:11434",
+    model: "llama3",
+    temperature: 0.2,
+  }),
+});
 ```
+
+For an index that persists to disk, use `FileVectorStore` as the retriever (see the [API Reference](./API-Reference.md)).
 
 ---
 
 ## Pipeline Methods & Operations
 
-### **Document Loading**
+### **Indexing Documents**
 
-Document loading is handled automatically by the loader plugin configured in `createRagPipeline()`. There is no separate `ingest()` method. Configure your loader when creating the pipeline:
-
-```typescript
-const pipeline = createRagPipeline({
-  loader: new PDFLoader({ source: "./docs" }),
-  // ... other plugins
-});
-```
+The pipeline object only exposes `run()` and `cleanup()`; there is no separate ingest method. Index documents by embedding them and calling your retriever's `store()` (as in the example above), or use the CLI's `rag-pipeline ingest <path>`, which loads, embeds and stores files into a local `FileVectorStore` index.
 
 ### **Querying & Response Generation**
 
-```typescript
+```javascript
 // Basic query
 const response = await pipeline.run({ query: "What is RAG?" });
-console.log(response.results);
+console.log(response.answer);
 
 // Query with options
-const detailedResponse = await pipeline.run({
+const detailed = await pipeline.run({
   query: "Explain the plugin architecture",
   options: {
     topK: 5,
-    timeout: 10000,
+    timeout: 10000, // resolves { success: false, error: 'Execution timeout' }
+    citations: true,
+    evaluate: true,
   },
 });
 
-console.log("Success:", detailedResponse.success);
-console.log("Query:", detailedResponse.query);
-console.log("Results:", detailedResponse.results);
+console.log(detailed.answer, detailed.citations, detailed.evaluation);
 
-// Streaming responses (returns async generator when stream: true)
+// Streaming responses (resolves to an async iterable when stream: true)
 const stream = await pipeline.run({
   query: "How do I optimize performance?",
   options: { stream: true },
@@ -242,11 +190,29 @@ for await (const chunk of stream) {
 }
 ```
 
+With `citations` or `evaluate` in stream mode, the stream ends with one `{ token: '', done: true, citations, evaluation }` chunk.
+
+Without an `llm`, the pipeline runs retrieval only and returns `answer: null`.
+
+### **Cancellation**
+
+Pass an `AbortSignal` as `options.signal`. Every component receives the run's signal, and no later stage starts after an abort.
+
+```javascript
+const controller = new AbortController();
+setTimeout(() => controller.abort(), 2000);
+
+const result = await pipeline.run({
+  query: "Summarise the release notes",
+  options: { signal: controller.signal },
+});
+// On abort: { success: false, error: 'Execution aborted' }
+```
+
 ### **Pipeline Cleanup**
 
-```typescript
-// Clean up resources when done
-await pipeline.cleanup();
+```javascript
+pipeline.cleanup();
 ```
 
 ---
@@ -302,108 +268,104 @@ Run `rag-pipeline info --plugins` to list the built-in names, and `rag-pipeline 
 
 ### **Error Handling & Resilience**
 
-```typescript
-import {
-  RagError,
-  PluginError,
-  ConfigurationError,
-} from "@DevilsDev/rag-pipeline-utils";
+`run()` does not throw for stage failures: check `success` and `error`. For your own code, `createError(code, context)` and `wrapError(error, code, context)` create errors with a `code` from `ERROR_CODES`, a formatted message and suggestions.
+
+```javascript
+const {
+  createError,
+  wrapError,
+  ERROR_CODES,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const response = await pipeline.run({ query: "Complex query" });
+if (!response.success) {
+  throw createError(ERROR_CODES.PIPELINE_EXECUTION_FAILED, {
+    reason: response.error,
+  });
+}
 
 try {
-  const response = await pipeline.run({ query: "Complex query" });
-} catch (error) {
-  if (error instanceof PluginError) {
-    console.error("Plugin error:", error.pluginName, error.message);
-    // Handle plugin-specific errors
-  } else if (error instanceof ConfigurationError) {
-    console.error("Configuration error:", error.message);
-    // Handle configuration issues
-  } else if (error instanceof RagError) {
-    console.error("RAG pipeline error:", error.message);
-    // Handle general pipeline errors
-  } else {
-    console.error("Unexpected error:", error);
-  }
+  await loadMyDocuments();
+} catch (err) {
+  throw wrapError(err, ERROR_CODES.PLUGIN_EXECUTION_FAILED, {
+    plugin: "my-loader",
+  });
 }
 ```
 
-### **Event Monitoring**
+### **Tracing Runs**
 
-```typescript
-// Listen to pipeline events
-pipeline.on("document:loaded", (event) => {
-  console.log(`Loaded ${event.chunks} chunks from ${event.source}`);
+The pipeline object does not emit events. To record what each run did, wrap it with `ExecutionTracer`:
+
+```javascript
+const { ExecutionTracer } = require("@devilsdev/rag-pipeline-utils");
+
+const tracer = new ExecutionTracer();
+const traced = tracer.trace(pipeline);
+
+tracer.on("traced", (trace) => {
+  console.log(`Run ${trace.id} took ${trace.totalDurationMs}ms`);
 });
 
-pipeline.on("embedding:completed", (event) => {
-  console.log(
-    `Generated ${event.embeddings} embeddings in ${event.duration}ms`,
-  );
-});
-
-pipeline.on("generation:token", (event) => {
-  process.stdout.write(event.token);
-});
-
-pipeline.on("error:handled", (event) => {
-  console.warn(`Handled error in ${event.context}:`, event.error.message);
-});
+const result = await traced.run({ query: "What is RAG?" });
+console.log(result.trace.metadata.resultCount);
 ```
 
-### **Custom Middleware**
+### **Wrapping a Pipeline**
 
-```typescript
-import { Middleware } from "@DevilsDev/rag-pipeline-utils";
+There is no middleware API. Because a pipeline is just an object with `run()`, you can wrap it yourself; `GuardrailsPipeline`, `CostTracker.wrap()` and `ExecutionTracer.trace()` all work this way.
 
-// Create custom logging middleware
-class CustomLoggingMiddleware implements Middleware {
-  name = "custom-logger";
-  priority = 100;
-
-  async beforeQuery(context: QueryContext): Promise<QueryContext> {
-    console.log(
-      `[${new Date().toISOString()}] Query started: ${context.query}`,
-    );
-    context.startTime = Date.now();
-    return context;
-  }
-
-  async afterQuery(
-    context: QueryContext,
-    result: QueryResult,
-  ): Promise<QueryResult> {
-    const duration = Date.now() - context.startTime;
-    console.log(
-      `[${new Date().toISOString()}] Query completed in ${duration}ms`,
-    );
-    return result;
-  }
+```javascript
+function withTiming(pipeline) {
+  return {
+    ...pipeline,
+    async run(input) {
+      const start = Date.now();
+      const result = await pipeline.run(input);
+      console.log(`Query completed in ${Date.now() - start}ms`);
+      return result;
+    },
+  };
 }
 
-// Add middleware to pipeline
-const config: PipelineConfig = {
-  // ... other config
-  middleware: [
-    new CustomLoggingMiddleware(),
-    // ... other middleware
-  ],
-};
+const timed = withTiming(pipeline);
 ```
-
----
-
-_This comprehensive usage guide covers the most common patterns and advanced features of @DevilsDev/rag-pipeline-utils. For more specific use cases, check out our [Tutorials](./Tutorials.md) section, or explore the [CLI Reference](./CLI.md) for detailed command documentation._
 
 ---
 
 ## Plugin Configuration
 
-You can customize the pipeline by registering plugins:
+You can register plugins by name on the exported `pluginRegistry` and then refer to them by name in `createRagPipeline` or `.ragrc.json`. `register()` is asynchronous. Each plugin needs a `metadata` object with `name`, `version` and `type` (the stage), plus the stage's methods (a retriever needs both `store()` and `retrieve()`).
 
-```js
-registry.register("loader", "custom", new MyCustomLoader());
-registry.register("retriever", "opensearch", new MyOpenSearchRetriever());
+```javascript
+const {
+  pluginRegistry,
+  createRagPipeline,
+} = require("@devilsdev/rag-pipeline-utils");
+
+class MyCustomLoader {
+  metadata = { name: "custom", version: "1.0.0", type: "loader" };
+  async load() {
+    /* ... */
+  }
+}
+
+await pluginRegistry.register("loader", "custom", new MyCustomLoader());
+await pluginRegistry.register(
+  "retriever",
+  "opensearch",
+  new MyOpenSearchRetriever(), // metadata.type === "retriever"
+);
+
+const pipeline = createRagPipeline({
+  loader: "custom",
+  retriever: "opensearch",
+  embedder,
+  llm,
+});
 ```
+
+See [Plugins](./Plugins.md) for the stage contracts. For more use cases, see the [Tutorials](./Tutorials.md).
 
 ---
 

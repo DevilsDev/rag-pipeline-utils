@@ -1,6 +1,6 @@
 # Security Guide
 
-This comprehensive security guide covers best practices, threat mitigation, and security configurations for **@DevilsDev/rag-pipeline-utils**. From API key management to data privacy and plugin security, this guide ensures your RAG pipeline deployments are secure and compliant.
+This comprehensive security guide covers best practices, threat mitigation, and security configurations for **@devilsdev/rag-pipeline-utils**. From API key management to data privacy and plugin security, this guide ensures your RAG pipeline deployments are secure and compliant.
 
 ---
 
@@ -44,28 +44,22 @@ export OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id openai-k
 
 **Configuration Security**:
 
+Keep API keys out of `.ragrc.json`. The built-in connectors read their key from the environment when they are constructed (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY`) unless you pass `apiKey` explicitly, and a call without a key fails fast with the error code `MISSING_API_KEY`. `rag-pipeline doctor` reports missing API key variables for the configured stages.
+
 ```json
 {
-  "plugins": {
-    "embedder": {
-      "name": "openai",
-      "config": {
-        "apiKey": "${OPENAI_API_KEY}", // Environment variable reference
-        "organization": "${OPENAI_ORG_ID}",
-        "timeout": 30000,
-        "retryAttempts": 3
-      }
-    }
-  },
-  "security": {
-    "encryptConfig": true,
-    "configEncryptionKey": "${CONFIG_ENCRYPTION_KEY}",
-    "auditLogging": true
-  }
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "openai" },
+    { "stage": "retriever", "name": "file-store" },
+    { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
+  ]
 }
 ```
 
-**Key Rotation Strategy**:
+Connectors retry only transient failures (network errors, 408/409/425/429/5xx) with exponential backoff and honour `Retry-After`.
+
+**Key Rotation Strategy** (application code, not part of this package):
 
 ```javascript
 // Implement automatic key rotation
@@ -226,9 +220,9 @@ class AuthenticationManager {
 }
 ```
 
-### **JWT Replay Protection** (v2.3.1+)
+### **JWT Replay Protection**
 
-The `JWTValidator` class includes **advanced replay protection** that distinguishes between self-signed tokens (reusable) and external tokens (single-use):
+The `JWTValidator` class includes replay protection that distinguishes between tokens it signed itself (reusable) and externally issued tokens (single-use by default):
 
 **Setup:**
 
@@ -240,10 +234,14 @@ const validator = new JWTValidator({
   algorithm: "HS256",
   issuer: "my-app",
   audience: "api-users",
-  strictValidation: true, // Enforces iss/aud validation
-  enableJtiTracking: true, // Prevents replay attacks
+  strictValidation: true, // Enforces iss/aud validation (default true)
+  enableJtiTracking: true, // Replay protection (default true)
+  singleUseTokens: true, // External tokens are single-use (default true)
+  maxTrackedJtis: 100000, // Bound on the replay store (default 100000)
 });
 ```
+
+With `singleUseTokens: true` (the default since 2.5.0), every externally issued token can be verified once; a second `verify()` of the same `jti` throws "Token replay detected". If your API accepts the same bearer token on many requests until it expires, pass `singleUseTokens: false`. The replay store is bounded by `maxTrackedJtis`: entries expire with the token, and when the store is full the least recently used entry is evicted (a `jti_evicted` event is emitted), so size it for your peak number of live tokens. An explicit `clockTolerance` or `notBeforeTolerance` of `0` is honoured (2.5.0 fix; it previously became 30 seconds).
 
 **Self-Signed Tokens (Reusable):**
 
@@ -291,7 +289,8 @@ try {
 **Data at Rest**:
 
 ```javascript
-// Encrypt sensitive data before storage
+// Application code: encrypt sensitive data before storage
+// (use a random salt per key in production)
 import crypto from "crypto";
 
 class DataEncryption {
@@ -301,8 +300,8 @@ class DataEncryption {
   }
 
   encrypt(data) {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher(this.algorithm, this.key, iv);
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
 
     let encrypted = cipher.update(JSON.stringify(data), "utf8", "hex");
     encrypted += cipher.final("hex");
@@ -317,7 +316,7 @@ class DataEncryption {
   }
 
   decrypt(encryptedData) {
-    const decipher = crypto.createDecipher(
+    const decipher = crypto.createDecipheriv(
       this.algorithm,
       this.key,
       Buffer.from(encryptedData.iv, "hex"),
@@ -339,38 +338,45 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 
 **Data in Transit**:
 
-```javascript
-// Enforce HTTPS and TLS
-const pipeline = createRagPipeline({
-  security: {
-    enforceHTTPS: true,
-    tlsVersion: "1.3",
-    certificateValidation: true,
-
-    // API client security
-    apiClients: {
-      openai: {
-        timeout: 30000,
-        validateCertificate: true,
-        rejectUnauthorized: true,
-      },
-      pinecone: {
-        timeout: 10000,
-        validateCertificate: true,
-        customCA: process.env.PINECONE_CA_CERT,
-      },
-    },
-  },
-});
-```
+`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, registry }`. The built-in OpenAI, Anthropic and Cohere connectors call HTTPS endpoints through their SDKs. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
 
 ### **Data Sanitization**
 
-**Input Sanitization**:
+**Input Validation with built-in helpers**:
+
+```javascript
+import {
+  validateInput,
+  PreRetrievalGuard,
+  detectInjection,
+} from "@devilsdev/rag-pipeline-utils";
+
+// Length and disallowed-token check: returns { valid, reasons, sanitized }
+const basic = validateInput(userQuery, { maxLength: 2000 });
+if (!basic.valid) throw new Error(basic.reasons.join("; "));
+
+// Prompt-injection check on the query: returns
+// { safe, issues, sanitizedQuery, injection: { detected, matches } }
+const guard = new PreRetrievalGuard({ maxQueryLength: 2000 });
+const check = guard.check(userQuery);
+if (!check.safe) {
+  // The query is never rewritten; blocking is up to you
+  // (GuardrailsPipeline blocks in strict mode).
+  throw new Error(`Blocked query: ${check.issues.join("; ")}`);
+}
+
+// Scan arbitrary text (e.g. a retrieved document) for indirect injection:
+// returns { detected, matches: [{ id, pattern, match }], normalized }
+const scan = detectInjection(documentText);
+```
+
+Detection normalises input first (homoglyphs, leetspeak folding and zero-width characters), and flags chat role markers, instruction overrides and prompt-exfiltration phrasing. It is pattern based, so treat it as one layer of defence, not a guarantee.
+
+**Custom Input Sanitizer** (application code, not part of this package):
 
 ```javascript
 // Sanitize user inputs to prevent injection attacks
-class InputSanitizer {
+class QuerySanitizer {
   constructor() {
     this.maxQueryLength = 1000;
     this.allowedCharacters = /^[a-zA-Z0-9\s\-_.,!?'"()]+$/;
@@ -474,245 +480,107 @@ class OutputFilter {
 }
 ```
 
-### **Path Traversal Defense** (v2.3.1+)
+### **Path Handling**
 
-The `InputSanitizer` class includes **multi-layer path traversal protection** with iterative URL decoding to catch sophisticated encoding attacks:
-
-**Key Features:**
-
-- **Iterative URL Decoding**: Up to 5 passes to detect multi-encoded attack vectors
-- **Attack Vector Detection**: Blocks standard traversal, Windows paths, URL encoded, and double-encoded paths
-- **Defense-in-Depth**: Critical security violations always throw errors regardless of configuration
-- **Comprehensive Validation**: Multiple validation layers for maximum security
-
-**Protected Attack Vectors:**
+The package does not export a path sanitizer. If your application turns user input into file paths (for example a document viewer or an ingestion endpoint), resolve the path against a fixed base directory and reject anything that escapes it:
 
 ```javascript
-import { sanitizePath } from "@devilsdev/rag-pipeline-utils";
+import path from "node:path";
 
-// Safe paths are normalized
-sanitizePath("docs/README.md"); // Returns: "docs/README.md"
-sanitizePath("./config/settings.json"); // Returns: "config/settings.json"
-
-// Dangerous paths throw errors
-sanitizePath("../../../etc/passwd"); // Throws: Path traversal detected
-sanitizePath("..\\..\\windows\\system32"); // Throws: Path traversal detected (Windows)
-sanitizePath("%2e%2e%2f%2e%2e%2fpasswd"); // Throws: Path traversal detected (URL encoded)
-sanitizePath("%252e%252e%252fconfig"); // Throws: Path traversal detected (double-encoded!)
-```
-
-**Attack Vectors Blocked:**
-
-1. **Standard Traversal**: `../../../etc/passwd`
-2. **Windows Paths**: `..\\..\\windows\\system32`
-3. **URL Encoded**: `%2e%2e%2f` (decodes to `../`)
-4. **Double Encoded**: `%252e%252e%252f` → `%2e%2e%2f` → `../`
-5. **Mixed Encoding**: Combinations of encoding techniques
-6. **Malformed Encoding**: Invalid URL encoding treated as attack indicators
-
-**Critical Security Behavior:**
-
-Path traversal violations **always throw errors**, even when `throwOnInvalid=false`:
-
-```javascript
-import { InputSanitizer } from "@devilsdev/rag-pipeline-utils";
-
-const sanitizer = new InputSanitizer({ throwOnInvalid: false });
-
-try {
-  // Path traversal ALWAYS throws, regardless of throwOnInvalid setting
-  const safePath = sanitizer.sanitizePath(userInput);
-
-  // Use safePath safely
-  const fileContent = fs.readFileSync(path.join(baseDir, safePath));
-} catch (error) {
-  if (error.message.includes("path traversal")) {
-    // Handle attack attempt
-    logger.warn("Path traversal attack blocked", {
-      input: userInput,
-      ip: req.ip,
-    });
-    return res.status(400).json({ error: "Invalid path" });
+function resolveInside(baseDir, userPath) {
+  const base = path.resolve(baseDir);
+  const target = path.resolve(base, userPath);
+  if (target !== base && !target.startsWith(base + path.sep)) {
+    throw new Error("Path escapes the base directory");
   }
-  throw error;
+  return target;
 }
 ```
 
-**Security Monitoring:**
-
-```javascript
-const sanitizer = new InputSanitizer({
-  enableMetrics: true,
-  auditLog: true,
-});
-
-// All blocked attempts tracked
-console.log(sanitizer.getStats().blocked); // Counter of blocked attacks
-
-// Audit events emitted for security monitoring
-sanitizer.on("security_violation", (event) => {
-  logger.security({
-    type: "path_traversal",
-    severity: "critical",
-    input: event.input,
-    detectionMethod: event.method, // "pattern" or "encoding"
-    timestamp: new Date().toISOString(),
-  });
-});
-```
-
-**Best Practices:**
-
-1. **Always wrap in try-catch**: Path traversal throws are intentional for security
-2. **Log blocked attempts**: Track patterns for security monitoring
-3. **Never disable validation**: Critical security checks cannot be disabled
-4. **Use with base directory**: Combine with path.join() and base directory validation
-5. **Monitor statistics**: Track blocked attempts for anomaly detection
+Decode URL-encoded input once before this check, and reject input that still contains `%` sequences, NUL bytes or absolute paths if your application does not need them.
 
 ---
 
 ## **Plugin Security**
 
-### **Plugin Sandboxing**
+### **Plugins run in-process**
+
+Plugins (loaders, embedders, retrievers, LLMs, rerankers) run in the same Node.js process as your application, with its permissions. There is no working sandbox: `PluginSandbox` is an experimental module whose `execute()` fails, and it does not isolate plugins (see [Experimental](./Experimental.md)). Only install plugins you have reviewed or whose publisher you trust, and run the pipeline under an operating-system account or container with the least privileges it needs.
+
+### **Installing plugins with the CLI**
+
+`rag-pipeline hub install <source>` (alias `plugin install`) installs a plugin from a local directory, a `.tgz`, a single `.js` file, `npm:<package>` or a registry (registry downloads are sha256-verified). The installer:
+
+- extracts into `.rag/plugins` and refuses entries that would escape that directory;
+- runs a static security scan; high-risk findings block the install unless you pass `--allow-risky`;
+- checks the stage contract (for example `embed()` for an embedder) in a separate process;
+- registers the plugin in `.ragrc.json`.
+
+There is no default registry: registry operations need `--registry <url>` or `RAG_PLUGIN_REGISTRY`. `rag-pipeline hub certify check <path>` scores a local plugin from its files (contract, security scan, tests, documentation). These checks reduce risk; they do not make untrusted code safe to run. See the [CLI reference](./CLI.md) for all options.
+
+### **Plugin Signature Verification**
+
+`pluginRegistry.register(category, name, impl, manifest, { content })` verifies an Ed25519-signed manifest when signature verification is enabled. The exported `pluginRegistry` singleton enables verification and fails closed when `NODE_ENV` is `production`.
+
+- **Empty trust store**: since 2.5.0 the trust store starts empty (the placeholder key was removed). Nothing verifies until you add a signer, either with `addTrustedSigner(signerId, publicKey, name)` on a `PluginSignatureVerifier` or through a `trustedKeysPath` JSON file.
+- **Binding the code**: the signed manifest can contain a `contentDigest` that covers the plugin's files. When a manifest declares one, the plugin content must be supplied (`register(..., { content })`) and must match, otherwise verification fails. `requireContentDigest: true` rejects signed manifests that do not bind the code.
+- **Unsigned plugins**: by default a plugin registered without a manifest is still accepted. A registry created with `requireSignedPlugins: true` refuses them while verification is enabled.
+- Plugins listed in a JSON plugin config are verified (signed manifest and plugin files) before they are imported.
 
 ```javascript
-// Implement secure plugin execution
-import { VM } from "vm2";
+import { PluginSignatureVerifier } from "@devilsdev/rag-pipeline-utils";
 
-class SecurePluginRunner {
-  constructor(options = {}) {
-    this.timeout = options.timeout || 30000;
-    this.memoryLimit = options.memoryLimit || 128 * 1024 * 1024; // 128MB
-    this.allowedModules = options.allowedModules || ["fs", "path", "crypto"];
-  }
+const verifier = new PluginSignatureVerifier({ requireContentDigest: true });
+verifier.addTrustedSigner("acme", acmePublicKeyPem, "Acme Plugins");
 
-  async executePlugin(pluginCode, context = {}) {
-    const vm = new VM({
-      timeout: this.timeout,
-      sandbox: {
-        ...context,
-        console: {
-          log: (...args) => console.log("[Plugin]", ...args),
-          error: (...args) => console.error("[Plugin]", ...args),
-        },
-        require: (module) => {
-          if (!this.allowedModules.includes(module)) {
-            throw new Error(`Module '${module}' is not allowed`);
-          }
-          return require(module);
-        },
-      },
-      wasm: false,
-      fixAsync: true,
-    });
-
-    try {
-      return await vm.run(pluginCode);
-    } catch (error) {
-      throw new Error(`Plugin execution failed: ${error.message}`);
-    }
-  }
-
-  validatePlugin(plugin) {
-    const validationRules = [
-      {
-        name: "No eval usage",
-        test: (code) => !code.includes("eval("),
-      },
-      {
-        name: "No Function constructor",
-        test: (code) => !code.includes("new Function("),
-      },
-      {
-        name: "No process access",
-        test: (code) => !code.includes("process."),
-      },
-      {
-        name: "No global access",
-        test: (code) => !code.includes("global."),
-      },
-    ];
-
-    const violations = validationRules.filter(
-      (rule) => !rule.test(plugin.toString()),
-    );
-
-    if (violations.length > 0) {
-      throw new Error(
-        `Plugin validation failed: ${violations.map((v) => v.name).join(", ")}`,
-      );
-    }
-  }
-}
-```
-
-### **Plugin Verification**
-
-```javascript
-// Verify plugin integrity and authenticity
-import crypto from "crypto";
-
-class PluginVerifier {
-  constructor(trustedPublishers = []) {
-    this.trustedPublishers = trustedPublishers;
-    this.signatureAlgorithm = "sha256";
-  }
-
-  verifySignature(plugin, signature, publicKey) {
-    const verify = crypto.createVerify(this.signatureAlgorithm);
-    verify.update(plugin);
-    verify.end();
-
-    return verify.verify(publicKey, signature, "hex");
-  }
-
-  async verifyPlugin(pluginPath) {
-    const plugin = await fs.readFile(pluginPath, "utf8");
-    const metadata = await this.extractMetadata(plugin);
-
-    // Check if publisher is trusted
-    if (!this.trustedPublishers.includes(metadata.publisher)) {
-      throw new Error(`Untrusted publisher: ${metadata.publisher}`);
-    }
-
-    // Verify digital signature
-    const signature = metadata.signature;
-    const publicKey = await this.getPublisherPublicKey(metadata.publisher);
-
-    if (!this.verifySignature(plugin, signature, publicKey)) {
-      throw new Error("Plugin signature verification failed");
-    }
-
-    // Check for known vulnerabilities
-    await this.scanForVulnerabilities(plugin);
-
-    return { verified: true, metadata };
-  }
-
-  async scanForVulnerabilities(plugin) {
-    const vulnerabilityPatterns = [
-      /require\(['"]child_process['"]\)/,
-      /require\(['"]fs['"]\).*unlinkSync/,
-      /require\(['"]net['"]\).*createServer/,
-      /Buffer\.from\(.*base64.*\)/,
-    ];
-
-    for (const pattern of vulnerabilityPatterns) {
-      if (pattern.test(plugin)) {
-        throw new Error(
-          `Potential security vulnerability detected: ${pattern}`,
-        );
-      }
-    }
-  }
-}
+const result = await verifier.verifyPluginSignature(
+  manifest, // includes contentDigest
+  manifest.signature, // base64 Ed25519 signature
+  "acme",
+  { files: ["index.js"], baseDir: pluginDir },
+);
+if (!result.verified) throw new Error(result.error);
 ```
 
 ---
 
 ## **Monitoring & Auditing**
 
-### **Security Logging**
+### **Audit Logging with AuditLogger**
+
+`AuditLogger` records authentication, authorization, data access, data modification, system change, API access and compliance events, and can query them, build compliance reports and verify their integrity.
+
+```javascript
+import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
+
+const audit = new AuditLogger({
+  encryptionKey: process.env.RAG_AUDIT_ENCRYPTION_KEY, // or set the env var
+  requireEncryption: true, // a missing key is an error instead of a warning
+  signingKey: process.env.RAG_AUDIT_SIGNING_KEY, // stable HMAC key across restarts
+});
+
+// Event and query fields use the underscore names the logger reads
+await audit.logDataAccess({
+  _action: "query",
+  _tenantId: "acme",
+  _userId: "u-42",
+  dataType: "document",
+  recordCount: 3,
+  result: "success",
+});
+const records = await audit.queryLogs({ _tenantId: "acme", limit: 100 });
+const integrity = await audit.verifyIntegrity();
+```
+
+Behaviour since 2.5.0:
+
+- The encryption key comes from `encryptionKey` or `RAG_AUDIT_ENCRYPTION_KEY`. With encryption enabled and no key, encryption is disabled with a warning (it previously used a throwaway per-process key that made logs unreadable after a restart); `requireEncryption: true` turns this into an error.
+- Encryption uses `createCipheriv` with a random IV per field; legacy `createCipher` records still decrypt on Node 22+.
+- Tenant, user and action filters in queries and compliance reports now match correctly (they previously returned every tenant's records).
+- The integrity hash covers action and tenant, and HMAC signatures are compared in constant time.
+- Without `signingKey`, the HMAC key is random per process, so `verifyIntegrity` flags records written before a restart. Pass a stable `signingKey` in production.
+
+### **Security Logging** (application code)
 
 ```javascript
 // Implement comprehensive security logging
@@ -858,88 +726,49 @@ class AnomalyDetector {
 
 ## **Security Configuration**
 
-### **Secure Defaults**
+### **Security-relevant settings in this package**
 
-```json
-{
-  "security": {
-    "authentication": {
-      "required": true,
-      "method": "jwt",
-      "tokenExpiry": "1h",
-      "refreshTokenExpiry": "7d"
-    },
-    "authorization": {
-      "rbac": true,
-      "defaultRole": "viewer",
-      "requireExplicitPermissions": true
-    },
-    "encryption": {
-      "dataAtRest": true,
-      "dataInTransit": true,
-      "algorithm": "aes-256-gcm",
-      "keyRotationInterval": "30d"
-    },
-    "plugins": {
-      "sandboxing": true,
-      "signatureVerification": true,
-      "trustedPublishersOnly": true,
-      "maxExecutionTime": 30000,
-      "memoryLimit": "128MB"
-    },
-    "logging": {
-      "auditTrail": true,
-      "securityEvents": true,
-      "logLevel": "info",
-      "logRetention": "90d"
-    },
-    "networking": {
-      "enforceHTTPS": true,
-      "tlsVersion": "1.3",
-      "certificateValidation": true,
-      "timeout": 30000
-    }
-  }
-}
-```
+There is no global `security` block in `.ragrc.json` or in `createRagPipeline`. Security behaviour is configured on the individual components:
 
-### **Environment-Specific Security**
+| Setting                                                            | Where                                                | Default                                                 |
+| ------------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------- |
+| Signature verification / fail closed                               | `pluginRegistry` singleton                           | On when `NODE_ENV=production`, off otherwise            |
+| `requireSignedPlugins`, `requireContentDigest`                     | `PluginRegistry` / `PluginSignatureVerifier` options | `false` (opt-in)                                        |
+| Trusted signers                                                    | `addTrustedSigner()` or `trustedKeysPath`            | Empty trust store                                       |
+| `singleUseTokens`, `maxTrackedJtis`, `strictValidation`            | `JWTValidator`                                       | `true`, `100000`, `true`                                |
+| `encryptionKey`, `requireEncryption`, `signingKey`                 | `AuditLogger`                                        | `RAG_AUDIT_ENCRYPTION_KEY`, `false`, random per process |
+| `enableInjectionDetection`, `maxQueryLength`                       | `PreRetrievalGuard`                                  | `true`, `10000`                                         |
+| `enforceACL`, `detectInjection`, `minRelevanceScore`, `maxAgeDays` | `RetrievalGuard`                                     | `false`, `false`, `0`, `0`                              |
+| `enablePIIDetection`, `enableGroundednessCheck`                    | `PostGenerationGuard`                                | `true`, `true`                                          |
+| `strict`                                                           | `GuardrailsPipeline`                                 | `false` (issues are reported as warnings)               |
+| Host / port / body limit                                           | `DevServer`, `rag-pipeline serve`                    | `127.0.0.1`, `3000`, 64 KB                              |
+
+### **Environment-Specific Settings**
 
 ```javascript
-// Development environment
-const devSecurityConfig = {
-  authentication: { required: false },
-  plugins: { signatureVerification: false },
-  logging: { logLevel: "debug" },
-};
+import {
+  createRagPipeline,
+  GuardrailsPipeline,
+} from "@devilsdev/rag-pipeline-utils";
 
-// Staging environment
-const stagingSecurityConfig = {
-  authentication: { required: true },
-  plugins: { signatureVerification: true },
-  logging: { logLevel: "info" },
-};
+const isProduction = process.env.NODE_ENV === "production";
 
-// Production environment
-const prodSecurityConfig = {
-  authentication: { required: true, mfa: true },
-  plugins: {
-    signatureVerification: true,
-    trustedPublishersOnly: true,
-    sandboxing: true,
+const safe = new GuardrailsPipeline(
+  createRagPipeline({ embedder, retriever, llm }),
+  {
+    strict: isProduction, // block instead of warn in production
+    retrieval: { enforceACL: true, detectInjection: true },
   },
-  logging: {
-    logLevel: "warn",
-    auditTrail: true,
-    siemIntegration: true,
-  },
-  encryption: {
-    dataAtRest: true,
-    dataInTransit: true,
-    keyRotationInterval: "7d",
-  },
-};
+);
+
+// enforceACL fails closed: pass the caller's permissions on every run
+const result = await safe.run({
+  query: userQuestion,
+  context: { userPermissions: user.roles },
+});
 ```
+
+Set `NODE_ENV=production` in production so the exported `pluginRegistry` verifies plugin signatures and fails closed.
 
 ---
 
@@ -1014,8 +843,8 @@ class IncidentResponse {
 - [ ] HTTPS enforced for all communications
 - [ ] Input validation and sanitization implemented
 - [ ] Output filtering for sensitive data
-- [ ] Plugin sandboxing enabled
-- [ ] Authentication and authorization configured
+- [ ] Plugins reviewed before install; signature verification enabled (`NODE_ENV=production`) with trusted signers configured
+- [ ] `GuardrailsPipeline` with `enforceACL` and `context.userPermissions` where documents are access-controlled- [ ] Authentication and authorization configured
 - [ ] Audit logging enabled
 - [ ] Anomaly detection active
 - [ ] Incident response plan in place
@@ -1037,60 +866,74 @@ class IncidentResponse {
 
 ### **Reporting Security Issues**
 
-- **Security Email**: security@devilsdev.com
-- **PGP Key**: Available at https://devilsdev.com/security/pgp
-- **Bug Bounty**: https://devilsdev.com/security/bounty
+Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/DevilsDev/rag-pipeline-utils/security/advisories/new). The disclosure policy and response times are in [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md).
 
 ### **Security Resources**
 
-- **Security Documentation**: [Complete security docs](https://docs.rag-pipeline-utils.dev/security)
 - **Security Advisories**: [GitHub Security Advisories](https://github.com/DevilsDev/rag-pipeline-utils/security/advisories)
-- **Compliance Guides**: [SOC2, GDPR, HIPAA compliance](https://docs.rag-pipeline-utils.dev/compliance)
+- **Capability status**: [Security Capabilities](./Security-Capabilities.md) lists what is implemented, partial or experimental.
+- **Experimental modules**: [Experimental](./Experimental.md) documents the simulated SSO, tenancy, governance and sandbox modules. Do not rely on them for authentication, tenant isolation, compliance or plugin isolation.
 
 ---
 
-## **3-Layer Guardrails (v2.4.0)**
+## **3-Layer Guardrails**
 
-Version 2.4.0 introduces a structured guardrails system that wraps any existing pipeline with pre-retrieval, retrieval-time, and post-generation safety checks:
+`GuardrailsPipeline` (added in 2.4.0) wraps an existing pipeline with pre-retrieval, retrieval-time and post-generation checks:
 
 ```javascript
-import { GuardrailsPipeline } from "@devilsdev/rag-pipeline-utils";
+import {
+  createRagPipeline,
+  GuardrailsPipeline,
+} from "@devilsdev/rag-pipeline-utils";
+
+const pipeline = createRagPipeline({ embedder, retriever, llm });
 
 const safePipeline = new GuardrailsPipeline(pipeline, {
   preRetrieval: { enableInjectionDetection: true },
-  retrieval: { minRelevanceScore: 0.6 },
+  retrieval: {
+    minRelevanceScore: 0.6,
+    enforceACL: true,
+    detectInjection: true,
+  },
   postGeneration: { enablePIIDetection: true, enableGroundednessCheck: true },
+  strict: true,
+});
+
+const result = await safePipeline.run({
+  query: userQuestion,
+  context: { userPermissions: ["engineering"] },
 });
 ```
 
 ### **Layer 1 -- Pre-Retrieval**
 
-Runs before any documents are fetched:
+Runs on the query before anything is retrieved:
 
-- **Prompt injection detection**: Scans incoming queries against 10 known injection patterns (role hijacking, instruction override, system-prompt leakage, delimiter attacks, etc.) and blocks or flags suspicious inputs.
-- **Topic filtering**: Rejects queries that fall outside configured topic boundaries, preventing misuse of the pipeline for unrelated content.
-- **Query validation**: Enforces length limits, character-set restrictions, and structural checks to ensure queries are well-formed before they reach the retriever.
+- **Prompt injection detection**: matches the query, after normalisation (NFKC, zero-width and control characters removed, homoglyph and leetspeak folding), against built-in rules such as chat role markers, instruction overrides and prompt-exfiltration phrasing. Since 2.5.0 the query is returned unchanged (no partial deletion) and findings are reported in `injection`; strict mode blocks. To cut false positives, bare "act as", "jailbreak", uppercase "DAN", a mid-line "system:" and "you are now ready" are no longer flagged.
+- **Topic filtering** (opt-in): `blockedTopics` / `allowedTopics`.
+- **Length limit**: `maxQueryLength` (default 10000).
 
 ### **Layer 2 -- Retrieval-Time**
 
-Applied while retrieving and scoring candidate documents:
+Runs between retrieval and generation: `GuardrailsPipeline` passes the retrieval guard to the pipeline as the `options.filterResults` hook, so the LLM never sees documents the guard removes. Removed documents are reported by id only.
 
-- **Relevance threshold**: Discards any retrieved chunk whose similarity score falls below `minRelevanceScore`, reducing noise in the context window.
-- **Freshness filtering**: Optionally filters out documents older than a configured age, ensuring answers reflect up-to-date information.
-- **ACL-based access control**: Checks per-document access-control lists so that users only see content they are authorized to access.
+- **Relevance threshold**: drops results whose score is below `minRelevanceScore`.
+- **Freshness filtering**: drops documents older than `maxAgeDays` (0 disables it).
+- **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed. The guard reads `acl` / `requiredRole` from the top level of each document, not from `metadata`; `MemoryRetriever` and `FileVectorStore` return only `id`, `score`, `content` and `metadata`, so wrap them to copy the ACL field up (see [Examples](./Examples.md)).
+- **Indirect injection scan** (opt-in): `detectInjection: true` scans retrieved document text; `injectionAction: 'remove'` (default) drops flagged documents, `'flag'` keeps and marks them.
 
 ### **Layer 3 -- Post-Generation**
 
-Validates the LLM output before it reaches the user:
+Checks the generated answer:
 
-- **PII detection**: Scans the generated response for email addresses, phone numbers, Social Security numbers, and credit card numbers. Detected PII is redacted or the response is blocked.
-- **Groundedness check**: Verifies that claims in the generated answer are supported by the retrieved context, preventing hallucinated or unsupported statements.
-- **Length validation**: Ensures the response stays within configured minimum and maximum token limits.
+- **PII detection**: email addresses, phone numbers, Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
+- **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus a numeric-consistency check; negation and units are not checked), against `groundednessThreshold` (default 0.3).
+- **Length validation**: `minResponseLength` / `maxResponseLength` (characters).
 
 ### **Combining Guardrails with Existing Security**
 
-The guardrails layer complements (and does not replace) the existing security infrastructure described above. Use `GuardrailsPipeline` together with authentication, RBAC, plugin sandboxing, and audit logging for defense in depth.
+Guardrails complement, and do not replace, authentication, authorization, plugin review and audit logging in your application.
 
 ---
 
-_This security guide provides comprehensive protection strategies for @DevilsDev/rag-pipeline-utils deployments. For additional security concerns, consult our security team or review the latest security advisories._
+_For reporting vulnerabilities see [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md)._
