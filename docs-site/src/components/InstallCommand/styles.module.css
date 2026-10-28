@@ -1,0 +1,66 @@
+.install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  padding: 0.55rem 0.55rem 0.55rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+.prompt {
+  color: #64748b;
+  user-select: none;
+}
+
+.command {
+  color: #e2e8f0;
+  background: none;
+  border: 0;
+  padding: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.copy {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 8px;
+  background: transparent;
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.copy:hover {
+  border-color: #a5b4fc;
+  color: #ffffff;
+}
+
+.status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* On phones, wrap at the space instead of scrolling inside the box. */
+@media (max-width: 576px) {
+  .install {
+    display: flex;
+    width: 100%;
+  }
+
+  .command {
+    flex: 1;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,54 +1,94 @@
 /**
- * Description: Crash-proof homepage header with full fallback safety
- * Author: Ali Kahwaji
- *
- * Note: do not put a version number in this header. The package version
- * is sourced from the root package.json at build time — see
- * docusaurus.config.js (PKG_VERSION).
+ * Homepage hero. The tagline and version come from the root package.json
+ * through docusaurus.config.js, so nothing here needs a release bump.
  */
 
 import React from "react";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Link from "@docusaurus/Link";
-import clsx from "clsx";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import InstallCommand from "@site/src/components/InstallCommand";
+import GroundingDemo from "@site/src/components/GroundingDemo";
 import styles from "./index.module.css";
-import Logo from "@site/static/img/logo.svg";
+
+const STAGES = [
+  "query",
+  "retrieve",
+  "rerank",
+  "generate",
+  "answer + citations",
+];
 
 export default function HomepageHeader() {
-  let siteConfig = {
-    title: "RAG Pipeline Utils",
-    tagline: "Composable pipelines for LLMs",
-  };
-
-  try {
-    const context = useDocusaurusContext();
-    if (context && context.siteConfig) {
-      siteConfig = {
-        title: context.siteConfig.title || siteConfig.title,
-        tagline: context.siteConfig.tagline || siteConfig.tagline,
-      };
-    }
-  } catch (e) {
-    console.warn("useDocusaurusContext failed:", e);
-  }
+  const { siteConfig } = useDocusaurusContext();
+  const version = siteConfig.customFields?.version;
 
   return (
-    <header className={clsx("hero", styles.heroBanner)}>
-      <div className="container text--center">
-        <Logo className={styles.logo} role="img" alt="RAG Utils Logo" />
-        <h1 className="hero__title">{siteConfig.title}</h1>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--primary button--lg"
-            to="/docs/Introduction"
-          >
-            Get Started
-          </Link>
-          <Link className="button button--outline button--lg" to="/blog">
-            Visit Blog
-          </Link>
+    <header className={styles.hero}>
+      <div className={styles.grid} aria-hidden="true" />
+      <div className={styles.glow} aria-hidden="true" />
+      <div className="container">
+        <div className={styles.layout}>
+          <div className={styles.copy}>
+            <div className={styles.chips}>
+              {version && (
+                <Link
+                  className={styles.chip}
+                  href={`https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v${version}`}
+                >
+                  v{version} released
+                </Link>
+              )}
+              <span className={styles.chip}>MIT</span>
+              <span className={styles.chip}>Node.js ≥ 18</span>
+            </div>
+
+            <h1 className={styles.title}>
+              RAG for Node.js that{" "}
+              <span className={styles.accent}>shows its sources</span>
+            </h1>
+            <p className={styles.tagline}>{siteConfig.tagline}</p>
+
+            <InstallCommand />
+
+            <div className={styles.actions}>
+              <Link
+                className="button button--primary button--lg"
+                to="/docs/Introduction"
+              >
+                Get started
+              </Link>
+              <Link
+                className={`button button--lg ${styles.ghost}`}
+                to="#quick-start"
+              >
+                Quick start
+              </Link>
+              <Link
+                className={`button button--lg ${styles.ghost}`}
+                href="https://github.com/DevilsDev/rag-pipeline-utils"
+              >
+                GitHub
+              </Link>
+            </div>
+          </div>
+
+          <div className={styles.demo}>
+            <GroundingDemo />
+          </div>
         </div>
+
+        <ol className={styles.pipeline} aria-label="Pipeline stages">
+          {STAGES.map((stage, i) => (
+            <li
+              key={stage}
+              className={
+                i === STAGES.length - 1 ? styles.stageFinal : styles.stage
+              }
+            >
+              {stage}
+            </li>
+          ))}
+        </ol>
       </div>
     </header>
   );

@@ -11,6 +11,7 @@
 // @ts-check
 
 const path = require("path");
+const { themes: prismThemes } = require("prism-react-renderer");
 // Read once at config-load. Docusaurus invokes this file at build time,
 // so picking up the version from the root package.json is fine here.
 const ROOT_PKG = require(path.resolve(__dirname, "..", "package.json"));
@@ -32,37 +33,90 @@ const config = {
   },
   trailingSlash: false,
 
-  favicon: "img/favicon.ico",
+  favicon: "img/favicon.svg",
+  headTags: [
+    {
+      tagName: "link",
+      attributes: {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/rag-pipeline-utils/img/favicon-32.png",
+      },
+    },
+    {
+      tagName: "link",
+      attributes: {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: "/rag-pipeline-utils/img/apple-touch-icon.png",
+      },
+    },
+  ],
 
   // GitHub Pages deployment config
   organizationName: "DevilsDev",
   projectName: "rag-pipeline-utils",
 
+  // Read by the homepage hero.
+  customFields: { version: PKG_VERSION },
+
+  // Fonts are self-hosted; see src/fonts.js.
+  clientModules: [require.resolve("./src/fonts.js")],
+
+  themes: [
+    [
+      // Local search: the index is built with the site, so it needs no
+      // external service or API key. Open it with Ctrl+K / Cmd+K.
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      {
+        hashed: true,
+        indexBlog: true,
+        docsRouteBasePath: "/docs",
+        highlightSearchTermsOnTargetPage: true,
+        searchBarShortcutHint: true,
+        explicitSearchResultPath: true,
+      },
+    ],
+  ],
+
   themeConfig: {
     metadata: [
       {
         name: "keywords",
-        content: "rag, llm, langchain, pipeline, openai, nodejs",
+        content:
+          "rag, retrieval-augmented generation, llm, nodejs, citations, evaluation, guardrails",
       },
       { name: "author", content: "Ali Kahwaji" },
-      { name: "theme-color", content: "#2563EB" },
+      { name: "theme-color", content: "#0b1020" },
     ],
-    // ✅ OpenGraph / Twitter image
-    image: "img/social-card.jpg",
+    // Open Graph / Twitter card, generated from assets/banner.svg.
+    image: "img/social-card.png",
 
-    // ✅ Color mode toggle support
     colorMode: {
       defaultMode: "light",
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },
 
-    // ✅ Sticky header
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
+    },
+
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.oneDark,
+      additionalLanguages: ["bash", "json", "yaml", "diff"],
+    },
+
     navbar: {
-      title: "RAG Pipeline Utils",
+      title: "rag-pipeline-utils",
       hideOnScroll: false,
       logo: {
-        alt: "RAG Pipeline Utils Logo",
+        alt: "rag-pipeline-utils",
         src: "img/logo.svg",
       },
       items: [
@@ -70,8 +124,12 @@ const config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Documentation",
+          label: "Docs",
         },
+        { to: "/docs/API-Reference", label: "API", position: "left" },
+        { to: "/docs/CLI", label: "CLI", position: "left" },
+        { to: "/docs/Examples", label: "Examples", position: "left" },
+        { to: "/blog", label: "Blog", position: "left" },
         {
           // Only the current version is published; older snapshots were
           // removed from the menu because they documented APIs that never
@@ -79,104 +137,73 @@ const config = {
           href: `https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v${PKG_VERSION}`,
           label: `v${PKG_VERSION}`,
           position: "left",
+          className: "rag-version",
         },
-        { to: "/blog", label: "Blog", position: "left" },
-        {
-          type: "dropdown",
-          label: "Enterprise",
-          position: "left",
-          items: [
-            { to: "/docs/Enterprise", label: "Enterprise Features" },
-            { to: "/docs/Observability", label: "Observability" },
-            { to: "/docs/Security", label: "Security" },
-            { to: "/docs/Performance", label: "Performance" },
-          ],
-        },
-        {
-          href: "https://github.com/DevilsDev/rag-pipeline-utils",
-          label: "GitHub",
-          position: "right",
-        },
+        { type: "search", position: "right" },
         {
           href: "https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils",
           label: "npm",
           position: "right",
         },
+        {
+          href: "https://github.com/DevilsDev/rag-pipeline-utils",
+          position: "right",
+          className: "header-github-link",
+          "aria-label": "GitHub repository",
+        },
       ],
     },
-
-    // Algolia DocSearch configuration
-    // To enable search:
-    // 1. Apply at https://docsearch.algolia.com/apply/
-    // 2. Uncomment the configuration below
-    // 3. Replace with your API keys
-    /*
-    algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 'rag-pipeline-utils',
-      contextualSearch: true,
-      searchParameters: {
-        facetFilters: ['language:en', `version:${PKG_VERSION}`],
-      },
-      searchPagePath: 'search',
-    },
-    */
 
     footer: {
       style: "dark",
       links: [
         {
-          title: "Documentation",
+          title: "Learn",
           items: [
-            { label: "Getting Started", to: "/docs/Introduction" },
-            { label: "Architecture", to: "/docs/Architecture" },
-            { label: "CLI Reference", to: "/docs/CLI" },
+            { label: "Introduction", to: "/docs/Introduction" },
             { label: "Tutorials", to: "/docs/Tutorials" },
+            { label: "Use cases", to: "/docs/Use-Cases" },
+            { label: "Comparison", to: "/docs/Comparison" },
           ],
         },
         {
-          title: "Enterprise",
+          title: "Reference",
           items: [
-            { label: "Enterprise Features", to: "/docs/Enterprise" },
-            { label: "Observability", to: "/docs/Observability" },
-            { label: "Security", to: "/docs/Security" },
-            { label: "Performance", to: "/docs/Performance" },
+            { label: "API reference", to: "/docs/API-Reference" },
+            { label: "CLI reference", to: "/docs/CLI" },
+            { label: "Plugins", to: "/docs/Plugins" },
+            { label: "Migration", to: "/docs/Migration" },
           ],
         },
         {
-          title: "Community",
+          title: "Production",
+          items: [
+            { label: "Guardrails", to: "/docs/Concepts-Guardrails" },
+            { label: "Evaluation", to: "/docs/Evaluation" },
+            { label: "Security", to: "/docs/Security" },
+            { label: "Experimental modules", to: "/docs/Experimental" },
+          ],
+        },
+        {
+          title: "Project",
           items: [
             {
               label: "GitHub",
               href: "https://github.com/DevilsDev/rag-pipeline-utils",
             },
             {
-              label: "Issues",
-              href: "https://github.com/DevilsDev/rag-pipeline-utils/issues",
-            },
-            {
               label: "Discussions",
               href: "https://github.com/DevilsDev/rag-pipeline-utils/discussions",
             },
-          ],
-        },
-        {
-          title: "More",
-          items: [
+            {
+              label: "Changelog",
+              href: "https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md",
+            },
             { label: "Blog", to: "/blog" },
-            {
-              label: "npm Package",
-              href: "https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils",
-            },
-            {
-              label: "License",
-              href: "https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE",
-            },
           ],
         },
       ],
-      copyright: `© ${new Date().getFullYear()} Ali Kahwaji. Built with Docusaurus.`,
+      copyright: `MIT licensed · © ${new Date().getFullYear()} Ali Kahwaji`,
     },
   },
 
