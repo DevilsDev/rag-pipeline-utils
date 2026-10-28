@@ -6,6 +6,7 @@ const { QueryPlanner } = require('./query-planner');
 const { IterativeRetriever } = require('./iterative-retriever');
 const { SelfCritiqueChecker } = require('./self-critique');
 const { embedQuery, canEmbed } = require('../utils/embed-query');
+const { createRunAbort } = require('../utils/run-abort');
 
 /**
  * Default configuration for the AgenticPipeline.
@@ -15,6 +16,7 @@ const DEFAULT_CONFIG = {
   maxConcurrency: 3,
   timeout: 60000,
   enablePlanning: true,
+  enableLlmPlanning: false,
   enableCritique: true,
   enableIterativeRetrieval: false,
   maxIterations: 3,
@@ -34,6 +36,9 @@ class AgenticPipeline extends EventEmitter {
    * @param {number} [options.maxConcurrency=3] - Max concurrent DAG node execution
    * @param {number} [options.timeout=60000] - Global timeout in ms
    * @param {boolean} [options.enablePlanning=true] - Whether to decompose queries
+   * @param {boolean} [options.enableLlmPlanning=false] - Ask the llm for the
+   *   sub-queries (strictly validated, heuristic fallback); costs one extra
+   *   llm.generate() call per run
    * @param {boolean} [options.enableCritique=true] - Whether to self-critique answers
    * @param {boolean} [options.enableIterativeRetrieval=false] - Whether to use iterative retrieval
    * @param {number} [options.maxIterations=3] - Max iterations for iterative retrieval
@@ -66,6 +71,13 @@ class AgenticPipeline extends EventEmitter {
    * @param {object} [params.embedder] - Optional embedder; when given, each
    *   sub-query is embedded on its own instead of reusing queryVector
    * @param {object} [params.options={}] - Extra options passed to llm.generate()
+   * @param {AbortSignal} [params.options.signal] - Cancels the run. The run
+   *   has its own AbortController (also aborted after `timeout`); its signal
+   *   is passed to retriever.retrieve({ ..., signal }), embedder.embedQuery /
+   *   embed(text, { signal }) and llm.generate(query, docs, { ...options,
+   *   signal }), and no later stage starts once it aborts. The returned
+   *   promise then rejects with Error('Execution timeout') or
+   *   Error('Execution aborted').
    * @returns {Promise<{
    *   success: boolean,
    *   query: string,
@@ -95,10 +107,44 @@ class AgenticPipeline extends EventEmitter {
       );
     }
 
+    // One AbortController per run: aborted on timeout or when the caller's
+    // options.signal aborts. Its signal goes to every component call.
+    const runAbort = createRunAbort({
+      timeout: this.config.timeout,
+      signal: options && options.signal,
+    });
+    try {
+      return await runAbort.race(
+        this._execute(
+          { query, retriever, llm, queryVector, embedder, options },
+          runAbort,
+        ),
+      );
+    } finally {
+      runAbort.cleanup();
+    }
+  }
+
+  /**
+   * @param {object} params - Validated run() parameters
+   * @param {object} runAbort - Per-run cancellation (see utils/run-abort)
+   * @returns {Promise<object>}
+   * @private
+   */
+  async _execute(
+    { query, retriever, llm, queryVector, embedder, options },
+    runAbort,
+  ) {
+    const { signal } = runAbort;
+    const llmOptions = { ...(options || {}), signal };
+
     // Phase 1: Plan
     let subQueries;
     if (this.config.enablePlanning) {
-      const plan = this.planner.plan(query);
+      const plan = this.config.enableLlmPlanning
+        ? await this.planner.plan(query, { llm, signal })
+        : this.planner.plan(query);
+      runAbort.throwIfAborted();
       subQueries = plan.subQueries;
       this.emit('planned', plan);
     } else {
@@ -114,13 +160,15 @@ class AgenticPipeline extends EventEmitter {
       dag.addNode(
         `retrieve-${i}`,
         async () => {
+          runAbort.throwIfAborted();
           // queryVector belongs to the original query; a decomposed
           // sub-query needs its own embedding when an embedder is available.
           const needsOwnVector =
             canEmbed(embedder) && (sq.subQuery !== query || !queryVector);
           const subQueryVector = needsOwnVector
-            ? await embedQuery(embedder, sq.subQuery)
+            ? await embedQuery(embedder, sq.subQuery, { signal })
             : queryVector;
+          runAbort.throwIfAborted();
           if (this.iterativeRetriever) {
             const result = await this.iterativeRetriever.retrieve({
               query: sq.subQuery,
@@ -128,6 +176,7 @@ class AgenticPipeline extends EventEmitter {
               llm,
               queryVector: subQueryVector,
               embedder,
+              signal,
             });
             return result.results;
           }
@@ -135,6 +184,7 @@ class AgenticPipeline extends EventEmitter {
             query: sq.subQuery,
             queryVector: subQueryVector,
             topK: 10,
+            signal,
           });
         },
         { timeout: this.config.timeout / 2, priority: sq.priority },
@@ -143,6 +193,7 @@ class AgenticPipeline extends EventEmitter {
 
     // Add merge node
     dag.addNode('merge', async (inputs) => {
+      runAbort.throwIfAborted();
       const allResults = Array.isArray(inputs)
         ? inputs.flat()
         : [inputs].flat();
@@ -166,8 +217,10 @@ class AgenticPipeline extends EventEmitter {
     // Add critique + generate nodes
     if (this.config.enableCritique) {
       dag.addNode('pre-generate', async (mergedResults) => {
+        runAbort.throwIfAborted();
         // Generate initial answer for critique
-        const answer = await llm.generate(query, mergedResults, options);
+        const answer = await llm.generate(query, mergedResults, llmOptions);
+        runAbort.throwIfAborted();
         const critique = this.critiqueChecker.check(
           String(answer),
           mergedResults,
@@ -178,6 +231,7 @@ class AgenticPipeline extends EventEmitter {
       dag.connect('merge', 'pre-generate');
 
       dag.addNode('generate', async ({ answer, mergedResults, critique }) => {
+        runAbort.throwIfAborted();
         if (critique.approved) {
           return { answer, results: mergedResults, critique };
         }
@@ -189,7 +243,7 @@ class AgenticPipeline extends EventEmitter {
         const refinedAnswer = await llm.generate(
           refinedPrompt,
           mergedResults,
-          options,
+          llmOptions,
         );
         return {
           answer: String(refinedAnswer),
@@ -200,7 +254,8 @@ class AgenticPipeline extends EventEmitter {
       dag.connect('pre-generate', 'generate');
     } else {
       dag.addNode('generate', async (mergedResults) => {
-        const answer = await llm.generate(query, mergedResults, options);
+        runAbort.throwIfAborted();
+        const answer = await llm.generate(query, mergedResults, llmOptions);
         return { answer: String(answer), results: mergedResults };
       });
       dag.connect('merge', 'generate');
@@ -217,6 +272,8 @@ class AgenticPipeline extends EventEmitter {
       continueOnError: true,
       gracefulDegradation: true,
     });
+    // continueOnError lets nodes degrade; an abort must not look like success.
+    runAbort.throwIfAborted();
 
     // Extract final result from generate node
     const output = dagResult?.answer
