@@ -8,6 +8,21 @@ const {
 } = require('../security/plugin-signature-verifier.js');
 const { logger } = require('../utils/logger');
 
+/**
+ * Locate the package's contracts/ directory. This file lives in src/core/ when
+ * loaded from source but is inlined into dist/index.cjs when bundled, so
+ * __dirname differs between the two layouts.
+ *
+ * @returns {string} Absolute path to the contracts directory
+ */
+function resolveContractsDir() {
+  const candidates = [
+    path.join(__dirname, '../../contracts'),
+    path.join(__dirname, '../contracts'),
+  ];
+  return candidates.find((dir) => fs.existsSync(dir)) || candidates[0];
+}
+
 class PluginRegistry {
   constructor(options = {}) {
     this._plugins = new Map();
@@ -82,8 +97,8 @@ class PluginRegistry {
   _loadContractSchema() {
     try {
       const schemaPath = path.join(
-        __dirname,
-        '../../contracts/contract-schema.json',
+        resolveContractsDir(),
+        'contract-schema.json',
       );
       if (fs.existsSync(schemaPath)) {
         const schemaContent = fs.readFileSync(schemaPath, 'utf8');
@@ -256,7 +271,7 @@ class PluginRegistry {
   }
 
   _loadContracts() {
-    const contractsDir = path.join(__dirname, '../../contracts');
+    const contractsDir = resolveContractsDir();
 
     try {
       const contractFiles = {

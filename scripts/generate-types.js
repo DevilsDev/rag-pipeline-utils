@@ -484,5 +484,98 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-fs.writeFileSync(outputPath, typeDefinitions.trim());
+fs.writeFileSync(outputPath, typeDefinitions.trim() + "\n");
+appendGeneratedDeclarations();
 console.log("TypeScript definitions generated: dist/index.d.ts");
+
+/**
+ * The template above only covers the original API. For every other export of
+ * src/index.js, emit declarations from the module's JSDoc with tsc into
+ * dist/types/ and re-export them from dist/index.d.ts, so new exports get
+ * types without being hand-written here.
+ */
+function appendGeneratedDeclarations() {
+  const { execFileSync } = require("child_process");
+  const srcDir = path.join(__dirname, "..", "src");
+  const indexSource = fs.readFileSync(path.join(srcDir, "index.js"), "utf8");
+
+  // const { A, B: C } = require('./dir/module');
+  const exportSources = new Map();
+  const requirePattern =
+    /const\s*\{([^}]+)\}\s*=\s*require\(\s*['"](\.\/[^'"]+)['"]\s*\)/g;
+  for (const [, names, modulePath] of indexSource.matchAll(requirePattern)) {
+    for (const part of names.split(",")) {
+      const [imported, local] = part.split(":").map((n) => n.trim());
+      if (imported) {
+        exportSources.set(local || imported, {
+          imported,
+          modulePath: modulePath.replace(/\.js$/, ""),
+        });
+      }
+    }
+  }
+
+  const template = fs.readFileSync(outputPath, "utf8");
+  const declared = new Set(
+    [
+      ...template.matchAll(
+        /export\s+(?:declare\s+)?(?:const|let|function|class)\s+([\w$]+)/g,
+      ),
+    ].map((m) => m[1]),
+  );
+  // export { a, b as c } — the exported name is the alias when present
+  for (const [, list] of template.matchAll(/export\s*\{([^}]*)\}/g)) {
+    for (const part of list.split(",")) {
+      const name = part
+        .trim()
+        .split(/\s+as\s+/)
+        .pop();
+      if (name) declared.add(name);
+    }
+  }
+  const runtimeExports = Object.keys(require(path.join(distDir, "index.cjs")));
+  const missing = runtimeExports.filter(
+    (name) => !declared.has(name) && exportSources.has(name),
+  );
+  if (missing.length === 0) return;
+
+  const modules = [
+    ...new Set(missing.map((n) => exportSources.get(n).modulePath)),
+  ];
+  const typesDir = path.join(distDir, "types");
+  fs.rmSync(typesDir, { recursive: true, force: true });
+  const tscBin = require.resolve("typescript/bin/tsc");
+  execFileSync(
+    process.execPath,
+    [
+      tscBin,
+      ...modules.map((m) => path.join(srcDir, `${m}.js`)),
+      "--allowJs",
+      "--declaration",
+      "--emitDeclarationOnly",
+      "--skipLibCheck",
+      "--rootDir",
+      srcDir,
+      "--outDir",
+      typesDir,
+    ],
+    { stdio: "inherit" },
+  );
+
+  const lines = missing.map((name) => {
+    const { imported, modulePath } = exportSources.get(name);
+    const spec = imported === name ? name : `${imported} as ${name}`;
+    return `export { ${spec} } from "./types/${modulePath.replace(/^\.\//, "")}";`;
+  });
+  fs.appendFileSync(
+    outputPath,
+    [
+      "",
+      "// =============================================================================",
+      "// Declarations generated from JSDoc (scripts/generate-types.js)",
+      "// =============================================================================",
+      ...lines,
+      "",
+    ].join("\n"),
+  );
+}

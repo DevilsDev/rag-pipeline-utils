@@ -11,10 +11,14 @@
  * @returns {string[]}
  */
 function tokenize(text) {
-  return text
+  // Unicode-aware: keep letters/digits in any script, drop apostrophes so
+  // "don't" stays one token, and treat every other character (including
+  // newlines and hyphens) as a separator.
+  return String(text)
     .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, '')
-    .split(/\s+/)
+    .replace(/['’]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .split(' ')
     .filter(Boolean);
 }
 
@@ -108,7 +112,64 @@ function computeJaccardSimilarity(tokensA, tokensB) {
   return intersection.size / union.size;
 }
 
+/**
+ * Common English function words. Ignored when measuring how much of a
+ * sentence a document supports, so "the" and "is" cannot ground a claim.
+ */
+const STOPWORDS = new Set(
+  (
+    'a an and are as at be been but by can could did do does for from had has ' +
+    'have he her his how i if in into is it its may me might must my no not ' +
+    'of on or our she should so than that the their them then there these ' +
+    'they this those to was we were what when where which while who why will ' +
+    'with would you your'
+  ).split(' '),
+);
+
+/**
+ * Content tokens of a sentence: tokens minus stopwords. Falls back to all
+ * tokens when nothing is left (e.g. "Yes."), so short sentences are still
+ * scored rather than skipped.
+ *
+ * @param {string[]} tokens
+ * @returns {string[]}
+ */
+function contentTokens(tokens) {
+  const content = tokens.filter((t) => !STOPWORDS.has(t));
+  return content.length > 0 ? content : tokens;
+}
+
+/**
+ * How much of a claim is supported by a document: the (optionally
+ * IDF-weighted) fraction of the claim's unique content tokens that appear in
+ * the document. Unlike Jaccard against the whole document, this does not
+ * shrink as the document gets longer, so a sentence copied verbatim from a
+ * long chunk scores 1.
+ *
+ * @param {string[]} claimTokens - Tokens of the sentence/claim/query
+ * @param {string[]|Set<string>} docTokens - Tokens of the document
+ * @param {Map<string, number>|null} [idfWeights] - Optional token weights
+ * @returns {number} Support score between 0 and 1
+ */
+function computeSupportScore(claimTokens, docTokens, idfWeights = null) {
+  const claim = [...new Set(contentTokens(claimTokens))];
+  if (claim.length === 0) return 0;
+  const docSet = docTokens instanceof Set ? docTokens : new Set(docTokens);
+
+  let matched = 0;
+  let total = 0;
+  for (const token of claim) {
+    const weight = idfWeights ? (idfWeights.get(token) ?? 1) : 1;
+    total += weight;
+    if (docSet.has(token)) matched += weight;
+  }
+  return total > 0 ? matched / total : 0;
+}
+
 module.exports = {
+  STOPWORDS,
+  contentTokens,
+  computeSupportScore,
   scoreAnswer,
   tokenize,
   computeBLEU,

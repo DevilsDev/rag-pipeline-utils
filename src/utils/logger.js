@@ -31,9 +31,20 @@ const getLogLevel = () => {
 // Determine if pretty printing should be enabled
 const shouldUsePrettyPrint = () => {
   // Enable pretty print in development or when explicitly requested
-  return (
-    process.env.NODE_ENV === 'development' || process.env.LOG_PRETTY === 'true'
-  );
+  const requested =
+    process.env.NODE_ENV === 'development' || process.env.LOG_PRETTY === 'true';
+  return requested && isPinoPrettyAvailable();
+};
+
+// pino-pretty is an optional peer dependency; pino throws at startup if the
+// transport target cannot be resolved, so fall back to JSON output instead.
+const isPinoPrettyAvailable = () => {
+  try {
+    require.resolve('pino-pretty');
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 /**
@@ -67,6 +78,25 @@ const baseLogger = pino({
     },
   }),
 });
+
+/**
+ * Coerce the meta argument into an object. Callers often pass
+ * console-style extras such as `logger.error("Failed:", error.message)`;
+ * spreading a string would log one key per character.
+ *
+ * @param {*} meta
+ * @returns {object}
+ */
+function normalizeMeta(meta) {
+  if (meta == null) return {};
+  if (meta instanceof Error) {
+    return { error: meta.message, stack: meta.stack };
+  }
+  if (typeof meta !== 'object' || Array.isArray(meta)) {
+    return { detail: meta };
+  }
+  return meta;
+}
 
 /**
  * Enhanced logger with correlation ID support and structured context
@@ -118,7 +148,7 @@ class StructuredLogger {
       ...this.context,
       correlationId: this.correlationId || crypto.randomUUID(),
       timestamp: new Date().toISOString(),
-      ...meta,
+      ...normalizeMeta(meta),
     };
 
     this.logger[level](logData, message);

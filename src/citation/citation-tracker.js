@@ -10,7 +10,7 @@ const { detectHallucinations } = require('./hallucination-detector');
  * @type {object}
  */
 const DEFAULT_CONFIG = {
-  similarityThreshold: 0.3,
+  similarityThreshold: 0.5,
   maxCitationsPerSentence: 3,
   useIDFWeighting: true,
 };
@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
 class CitationTracker extends EventEmitter {
   /**
    * @param {object} [options] - Override default configuration
-   * @param {number} [options.similarityThreshold=0.3] - Minimum similarity for a citation match
+   * @param {number} [options.similarityThreshold=0.5] - Minimum similarity for a citation match
    * @param {number} [options.maxCitationsPerSentence=3] - Max citations per sentence
    * @param {boolean} [options.useIDFWeighting=true] - Whether to apply IDF weighting
    */
@@ -76,9 +76,11 @@ class CitationTracker extends EventEmitter {
         'CitationTracker.track(): answer must be a non-empty string',
       );
     }
-    if (!Array.isArray(retrievedDocs) || retrievedDocs.length === 0) {
+    // An empty array is valid (retrieval found nothing): every sentence is
+    // then reported as unsupported rather than failing the whole run.
+    if (!Array.isArray(retrievedDocs)) {
       throw new Error(
-        'CitationTracker.track(): retrievedDocs must be a non-empty array',
+        'CitationTracker.track(): retrievedDocs must be an array',
       );
     }
 

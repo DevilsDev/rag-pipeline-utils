@@ -86,8 +86,10 @@ class RetrievalGuard extends EventEmitter {
         }
       }
 
-      // 3. ACL filter
-      if (!dominated && this.config.enforceACL && context.userPermissions) {
+      // 3. ACL filter. Missing userPermissions fails closed: the user is
+      // treated as having no roles, so restricted documents are removed.
+      if (!dominated && this.config.enforceACL) {
+        const userPermissions = context.userPermissions || [];
         const requiredRoles = doc.requiredRole
           ? [].concat(doc.requiredRole)
           : doc.acl
@@ -96,7 +98,7 @@ class RetrievalGuard extends EventEmitter {
 
         if (requiredRoles && requiredRoles.length > 0) {
           const hasAccess = requiredRoles.some((role) =>
-            context.userPermissions.includes(role),
+            userPermissions.includes(role),
           );
           if (!hasAccess) {
             dominated = true;

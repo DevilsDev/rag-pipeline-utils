@@ -40,9 +40,12 @@ import {
   OpenAIConnector,
 } from "@devilsdev/rag-pipeline-utils";
 
+const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+
 const pipeline = createRagPipeline({
-  retriever: new MemoryRetriever(),
-  llm: new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY }),
+  embedder: openai, // embeds the query for vector search
+  retriever: new MemoryRetriever(), // populate with retriever.store([...])
+  llm: openai,
 });
 
 const result = await pipeline.run({ query: "What does X do?" });

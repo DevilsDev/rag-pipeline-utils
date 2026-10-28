@@ -3,6 +3,7 @@
 const { EventEmitter } = require('events');
 const { retry } = require('../utils/retry');
 const { tokenize, computeJaccardSimilarity } = require('../evaluate/scoring');
+const { embedQuery, canEmbed } = require('../utils/embed-query');
 
 /**
  * Default configuration for the IterativeRetriever.
@@ -110,10 +111,12 @@ class IterativeRetriever extends EventEmitter {
    * @param {object} params.retriever - Retriever instance with .retrieve() method
    * @param {object} [params.llm] - Optional LLM for query refinement
    * @param {Array<number>} [params.queryVector] - Optional pre-computed query vector
+   * @param {object} [params.embedder] - Optional embedder; when given, each
+   *   refined query is re-embedded instead of reusing queryVector
    * @returns {Promise<{results: Array<object>, iterations: number, converged: boolean, coverage: number}>}
    * @throws {Error} If query or retriever is missing
    */
-  async retrieve({ query, retriever, llm, queryVector }) {
+  async retrieve({ query, retriever, llm, queryVector, embedder }) {
     // 1. Validate inputs
     if (!query || typeof query !== 'string' || !query.trim()) {
       throw new Error(
@@ -137,9 +140,19 @@ class IterativeRetriever extends EventEmitter {
     while (iterations < this.config.maxIterations) {
       // a. Retrieve with retry
       const retrieveQuery = currentQuery;
+      // Without an embedder the caller's vector is all we have; it only
+      // matches the original query, so refined queries need re-embedding.
+      const retrieveVector =
+        canEmbed(embedder) && (retrieveQuery !== query || !queryVector)
+          ? await embedQuery(embedder, retrieveQuery)
+          : queryVector;
       const newResults = await retry(
         () =>
-          retriever.retrieve({ query: retrieveQuery, queryVector, topK: 10 }),
+          retriever.retrieve({
+            query: retrieveQuery,
+            queryVector: retrieveVector,
+            topK: 10,
+          }),
         this.config.retryOptions,
       );
 

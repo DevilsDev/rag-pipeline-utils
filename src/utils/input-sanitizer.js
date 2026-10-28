@@ -66,6 +66,21 @@ const ValidationPatterns = {
 };
 
 /**
+ * Test a shared pattern from start of string. The DangerousPatterns regexes
+ * carry the /g flag (needed by replace()), and RegExp#test() on a /g regex
+ * resumes from lastIndex left by the previous call, which made a match
+ * against one input skip part of the next and let payloads through.
+ *
+ * @param {RegExp} pattern
+ * @param {string} str
+ * @returns {boolean}
+ */
+function matchesPattern(pattern, str) {
+  pattern.lastIndex = 0;
+  return pattern.test(str);
+}
+
+/**
  * Dangerous patterns that indicate attacks (compiled for performance)
  */
 const DangerousPatterns = {
@@ -476,7 +491,7 @@ class InputSanitizer {
 
     // Apply all XSS patterns
     for (const pattern of DangerousPatterns.xss) {
-      if (pattern.test(sanitized)) {
+      if (matchesPattern(pattern, sanitized)) {
         this.stats.blocked++;
         sanitized = sanitized.replace(pattern, '');
       }
@@ -497,7 +512,7 @@ class InputSanitizer {
 
     // Check for SQL injection patterns
     for (const pattern of DangerousPatterns.sql) {
-      if (pattern.test(sanitized)) {
+      if (matchesPattern(pattern, sanitized)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
           throw new Error('Potential SQL injection detected');
@@ -520,7 +535,7 @@ class InputSanitizer {
   _sanitizeCommand(str) {
     // Check for command injection patterns
     for (const pattern of DangerousPatterns.command) {
-      if (pattern.test(str)) {
+      if (matchesPattern(pattern, str)) {
         this.stats.blocked++;
         if (this.options.throwOnInvalid) {
           throw new Error('Potential command injection detected');
@@ -560,7 +575,7 @@ class InputSanitizer {
 
     // Check for path traversal patterns in both original and fully decoded versions
     for (const pattern of DangerousPatterns.pathTraversal) {
-      if (pattern.test(str) || pattern.test(current)) {
+      if (matchesPattern(pattern, str) || matchesPattern(pattern, current)) {
         this.stats.blocked++;
         // SECURITY: Always throw on path traversal - it should never be silently sanitized
         // Empty paths could resolve to application root, creating security vulnerabilities

@@ -1,10 +1,6 @@
 'use strict';
 
-const {
-  splitSentences,
-  tokenize,
-  computeJaccardSimilarity,
-} = require('./scoring');
+const { splitSentences, tokenize, computeSupportScore } = require('./scoring');
 const { mapSentenceToSources } = require('../citation/source-mapper');
 
 /**
@@ -14,11 +10,11 @@ const { mapSentenceToSources } = require('../citation/source-mapper');
  * @param {string} answer - The generated answer text
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents with content
  * @param {object} [options={}] - Configuration options
- * @param {number} [options.threshold=0.3] - Minimum similarity score to consider a sentence faithful
+ * @param {number} [options.threshold=0.5] - Minimum similarity score to consider a sentence faithful
  * @returns {{ score: number, faithfulSentences: number, totalSentences: number, details: Array<{ sentence: string, score: number, isFaithful: boolean, bestSource: number }> }}
  */
 function computeFaithfulness(answer, retrievedDocs, options = {}) {
-  const { threshold = 0.3 } = options;
+  const { threshold = 0.5 } = options;
 
   if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
@@ -60,7 +56,7 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
       }
 
       const docTokens = tokenize(docContent);
-      const similarity = computeJaccardSimilarity(sentenceTokens, docTokens);
+      const similarity = computeSupportScore(sentenceTokens, docTokens);
 
       if (similarity > bestScore) {
         bestScore = similarity;
@@ -102,13 +98,18 @@ function computeFaithfulnessFromCitations(citationResult) {
       ? citationResult.groundednessScore
       : 0;
 
+  // CitationTracker only lists sources at or above its similarity threshold,
+  // so a sentence is faithful exactly when it has at least one source.
   const details = Array.isArray(citationResult.citations)
-    ? citationResult.citations.map((c) => ({
-        sentence: c.sentence || c.text || '',
-        score: c.score || c.similarity || 0,
-        isFaithful: (c.score || c.similarity || 0) > 0,
-        bestSource: c.sourceIndex != null ? c.sourceIndex : -1,
-      }))
+    ? citationResult.citations.map((c) => {
+        const best = Array.isArray(c.sources) ? c.sources[0] : undefined;
+        return {
+          sentence: c.sentence || c.text || '',
+          score: best ? best.score : 0,
+          isFaithful: Boolean(best),
+          bestSource: best ? best.docIndex : -1,
+        };
+      })
     : [];
 
   return { score, details };

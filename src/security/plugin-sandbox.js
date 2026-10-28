@@ -7,7 +7,23 @@
  * @version 2.1.1
  */
 
-const ivm = require('isolated-vm');
+// isolated-vm is a native addon and an optional peer dependency: load it only
+// when a sandbox is actually used so importing the package never requires it.
+let ivmModule = null;
+function loadIsolatedVm() {
+  if (!ivmModule) {
+    try {
+      ivmModule = require('isolated-vm');
+    } catch (error) {
+      throw new Error(
+        'PluginSandbox requires the optional peer dependency isolated-vm. ' +
+          'Install it with `npm install isolated-vm`. ' +
+          `(${error.message})`,
+      );
+    }
+  }
+  return ivmModule;
+}
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -295,6 +311,7 @@ class PluginSandbox extends EventEmitter {
     let context;
 
     try {
+      const ivm = loadIsolatedVm();
       // Create new isolate with memory limit
       isolate = new ivm.Isolate({
         memoryLimit: Math.floor(this.options.memoryLimit / (1024 * 1024)), // Convert to MB

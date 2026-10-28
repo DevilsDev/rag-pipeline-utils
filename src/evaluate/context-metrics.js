@@ -1,10 +1,6 @@
 'use strict';
 
-const {
-  tokenize,
-  splitSentences,
-  computeJaccardSimilarity,
-} = require('./scoring');
+const { tokenize, splitSentences, computeSupportScore } = require('./scoring');
 
 /**
  * Compute context precision: the fraction of retrieved documents that are relevant to the query.
@@ -12,7 +8,7 @@ const {
  * @param {string} query - The user query
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
- * @param {number} [options.threshold=0.2] - Minimum Jaccard similarity for a doc to be considered relevant
+ * @param {number} [options.threshold=0.2] - Minimum share of query content terms a doc must contain to be considered relevant
  * @returns {{ score: number, relevantDocs: number, totalDocs: number, perDocScores: Array<{ index: number, score: number, isRelevant: boolean }> }}
  */
 function computeContextPrecision(query, retrievedDocs, options = {}) {
@@ -39,7 +35,8 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
     }
 
     const docTokens = tokenize(docContent);
-    const score = computeJaccardSimilarity(queryTokens, docTokens);
+    // Share of the query's content terms that the document contains.
+    const score = computeSupportScore(queryTokens, docTokens);
     perDocScores.push({ index: i, score, isRelevant: score >= threshold });
   }
 
@@ -56,11 +53,11 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
  * @param {string} answer - The generated answer text
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
- * @param {number} [options.threshold=0.3] - Minimum Jaccard similarity for a claim to be considered supported
+ * @param {number} [options.threshold=0.5] - Minimum share of a claim's content terms a doc must contain to support it
  * @returns {{ score: number, supportedClaims: number, totalClaims: number, details: Array<{ claim: string, score: number, isSupported: boolean, bestDocIndex: number }> }}
  */
 function computeContextRecall(answer, retrievedDocs, options = {}) {
-  const { threshold = 0.3 } = options;
+  const { threshold = 0.5 } = options;
 
   if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, supportedClaims: 0, totalClaims: 0, details: [] };
@@ -101,7 +98,7 @@ function computeContextRecall(answer, retrievedDocs, options = {}) {
       }
 
       const docTokens = tokenize(docContent);
-      const similarity = computeJaccardSimilarity(claimTokens, docTokens);
+      const similarity = computeSupportScore(claimTokens, docTokens);
 
       if (similarity > bestScore) {
         bestScore = similarity;

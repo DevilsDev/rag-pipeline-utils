@@ -31,7 +31,7 @@ jobs:
   publish:
     name: NPM Release (OIDC + provenance)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     environment: npm
     permissions:
       contents: read
@@ -72,6 +72,9 @@ jobs:
 
       - name: Verify package contents
         run: npm run verify:pack --if-present
+
+      - name: Smoke test packed tarball
+        run: npm run smoke:pack
 
       # --provenance attaches a SLSA build provenance attestation to the
       # tarball, signed via Sigstore. Visible on the npm package page as

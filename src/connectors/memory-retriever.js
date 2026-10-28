@@ -65,8 +65,15 @@ class MemoryRetriever extends BaseConnector {
     if (Array.isArray(queryOrObj)) {
       queryVector = queryOrObj;
     } else {
-      queryVector = queryOrObj.queryVector;
-      topK = queryOrObj.topK || k;
+      queryVector = queryOrObj?.queryVector;
+      topK = queryOrObj?.topK || k;
+    }
+
+    if (!Array.isArray(queryVector) && !ArrayBuffer.isView(queryVector)) {
+      throw new Error(
+        'MemoryRetriever.retrieve(): queryVector is required. Pass an ' +
+          '`embedder` to createRagPipeline or supply `queryVector` to run().',
+      );
     }
 
     const results = [];

@@ -72,9 +72,12 @@ import {
   OpenAIConnector,
 } from "@devilsdev/rag-pipeline-utils";
 
+const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+
 const base = createRagPipeline({
+  embedder: openai,
   retriever: new MemoryRetriever(),
-  llm: new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY }),
+  llm: openai,
 });
 
 const safe = new GuardrailsPipeline(base, {

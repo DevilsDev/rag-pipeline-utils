@@ -21,7 +21,7 @@ describe("CitationTracker", () => {
 
   describe("Constructor", () => {
     test("creates with default configuration", () => {
-      expect(tracker.config.similarityThreshold).toBe(0.3);
+      expect(tracker.config.similarityThreshold).toBe(0.5);
       expect(tracker.config.maxCitationsPerSentence).toBe(3);
       expect(tracker.config.useIDFWeighting).toBe(true);
     });
@@ -63,15 +63,17 @@ describe("CitationTracker", () => {
       );
     });
 
-    test("throws on empty docs array", () => {
-      expect(() => tracker.track("Some answer.", [])).toThrow(
-        "retrievedDocs must be a non-empty array",
-      );
+    test("empty docs array reports every sentence as unsupported", () => {
+      const result = tracker.track("Some answer. Another claim.", []);
+      expect(result.groundednessScore).toBe(0);
+      expect(result.citations).toHaveLength(2);
+      expect(result.citations.every((c) => c.sources.length === 0)).toBe(true);
+      expect(result.metadata.docCount).toBe(0);
     });
 
     test("throws when docs is not an array", () => {
       expect(() => tracker.track("Some answer.", "not-an-array")).toThrow(
-        "retrievedDocs must be a non-empty array",
+        "retrievedDocs must be an array",
       );
     });
   });

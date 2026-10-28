@@ -1,7 +1,8 @@
 'use strict';
-const { PluginRegistry } = require('./plugin-registry.js');
-
-const defaultRegistry = new PluginRegistry();
+// Share the exported singleton so plugins registered via
+// `pluginRegistry.register()` are resolvable by name here.
+const defaultRegistry = require('./plugin-registry.js');
+const { embedQuery, canEmbed } = require('../utils/embed-query');
 
 function resolve(registry, type, value) {
   const reg = registry || defaultRegistry;
@@ -10,12 +11,11 @@ function resolve(registry, type, value) {
 
 function withTimeout(promise, ms) {
   if (!ms) return promise;
-  return Promise.race([
-    promise,
-    new Promise((_, rej) =>
-      setTimeout(() => rej(new Error('Execution timeout')), ms),
-    ),
-  ]);
+  let timer;
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => rej(new Error('Execution timeout')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 module.exports.createRagPipeline = function createRagPipeline({
@@ -49,13 +49,21 @@ module.exports.createRagPipeline = function createRagPipeline({
     const { timeout, stream } = options || {};
     const doWork = (async () => {
       if (loaderI?.load) await loaderI.load();
-      if (embedderI?.embed && query) await embedderI.embed(query);
+      let vector = queryVector;
+      if (!vector && query && canEmbed(embedderI)) {
+        vector = await embedQuery(embedderI, query);
+      }
 
-      const docs = await retrieverI.retrieve({
+      let docs = await retrieverI.retrieve({
         query,
-        queryVector,
+        queryVector: vector,
         topK: options.topK ?? 3,
       });
+      // Hook for filtering (e.g. ACL guardrails) before anything downstream,
+      // including the LLM, sees the retrieved documents.
+      if (typeof options.filterResults === 'function' && Array.isArray(docs)) {
+        docs = await options.filterResults(docs);
+      }
       let results = docs;
       if (rerankerI?.rerank && Array.isArray(docs) && docs.length) {
         results = await rerankerI.rerank(query || '', docs, {
