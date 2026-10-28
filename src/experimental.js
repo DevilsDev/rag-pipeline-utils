@@ -12,9 +12,11 @@
  * - Model training / federated learning: metrics and weights are random.
  * - MultiModalProcessor: returns random embeddings; only stores content.
  * - AdaptiveRetrievalEngine: in-memory placeholder strategy.
- * - SSO providers: OAuth2/OIDC/AD accept any code when NODE_ENV is not
- *   "production"; SAML assertions are not verified; OIDC id_tokens are not
- *   validated.
+ * - SSO providers: OAuth2/OIDC use PKCE and OIDC validates id_tokens, but
+ *   the flows are lightly tested; SAML refuses to authenticate (no XML
+ *   signature verification); Active Directory is a development stub. A
+ *   development bypass (any code accepted, fixed identity) exists only
+ *   with `devBypass: true` outside production.
  * - TenantManager / ResourceMonitor: usage figures are random.
  * - DataGovernanceManager: random classification; erasure deletes nothing.
  * - PluginSandbox: execute() is not functional; plugins are not isolated.
