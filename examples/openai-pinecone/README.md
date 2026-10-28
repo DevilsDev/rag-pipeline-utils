@@ -1,209 +1,148 @@
 # OpenAI + Pinecone RAG Pipeline Example
 
-This example demonstrates a complete production-ready RAG pipeline using:
+A RAG pipeline that uses:
 
-- **OpenAI** for embeddings and text generation
-- **Pinecone** for vector storage and retrieval
-- **RAG Pipeline Utils** for orchestration
+- **OpenAI** (`OpenAIConnector` from the library) for embeddings and answers
+- **Pinecone** for vector storage, through a small retriever adapter
+  (`PineconeRetriever` in `index.js`)
+- **`createRagPipeline`** to wire them together, with citations and
+  evaluation
 
-## Features
-
-- ✅ Real OpenAI API integration
-- ✅ Real Pinecone vector database integration
-- ✅ Mock mode for testing without API keys
-- ✅ Document ingestion with chunking
-- ✅ Semantic search with vector similarity
-- ✅ Context-aware answer generation
+It also has an **offline mode** that needs no API keys.
 
 ## Prerequisites
 
 - Node.js 18 or higher
-- OpenAI API key (sign up at https://platform.openai.com/)
-- Pinecone API key (sign up at https://www.pinecone.io/)
+- For the online mode:
+  - OpenAI API key (https://platform.openai.com/)
+  - Pinecone API key (https://www.pinecone.io/) and an index named
+    `rag-pipeline-demo` (or your own `PINECONE_INDEX_NAME`) with dimension
+    `1536` (matches `text-embedding-3-small`) and the cosine metric
 
 ## Setup
 
-1. **Install dependencies**:
+```bash
+npm install
+cp .env.example .env    # then fill in the keys
+```
 
-   ```bash
-   npm install
-   ```
+`.env` variables:
 
-2. **Configure environment variables**:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. **Edit `.env` with your API keys**:
-
-   ```
-   OPENAI_API_KEY=sk-your-actual-key
-   PINECONE_API_KEY=your-actual-key
-   PINECONE_ENVIRONMENT=us-east-1-aws
-   PINECONE_INDEX_NAME=rag-pipeline-demo
-   ```
-
-4. **Create Pinecone index** (if not exists):
-   - Go to Pinecone console
-   - Create a new index named `rag-pipeline-demo`
-   - Set dimension to `1536` (OpenAI text-embedding-3-small)
-   - Choose your preferred metric (cosine recommended)
+| Variable                 | Required | Default                  |
+| ------------------------ | -------- | ------------------------ |
+| `OPENAI_API_KEY`         | online   | none                     |
+| `PINECONE_API_KEY`       | online   | none                     |
+| `PINECONE_INDEX_NAME`    | no       | `rag-pipeline-demo`      |
+| `OPENAI_MODEL`           | no       | `gpt-4o-mini`            |
+| `OPENAI_EMBEDDING_MODEL` | no       | `text-embedding-3-small` |
+| `USE_MOCK_MODE`          | no       | `false`                  |
 
 ## Usage
 
-### With Real APIs
+### Online (OpenAI + Pinecone)
 
 ```bash
 npm start
 ```
 
-### With Mock Mode (No API Keys Required)
+The run upserts three sample documents into the index (ids `doc-1` to
+`doc-3`), waits until Pinecone reports them, then asks one question. Each run
+makes 4 embedding calls and 1 chat completion.
+
+### Offline mode (no API keys, no network)
 
 ```bash
 npm run mock
 ```
 
-Or:
+Or `node index.js --mock`, or set `USE_MOCK_MODE=true`. Offline mode replaces
+OpenAI and Pinecone with the built-in `LocalEmbedder` (TF-IDF),
+`MemoryRetriever` and an extractive stub llm that returns the first sentence
+of the best document. Retrieval is lexical, so rankings differ from the
+online mode.
 
-```bash
-USE_MOCK_MODE=true npm start
+Offline output:
+
+```
+RAG Pipeline - OpenAI + Pinecone
+================================
+
+MOCK MODE: LocalEmbedder + MemoryRetriever + stub llm (no API calls)
+
+Embedding 3 documents...
+Stored 3 vectors
+
+Query: What is machine learning?
+
+Retrieved 3 documents:
+  doc-2  score=0.321
+  doc-1  score=0.226
+  doc-3  score=0.000
+
+Answer:
+------------------------------------------------------------
+Deep learning is a specialized form of machine learning that uses neural networks with multiple layers.
+------------------------------------------------------------
+Groundedness: 1.00
+Evaluation:   faithfulness=1.00 relevance=0.59 contextPrecision=0.67 groundedness=0.86
+
+Pipeline completed successfully.
 ```
 
 ## How It Works
 
-1. **Document Loading**: Sample documents are loaded into memory
-2. **Embedding Generation**: OpenAI creates vector embeddings for each document
-3. **Vector Storage**: Embeddings are stored in Pinecone with metadata
-4. **Query Processing**: User query is embedded using the same model
-5. **Semantic Search**: Pinecone finds most relevant documents by vector similarity
-6. **Answer Generation**: OpenAI generates answer using retrieved context
+```javascript
+const openai = new OpenAIConnector({ model: "gpt-4o-mini" }); // reads OPENAI_API_KEY
+const retriever = new PineconeRetriever(); // reads PINECONE_API_KEY
 
-## Expected Output
+// Index: embed each document and upsert it (content kept in metadata)
+await retriever.store([
+  { id, vector: await openai.embed(text), content: text },
+]);
 
+// Query: the pipeline embeds the query, calls
+// retriever.retrieve({ query, queryVector, topK, signal }) and then
+// openai.generate(query, results, { signal })
+const pipeline = createRagPipeline({
+  embedder: openai,
+  retriever,
+  llm: openai,
+});
+const result = await pipeline.run({
+  query: "What is machine learning?",
+  options: { topK: 3, citations: true, evaluate: true, timeout: 60000 },
+});
+// { success, query, results, answer, citations, evaluation }
 ```
-🚀 RAG Pipeline - OpenAI + Pinecone Integration
-================================================
 
-📄 Loading documents...
-   Loaded 3 documents
-
-🔢 Generating embeddings...
-   Generated embeddings for 3 documents
-
-💾 Storing in Pinecone...
-   Stored 3 vectors in Pinecone index
-
-🔍 Query: What is machine learning?
-
-📊 Retrieved 3 relevant documents
-
-💡 Answer:
-Machine learning is a subset of artificial intelligence that enables
-computers to learn from data without being explicitly programmed...
-
-✅ Pipeline completed successfully!
-```
+A failed run resolves `{ success: false, error }` instead of throwing (for
+example `Execution timeout`). Pass `options.signal` (an `AbortSignal`) to
+cancel a run. The OpenAI connector retries transient failures (429, 5xx,
+network) itself; a missing key fails fast with code `MISSING_API_KEY`.
 
 ## Customization
 
-### Change the Documents
-
-Edit the `documents` array in `index.js`:
-
-```javascript
-const documents = [
-  { id: "your-id", content: "Your content here" },
-  // Add more documents...
-];
-```
-
-### Adjust Retrieval Settings
-
-Modify retrieval parameters:
-
-```javascript
-const results = await retriever.retrieve(query, {
-  topK: 5, // Number of results
-  minScore: 0.7, // Minimum similarity score
-  includeMetadata: true, // Include document metadata
-});
-```
-
-### Use Different OpenAI Models
-
-```javascript
-// For embeddings
-const embedder = new OpenAIEmbedder({
-  model: "text-embedding-3-large", // Higher quality, more expensive
-});
-
-// For LLM
-const llm = new OpenAILLM({
-  model: "gpt-4", // More capable model
-  temperature: 0.7, // Creativity level
-  maxTokens: 500, // Response length
-});
-```
-
-## Cost Considerations
-
-### OpenAI Pricing (as of 2025)
-
-- **text-embedding-3-small**: $0.02 per 1M tokens
-- **gpt-3.5-turbo**: $0.50 per 1M input tokens, $1.50 per 1M output tokens
-
-### Pinecone Pricing
-
-- **Free tier**: 1 index, 100K vectors
-- **Paid plans**: Start at $70/month for production usage
-
-### Cost Optimization
-
-- Use mock mode for development
-- Batch document processing
-- Cache embeddings locally
-- Implement rate limiting
+- **Documents**: edit the `documents` array in `index.js`.
+- **Retrieval**: change `topK` in the `run()` options.
+- **Models**: set `OPENAI_MODEL` / `OPENAI_EMBEDDING_MODEL`. A different
+  embedding model may need an index with a different dimension
+  (`text-embedding-3-large` is 3072).
 
 ## Troubleshooting
 
-### "Invalid API key" error
-
-Ensure your `.env` file contains valid API keys without quotes:
-
-```
-OPENAI_API_KEY=sk-abc123
-```
-
-### "Index not found" error
-
-Create the Pinecone index first or update `PINECONE_INDEX_NAME` to match your existing index.
-
-### "Dimension mismatch" error
-
-Ensure your Pinecone index dimension (1536) matches the OpenAI embedding model output.
-
-### Connection timeout
-
-Check your network connection and API service status:
-
-- OpenAI: https://status.openai.com/
-- Pinecone: https://status.pinecone.io/
-
-## Next Steps
-
-- Add document chunking for large texts
-- Implement caching layer for embeddings
-- Add reranking for improved relevance
-- Integrate with your application database
-- Deploy to production with proper error handling
+- **`OPENAI_API_KEY is required` / `PINECONE_API_KEY is required`**: set the
+  key in `.env` (no quotes) or use `npm run mock`.
+- **Index not found**: create the index or set `PINECONE_INDEX_NAME`.
+- **Dimension mismatch**: the index dimension must equal the embedding size
+  (1536 for `text-embedding-3-small`).
+- **`Pinecone index not fully updated yet`**: upserts are eventually
+  consistent; rerun, or results may be partial on the first run.
 
 ## Resources
 
-- [RAG Pipeline Utils Documentation](https://github.com/DevilsDev/rag-pipeline-utils)
-- [OpenAI API Documentation](https://platform.openai.com/docs)
-- [Pinecone Documentation](https://docs.pinecone.io/)
-- [RAG Architecture Guide](https://www.pinecone.io/learn/retrieval-augmented-generation/)
+- [RAG Pipeline Utils documentation](https://devilsdev.github.io/rag-pipeline-utils/)
+- [OpenAI API documentation](https://platform.openai.com/docs)
+- [Pinecone documentation](https://docs.pinecone.io/)
 
 ## License
 

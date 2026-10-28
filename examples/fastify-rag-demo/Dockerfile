@@ -3,8 +3,10 @@
 
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --prefer-offline --no-audit --no-fund
+# No lockfile is committed for this example, so `npm ci` would fail. If you
+# commit a package-lock.json, copy it too and switch to `npm ci --omit=dev`.
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund
 
 FROM node:20-alpine AS runtime
 WORKDIR /app
