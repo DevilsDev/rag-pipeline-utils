@@ -345,8 +345,6 @@ rag-pipeline ai multimodal process report.html --json
 - Images are not supported. The built-in llm connectors (`openai`, `anthropic`, `ollama`) only send text prompts, and image processing needs a vision-capable model. An image path exits `1` with that explanation.
 - In a directory, images and other unsupported files are listed as skipped.
 
-The earlier `ai` commands (federated learning, LLM fine-tuning, training job status/deploy, dashboard, adaptive profiles, multimodal search/describe) were removed because they printed simulated results.
-
 ---
 
 ## `completion`
