@@ -12,12 +12,11 @@ Our testing strategy encompasses multiple layers:
 
 1. **Unit Tests** (`__tests__/unit/`) - Component-level testing
 2. **Integration Tests** (`__tests__/integration/`) - Cross-component workflows
-3. **Performance Tests** (`__tests__/performance/`) - Load and latency testing
-4. **Security Tests** (`__tests__/security/`) - Plugin isolation and vulnerability testing
-5. **Property-Based Tests** (`__tests__/property/`) - Automated fuzz testing
-6. **Load Tests** (`__tests__/load/`) - Concurrent user simulation
-7. **End-to-End Tests** (`__tests__/e2e/`) - Real data integration
-8. **Compatibility Tests** (`__tests__/compatibility/`) - Cross-platform validation
+3. **Security Tests** (`__tests__/security/`) - Plugin isolation and vulnerability testing
+4. **Load Tests** (`__tests__/load/`) - Concurrent user simulation
+5. **End-to-End Tests** (`__tests__/e2e/`) - Real data integration and CLI workflows
+
+Every suite must exercise real code from `src/`, `bin/` or `scripts/`; suites that only assert on inline mocks are not accepted.
 
 ### Test Coverage Metrics
 
