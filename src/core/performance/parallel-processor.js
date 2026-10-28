@@ -36,16 +36,77 @@ class Semaphore {
   }
 }
 
+/** Built-in embedders whose embed() takes one string, not an array. */
+function isSingleTextEmbedder(embedder) {
+  /* eslint-disable global-require */
+  const singleText = [
+    require('../../connectors/local-embedder').LocalEmbedder,
+    require('../../connectors/openai-connector').OpenAIConnector,
+    require('../../connectors/ollama-connector').OllamaConnector,
+    require('../../connectors/cohere-connector').CohereConnector,
+  ];
+  /* eslint-enable global-require */
+  return singleText.some((Class) => Class && embedder instanceof Class);
+}
+
+const EMBED_MODES = ['auto', 'batch', 'single'];
+
 /**
  * Parallel processor for embedding operations with configurable concurrency
  */
 class ParallelEmbedder {
+  /**
+   * @param {object} embedder - Embedder with embed() and/or embedBatch()
+   * @param {object} [_options]
+   * @param {number} [_options.batchSize=10] - Texts per batch
+   * @param {number} [_options.maxConcurrency=3] - Batches in flight at once
+   * @param {number} [_options.retryAttempts=2] - Retries per failed batch
+   * @param {number} [_options.retryDelay=1000] - Base retry delay in ms
+   * @param {'auto'|'batch'|'single'} [_options.mode='auto'] - How a batch is
+   *   embedded: 'batch' calls embed(texts) and expects one vector per text,
+   *   'single' calls embed(text) for each text. 'auto' uses embedBatch(texts)
+   *   when the embedder has it, 'single' for the built-in connectors (which
+   *   embed one string at a time) and 'batch' otherwise.
+   */
   constructor(embedder, _options = {}) {
     this.embedder = embedder;
     this.batchSize = _options.batchSize || 10;
     this.maxConcurrency = _options.maxConcurrency || 3;
     this.retryAttempts = _options.retryAttempts || 2;
     this.retryDelay = _options.retryDelay || 1000;
+    const mode = _options.mode || 'auto';
+    if (!EMBED_MODES.includes(mode)) {
+      throw new Error(
+        `Invalid mode "${mode}". Expected one of: ${EMBED_MODES.join(', ')}`,
+      );
+    }
+    this.mode = mode;
+  }
+
+  /**
+   * Embed one batch according to the mode.
+   * @param {string[]} batch
+   * @returns {Promise<number[][]>}
+   * @private
+   */
+  async _embed(batch) {
+    const embedder = this.embedder;
+    if (this.mode === 'auto' && typeof embedder.embedBatch === 'function') {
+      return embedder.embedBatch(batch);
+    }
+    const single =
+      this.mode === 'single' ||
+      (this.mode === 'auto' && isSingleTextEmbedder(embedder));
+    if (!single) {
+      return embedder.embed(batch);
+    }
+    // One text at a time within a batch, so maxConcurrency still bounds the
+    // number of requests in flight.
+    const vectors = [];
+    for (const text of batch) {
+      vectors.push(await embedder.embed(text));
+    }
+    return vectors;
   }
 
   /**
@@ -133,7 +194,7 @@ class ParallelEmbedder {
 
     for (let attempt = 0; attempt <= this.retryAttempts; attempt++) {
       try {
-        const result = await this.embedder.embed(batch);
+        const result = await this._embed(batch);
 
         // Validate result
         if (!Array.isArray(result) || result.length !== batch.length) {
