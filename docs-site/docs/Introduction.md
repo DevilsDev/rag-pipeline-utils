@@ -44,10 +44,7 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ### **Advanced AI Capabilities**
 
-- **Multi-Modal Processing**: Handle text, images, and structured data in unified pipelines
-- **Federated Learning**: Distributed model training with privacy-preserving aggregation
-- **Adaptive Retrieval Engine**: Dynamic retrieval strategies with performance optimization
-- **Model Training Orchestrator**: End-to-end training workflows with hyperparameter tuning
+- **Experimental AI modules**: multi-modal processing, federated learning, adaptive retrieval and a model training orchestrator are simulations, exported from `@devilsdev/rag-pipeline-utils/experimental`. See [Experimental modules](./Experimental.md).
 - **Intelligent Reranking**: Context-aware reranking with multiple scoring algorithms
 
 ### **Developer Experience Excellence**
@@ -203,7 +200,7 @@ Evaluation and dashboards are library APIs (`evaluateRagDataset`,
 **Production Features:**
 
 - **Enterprise Architecture**: Dependency injection, SLO monitoring, semantic release automation
-- **Advanced AI**: Multi-modal processing, federated learning, adaptive retrieval engines
+- **Experimental** (`/experimental` entry): simulated AI, SSO, multi-tenancy and data-governance modules
 - **Developer Tools**: CLI with a local index, doctor diagnostics and a local HTTP dev server
 - **Observability**: Structured logging, performance profiling, distributed tracing
 - **Testing Infrastructure**: External API mocking, deterministic test environments

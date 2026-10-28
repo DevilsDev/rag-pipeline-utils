@@ -1,5 +1,7 @@
 # Enterprise Features
 
+> **Experimental:** SSO (SAML/OAuth2/OIDC/Active Directory), multi-tenancy, data governance, model training, federated learning, multimodal processing and adaptive retrieval are simulated or incomplete. They are exported from `@devilsdev/rag-pipeline-utils/experimental` and must not be used for authentication, tenant isolation or compliance. See [Experimental modules](./Experimental.md) for what each one really does.
+
 @DevilsDev/rag-pipeline-utils provides comprehensive enterprise-grade capabilities for mission-critical RAG deployments. This guide covers the advanced features designed for production environments requiring high availability, security, and observability.
 
 ---
@@ -371,7 +373,7 @@ test("handles poor network conditions", async () => {
 Handle text, images, and structured data in unified pipelines:
 
 ```javascript
-import { MultiModalProcessor } from "@DevilsDev/rag-pipeline-utils/ai";
+import { MultiModalProcessor } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const processor = new MultiModalProcessor({
   textProcessor: "openai-embedder",
@@ -396,7 +398,7 @@ const result = await processor.process({
 Distributed model training with privacy preservation:
 
 ```javascript
-import { FederatedLearningCoordinator } from "@DevilsDev/rag-pipeline-utils/ai";
+import { FederatedLearningCoordinator } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const coordinator = new FederatedLearningCoordinator({
   aggregationStrategy: "federated-averaging",
@@ -418,7 +420,7 @@ const globalModel = await coordinator.coordinateTraining({
 Dynamic retrieval strategies with performance optimization:
 
 ```javascript
-import { AdaptiveRetrievalEngine } from "@DevilsDev/rag-pipeline-utils/ai";
+import { AdaptiveRetrievalEngine } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const engine = new AdaptiveRetrievalEngine({
   strategies: ["semantic", "keyword", "hybrid", "graph-based"],

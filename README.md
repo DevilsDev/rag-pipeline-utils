@@ -129,21 +129,21 @@ Each stage is optional, pluggable, and observable.
 
 Opt in only to what you need:
 
-| Capability     | What you get                                                             |
-| -------------- | ------------------------------------------------------------------------ |
-| **Chunking**   | 5 strategies: sentence, fixed-size, recursive, semantic, structure-aware |
-| **Retrieval**  | Hybrid vector + BM25 with Reciprocal Rank Fusion                         |
-| **Reranking**  | LLM, BM25 scoring, embedding similarity, or cascade                      |
-| **Evaluation** | Faithfulness, relevance, context precision/recall, groundedness          |
-| **Citation**   | Per-sentence source attribution, hallucination detection                 |
-| **Agentic**    | Query planning, iterative retrieval, self-critique                       |
-| **Guardrails** | Injection detection, PII filtering, ACL-aware access control             |
-| **GraphRAG**   | Knowledge graph construction with entity extraction                      |
-| **Streaming**  | SSE and WebSocket adapters with backpressure control                     |
-| **Cost**       | Token tracking, budget enforcement, provider pricing                     |
-| **Debugging**  | Execution tracing, bottleneck detection                                  |
-| **MCP**        | Expose pipelines as Model Context Protocol tools                         |
-| **Enterprise** | Multi-tenancy, SSO (SAML/OAuth2/AD/OIDC), audit logs                     |
+| Capability     | What you get                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Chunking**   | 5 strategies: sentence, fixed-size, recursive, semantic, structure-aware                                           |
+| **Retrieval**  | Hybrid vector + BM25 with Reciprocal Rank Fusion                                                                   |
+| **Reranking**  | LLM, BM25 scoring, embedding similarity, or cascade                                                                |
+| **Evaluation** | Faithfulness, relevance, context precision/recall, groundedness                                                    |
+| **Citation**   | Per-sentence source attribution, hallucination detection                                                           |
+| **Agentic**    | Query planning, iterative retrieval, self-critique                                                                 |
+| **Guardrails** | Injection detection, PII filtering, ACL-aware access control                                                       |
+| **GraphRAG**   | Knowledge graph construction with entity extraction                                                                |
+| **Streaming**  | SSE and WebSocket adapters with backpressure control                                                               |
+| **Cost**       | Token tracking, budget enforcement, provider pricing                                                               |
+| **Debugging**  | Execution tracing, bottleneck detection                                                                            |
+| **MCP**        | Expose pipelines as Model Context Protocol tools                                                                   |
+| **Enterprise** | Audit logs (multi-tenancy, SSO and data governance are experimental: `@devilsdev/rag-pipeline-utils/experimental`) |
 
 See [full documentation](https://devilsdev.github.io/rag-pipeline-utils/) for complete API reference.
 

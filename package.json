@@ -5,11 +5,23 @@
   "main": "dist/index.cjs",
   "type": "commonjs",
   "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "experimental": [
+        "dist/experimental.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
+    },
+    "./experimental": {
+      "types": "./dist/experimental.d.ts",
+      "require": "./dist/experimental.cjs",
+      "import": "./dist/experimental.mjs"
     },
     "./cli": "./bin/cli.js"
   },

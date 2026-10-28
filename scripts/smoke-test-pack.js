@@ -32,6 +32,18 @@ function run(cmd, args, cwd) {
   });
 }
 
+/** Run node with args; return stdout and stderr (throws on non-zero exit). */
+function runCapture(args, cwd) {
+  const { spawnSync } = require("child_process");
+  const result = spawnSync(process.execPath, args, { cwd, encoding: "utf8" });
+  if (result.status !== 0) {
+    const error = new Error(result.stderr || `exit ${result.status}`);
+    error.stderr = result.stderr;
+    throw error;
+  }
+  return { stdout: result.stdout, stderr: result.stderr };
+}
+
 function check(name, fn) {
   try {
     fn();
@@ -80,9 +92,8 @@ run(
 
 const pkgName = require(path.join(root, "package.json")).name;
 const results = [
-  check("require() loads with no console output", () => {
-    const out = run(
-      process.execPath,
+  check("require() loads with no console output or warnings", () => {
+    const { stdout, stderr } = runCapture(
       [
         "-e",
         `const m=require('${pkgName}');` +
@@ -90,8 +101,32 @@ const results = [
       ],
       consumerDir,
     );
-    if (out.trim()) throw new Error(`unexpected output:\n${out}`);
+    if (stdout.trim() || stderr.trim()) {
+      throw new Error(`unexpected output:\n${stdout}${stderr}`);
+    }
   }),
+  check(
+    "experimental entry: require/import, one class copy, one warning",
+    () => {
+      const script = [
+        `const main = require('${pkgName}');`,
+        `const exp = require('${pkgName}/experimental');`,
+        "if (typeof exp.TenantManager !== 'function') throw new Error('missing TenantManager');",
+        "new exp.TenantManager();", // no warning from the experimental entry
+        "const a = new main.TenantManager();",
+        "new main.TenantManager();",
+        "if (!(a instanceof exp.TenantManager)) throw new Error('two copies of the class');",
+        `import('${pkgName}/experimental').then((esm) => {`,
+        "  if (esm.TenantManager !== exp.TenantManager) throw new Error('ESM/CJS mismatch');",
+        "});",
+      ].join("\n");
+      const { stderr } = runCapture(["-e", script], consumerDir);
+      const warnings = stderr.match(/RAG_DEP_TENANT_MANAGER/g) || [];
+      if (warnings.length !== 1) {
+        throw new Error(`expected exactly one deprecation warning:\n${stderr}`);
+      }
+    },
+  ),
   check("import() loads", () => {
     run(
       process.execPath,
@@ -170,28 +205,37 @@ const results = [
         "const tracker = new CitationTracker({ similarityThreshold: 0.5 });",
         "const score: number = tracker.track('answer', []).groundednessScore;",
         "new GuardrailsPipeline(pipeline, { strict: true });",
-        "export { score };",
+        `import { TenantManager, SSOManager } from "${pkgName}/experimental";`,
+        "const tenants: typeof TenantManager = TenantManager;",
+        "let sso: InstanceType<typeof SSOManager> | undefined;",
+        "export { score, tenants, sso };",
       ].join("\n"),
     );
-    run(
-      process.execPath,
-      [
-        require.resolve("typescript/bin/tsc", { paths: [root] }),
-        "--noEmit",
-        "--strict",
-        "--module",
-        "commonjs",
-        "--moduleResolution",
-        "node",
-        "--esModuleInterop",
-        "--typeRoots",
-        path.join(root, "node_modules", "@types"),
-        "--types",
-        "node",
-        "check.ts",
-      ],
-      consumerDir,
-    );
+    // "node" resolution reads typesVersions; "node16" reads the exports map
+    for (const [moduleKind, resolution] of [
+      ["commonjs", "node"],
+      ["node16", "node16"],
+    ]) {
+      run(
+        process.execPath,
+        [
+          require.resolve("typescript/bin/tsc", { paths: [root] }),
+          "--noEmit",
+          "--strict",
+          "--module",
+          moduleKind,
+          "--moduleResolution",
+          resolution,
+          "--esModuleInterop",
+          "--typeRoots",
+          path.join(root, "node_modules", "@types"),
+          "--types",
+          "node",
+          "check.ts",
+        ],
+        consumerDir,
+      );
+    }
   }),
 ];
 
