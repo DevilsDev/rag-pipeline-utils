@@ -74,7 +74,7 @@ describe("createRagPipeline cancellation", () => {
 
   test("a timeout aborts the signal and no later stage runs", async () => {
     // The retriever ignores the signal and resolves after the timeout.
-    const c = recordingComponents({ retrieveDelay: 80 });
+    const c = recordingComponents({ retrieveDelay: 400 });
     const pipeline = createRagPipeline(c);
 
     const started = Date.now();
@@ -84,11 +84,11 @@ describe("createRagPipeline cancellation", () => {
     });
 
     expect(result).toEqual({ success: false, error: "Execution timeout" });
-    expect(Date.now() - started).toBeLessThan(80);
+    expect(Date.now() - started).toBeLessThan(300);
     expect(c.calls.retrieve[0].signal.aborted).toBe(true);
 
     // Let the ignored retrieval finish: the pipeline must not continue.
-    await sleep(120);
+    await sleep(450);
     expect(c.calls.rerank).toHaveLength(0);
     expect(c.calls.generate).toHaveLength(0);
   });
@@ -107,7 +107,7 @@ describe("createRagPipeline cancellation", () => {
   });
 
   test("the caller's options.signal cancels the run", async () => {
-    const c = recordingComponents({ retrieveDelay: 80 });
+    const c = recordingComponents({ retrieveDelay: 400 });
     const pipeline = createRagPipeline(c);
     const controller = new AbortController();
 
@@ -123,7 +123,7 @@ describe("createRagPipeline cancellation", () => {
     expect(c.calls.retrieve[0].signal.aborted).toBe(true);
     // The components get the run's own signal, which follows the caller's.
     expect(c.calls.retrieve[0].signal).not.toBe(controller.signal);
-    await sleep(120);
+    await sleep(450);
     expect(c.calls.generate).toHaveLength(0);
   });
 

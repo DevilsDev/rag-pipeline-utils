@@ -65,7 +65,7 @@ describe("AgenticPipeline cancellation", () => {
   });
 
   test("a timeout rejects, aborts the signal and skips generation", async () => {
-    const c = recorder({ retrieveDelay: 80 });
+    const c = recorder({ retrieveDelay: 400 });
     const pipeline = new AgenticPipeline({
       enablePlanning: false,
       timeout: 20,
@@ -80,12 +80,12 @@ describe("AgenticPipeline cancellation", () => {
     ).rejects.toThrow("Execution timeout");
 
     expect(c.calls.retrieve[0].signal.aborted).toBe(true);
-    await sleep(120);
+    await sleep(450);
     expect(c.calls.generate).toHaveLength(0);
   });
 
   test("the caller's options.signal cancels the run", async () => {
-    const c = recorder({ retrieveDelay: 80 });
+    const c = recorder({ retrieveDelay: 400 });
     const pipeline = new AgenticPipeline({ enablePlanning: false });
     const controller = new AbortController();
 
@@ -99,7 +99,7 @@ describe("AgenticPipeline cancellation", () => {
     controller.abort();
 
     await expect(pending).rejects.toThrow("Execution aborted");
-    await sleep(120);
+    await sleep(450);
     expect(c.calls.generate).toHaveLength(0);
   });
 

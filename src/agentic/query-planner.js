@@ -24,6 +24,11 @@ const COMPARATIVE_KEYWORDS = [
   'difference',
   'versus',
   'vs',
+  'compared',
+  'comparing',
+  'comparison',
+  'contrasting',
+  'differ',
 ];
 
 /**
