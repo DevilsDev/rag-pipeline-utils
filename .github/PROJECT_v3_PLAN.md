@@ -1,26 +1,31 @@
 # v3.0 — Planning & Scoping
 
-> **Status**: planning. No code yet. This document defines what v3.0
+> **Status**: planning. No code yet. Updated 2026-10-29 after 2.5.0; see
+> [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md) for the reasoning behind the changes.
+> This document defines what v3.0
 > is, what it isn't, and the order in which the work should land. The
 > intent is that any contributor (or future-me) can read this doc cold
 > and know what to build, in what order, and how to know it's done.
 
 ## Headline
 
-**v3.0 is the major where we (a) split into scoped packages, (b) ship intelligent caching, (c) drop Node 18 support, and optionally (d) rename.**
+**v3.0 is the major where we (a) split into scoped packages, (b) remove the deprecated experimental classes from the main entry, (c) drop Node 18 support, (d) upgrade the `openai` SDK, and (e) shrink the install. Intelligent caching ships first, in 2.6.0, and becomes part of the 3.0 baseline. We keep the name.**
 
 Patch and minor releases on the 2.x line continue in parallel until v3.0 is in beta.
 
 ## What's in scope
 
-| Item                                                                                                                           | Effort                                        | Risk   | Decision                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| **Intelligent caching** (embedding / retrieval / generation caches)                                                            | 2–3 days focused                              | Low    | Build first — user-visible win, no breaking changes, can land in v2.5.x first to soak   |
-| **Monorepo split** into `@devilsdev/rag-core`, `@devilsdev/rag-connectors`, `@devilsdev/rag-eval`, `@devilsdev/rag-guardrails` | 2–3 weeks                                     | High   | Build second — defines the v3.0 surface                                                 |
-| **Drop Node.js 18** (require ≥ 20)                                                                                             | 0.5 day                                       | Low    | Land with the major bump — Node 18 EOL since April 2025                                 |
-| **Rename decision** (keep `rag-pipeline-utils` vs. rename to `composable-rag` or similar)                                      | 0 days for the decision, 2 days for execution | Medium | See "Rename decision" section — strongly leaning **keep the name** with a tagline shift |
-| **OIDC publishing for sub-packages**                                                                                           | 0.5 day per sub-package                       | Low    | Reuse the established v2.4.5 release.yml pattern                                        |
-| **Migration guide**                                                                                                            | 1 day                                         | Low    | Required deliverable per [SEMVER policy](../SEMVER.md)                                  |
+| Item                                                                                                                           | Effort                                        | Risk   | Decision                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| **Intelligent caching** (embedding / retrieval / generation caches)                                                            | 2–3 days focused                              | Low    | Build first — ships in **v2.6.0** (it was planned for 2.5.0, which shipped without it) to soak before 3.0 |
+| **Monorepo split** into `@devilsdev/rag-core`, `@devilsdev/rag-connectors`, `@devilsdev/rag-eval`, `@devilsdev/rag-guardrails` | 2–3 weeks                                     | High   | Build second — defines the v3.0 surface                                                                   |
+| **Drop Node.js 18** (require ≥ 20)                                                                                             | 0.5 day                                       | Low    | Land with the major bump — Node 18 EOL since April 2025                                                   |
+| **Rename decision** (keep `rag-pipeline-utils` vs. rename to `composable-rag` or similar)                                      | 0 days for the decision, 2 days for execution | Medium | See "Rename decision" section — strongly leaning **keep the name** with a tagline shift                   |
+| **OIDC publishing for sub-packages**                                                                                           | 0.5 day per sub-package                       | Low    | Reuse the established v2.4.5 release.yml pattern                                                          |
+| **Migration guide**                                                                                                            | 1 day                                         | Low    | Required deliverable per [SEMVER policy](../SEMVER.md)                                                    |
+| **Remove deprecated experimental classes from the main entry** (15 classes; they stay under `/experimental`)                   | 0.5 day                                       | Low    | Added 2026-10-29. Allowed because 2.5.0 shipped one-time deprecation warnings                             |
+| **`openai` SDK major upgrade**                                                                                                 | 1 day                                         | Medium | Added 2026-10-29. The next major needs Node 20+, so it lands with the Node 18 drop                        |
+| **Smaller install**: provider SDKs become optional peer dependencies, CLI-only dependencies move to `@devilsdev/rag-cli`       | 2 days                                        | Medium | Added 2026-10-29. The 2.5.0 install is 188 packages / 57 MB; breaking, so major only                      |
 
 ## What's NOT in scope
 
@@ -29,7 +34,7 @@ These have been considered and explicitly deferred:
 - **Native Rust bindings for hot paths** — Cool, but the hot paths in a RAG pipeline are network-bound (embedder/LLM API calls), not CPU-bound. Rust bindings would speed up the wrong thing. Revisit only if benchmarks identify a real CPU bottleneck.
 - **Kubernetes operator** — Out of scope for a library. Belongs in a separate `rag-pipeline-operator` repo if anyone wants to build it.
 - **Edge-runtime deployment** (Cloudflare Workers, Vercel Edge) — Possible but requires careful audit of every dependency for V8-isolate compatibility. Could be a v3.x minor after v3.0 ships.
-- **Built-in vector store** — Bring-your-own-store is the explicit design. Adding our own would compete with Pinecone/Weaviate/Qdrant/pgvector, which we don't want.
+- **Built-in vector store** — Bring-your-own-store is the explicit design. Adding our own would compete with Pinecone/Weaviate/Qdrant/pgvector, which we don't want. (`FileVectorStore`, added in 2.5.0, is a local JSON index for the CLI and small projects, not a hosted or scalable store, so it does not change this. First-party connectors to real stores (pgvector, Qdrant, Pinecone) are planned for 2.7.0.)
 - **Web UI / no-code builder** — Not a library concern.
 - **Python port** — Not happening. Use the Python ecosystem's existing tools.
 
@@ -117,9 +122,14 @@ Ship `MemoryCache` and `RedisCache` in the box. Adapter contracts let users plug
 - [ ] Documentation page: `docs-site/docs/Caching.md` with the diagram + decision tree
 - [ ] CHANGELOG entry framing this as the user-visible win of the release
 
-### Land it as v2.5.0 first
+### Land it as v2.6.0 first
 
-Caching is additive — opt-in via `cache:` config. Ship as `v2.5.0` and let it soak for a few weeks before declaring it part of the v3.0 baseline. This de-risks the v3.0 release.
+Caching is additive — opt-in via `cache:` config. Ship as `v2.6.0` and let it soak for a few weeks before declaring it part of the v3.0 baseline. This de-risks the v3.0 release.
+
+Two requirements added after 2.5.0:
+
+- Cache keys include every run option that changes the result, including guardrail and ACL context such as `userPermissions`, so one user's results are never served to another.
+- Results are stored only when a run succeeded and was not aborted or timed out.
 
 ## Monorepo split — design
 
@@ -221,8 +231,10 @@ If we ever go through a major repositioning that warrants a rename (e.g. expandi
 
 ```
 NOW                                   ┐
-├── v2.5.0 — Intelligent caching      │  Soak in 2.x for ~4 weeks
-├── v2.5.x — Bug-fix patches          │  before promoting to v3.0
+├── v2.5.0 — Shipped 2026-10-28 (fixes, CLI, /experimental)
+├── v2.5.x — Bug-fix patches
+├── v2.6.0 — Intelligent caching      │  Soak in 2.x for ~4 weeks
+├── v2.7.0 — Evaluation in CI         │  before promoting to v3.0
 ├── (~4 weeks of feedback)            ┘
 │
 ├── v3.0.0-beta.1 — Monorepo split    ┐
@@ -230,6 +242,8 @@ NOW                                   ┐
 │   - Meta-package re-exports          │  for plugin authors to test
 │   - Migration guide                  │
 │   - Drop Node 18                     │
+│   - Remove deprecated exports        │
+│   - openai SDK major, smaller install│
 │   - All existing tests pass         ┘
 │
 ├── v3.0.0-rc.1 — Bug fixes from beta
@@ -259,14 +273,14 @@ NOW                                   ┐
 
 ## How we'll know v3.0 is ready
 
-| Signal                                                                                             | Threshold |
-| -------------------------------------------------------------------------------------------------- | --------- |
-| All v2.5.x users can `npm install @devilsdev/rag-pipeline-utils@3.0.0` and have nothing break      | Required  |
-| Tree-shaking-aware users see ≥30% bundle size reduction by switching to direct sub-package imports | Required  |
-| All 2,050+ tests pass on the new structure                                                         | Required  |
-| Caching demonstrably reduces repeat-query latency by ≥50% on the demo corpus                       | Required  |
-| Migration guide reviewed by at least 2 external contributors                                       | Required  |
-| Beta has been live for at least 2 weeks with no P0 issues                                          | Required  |
+| Signal                                                                                                                                                                         | Threshold |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| All v2.5.x users can `npm install @devilsdev/rag-pipeline-utils@3.0.0` and have nothing break                                                                                  | Required  |
+| Tree-shaking-aware users see ≥30% bundle size reduction by switching to direct sub-package imports (2.5.0 baseline: 672.6 kB tarball, 2.8 MB unpacked, 188 installed packages) | Required  |
+| All tests pass on the new structure (2,381 at 2.5.0)                                                                                                                           | Required  |
+| Caching demonstrably reduces repeat-query latency by ≥50% on the demo corpus                                                                                                   | Required  |
+| Migration guide reviewed by at least 2 external contributors                                                                                                                   | Required  |
+| Beta has been live for at least 2 weeks with no P0 issues                                                                                                                      | Required  |
 
 ## What this document is NOT
 
@@ -276,6 +290,7 @@ NOW                                   ┐
 
 ## Update log
 
-| Date       | Change                            |
-| ---------- | --------------------------------- |
-| 2026-04-19 | Initial planning doc, post-v2.4.5 |
+| Date       | Change                                                                                                                                                                        |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-19 | Initial planning doc, post-v2.4.5                                                                                                                                             |
+| 2026-10-29 | After 2.5.0: caching moved to 2.6.0, 2.7.0 added, deprecated-export removal, `openai` upgrade and smaller install added to scope, `FileVectorStore` note, baselines refreshed |
