@@ -1,139 +1,135 @@
 # Basic RAG Pipeline Example
 
-This example demonstrates the fundamental concepts of building a RAG (Retrieval-Augmented Generation) pipeline using `@devilsdev/rag-pipeline-utils`.
+A minimal, fully offline RAG pipeline built with
+`@devilsdev/rag-pipeline-utils`. No API keys or network access needed.
 
 ## What This Example Shows
 
-1. **Plugin Implementation** - How to create custom loader, embedder, and retriever plugins
-2. **Plugin Registration** - How to register plugins with the plugin registry
-3. **DAG Workflow** - Building multi-stage pipelines with dependency management
-4. **Error Handling** - Proper validation and error handling patterns
+1. **Indexing** with the built-in `LocalEmbedder` (TF-IDF) and
+   `MemoryRetriever` (in-memory cosine similarity)
+2. **A custom LLM plugin** registered on `pluginRegistry` and referenced by
+   name in `createRagPipeline()`
+3. **`pipeline.run()`** with citations and evaluation
+4. **Retrieval-only mode**: without an `llm`, `answer` is `null`
+5. **Cancellation** through `options.signal` (an `AbortSignal`)
 
 ## Prerequisites
 
-- Node.js 18.0.0 or higher
-- npm or yarn package manager
-
-## Setup
-
-Install dependencies:
-
-```bash
-npm install
-```
+- Node.js 18 or higher
 
 ## Run the Example
 
 ```bash
+npm install
 npm start
 ```
 
-Or directly:
-
-```bash
-node index.js
-```
+Or directly: `node index.js`. The example always runs offline.
 
 ## Expected Output
 
 ```
-=== RAG Pipeline Example ===
+=== Basic RAG pipeline (offline) ===
 
-✓ DAG validation passed
+Indexed 4 documents (60 dimensions)
 
-[INFO] Loading document { filePath: './sample-document.txt' }
-[INFO] Embedding texts { count: 1 }
-[INFO] Storing vectors { count: 1 }
-[INFO] Retrieving similar documents { topK: 3 }
+Query:    How does a vector database find similar documents?
+Answer:   A vector database stores embeddings and finds the nearest vectors to a query embedding.
+Results:  vector-db (0.413), reranking (0.140)
+Groundedness (citations): 1.00
+Evaluation scores: faithfulness=1.00 relevance=0.28 contextPrecision=0.50 groundedness=0.79
 
-=== Pipeline Results ===
+--- Retrieval only (no llm) ---
+Answer:   null
+Top hit:  chunking
 
-Document loaded: { source: './sample-document.txt', timestamp: '...' }
-Embeddings generated: 1 vectors
-Storage result: { stored: 1, totalStored: 1 }
-Query results: [
-  { score: 1, metadata: {...} },
-  ...
-]
+--- Cancelled run ---
+success: false | error: Execution aborted
 
-✓ Pipeline completed in 45 ms
+Done.
 ```
 
 ## Code Structure
 
-### 1. Plugin Implementations
+### 1. Index documents
 
 ```javascript
-// Loader plugin - loads and parses documents
-class BasicTextLoader {
-  async load(filePath) { ... }
-}
+const embedder = new LocalEmbedder();
+embedder.train(documents.map((d) => d.content)); // build the vocabulary
 
-// Embedder plugin - converts text to vectors
-class MockEmbedder {
-  async embed(texts) { ... }
-}
-
-// Retriever plugin - stores and retrieves vectors
-class MockRetriever {
-  async store(vectors, metadata) { ... }
-  async retrieve(queryVector, topK) { ... }
-}
+const retriever = new MemoryRetriever();
+await retriever.store(
+  documents.map((d) => ({
+    id: d.id,
+    vector: embedder.embed(d.content),
+    content: d.content,
+    metadata: d.metadata,
+  })),
+);
 ```
 
-### 2. Plugin Registration
+### 2. Register a custom plugin
+
+The pipeline calls `llm.generate(query, docs, { signal, ... })` and expects a
+string. Registered plugins need `metadata: { name, version, type }`, and
+`register()` returns a Promise:
 
 ```javascript
-pluginRegistry.register("loader", "basic-text", new BasicTextLoader());
-pluginRegistry.register("embedder", "mock", new MockEmbedder());
-pluginRegistry.register("retriever", "mock", new MockRetriever());
+class ExtractiveLLM {
+  constructor() {
+    this.metadata = { name: "extractive-llm", version: "1.0.0", type: "llm" };
+  }
+  async generate(query, docs, options) { ... }
+}
+
+await pluginRegistry.register("llm", "extractive", new ExtractiveLLM());
 ```
 
-### 3. DAG Pipeline
+### 3. Build and run the pipeline
 
 ```javascript
-const dag = new DAGEngine({ timeout: 30000 });
+const pipeline = createRagPipeline({ embedder, retriever, llm: "extractive" });
 
-dag.addNode('load', async (input) => { ... });
-dag.addNode('embed', async (document) => { ... });
-dag.addNode('store', async (data) => { ... });
-dag.addNode('query', async (data) => { ... });
-
-dag.connect('load', 'embed');
-dag.connect('embed', 'store');
-dag.connect('store', 'query');
-
-const results = await dag.execute({ filePath: './sample.txt' });
+const result = await pipeline.run({
+  query: "How does a vector database find similar documents?",
+  options: { topK: 2, citations: true, evaluate: true },
+});
+// { success, query, results, answer, citations, evaluation }
 ```
+
+### 4. Cancel a run
+
+```javascript
+const controller = new AbortController();
+const pending = pipeline.run({ query, options: { signal: controller.signal } });
+controller.abort();
+await pending; // { success: false, error: "Execution aborted" }
+```
+
+`options.timeout` (ms) works the same way and resolves
+`{ success: false, error: "Execution timeout" }`.
 
 ## Next Steps
 
-To build a production RAG pipeline:
+- Replace `ExtractiveLLM` with a real connector: `OpenAIConnector`,
+  `AnthropicConnector` or `OllamaConnector`
+- Use `OpenAIConnector` or `CohereConnector` as the embedder for semantic
+  (not lexical) retrieval
+- Persist the index with `FileVectorStore`, or use the CLI
+  (`rag-pipeline init --template local`, `ingest`, `query`)
+- Add `GuardrailsPipeline` and a reranker (`EmbeddingReranker`)
 
-1. **Replace Mock Plugins** - Implement real plugins using:
-
-   - OpenAI Embeddings API
-   - Pinecone/Chroma/Weaviate vector database
-   - LangChain loaders for various document types
-
-2. **Add LLM Integration** - Add a language model node for query answering
-
-3. **Error Handling** - Add retry logic and graceful degradation
-
-4. **Configuration** - Use `.ragrc.json` for configuration management
-
-5. **Observability** - Enable metrics and tracing for production monitoring
+See [`../openai-pinecone`](../openai-pinecone) and
+[`../fastify-rag-demo`](../fastify-rag-demo) for larger examples.
 
 ## Learn More
 
 - [Main Documentation](../../README.md)
-- [Plugin Development Guide](../../docs/PLUGIN_DEVELOPMENT.md)
-- [DAG Engine Documentation](../../docs/DAG_ENGINE.md)
+- [Core concepts](../../docs-site/docs/Concepts-Core.md)
+- [Plugins](../../docs-site/docs/Plugins.md)
 - [Configuration Schema](../../.ragrc.schema.json)
 
 ## Support
-
-For issues or questions, please visit:
 
 - [GitHub Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues)
 - [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
