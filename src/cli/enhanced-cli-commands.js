@@ -19,7 +19,10 @@ const {
 
 // Handler modules
 const { handleRun } = require("./handlers/run-handler.js");
-const { handleInit } = require("./handlers/init-handler.js");
+const {
+  handleInit,
+  exitAfterConnectionTest,
+} = require("./handlers/init-handler.js");
 const {
   handleDoctor,
   handleValidate,
@@ -84,7 +87,10 @@ class EnhancedCLI {
       .option("--output <path>", "Output configuration file", ".ragrc.json")
       .option("--force", "Overwrite existing configuration")
       .action(async (options) => {
-        await handleInit(this.program.opts(), options);
+        const result = await handleInit(this.program.opts(), options);
+        // After a connection test, exit even if a provider call left a
+        // socket or timer open (see exitAfterConnectionTest).
+        exitAfterConnectionTest(result);
       });
 
     this.program

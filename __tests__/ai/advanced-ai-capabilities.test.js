@@ -8,353 +8,20 @@ beforeAll(() => {
   jest.useRealTimers();
 });
 
-//
-// Fully mocked, in-memory test doubles
-//
-
-// ModelTrainingOrchestrator mock
-const ModelTrainingOrchestrator = jest.fn().mockImplementation((_config) => {
-  const jobs = new Map(); // jobId -> { status, metrics }
-  return {
-    config: _config,
-    // training lifecycle
-    createTrainingJob: jest.fn(async () => {
-      const id = `job-${jobs.size + 1}`;
-      jobs.set(id, {
-        status: "created",
-        metrics: { loss: 0.1, accuracy: 0.95 },
-      });
-      return id;
-    }),
-    startTraining: jest.fn(async (jobId) => {
-      const j = jobs.get(jobId) || { metrics: { loss: 0.1, accuracy: 0.95 } };
-      j.status = "running";
-      jobs.set(jobId, j);
-      // simulate quick finish
-      await new Promise((r) => setTimeout(r, 5));
-      j.status = "completed";
-      return { started: true };
-    }),
-    optimizeHyperparameters: jest.fn(async () => `optimization-${Date.now()}`),
-    getOptimizationResults: jest.fn(async () => ({
-      bestConfiguration: { learningRate: 0.01, batchSize: 32 },
-      trials: [{ id: 1, score: 0.95 }],
-    })),
-    deployModel: jest.fn(async () => "deployment-123"),
-    getDeploymentStatus: jest.fn(async () => ({
-      status: "active",
-      endpoint: "https://api.example.com/model/deployment-123",
-    })),
-    getTrainingMetrics: jest.fn(() => ({ loss: 0.1, accuracy: 0.95 })),
-  };
-});
-
-// AdaptiveRetrieval mock
-const AdaptiveRetrieval = jest.fn().mockImplementation((_config) => {
-  const profiles = new Map(); // userId -> { preferences, learningHistory }
-  return {
-    initializeUserProfile: jest.fn(async (userId, prefs = {}) => {
-      const p = { userId, preferences: prefs, learningHistory: [] };
-      profiles.set(userId, p);
-      return p;
-    }),
-    adaptiveRetrieve: jest.fn(async (_userId, _query, opts = {}) => ({
-      documents: [{ id: 1, content: "test doc" }],
-      adaptationMetadata: {
-        adapted: true,
-        customModel: opts?.customModel || undefined,
-      },
-    })),
-    processFeedback: jest.fn(async (userId, feedback) => {
-      const p = profiles.get(userId);
-      if (p)
-        p.learningHistory.push({ query: feedback.query, feedback: "positive" });
-      return { updated: true };
-    }),
-    getUserProfile: jest.fn(
-      async (userId) =>
-        profiles.get(userId) || {
-          userId,
-          preferences: {},
-          learningHistory: [],
-        },
-    ),
-    personalizeRanking: jest.fn(async () => [
-      {
-        id: "1",
-        content: "Introduction to machine learning",
-        personalizedScore: 0.95,
-        rankingFactors: ["interest_match"],
-      },
-      {
-        id: "2",
-        content: "Deep learning fundamentals",
-        personalizedScore: 0.9,
-        rankingFactors: ["expertise_level"],
-      },
-      {
-        id: "3",
-        content: "Statistics for beginners",
-        personalizedScore: 0.7,
-        rankingFactors: ["relevance"],
-      },
-    ]),
-  };
-});
-
-// MultiModalProcessor mock
-const MultiModalProcessor = jest.fn().mockImplementation((_config) => {
-  const items = new Map(); // id -> record
-  const mkId = () => `mm-${items.size + 1}`;
-
-  const processContent = jest.fn(async (_tenantId, content) => {
-    const id = mkId();
-    const unifiedEmbedding = [0.1, 0.2, 0.3, 0.4, 0.5];
-
-    const modalities = {};
-    const t = (content.type || "").toLowerCase();
-
-    if (t.includes("image")) {
-      modalities.image = {
-        embedding: [0.1, 0.2, 0.3],
-        features: ["feature1", "feature2"],
-      };
-    }
-    if (t.includes("audio")) {
-      modalities.audio = {
-        embedding: [0.4, 0.5, 0.6],
-        features: {
-          transcript: content.transcript || content.audioTranscript || "",
-        },
-      };
-    }
-    if (t.includes("video")) {
-      modalities.video = {
-        embedding: [0.7, 0.8, 0.9],
-        features: {
-          scenes: ["intro", "main", "outro"],
-          actions: ["speak", "show"],
-        },
-      };
-    }
-    if (
-      t.includes("text") ||
-      (!t.includes("image") && !t.includes("audio") && !t.includes("video"))
-    ) {
-      modalities.text = {
-        embedding: [0.11, 0.12, 0.13],
-        features: { length: (content.text || "").length },
-      };
-    }
-
-    const record = { id, modalities, unifiedEmbedding };
-    items.set(id, record);
-    return record;
-  });
-
-  return {
-    processContent,
-    multiModalSearch: jest.fn(async () => ({
-      results: [{ id: "any", relevance: 0.9 }],
-      metadata: { total: 1 },
-    })),
-    generateContentDescription: jest.fn(async () => ({
-      video: "Video description",
-      unified: "Unified description",
-    })),
-    findSimilarContent: jest.fn(async (id) => {
-      // return other items (if any)
-      const others = [...items.keys()].filter((k) => k !== id);
-      return others.length
-        ? others.map((k) => ({ id: k, similarity: 0.8 }))
-        : [{ id: "mm-x", similarity: 0.8 }];
-    }),
-  };
-});
-
-// FederatedLearningCoordinator mock
-const FederatedLearningCoordinator = jest.fn().mockImplementation((_config) => {
-  const feds = new Map(); // federationId -> { participants: [...] }
-  const handlers = Object.create(null); // event -> [fns]
-
-  const on = (evt, fn) => {
-    if (!handlers[evt]) handlers[evt] = [];
-    handlers[evt].push(fn);
-    return true;
-  };
-  const emit = (evt, payload) => {
-    (handlers[evt] || []).forEach((fn) => {
-      try {
-        fn(payload);
-      } catch {}
-    });
-  };
-
-  return {
-    on,
-    // federation lifecycle
-    createFederation: jest.fn(
-      async (_tenantId, _modelConfig /*, options */) => {
-        const id = `fed-${feds.size + 1}`;
-        feds.set(id, { id, participants: [] });
-        return id; // tests expect a string id
-      },
-    ),
-    registerParticipant: jest.fn(async (fedId, participant) => {
-      if (!feds.has(fedId)) throw new Error("Federation not found");
-      if (
-        !participant ||
-        (typeof participant.dataSize === "number" && participant.dataSize < 100)
-      ) {
-        throw new Error("Participant not eligible");
-      }
-      const pid = `p-${feds.get(fedId).participants.length + 1}`;
-      feds.get(fedId).participants.push({ id: pid, ...participant });
-      return pid;
-    }),
-    startFederatedRound: jest.fn(async (fedId) => {
-      const fed = feds.get(fedId);
-      if (!fed) throw new Error("Federation not found");
-      emit("federated_round_started", { federationId: fedId });
-
-      const result = {
-        roundId: `r-${Date.now()}`,
-        round: 1,
-        participants: fed.participants.length,
-        convergence: { globalAccuracy: 0.9, delta: 0.01 },
-      };
-
-      emit("federated_round_completed", {
-        federationId: fedId,
-        metrics: result.convergence,
-      });
-      return result;
-    }),
-    getFederationStats: jest.fn(async (fedId) => {
-      const fed = feds.get(fedId);
-      return {
-        federation: { id: fedId },
-        performance: { accuracy: 0.9 },
-        privacy: { enabled: true },
-        participants: fed ? fed.participants : [],
-      };
-    }),
-    // compatibility with some names used in the header mock (not strictly needed by tests)
-    getFederationStatistics: jest.fn(async (fedId) => ({
-      participants: (feds.get(fedId)?.participants || []).length,
-      rounds: 1,
-    })),
-    preservePrivacy: jest.fn(async () => ({ privacyScore: 0.95 })),
-    conductLearningRound: jest.fn(async () => ({
-      roundId: "test-round",
-      improvements: 0.05,
-    })),
-    validateParticipantEligibility: jest.fn(async () => ({ eligible: true })),
-  };
-});
-
 describe("Advanced AI/ML Capabilities", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // Import the actual AI modules
-  const modelTrainer = require("../../src/ai/model-training");
+  // Real in-memory modules behind the exported MultiModalProcessor and
+  // AdaptiveRetrievalEngine wrappers (src/ai/multimodal.js, retrieval-engine.js)
   const adaptiveRetrieval = require("../../src/ai/adaptive-retrieval");
   const multiModalProcessor = require("../../src/ai/multimodal-processing");
-  const federatedLearning = require("../../src/ai/federated-learning");
 
   beforeEach(() => {
     // Clear all modules before each test
-    modelTrainer.clear();
     adaptiveRetrieval.clear();
     multiModalProcessor.clear();
-    federatedLearning.clear();
-  });
-
-  //
-  // Model Training Orchestrator
-  //
-  describe("Model Training Orchestrator", () => {
-    test("should create custom embedding training job", async () => {
-      const trainingConfig = {
-        modelType: "embedding",
-        architecture: "transformer",
-        dataset: { type: "text_pairs", size: 10000, source: "synthetic" },
-      };
-      const result = await modelTrainer.createTrainingJob(
-        "tenant-1",
-        trainingConfig,
-      );
-      expect(result).toBeDefined();
-      expect(typeof result).toBe("string");
-    });
-
-    test("should handle training job lifecycle", async () => {
-      const trainingConfig = {
-        modelType: "embedding",
-        architecture: "transformer",
-        dataset: { type: "text_pairs", size: 1000 },
-      };
-      const jobId = await modelTrainer.createTrainingJob(
-        "tenant-1",
-        trainingConfig,
-      );
-      // Training jobs are automatically completed in our implementation
-      expect(jobId).toMatch(/^job-/);
-    });
-
-    test("should perform hyperparameter optimization", async () => {
-      const optimizationConfig = {
-        modelType: "embedding",
-        hyperparameters: {
-          learningRate: [0.001, 0.01, 0.1],
-          batchSize: [16, 32, 64],
-          hiddenSize: [256, 512, 768],
-        },
-        optimization: {
-          strategy: "bayesian",
-          maxTrials: 5,
-          metric: "accuracy",
-        },
-      };
-      const optId = await modelTrainer.optimizeHyperparameters(
-        "tenant-1",
-        optimizationConfig,
-      );
-      expect(optId).toBeDefined();
-
-      const results = await modelTrainer.getOptimization(optId);
-      expect(results).toHaveProperty("bestConfiguration");
-      expect(results).toHaveProperty("trials");
-      expect(results.trials.length).toBeGreaterThan(0);
-    });
-
-    test("should handle model deployment", async () => {
-      const trainingConfig = {
-        modelType: "embedding",
-        architecture: "transformer",
-        dataset: { type: "text_pairs", size: 1000 },
-      };
-      const jobId = await modelTrainer.createTrainingJob(
-        "tenant-1",
-        trainingConfig,
-      );
-      // Training jobs are automatically completed in our implementation
-
-      // Wait a tick to simulate completion
-      await new Promise((r) => setTimeout(r, 20));
-
-      const deploymentId = await modelTrainer.deployModel(jobId, {
-        environment: "staging",
-        scalingConfig: { minInstances: 1, maxInstances: 3 },
-      });
-      expect(deploymentId).toBeDefined();
-
-      const deployment = await modelTrainer.getDeployment(deploymentId);
-      expect(deployment).toHaveProperty("status");
-      expect(deployment).toHaveProperty("endpoint");
-    });
   });
 
   //
@@ -583,293 +250,85 @@ describe("Advanced AI/ML Capabilities", () => {
   });
 
   //
-  // Federated Learning Coordinator
+  // Exported experimental classes (src/experimental.js)
   //
-  describe("Federated Learning Coordinator", () => {
-    test("should create federation", async () => {
-      const modelConfig = {
-        type: "embedding",
-        architecture: "transformer",
-        dimension: 768,
-      };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-      expect(federationId).toBeDefined();
-      expect(typeof federationId).toBe("string");
-    });
+  describe("Exported experimental classes", () => {
+    const experimental = require("../../src/experimental");
 
-    test("should register participants", async () => {
-      const modelConfig = { type: "embedding", architecture: "transformer" };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-
-      const participants = [
-        {
-          tenantId: "tenant-1",
-          dataSize: 1000,
-          computeCapacity: 0.8,
-          networkBandwidth: 100,
-          privacyLevel: "standard",
-        },
-        {
-          tenantId: "tenant-2",
-          dataSize: 1500,
-          computeCapacity: 0.6,
-          networkBandwidth: 80,
-          privacyLevel: "high",
-        },
-        {
-          tenantId: "tenant-3",
-          dataSize: 800,
-          computeCapacity: 0.9,
-          networkBandwidth: 120,
-          privacyLevel: "medium",
-        },
-      ];
-
-      const participantIds = [];
-      for (const participant of participants) {
-        const participantId = await federatedLearning.registerParticipants(
-          federationId,
-          [participant],
-        );
-        participantIds.push(participantId);
+    test("exports the four AI/ML classes as constructors", () => {
+      for (const name of [
+        "MultiModalProcessor",
+        "AdaptiveRetrievalEngine",
+        "FederatedLearningCoordinator",
+        "ModelTrainingOrchestrator",
+      ]) {
+        expect(typeof experimental[name]).toBe("function");
+        expect(() => new experimental[name]()).not.toThrow();
       }
-
-      expect(participantIds).toHaveLength(3);
-      participantIds.forEach((id) => expect(typeof id).toBe("string"));
     });
 
-    test("should conduct federated learning round", async () => {
-      const events = [];
-      federatedLearning.on("federated_round_started", (data) =>
-        events.push({ type: "round_started", data }),
-      );
-      federatedLearning.on("federated_round_completed", (data) =>
-        events.push({ type: "round_completed", data }),
-      );
+    test("ModelTrainingOrchestrator runs a job through its lifecycle", async () => {
+      const orchestrator = new experimental.ModelTrainingOrchestrator({
+        epochs: 3,
+      });
+      expect(orchestrator.config.epochs).toBe(3);
 
-      const modelConfig = { type: "embedding", architecture: "transformer" };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-
-      const participants = [
-        {
-          tenantId: "tenant-1",
-          dataSize: 1000,
-          computeCapacity: 0.8,
-          networkBandwidth: 100,
-        },
-        {
-          tenantId: "tenant-2",
-          dataSize: 1500,
-          computeCapacity: 0.6,
-          networkBandwidth: 80,
-        },
-        {
-          tenantId: "tenant-3",
-          dataSize: 800,
-          computeCapacity: 0.9,
-          networkBandwidth: 120,
-        },
-      ];
-      for (const participant of participants) {
-        await federatedLearning.registerParticipants(federationId, [
-          participant,
-        ]);
-      }
-
-      const roundResult = await federatedLearning.conductRound(federationId);
-      expect(roundResult).toHaveProperty("roundId");
-      expect(roundResult).toHaveProperty("round");
-      expect(roundResult).toHaveProperty("participants");
-      expect(roundResult).toHaveProperty("convergence");
-      expect(roundResult.participants).toBeGreaterThan(0);
-      expect(events.some((e) => e.type === "round_started")).toBe(true);
-      expect(events.some((e) => e.type === "round_completed")).toBe(true);
-    });
-
-    test("should handle privacy preservation", async () => {
-      const modelConfig = { type: "embedding", architecture: "transformer" };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-        {
-          privacy: {
-            differentialPrivacy: { enabled: true, epsilon: 1.0 },
-            securAggregation: { enabled: true },
-          },
-        },
-      );
-
-      const base = {
-        dataSize: 1000,
-        computeCapacity: 0.8,
-        networkBandwidth: 100,
-        privacyLevel: "high",
-      };
-      await federatedLearning.registerParticipants(federationId, [
-        {
-          tenantId: "tenant-1",
-          ...base,
-        },
-      ]);
-      await federatedLearning.registerParticipants(federationId, [
-        {
-          tenantId: "tenant-2",
-          ...base,
-        },
-      ]);
-      await federatedLearning.registerParticipants(federationId, [
-        {
-          tenantId: "tenant-3",
-          ...base,
-        },
-      ]);
-
-      const roundResult = await federatedLearning.conductRound(federationId);
-      expect(roundResult).toHaveProperty("convergence");
-      expect(roundResult.convergence).toHaveProperty("globalAccuracy");
-    });
-
-    test("should provide federation statistics", async () => {
-      const modelConfig = { type: "embedding", architecture: "transformer" };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-
-      const participants = [
-        {
-          tenantId: "tenant-1",
-          dataSize: 1000,
-          computeCapacity: 0.8,
-          networkBandwidth: 100,
-        },
-        {
-          tenantId: "tenant-2",
-          dataSize: 1500,
-          computeCapacity: 0.6,
-          networkBandwidth: 80,
-        },
-      ];
-      for (const participant of participants) {
-        await federatedLearning.registerParticipants(federationId, [
-          participant,
-        ]);
-      }
-
-      const stats = await federatedLearning.getStats(federationId);
-      expect(stats).toHaveProperty("federation");
-      expect(stats).toHaveProperty("performance");
-      expect(stats).toHaveProperty("privacy");
-      expect(stats).toHaveProperty("participants");
-      expect(stats.federation).toHaveProperty("id", federationId);
-      expect(stats.participants).toHaveLength(2);
-    });
-
-    test("should handle participant eligibility validation", async () => {
-      const modelConfig = { type: "embedding", architecture: "transformer" };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-
-      const invalidParticipant = {
-        tenantId: "tenant-1",
-        dataSize: 50,
-        computeCapacity: 0.8,
-        networkBandwidth: 100,
-      };
-      await expect(
-        federatedLearning.registerParticipants(federationId, [
-          invalidParticipant,
-        ]),
-      ).rejects.toThrow("Participant not eligible");
-    });
-  });
-
-  //
-  // Integration Tests
-  //
-  describe("Integration Tests", () => {
-    test("should integrate model training with adaptive retrieval", async () => {
-      const trainingConfig = {
+      const jobId = await orchestrator.createTrainingJob("tenant-1", {
         modelType: "embedding",
-        architecture: "transformer",
-        dataset: { type: "text_pairs", size: 1000 },
-      };
-      const jobId = await modelTrainer.createTrainingJob(
-        "tenant-1",
-        trainingConfig,
+      });
+      expect(typeof jobId).toBe("string");
+      expect(orchestrator.getTrainingStatus(jobId).status).toBe("created");
+
+      await expect(orchestrator.deployModel(jobId)).rejects.toThrow(
+        /is not completed/,
       );
-      await modelTrainer.startTraining(jobId);
-      await new Promise((r) => setTimeout(r, 10));
-      const deploymentId = await modelTrainer.deployModel(jobId, {
-        environment: "staging",
+
+      const completed = new Promise((resolve) =>
+        orchestrator.once("training_completed", resolve),
+      );
+      await expect(orchestrator.startTraining(jobId)).resolves.toEqual({
+        jobId,
+        status: "started",
+      });
+      expect(orchestrator.getTrainingStatus(jobId).status).toBe("training");
+      await completed;
+      expect(orchestrator.getTrainingStatus(jobId).status).toBe("completed");
+    });
+
+    test("FederatedLearningCoordinator registers eligible participants", async () => {
+      const coordinator = new experimental.FederatedLearningCoordinator();
+      const federationId = await coordinator.createFederation("tenant-1", {
+        type: "embedding",
       });
 
-      const userId = "user-123";
-      await adaptiveRetrieval.initializeUserProfile(userId);
-      const results = await adaptiveRetrieval.adaptiveRetrieve(
-        userId,
-        "test query",
-        { customModel: deploymentId },
-      );
+      await coordinator.registerParticipant(federationId, {
+        tenantId: "tenant-2",
+        dataSize: 1000,
+        computeCapacity: 0.5,
+      });
+      await expect(
+        coordinator.registerParticipant(federationId, {
+          tenantId: "tenant-3",
+          dataSize: 10,
+          computeCapacity: 0.5,
+        }),
+      ).rejects.toThrow(/Insufficient data size/);
 
-      expect(results).toHaveProperty("documents");
-      expect(results).toHaveProperty("adaptationMetadata");
+      const status = await coordinator.getFederationStatus(federationId);
+      expect(status).toMatchObject({
+        id: federationId,
+        status: "created",
+        participantCount: 1,
+      });
     });
 
-    test("should integrate multi-modal processing with federated learning", async () => {
-      const content = {
-        type: "video/mp4",
-        size: 5120000,
-        duration: 240,
-        audioTranscript: "Educational content about AI",
-      };
-      await multiModalProcessor.processContent("tenant-1", content);
-
-      const modelConfig = {
-        type: "multimodal",
-        architecture: "clip",
-        modalities: ["image", "text", "audio"],
-      };
-      const federationId = await federatedLearning.createFederation(
-        "tenant-1",
-        modelConfig,
-      );
-
-      const participants = [
-        {
-          tenantId: "tenant-1",
-          dataSize: 1000,
-          computeCapacity: 0.8,
-          networkBandwidth: 100,
-          modalitySupport: ["image", "text", "audio"],
-        },
-        {
-          tenantId: "tenant-2",
-          dataSize: 1500,
-          computeCapacity: 0.6,
-          networkBandwidth: 80,
-          modalitySupport: ["image", "text"],
-        },
-      ];
-      for (const participant of participants) {
-        await federatedLearning.registerParticipants(federationId, [
-          participant,
-        ]);
-      }
-
-      const stats = await federatedLearning.getStats(federationId);
-      expect(stats.participants).toHaveLength(2);
+    test("MultiModalProcessor delegates to the in-memory processor", async () => {
+      const processor = new experimental.MultiModalProcessor();
+      const result = await processor.processContent("tenant-1", {
+        type: "text/plain",
+        content: "hello world",
+      });
+      expect(result).toBeDefined();
     });
   });
 });

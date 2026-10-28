@@ -147,8 +147,6 @@
     "dist/",
     "src/",
     "!src/mocks/",
-    "!src/ai/module-template.js",
-    "!src/ai/index-fixed.js",
     "!src/dev/examples/",
     "!src/dev/README.md",
     "!src/utils/examples/",

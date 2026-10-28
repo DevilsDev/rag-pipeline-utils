@@ -8,12 +8,15 @@
  *
  * @param {object} embedder - Object with embedQuery() or embed()
  * @param {string} query - Text to embed
+ * @param {object} [options] - Passed through as the second argument (e.g.
+ *   `{ signal }` to cancel the call); omitted when not given
  * @returns {Promise<number[]|undefined>} The query vector
  */
-async function embedQuery(embedder, query) {
+async function embedQuery(embedder, query, options) {
+  const args = options === undefined ? [query] : [query, options];
   const raw = embedder.embedQuery
-    ? await embedder.embedQuery(query)
-    : await embedder.embed(query);
+    ? await embedder.embedQuery(...args)
+    : await embedder.embed(...args);
   const first = Array.isArray(raw) && typeof raw[0] !== 'number' ? raw[0] : raw;
   if (Array.isArray(first)) return first;
   return first?.values || first?.vector || first?.embedding;

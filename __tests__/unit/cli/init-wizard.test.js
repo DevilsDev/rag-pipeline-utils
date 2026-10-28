@@ -496,6 +496,81 @@ describe("runInitWizard", () => {
       expect(result.config.pipeline.map((e) => e.name)).toContain("ollama");
     });
 
+    test("passes an AbortSignal to each call and aborts it on timeout", async () => {
+      const seen = {};
+      const build = (config) => {
+        const [e] = config.pipeline;
+        if (e.stage === "embedder") {
+          return {
+            embedder: {
+              embedQuery: async (text, options) => {
+                seen.embedder = options.signal;
+                return [0.5];
+              },
+            },
+          };
+        }
+        return {
+          llm: {
+            // A connector that honours options.signal: rejects on abort.
+            generate: (q, ctx, options) => {
+              seen.llm = options.signal;
+              return new Promise((_, reject) => {
+                options.signal.addEventListener("abort", () =>
+                  reject(options.signal.reason),
+                );
+              });
+            },
+          },
+        };
+      };
+
+      const results = await testConnections(
+        {
+          pipeline: [
+            { stage: "embedder", name: "openai" },
+            { stage: "llm", name: "ollama" },
+          ],
+        },
+        { buildComponents: build, configDir: dir, timeoutMs: 20 },
+      );
+
+      expect(seen.embedder).toBeInstanceOf(AbortSignal);
+      expect(seen.embedder.aborted).toBe(false);
+      expect(seen.llm).toBeInstanceOf(AbortSignal);
+      expect(seen.llm.aborted).toBe(true);
+      expect(seen.llm.reason.message).toBe(
+        'generate("Say OK") timed out after 20 ms',
+      );
+      expect(results[1]).toEqual({
+        stage: "llm",
+        ok: false,
+        message: 'ollama: generate("Say OK") timed out after 20 ms',
+      });
+    });
+
+    test("an embedder with only embed() also gets the signal", async () => {
+      let signal;
+      const results = await testConnections(
+        { pipeline: [{ stage: "embedder", name: "cohere" }] },
+        {
+          buildComponents: () => ({
+            embedder: {
+              embed: async (text, options) => {
+                signal = options && options.signal;
+                return [[1, 2]];
+              },
+            },
+          }),
+          configDir: dir,
+          timeoutMs: 50,
+        },
+      );
+
+      expect(signal).toBeInstanceOf(AbortSignal);
+      expect(results[0].ok).toBe(true);
+    });
+
     test("a component that fails to construct is reported", async () => {
       const results = await testConnections(
         {
