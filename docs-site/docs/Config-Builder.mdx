@@ -1,0 +1,24 @@
+---
+id: Config-Builder
+title: Configuration builder
+sidebar_label: Config builder
+hide_table_of_contents: true
+description: Build a .ragrc.json for the rag-pipeline CLI in your browser. The output matches rag-pipeline init and the JSON schema.
+---
+
+import ConfigBuilder from "@site/src/components/ConfigBuilder";
+
+# Configuration builder
+
+Pick a component for each stage to get a `.ragrc.json` for the [`rag-pipeline` CLI](./CLI.md). The file is the same one `rag-pipeline init` would write for that selection. The test suite checks this for every combination, and validates each one against [`.ragrc.schema.json`](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.ragrc.schema.json).
+
+Leave an option blank to use the connector's default, shown as the placeholder. API keys are read from environment variables and never go in the file.
+
+<ConfigBuilder />
+
+## Using the file
+
+- Save it as `.ragrc.json` in the directory you run the CLI from, or pass `--config <path>`.
+- `rag-pipeline doctor` checks the file, your API keys and the index before you ingest.
+- The `"$schema"` line gives editors such as VS Code autocompletion and validation. The CLI ignores it.
+- Custom plugins (your own `.js` modules) are added with `rag-pipeline init` or by hand; see [Configuration](./CLI.md#configuration-ragrcjson).

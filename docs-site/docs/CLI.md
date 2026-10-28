@@ -34,6 +34,8 @@ With the default `local` template there is no language model, so `query` prints 
 
 ## Configuration (`.ragrc.json`)
 
+> **Tip:** the [configuration builder](./Config-Builder.mdx) writes this file for you in the browser.
+
 `init` writes a file like this:
 
 ```json

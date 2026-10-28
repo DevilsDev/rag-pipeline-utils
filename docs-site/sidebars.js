@@ -37,7 +37,14 @@ const sidebars = {
       type: "category",
       label: "Developer Guide",
       collapsed: false,
-      items: ["Usage", "CLI", "API-Reference", "Examples", "Plugins"],
+      items: [
+        "Usage",
+        "CLI",
+        "Config-Builder",
+        "API-Reference",
+        "Examples",
+        "Plugins",
+      ],
     },
     {
       type: "category",
@@ -74,6 +81,7 @@ const sidebars = {
         "Migration",
         "Troubleshooting",
         "FAQ",
+        "Changelog",
       ],
     },
     {
