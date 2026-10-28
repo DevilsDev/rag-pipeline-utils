@@ -41,11 +41,18 @@ function deny(fnName, orig) {
   };
 }
 
-// Block Node core http/https
-http.request = deny("http.request", http.request.bind(http));
-http.get = deny("http.get", http.get.bind(http));
-https.request = deny("https.request", https.request.bind(https));
-https.get = deny("https.get", https.get.bind(https));
+// Block Node core http/https. Core modules are shared by every test file in
+// the process, so always wrap the original function; wrapping the previous
+// file's wrapper would stack checks bound to stale per-file globals.
+for (const [mod, name] of [
+  [http, "http"],
+  [https, "https"],
+]) {
+  mod.__originalRequest = mod.__originalRequest || mod.request;
+  mod.__originalGet = mod.__originalGet || mod.get;
+  mod.request = deny(`${name}.request`, mod.__originalRequest.bind(mod));
+  mod.get = deny(`${name}.get`, mod.__originalGet.bind(mod));
+}
 
 // Block global fetch (Node 18+ / 22 uses undici)
 if (globalThis.fetch) {
