@@ -433,6 +433,18 @@ describe("SSO security", () => {
       ).rejects.toThrow(message);
     });
 
+    test.each([["issuer"], ["clientId"]])(
+      "refuses to validate when %s is not configured",
+      async (field) => {
+        const unconfigured = new OIDCProvider(
+          oidcConfig({ [field]: undefined }),
+        );
+        await expect(
+          unconfigured.validateIdToken(idToken(), { nonce: "n-1" }),
+        ).rejects.toThrow(`${field} must be configured`);
+      },
+    );
+
     test("requires an expected nonce", async () => {
       await expect(oidc.validateIdToken(idToken(), {})).rejects.toThrow(
         "expected nonce is required",

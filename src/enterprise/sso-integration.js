@@ -1379,6 +1379,13 @@ class OIDCProvider {
       if (!nonce) {
         throw new Error('expected nonce is required');
       }
+      // jsonwebtoken silently skips iss/aud checks for falsy values
+      if (!this._config.issuer) {
+        throw new Error('issuer must be configured');
+      }
+      if (!this._config.clientId) {
+        throw new Error('clientId must be configured');
+      }
       const decoded = jwt.decode(idToken, { complete: true });
       if (!decoded || !decoded.header || !decoded.payload) {
         throw new Error('malformed id_token');
