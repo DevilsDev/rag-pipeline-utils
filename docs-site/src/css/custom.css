@@ -1,641 +1,305 @@
 /**
- * Version: 2.0.0
- * Path: docs-site/src/css/custom.css
- * Description: Professional Enterprise Blue theme for RAG Pipeline Utils documentation
- * Author: Ali Kahwaji
- * Last Updated: November 8, 2025
+ * docs-site theme
+ *
+ * Colours come from the README banner (assets/banner.svg): a navy base with
+ * a sky-to-violet accent. Every text colour below passes WCAG AA (4.5:1)
+ * against the background it is used on, in both colour modes.
+ * Fonts are self-hosted (src/fonts.js), so the site makes no requests to
+ * font CDNs.
  */
 
-/* Import Professional Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+/* ---------- Tokens ---------- */
 
-/* ===================================
- * Enterprise Blue Light Theme
- * =================================== */
-html[data-theme="light"],
 :root {
-  /* Primary Colors - Professional Blue */
-  --ifm-color-primary: #2563eb;
-  --ifm-color-primary-dark: #1e40af;
-  --ifm-color-primary-darker: #1e3a8a;
-  --ifm-color-primary-darkest: #1e3a8a;
-  --ifm-color-primary-light: #3b82f6;
-  --ifm-color-primary-lighter: #60a5fa;
-  --ifm-color-primary-lightest: #93c5fd;
+  --rag-navy-950: #0b1020;
+  --rag-navy-900: #111a33;
+  --rag-navy-800: #16213e;
+  --rag-sky: #38bdf8;
+  --rag-violet: #a78bfa;
+  --rag-accent-gradient: linear-gradient(
+    90deg,
+    var(--rag-sky),
+    var(--rag-violet)
+  );
 
-  /* Semantic Colors */
-  --ifm-color-success: #10b981;
-  --ifm-color-success-dark: #059669;
-  --ifm-color-success-darker: #047857;
-  --ifm-color-success-darkest: #065f46;
-  --ifm-color-success-light: #34d399;
-  --ifm-color-success-lighter: #6ee7b7;
-  --ifm-color-success-lightest: #a7f3d0;
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3730a3;
+  --ifm-color-primary-darkest: #312e81;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
 
-  --ifm-color-warning: #f59e0b;
-  --ifm-color-warning-dark: #d97706;
-  --ifm-color-warning-darker: #b45309;
-  --ifm-color-warning-darkest: #92400e;
-  --ifm-color-warning-light: #fbbf24;
-  --ifm-color-warning-lighter: #fcd34d;
-  --ifm-color-warning-lightest: #fde68a;
-
-  --ifm-color-danger: #ef4444;
-  --ifm-color-danger-dark: #dc2626;
-  --ifm-color-danger-darker: #b91c1c;
-  --ifm-color-danger-darkest: #991b1b;
-  --ifm-color-danger-light: #f87171;
-  --ifm-color-danger-lighter: #fca5a5;
-  --ifm-color-danger-lightest: #fecaca;
-
-  --ifm-color-info: #0ea5e9;
-  --ifm-color-info-dark: #0284c7;
-  --ifm-color-info-darker: #0369a1;
-  --ifm-color-info-darkest: #075985;
-  --ifm-color-info-light: #38bdf8;
-  --ifm-color-info-lighter: #7dd3fc;
-  --ifm-color-info-lightest: #bae6fd;
-
-  /* Neutral Palette */
-  --ifm-color-gray-0: #ffffff;
-  --ifm-color-gray-50: #f9fafb;
-  --ifm-color-gray-100: #f3f4f6;
-  --ifm-color-gray-200: #e5e7eb;
-  --ifm-color-gray-300: #d1d5db;
-  --ifm-color-gray-400: #9ca3af;
-  --ifm-color-gray-500: #6b7280;
-  --ifm-color-gray-600: #4b5563;
-  --ifm-color-gray-700: #374151;
-  --ifm-color-gray-800: #1f2937;
-  --ifm-color-gray-900: #111827;
-
-  /* Background & Surface */
   --ifm-background-color: #ffffff;
-  --ifm-background-surface-color: #f9fafb;
-  --ifm-navbar-background-color: #f9fafb;
-  --ifm-footer-background-color: #f3f4f6;
-  --ifm-card-background-color: #ffffff;
-  --ifm-code-background: #f3f4f6;
+  --ifm-background-surface-color: #f8fafc;
+  --ifm-font-color-base: #0f172a;
+  --ifm-color-content-secondary: #475569;
+  --ifm-toc-border-color: #e2e8f0;
+  --ifm-hr-border-color: #e2e8f0;
 
-  /* Typography */
-  --ifm-font-color-base: #1f2937;
-  --ifm-font-color-base-inverse: #ffffff;
-  --ifm-heading-color: #111827;
-  --ifm-font-color-secondary: #6b7280;
-  --ifm-link-color: #2563eb;
-  --ifm-link-hover-color: #1e40af;
-
-  /* Font Families */
   --ifm-font-family-base:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Inter", ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   --ifm-font-family-monospace:
-    "JetBrains Mono", "Fira Code", Monaco, "Courier New", monospace;
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+  --ifm-heading-font-weight: 700;
 
-  /* Spacing & Layout */
-  --ifm-global-radius: 8px;
+  --ifm-code-font-size: 90%;
   --ifm-code-border-radius: 6px;
-  --ifm-button-border-radius: 6px;
-  --ifm-card-border-radius: 8px;
+  --docusaurus-highlighted-code-line-bg: rgba(79, 70, 229, 0.12);
 
-  /* Shadows */
-  --ifm-global-shadow-lw:
-    0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --ifm-global-shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --ifm-global-shadow-tl:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ifm-navbar-height: 3.75rem;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.85);
+  --ifm-navbar-shadow: none;
+  --ifm-footer-background-color: var(--rag-navy-950);
 
-  /* Borders */
-  --ifm-color-emphasis-0: var(--ifm-color-gray-0);
-  --ifm-color-emphasis-100: var(--ifm-color-gray-100);
-  --ifm-color-emphasis-200: var(--ifm-color-gray-200);
-  --ifm-color-emphasis-300: var(--ifm-color-gray-300);
-  --ifm-color-emphasis-400: var(--ifm-color-gray-400);
-  --ifm-color-emphasis-500: var(--ifm-color-gray-500);
-  --ifm-color-emphasis-600: var(--ifm-color-gray-600);
-  --ifm-color-emphasis-700: var(--ifm-color-gray-700);
-  --ifm-color-emphasis-800: var(--ifm-color-gray-800);
-  --ifm-color-emphasis-900: var(--ifm-color-gray-900);
+  --ifm-global-radius: 10px;
+  --ifm-button-border-radius: 10px;
+  --ifm-card-border-radius: 14px;
+
+  --rag-border: #e2e8f0;
+  --rag-card-bg: #ffffff;
+  --rag-card-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
-/* ===================================
- * Enterprise Blue Dark Theme
- * =================================== */
 html[data-theme="dark"] {
-  /* Primary Colors - Lighter for dark background */
-  --ifm-color-primary: #60a5fa;
-  --ifm-color-primary-dark: #3b82f6;
-  --ifm-color-primary-darker: #2563eb;
-  --ifm-color-primary-darkest: #1e40af;
-  --ifm-color-primary-light: #93c5fd;
-  --ifm-color-primary-lighter: #bfdbfe;
-  --ifm-color-primary-lightest: #dbeafe;
+  --ifm-color-primary: #a5b4fc;
+  --ifm-color-primary-dark: #8b9cfb;
+  --ifm-color-primary-darker: #818cf8;
+  --ifm-color-primary-darkest: #6366f1;
+  --ifm-color-primary-light: #c7d2fe;
+  --ifm-color-primary-lighter: #e0e7ff;
+  --ifm-color-primary-lightest: #eef2ff;
 
-  /* Backgrounds */
-  --ifm-background-color: #0f172a;
-  --ifm-background-surface-color: #1e293b;
-  --ifm-navbar-background-color: #1e293b;
-  --ifm-footer-background-color: #1e293b;
-  --ifm-card-background-color: #1e293b;
-  --ifm-code-background: #1e293b;
-
-  /* Typography */
+  --ifm-background-color: var(--rag-navy-950);
+  --ifm-background-surface-color: var(--rag-navy-900);
   --ifm-font-color-base: #e2e8f0;
-  --ifm-font-color-base-inverse: #0f172a;
-  --ifm-heading-color: #f1f5f9;
-  --ifm-font-color-secondary: #94a3b8;
-  --ifm-link-color: #60a5fa;
-  --ifm-link-hover-color: #93c5fd;
+  --ifm-color-content-secondary: #94a3b8;
+  --ifm-toc-border-color: #1e293b;
+  --ifm-hr-border-color: #1e293b;
+  --ifm-navbar-background-color: rgba(11, 16, 32, 0.8);
+  --docusaurus-highlighted-code-line-bg: rgba(165, 180, 252, 0.14);
 
-  /* Borders */
-  --ifm-color-emphasis-100: #334155;
-  --ifm-color-emphasis-200: #475569;
-  --ifm-color-emphasis-300: #64748b;
-  --ifm-color-emphasis-400: #64748b;
-  --ifm-color-emphasis-500: #64748b;
-  --ifm-color-emphasis-600: #475569;
-  --ifm-color-emphasis-700: #334155;
-  --ifm-color-emphasis-800: #1e293b;
-  --ifm-color-emphasis-900: #0f172a;
-
-  /* Shadows */
-  --ifm-global-shadow-lw: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-  --ifm-global-shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --ifm-global-shadow-tl:
-    0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --rag-border: #1e293b;
+  --rag-card-bg: var(--rag-navy-900);
+  --rag-card-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* ===================================
- * Typography System
- * =================================== */
-body {
-  font-family: var(--ifm-font-family-base);
-  font-size: 16px;
-  line-height: 1.75;
-  font-weight: 400;
+/* ---------- Base ---------- */
+
+html {
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
+h3 {
+  letter-spacing: -0.02em;
 }
 
-h1 {
+.markdown h1:first-child {
   font-size: 2.25rem;
 }
-h2 {
-  font-size: 1.875rem;
-}
-h3 {
-  font-size: 1.5rem;
-}
-h4 {
-  font-size: 1.25rem;
-}
-h5 {
-  font-size: 1.125rem;
-}
-h6 {
-  font-size: 1rem;
+
+.markdown > h2 {
+  margin-top: 2.5rem;
+  padding-top: 0.5rem;
 }
 
-code,
-pre,
-kbd,
-samp {
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.875em;
+a {
+  text-underline-offset: 0.18em;
 }
 
-/* ===================================
- * Professional Button Styling
- * =================================== */
-.button {
-  font-weight: 500;
-  border-radius: var(--ifm-button-border-radius);
-  padding: 0.625rem 1.25rem;
-  transition: all 0.15s ease-in-out;
-  letter-spacing: 0.025em;
-}
-
-.button--primary {
-  background: linear-gradient(
-    135deg,
-    var(--ifm-color-primary) 0%,
-    var(--ifm-color-primary-dark) 100%
-  );
-  border: none;
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-}
-
-.button--primary:hover {
-  background: linear-gradient(
-    135deg,
-    var(--ifm-color-primary-dark) 0%,
-    var(--ifm-color-primary-darker) 100%
-  );
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-  transform: translateY(-1px);
-  color: white;
-}
-
-.button--outline {
-  border: 2px solid var(--ifm-color-primary);
-  color: var(--ifm-color-primary);
-  background: transparent;
-}
-
-.button--outline:hover {
-  background: var(--ifm-color-primary);
-  color: white;
-  border-color: var(--ifm-color-primary);
-}
-
-.button--secondary {
-  background-color: var(--ifm-color-gray-200);
-  color: var(--ifm-color-gray-900);
-  border: none;
-}
-
-html[data-theme="dark"] .button--secondary {
-  background-color: var(--ifm-color-gray-700);
-  color: var(--ifm-color-gray-100);
-}
-
-.button--secondary:hover {
-  background-color: var(--ifm-color-gray-300);
-}
-
-html[data-theme="dark"] .button--secondary:hover {
-  background-color: var(--ifm-color-gray-600);
-}
-
-/* ===================================
- * Enhanced Code Blocks
- * =================================== */
-pre {
-  border-radius: var(--ifm-code-border-radius);
-  border: 1px solid var(--ifm-color-emphasis-200);
-  box-shadow: var(--ifm-global-shadow-lw);
-  padding: 1.25rem;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  overflow-x: auto;
-  background-color: var(--ifm-code-background);
-}
-
-html[data-theme="dark"] pre {
-  border-color: var(--ifm-color-emphasis-700);
-  background-color: #1e293b;
-}
-
-code:not(pre code) {
-  background-color: var(--ifm-color-gray-100);
-  color: var(--ifm-color-gray-800);
-  padding: 0.125rem 0.375rem;
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
   border-radius: 4px;
-  font-size: 0.875em;
-  font-weight: 500;
 }
 
-html[data-theme="dark"] code:not(pre code) {
-  background-color: var(--ifm-color-gray-800);
-  color: var(--ifm-color-gray-200);
-}
+/* ---------- Navbar ---------- */
 
-/* ===================================
- * Professional Navigation
- * =================================== */
 .navbar {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-}
-
-html[data-theme="dark"] .navbar {
-  border-bottom-color: var(--ifm-color-emphasis-700);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--rag-border);
 }
 
 .navbar__title {
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .navbar__link {
   font-weight: 500;
+  font-size: 0.95rem;
 }
 
-/* ===================================
- * Card & Surface Components
- * =================================== */
-.card {
-  border-radius: var(--ifm-card-border-radius);
-  border: 1px solid var(--ifm-color-emphasis-200);
-  box-shadow: var(--ifm-global-shadow-lw);
-  transition: all 0.2s ease-in-out;
-  background-color: var(--ifm-card-background-color);
+/* Small pill for the version link in the navbar. */
+.navbar__item.rag-version {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  padding: 0.15rem 0.6rem;
+  margin-left: 0.25rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 999px;
+  color: var(--ifm-color-content-secondary);
 }
 
-.card:hover {
-  box-shadow: var(--ifm-global-shadow-tl);
-  transform: translateY(-2px);
+.navbar__item.rag-version:hover {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
 }
 
-html[data-theme="dark"] .card {
-  border-color: var(--ifm-color-emphasis-700);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+/* Icon-only GitHub link. */
+.header-github-link::before {
+  content: "";
+  display: flex;
+  width: 22px;
+  height: 22px;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2 0 1.9 1.2 1.9 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.4 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.8 0 3.2.9.8 1.3 1.9 1.3 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1 .9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3'/%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 
-/* ===================================
- * Professional Tables
- * =================================== */
-table {
-  border-collapse: separate;
-  border-spacing: 0;
+/* ---------- Buttons ---------- */
+
+.button {
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.button--primary {
+  --ifm-button-background-color: #4f46e5;
+  --ifm-button-border-color: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.28);
+}
+
+.button--primary:hover {
+  --ifm-button-background-color: #4338ca;
+  --ifm-button-border-color: #4338ca;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .button--primary {
+  --ifm-button-background-color: #6366f1;
+  --ifm-button-border-color: #6366f1;
+}
+
+.button--secondary {
+  --ifm-button-background-color: transparent;
+  --ifm-button-border-color: var(--rag-border);
+  --ifm-button-color: var(--ifm-font-color-base);
+}
+
+.button--secondary:hover {
+  --ifm-button-background-color: var(--ifm-background-surface-color);
+  --ifm-button-border-color: var(--ifm-color-primary);
+}
+
+/* ---------- Code ---------- */
+
+.theme-code-block {
+  border: 1px solid var(--rag-border);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .theme-code-block {
+  border-color: #1e293b;
+}
+
+code {
+  border: 1px solid var(--rag-border);
+  padding: 0.1rem 0.35rem;
+}
+
+pre code {
+  border: 0;
+}
+
+/* ---------- Docs layout ---------- */
+
+.menu {
+  font-size: 0.925rem;
+}
+
+.menu__link {
+  border-radius: 8px;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  font-weight: 600;
+  background: color-mix(in srgb, var(--ifm-color-primary) 10%, transparent);
+}
+
+.theme-doc-sidebar-container {
+  border-right-color: var(--rag-border) !important;
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
+}
+
+/* Tables: readable on narrow screens and in both modes. */
+.markdown table {
+  display: table;
   width: 100%;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: var(--ifm-global-radius);
-  overflow: hidden;
+  border-collapse: collapse;
+  font-size: 0.925rem;
 }
 
-thead {
-  background-color: var(--ifm-color-gray-100);
+.markdown table thead tr {
+  background: var(--ifm-background-surface-color);
 }
 
-html[data-theme="dark"] thead {
-  background-color: var(--ifm-color-gray-800);
+.markdown table th,
+.markdown table td {
+  border-color: var(--rag-border);
 }
 
-th {
-  font-weight: 600;
-  text-align: left;
-  padding: 0.75rem 1rem;
-  border-bottom: 2px solid var(--ifm-color-emphasis-300);
+@media (max-width: 996px) {
+  .markdown table {
+    display: block;
+    overflow-x: auto;
+  }
 }
 
-html[data-theme="dark"] th {
-  border-bottom-color: var(--ifm-color-emphasis-600);
+/* Admonitions: flatter, with a coloured left edge. */
+.theme-admonition {
+  border-left-width: 4px;
+  border-radius: 10px;
+  box-shadow: none;
 }
 
-td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-}
+/* ---------- Footer ---------- */
 
-html[data-theme="dark"] td {
-  border-bottom-color: var(--ifm-color-emphasis-700);
-}
-
-tr:last-child td {
-  border-bottom: none;
-}
-
-/* ===================================
- * Enhanced Admonitions (Callouts)
- * =================================== */
-.admonition {
-  border-left: 4px solid var(--ifm-color-primary);
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-  border-radius: 4px;
-}
-
-.admonition-heading {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.admonition-note {
-  border-left-color: var(--ifm-color-info);
-  background-color: rgba(14, 165, 233, 0.05);
-}
-
-.admonition-tip {
-  border-left-color: var(--ifm-color-success);
-  background-color: rgba(16, 185, 129, 0.05);
-}
-
-.admonition-warning {
-  border-left-color: var(--ifm-color-warning);
-  background-color: rgba(245, 158, 11, 0.05);
-}
-
-.admonition-danger,
-.admonition-caution {
-  border-left-color: var(--ifm-color-danger);
-  background-color: rgba(239, 68, 68, 0.05);
-}
-
-/* ===================================
- * Professional Scrollbar
- * =================================== */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--ifm-color-gray-100);
-}
-
-html[data-theme="dark"] ::-webkit-scrollbar-track {
-  background: var(--ifm-color-gray-800);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--ifm-color-gray-400);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ifm-color-gray-500);
-}
-
-html[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: var(--ifm-color-gray-600);
-}
-
-html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: var(--ifm-color-gray-500);
-}
-
-/* ===================================
- * Footer Styling
- * =================================== */
 .footer {
-  background-color: var(--ifm-footer-background-color);
-  border-top: 1px solid var(--ifm-color-emphasis-200);
+  border-top: 1px solid #1e293b;
 }
 
-html[data-theme="dark"] .footer {
-  border-top-color: var(--ifm-color-emphasis-700);
-}
-
-.footer__title {
-  font-weight: 600;
-  color: var(--ifm-heading-color);
-}
-
-.footer__link-item {
-  color: var(--ifm-font-color-secondary);
-  transition: color 0.15s ease;
+.footer--dark {
+  --ifm-footer-link-color: #cbd5e1;
+  --ifm-footer-title-color: #ffffff;
+  --ifm-footer-color: #94a3b8;
 }
 
 .footer__link-item:hover {
-  color: var(--ifm-link-color);
+  color: #ffffff;
 }
 
-/* ===================================
- * Sidebar Styling
- * =================================== */
-.menu__link {
-  border-radius: 6px;
-  transition: all 0.15s ease;
-}
+/* ---------- Motion ---------- */
 
-.menu__link--active {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: var(--ifm-color-primary);
-  font-weight: 600;
-}
-
-.menu__link:hover {
-  background-color: var(--ifm-color-gray-100);
-}
-
-html[data-theme="dark"] .menu__link:hover {
-  background-color: var(--ifm-color-gray-800);
-}
-
-html[data-theme="dark"] .menu__link--active {
-  background-color: rgba(96, 165, 250, 0.15);
-}
-
-/* ===================================
- * TOC Styling
- * =================================== */
-.table-of-contents__link {
-  color: var(--ifm-font-color-secondary);
-  transition: color 0.15s ease;
-}
-
-.table-of-contents__link:hover,
-.table-of-contents__link--active {
-  color: var(--ifm-color-primary);
-  font-weight: 500;
-}
-
-/* ===================================
- * Search Bar Styling
- * =================================== */
-.navbar__search-input {
-  border-radius: 6px;
-  border: 1px solid var(--ifm-color-emphasis-300);
-  transition: all 0.15s ease;
-}
-
-.navbar__search-input:focus {
-  border-color: var(--ifm-color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-/* ===================================
- * Homepage Hero Section
- * =================================== */
-.hero {
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-}
-
-html[data-theme="dark"] .hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-bottom-color: var(--ifm-color-emphasis-700);
-}
-
-.hero__title {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-}
-
-.hero__subtitle {
-  font-size: 1.25rem;
-  color: var(--ifm-font-color-secondary);
-  font-weight: 400;
-}
-
-/* ===================================
- * Responsive Design
- * =================================== */
-@media (max-width: 996px) {
-  .hero__title {
-    font-size: 2rem;
-  }
-
-  .hero__subtitle {
-    font-size: 1rem;
-  }
-
-  h1 {
-    font-size: 1.875rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
-  h3 {
-    font-size: 1.25rem;
-  }
-}
-
-/* ===================================
- * Print Styles
- * =================================== */
-@media print {
-  .navbar,
-  .footer,
-  .pagination-nav,
-  .table-of-contents {
-    display: none;
-  }
-
-  body {
-    color: #000;
-    background: #fff;
-  }
-}
-
-/* ===================================
- * Accessibility Enhancements
- * =================================== */
-.button:focus-visible,
-.menu__link:focus-visible,
-.navbar__link:focus-visible {
-  outline: 2px solid var(--ifm-color-primary);
-  outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .button--primary {
-    border: 2px solid var(--ifm-color-primary-darker);
-  }
-
-  .card {
-    border-width: 2px;
-  }
-}
-
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -643,5 +307,6 @@ html[data-theme="dark"] .hero {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

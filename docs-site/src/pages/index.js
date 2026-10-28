@@ -1,42 +1,15 @@
-// docs-site/src/pages/index.js
-
 import React from "react";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
 import CodeBlock from "@theme/CodeBlock";
+import useBaseUrl from "@docusaurus/useBaseUrl";
+import useBrokenLinks from "@docusaurus/useBrokenLinks";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import HomepageHeader from "@site/src/components/HomepageHeader";
-import HomepageFeatures from "@site/src/components/HomepageFeatures";
 import styles from "./index.module.css";
 
-function HomepageStats() {
-  const stats = [
-    { value: "4 + 1", label: "Model providers + offline" },
-    { value: "3", label: "Guardrail layers" },
-    { value: "ESM + CJS", label: "With TypeScript types" },
-    { value: "MIT", label: "License" },
-  ];
-
-  return (
-    <section className={styles.statsSection}>
-      <div className="container">
-        <div className="row">
-          {stats.map((stat, idx) => (
-            <div key={idx} className="col col--3">
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{stat.value}</div>
-                <div className={styles.statLabel}>{stat.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Same example as the README "Quick start", which runs in the test suite
-// (__tests__/docs/readme-examples.test.js). Keep the two in sync.
+// Same example as the README "Quick start". It runs in the test suite
+// (__tests__/docs/site-homepage.test.js); keep the two in sync.
 const QUICK_START = `import {
   createRagPipeline,
   LocalEmbedder,
@@ -70,38 +43,160 @@ const result = await pipeline.run({
 
 console.log(result.results[0].id); // "vacation"`;
 
-function HomepageQuickStart() {
+const PILLARS = [
+  {
+    title: "Citations you can check",
+    text: "Each sentence of an answer is mapped to the passages that support it, with a groundedness score and a check that numbers match the sources.",
+    code: `const { answer, citations } = await pipeline.run({
+  query,
+  options: { citations: true },
+});`,
+    link: "/docs/Concepts-Evaluation",
+  },
+  {
+    title: "Evaluation built in",
+    text: "Faithfulness, relevance, context precision, context recall and groundedness, per answer or over a test set.",
+    code: `const { evaluation } = await pipeline.run({
+  query,
+  options: { evaluate: true, referenceAnswer },
+});`,
+    link: "/docs/Evaluation",
+  },
+  {
+    title: "Guardrails at three stages",
+    text: "Prompt-injection detection before retrieval, ACL and relevance filtering before generation, PII redaction after.",
+    code: `const safe = new GuardrailsPipeline(pipeline, {
+  retrieval: { enforceACL: true },
+});`,
+    link: "/docs/Concepts-Guardrails",
+  },
+  {
+    title: "Production behaviour",
+    text: "AbortSignal cancellation and real timeouts, retries only on transient errors, typed ESM and CommonJS exports.",
+    code: `const controller = new AbortController();
+await pipeline.run({
+  query,
+  options: { signal: controller.signal, timeout: 5000 },
+});`,
+    link: "/docs/API-Reference",
+  },
+];
+
+const TOOLBOX = [
+  ["Chunking", "Sentence, fixed-size, recursive, semantic and structure-aware"],
+  ["Hybrid retrieval", "BM25 plus vectors, merged with reciprocal rank fusion"],
+  ["Reranking", "Scoring, embedding (cached) and cascade rerankers"],
+  ["Agentic RAG", "Query planning, iterative retrieval, self-critique"],
+  ["GraphRAG", "Knowledge-graph construction and traversal"],
+  ["Streaming", "Tokens, then a final chunk with citations and scores"],
+  ["Cost control", "Token budgets and per-model cost tracking"],
+  ["MCP", "Expose a pipeline as Model Context Protocol tools"],
+];
+
+const PROVIDERS = ["OpenAI", "Anthropic", "Cohere", "Ollama", "Offline TF-IDF"];
+
+function Pillars() {
   return (
-    <section className={styles.quickStartSection}>
+    <section className={styles.section}>
       <div className="container">
-        <div className="row">
-          <div className="col col--5">
-            <h2>Quick Start</h2>
-            <p className={styles.quickStartDesc}>
-              Install the package and run a pipeline in under a minute. This
-              example needs no API keys: it uses the built-in TF-IDF embedder
-              and an in-memory store. Add an LLM connector to generate cited
-              answers.
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>Why rag-pipeline-utils</p>
+          <h2>Answers your users can verify</h2>
+          <p>
+            One <code>createRagPipeline()</code> call wires an embedder, a
+            retriever and an LLM. Everything below is an opt-in layer on top.
+          </p>
+        </div>
+        <div className={styles.pillars}>
+          {PILLARS.map((p) => (
+            <article key={p.title} className={styles.pillar}>
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+              <CodeBlock language="js" className={styles.pillarCode}>
+                {p.code}
+              </CodeBlock>
+              <Link to={p.link} className={styles.more}>
+                Learn more →
+              </Link>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CliDemo() {
+  const gif = useBaseUrl("/img/cli-demo.gif");
+  return (
+    <section className={`${styles.section} ${styles.alt}`}>
+      <div className="container">
+        <div className={styles.split}>
+          <div>
+            <p className={styles.eyebrow}>Command line</p>
+            <h2>Index a folder and ask it questions</h2>
+            <p>
+              <code>rag-pipeline</code> builds a persistent local index from
+              Markdown, HTML, CSV and text files. The default template runs
+              offline with no API keys; switch templates to answer with OpenAI,
+              Anthropic or Ollama.
             </p>
             <CodeBlock language="bash">
-              npm install @devilsdev/rag-pipeline-utils
+              {`npx rag-pipeline init
+npx rag-pipeline ingest ./docs
+npx rag-pipeline query "What is the remote work policy?"
+npx rag-pipeline serve --port 3000`}
             </CodeBlock>
-            <div className={styles.quickStartButtons}>
-              <Link
-                className="button button--primary button--lg"
-                to="/docs/Introduction"
-              >
-                View Documentation
+            <Link to="/docs/CLI" className={styles.more}>
+              CLI reference →
+            </Link>
+          </div>
+          <div className={styles.terminal}>
+            <img
+              src={gif}
+              alt="Terminal recording: rag-pipeline init, ingest ./docs, then a query that returns the vacation policy as the top passage"
+              width="1200"
+              height="680"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuickStart() {
+  // The hero links here; register the id so the anchor check sees it.
+  useBrokenLinks().collectAnchor("quick-start");
+  return (
+    <section id="quick-start" className={styles.section}>
+      <div className="container">
+        <div className={`${styles.split} ${styles.splitTop}`}>
+          <div className={styles.sticky}>
+            <p className={styles.eyebrow}>Quick start</p>
+            <h2>Running in under a minute</h2>
+            <p>
+              This example needs no API keys: it uses the built-in TF-IDF
+              embedder and an in-memory store. Add an LLM connector to generate
+              cited answers, or swap in your own components. Each one is a plain
+              object with the method its stage needs.
+            </p>
+            <ul className={styles.providers} aria-label="Built-in providers">
+              {PROVIDERS.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+            <div className={styles.inlineActions}>
+              <Link className="button button--primary" to="/docs/Introduction">
+                Read the guide
               </Link>
-              <Link
-                className="button button--outline button--lg"
-                to="/docs/Examples"
-              >
-                See Examples
+              <Link className="button button--secondary" to="/docs/Examples">
+                See examples
               </Link>
             </div>
           </div>
-          <div className="col col--7">
+          <div className={styles.codeCol}>
             <CodeBlock language="js" title="quick-start.mjs">
               {QUICK_START}
             </CodeBlock>
@@ -112,190 +207,75 @@ function HomepageQuickStart() {
   );
 }
 
-function HomepageUseCases() {
-  const cases = [
-    {
-      tag: "Document Q&A",
-      title: "Answer questions with citations",
-      description:
-        "Return grounded answers where every sentence links back to the source chunk. Per-sentence citation tracking and groundedness scoring built in.",
-      code: `const result = await pipeline.run({
-  query: "Which policy covers remote work?",
-  options: { citations: true },
-});
-// result.citations maps each answer
-// sentence to its source documents`,
-      link: "/docs/Evaluation",
-      linkLabel: "Citation & grounding docs",
-    },
-    {
-      tag: "Internal knowledge",
-      title: "Assistants with faithfulness guarantees",
-      description:
-        "Score every answer on faithfulness, relevance, context precision, and recall. Alert when quality drops below your production threshold.",
-      code: `const result = await pipeline.run({
-  query: userQuestion,
-  options: { evaluate: true },
-});
-// result.evaluation.scores
-//   = { faithfulness, relevance, ... }`,
-      link: "/docs/Evaluation",
-      linkLabel: "Evaluation harness docs",
-    },
-    {
-      tag: "Enterprise service",
-      title: "Pipelines with production guardrails",
-      description:
-        "Three-layer defense: prompt-injection detection pre-retrieval, relevance thresholds during retrieval, and PII + groundedness checks post-generation.",
-      code: `const safePipeline = new GuardrailsPipeline(
-  createRagPipeline({ ... }),
-  {
-    preRetrieval:  { enableInjectionDetection: true },
-    retrieval:     { minRelevanceScore: 0.6 },
-    postGeneration:{ enablePIIDetection: true },
-  }
-);`,
-      link: "/docs/Security",
-      linkLabel: "Guardrails docs",
-    },
-  ];
-
+function Toolbox() {
   return (
-    <section className={styles.useCasesSection}>
+    <section className={`${styles.section} ${styles.alt}`}>
       <div className="container">
-        <h2 className="text--center margin-bottom--sm">
-          Three Paths, One Pipeline
-        </h2>
-        <p className={styles.useCasesLead}>
-          Start with retrieval. Add evaluation when quality matters. Add
-          guardrails when you ship. Each primitive is optional — pick what your
-          team actually needs.
-        </p>
-        <div className="row">
-          {cases.map((c, idx) => (
-            <div key={idx} className="col col--4 margin-bottom--lg">
-              <div className={styles.useCaseCard}>
-                <span className={styles.useCaseTag}>{c.tag}</span>
-                <h3>{c.title}</h3>
-                <p>{c.description}</p>
-                <CodeBlock language="js" className={styles.useCaseCode}>
-                  {c.code}
-                </CodeBlock>
-                <Link to={c.link} className={styles.featureLink}>
-                  {c.linkLabel} →
-                </Link>
-              </div>
-            </div>
+        <div className={styles.sectionHead}>
+          <p className={styles.eyebrow}>Also in the box</p>
+          <h2>The rest of a RAG stack</h2>
+        </div>
+        <ul className={styles.toolbox}>
+          {TOOLBOX.map(([name, text]) => (
+            <li key={name}>
+              <strong>{name}</strong>
+              <span>{text}</span>
+            </li>
           ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function Compare() {
+  return (
+    <section className={styles.section}>
+      <div className="container">
+        <div className={styles.compare}>
+          <div>
+            <p className={styles.eyebrow}>How it compares</p>
+            <h2>Narrow on purpose</h2>
+            <p>
+              LangChain.js and LlamaIndex.TS are broad frameworks with large
+              integration catalogues. This library focuses on RAG for Node.js
+              services and ships evaluation, citations and guardrails as part of
+              the pipeline, in one MIT package with a small surface to review.
+            </p>
+          </div>
+          <Link
+            className="button button--secondary button--lg"
+            to="/docs/Comparison"
+          >
+            Read the comparison
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function HomepageKeyFeatures() {
-  const features = [
-    {
-      title: "Modular Plugin Architecture",
-      description:
-        "5 plugin types with JSON Schema contracts; connectors for OpenAI, Anthropic, Cohere and Ollama, plus an offline embedder.",
-      link: "/docs/Plugins",
-    },
-    {
-      title: "Smart Chunking & Retrieval",
-      description:
-        "5 chunking strategies, hybrid vector + BM25 search, and reciprocal rank fusion for highly relevant context retrieval.",
-      link: "/docs/Architecture",
-    },
-    {
-      title: "RAG Evaluation",
-      description:
-        "Faithfulness, relevance, context precision, context recall (with a reference answer) and groundedness.",
-      link: "/docs/Evaluation",
-    },
-    {
-      title: "Citation & Grounding",
-      description:
-        "Per-sentence source attribution, a hallucination report and a check that numbers in the answer appear in the sources.",
-      link: "/docs/Evaluation",
-    },
-    {
-      title: "Agentic RAG & GraphRAG",
-      description:
-        "Query planning, iterative retrieval, self-critique loops, and knowledge graph traversal for complex multi-hop questions.",
-      link: "/docs/Architecture",
-    },
-    {
-      title: "3-Layer Guardrails",
-      description:
-        "Prompt injection detection, ACL filtering, and PII detection to protect your pipeline at input, retrieval, and output stages.",
-      link: "/docs/Security",
-    },
-    {
-      title: "Streaming & Connectors",
-      description:
-        "SSE/WebSocket streaming plus built-in OpenAI, Anthropic, Cohere, and Ollama connectors for flexible deployment.",
-      link: "/docs/Performance",
-    },
-    {
-      title: "Cost & Debugging",
-      description:
-        "Token tracking, budget enforcement, execution tracing, and bottleneck detection for full pipeline observability.",
-      link: "/docs/Performance",
-    },
-    {
-      title: "Security Building Blocks",
-      description:
-        "JWT validation with replay protection, signed plugins, and encrypted audit logs. Multi-tenancy, SSO and the plugin sandbox are experimental.",
-      link: "/docs/Security",
-    },
-  ];
-
+function CallToAction() {
   return (
-    <section className={styles.keyFeaturesSection}>
+    <section className={styles.cta}>
       <div className="container">
-        <h2 className="text--center margin-bottom--lg">
-          Production-Ready Features
-        </h2>
-        <div className="row">
-          {features.map((feature, idx) => (
-            <div key={idx} className="col col--4 margin-bottom--lg">
-              <div className={styles.featureCard}>
-                <h3>{feature.title}</h3>
-                <p>{feature.description}</p>
-                <Link to={feature.link} className={styles.featureLink}>
-                  Learn more →
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function HomepageCTA() {
-  return (
-    <section className={styles.ctaSection}>
-      <div className="container text--center">
         <h2>Build RAG you can check</h2>
-        <p className={styles.ctaDesc}>
-          Start offline with the quick start, then add a model, citations,
-          evaluation and guardrails as you need them.
+        <p>
+          Start offline, then add a model, citations, evaluation and guardrails
+          as you need them.
         </p>
-        <div className={styles.ctaButtons}>
+        <div className={styles.inlineActions}>
           <Link
             className="button button--primary button--lg"
             to="/docs/Introduction"
           >
-            Get Started Now
+            Get started
           </Link>
           <Link
-            className="button button--outline button--lg"
+            className={`button button--lg ${styles.ctaGhost}`}
             href="https://github.com/DevilsDev/rag-pipeline-utils"
           >
-            View on GitHub
+            Star on GitHub
           </Link>
         </div>
       </div>
@@ -309,12 +289,12 @@ export default function Home() {
     <Layout title="Composable RAG for Node.js" description={siteConfig.tagline}>
       <HomepageHeader />
       <main>
-        <HomepageStats />
-        <HomepageFeatures />
-        <HomepageQuickStart />
-        <HomepageUseCases />
-        <HomepageKeyFeatures />
-        <HomepageCTA />
+        <Pillars />
+        <CliDemo />
+        <QuickStart />
+        <Toolbox />
+        <Compare />
+        <CallToAction />
       </main>
     </Layout>
   );

@@ -1,77 +1,174 @@
-/**
- * Version: 1.4.0
- * Path: docs-site/src/components/HomepageHeader/index.module.css
- * Description: Styles for responsive hero banner with mint green CTA
- * Author: Ali Kahwaji
- */
-
-:root {
-  --hero-accent: #3ef4b6;
+/* The hero is navy in both colour modes, like the README banner. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 4.5rem 0 3rem;
+  background: linear-gradient(135deg, #0b1020 0%, #16213e 100%);
+  color: #f8fafc;
 }
 
-.heroBanner {
-  padding: 5rem 2rem;
-  background: var(--ifm-background-color);
-  text-align: center;
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%);
 }
 
-.heroTitle {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--ifm-heading-color);
-  margin-bottom: 1rem;
-  line-height: 1.2;
+.glow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 90%;
+  background: radial-gradient(
+    closest-side,
+    rgba(167, 139, 250, 0.22),
+    transparent
+  );
+  pointer-events: none;
 }
 
-.heroSubtitle {
-  font-size: 1.2rem;
-  color: var(--ifm-font-color-base);
-  max-width: 720px;
-  margin: 0 auto 2rem auto;
+.layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
 }
 
-.buttons {
+.copy {
+  min-width: 0;
+}
+
+.chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chip {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  font-size: 0.8rem;
+}
+
+a.chip:hover {
+  color: #ffffff;
+  border-color: #a5b4fc;
+  text-decoration: none;
+}
+
+.title {
+  margin: 0 0 1.1rem;
+  font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: #f8fafc;
+}
+
+.accent {
+  background: linear-gradient(90deg, #38bdf8, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  max-width: 36rem;
+  margin: 0 0 1.75rem;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.ghost {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.ghost:hover {
+  border-color: #a5b4fc;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.demo {
+  min-width: 0;
+}
+
+/* Pipeline strip, as in the banner. */
+.pipeline {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: 0.5rem 2.25rem;
+  margin: 3.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
 }
 
-.ctaButton {
-  border-radius: 8px;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  transition: all 0.25s ease-in-out;
+.stage,
+.stageFinal {
+  position: relative;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 10px;
+  background: rgba(17, 26, 51, 0.8);
+  color: #e2e8f0;
 }
 
-.ctaButton.button--primary {
-  background-color: var(--hero-accent);
-  border: none;
-  color: black;
+.stage::after {
+  content: "→";
+  position: absolute;
+  right: -1.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
 }
 
-.ctaButton.button--primary:hover {
-  background-color: #33e3a6;
-  box-shadow: 0 0 0 4px rgba(62, 244, 182, 0.3);
+.stageFinal {
+  border-color: transparent;
+  background:
+    linear-gradient(#0f2a3a, #0f2a3a) padding-box,
+    linear-gradient(90deg, #38bdf8, #a78bfa) border-box;
+  border: 1px solid transparent;
+  color: #ffffff;
 }
 
-.ctaButton.button--outline {
-  border-color: var(--hero-accent);
-  color: var(--hero-accent);
-}
-
-.ctaButton.button--outline:hover {
-  background-color: rgba(62, 244, 182, 0.1);
-  border-color: var(--hero-accent);
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .heroTitle {
-    font-size: 2.25rem;
+@media (max-width: 996px) {
+  .hero {
+    padding: 3rem 0 2.5rem;
   }
 
-  .heroSubtitle {
-    font-size: 1rem;
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.25rem;
+  }
+
+  .pipeline {
+    margin-top: 2.5rem;
+    gap: 0.5rem;
+  }
+
+  .stage::after {
+    display: none;
   }
 }

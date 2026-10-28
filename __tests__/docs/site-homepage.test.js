@@ -33,4 +33,27 @@ describe("docs-site homepage quick start", () => {
 
     expect(logged).toEqual(["vacation"]);
   });
+
+  test("hero grounding example shows CitationTracker's real output", () => {
+    const example = JSON.parse(
+      fs.readFileSync(
+        path.join(ROOT, "docs-site/src/data/heroExample.json"),
+        "utf8",
+      ),
+    );
+    const { CitationTracker } = require(path.join(ROOT, "src/index.js"));
+    const docs = example.sources.map((s) => ({ id: s.id, content: s.content }));
+
+    for (const answer of example.answers) {
+      const result = new CitationTracker().track(answer.text, docs);
+      expect(result.groundednessScore).toBeCloseTo(answer.groundedness, 2);
+
+      const cited = [
+        ...new Set(
+          result.citations.flatMap((c) => c.sources.map((s) => s.docId)),
+        ),
+      ].sort();
+      expect(cited).toEqual([...answer.citedSources].sort());
+    }
+  });
 });

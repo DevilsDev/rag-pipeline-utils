@@ -1,0 +1,152 @@
+.card {
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  background: rgba(11, 16, 32, 0.78);
+  box-shadow:
+    0 24px 60px rgba(2, 6, 23, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  text-align: left;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #334155;
+}
+
+.body {
+  padding: 1.1rem 1.2rem 1.25rem;
+}
+
+.question {
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+}
+
+.label {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-right: 0.35rem;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+}
+
+.tab {
+  padding: 0.3rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #cbd5e1;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: rgba(165, 180, 252, 0.16);
+  color: #ffffff;
+}
+
+.answer {
+  margin: 0 0 0.9rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #f8fafc;
+  min-height: 3.2em;
+}
+
+.cite {
+  margin-left: 0.15rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.7rem;
+  color: #7dd3fc;
+}
+
+.verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.score {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 600;
+}
+
+.ok {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #a7f3d0;
+}
+
+.bad {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+}
+
+.sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.sources li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  transition: border-color 0.2s ease;
+}
+
+.sourceCited {
+  border-color: rgba(125, 211, 252, 0.55) !important;
+  color: #cbd5e1 !important;
+}
+
+.sourceId {
+  font-family: var(--ifm-font-family-monospace);
+  color: #e2e8f0;
+}
+
+.sourceText {
+  line-height: 1.45;
+}

@@ -1,0 +1,27 @@
+{
+  "question": "How many vacation days do I get?",
+  "sources": [
+    {
+      "id": "vacation.md",
+      "content": "Full-time employees receive twenty days of paid vacation per year. Unused days carry over to March."
+    },
+    {
+      "id": "remote-work.md",
+      "content": "Employees may work remotely up to three days per week with manager approval."
+    }
+  ],
+  "answers": [
+    {
+      "label": "Grounded answer",
+      "text": "Full-time employees receive twenty days of paid vacation per year. Unused days carry over to March.",
+      "groundedness": 1,
+      "citedSources": ["vacation.md"]
+    },
+    {
+      "label": "Wrong number",
+      "text": "Full-time employees receive thirty days of paid vacation per year.",
+      "groundedness": 0,
+      "citedSources": []
+    }
+  ]
+}

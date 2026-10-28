@@ -1,300 +1,261 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
-
-.heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+.section {
+  padding: 5rem 0;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.alt {
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--rag-border);
+  border-bottom: 1px solid var(--rag-border);
 }
 
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* Stats Section */
-.statsSection {
-  padding: 3rem 0;
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  color: white;
-}
-
-.statCard {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-
-.statValue {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: white;
-}
-
-.statLabel {
-  font-size: 1rem;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-}
-
-/* Quick Start Section */
-.quickStartSection {
-  padding: 4rem 0;
-  background-color: var(--ifm-background-color);
-}
-
-.quickStartDesc {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  color: var(--ifm-font-color-secondary);
-}
-
-.quickStartButtons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* Use Cases Section */
-.useCasesSection {
-  padding: 4rem 0;
-  background-color: var(--ifm-background-color);
-}
-
-.useCasesSection h2 {
-  font-size: 2.25rem;
-  font-weight: 700;
-}
-
-.useCasesLead {
-  text-align: center;
-  font-size: 1.125rem;
-  line-height: 1.6;
-  color: var(--ifm-font-color-secondary);
-  max-width: 720px;
+.sectionHead {
+  max-width: 44rem;
   margin: 0 auto 3rem;
+  text-align: center;
 }
 
-.useCaseCard {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  height: 100%;
-  border: 1px solid var(--ifm-color-emphasis-200);
+.sectionHead h2,
+.split h2,
+.compare h2 {
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  margin-bottom: 0.75rem;
+}
+
+.sectionHead p,
+.split p,
+.compare p {
+  color: var(--ifm-color-content-secondary);
+  font-size: 1.05rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary) !important;
+}
+
+.more {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Pillars */
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.pillar {
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  padding: 1.75rem;
+  border: 1px solid var(--rag-border);
+  border-radius: var(--ifm-card-border-radius);
+  background: var(--rag-card-bg);
+  box-shadow: var(--rag-card-shadow);
 }
 
-.useCaseCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
-  border-color: var(--ifm-color-primary);
+.pillar h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
 }
 
-.useCaseTag {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--ifm-color-primary);
-  background: rgba(37, 99, 235, 0.08);
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  align-self: flex-start;
-  margin-bottom: 1rem;
-}
-
-.useCaseCard h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--ifm-heading-color);
-  line-height: 1.3;
-}
-
-.useCaseCard p {
-  color: var(--ifm-font-color-secondary);
-  line-height: 1.6;
+.pillar p {
+  color: var(--ifm-color-content-secondary);
   margin-bottom: 1.25rem;
 }
 
-.useCaseCode {
-  /* Colours and padding come from the theme's CodeBlock. */
-  font-size: 0.8125rem;
-  margin: 0 0 1.25rem;
-  flex-grow: 1;
-}
-
-[data-theme="dark"] .useCaseCard {
-  background: var(--ifm-background-surface-color);
-  border-color: var(--ifm-color-emphasis-300);
-}
-
-/* Key Features Section */
-.keyFeaturesSection {
-  padding: 4rem 0;
-  background-color: var(--ifm-background-surface-color);
-}
-
-.keyFeaturesSection h2 {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 3rem;
-}
-
-.featureCard {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  height: 100%;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  transition: all 0.3s ease;
-}
-
-.featureCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1);
-  border-color: var(--ifm-color-primary);
-}
-
-.featureCard h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
+.pillarCode {
+  margin-top: auto;
   margin-bottom: 1rem;
-  color: var(--ifm-heading-color);
+  font-size: 0.85rem;
 }
 
-.featureCard p {
-  color: var(--ifm-font-color-secondary);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
+/* Two-column sections */
 
-.featureLink {
-  color: var(--ifm-color-primary);
-  font-weight: 500;
-  text-decoration: none;
-  display: inline-flex;
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 3rem;
   align-items: center;
-  transition: all 0.2s ease;
 }
 
-.featureLink:hover {
-  color: var(--ifm-color-primary-dark);
-  text-decoration: none;
-  transform: translateX(4px);
+/* For a tall code column: keep the text at the top and in view. */
+.splitTop {
+  align-items: start;
 }
 
-/* CTA Section */
-.ctaSection {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+.sticky {
+  position: sticky;
+  top: calc(var(--ifm-navbar-height) + 2rem);
 }
 
-.ctaSection h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: var(--ifm-heading-color);
+.codeCol {
+  min-width: 0;
 }
 
-.ctaDesc {
-  font-size: 1.25rem;
-  color: var(--ifm-font-color-secondary);
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
+.codeCol :global(.theme-code-block) {
+  margin-bottom: 0;
+  box-shadow: var(--rag-card-shadow);
 }
 
-.ctaButtons {
+.terminal {
+  min-width: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--rag-border);
+  box-shadow: var(--rag-card-shadow);
+  background: #1e1e2e;
+}
+
+.terminal img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.providers {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 0;
+  list-style: none;
 }
 
-/* Dark Mode Adjustments */
-[data-theme="dark"] .featureCard {
-  background: var(--ifm-background-surface-color);
-  border-color: var(--ifm-color-emphasis-300);
+.providers li {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: var(--rag-card-bg);
 }
 
-[data-theme="dark"] .ctaSection {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
-/* Responsive Design */
-@media screen and (max-width: 996px) {
-  .statsSection {
-    padding: 2rem 0;
-  }
+/* Toolbox */
 
-  .statValue {
-    font-size: 2rem;
-  }
-
-  .quickStartSection {
-    padding: 3rem 0;
-  }
-
-  .quickStartSection .row {
-    flex-direction: column-reverse;
-  }
-
-  .quickStartSection .col {
-    max-width: 100%;
-  }
-
-  .keyFeaturesSection h2 {
-    font-size: 1.875rem;
-  }
-
-  .ctaSection h2 {
-    font-size: 2rem;
-  }
-
-  .ctaDesc {
-    font-size: 1.1rem;
-  }
+.toolbox {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-@media screen and (max-width: 768px) {
-  .statCard {
-    padding: 1.5rem 0.5rem;
+.toolbox li {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 12px;
+  background: var(--rag-card-bg);
+}
+
+.toolbox strong {
+  font-size: 1rem;
+}
+
+.toolbox span {
+  color: var(--ifm-color-content-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Comparison */
+
+.compare {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2.5rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 18px;
+  background: var(--rag-card-bg);
+  box-shadow: var(--rag-card-shadow);
+}
+
+.compare > div {
+  max-width: 44rem;
+}
+
+.compare p:last-child {
+  margin-bottom: 0;
+}
+
+/* Closing call to action, navy like the hero. */
+
+.cta {
+  padding: 5rem 0;
+  text-align: center;
+  background: linear-gradient(135deg, #0b1020 0%, #16213e 100%);
+  color: #f8fafc;
+}
+
+.cta h2 {
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  color: #f8fafc;
+}
+
+.cta p {
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  margin-bottom: 1.75rem;
+}
+
+.cta .inlineActions {
+  justify-content: center;
+}
+
+.ctaGhost {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.ctaGhost:hover {
+  border-color: #a5b4fc;
+  color: #ffffff;
+}
+
+@media (max-width: 996px) {
+  .section {
+    padding: 3.5rem 0;
   }
 
-  .statValue {
-    font-size: 1.75rem;
+  .pillars,
+  .split {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .statLabel {
-    font-size: 0.875rem;
+  .sticky {
+    position: static;
   }
 
-  .quickStartButtons,
-  .ctaButtons {
+  .toolbox {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compare {
     flex-direction: column;
+    align-items: flex-start;
+    padding: 1.75rem;
   }
+}
 
-  .quickStartButtons .button,
-  .ctaButtons .button {
-    width: 100%;
+@media (max-width: 576px) {
+  .toolbox {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
