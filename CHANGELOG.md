@@ -9,10 +9,38 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [2.5.0] - 2026-10-28
 
 ### Added
 
+- **Cancellation**: `createRagPipeline` creates an AbortController per run
+  and passes its signal to every component (`retriever.retrieve({ signal })`,
+  `embedder.embedQuery/embed(text, { signal })`, `reranker.rerank(q, docs,
+{ signal })`, `llm.generate(q, docs, { signal })`); a new `options.signal`
+  lets callers cancel. All built-in connectors and rerankers honour it.
+  `AgenticPipeline` and `IterativeRetriever` propagate it too.
+- `QueryPlanner.plan(query, { llm, signal })`: LLM-proposed sub-queries with
+  strict JSON validation and heuristic fallback (returns a Promise);
+  `AgenticPipeline` option `enableLlmPlanning` (default `false`).
+- `checkNumericConsistency`, `extractNumbers`, `detectInjection` and
+  `PRICING_METADATA` exports.
+- Opt-in `detectInjection` on `RetrievalGuard` to scan retrieved documents for
+  indirect prompt injection.
+- `CostCalculator`: pricing provenance (`source`, `asOf`, `verified`), a
+  `pricing` override, one-time unknown-model warnings
+  (`RAG_UNKNOWN_MODEL_PRICING`), longest-match model resolution.
+- `EmbeddingReranker` `cacheSize` (LRU of document embeddings) and
+  `concurrency` options; `MemoryRetriever` `eviction: 'fifo'` option.
+- Plugin signatures: `computeContentDigest()`, a signed `contentDigest` that
+  binds plugin code, opt-in `requireContentDigest` and `requireSignedPlugins`,
+  and `register()`'s optional `{ content }` argument.
+- `JWTValidator` options `singleUseTokens` (default `true`) and
+  `maxTrackedJtis` (default 100000).
+- `AuditLogger` reads its key from `encryptionKey` or
+  `RAG_AUDIT_ENCRYPTION_KEY`; `requireEncryption: true` makes a missing key an
+  error.
+- `.env.example` for `docker compose`.
+- `npm run test:serial` and `npm run format:check`.
 - **Working CLI workflow**: `rag-pipeline init`, `ingest <path>`, `query
 <question>` and `run` now do real work against a persistent local index.
   `init` writes a pipeline of built-in components (`--template local |
@@ -65,6 +93,14 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Removed
 
+- Ten unreachable duplicate modules under `src/ai/` and the internal
+  `src/dag/enhanced-dag-engine.js` (never reachable from the package entries;
+  the exported classes are unchanged).
+- semantic-release configuration and dependencies (releases use
+  `npm publish --provenance` from the release workflow), duplicate
+  `.eslintrc.json` and `.babelrc`, about 50 one-off fix scripts and their
+  `ci:*` npm scripts, the tracked `junit.xml`, and 14 test suites that never
+  exercised `src/` (fake pipelines, mocks, empty timing loops).
 - CLI placeholders that printed success without doing anything (`ingest`,
   `query`, `doctor`, `validate`, `plugin search|install|publish`) and
   options that had no effect (`--trace`, `--stats`, `--parallel`,
@@ -85,6 +121,34 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Fixed
 
+- **`createRagPipeline`**: timeouts now cancel work and no stage starts after
+  an abort (a timeout still resolves `{ success: false, error: 'Execution
+timeout' }`; a caller abort resolves `'Execution aborted'`). Without an llm
+  it runs retrieval only and returns `answer: null` instead of `'ok'`. Stream
+  mode with `citations` or `evaluate` ends with one `{ token: '', done: true,
+citations, evaluation }` chunk. The artificial 5 ms delay is removed.
+- **Connectors** retry only transient failures (network, 408/409/425/429/5xx)
+  with exponential backoff, jitter and `Retry-After`; SDK-internal retries are
+  disabled. API keys are read at construction, and calls without a key fail
+  fast with `MISSING_API_KEY`.
+- **`MemoryRetriever`** enforces `maxDocuments` and rejects mismatched vector
+  dimensions instead of truncating them.
+- **`AuditLogger`** no longer encrypts with a random per-process key that made
+  logs unreadable after a restart; legacy `createCipher` records decrypt on
+  Node 22+.
+- **`JWTValidator` / `jwt-config`** honour an explicit `clockTolerance` /
+  `notBeforeTolerance` of 0 (it became 30); the expired-token test is enabled.
+- **`loadPluginsFromJson`** awaits registration and verifies signed manifests
+  and plugin files before importing them.
+- **`rag-pipeline init`**: the connection test aborts its calls after the 15 s
+  timeout and the CLI exits afterwards.
+- **Benchmarks** accept `--iterations=N`, no longer abort on the retry
+  benchmarks' deliberate warm-up failures, and exit when done.
+- **Docs generation** no longer hangs: the JSDoc regex backtracked
+  exponentially on an unterminated `/**`.
+- **Tests** run in parallel again (a suite destroyed the Jest worker's own
+  stdio streams), no longer rewrite tracked fixtures, and coverage works on
+  Windows (the test setup no longer patches `path.resolve`).
 - **Package import**: `require()` / `import` of 2.4.5 failed in every clean
   install with `Cannot find module 'isolated-vm'`. `isolated-vm` is now
   loaded only when `PluginSandbox` runs and is an optional peer dependency;
@@ -143,6 +207,51 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Changed
 
+- **Metric changes**:
+  - Context recall now measures how much of a reference (ground-truth) answer
+    the retrieved documents support. Pass it via
+    `PipelineEvaluator.evaluate(result, { referenceAnswer })` or
+    `run({ options: { evaluate: true, referenceAnswer } })`. Without one,
+    `scores.contextRecall` is omitted, `details.contextRecall` is
+    `{ score: null, skipped: true, reason }`, and `metadata.metricsSkipped`
+    lists it.
+  - `computeGroundedness` is a weighted mean over the available components;
+    without a reference it is `(0.4 * faithfulness + 0.3 * contextPrecision)
+/ 0.7`.
+  - Claim support checks numbers: a sentence whose numbers (digits, decimals,
+    percentages, number words) are not in the source scores below 0.4 and is
+    not grounded. This affects citations, faithfulness, recall,
+    `PostGenerationGuard` and `SelfCritiqueChecker`. "20" equals "twenty".
+- **`createRagPipeline`** results always include `answer` when an llm is
+  configured.
+- **`QueryPlanner`** splits only at clause or question boundaries, keeps
+  "salt and pepper"-style phrases intact, and expands comparisons into one
+  sub-query per entity plus the comparison; results carry `source`.
+- **Prompts**: built-in connectors put retrieved context in the user message
+  as delimited, untrusted reference data, with a system prompt telling the
+  model to treat it as data. Answers may differ.
+- **`PreRetrievalGuard`** returns the query unchanged (no partial deletion) and
+  reports detections in `injection`; strict mode still blocks. Detection
+  normalises input first. To cut false positives, bare "act as", "jailbreak",
+  uppercase "DAN", mid-line "system:" and "you are now ready" are no longer
+  flagged; chat role markers, prompt-exfiltration phrasing and normalisation
+  bypasses now are.
+- **`CostCalculator`** prices `gpt-4o-mini-*` and `claude-3-5-sonnet-*`
+  correctly (previously gpt-4 pricing and $0); `customPricing` entries without
+  `unit` default to per-1000 tokens. Built-in prices are marked unverified:
+  their `asOf` is when they were added, not when they were checked.
+- **`EmbeddingReranker`** limits concurrency to 4 by default; call
+  `clearCache()` after retraining an embedder.
+- **`AuditLogger`** with encryption enabled and no key now disables
+  encryption with a warning instead of using a throwaway key.
+- **Plugin trust store** is empty by default (the placeholder key is gone).
+- **`docker compose`** requires `POSTGRES_PASSWORD`, `REDIS_PASSWORD` and
+  `GRAFANA_ADMIN_PASSWORD`, publishes ports on 127.0.0.1 only, and drops the
+  debugger port and the Prometheus lifecycle API; the image build fails on
+  critical runtime vulnerabilities.
+- **CI**: one `ci.yml` workflow (required checks `Test & Lint (18|20|22)`)
+  that also enforces `format:check` and the tarball smoke test, and runs for
+  pull requests into any branch. `npm test` runs Jest in parallel.
 - **`DevServer`** now really listens: `start()` binds port 3000 by default
   (pass `port: 0` for a free port), so existing callers may see
   `EADDRINUSE`. Default host is `127.0.0.1` (was `localhost`), default
@@ -181,10 +290,41 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 - `CitationTracker.track()` non-array error message is now
   "retrievedDocs must be an array".
 
+### Security
+
+- Production dependencies: `npm audit --omit=dev` reports no high or critical
+  findings (axios ^1.21.0; overrides for fast-uri, follow-redirects,
+  form-data, ws and zod).
+- Experimental SSO: the development bypass that accepted any authorization
+  code requires `devBypass: true` and a non-production `NODE_ENV` and is
+  refused in production; OIDC id_tokens are validated (JWKS signature, iss,
+  aud, exp, nonce); OAuth2/OIDC use PKCE (S256); `redirect_uri` comes only
+  from configuration; callbacks must match the stored login request's
+  provider.
+- Plugin signatures: Ed25519 verification works (`crypto.verify` with
+  KeyObjects); a signed `contentDigest` binds plugin code and is always
+  enforced when present.
+- `AuditLogger` compares HMAC signatures in constant time; `JWTValidator`'s
+  replay store is bounded and expires entries.
+- Retrieved documents are no longer placed in the LLM system role; prompt
+  injection detection normalises homoglyphs, leetspeak and zero-width
+  characters.
+- `.secrets` is no longer tracked in git (rotate anything it held) and is
+  excluded from Docker builds.
+
 ### Known limitations
 
-- Grounding remains lexical. A sentence that repeats a source with a wrong
-  number ("thirty days" instead of "twenty") is still scored as grounded.
+- Grounding is lexical plus a numeric-consistency check. Not checked:
+  negation ("not twenty days"), units ("20 hours" vs "20 days"), ordinals, a
+  lone "one", differently split decimals, and claims that combine facts from
+  several documents. Document-side matching is lenient ("twenty-five" in a
+  source also supports "twenty" or "five").
+- The `openai` SDK stays on 4.x: newer majors need Node 20+ and will come with
+  3.0. `csv-parse` has one moderate advisory whose fix is a major release.
+- Experimental SSO cannot refresh OIDC sessions, and `SAMLProvider` refuses
+  to authenticate.
+- `AuditLogger`'s HMAC signing key is random per process unless `signingKey`
+  is passed, so `verifyIntegrity` flags records written before a restart.
 
 ## [2.4.5] - 2026-04-19
 
