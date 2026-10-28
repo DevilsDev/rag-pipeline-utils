@@ -61,7 +61,9 @@ class LocalEmbedder extends BaseConnector {
     const idfEntries = [];
     for (const [token, freq] of docFreq) {
       if (freq < this.config.minDocFrequency) continue;
-      const idfValue = Math.log(this.docCount / (freq + 1));
+      // Smoothed IDF stays positive; log(N / (df + 1)) is <= 0 for every
+      // token in small corpora (N <= 2), which produced all-zero vectors.
+      const idfValue = Math.log(1 + this.docCount / freq);
       idfEntries.push([token, idfValue]);
     }
 
@@ -141,6 +143,35 @@ class LocalEmbedder extends BaseConnector {
    */
   embedQuery(query) {
     return this.embed(query);
+  }
+
+  /**
+   * Serializable vocabulary and IDF weights, so a trained embedder can be
+   * restored in another process (e.g. by FileVectorStore-backed CLI queries).
+   *
+   * @returns {{docCount: number, vocabulary: Array<[string, number]>, idf: Array<[string, number]>}}
+   */
+  getState() {
+    return {
+      docCount: this.docCount,
+      vocabulary: [...this.vocabulary],
+      idf: [...this.idf],
+    };
+  }
+
+  /**
+   * Restore state produced by getState().
+   * @param {{docCount: number, vocabulary: Array<[string, number]>, idf: Array<[string, number]>}} state
+   */
+  setState(state) {
+    this.docCount = state.docCount || 0;
+    this.vocabulary = new Map(state.vocabulary || []);
+    this.idf = new Map(state.idf || []);
+  }
+
+  /** @returns {number} Vector length produced by embed() once trained */
+  get dimensions() {
+    return this.vocabulary.size;
   }
 
   /**

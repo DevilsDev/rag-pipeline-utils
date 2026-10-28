@@ -209,17 +209,23 @@ describe("Enhanced CLI Integration Tests", () => {
 
     it("should show extended help with examples", async () => {
       const result = await runCLI(["--help"]);
-      expect(result.stdout).toContain("rag-pipeline init --interactive");
-      expect(result.stdout).toContain("rag-pipeline doctor --auto-fix");
-      expect(result.stdout).toContain("rag-pipeline plugin search openai");
+      expect(result.stdout).toContain("rag-pipeline init");
+      expect(result.stdout).toContain("rag-pipeline ingest ./docs");
+      expect(result.stdout).toContain('rag-pipeline query "What is X?"');
     });
   });
 
   describe("Global Options", () => {
     it("should handle dry-run flag", async () => {
-      const result = await runCLI(["--dry-run", "ingest", "test-document.txt"]);
-      expect(result.stdout).toContain("🧪 Dry run: Would ingest document");
-      expect(result.stdout).toContain("File: test-document.txt");
+      const result = await runCLI([
+        "--config",
+        "valid.ragrc.json",
+        "--dry-run",
+        "ingest",
+        "test-document.txt",
+      ]);
+      expect(result.stdout).toContain("🧪 Dry run: would ingest 1 file(s)");
+      expect(result.stdout).toContain("test-document.txt");
     });
 
     it("should handle verbose flag", async () => {
@@ -243,9 +249,7 @@ describe("Enhanced CLI Integration Tests", () => {
         "--output",
         "new-config.json",
       ]);
-      expect(result.stdout).toContain(
-        "🧪 Dry run: Would initialize RAG pipeline configuration",
-      );
+      expect(result.stdout).toContain("🧪 Dry run: would write configuration");
       expect(result.stdout).toContain("Output file: new-config.json");
     });
 
@@ -256,8 +260,9 @@ describe("Enhanced CLI Integration Tests", () => {
         "valid.ragrc.json",
         "--no-interactive",
       ]);
-      expect(result.stdout).toContain("Configuration file already exists");
-      expect(result.stdout).toContain("Use --force to overwrite");
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain("Configuration file already exists");
+      expect(result.stderr).toContain("Use --force to overwrite");
     });
 
     it("should create basic configuration when not interactive", async () => {
@@ -269,7 +274,7 @@ describe("Enhanced CLI Integration Tests", () => {
         "--no-interactive",
       ]);
       expect(result.success).toBe(true);
-      expect(result.stdout).toContain("Basic configuration created");
+      expect(result.stdout).toContain("Configuration written");
 
       const configExists = await fs
         .access(outputPath)
@@ -530,109 +535,6 @@ describe("Enhanced CLI Integration Tests", () => {
       expect(result.stderr || result.stdout).toMatch(
         /json|syntax|error|invalid|parse/i,
       );
-    });
-  });
-
-  describe("Integration with Observability", () => {
-    it("should handle trace flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--trace",
-      ]);
-      expect(result.stdout).toContain("Tracing: enabled");
-    });
-
-    it("should handle stats flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "query",
-        "What is this about?",
-        "--stats",
-      ]);
-      expect(result.stdout).toContain("🧪 Dry run: Would execute query");
-    });
-
-    it("should handle export-observability flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--export-observability",
-        "observability.json",
-      ]);
-      expect(result.stdout).toContain("🧪 Dry run: Would ingest document");
-    });
-  });
-
-  describe("Performance and Memory", () => {
-    it("should handle parallel processing flag", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--parallel",
-        "--max-concurrency",
-        "5",
-      ]);
-      expect(result.stdout).toContain("Parallel processing: enabled");
-    });
-
-    it("should handle streaming flag", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--streaming",
-        "--batch-size",
-        "20",
-      ]);
-      expect(result.stdout).toContain("Streaming: enabled");
-    });
-
-    it("should handle memory limits", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--max-memory",
-        "1024",
-      ]);
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("CLI UX Features", () => {
-    it("should show document preview when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--preview",
-      ]);
-      expect(result.stdout).toContain("📄 Document Preview:");
-    });
-
-    it("should validate files when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--validate",
-      ]);
-      expect(result.stdout).toContain("File validation passed");
-    });
-
-    it("should show query explanation when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "query",
-        "What is this document about?",
-        "--explain",
-      ]);
-      expect(result.stdout).toContain("🔍 Query Explanation:");
-      expect(result.stdout).toContain("Processing steps:");
     });
   });
 

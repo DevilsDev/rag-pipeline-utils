@@ -1,44 +1,59 @@
 /**
  * Query command handler
- * Handles RAG pipeline queries
+ * Answers a question from the ingested index. Without an llm stage it prints
+ * the retrieved passages instead of an answer.
  */
 
-const { logger } = require("../../utils/logger.js");
+const { loadCliConfig } = require("../shared/config-context.js");
+const { query } = require("../services/rag-service.js");
+
+function printPassages(results) {
+  // A score of 0 means no overlap with the question at all.
+  const matches = results.filter((doc) => !(doc.score <= 0));
+  if (matches.length === 0) {
+    console.log("No matching passages found.");
+    return;
+  }
+  matches.forEach((doc, i) => {
+    const source = doc.metadata?.source || doc.id;
+    const score = typeof doc.score === "number" ? doc.score.toFixed(3) : "-";
+    console.log(`\n[${i + 1}] ${source} (score ${score})`);
+    console.log(doc.content);
+  });
+}
 
 /**
- * Handle query command
  * @param {object} globalOptions - Global CLI options from program.opts()
- * @param {string} prompt - Query prompt
+ * @param {string} question - Query text
  * @param {object} options - Command-specific options
  */
-async function handleQuery(globalOptions, prompt, options) {
+async function handleQuery(globalOptions, question, options = {}) {
   try {
-    if (globalOptions.dryRun) {
-      console.log("🧪 Dry run: Would execute query");
-      console.log(
-        `Prompt: ${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}`,
-      );
-      console.log(`Streaming: ${options.stream ? "enabled" : "disabled"}`);
+    const { config, configDir } = loadCliConfig(globalOptions);
+    const topK = options.topK || 3;
 
-      if (options.explain) {
-        console.log("🔍 Query Explanation:");
-        console.log("Processing steps:");
-        console.log("  1. Text embedding generation");
-        console.log("  2. Vector similarity search");
-        console.log("  3. Context retrieval");
-        console.log("  4. Language model generation");
-      }
+    if (globalOptions.dryRun) {
+      console.log(`🧪 Dry run: would query the index for: ${question}`);
       return;
     }
 
-    console.log(
-      `🤔 Processing query: ${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}`,
-    );
-    console.log("\n📝 Response:");
-    console.log("Mock response to query");
+    const result = await query({ config, configDir, question, topK });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
+
+    if (result.answer === null) {
+      console.log("No llm stage configured; showing retrieved passages.");
+    } else {
+      console.log(result.answer);
+      console.log("\nSources:");
+    }
+    printPassages(result.results);
   } catch (error) {
-    logger.error("❌ Query processing failed:", error.message);
-    process.exit(1);
+    console.error(`❌ Query failed: ${error.message}`);
+    process.exitCode = 1;
   }
 }
 

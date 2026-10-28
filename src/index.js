@@ -74,6 +74,7 @@ const { detectHallucinations } = require('./citation/hallucination-detector');
 const { BM25Search } = require('./retrieval/bm25-search');
 const { reciprocalRankFusion } = require('./retrieval/rank-fusion');
 const { HybridRetriever } = require('./retrieval/hybrid-retriever');
+const { FileVectorStore } = require('./retrieval/file-vector-store');
 
 // Guardrails
 const { PreRetrievalGuard } = require('./guardrails/pre-retrieval-guard');
@@ -238,6 +239,7 @@ module.exports = {
   BM25Search,
   reciprocalRankFusion,
   HybridRetriever,
+  FileVectorStore,
 
   // Guardrails
   PreRetrievalGuard,

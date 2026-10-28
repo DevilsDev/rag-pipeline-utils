@@ -6,13 +6,11 @@
  */
 
 const { Command } = require("commander");
-const fs = require("fs/promises");
 
 const { logger } = require("../utils/logger.js");
 
 // Shared utilities
 const {
-  createProgressBar,
   parsePositiveInteger,
   generateCompletionScript,
   getVersion,
@@ -117,34 +115,29 @@ class EnhancedCLI {
    * Setup all CLI commands
    */
   setupCommands() {
-    // Interactive initialization command
     this.program
       .command("init")
-      .description("Initialize RAG pipeline configuration")
-      .option("--interactive", "Use interactive wizard", true)
-      .option("--no-interactive", "Skip interactive wizard")
-      .option("--template <name>", "Use configuration template")
+      .description("Create a .ragrc.json configuration")
+      .option("--no-interactive", "Use the template without prompting")
+      .option(
+        "--template <name>",
+        "Starting point: local, openai, ollama, anthropic",
+        "local",
+      )
       .option("--output <path>", "Output configuration file", ".ragrc.json")
       .option("--force", "Overwrite existing configuration")
       .action(async (options) => {
-        await handleInit(this.program.opts(), options, (outputPath) =>
-          this.createBasicConfig(outputPath),
-        );
+        await handleInit(this.program.opts(), options);
       });
 
-    // Run pipeline command
     this.program
       .command("run")
-      .description("Execute RAG pipeline operations")
-      .option("--ingest <file>", "Ingest document into pipeline")
-      .option("--query <prompt>", "Query the pipeline")
-      .option("--stream", "Enable streaming output")
-      .option(
-        "--abort-timeout <ms>",
-        "Abort operation after timeout (milliseconds)",
-        parsePositiveInteger,
-      )
-      .option("--parallel", "Enable parallel processing")
+      .description("Ingest and/or query in one step")
+      .option("--ingest <path>", "File or directory to ingest first")
+      .option("--query <text>", "Question to ask after ingesting")
+      .option("--rebuild", "Discard the existing index before ingesting")
+      .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option("--json", "Print the query result as JSON")
       .action(async (options) => {
         await handleRun(this.program.opts(), options);
       });
@@ -160,52 +153,23 @@ class EnhancedCLI {
         await handleDoctor(this.program.opts(), options, mockPipelineDoctor);
       });
 
-    // Enhanced ingest command
     this.program
       .command("ingest")
-      .description("Ingest documents into the pipeline")
-      .argument("<file>", "Document file to ingest")
-      .option("--validate", "Validate document before ingesting")
-      .option("--preview", "Show preview of document chunks")
-      .option("--parallel", "Enable parallel processing")
-      .option("--streaming", "Enable streaming with memory safeguards")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
-      .option(
-        "--export-observability <file>",
-        "Export observability data to file",
-      )
-      .option(
-        "--max-concurrency <number>",
-        "Maximum concurrent operations",
-        "3",
-      )
-      .option(
-        "--batch-size <number>",
-        "Batch size for parallel processing",
-        "10",
-      )
-      .option("--max-memory <number>", "Maximum memory usage in MB", "512")
-      .action(async (file, options) => {
-        await handleIngest(this.program.opts(), file, options);
+      .description("Load, embed and index documents")
+      .argument("<path>", "File or directory (.md, .html, .csv, .txt)")
+      .option("--rebuild", "Discard the existing index before ingesting")
+      .action(async (inputPath, options) => {
+        await handleIngest(this.program.opts(), inputPath, options);
       });
 
-    // Enhanced query command
     this.program
       .command("query")
-      .description("Query the RAG pipeline")
-      .argument("<prompt>", "Query prompt")
-      .option("--stream", "Enable streaming response")
-      .option("--explain", "Show explanation of query processing")
-      .option("--parallel", "Enable parallel processing")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
-      .option(
-        "--export-observability <file>",
-        "Export observability data to file",
-      )
-      .action(async (prompt, options) => {
-        await handleQuery(this.program.opts(), prompt, options);
+      .description("Ask a question against the ingested documents")
+      .argument("<question>", "Question text")
+      .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option("--json", "Print the result as JSON")
+      .action(async (question, options) => {
+        await handleQuery(this.program.opts(), question, options);
       });
 
     // Configuration validation command
@@ -278,64 +242,6 @@ class EnhancedCLI {
   }
 
   /**
-   * Create basic configuration
-   */
-  async createBasicConfig(outputPath) {
-    const { validateRagrc } = require("../config/enhanced-ragrc-schema.js");
-
-    const base = {
-      namespace: "default",
-      metadata: {
-        name: "rag-pipeline",
-        version: "1.0.0",
-        description: "RAG pipeline configuration",
-        createdAt: new Date().toISOString(),
-      },
-      pipeline: [
-        { stage: "loader", name: "fs-loader", version: "1.0.0" },
-        { stage: "embedder", name: "mock-embedder", version: "1.0.0" },
-        { stage: "retriever", name: "mock-retriever", version: "1.0.0" },
-        { stage: "llm", name: "mock-llm", version: "1.0.0" },
-      ],
-      performance: {
-        parallel: {
-          enabled: false,
-          maxConcurrency: 3,
-        },
-        caching: {
-          enabled: false,
-          maxSize: 1000,
-          ttl: 3600,
-        },
-      },
-      observability: {
-        logging: {
-          level: "info",
-          structured: true,
-        },
-      },
-    };
-
-    const result = validateRagrc(base);
-    if (!result.valid) {
-      result.errors?.forEach((error) =>
-        console.error(`  ${error.instancePath || ""}: ${error.message}`),
-      );
-      throw new Error("Failed to generate valid configuration");
-    }
-
-    if (outputPath) {
-      await fs.writeFile(
-        outputPath,
-        JSON.stringify(result.normalized, null, 2),
-      );
-      console.log(`✅ Basic configuration created: ${outputPath}`);
-    }
-
-    return result.normalized;
-  }
-
-  /**
    * Run the CLI
    */
   async run(argv = process.argv) {
@@ -363,39 +269,8 @@ async function runEnhancedCLI(argv = process.argv) {
   await enhancedCLI.run(argv);
 }
 
-// CLI command surface for tests
-const init = async () => ({ ok: true });
-const ingest = async () => ({ ok: true });
-const query = async () => ({ ok: true });
-const handleError = async () => ({ ok: true });
-const validateArgs = () => true;
-const showHelp = () => "help text";
-
-// Extract createBasicConfig from the class for direct export
-const createBasicConfig = async (outputPath) => {
-  const cli = new EnhancedCLI();
-  return await cli.createBasicConfig(outputPath);
-};
-
-const enhancedCliCommands = {
-  init,
-  ingest,
-  query,
-  handleError,
-  validateArgs,
-  showHelp,
-};
-
 module.exports = {
   EnhancedCLI,
   enhancedCLI,
   runEnhancedCLI,
-  enhancedCliCommands,
-  init,
-  ingest,
-  query,
-  handleError,
-  validateArgs,
-  showHelp,
-  createBasicConfig,
 };

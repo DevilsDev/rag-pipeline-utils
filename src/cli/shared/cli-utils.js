@@ -71,10 +71,10 @@ function getVersion() {
 function getExtendedHelp() {
   return `
 Examples:
-  rag-pipeline init --interactive          Initialize with wizard
-  rag-pipeline doctor --auto-fix           Diagnose and fix issues
-  rag-pipeline plugin search openai        Search for plugins
-  rag-pipeline config show plugins         Show plugin configuration
+  rag-pipeline init                        Create .ragrc.json (prompts in a terminal)
+  rag-pipeline ingest ./docs               Index a file or directory
+  rag-pipeline query "What is X?"          Ask a question about the indexed documents
+  rag-pipeline config show                 Show the current configuration
 
 For more information, visit: https://github.com/DevilsDev/rag-pipeline-utils
 `;

@@ -18,11 +18,18 @@ const CONFIG_FILENAME = ".ragrc.json";
  * @param {string} [cwd=process.cwd()] - Directory to resolve the config from
  * @returns {object} Validated configuration object
  */
-function loadRagConfig(cwd = process.cwd()) {
-  const configPath = path.resolve(cwd, CONFIG_FILENAME);
+/**
+ * Load and validate .ragrc.json.
+ *
+ * @param {string} [location=process.cwd()] - A directory containing
+ *   .ragrc.json, or the path of a config file (any name ending in .json)
+ * @returns {object} Normalized configuration
+ */
+function loadRagConfig(location = process.cwd()) {
+  const configPath = resolveConfigPath(location);
 
+  // Errors are thrown, not logged: callers (e.g. the CLI) report them once.
   if (!fs.existsSync(configPath)) {
-    logger.error(`❌ Config file not found: ${configPath}`);
     throw new Error(`Config file not found: ${configPath}`);
   }
 
@@ -32,23 +39,35 @@ function loadRagConfig(cwd = process.cwd()) {
   try {
     config = JSON.parse(raw);
   } catch (err) {
-    logger.error("❌ Failed to parse JSON configuration.");
-    throw new Error("Invalid JSON in config file.");
+    throw new Error(
+      `Invalid JSON in config file ${configPath}: ${err.message}`,
+    );
   }
 
   const { valid, errors, normalized } = validateRagrc(config);
 
   if (!valid) {
-    logger.error(
-      `❌ Config validation failed:\n${JSON.stringify(errors, null, 2)}`,
-    );
-    throw new Error("Config validation failed");
+    const details = (errors || []).map((e) => e.message).join("; ");
+    throw new Error(`Config validation failed: ${details}`);
   }
 
-  logger.info("✅ Configuration loaded and normalized successfully");
+  logger.debug("Configuration loaded", { configPath });
   return normalized;
+}
+
+/**
+ * @param {string} [location=process.cwd()] - Directory or config file path
+ * @returns {string} Absolute path of the config file
+ */
+function resolveConfigPath(location = process.cwd()) {
+  const absolute = path.resolve(location);
+  const isFile =
+    (fs.existsSync(absolute) && fs.statSync(absolute).isFile()) ||
+    absolute.toLowerCase().endsWith(".json");
+  return isFile ? absolute : path.join(absolute, CONFIG_FILENAME);
 }
 
 module.exports = {
   loadRagConfig,
+  resolveConfigPath,
 };
