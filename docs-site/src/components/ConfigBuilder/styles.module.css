@@ -94,8 +94,6 @@
 }
 
 .output {
-  position: sticky;
-  top: calc(var(--ifm-navbar-height) + 1rem);
   min-width: 0;
 }
 
@@ -139,9 +137,5 @@
 @media (max-width: 996px) {
   .builder {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .output {
-    position: static;
   }
 }
