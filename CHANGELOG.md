@@ -11,6 +11,37 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Working CLI workflow**: `rag-pipeline init`, `ingest <path>`, `query
+<question>` and `run` now do real work against a persistent local index.
+  `init` writes a pipeline of built-in components (`--template local |
+openai | ollama | anthropic`, or interactive prompts in a terminal).
+- **`FileVectorStore`** (exported): JSON-file vector index with atomic
+  writes, embedder/dimension tracking and per-source re-ingestion.
+- **`.ragrc.json` pipeline resolution**: entries `{ stage, name, config }`
+  resolve to built-in components, custom plugin modules under `plugins`, or
+  plugins registered on `pluginRegistry`.
+- **`rag-pipeline serve`** and a working **`DevServer`**: local HTTP API
+  (`GET /health`, `POST /query`) bound to 127.0.0.1, JSON only, 64 KB body
+  limit, no CORS.
+- `LocalEmbedder.getState()` / `setState()`.
+
+### Removed
+
+- CLI placeholders that printed success without doing anything (`ingest`,
+  `query`, `doctor`, `validate`, `plugin search|install|publish`) and
+  options that had no effect (`--trace`, `--stats`, `--parallel`,
+  `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`,
+  `--abort-timeout`, `--quiet`, `config show --format`).
+- The interactive wizard built on hard-coded mock registry data.
+- Unreachable modules that were never exported or registered: `src/dx/`
+  (including a realtime debugger exposing an unauthenticated WebSocket),
+  `src/cli/commands/{dx,docs}.js`, `src/cli/input-sanitization-middleware.js`,
+  `src/cli/plugin-marketplace-commands.js`, `src/query.js`, `src/ingest.js`,
+  `src/pipeline/pipeline.js`, `src/core/pipeline-factory.js`. The package
+  `exports` map only exposes `.` and `./cli`, so these were never public.
+
 ### Fixed
 
 - **Package import**: `require()` / `import` of 2.4.5 failed in every clean
@@ -53,6 +84,20 @@ page.
   declarations. They are now generated from JSDoc at build time into
   `dist/types/` and re-exported from `dist/index.d.ts`; the build fails if
   any export is undeclared, and the smoke test compiles a TypeScript consumer.
+- **`doctor` / `validate`** report real findings (unknown components,
+  missing stages, missing API keys, broken custom plugins) and exit 1 on
+  errors. `doctor --auto-fix` no longer lets callers re-enable a shell, no
+  longer strips Windows path separators, and runs npm on Windows.
+- **`hub`** (alias `plugin`) commands are registered. There is no default
+  registry (the old default host does not exist): pass `--registry <url>` or
+  set `RAG_PLUGIN_REGISTRY`. `hub install` is disabled until it verifies and
+  installs plugin code safely.
+- **Hot reload** ignore patterns work again (chokidar 4 dropped glob support)
+  and only JavaScript changes trigger a reload.
+- `loadRagConfig()` accepts a config file path as well as a directory and no
+  longer logs to stdout.
+- `LocalEmbedder` produced all-zero vectors for corpora of two or fewer
+  documents (IDF is now smoothed).
 - **Logger**: console-style calls such as `logger.error("Failed:", msg)` no
   longer log the message as one key per character.
 
