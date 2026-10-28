@@ -147,7 +147,6 @@
     "!src/utils/ci/",
     "!src/ci/",
     "!src/scripts/",
-    "!src/cli/plugin-marketplace-commands.js",
     "bin/",
     "contracts/",
     ".ragrc.schema.json",
