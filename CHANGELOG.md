@@ -11,6 +11,61 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Working CLI workflow**: `rag-pipeline init`, `ingest <path>`, `query
+<question>` and `run` now do real work against a persistent local index.
+  `init` writes a pipeline of built-in components (`--template local |
+openai | ollama | anthropic`, or interactive prompts in a terminal).
+- **`FileVectorStore`** (exported): JSON-file vector index with atomic
+  writes, embedder/dimension tracking and per-source re-ingestion.
+- **`.ragrc.json` pipeline resolution**: entries `{ stage, name, config }`
+  resolve to built-in components, custom plugin modules under `plugins`, or
+  plugins registered on `pluginRegistry`.
+- **`rag-pipeline serve`** and a working **`DevServer`**: local HTTP API
+  (`GET /health`, `POST /query`) bound to 127.0.0.1, JSON only, 64 KB body
+  limit, no CORS.
+- `LocalEmbedder.getState()` / `setState()`.
+- **`rag-pipeline hub install <source>`** installs plugins from a local
+  directory, `.tgz`, single `.js` file, `npm:<package>` or a registry
+  (sha256-verified). It contains extraction to `.rag/plugins`, runs a static
+  security scan (high-risk findings block unless `--allow-risky`), checks the
+  stage contract in a separate process, and registers the plugin in
+  `.ragrc.json`. `PluginHub.installPlugin()` uses the same installer.
+- **`rag-pipeline hub certify submit|check <path>`** scores a local plugin
+  from its files (contract, security scan, tests, documentation) against the
+  BASIC/VERIFIED/ENTERPRISE automated thresholds.
+- **`rag-pipeline hub list`** lists plugins registered in the config.
+- **`rag-pipeline init` setup wizard**: chooses the embedder, LLM, retriever and an optional reranker, using only built-ins or custom plugin modules. Connector options are pre-filled with the connector defaults. Each custom plugin is loaded and its stage method checked before it is accepted. The wizard reports which API key environment variables are missing, can run a connection test on request, and previews the JSON before writing.
+- **`rag-pipeline ai`**, built on the configured pipeline and index:
+  `ai train embedding [path]` refits the `local` TF-IDF embedder and
+  re-embeds the index; `ai benchmark` reports measured p50/p95/mean latency
+  per stage; `ai feedback <question> <docId> --rating up|down` stores votes in
+  `.rag/feedback.json` and `ai search` applies them as a capped,
+  explained score adjustment; `ai multimodal process <path>` reports type,
+  characters and chunks for text files (images exit 1: no built-in connector
+  accepts image input).
+
+### Removed
+
+- CLI placeholders that printed success without doing anything (`ingest`,
+  `query`, `doctor`, `validate`, `plugin search|install|publish`) and
+  options that had no effect (`--trace`, `--stats`, `--parallel`,
+  `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`,
+  `--abort-timeout`, `--quiet`, `config show --format`).
+- The interactive wizard built on hard-coded mock registry data.
+- The unregistered `src/cli/commands/ai-ml*` command modules: federated
+  learning, LLM fine-tuning, `ai train status|deploy`, `ai dashboard`,
+  adaptive profiles and multimodal `search`/`describe`. They called methods
+  missing from the `src/ai` engines, exited 0 on failure and printed
+  hard-coded or simulated numbers. The `src/ai` library modules are unchanged.
+- Unreachable modules that were never exported or registered: `src/dx/`
+  (including a realtime debugger exposing an unauthenticated WebSocket),
+  `src/cli/commands/{dx,docs}.js`, `src/cli/input-sanitization-middleware.js`,
+  `src/cli/plugin-marketplace-commands.js`, `src/query.js`, `src/ingest.js`,
+  `src/pipeline/pipeline.js`, `src/core/pipeline-factory.js`. The package
+  `exports` map only exposes `.` and `./cli`, so these were never public.
+
 ### Fixed
 
 - **Package import**: `require()` / `import` of 2.4.5 failed in every clean
@@ -53,10 +108,42 @@ page.
   declarations. They are now generated from JSDoc at build time into
   `dist/types/` and re-exported from `dist/index.d.ts`; the build fails if
   any export is undeclared, and the smoke test compiles a TypeScript consumer.
+- **`doctor` / `validate`** report real findings (unknown components,
+  missing stages, missing API keys, broken custom plugins) and exit 1 on
+  errors. `doctor --auto-fix` no longer lets callers re-enable a shell, no
+  longer strips Windows path separators, and runs npm on Windows.
+- **`hub`** (alias `plugin`) commands are registered. There is no default
+  registry (the old default host does not exist): pass `--registry <url>` or
+  set `RAG_PLUGIN_REGISTRY` for registry operations.
+- **Hot reload** ignore patterns work again (chokidar 4 dropped glob support)
+  and only JavaScript changes trigger a reload.
+- `loadRagConfig()` accepts a config file path as well as a directory and no
+  longer logs to stdout.
+- `LocalEmbedder` produced all-zero vectors for corpora of two or fewer
+  documents (IDF is now smoothed).
 - **Logger**: console-style calls such as `logger.error("Failed:", msg)` no
   longer log the message as one key per character.
 
 ### Changed
+
+- **`DevServer`** now really listens: `start()` binds port 3000 by default
+  (pass `port: 0` for a free port), so existing callers may see
+  `EADDRINUSE`. Default host is `127.0.0.1` (was `localhost`), default
+  `watchPaths` is `[]` (was `./src/plugins`, `./src/mocks`), and requests
+  must use a loopback `Host` header while bound to loopback.
+- **`loadRagConfig()`** error messages now include details
+  (`Config validation failed: ...`, `Invalid JSON in config file <path>: ...`)
+  and it no longer logs.
+- **`rag-pipeline plugin` / `hub`** registry operations require
+  `--registry <url>` or `RAG_PLUGIN_REGISTRY`. `hub certify submit` takes a
+  local plugin path and reports computed scores; it previously issued
+  certificates from fixed placeholder scores. `PluginHub.installPlugin()` now
+  installs into `<project>/.rag/plugins` and registers the plugin in the
+  config (it previously only wrote `metadata.json` to `localCacheDir`), and
+  `getInstalledPlugins()` reads the config.
+- **`FileVectorStore`** index files store mostly-zero vectors sparsely and
+  round values to 7 significant digits (about 10x smaller for the `local`
+  embedder).
 
 - **Grounding scores** (citations, faithfulness, context precision/recall,
   groundedness, `PostGenerationGuard`, `SelfCritiqueChecker`) now measure the

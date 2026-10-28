@@ -39,6 +39,25 @@ const SEVERITY_LEVELS = {
 };
 
 /**
+ * Locate npm's CLI script next to the running node binary (Windows layout:
+ * <node dir>/node_modules/npm/bin/npm-cli.js).
+ * @returns {string}
+ */
+function resolveNpmCli() {
+  const candidate = path.join(
+    path.dirname(process.execPath),
+    "node_modules",
+    "npm",
+    "bin",
+    "npm-cli.js",
+  );
+  if (!require("fs").existsSync(candidate)) {
+    throw new Error("npm not found next to node; run npm install manually");
+  }
+  return candidate;
+}
+
+/**
  * Doctor command for pipeline diagnostics
  */
 class PipelineDoctor {
@@ -118,21 +137,31 @@ class PipelineDoctor {
       throw new Error(`Command not allowed: ${command}`);
     }
 
-    // Sanitize arguments
+    // Sanitize arguments. Backslashes are kept: there is no shell to
+    // interpret them, and they are path separators on Windows.
     const sanitizedArgs = args.map((arg) => {
       if (typeof arg !== "string") {
         throw new Error("All arguments must be strings");
       }
-      // Remove shell metacharacters
-      return arg.replace(/[;&|`$(){}[\]<>"'\\]/g, "");
+      return arg.replace(/[;&|`$(){}[\]<>"']/g, "");
     });
 
     const execOptions = {
-      shell: false, // Never use shell to prevent injection
       timeout: options.timeout || 30000,
       env: { ...process.env, PATH: process.env.PATH }, // Controlled environment
       ...options,
+      shell: false, // Never use a shell; set last so callers cannot override it
     };
+
+    // npm is a .cmd shim on Windows, which execFile cannot run without a
+    // shell; run npm's JS entry point with node instead.
+    if (command === "npm" && process.platform === "win32") {
+      return await execFileAsync(
+        process.execPath,
+        [resolveNpmCli(), ...sanitizedArgs],
+        execOptions,
+      );
+    }
 
     return await execFileAsync(command, sanitizedArgs, execOptions);
   }
@@ -168,7 +197,12 @@ class PipelineDoctor {
         // Validate config path is within project directory
         const configPath = path.resolve(this.options.configPath);
         const projectDir = path.resolve(".");
-        if (!configPath.startsWith(projectDir)) {
+        // Containment check: a bare startsWith(projectDir) also accepted
+        // sibling directories such as "/proj-evil".
+        const inside = ["/", "\\"].some((sep) =>
+          configPath.startsWith(projectDir + sep),
+        );
+        if (!inside) {
           throw new Error("Config path outside project directory");
         }
 

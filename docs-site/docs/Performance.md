@@ -16,16 +16,21 @@ This comprehensive performance guide helps you optimize **@DevilsDev/rag-pipelin
 
 ### **Performance Monitoring**
 
+The CLI has no `benchmark` or `monitor` command. Time individual commands,
+and use `rag-pipeline doctor` for memory and configuration checks:
+
 ```bash
-# Enable performance monitoring
-rag-pipeline query "test" --benchmark --stats
+# Time a query end to end
+time rag-pipeline query "test" --json
 
-# Comprehensive performance analysis
-rag-pipeline benchmark --comprehensive --output perf-report.json
-
-# Real-time monitoring
-rag-pipeline monitor --metrics throughput,latency,memory --interval 5s
+# Memory, config size and other performance checks
+rag-pipeline doctor --category performance
 ```
+
+For in-process metrics, use `MetricsAggregator` and `DashboardGenerator`
+(see [Evaluation](./Evaluation.md#dashboard-visualization)). The repository's
+internal benchmark suite runs with `npm run benchmark` from a clone; see
+[Benchmarks](./Benchmarks.md).
 
 ---
 
@@ -107,17 +112,6 @@ class OptimizedEmbedder extends BaseEmbedder {
 }
 ```
 
-**Embedding Benchmarks**:
-
-```bash
-# Benchmark different embedding strategies
-rag-pipeline benchmark embedder \
-  --texts 1000 \
-  --batch-sizes 10,50,100,200 \
-  --concurrency-levels 1,3,5,10 \
-  --output embedding-benchmark.json
-```
-
 ### **2. Vector Retrieval Optimization**
 
 **Index Configuration**:
@@ -167,17 +161,6 @@ async function optimizedRetrieve(query, options = {}) {
     maxRetries: 2,
   });
 }
-```
-
-**Vector Store Benchmarks**:
-
-```bash
-# Compare vector store performance
-rag-pipeline benchmark retriever \
-  --stores pinecone,chroma,weaviate \
-  --queries 500 \
-  --concurrent 10 \
-  --metrics latency,throughput,accuracy
 ```
 
 ### **3. LLM Generation Optimization**
@@ -459,16 +442,12 @@ console.log("Throughput:", metrics.throughput.current);
 
 ```bash
 # Profile memory usage
-node --inspect --max-old-space-size=4096 rag-pipeline ingest ./large-dataset
+node --inspect --max-old-space-size=4096 \
+  node_modules/@devilsdev/rag-pipeline-utils/bin/cli.js ingest ./large-dataset
 
-# Profile CPU usage
-rag-pipeline benchmark --profile-cpu --output cpu-profile.json
-
-# Generate performance report
-rag-pipeline analyze-performance \
-  --input performance-logs.json \
-  --output performance-report.html \
-  --include-recommendations
+# Profile CPU usage (writes a .cpuprofile file to the current directory)
+node --cpu-prof node_modules/@devilsdev/rag-pipeline-utils/bin/cli.js \
+  query "test"
 ```
 
 ### **Custom Metrics**

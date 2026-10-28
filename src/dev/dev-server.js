@@ -7,19 +7,24 @@
  * for rapid plugin and configuration development.
  *
  * Features:
+ * - Local HTTP API over the configured pipeline:
+ *     GET  /health  -> { status, uptime }
+ *     POST /query   -> { question, topK? } => { answer, results, citations }
+ *   Binds to 127.0.0.1 by default, JSON only, no CORS headers, request
+ *   bodies limited to 64 KB, no static file serving.
  * - Automatic hot reloading of plugins and configuration
- * - Live feedback on reload status
- * - Error notifications
  * - Statistics dashboard
- * - WebSocket support for real-time updates (optional)
  *
  * @module dev/dev-server
  * @since 2.4.0
  */
 
+const http = require('http');
 const { EventEmitter } = require('events');
 const { createHotReloadManager } = require('./hot-reload');
 const { logger } = require('../utils/logger');
+
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
 
 /**
  * Development Server
@@ -31,9 +36,12 @@ class DevServer extends EventEmitter {
     super();
 
     this.options = {
-      port: options.port || 3000,
-      host: options.host || 'localhost',
-      watchPaths: options.watchPaths || ['./src/plugins', './src/mocks'],
+      port: options.port ?? 3000, // 0 picks a free port
+      host: options.host || '127.0.0.1',
+      watchPaths: options.watchPaths || [],
+      maxBodyBytes: options.maxBodyBytes || 64 * 1024,
+      // Optional custom handler: async ({ question, topK }) => result
+      query: options.query || null,
       configPath: options.configPath || '.ragrc.json',
       verbose: options.verbose !== false,
       autoReload: options.autoReload !== false,
@@ -147,12 +155,23 @@ class DevServer extends EventEmitter {
     // Start hot reload
     await this.hotReload.start();
 
+    this.server = http.createServer((req, res) => {
+      this._handleRequest(req, res).catch((error) => {
+        this._send(res, 500, { error: error.message });
+      });
+    });
+    await new Promise((resolve, reject) => {
+      this.server.once('error', reject);
+      this.server.listen(this.options.port, this.options.host, () => {
+        this.server.off('error', reject);
+        resolve();
+      });
+    });
+    this.port = this.server.address().port;
+
     this.isRunning = true;
 
-    this._log(
-      `Development server started on ${this.options.host}:${this.options.port}`,
-      'success',
-    );
+    this._log(`Development server listening on ${this.url}`, 'success');
     this._log(`Watching: ${this.options.watchPaths.join(', ')}`, 'info');
     this._log(
       'Hot reload enabled - changes will be applied automatically',
@@ -178,6 +197,11 @@ class DevServer extends EventEmitter {
     // Stop hot reload
     await this.hotReload.stop();
 
+    if (this.server) {
+      await new Promise((resolve) => this.server.close(() => resolve()));
+      this.server = null;
+    }
+
     this.isRunning = false;
 
     const uptime = this.startTime ? Date.now() - this.startTime : 0;
@@ -202,7 +226,8 @@ class DevServer extends EventEmitter {
       isRunning: this.isRunning,
       uptime,
       host: this.options.host,
-      port: this.options.port,
+      port: this.port ?? this.options.port,
+      url: this.isRunning ? this.url : null,
       watchPaths: this.options.watchPaths,
       configPath: this.options.configPath,
       hotReload: {
@@ -249,6 +274,136 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
    * @param {string} type - Type ('plugin' or 'config')
    * @returns {Promise<void>}
    */
+  /** @returns {string} Base URL of the running server */
+  get url() {
+    return `http://${this.options.host}:${this.port ?? this.options.port}`;
+  }
+
+  /**
+   * Route a request. Only GET /health and POST /query exist.
+   * @private
+   */
+  async _handleRequest(req, res) {
+    // DNS rebinding: a web page can point its own domain at 127.0.0.1 and
+    // then call this server same-origin. When bound to loopback, only accept
+    // requests addressed to a loopback name.
+    if (
+      LOOPBACK_HOSTS.has(this.options.host) &&
+      !this._isLoopbackHostHeader(req)
+    ) {
+      return this._send(res, 403, { error: 'Forbidden host' });
+    }
+
+    const { pathname } = new URL(req.url, 'http://localhost');
+
+    if (pathname === '/health') {
+      if (req.method !== 'GET')
+        return this._send(res, 405, { error: 'Use GET' });
+      const uptime = this.startTime ? Date.now() - this.startTime : 0;
+      return this._send(res, 200, { status: 'ok', uptime });
+    }
+
+    if (pathname === '/query') {
+      if (req.method !== 'POST')
+        return this._send(res, 405, { error: 'Use POST' });
+      let body;
+      try {
+        body = await this._readJson(req);
+      } catch (error) {
+        return this._send(res, error.statusCode || 400, {
+          error: error.message,
+        });
+      }
+      const { question, topK } = body || {};
+      if (typeof question !== 'string' || !question.trim()) {
+        return this._send(res, 400, {
+          error: '"question" must be a non-empty string',
+        });
+      }
+      if (
+        topK !== undefined &&
+        !(Number.isInteger(topK) && topK > 0 && topK <= 50)
+      ) {
+        return this._send(res, 400, {
+          error: '"topK" must be an integer from 1 to 50',
+        });
+      }
+      const result = await this._runQuery({ question, topK: topK || 3 });
+      return this._send(res, 200, result);
+    }
+
+    return this._send(res, 404, { error: 'Not found' });
+  }
+
+  /** @private */
+  _isLoopbackHostHeader(req) {
+    const header = req.headers.host || '';
+    const hostname = header.startsWith('[')
+      ? header.slice(0, header.indexOf(']') + 1)
+      : header.split(':')[0];
+    return LOOPBACK_HOSTS.has(hostname.toLowerCase());
+  }
+
+  /**
+   * Answer with the custom `query` option, or the pipeline described by the
+   * config file (reloaded per request, so config edits apply immediately).
+   * @private
+   */
+  async _runQuery({ question, topK }) {
+    if (this.options.query) return this.options.query({ question, topK });
+    const { loadCliConfig } = require('../cli/shared/config-context');
+    const { query } = require('../cli/services/rag-service');
+    const { config, configDir } = loadCliConfig({
+      config: this.options.configPath,
+    });
+    return query({ config, configDir, question, topK });
+  }
+
+  /** @private */
+  _readJson(req) {
+    return new Promise((resolve, reject) => {
+      const type = req.headers['content-type'] || '';
+      if (!type.includes('application/json')) {
+        const error = new Error('Content-Type must be application/json');
+        error.statusCode = 415;
+        return reject(error);
+      }
+      let size = 0;
+      const chunks = [];
+      req.on('data', (chunk) => {
+        size += chunk.length;
+        if (size > this.options.maxBodyBytes) {
+          const error = new Error('Request body too large');
+          error.statusCode = 413;
+          reject(error);
+          // Stop buffering but keep draining, so the 413 response is delivered
+          req.removeAllListeners('data');
+          req.resume();
+          return;
+        }
+        chunks.push(chunk);
+      });
+      req.on('end', () => {
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'));
+        } catch {
+          reject(new Error('Invalid JSON body'));
+        }
+      });
+      req.on('error', reject);
+    });
+  }
+
+  /** @private */
+  _send(res, status, payload) {
+    if (res.headersSent) return;
+    res.writeHead(status, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    res.end(JSON.stringify(payload));
+  }
+
   async triggerReload(filePath, type = 'plugin') {
     this._log(`Manually triggering reload: ${filePath}`, 'info');
     await this.hotReload.triggerReload(filePath, type);

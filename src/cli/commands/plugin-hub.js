@@ -11,17 +11,80 @@ const hubCommands = require("./plugin-hub/hub-commands");
 const certificationCommands = require("./plugin-hub/certification-commands");
 const reviewCommands = require("./plugin-hub/review-commands");
 const { setupEventListeners } = require("./plugin-hub/event-handlers");
+const {
+  installFromSource,
+  certifyLocal,
+  listPlugins,
+} = require("./plugin-hub/local-commands");
 
 class PluginHubCLI {
-  constructor() {
-    this.hub = new PluginHub();
-    this.certification = new PluginCertification();
-    setupEventListeners(this.hub, this.certification);
+  /**
+   * @param {object} [options]
+   * @param {string} [options.registryUrl] - Overrides --registry / RAG_PLUGIN_REGISTRY
+   */
+  constructor(options = {}) {
+    this.registryUrl = options.registryUrl;
+  }
+
+  /**
+   * There is no public registry: the old default (registry.rag-pipeline.dev)
+   * does not resolve. Commands that talk to a registry need one configured.
+   */
+  _resolveRegistryUrl() {
+    const url = this.registryUrl || process.env.RAG_PLUGIN_REGISTRY;
+    if (!url) {
+      throw new Error(
+        "No plugin registry configured. Pass --registry <url> or set RAG_PLUGIN_REGISTRY.",
+      );
+    }
+    return url;
+  }
+
+  _init() {
+    if (!this._hub) {
+      const registryUrl = this._resolveRegistryUrl();
+      this._hub = new PluginHub({ registryUrl });
+      this._certification = new PluginCertification({ registryUrl });
+      setupEventListeners(this._hub, this._certification);
+    }
+  }
+
+  get hub() {
+    this._init();
+    return this._hub;
+  }
+
+  get certification() {
+    this._init();
+    return this._certification;
   }
 
   createCommands() {
     const program = new Command("hub");
-    program.description("Community plugin hub operations");
+    program
+      .alias("plugin")
+      .description("Plugin registry operations (requires --registry <url>)")
+      .option(
+        "--registry <url>",
+        "Plugin registry URL (or RAG_PLUGIN_REGISTRY)",
+      )
+      .hook("preAction", (_hubCommand, actionCommand) => {
+        // Local commands: requirements and submit never need a registry; install
+        // needs one only for registry ids and checks that itself.
+        if (
+          ["requirements", "install", "submit", "list"].includes(
+            actionCommand.name(),
+          )
+        )
+          return;
+        this.registryUrl = this.registryUrl || program.opts().registry;
+        try {
+          this._resolveRegistryUrl();
+        } catch (error) {
+          console.error(`❌ ${error.message}`);
+          process.exit(1);
+        }
+      });
 
     // Search command
     program
@@ -42,21 +105,22 @@ class PluginHubCLI {
         await hubCommands.searchPlugins(this.hub, query, _options);
       });
 
-    // Install command
     program
-      .command("install <plugin>")
-      .description("Install a plugin from the hub")
-      .option("-v, --version <version>", "Plugin version", "latest")
-      .option("--no-security-scan", "Skip security scan")
-      .option("--require-certified", "Only install certified plugins")
-      .option(
-        "--sandbox-timeout <timeout>",
-        "Sandbox timeout in ms",
-        parseInt,
-        30000,
+      .command("install <source>")
+      .description(
+        "Install a plugin from a local path, .tgz, .js, npm:<package> or the registry",
       )
-      .action(async (plugin, _options) => {
-        await hubCommands.installPlugin(this.hub, plugin, _options);
+      .option("--stage <stage>", "loader, embedder, retriever, llm or reranker")
+      .option("--name <name>", "Name to register the plugin under")
+      .option("-v, --version <version>", "Registry version", "latest")
+      .option("--force", "Replace an installed plugin with the same stage/name")
+      .option("--allow-risky", "Install despite high-risk security findings")
+      .action(async (source, _options, command) => {
+        const globals = command.optsWithGlobals();
+        this.registryUrl = this.registryUrl || globals.registry;
+        const getHub = () =>
+          this.registryUrl || process.env.RAG_PLUGIN_REGISTRY ? this.hub : null;
+        await installFromSource(source, _options, globals, getHub);
       });
 
     // Info command
@@ -71,10 +135,10 @@ class PluginHubCLI {
     program
       .command("list")
       .alias("ls")
-      .description("List installed plugins")
-      .option("--format <format>", "Output format: table, json", "table")
-      .action(async (_options) => {
-        await hubCommands.listInstalledPlugins(this.hub, _options);
+      .description("List plugins registered in the config")
+      .option("--json", "Print as JSON")
+      .action(async (_options, command) => {
+        listPlugins(command.optsWithGlobals(), _options);
       });
 
     // Publish command
@@ -132,19 +196,14 @@ class PluginHubCLI {
       .description("Plugin certification operations");
 
     certifyCmd
-      .command("submit <plugin>")
-      .description("Submit plugin for certification")
-      .option(
-        "-l, --level <level>",
-        "Certification level: BASIC, VERIFIED, ENTERPRISE",
-        "BASIC",
-      )
-      .action(async (plugin, _options) => {
-        await certificationCommands.submitForCertification(
-          this.certification,
-          plugin,
-          _options,
-        );
+      .command("submit <path>")
+      .alias("check")
+      .description("Run automated certification checks on a local plugin")
+      .option("--stage <stage>", "loader, embedder, retriever, llm or reranker")
+      .option("--json", "Print the report as JSON")
+      .option("--output <file>", "Save the report as JSON")
+      .action(async (pluginPath, _options) => {
+        await certifyLocal(pluginPath, _options);
       });
 
     certifyCmd
@@ -162,8 +221,9 @@ class PluginHubCLI {
       .command("requirements [level]")
       .description("Show certification requirements")
       .action(async (level) => {
+        // Requirements are a static list; no registry is contacted.
         await certificationCommands.showCertificationRequirements(
-          this.certification,
+          new PluginCertification(),
           level,
         );
       });

@@ -18,22 +18,28 @@ npm install @devilsdev/rag-pipeline-utils
 
 ## 2. Ingest Documents Using CLI
 
-This CLI command loads PDFs, embeds them, and stores the vectors.
+This CLI command loads a file or directory (`.md`, `.markdown`, `.html`,
+`.htm`, `.csv`, `.txt`), embeds the chunks, and stores them in the index.
 
 ```bash
-npx rag-utils ingest ./sample.pdf --config .ragrc.json
+npx rag-pipeline init --no-interactive
+npx rag-pipeline ingest ./docs
 ```
 
-Ensure you have a valid `.ragrc.json` config:
+`init` writes a valid `.ragrc.json` like this (offline `local` template):
 
 ```json
 {
-  "loader": { "pdf": "./src/mocks/pdf-loader.js" },
-  "embedder": { "openai": "./src/mocks/openai-embedder.js" },
-  "retriever": { "pinecone": "./src/mocks/pinecone-retriever.js" },
-  "llm": { "openai": "./src/mocks/openai-llm.js" },
-  "namespace": "docs-example",
-  "pipeline": ["loader", "embedder", "retriever"]
+  "namespace": "default",
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "local" },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    }
+  ]
 }
 ```
 
@@ -42,8 +48,11 @@ Ensure you have a valid `.ragrc.json` config:
 ## 3. Run a Query Using CLI
 
 ```bash
-npx rag-utils query "What is this document about?" --config .ragrc.json
+npx rag-pipeline query "What is this document about?"
 ```
+
+Without an `llm` stage, `query` prints the best-matching passages. See the
+[CLI Reference](./CLI.md) for all commands and options.
 
 ---
 
@@ -52,30 +61,48 @@ npx rag-utils query "What is this document about?" --config .ragrc.json
 You can create your own loader/retriever/LLM:
 
 ```js
-// src/plugins/my-custom-llm.js
-export default class MyCustomLLM {
-  ask(prompt) {
-    return `Custom response to: ${prompt}`;
+// src/plugins/my-custom-llm.js (CommonJS; loaded with require())
+module.exports = class MyCustomLLM {
+  constructor(config = {}) {
+    this.config = config; // the entry's "config" from .ragrc.json
   }
-}
+
+  // query: the user's question; docs: retrieved passages ({ content, metadata })
+  async generate(query, docs) {
+    return `Custom answer to "${query}" from ${docs.length} passage(s)`;
+  }
+};
 ```
 
 Then reference it in `.ragrc.json`:
 
 ```json
-"llm": {
-  "custom": "./src/plugins/my-custom-llm.js"
+{
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "local" },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    },
+    { "stage": "llm", "name": "custom" }
+  ],
+  "plugins": {
+    "llm": { "custom": "./src/plugins/my-custom-llm.js" }
+  }
 }
 ```
 
 ---
 
-## 5. Validate Plugin Mocks
+## 5. Check the Configuration
 
-Ensure all mocks meet contract interfaces before commit:
+Confirm every pipeline entry resolves and your custom plugin loads:
 
 ```bash
-npm run validate-fixtures
+npx rag-pipeline validate
+npx rag-pipeline doctor --category configuration plugins
 ```
 
 ---

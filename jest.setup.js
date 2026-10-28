@@ -15,8 +15,25 @@ function prettyUrl(target) {
   }
 }
 
+// Loopback is allowed only for tests that opt in by setting
+// globalThis.__ALLOW_LOOPBACK_HTTP__ (they start their own local server).
+// Otherwise a test could silently reach a real local service, e.g. Ollama.
+function isLoopback(target) {
+  if (!globalThis.__ALLOW_LOOPBACK_HTTP__) return false;
+  try {
+    const host =
+      typeof target === "string" || target instanceof URL
+        ? new URL(String(target)).hostname
+        : target.hostname || (target.host || "").split(":")[0];
+    return ["127.0.0.1", "localhost", "::1", "[::1]"].includes(host);
+  } catch {
+    return false;
+  }
+}
+
 function deny(fnName, orig) {
   return (...args) => {
+    if (isLoopback(args[0])) return orig(...args);
     const msg = `🚫 ${fnName} blocked in tests: ${prettyUrl(args[0])}`;
     // eslint-disable-next-line no-console
     console.error(msg, "\n", new Error().stack);
@@ -24,17 +41,25 @@ function deny(fnName, orig) {
   };
 }
 
-// Block Node core http/https
-http.request = deny("http.request", http.request.bind(http));
-http.get = deny("http.get", http.get.bind(http));
-https.request = deny("https.request", https.request.bind(https));
-https.get = deny("https.get", https.get.bind(https));
+// Block Node core http/https. Core modules are shared by every test file in
+// the process, so always wrap the original function; wrapping the previous
+// file's wrapper would stack checks bound to stale per-file globals.
+for (const [mod, name] of [
+  [http, "http"],
+  [https, "https"],
+]) {
+  mod.__originalRequest = mod.__originalRequest || mod.request;
+  mod.__originalGet = mod.__originalGet || mod.get;
+  mod.request = deny(`${name}.request`, mod.__originalRequest.bind(mod));
+  mod.get = deny(`${name}.get`, mod.__originalGet.bind(mod));
+}
 
 // Block global fetch (Node 18+ / 22 uses undici)
 if (globalThis.fetch) {
   const original = globalThis.fetch;
   globalThis.fetch = async (input, init) => {
     const url = typeof input === "string" ? input : input?.url;
+    if (isLoopback(url)) return original(input, init);
     const msg = `🚫 fetch blocked in tests: ${url}`;
     // eslint-disable-next-line no-console
     console.error(msg, "\n", new Error().stack);

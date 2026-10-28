@@ -113,6 +113,51 @@ const results = [
       "cli.js",
     );
     run(process.execPath, [binPath, "--help"], consumerDir);
+    // Every command group loads its modules (catches undeclared deps)
+    for (const command of [
+      "init",
+      "ingest",
+      "query",
+      "run",
+      "serve",
+      "doctor",
+      "validate",
+      "config",
+      "info",
+      "hub",
+      "ai",
+    ]) {
+      run(process.execPath, [binPath, command, "--help"], consumerDir);
+    }
+  }),
+  check("CLI init -> ingest -> query works offline", () => {
+    const binPath = path.join(
+      consumerDir,
+      "node_modules",
+      ...pkgName.split("/"),
+      "bin",
+      "cli.js",
+    );
+    const docsDir = path.join(consumerDir, "docs");
+    fs.mkdirSync(docsDir);
+    fs.writeFileSync(
+      path.join(docsDir, "policy.md"),
+      "# Leave\n\nEmployees receive twenty days of paid vacation per year.\n",
+    );
+    fs.writeFileSync(
+      path.join(docsDir, "notes.html"),
+      "<p>Remote work is allowed.</p>",
+    );
+    run(process.execPath, [binPath, "init", "--no-interactive"], consumerDir);
+    run(process.execPath, [binPath, "ingest", "docs"], consumerDir);
+    const out = run(
+      process.execPath,
+      [binPath, "query", "paid vacation days"],
+      consumerDir,
+    );
+    if (!out.includes("docs/policy.md")) {
+      throw new Error(`query did not return the indexed document:\n${out}`);
+    }
   }),
   check("type declarations compile", () => {
     // Uses the repo's TypeScript and @types/node; the consumer only has

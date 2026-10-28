@@ -1,51 +1,116 @@
 /**
  * Init command handler
- * Handles RAG pipeline configuration initialization
+ * Writes a .ragrc.json whose pipeline names built-in components (or custom
+ * plugins checked by the setup wizard), so the result works with
+ * `ingest` / `query` immediately.
  */
 
 const fs = require("fs/promises");
-const { logger } = require("../../utils/logger.js");
+const { buildInitConfig } = require("../wizard/config-builder.js");
+const { runInitWizard, ask } = require("../wizard/init-wizard.js");
+
+/**
+ * Starting points for `init --template <name>`. "local" needs no API keys or
+ * services; it has no llm stage, so `query` prints the retrieved passages.
+ * In interactive mode the template only sets the wizard's defaults.
+ */
+const TEMPLATES = {
+  local: { embedder: "local", llm: null },
+  openai: { embedder: "openai", llm: "openai" },
+  ollama: { embedder: "ollama", llm: "ollama" },
+  anthropic: { embedder: "local", llm: "anthropic" },
+};
+
+function inquirerPrompt(questions) {
+  const inquirer = require("inquirer");
+  return inquirer.prompt(questions);
+}
 
 /**
  * Handle init command
  * @param {object} globalOptions - Global CLI options from program.opts()
  * @param {object} options - Command-specific options
- * @param {Function} createBasicConfigFn - Function to create basic config
+ * @param {object} [deps] - Injectable dependencies for tests
+ * @param {Function} [deps.prompt] - inquirer-style prompt([question]) => answers
+ * @param {object} [deps.env] - Environment for the API key check
+ * @param {Function} [deps.buildComponents] - Used by the connection test
+ * @param {Function} [deps.log] - Wizard output (console.log)
+ * @param {number} [deps.timeoutMs] - Connection test timeout
  */
-async function handleInit(globalOptions, options, createBasicConfigFn) {
+async function handleInit(globalOptions, options, deps = {}) {
   try {
+    const templateName = options.template || "local";
+    const template = TEMPLATES[templateName];
+    if (!template) {
+      throw new Error(
+        `Unknown template "${templateName}". Available: ${Object.keys(TEMPLATES).join(", ")}`,
+      );
+    }
+
+    // commander sets options.interactive=false for --no-interactive; only
+    // prompt when a person is at the terminal.
+    const interactive =
+      options.interactive !== false && Boolean(process.stdin.isTTY);
+
     if (globalOptions.dryRun) {
-      console.log("🧪 Dry run: Would initialize RAG pipeline configuration");
+      console.log("🧪 Dry run: would write configuration");
       console.log(`Output file: ${options.output}`);
-      console.log(`Interactive mode: ${!options.noInteractive}`);
+      console.log(`Template: ${templateName}`);
+      console.log(`Interactive: ${interactive}`);
       return;
     }
 
-    // Check if config already exists
-    if (!options.force) {
-      try {
-        await fs.access(options.output);
-        console.log(`❌ Configuration file already exists: ${options.output}`);
-        console.log(
-          "Use --force to overwrite or choose a different output path.",
+    const prompt = deps.prompt || inquirerPrompt;
+    const exists = await fs
+      .access(options.output)
+      .then(() => true)
+      .catch(() => false);
+    if (exists && !options.force) {
+      if (!interactive) {
+        throw new Error(
+          `Configuration file already exists: ${options.output}. Use --force to overwrite.`,
         );
+      }
+      const overwrite = await ask(prompt, {
+        type: "confirm",
+        name: "overwrite",
+        message: `${options.output} already exists. Replace it?`,
+        default: false,
+      });
+      if (!overwrite) {
+        console.log("Nothing written.");
         return;
-      } catch (error) {
-        // File doesn't exist, which is good
       }
     }
 
-    if (!options.noInteractive) {
-      console.log("🧙‍♂️ Starting interactive configuration wizard...\n");
-      // Mock interactive wizard
-      await createBasicConfigFn(options.output);
+    let config;
+    if (interactive) {
+      const result = await runInitWizard({
+        prompt,
+        defaults: template,
+        outputPath: options.output,
+        overwrite: exists,
+        env: deps.env || process.env,
+        buildComponents: deps.buildComponents,
+        log: deps.log || console.log,
+        timeoutMs: deps.timeoutMs,
+      });
+      if (!result) {
+        console.log("Nothing written.");
+        return;
+      }
+      config = result.config;
     } else {
-      await createBasicConfigFn(options.output);
+      config = buildInitConfig(template);
     }
+
+    await fs.writeFile(options.output, JSON.stringify(config, null, 2) + "\n");
+    console.log(`✅ Configuration written: ${options.output}`);
+    console.log("Next: rag-pipeline ingest <file-or-directory>");
   } catch (error) {
-    logger.error("❌ Initialization failed:", error.message);
-    process.exit(1);
+    console.error(`❌ Initialization failed: ${error.message}`);
+    process.exitCode = 1;
   }
 }
 
-module.exports = { handleInit };
+module.exports = { handleInit, buildInitConfig, TEMPLATES };

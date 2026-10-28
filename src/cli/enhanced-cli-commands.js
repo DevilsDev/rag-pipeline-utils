@@ -6,13 +6,11 @@
  */
 
 const { Command } = require("commander");
-const fs = require("fs/promises");
 
 const { logger } = require("../utils/logger.js");
 
 // Shared utilities
 const {
-  createProgressBar,
   parsePositiveInteger,
   generateCompletionScript,
   getVersion,
@@ -35,55 +33,13 @@ const {
 const { handleIngest } = require("./handlers/ingest-handler.js");
 const { handleQuery } = require("./handlers/query-handler.js");
 
-// Mock dependencies for test compatibility
-const mockPluginMarketplaceCommands = () => {
-  const cmd = new Command("plugin");
-  cmd.description("Plugin marketplace commands");
-  cmd
-    .command("search")
-    .argument("[query]")
-    .action(() => {});
-  cmd
-    .command("install")
-    .argument("<name>")
-    .action(() => {});
-  cmd.command("publish").action(() => {});
-  return cmd;
-};
-
-const mockPipelineDoctor = async (options) => {
-  console.log("🏥 Running pipeline diagnostics");
-  if (options.categories) {
-    options.categories.forEach((cat) => {
-      console.log(`${cat.charAt(0).toUpperCase() + cat.slice(1)} Issues:`);
-      console.log("  ✅ No issues found");
-    });
-  } else {
-    console.log("✅ All systems operational");
+function parseNonNegativeInt(value) {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0) {
+    throw new Error(`Expected a non-negative integer, got "${value}"`);
   }
-  return {
-    summary: { total: 0, passed: 0, warnings: 0, errors: 0 },
-    categories: {},
-    issues: [],
-  };
-};
-
-const mockValidateSchema = (config) => {
-  if (!config || typeof config !== "object") {
-    return {
-      valid: false,
-      errors: [{ message: "Invalid configuration format" }],
-    };
-  }
-  if (config.plugins && typeof config.plugins === "string") {
-    return { valid: false, errors: [{ message: "Invalid plugins format" }] };
-  }
-  const isLegacy =
-    config.plugins &&
-    typeof config.plugins === "object" &&
-    Object.values(config.plugins).some((p) => typeof p === "string");
-  return { valid: true, legacy: isLegacy };
-};
+  return n;
+}
 
 /**
  * Enhanced CLI with improved UX and additional features
@@ -105,7 +61,6 @@ class EnhancedCLI {
       .version(getVersion(), "-v, --version", "Display version information")
       .option("--config <path>", "Configuration file path", ".ragrc.json")
       .option("--verbose", "Enable verbose output")
-      .option("--quiet", "Suppress non-essential output")
       .option("--no-color", "Disable colored output")
       .option("--dry-run", "Show what would be done without executing")
       .helpOption("-h, --help", "Display help information")
@@ -117,111 +72,95 @@ class EnhancedCLI {
    * Setup all CLI commands
    */
   setupCommands() {
-    // Interactive initialization command
     this.program
       .command("init")
-      .description("Initialize RAG pipeline configuration")
-      .option("--interactive", "Use interactive wizard", true)
-      .option("--no-interactive", "Skip interactive wizard")
-      .option("--template <name>", "Use configuration template")
+      .description("Create a .ragrc.json configuration")
+      .option("--no-interactive", "Use the template without prompting")
+      .option(
+        "--template <name>",
+        "Starting point: local, openai, ollama, anthropic",
+        "local",
+      )
       .option("--output <path>", "Output configuration file", ".ragrc.json")
       .option("--force", "Overwrite existing configuration")
       .action(async (options) => {
-        await handleInit(this.program.opts(), options, (outputPath) =>
-          this.createBasicConfig(outputPath),
-        );
+        await handleInit(this.program.opts(), options);
       });
 
-    // Run pipeline command
     this.program
       .command("run")
-      .description("Execute RAG pipeline operations")
-      .option("--ingest <file>", "Ingest document into pipeline")
-      .option("--query <prompt>", "Query the pipeline")
-      .option("--stream", "Enable streaming output")
-      .option(
-        "--abort-timeout <ms>",
-        "Abort operation after timeout (milliseconds)",
-        parsePositiveInteger,
-      )
-      .option("--parallel", "Enable parallel processing")
+      .description("Ingest and/or query in one step")
+      .option("--ingest <path>", "File or directory to ingest first")
+      .option("--query <text>", "Question to ask after ingesting")
+      .option("--rebuild", "Discard the existing index before ingesting")
+      .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option("--json", "Print the query result as JSON")
       .action(async (options) => {
         await handleRun(this.program.opts(), options);
       });
 
-    // Doctor command for diagnostics
     this.program
       .command("doctor")
-      .description("Diagnose and fix common issues")
-      .option("--category <categories...>", "Diagnostic categories to check")
-      .option("--auto-fix", "Automatically fix issues where possible")
-      .option("--report <path>", "Save diagnostic report to file")
+      .description("Diagnose configuration, plugins and environment")
+      .option(
+        "--category <categories...>",
+        "Only run: configuration, plugins, dependencies, performance, security, environment",
+      )
+      .option(
+        "--auto-fix",
+        "Fix issues where possible (npm install, file permissions)",
+      )
+      .option("--report <path>", "Save the diagnostic report as JSON")
       .action(async (options) => {
-        await handleDoctor(this.program.opts(), options, mockPipelineDoctor);
+        await handleDoctor(this.program.opts(), options);
       });
 
-    // Enhanced ingest command
     this.program
       .command("ingest")
-      .description("Ingest documents into the pipeline")
-      .argument("<file>", "Document file to ingest")
-      .option("--validate", "Validate document before ingesting")
-      .option("--preview", "Show preview of document chunks")
-      .option("--parallel", "Enable parallel processing")
-      .option("--streaming", "Enable streaming with memory safeguards")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
-      .option(
-        "--export-observability <file>",
-        "Export observability data to file",
-      )
-      .option(
-        "--max-concurrency <number>",
-        "Maximum concurrent operations",
-        "3",
-      )
-      .option(
-        "--batch-size <number>",
-        "Batch size for parallel processing",
-        "10",
-      )
-      .option("--max-memory <number>", "Maximum memory usage in MB", "512")
-      .action(async (file, options) => {
-        await handleIngest(this.program.opts(), file, options);
+      .description("Load, embed and index documents")
+      .argument("<path>", "File or directory (.md, .html, .csv, .txt)")
+      .option("--rebuild", "Discard the existing index before ingesting")
+      .action(async (inputPath, options) => {
+        await handleIngest(this.program.opts(), inputPath, options);
       });
 
-    // Enhanced query command
     this.program
       .command("query")
-      .description("Query the RAG pipeline")
-      .argument("<prompt>", "Query prompt")
-      .option("--stream", "Enable streaming response")
-      .option("--explain", "Show explanation of query processing")
-      .option("--parallel", "Enable parallel processing")
-      .option("--trace", "Enable detailed tracing and event logging")
-      .option("--stats", "Show pipeline metrics summary at the end")
-      .option(
-        "--export-observability <file>",
-        "Export observability data to file",
-      )
-      .action(async (prompt, options) => {
-        await handleQuery(this.program.opts(), prompt, options);
+      .description("Ask a question against the ingested documents")
+      .argument("<question>", "Question text")
+      .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option("--json", "Print the result as JSON")
+      .action(async (question, options) => {
+        await handleQuery(this.program.opts(), question, options);
       });
 
-    // Configuration validation command
     this.program
       .command("validate")
-      .description("Validate configuration file")
-      .option("--schema", "Validate against schema only")
-      .option("--plugins", "Validate plugin availability")
-      .option("--dependencies", "Check plugin dependencies")
-      .option("--fix", "Attempt to fix validation issues")
-      .action(async (options) => {
-        await handleValidate(this.program.opts(), options, mockValidateSchema);
+      .description("Validate the configuration and resolve its components")
+      .action(async () => {
+        await handleValidate(this.program.opts());
       });
 
-    // Plugin marketplace commands
-    this.program.addCommand(mockPluginMarketplaceCommands());
+    this.program
+      .command("serve")
+      .description("Serve GET /health and POST /query over HTTP (local use)")
+      .option(
+        "--port <n>",
+        "Port (0 picks a free one)",
+        parseNonNegativeInt,
+        3000,
+      )
+      .option("--host <host>", "Interface to bind", "127.0.0.1")
+      .action(async (options) => {
+        const { handleServe } = require("./handlers/serve-handler.js");
+        await handleServe(this.program.opts(), options);
+      });
+
+    const { PluginHubCLI } = require("./commands/plugin-hub.js");
+    this.program.addCommand(new PluginHubCLI().createCommands());
+
+    const { createAiCommand } = require("./commands/ai.js");
+    this.program.addCommand(createAiCommand(() => this.program.opts()));
 
     // Configuration management commands
     const configCmd = new Command("config");
@@ -230,7 +169,6 @@ class EnhancedCLI {
     configCmd
       .command("show")
       .description("Show current configuration")
-      .option("--format <format>", "Output format (json, yaml, table)", "json")
       .option("--section <section>", "Show specific configuration section")
       .action(async (options) => {
         await handleConfigShow(this.program.opts(), options);
@@ -259,7 +197,7 @@ class EnhancedCLI {
     this.program
       .command("info")
       .description("Show system and plugin information")
-      .option("--plugins", "Show registered plugin versions")
+      .option("--plugins", "Show built-in components and custom plugins")
       .option("--system", "Show system information")
       .option("--config", "Show configuration summary")
       .action(async (options) => {
@@ -275,64 +213,6 @@ class EnhancedCLI {
         const completionScript = generateCompletionScript(shell);
         console.log(completionScript);
       });
-  }
-
-  /**
-   * Create basic configuration
-   */
-  async createBasicConfig(outputPath) {
-    const { validateRagrc } = require("../config/enhanced-ragrc-schema.js");
-
-    const base = {
-      namespace: "default",
-      metadata: {
-        name: "rag-pipeline",
-        version: "1.0.0",
-        description: "RAG pipeline configuration",
-        createdAt: new Date().toISOString(),
-      },
-      pipeline: [
-        { stage: "loader", name: "fs-loader", version: "1.0.0" },
-        { stage: "embedder", name: "mock-embedder", version: "1.0.0" },
-        { stage: "retriever", name: "mock-retriever", version: "1.0.0" },
-        { stage: "llm", name: "mock-llm", version: "1.0.0" },
-      ],
-      performance: {
-        parallel: {
-          enabled: false,
-          maxConcurrency: 3,
-        },
-        caching: {
-          enabled: false,
-          maxSize: 1000,
-          ttl: 3600,
-        },
-      },
-      observability: {
-        logging: {
-          level: "info",
-          structured: true,
-        },
-      },
-    };
-
-    const result = validateRagrc(base);
-    if (!result.valid) {
-      result.errors?.forEach((error) =>
-        console.error(`  ${error.instancePath || ""}: ${error.message}`),
-      );
-      throw new Error("Failed to generate valid configuration");
-    }
-
-    if (outputPath) {
-      await fs.writeFile(
-        outputPath,
-        JSON.stringify(result.normalized, null, 2),
-      );
-      console.log(`✅ Basic configuration created: ${outputPath}`);
-    }
-
-    return result.normalized;
   }
 
   /**
@@ -363,39 +243,8 @@ async function runEnhancedCLI(argv = process.argv) {
   await enhancedCLI.run(argv);
 }
 
-// CLI command surface for tests
-const init = async () => ({ ok: true });
-const ingest = async () => ({ ok: true });
-const query = async () => ({ ok: true });
-const handleError = async () => ({ ok: true });
-const validateArgs = () => true;
-const showHelp = () => "help text";
-
-// Extract createBasicConfig from the class for direct export
-const createBasicConfig = async (outputPath) => {
-  const cli = new EnhancedCLI();
-  return await cli.createBasicConfig(outputPath);
-};
-
-const enhancedCliCommands = {
-  init,
-  ingest,
-  query,
-  handleError,
-  validateArgs,
-  showHelp,
-};
-
 module.exports = {
   EnhancedCLI,
   enhancedCLI,
   runEnhancedCLI,
-  enhancedCliCommands,
-  init,
-  ingest,
-  query,
-  handleError,
-  validateArgs,
-  showHelp,
-  createBasicConfig,
 };

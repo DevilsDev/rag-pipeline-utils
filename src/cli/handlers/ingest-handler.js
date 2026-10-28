@@ -1,41 +1,47 @@
 /**
  * Ingest command handler
- * Handles document ingestion into the pipeline
+ * Loads documents, embeds their chunks and stores them in the configured
+ * retriever (file-store persists them for later `query` runs).
  */
 
-const { logger } = require("../../utils/logger.js");
+const { loadCliConfig } = require("../shared/config-context.js");
+const { ingest } = require("../services/rag-service.js");
 
 /**
- * Handle ingest command
  * @param {object} globalOptions - Global CLI options from program.opts()
- * @param {string} file - Document file path
+ * @param {string} inputPath - File or directory to ingest
  * @param {object} options - Command-specific options
  */
-async function handleIngest(globalOptions, file, options) {
+async function handleIngest(globalOptions, inputPath, options = {}) {
   try {
-    if (globalOptions.dryRun) {
-      console.log("🧪 Dry run: Would ingest document");
-      console.log(`File: ${file}`);
-      console.log(
-        `Parallel processing: ${options.parallel ? "enabled" : "disabled"}`,
-      );
-      console.log(`Streaming: ${options.streaming ? "enabled" : "disabled"}`);
-      console.log(`Tracing: ${options.trace ? "enabled" : "disabled"}`);
+    const { config, configDir } = loadCliConfig(globalOptions);
 
-      if (options.preview) {
-        console.log("📄 Document Preview:");
-      }
-      if (options.validate) {
-        console.log("File validation passed");
+    if (globalOptions.dryRun) {
+      const { readDocuments } = require("../../loader/document-reader.js");
+      const documents = await readDocuments(inputPath, { baseDir: configDir });
+      console.log(`🧪 Dry run: would ingest ${documents.length} file(s)`);
+      for (const doc of documents) {
+        console.log(`  ${doc.source} (${doc.chunks.length} chunks)`);
       }
       return;
     }
 
-    console.log(`📄 Ingesting document: ${file}`);
-    console.log("✅ Document ingested successfully!");
+    const summary = await ingest({
+      config,
+      configDir,
+      inputPath,
+      rebuild: Boolean(options.rebuild),
+    });
+    console.log(
+      `✅ Ingested ${summary.files} file(s), ${summary.chunks} chunk(s). ` +
+        `Index now holds ${summary.totalChunks} chunk(s).`,
+    );
+    if (globalOptions.verbose) {
+      for (const source of summary.sources) console.log(`  ${source}`);
+    }
   } catch (error) {
-    logger.error("❌ Document ingestion failed:", error.message);
-    process.exit(1);
+    console.error(`❌ Ingestion failed: ${error.message}`);
+    process.exitCode = 1;
   }
 }
 

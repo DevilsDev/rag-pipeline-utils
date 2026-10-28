@@ -145,6 +145,23 @@ class PluginHub extends EventEmitter {
   /**
    * Install plugin from the hub
    */
+  /**
+   * Download a plugin from the registry and install it into a project
+   * (see ecosystem/plugin-installer.js): sha256 verified against the
+   * registry, static security scan (high-risk findings block unless
+   * allowRisky), stage contract check, files kept inside
+   * <project>/.rag/plugins, and `plugins.<stage>.<name>` added to the config.
+   *
+   * @param {string} pluginId - Registry plugin id
+   * @param {string} [version='latest']
+   * @param {object} [_options]
+   * @param {string} [_options.configPath='.ragrc.json'] - Config to register the plugin in
+   * @param {boolean} [_options.requireCertified] - Refuse plugins the registry marks uncertified
+   * @param {string} [_options.stage] - Overrides package.json ragPipeline.stage
+   * @param {string} [_options.name] - Overrides package.json ragPipeline.name
+   * @param {boolean} [_options.force] - Replace an installed plugin
+   * @param {boolean} [_options.allowRisky] - Install despite high-risk findings
+   */
   async installPlugin(pluginId, version = 'latest', _options = {}) {
     const installId = crypto.randomUUID();
     const startedAt = Date.now();
@@ -152,69 +169,43 @@ class PluginHub extends EventEmitter {
     try {
       this.emit('install_start', { pluginId, version, installId });
 
-      // Get plugin info and verify
-      const pluginInfo = await this.getPluginInfo(pluginId);
-      if (!pluginInfo) throw new Error(`Plugin ${pluginId} not found`);
-
-      // Check certification if required
-      if (_options.requireCertified && !pluginInfo.certified) {
-        throw new Error(`Plugin ${pluginId} is not certified`);
+      if (_options.requireCertified) {
+        const info = await this.getPluginInfo(pluginId);
+        if (!info.certified)
+          throw new Error(`Plugin ${pluginId} is not certified`);
       }
 
-      // Security scan in sandbox
-      if (_options.securityScan !== false) {
-        this.emit('install_progress', { installId, stage: 'security_scan' });
-        await this.sandbox.scanPlugin(pluginInfo);
-      }
-
-      // Download plugin
-      this.emit('install_progress', { installId, stage: 'downloading' });
-      const downloadUrl = await this._getDownloadUrl(pluginId, version);
-      const pluginData = await this._downloadPlugin(downloadUrl);
-
-      // Verify integrity
-      this.emit('install_progress', { installId, stage: 'verifying' });
-      await this._verifyPluginIntegrity(pluginData, pluginInfo.checksums);
-
-      // Install in sandbox first
-      this.emit('install_progress', { installId, stage: 'sandbox_install' });
-      const sandboxResult = await this.sandbox.installPlugin(pluginData, {
-        timeout: _options.sandboxTimeout || 30000,
-        memoryLimit: _options.memoryLimit || '512MB',
-        networkAccess: _options.networkAccess || false,
+      const { installPlugin } = require('./plugin-installer');
+      const result = await installPlugin({
+        source: pluginId,
+        version,
+        hub: this,
+        configPath: _options.configPath || '.ragrc.json',
+        stage: _options.stage,
+        name: _options.name,
+        force: _options.force,
+        allowRisky: _options.allowRisky,
+        onProgress: (stage) =>
+          this.emit('install_progress', { installId, stage }),
       });
 
-      if (!sandboxResult.success) {
-        throw new Error(`Sandbox installation failed: ${sandboxResult.error}`);
-      }
-
-      // Install to main system
-      this.emit('install_progress', { installId, stage: 'installing' });
-      const installPath = await this._installPluginToSystem(
-        pluginData,
-        pluginInfo,
-      );
-
-      // Track installation analytics
       this.analytics.trackInstallation(pluginId, version, {
         success: true,
         installTime: Date.now() - startedAt,
       });
-
       this.emit('install_complete', {
         pluginId,
         version,
         installId,
-        installPath,
-        pluginInfo,
+        installPath: result.path,
       });
 
       return {
         success: true,
         pluginId,
         version,
-        installPath,
-        pluginInfo,
+        installPath: result.path,
+        ...result,
       };
     } catch (error) {
       this.analytics.trackInstallation(pluginId, version, {
@@ -344,46 +335,16 @@ class PluginHub extends EventEmitter {
   /**
    * Get user's installed plugins
    */
-  async getInstalledPlugins() {
-    try {
-      const pluginsDir = path.join(this._config.localCacheDir, 'plugins');
-      const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
-
-      const installed = [];
-
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const metadataPath = path.join(
-            pluginsDir,
-            entry.name,
-            'metadata.json',
-          );
-
-          try {
-            const metadata = JSON.parse(
-              await fs.readFile(metadataPath, 'utf8'),
-            );
-            installed.push({
-              ...metadata,
-              installPath: path.join(pluginsDir, entry.name),
-              lastUsed: await this.analytics.getLastUsed(metadata.id),
-            });
-          } catch {
-            // Skip invalid plugins
-            continue; // eslint-disable-line no-continue
-          }
-        }
-      }
-
-      return installed;
-    } catch {
-      return [];
-    }
+  /**
+   * Plugins registered in a project's config (see plugin-installer
+   * listInstalledPlugins).
+   * @param {string} [configPath='.ragrc.json']
+   */
+  async getInstalledPlugins(configPath = '.ragrc.json') {
+    const { listInstalledPlugins } = require('./plugin-installer');
+    return listInstalledPlugins(configPath);
   }
 
-  // ------------------------------
-  // Private methods
-  // ------------------------------
   async _makeRequest(method, endpoint, params = {}) {
     const doFetch = pickFetch(this._config.fetch);
     if (!doFetch) throw new Error('fetch is not available in this environment');
@@ -540,35 +501,6 @@ class PluginHub extends EventEmitter {
     }
   }
 
-  async _installPluginToSystem(pluginData, pluginInfo) {
-    const installDir = path.join(
-      this._config.localCacheDir,
-      'plugins',
-      pluginInfo.id,
-    );
-
-    // Create installation directory
-    await fs.mkdir(installDir, { recursive: true });
-
-    // Simulated install: write metadata only
-    const metadataPath = path.join(installDir, 'metadata.json');
-    await fs.writeFile(
-      metadataPath,
-      JSON.stringify(
-        {
-          ...pluginInfo,
-          installedAt: new Date().toISOString(),
-          installPath: installDir,
-          size: Buffer.isBuffer(pluginData) ? pluginData.length : 0,
-        },
-        null,
-        2,
-      ),
-    );
-
-    return installDir;
-  }
-
   async _validatePluginForPublish(pluginPath) {
     // Validate plugin structure and metadata
     const packageJsonPath = path.join(pluginPath, 'package.json');
@@ -608,19 +540,12 @@ class PluginHub extends EventEmitter {
     });
   }
 
-  async _getInstalledVersion(pluginId) {
-    try {
-      const metadataPath = path.join(
-        this._config.localCacheDir,
-        'plugins',
-        pluginId,
-        'metadata.json',
-      );
-      const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf8'));
-      return metadata.version;
-    } catch {
-      return null;
-    }
+  async _getInstalledVersion(pluginId, configPath = '.ragrc.json') {
+    const { listInstalledPlugins } = require('./plugin-installer');
+    const match = listInstalledPlugins(configPath).find(
+      (p) => p.name === pluginId,
+    );
+    return match ? match.version : null;
   }
 }
 

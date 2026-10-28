@@ -1,78 +1,91 @@
 /**
- * Configuration checker for RAG Pipeline Diagnostics
- * Checks configuration file existence, validity, and schema compliance
+ * Configuration diagnostics: the file exists, parses, validates, and every
+ * pipeline entry resolves to a component.
  */
 
-const fs = require("fs/promises");
+const fs = require("fs");
+const path = require("path");
 
-/**
- * Check configuration issues
- * @param {object} options - Doctor options (must include configPath)
- * @returns {Promise<Array>} Array of configuration issues
- */
+function issue(severity, code, message, fix) {
+  return {
+    category: "configuration",
+    severity,
+    code,
+    message,
+    fix,
+    autoFixable: false,
+  };
+}
+
 async function checkConfiguration(options) {
-  const issues = [];
+  const { loadRagConfig } = require("../../config/load-config.js");
+  const { buildComponents } = require("../../config/component-factory.js");
+  const configPath = path.resolve(options.configPath);
 
+  if (!fs.existsSync(configPath)) {
+    return [
+      issue(
+        "error",
+        "CONFIG_MISSING",
+        `Configuration file not found: ${options.configPath}`,
+        'Run "rag-pipeline init" to create a configuration file',
+      ),
+    ];
+  }
+
+  let config;
   try {
-    await fs.access(options.configPath);
+    config = loadRagConfig(configPath);
   } catch (error) {
-    issues.push({
-      category: "configuration",
-      severity: "error",
-      code: "CONFIG_MISSING",
-      message: `Configuration file not found: ${options.configPath}`,
-      fix: 'Run "rag-pipeline init" to create a configuration file',
-      autoFixable: false,
-    });
-    return issues;
+    const invalidJson = /Invalid JSON/.test(error.message);
+    return [
+      issue(
+        "error",
+        invalidJson ? "CONFIG_INVALID_JSON" : "CONFIG_SCHEMA_ERROR",
+        error.message,
+        invalidJson
+          ? `Fix JSON syntax errors in ${options.configPath}`
+          : "Fix the reported configuration errors",
+      ),
+    ];
+  }
+
+  const issues = [];
+  const stages = new Set(config.pipeline.map((entry) => entry.stage));
+  for (const stage of ["embedder", "retriever"]) {
+    if (!stages.has(stage)) {
+      issues.push(
+        issue(
+          "error",
+          "CONFIG_STAGE_MISSING",
+          `Pipeline has no ${stage} stage`,
+          `Add { "stage": "${stage}", "name": ... } to the pipeline (see rag-pipeline init)`,
+        ),
+      );
+    }
+  }
+  if (!stages.has("llm")) {
+    issues.push(
+      issue(
+        "info",
+        "CONFIG_NO_LLM",
+        "Pipeline has no llm stage; query prints retrieved passages only",
+        'Add { "stage": "llm", "name": "openai" } (or anthropic, ollama) to generate answers',
+      ),
+    );
   }
 
   try {
-    const configContent = await fs.readFile(options.configPath, "utf8");
-    const config = JSON.parse(configContent);
-
-    // Check if config is empty
-    if (Object.keys(config).length === 0 || !config.plugins) {
-      issues.push({
-        category: "configuration",
-        severity: "warning",
-        code: "CONFIG_EMPTY",
-        message: "Configuration file is empty or missing required sections",
-        fix: "Add plugin configurations and pipeline settings",
-        autoFixable: false,
-      });
-    }
-
-    // Validate schema if available
-    try {
-      const {
-        validateEnhancedRagrcSchema,
-      } = require("../../config/enhanced-ragrc-schema.js");
-      const validation = validateEnhancedRagrcSchema(config);
-      if (!validation.valid && validation.errors) {
-        validation.errors.forEach((error) => {
-          issues.push({
-            category: "configuration",
-            severity: "error",
-            code: "CONFIG_SCHEMA_ERROR",
-            message: `Schema validation failed: ${error.instancePath} ${error.message}`,
-            fix: "Fix configuration schema errors",
-            autoFixable: false,
-          });
-        });
-      }
-    } catch (schemaError) {
-      // Schema validation not available, skip
-    }
-  } catch (parseError) {
-    issues.push({
-      category: "configuration",
-      severity: "error",
-      code: "CONFIG_INVALID_JSON",
-      message: "Configuration file contains invalid JSON syntax",
-      fix: `Fix JSON syntax errors in ${options.configPath}`,
-      autoFixable: false,
-    });
+    buildComponents(config, { configDir: path.dirname(configPath) });
+  } catch (error) {
+    issues.push(
+      issue(
+        "error",
+        "CONFIG_COMPONENT_UNKNOWN",
+        error.message,
+        'Use a built-in name or register the plugin under "plugins"',
+      ),
+    );
   }
 
   return issues;

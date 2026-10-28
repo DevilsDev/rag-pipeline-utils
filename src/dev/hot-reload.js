@@ -28,6 +28,42 @@ const {
 } = require('../utils/error-formatter');
 const { logger } = require('../utils/logger');
 
+const RELOADABLE_EXTENSIONS = new Set(['.js', '.cjs', '.mjs']);
+
+/**
+ * chokidar 4 removed glob support, so glob strings in `ignored` were treated
+ * as literal paths and matched nothing. Convert them to one matcher function.
+ *
+ * @param {Array<string|RegExp|Function>} patterns
+ * @returns {(filePath: string) => boolean}
+ */
+function toIgnoreMatcher(patterns) {
+  const matchers = patterns.map((pattern) => {
+    if (typeof pattern === 'function') return pattern;
+    if (pattern instanceof RegExp) return (p) => pattern.test(p);
+    const regex = new RegExp(
+      '^' +
+        pattern
+          .split('**/')
+          .map((part) =>
+            part
+              .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+              .replace(/\*\*/g, '\u0000') // a remaining ** (e.g. trailing) spans directories
+              .replace(/\*/g, '[^/]*')
+              .replace(/\?/g, '[^/]')
+              .replace(/\u0000/g, '.*'),
+          )
+          .join('(?:.*/)?') +
+        '$',
+    );
+    return (p) => regex.test(p);
+  });
+  return (filePath) => {
+    const normalized = filePath.split(path.sep).join('/');
+    return matchers.some((match) => match(normalized));
+  };
+}
+
 /**
  * Hot Reload Manager
  *
@@ -135,7 +171,7 @@ class HotReloadManager extends EventEmitter {
    */
   async _watchPlugins() {
     const watcher = chokidar.watch(this.options.watchPaths, {
-      ignored: this.options.ignorePatterns,
+      ignored: toIgnoreMatcher(this.options.ignorePatterns),
       persistent: true,
       ignoreInitial: true,
       awaitWriteFinish: {
@@ -206,6 +242,8 @@ class HotReloadManager extends EventEmitter {
    * @param {string} filePath - Changed file path
    */
   _handlePluginChange(filePath) {
+    // Only JavaScript modules can be re-required; ignore data and docs.
+    if (!RELOADABLE_EXTENSIONS.has(path.extname(filePath))) return;
     this._log(`Plugin changed: ${filePath}`);
 
     // Debounce rapid changes
@@ -803,6 +841,7 @@ function createHotReloadManager(options = {}) {
 }
 
 module.exports = {
+  toIgnoreMatcher,
   HotReloadManager,
   createHotReloadManager,
 };

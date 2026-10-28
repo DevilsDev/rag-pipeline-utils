@@ -15,6 +15,28 @@ const {
   PluginCertification,
 } = require("../../src/ecosystem/plugin-certification");
 const fs = require("fs").promises;
+const fsSync = require("fs");
+const os = require("os");
+const { makeTgz } = require("../utils/make-tgz");
+
+// A real plugin package, installed by PluginHub.installPlugin into a temp project
+const pluginArchive = () =>
+  makeTgz({
+    "package/package.json": JSON.stringify({
+      name: "test-plugin",
+      version: "1.0.0",
+      ragPipeline: { stage: "llm", name: "test-plugin" },
+    }),
+    "package/index.js":
+      "module.exports = class { async generate(q) { return q; } };",
+  });
+
+function tempProject() {
+  const dir = fsSync.mkdtempSync(path.join(os.tmpdir(), "hub-test-"));
+  const configPath = path.join(dir, ".ragrc.json");
+  fsSync.writeFileSync(configPath, JSON.stringify({ pipeline: [] }));
+  return { dir, configPath };
+}
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -132,7 +154,8 @@ describe("Plugin Hub", () => {
 
   describe("Plugin Installation", () => {
     test("should install plugin successfully", async () => {
-      const mockPluginData = Buffer.from("mock plugin data");
+      jest.useRealTimers(); // the installer checks the plugin in a child process
+      const mockPluginData = pluginArchive();
 
       // Calculate correct SHA256 for mock data
       const hash = crypto.createHash("sha256");
@@ -184,12 +207,24 @@ describe("Plugin Hub", () => {
       jest.spyOn(fs, "mkdir").mockResolvedValue();
       jest.spyOn(fs, "writeFile").mockResolvedValue();
 
-      const result = await hub.installPlugin("test-plugin", "latest");
+      const { dir, configPath } = tempProject();
+      const result = await hub.installPlugin("test-plugin", "latest", {
+        configPath,
+      });
 
       expect(result.success).toBe(true);
       expect(result.pluginId).toBe("test-plugin");
-      expect(hub.sandbox.scanPlugin).toHaveBeenCalled();
-      expect(hub.sandbox.installPlugin).toHaveBeenCalled();
+      expect(
+        fsSync.existsSync(
+          path.join(dir, ".rag/plugins/llm-test-plugin/index.js"),
+        ),
+      ).toBe(true);
+      expect(
+        JSON.parse(fsSync.readFileSync(configPath, "utf8")).plugins.llm[
+          "test-plugin"
+        ],
+      ).toBe("./.rag/plugins/llm-test-plugin/index.js");
+      fsSync.rmSync(dir, { recursive: true, force: true });
     });
 
     test("should reject uncertified plugins when required", async () => {
@@ -674,7 +709,8 @@ describe("Integration Tests", () => {
     const hub = new PluginHub();
 
     // Calculate correct checksum for mock plugin data
-    const mockPluginBuffer = Buffer.from("plugin data");
+    jest.useRealTimers(); // the installer checks the plugin in a child process
+    const mockPluginBuffer = pluginArchive();
     const hash = crypto.createHash("sha256");
     hash.update(mockPluginBuffer);
     const correctChecksum = hash.digest("hex");
@@ -725,8 +761,12 @@ describe("Integration Tests", () => {
     expect(searchResults.results).toHaveLength(1);
 
     // Install
-    const installResult = await hub.installPlugin("test-plugin");
+    const { dir, configPath } = tempProject();
+    const installResult = await hub.installPlugin("test-plugin", "latest", {
+      configPath,
+    });
     expect(installResult.success).toBe(true);
+    fsSync.rmSync(dir, { recursive: true, force: true });
 
     // Rate
     await hub.ratePlugin("test-plugin", 5, "Great plugin!");

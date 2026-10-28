@@ -14,18 +14,25 @@ This project goes beyond traditional RAG tools — it’s a **developer-focused 
 
 **Use Case:** A team wants to test three different retrievers (Pinecone, Weaviate, Redis) and switch LLMs dynamically during eval.
 
+Components are chosen in `.ragrc.json`, so keep one config per variant and
+select it with `--config`:
+
 ```bash
-rag-utils ingest sample.pdf --retriever pinecone --llm openai
+rag-pipeline --config configs/openai.json run --ingest ./docs --query "How does this work?"
+rag-pipeline --config configs/anthropic.json run --ingest ./docs --query "How does this work?"
 ```
 
 ---
 
 ### 2. Plugin-Based Evaluation Benchmarks
 
-**Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents using CLI:
+**Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents. Evaluation is a library API (there is no CLI command for it):
 
-```bash
-rag-utils evaluate --dataset tests/eval.json --llm anthropic
+```js
+const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
+
+// tests/eval.json: [{ "prompt": "...", "expected": "..." }, ...]
+const results = await evaluateRagDataset("tests/eval.json", pipelineConfig);
 ```
 
 ---

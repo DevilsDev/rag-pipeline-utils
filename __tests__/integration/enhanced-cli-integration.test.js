@@ -94,19 +94,12 @@ async function setupTestFixtures() {
       version: "1.0.0",
       createdAt: new Date().toISOString(),
     },
-    plugins: {
-      loader: { "file-loader": "latest" },
-      embedder: { "openai-embedder": "latest" },
-      retriever: { "vector-retriever": "latest" },
-      llm: { "openai-llm": "latest" },
-    },
-    pipeline: {
-      stages: ["loader", "embedder", "retriever", "llm"],
-      middleware: {
-        retry: { enabled: true, maxAttempts: 3 },
-        logging: { enabled: true, level: "info" },
-      },
-    },
+    pipeline: [
+      { stage: "loader", name: "auto" },
+      { stage: "embedder", name: "local" },
+      { stage: "retriever", name: "file-store" },
+    ],
+    plugins: {},
     performance: {
       parallel: { enabled: true, maxConcurrency: 3 },
       streaming: { enabled: true, batchSize: 10, maxMemoryMB: 512 },
@@ -209,17 +202,23 @@ describe("Enhanced CLI Integration Tests", () => {
 
     it("should show extended help with examples", async () => {
       const result = await runCLI(["--help"]);
-      expect(result.stdout).toContain("rag-pipeline init --interactive");
-      expect(result.stdout).toContain("rag-pipeline doctor --auto-fix");
-      expect(result.stdout).toContain("rag-pipeline plugin search openai");
+      expect(result.stdout).toContain("rag-pipeline init");
+      expect(result.stdout).toContain("rag-pipeline ingest ./docs");
+      expect(result.stdout).toContain('rag-pipeline query "What is X?"');
     });
   });
 
   describe("Global Options", () => {
     it("should handle dry-run flag", async () => {
-      const result = await runCLI(["--dry-run", "ingest", "test-document.txt"]);
-      expect(result.stdout).toContain("🧪 Dry run: Would ingest document");
-      expect(result.stdout).toContain("File: test-document.txt");
+      const result = await runCLI([
+        "--config",
+        "valid.ragrc.json",
+        "--dry-run",
+        "ingest",
+        "test-document.txt",
+      ]);
+      expect(result.stdout).toContain("🧪 Dry run: would ingest 1 file(s)");
+      expect(result.stdout).toContain("test-document.txt");
     });
 
     it("should handle verbose flag", async () => {
@@ -243,9 +242,7 @@ describe("Enhanced CLI Integration Tests", () => {
         "--output",
         "new-config.json",
       ]);
-      expect(result.stdout).toContain(
-        "🧪 Dry run: Would initialize RAG pipeline configuration",
-      );
+      expect(result.stdout).toContain("🧪 Dry run: would write configuration");
       expect(result.stdout).toContain("Output file: new-config.json");
     });
 
@@ -256,8 +253,9 @@ describe("Enhanced CLI Integration Tests", () => {
         "valid.ragrc.json",
         "--no-interactive",
       ]);
-      expect(result.stdout).toContain("Configuration file already exists");
-      expect(result.stdout).toContain("Use --force to overwrite");
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain("Configuration file already exists");
+      expect(result.stderr).toContain("Use --force to overwrite");
     });
 
     it("should create basic configuration when not interactive", async () => {
@@ -269,7 +267,7 @@ describe("Enhanced CLI Integration Tests", () => {
         "--no-interactive",
       ]);
       expect(result.success).toBe(true);
-      expect(result.stdout).toContain("Basic configuration created");
+      expect(result.stdout).toContain("Configuration written");
 
       const configExists = await fs
         .access(outputPath)
@@ -288,9 +286,13 @@ describe("Enhanced CLI Integration Tests", () => {
   describe("Doctor Command", () => {
     it("should run basic diagnostics", async () => {
       const result = await runCLI(["--config", "valid.ragrc.json", "doctor"]);
-      expect(result.success).toBe(true);
-      expect(result.stdout).toContain("🏥 Running pipeline diagnostics");
-      expect(result.stdout).toMatch(/✅|⚠️|❌/);
+      // The fixture package.json lists dependencies that are not installed
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain("🏥 Pipeline diagnostics");
+      expect(result.stdout).toContain(
+        "[NPM_DEPENDENCY_MISSING] NPM dependency missing: commander",
+      );
+      expect(result.stdout).toContain("[INDEX_MISSING]");
     });
 
     it("should detect configuration issues", async () => {
@@ -301,9 +303,10 @@ describe("Enhanced CLI Integration Tests", () => {
         "--category",
         "configuration",
       ]);
-      expect(result.stdout).toContain("Configuration Issues");
-      // Accept either success or error indicators
-      expect(result.stdout).toMatch(/❌|⚠️|✅/);
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain(
+        "[CONFIG_STAGE_MISSING] Pipeline has no embedder stage",
+      );
     });
 
     it("should save diagnostic report", async () => {
@@ -315,7 +318,6 @@ describe("Enhanced CLI Integration Tests", () => {
         "--report",
         "diagnostic-report.json",
       ]);
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain("Diagnostic report saved");
 
       const reportExists = await fs
@@ -340,8 +342,8 @@ describe("Enhanced CLI Integration Tests", () => {
         "plugins",
       ]);
       expect(result.success).toBe(true);
-      expect(result.stdout).toContain("Configuration");
-      expect(result.stdout).toContain("Plugins");
+      expect(result.stdout).toContain("[CONFIG_NO_LLM]");
+      expect(result.stdout).not.toContain("[ENV_VAR_MISSING]");
     });
   });
 
@@ -358,16 +360,19 @@ describe("Enhanced CLI Integration Tests", () => {
         "invalid.ragrc.json",
         "validate",
       ]);
+      expect(result.code).toBe(1);
       expect(result.stdout).toContain("❌ Configuration validation failed");
     });
 
-    it("should detect legacy format", async () => {
+    it("should reject components that do not exist", async () => {
       const result = await runCLI([
         "--config",
         "legacy.ragrc.json",
         "validate",
       ]);
-      expect(result.stdout).toMatch(/legacy format|consider upgrading/i);
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain("[CONFIG_COMPONENT_UNKNOWN]");
+      expect(result.stdout).toMatch(/Unknown loader "file-loader"/);
     });
   });
 
@@ -533,109 +538,6 @@ describe("Enhanced CLI Integration Tests", () => {
     });
   });
 
-  describe("Integration with Observability", () => {
-    it("should handle trace flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--trace",
-      ]);
-      expect(result.stdout).toContain("Tracing: enabled");
-    });
-
-    it("should handle stats flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "query",
-        "What is this about?",
-        "--stats",
-      ]);
-      expect(result.stdout).toContain("🧪 Dry run: Would execute query");
-    });
-
-    it("should handle export-observability flag in dry-run", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--export-observability",
-        "observability.json",
-      ]);
-      expect(result.stdout).toContain("🧪 Dry run: Would ingest document");
-    });
-  });
-
-  describe("Performance and Memory", () => {
-    it("should handle parallel processing flag", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--parallel",
-        "--max-concurrency",
-        "5",
-      ]);
-      expect(result.stdout).toContain("Parallel processing: enabled");
-    });
-
-    it("should handle streaming flag", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--streaming",
-        "--batch-size",
-        "20",
-      ]);
-      expect(result.stdout).toContain("Streaming: enabled");
-    });
-
-    it("should handle memory limits", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--max-memory",
-        "1024",
-      ]);
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("CLI UX Features", () => {
-    it("should show document preview when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--preview",
-      ]);
-      expect(result.stdout).toContain("📄 Document Preview:");
-    });
-
-    it("should validate files when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "ingest",
-        "test-document.txt",
-        "--validate",
-      ]);
-      expect(result.stdout).toContain("File validation passed");
-    });
-
-    it("should show query explanation when requested", async () => {
-      const result = await runCLI([
-        "--dry-run",
-        "query",
-        "What is this document about?",
-        "--explain",
-      ]);
-      expect(result.stdout).toContain("🔍 Query Explanation:");
-      expect(result.stdout).toContain("Processing steps:");
-    });
-  });
-
   describe("Plugin Marketplace Integration", () => {
     it("should show plugin commands in help", async () => {
       const result = await runCLI(["plugin", "--help"]);
@@ -645,9 +547,24 @@ describe("Enhanced CLI Integration Tests", () => {
       expect(result.stdout).toContain("publish");
     });
 
-    it("should handle plugin search dry-run", async () => {
-      const result = await runCLI(["--dry-run", "plugin", "search", "openai"]);
-      expect(result.success).toBe(true);
+    it("should require a registry for plugin search", async () => {
+      const result = await runCLI(["plugin", "search", "openai"]);
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain("No plugin registry configured");
+    });
+
+    it("should explain a plugin install source it cannot resolve", async () => {
+      const result = await runCLI([
+        "--config",
+        "valid.ragrc.json",
+        "plugin",
+        "install",
+        "anything",
+      ]);
+      expect(result.code).toBe(1);
+      expect(result.stderr).toContain(
+        "is not a local path or npm:<package>, and no plugin registry is configured",
+      );
     });
   });
 });

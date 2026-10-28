@@ -1,221 +1,174 @@
 /**
- * Tests for CLI init command to ensure it generates valid configurations
+ * Tests for the init command's generated configuration.
  */
 
-const fs = require("fs/promises");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { validateRagrc } = require("../../src/config/enhanced-ragrc-schema.js");
+const { loadRagConfig } = require("../../src/config/load-config.js");
+const { buildComponents } = require("../../src/config/component-factory.js");
+const {
+  buildInitConfig,
+  handleInit,
+  TEMPLATES,
+} = require("../../src/cli/handlers/init-handler.js");
 
-// Mock the enhanced CLI commands
-const { EnhancedCLI } = require("../../src/cli/enhanced-cli-commands.js");
+describe("init configuration", () => {
+  test.each(Object.entries(TEMPLATES))(
+    "template %s validates and names only built-in components",
+    (_name, template) => {
+      const config = buildInitConfig(template);
 
-describe("CLI Init Command", () => {
-  let tempDir;
-  let configPath;
+      expect(validateRagrc(config).valid).toBe(true);
+      expect(() => buildComponents(config)).not.toThrow();
+    },
+  );
 
-  beforeEach(async () => {
-    // Create temporary directory for test configs
-    tempDir = path.join(__dirname, "..", "__temp__", `test-${Date.now()}`);
-    await fs.mkdir(tempDir, { recursive: true });
-    configPath = path.join(tempDir, ".ragrc.json");
+  test("local template needs no API keys and has no llm stage", () => {
+    const config = buildInitConfig(TEMPLATES.local);
+
+    expect(config.pipeline.map((p) => p.name)).toEqual([
+      "auto",
+      "local",
+      "file-store",
+    ]);
   });
 
-  afterEach(async () => {
-    // Clean up temporary files
+  test("uses the chosen index path", () => {
+    const config = buildInitConfig({
+      embedder: "local",
+      llm: null,
+      indexPath: "data/idx.json",
+    });
+
+    expect(config.pipeline[2].config).toEqual({ path: "data/idx.json" });
+  });
+});
+
+describe("handleInit", () => {
+  let dir;
+  let output;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "init-"));
+    output = path.join(dir, ".ragrc.json");
+    process.exitCode = undefined;
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.exitCode = undefined;
+    jest.restoreAllMocks();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("writes a config that loadRagConfig accepts", async () => {
+    await handleInit({}, { output, interactive: false });
+
+    expect(process.exitCode).toBeUndefined();
+    expect(loadRagConfig(output).pipeline).toHaveLength(3);
+  });
+
+  /** Run handleInit as if at a terminal, answering from a script. */
+  async function interactiveInit(options, script) {
+    const isTTY = process.stdin.isTTY;
+    process.stdin.isTTY = true;
+    const asked = [];
+    const prompt = async ([question]) => {
+      asked.push(question.name);
+      const value =
+        question.name in script ? script[question.name] : question.default;
+      return { [question.name]: value };
+    };
     try {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (error) {
-      // Ignore cleanup errors
+      await handleInit(
+        {},
+        { output, ...options },
+        { prompt, env: {}, log: () => {} },
+      );
+    } finally {
+      process.stdin.isTTY = isTTY;
     }
+    return asked;
+  }
+
+  test("runs the setup wizard in interactive mode", async () => {
+    const asked = await interactiveInit(
+      { template: "local" },
+      { embedder: "openai", llm: "anthropic", indexPath: "i.json" },
+    );
+
+    expect(asked).toEqual(
+      expect.arrayContaining(["embedder", "llm", "retriever", "confirmWrite"]),
+    );
+    const config = JSON.parse(fs.readFileSync(output, "utf8"));
+    expect(config.pipeline.map((p) => p.name)).toEqual([
+      "auto",
+      "openai",
+      "file-store",
+      "anthropic",
+    ]);
+    expect(config.pipeline[2].config).toEqual({ path: "i.json" });
+    expect(() => buildComponents(config, { configDir: dir })).not.toThrow();
   });
 
-  describe("createBasicConfig", () => {
-    test("should generate valid normalized configuration", async () => {
-      const cli = new EnhancedCLI();
+  test("--template sets the wizard defaults", async () => {
+    await interactiveInit({ template: "ollama" }, {});
 
-      await cli.createBasicConfig(configPath);
-
-      // Verify file was created
-      const configExists = await fs
-        .access(configPath)
-        .then(() => true)
-        .catch(() => false);
-      expect(configExists).toBe(true);
-
-      // Read and parse the generated config
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      // Validate the configuration
-      const validation = validateRagrc(config);
-      expect(validation.valid).toBe(true);
-      expect(validation.errors).toBeUndefined();
-    });
-
-    test("should generate config with canonical pipeline structure", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      // Check pipeline structure
-      expect(config.pipeline).toBeInstanceOf(Array);
-      expect(config.pipeline.length).toBeGreaterThan(0);
-
-      // Verify each pipeline stage has required properties
-      config.pipeline.forEach((stage) => {
-        expect(stage).toHaveProperty("stage");
-        expect(stage).toHaveProperty("name");
-        expect(stage).toHaveProperty("version");
-        expect(typeof stage.stage).toBe("string");
-        expect(typeof stage.name).toBe("string");
-        expect(typeof stage.version).toBe("string");
-      });
-    });
-
-    test("should include default namespace", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      expect(config.namespace).toBe("default");
-    });
-
-    test("should include required metadata", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      expect(config.metadata).toBeDefined();
-      expect(config.metadata.name).toBeDefined();
-      expect(config.metadata.version).toBeDefined();
-      expect(config.metadata.description).toBeDefined();
-      expect(config.metadata.createdAt).toBeDefined();
-
-      // Verify createdAt is a valid ISO date
-      expect(() => new Date(config.metadata.createdAt)).not.toThrow();
-    });
-
-    test("should include performance and observability sections", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      // Check performance section
-      expect(config.performance).toBeDefined();
-      expect(config.performance.parallel).toBeDefined();
-      expect(config.performance.caching).toBeDefined();
-
-      // Check observability section
-      expect(config.observability).toBeDefined();
-      expect(config.observability.logging).toBeDefined();
-      expect(config.observability.logging.level).toBe("info");
-    });
-
-    test("should generate config that passes schema validation", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      // Validate against schema
-      const validation = validateRagrc(config);
-
-      if (!validation.valid) {
-        console.error("Validation errors:", validation.errors);
-      }
-
-      expect(validation.valid).toBe(true);
-    });
-
-    test("should include standard pipeline stages", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      const stages = config.pipeline.map((p) => p.stage);
-      expect(stages).toContain("loader");
-      expect(stages).toContain("embedder");
-      expect(stages).toContain("retriever");
-      expect(stages).toContain("llm");
-    });
-
-    test("should set reasonable default values", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      // Check default performance settings
-      expect(config.performance.parallel.enabled).toBe(false);
-      expect(config.performance.parallel.maxConcurrency).toBe(3);
-      expect(config.performance.caching.enabled).toBe(false);
-      expect(config.performance.caching.maxSize).toBe(1000);
-      expect(config.performance.caching.ttl).toBe(3600);
-
-      // Check default observability settings
-      expect(config.observability.logging.level).toBe("info");
-      expect(config.observability.logging.structured).toBe(true);
-    });
+    const names = loadRagConfig(output).pipeline.map((p) => p.name);
+    expect(names).toEqual(["auto", "ollama", "file-store", "ollama"]);
   });
 
-  describe("Integration with validation system", () => {
-    test("should create config that loads successfully with loadRagConfig", async () => {
-      const { loadRagConfig } = require("../../src/config/load-config.js");
-      const cli = new EnhancedCLI();
+  test("declining the preview writes nothing", async () => {
+    await interactiveInit({}, { confirmWrite: false });
 
-      await cli.createBasicConfig(configPath);
-
-      // Should load without throwing
-      expect(async () => {
-        const config = loadRagConfig(tempDir);
-        expect(config).toBeDefined();
-        expect(config.pipeline).toBeInstanceOf(Array);
-        expect(config.namespace).toBe("default");
-      }).not.toThrow();
-    });
-
-    test("should create config that passes doctor validation", async () => {
-      const cli = new EnhancedCLI();
-
-      await cli.createBasicConfig(configPath);
-
-      // Simulate doctor validation
-      const configContent = await fs.readFile(configPath, "utf-8");
-      const config = JSON.parse(configContent);
-
-      const validation = validateRagrc(config);
-      expect(validation.valid).toBe(true);
-
-      // Check that normalized config is equivalent to original
-      expect(validation.normalized).toEqual(config);
-    });
+    expect(process.exitCode).toBeUndefined();
+    expect(fs.existsSync(output)).toBe(false);
   });
 
-  describe("Error handling", () => {
-    test("should handle invalid output path gracefully", async () => {
-      const cli = new EnhancedCLI();
-      const invalidPath = "/invalid/path/that/does/not/exist/.ragrc.json";
+  test("asks before replacing an existing file and keeps it on no", async () => {
+    fs.writeFileSync(output, "{}");
 
-      await expect(cli.createBasicConfig(invalidPath)).rejects.toThrow();
-    });
+    const asked = await interactiveInit({}, { overwrite: false });
+
+    expect(asked).toEqual(["overwrite"]);
+    expect(fs.readFileSync(output, "utf8")).toBe("{}");
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  test("replaces an existing file when the user agrees", async () => {
+    fs.writeFileSync(output, "{}");
+
+    const asked = await interactiveInit({}, { overwrite: true });
+
+    expect(asked[0]).toBe("overwrite");
+    expect(loadRagConfig(output).pipeline).toHaveLength(3);
+  });
+
+  test("--force skips the overwrite question", async () => {
+    fs.writeFileSync(output, "{}");
+
+    const asked = await interactiveInit({ force: true }, {});
+
+    expect(asked).not.toContain("overwrite");
+    expect(loadRagConfig(output).pipeline).toHaveLength(3);
+  });
+
+  test("refuses to overwrite without --force when not interactive", async () => {
+    fs.writeFileSync(output, "{}");
+
+    await handleInit({}, { output, interactive: false });
+
+    expect(process.exitCode).toBe(1);
+    expect(fs.readFileSync(output, "utf8")).toBe("{}");
+  });
+
+  test("rejects an unknown template", async () => {
+    await handleInit({}, { output, interactive: false, template: "nope" });
+
+    expect(process.exitCode).toBe(1);
+    expect(fs.existsSync(output)).toBe(false);
   });
 });
