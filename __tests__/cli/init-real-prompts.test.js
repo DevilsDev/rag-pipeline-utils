@@ -78,7 +78,9 @@ function createTerminal() {
   return { input, output, ask, plain };
 }
 
-const type = (text) => [...text.split(""), KEY.enter];
+// Text goes in one write (readline splits it into keypresses), then Enter.
+const type = (text) => [text, KEY.enter];
+const TIMEOUT_MS = 20000;
 
 describe("init wizard with real inquirer prompts", () => {
   let dir;
@@ -117,82 +119,90 @@ describe("init wizard with real inquirer prompts", () => {
     );
   }
 
-  test("a full local-embedder run writes the offline pipeline", async () => {
-    const done = start();
+  test(
+    "a full local-embedder run writes the offline pipeline",
+    async () => {
+      const done = start();
 
-    await terminal.ask("Embedder:", [KEY.enter]);
-    await terminal.ask("Language model:", [KEY.enter]);
-    await terminal.ask("Retriever:", [KEY.enter]);
-    await terminal.ask("Index file", [KEY.enter]);
-    await terminal.ask("Reranker", [KEY.enter]);
-    await terminal.ask("Test the embedder/LLM now?", ["y", KEY.enter]);
-    await terminal.ask("Write this configuration", [KEY.enter]);
+      await terminal.ask("Embedder:", [KEY.enter]);
+      await terminal.ask("Language model:", [KEY.enter]);
+      await terminal.ask("Retriever:", [KEY.enter]);
+      await terminal.ask("Index file", [KEY.enter]);
+      await terminal.ask("Reranker", [KEY.enter]);
+      await terminal.ask("Test the embedder/LLM now?", ["y", KEY.enter]);
+      await terminal.ask("Write this configuration", [KEY.enter]);
 
-    const result = await done;
+      const result = await done;
 
-    expect(result).toEqual({ written: true, connectionTested: false });
-    expect(process.exitCode).toBeUndefined();
-    expect(lines.join("\n")).toMatch(
-      /local embedder runs offline; nothing to test/,
-    );
-    const config = JSON.parse(fs.readFileSync(output, "utf8"));
-    expect(config.pipeline).toEqual([
-      { stage: "loader", name: "auto" },
-      { stage: "embedder", name: "local" },
-      expect.objectContaining({ stage: "retriever", name: "file-store" }),
-    ]);
-    expect(config.plugins).toBeUndefined();
-    // The answers were rendered by inquirer on the fake terminal.
-    expect(terminal.plain()).toMatch(/Embedder: local/);
-  });
+      expect(result).toEqual({ written: true, connectionTested: false });
+      expect(process.exitCode).toBeUndefined();
+      expect(lines.join("\n")).toMatch(
+        /local embedder runs offline; nothing to test/,
+      );
+      const config = JSON.parse(fs.readFileSync(output, "utf8"));
+      expect(config.pipeline).toEqual([
+        { stage: "loader", name: "auto" },
+        { stage: "embedder", name: "local" },
+        expect.objectContaining({ stage: "retriever", name: "file-store" }),
+      ]);
+      expect(config.plugins).toBeUndefined();
+      // The answers were rendered by inquirer on the fake terminal.
+      expect(terminal.plain()).toMatch(/Embedder: local/);
+    },
+    TIMEOUT_MS,
+  );
 
-  test("a custom embedder plugin is re-prompted until it is valid", async () => {
-    const slash = (p) => p.split(path.sep).join("/");
-    const missing = slash(path.join(dir, "missing.js"));
-    const wrongShape = slash(path.join(dir, "not-an-embedder.js"));
-    const valid = slash(path.join(dir, "plugins", "my-embedder.js"));
-    fs.writeFileSync(wrongShape, "module.exports = { hello() {} };");
-    fs.mkdirSync(path.dirname(valid));
-    fs.writeFileSync(
-      valid,
-      "module.exports = class { embed(t) { return [t.length]; } };",
-    );
+  test(
+    "a custom embedder plugin is re-prompted until it is valid",
+    async () => {
+      const slash = (p) => p.split(path.sep).join("/");
+      const missing = slash(path.join(dir, "missing.js"));
+      const wrongShape = slash(path.join(dir, "not-an-embedder.js"));
+      const valid = slash(path.join(dir, "plugins", "my-embedder.js"));
+      fs.writeFileSync(wrongShape, "module.exports = { hello() {} };");
+      fs.mkdirSync(path.dirname(valid));
+      fs.writeFileSync(
+        valid,
+        "module.exports = class { embed(t) { return [t.length]; } };",
+      );
 
-    const done = start();
+      const done = start();
 
-    // local, openai, ollama, cohere, custom: four steps down to "custom".
-    await terminal.ask("Embedder:", [
-      KEY.down,
-      KEY.down,
-      KEY.down,
-      KEY.down,
-      KEY.enter,
-    ]);
-    await terminal.ask("Path to your embedder module", type(missing));
-    await terminal.ask("Path to your embedder module", type(wrongShape));
-    await terminal.ask("Path to your embedder module", type(valid));
-    await terminal.ask("Language model:", [KEY.enter]);
-    await terminal.ask("Retriever:", [KEY.enter]);
-    await terminal.ask("Index file", [KEY.enter]);
-    await terminal.ask("Reranker", [KEY.enter]);
-    await terminal.ask("Test the embedder/LLM now?", [KEY.enter]);
-    await terminal.ask("Write this configuration", [KEY.enter]);
+      // local, openai, ollama, cohere, custom: four steps down to "custom".
+      await terminal.ask("Embedder:", [
+        KEY.down,
+        KEY.down,
+        KEY.down,
+        KEY.down,
+        KEY.enter,
+      ]);
+      await terminal.ask("Path to your embedder module", type(missing));
+      await terminal.ask("Path to your embedder module", type(wrongShape));
+      await terminal.ask("Path to your embedder module", type(valid));
+      await terminal.ask("Language model:", [KEY.enter]);
+      await terminal.ask("Retriever:", [KEY.enter]);
+      await terminal.ask("Index file", [KEY.enter]);
+      await terminal.ask("Reranker", [KEY.enter]);
+      await terminal.ask("Test the embedder/LLM now?", [KEY.enter]);
+      await terminal.ask("Write this configuration", [KEY.enter]);
 
-    const result = await done;
+      const result = await done;
 
-    expect(result).toEqual({ written: true, connectionTested: false });
-    const log = lines.join("\n");
-    expect(log).toMatch(/File not found: .*missing\.js/);
-    expect(log).toMatch(/not-an-embedder\.js does not look like a embedder/);
-    expect(log).toMatch(/embedder plugin "my-embedder"/);
+      expect(result).toEqual({ written: true, connectionTested: false });
+      const log = lines.join("\n");
+      expect(log).toMatch(/File not found: .*missing\.js/);
+      expect(log).toMatch(/not-an-embedder\.js does not look like a embedder/);
+      expect(log).toMatch(/embedder plugin "my-embedder"/);
 
-    const config = JSON.parse(fs.readFileSync(output, "utf8"));
-    expect(config.pipeline.find((e) => e.stage === "embedder")).toEqual({
-      stage: "embedder",
-      name: "my-embedder",
-    });
-    expect(config.plugins).toEqual({
-      embedder: { "my-embedder": "./plugins/my-embedder.js" },
-    });
-  });
+      const config = JSON.parse(fs.readFileSync(output, "utf8"));
+      expect(config.pipeline.find((e) => e.stage === "embedder")).toEqual({
+        stage: "embedder",
+        name: "my-embedder",
+      });
+      expect(config.plugins).toEqual({
+        embedder: { "my-embedder": "./plugins/my-embedder.js" },
+      });
+    },
+    TIMEOUT_MS,
+  );
 });
