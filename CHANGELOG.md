@@ -93,6 +93,8 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Removed
 
+- Unused CLI config templates under `src/cli/templates/` (old format,
+  referenced a schema path that did not exist).
 - Ten unreachable duplicate modules under `src/ai/` and the internal
   `src/dag/enhanced-dag-engine.js` (never reachable from the package entries;
   the exported classes are unchanged).
@@ -207,6 +209,11 @@ citations, evaluation }` chunk. The artificial 5 ms delay is removed.
 
 ### Changed
 
+- **Documentation**: the README is rewritten with use cases whose code runs
+  in CI (`__tests__/docs/readme-examples.test.js` executes every README
+  example), and `.ragrc.json`'s JSON schema (`.ragrc.schema.json`, shipped in
+  the package) now describes the `pipeline` + `plugins` format the CLI and
+  `loadRagConfig()` actually use.
 - **Metric changes**:
   - Context recall now measures how much of a reference (ground-truth) answer
     the retrieved documents support. Pass it via
