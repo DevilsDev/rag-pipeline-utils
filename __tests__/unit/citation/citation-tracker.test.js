@@ -21,7 +21,7 @@ describe("CitationTracker", () => {
 
   describe("Constructor", () => {
     test("creates with default configuration", () => {
-      expect(tracker.config.similarityThreshold).toBe(0.3);
+      expect(tracker.config.similarityThreshold).toBe(0.5);
       expect(tracker.config.maxCitationsPerSentence).toBe(3);
       expect(tracker.config.useIDFWeighting).toBe(true);
     });

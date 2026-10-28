@@ -25,11 +25,11 @@ const DEFAULT_WEIGHTS = {
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
  * @param {{ faithfulness: number, contextPrecision: number, contextRecall: number }} [options.weights] - Custom weights for each component
- * @param {number} [options.threshold=0.3] - Similarity threshold passed to component metrics
+ * @param {number} [options.threshold=0.5] - Similarity threshold passed to component metrics
  * @returns {{ score: number, components: { faithfulness: object, contextPrecision: object, contextRecall: object }, weights: { faithfulness: number, contextPrecision: number, contextRecall: number } }}
  */
 function computeGroundedness(query, answer, retrievedDocs, options = {}) {
-  const { weights = DEFAULT_WEIGHTS, threshold = 0.3 } = options;
+  const { weights = DEFAULT_WEIGHTS, threshold = 0.5 } = options;
 
   const faithfulness = computeFaithfulness(answer, retrievedDocs, {
     threshold,

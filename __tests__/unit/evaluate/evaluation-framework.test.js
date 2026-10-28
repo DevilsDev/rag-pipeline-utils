@@ -241,7 +241,7 @@ describe("PipelineEvaluator", () => {
   describe("Constructor", () => {
     test("creates with default config", () => {
       expect(evaluator.config.metrics).toEqual(DEFAULT_CONFIG.metrics);
-      expect(evaluator.config.threshold).toBe(0.3);
+      expect(evaluator.config.threshold).toBe(0.5);
     });
 
     test("accepts custom metrics list", () => {

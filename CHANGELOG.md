@@ -9,6 +9,70 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Fixed
+
+- **Package import**: `require()` / `import` of 2.4.5 failed in every clean
+  install with `Cannot find module 'isolated-vm'`. `isolated-vm` is now
+  loaded only when `PluginSandbox` runs and is an optional peer dependency;
+  `pino-pretty` is an optional peer as well. Added the missing `ajv-formats`
+  and `marked` dependencies, pinned `chalk` to 4.x (5.x is ESM-only), removed
+  unused `dotenv`. Importing the bundle no longer prints "Missing Contract"
+  warnings. A tarball smoke test (`npm run smoke:pack`) now runs in CI and
+  before publish.
+- **`createRagPipeline`**: the query embedding was computed and discarded, so
+  the README quick start returned `success: false`. Plugins registered on the
+  exported `pluginRegistry` are now resolvable by name, and the timeout timer
+  is cleared when a run finishes.
+- **Citations** with zero retrieved documents no longer fail the run; every
+  sentence is reported as unsupported.
+- **`HybridRetriever`** passes the full request (including `queryVector`) to
+  `retrieve()`, so vector results are no longer silently dropped, and throws
+  when every retriever fails.
+- **Guardrails**: the retrieval guard (ACL, relevance, freshness) now runs
+  before generation via the new `options.filterResults` hook; removed
+  documents are reported by id only; strict-mode blocks no longer return the
+  raw answer; PII is redacted in citations and evaluation details too.
+- **`AuditLogger`**: tenant/user/action filters never matched, so queries and
+  compliance reports returned every tenant's records. Encryption now uses
+  `createCipheriv` with a random IV per field (it threw on Node 22 and reused
+  the nonce on Node 18/20). The integrity hash now covers action and tenant.
+- **`InputSanitizer`**: a regex state bug let command-injection payloads
+  through after a previously blocked input.
+- **`LLMReranker`** sends an actual ranking prompt instead of the raw
+  question, keeps documents the LLM omits, and honours `topK`.
+- **Agentic RAG**: with an `embedder`, each sub-query and refined query is
+  embedded on its own instead of reusing the original query vector.
+- **Logger**: console-style calls such as `logger.error("Failed:", msg)` no
+  longer log the message as one key per character.
+
+### Changed
+
+- **Grounding scores** (citations, faithfulness, context precision/recall,
+  groundedness, `PostGenerationGuard`, `SelfCritiqueChecker`) now measure the
+  share of a sentence's content words found in a document, optionally
+  IDF-weighted. They previously used Jaccard similarity against the whole
+  document, which shrinks with document length: an answer copied verbatim
+  from a ~70-word chunk scored 0. Scores will be noticeably higher for
+  grounded answers.
+- Default per-sentence similarity threshold raised from 0.3 to 0.5
+  (`CitationTracker.similarityThreshold`, `PipelineEvaluator.threshold`,
+  faithfulness/recall/hallucination-detector `threshold`). Aggregate
+  thresholds (`groundednessThreshold`, `approvalThreshold`) are unchanged.
+- The tokenizer keeps non-ASCII letters (`Política` no longer becomes
+  `poltica`) and splits on newlines and hyphens instead of gluing words
+  together. This also affects BM25, BLEU/ROUGE and the scoring reranker.
+- `RetrievalGuard` with `enforceACL` now fails closed when
+  `context.userPermissions` is missing.
+- `CitationTracker.track()` non-array error message is now
+  "retrievedDocs must be an array".
+
+### Known limitations
+
+- Grounding remains lexical. A sentence that repeats a source with a wrong
+  number ("thirty days" instead of "twenty") is still scored as grounded.
+
 ## [2.4.5] - 2026-04-19
 
 ### Changed

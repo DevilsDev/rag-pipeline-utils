@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
     'contextRecall',
     'groundedness',
   ],
-  threshold: 0.3,
+  threshold: 0.5,
   includeBLEU: false,
   includeROUGE: false,
 };

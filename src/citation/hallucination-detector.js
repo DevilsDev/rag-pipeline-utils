@@ -10,7 +10,7 @@
  *
  * @param {Array<{sentence: string, sources: Array<{docId: string|undefined, docIndex: number, score: number}>}>} citationResults
  * @param {object} [options]
- * @param {number} [options.threshold=0.3] - Score threshold for grounded classification
+ * @param {number} [options.threshold=0.5] - Score threshold for grounded classification
  * @returns {{
  *   hallucinationRate: number,
  *   sentences: Array<{text: string, classification: string, bestScore: number, bestSource: object|null}>,
@@ -18,7 +18,7 @@
  * }}
  */
 function detectHallucinations(citationResults, options = {}) {
-  const { threshold = 0.3 } = options;
+  const { threshold = 0.5 } = options;
 
   if (!Array.isArray(citationResults) || citationResults.length === 0) {
     return {

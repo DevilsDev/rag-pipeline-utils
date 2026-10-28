@@ -10,7 +10,7 @@ const { detectHallucinations } = require('./hallucination-detector');
  * @type {object}
  */
 const DEFAULT_CONFIG = {
-  similarityThreshold: 0.3,
+  similarityThreshold: 0.5,
   maxCitationsPerSentence: 3,
   useIDFWeighting: true,
 };
@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
 class CitationTracker extends EventEmitter {
   /**
    * @param {object} [options] - Override default configuration
-   * @param {number} [options.similarityThreshold=0.3] - Minimum similarity for a citation match
+   * @param {number} [options.similarityThreshold=0.5] - Minimum similarity for a citation match
    * @param {number} [options.maxCitationsPerSentence=3] - Max citations per sentence
    * @param {boolean} [options.useIDFWeighting=true] - Whether to apply IDF weighting
    */

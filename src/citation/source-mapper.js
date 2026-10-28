@@ -1,10 +1,12 @@
 'use strict';
 
-const { tokenize, computeJaccardSimilarity } = require('../evaluate/scoring');
+const { tokenize, computeSupportScore } = require('../evaluate/scoring');
 
 /**
  * Build IDF (Inverse Document Frequency) weights from a collection of documents.
- * IDF = log(totalDocs / docsContainingToken)
+ * IDF = log(1 + totalDocs / docsContainingToken). The +1 keeps weights
+ * positive, so tokens found in every document (and every token when only one
+ * document was retrieved) still count instead of weighing zero.
  * @param {Array<{content?: string, text?: string}>} docs - Array of document objects
  * @returns {Map<string, number>} Map of token to IDF weight
  */
@@ -24,24 +26,25 @@ function buildIDFWeights(docs) {
 
   const idfWeights = new Map();
   for (const [token, df] of docFrequency) {
-    idfWeights.set(token, Math.log(totalDocs / df));
+    idfWeights.set(token, Math.log(1 + totalDocs / df));
   }
 
   return idfWeights;
 }
 
 /**
- * Map a sentence to its most relevant source documents using token similarity.
+ * Map a sentence to its most relevant source documents by how much of the
+ * sentence each document supports (see computeSupportScore).
  * @param {string} sentence - The sentence to map
  * @param {Array<{content?: string, text?: string, id?: string}>} docs - Source documents
  * @param {object} [options] - Configuration options
  * @param {number} [options.maxCitations=3] - Maximum number of citations to return
- * @param {number} [options.threshold=0.3] - Minimum similarity threshold
+ * @param {number} [options.threshold=0.5] - Minimum similarity threshold
  * @param {Map<string, number>|null} [options.idfWeights=null] - Optional IDF weights for weighted similarity
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
  */
 function mapSentenceToSources(sentence, docs, options = {}) {
-  const { maxCitations = 3, threshold = 0.3, idfWeights = null } = options;
+  const { maxCitations = 3, threshold = 0.5, idfWeights = null } = options;
 
   const sentenceTokens = tokenize(sentence);
   if (!sentenceTokens.length) return [];
@@ -54,29 +57,10 @@ function mapSentenceToSources(sentence, docs, options = {}) {
     const docTokens = tokenize(docText);
     if (!docTokens.length) continue;
 
-    let score;
-    const sentenceSet = new Set(sentenceTokens);
+    // Share of the sentence's content tokens found in this document.
     const docSet = new Set(docTokens);
-    const matched = [...sentenceSet].filter((t) => docSet.has(t));
-
-    if (idfWeights) {
-      // IDF-weighted Jaccard: sum IDF weights of intersection / sum IDF weights of union
-      const union = new Set([...sentenceSet, ...docSet]);
-      let intersectionWeight = 0;
-      let unionWeight = 0;
-
-      for (const token of union) {
-        const weight = idfWeights.get(token) || 1;
-        if (sentenceSet.has(token) && docSet.has(token)) {
-          intersectionWeight += weight;
-        }
-        unionWeight += weight;
-      }
-
-      score = unionWeight > 0 ? intersectionWeight / unionWeight : 0;
-    } else {
-      score = computeJaccardSimilarity(sentenceTokens, docTokens);
-    }
+    const score = computeSupportScore(sentenceTokens, docSet, idfWeights);
+    const matched = [...new Set(sentenceTokens)].filter((t) => docSet.has(t));
 
     if (score >= threshold) {
       results.push({
