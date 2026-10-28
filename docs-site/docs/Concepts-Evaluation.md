@@ -15,13 +15,13 @@ that gap.
 
 ## What's in rag-eval
 
-| Surface                                          | Purpose                                                                                                                                                                                                                                           |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PipelineEvaluator`                              | Score a pipeline result (`{ query, answer, results }`) on faithfulness, relevance, context precision, context recall and groundedness.                                                                                                            |
-| `CitationTracker`                                | Per-sentence attribution of the generated answer to source documents, plus a hallucination report.                                                                                                                                                |
-| `compute*()` functions                           | Standalone metrics: `computeFaithfulness`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`.                                                                                                    |
-| `checkNumericConsistency()` / `extractNumbers()` | The numeric check used by claim support: numbers in a claim must appear in the source ("20" equals "twenty").                                                                                                                                     |
-| `evaluateRagDataset()`                           | Batch helper: runs `[{ prompt, expected }]` from a JSON file through a pipeline and scores each case with BLEU/ROUGE. Known issue in 2.5.0: it scores the retrieved documents instead of the answer, so use `PipelineEvaluator` per case for now. |
+| Surface                                          | Purpose                                                                                                                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PipelineEvaluator`                              | Score a pipeline result (`{ query, answer, results }`) on faithfulness, relevance, context precision, context recall and groundedness.                     |
+| `CitationTracker`                                | Per-sentence attribution of the generated answer to source documents, plus a hallucination report.                                                         |
+| `compute*()` functions                           | Standalone metrics: `computeFaithfulness`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`.             |
+| `checkNumericConsistency()` / `extractNumbers()` | The numeric check used by claim support: numbers in a claim must appear in the source ("20" equals "twenty").                                              |
+| `evaluateRagDataset()`                           | Batch helper: runs `[{ prompt, expected }]` from a JSON file through a pipeline and scores each answer against `expected` with BLEU/ROUGE. Needs an `llm`. |
 
 All metrics are computed locally and deterministically; no judge LLM is called. Grounding is lexical (the share of a sentence's content words found in a document, optionally IDF-weighted) plus a numeric-consistency check. Negation ("not twenty days"), units ("20 hours" vs "20 days") and claims that combine several documents are not checked.
 

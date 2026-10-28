@@ -22,15 +22,15 @@ async function evaluateRagDataset(_datasetPath, _config) {
   const results = [];
   for (const { prompt, expected } of cases) {
     try {
-      logger.info({ prompt }, 'Evaluating case');
+      logger.info('Evaluating case', { prompt });
       const result = await pipeline.run({ query: prompt });
-      const actual = result.results || '';
+      const actual = typeof result.answer === 'string' ? result.answer : '';
       const success =
         result.success && normalizeText(actual) === normalizeText(expected);
       const scores = scoreAnswer(actual, expected);
       results.push({ prompt, expected, actual, success, scores });
     } catch (err) {
-      logger.error({ prompt, error: err.message }, 'Evaluation failed');
+      logger.error('Evaluation failed', { prompt, error: err.message });
       results.push({
         prompt,
         expected,

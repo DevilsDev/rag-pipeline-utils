@@ -117,7 +117,7 @@ const result = await guarded.run({
 
 - A document is restricted when it has an `acl` or `requiredRole` field (a role or a list of roles). The user needs at least one of them in `context.userPermissions`.
 - With `enforceACL`, a missing `userPermissions` fails closed: every restricted document is removed.
-- The guard reads `acl` and `requiredRole` from the top level of each retrieved document. The built-in `MemoryRetriever` and `FileVectorStore` return only `id`, `score`, `content` and `metadata`, so with them you must copy the field to the top level, for example in a small retriever wrapper.
+- The guard reads `acl` and `requiredRole` from each retrieved result or its `metadata`. Store them in `metadata` when you index with `MemoryRetriever` or `FileVectorStore`.
 - `detectInjection: true` scans retrieved documents for indirect prompt injection.
 
 See [Guardrails concepts](./Concepts-Guardrails.md) for all options.

@@ -123,6 +123,11 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 
 ### Fixed
 
+- **`evaluateRagDataset`** scores the generated answer; it scored the
+  retrieved documents, so every case failed with zero scores.
+- **`RetrievalGuard`** with `enforceACL` also reads a top-level `acl` /
+  `requiredRole` on results that have `metadata` (it read only `metadata`
+  then).
 - **`createRagPipeline`**: timeouts now cancel work and no stage starts after
   an abort (a timeout still resolves `{ success: false, error: 'Execution
 timeout' }`; a caller abort resolves `'Execution aborted'`). Without an llm

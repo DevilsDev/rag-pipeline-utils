@@ -167,17 +167,9 @@ class SecureKnowledgeBase {
     const openai = new OpenAIConnector();
     const pipeline = createRagPipeline({
       embedder: openai,
-      // RetrievalGuard reads `acl` (or `requiredRole`) from each result.
-      // MemoryRetriever returns { id, score, content, metadata }, so lift
-      // the role list out of metadata:
-      retriever: {
-        store: (docs) => retriever.store(docs),
-        retrieve: async (request) =>
-          (await retriever.retrieve(request)).map((doc) => ({
-            ...doc,
-            acl: doc.metadata?.acl,
-          })),
-      },
+      // RetrievalGuard reads `acl` (or `requiredRole`) from each result's
+      // metadata, which is where MemoryRetriever returns it.
+      retriever,
       llm: openai,
     });
 

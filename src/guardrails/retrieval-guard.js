@@ -100,11 +100,11 @@ class RetrievalGuard extends EventEmitter {
       // treated as having no roles, so restricted documents are removed.
       if (!dominated && this.config.enforceACL) {
         const userPermissions = context.userPermissions || [];
-        const requiredRoles = doc.requiredRole
-          ? [].concat(doc.requiredRole)
-          : doc.acl
-            ? [].concat(doc.acl)
-            : null;
+        // Read the restriction from the result itself or its metadata, so a
+        // top-level `acl` is not ignored when the result also has metadata.
+        const restriction =
+          result.requiredRole ?? result.acl ?? doc.requiredRole ?? doc.acl;
+        const requiredRoles = restriction ? [].concat(restriction) : null;
 
         if (requiredRoles && requiredRoles.length > 0) {
           const hasAccess = requiredRoles.some((role) =>
