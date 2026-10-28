@@ -1,398 +1,209 @@
 # Plugin Development Guide
 
-The **@DevilsDev/rag-pipeline-utils** toolkit is built on a fully modular plugin architecture that enables seamless extension and customization. This comprehensive guide covers plugin development, architecture patterns, contracts, and best practices for building production-ready plugins.
+Every stage of a **@devilsdev/rag-pipeline-utils** pipeline is a plugin: a plain object or class instance with the method(s) its stage requires. There is no base class to extend and nothing to inherit. This guide covers the stage contracts, the three ways to make a plugin available to a pipeline, cancellation, signatures, and the `rag-pipeline hub` commands.
 
 ---
 
-## **Plugin Architecture Overview**
+## **Plugin Model**
 
-The plugin system follows SOLID principles with a registry-based architecture that supports:
+A pipeline has five stages. Only `retriever` is needed for retrieval; `llm` is needed for answers.
 
-- **Type Safety**: Strict TypeScript interfaces for all plugin contracts
-- **Runtime Validation**: Contract enforcement at registration and execution
-- **Hot Swapping**: Dynamic plugin loading and replacement
-- **Dependency Injection**: Clean separation of concerns
-- **Extensibility**: Support for custom plugin types and middleware
+| Stage       | Required methods                             | Called by `createRagPipeline` as                           |
+| ----------- | -------------------------------------------- | ---------------------------------------------------------- |
+| `loader`    | `load()`                                     | `loader.load()` before each run                            |
+| `embedder`  | `embed()` (optionally `embedQuery()`)        | `embedder.embedQuery(query, { signal })` or `embed(...)`   |
+| `retriever` | `store()` and `retrieve()`                   | `retriever.retrieve({ query, queryVector, topK, signal })` |
+| `reranker`  | `rerank()`                                   | `reranker.rerank(query, docs, { topK, signal })`           |
+| `llm`       | `generate()` (optionally `generateStream()`) | `llm.generate(query, docs, { ...options, signal })`        |
 
-### **Core Plugin Types**
+The required methods come from the contract files in [`contracts/`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/contracts). `pluginRegistry.register()` rejects a plugin that is missing one (or its `metadata`, see below), and `rag-pipeline hub install` checks the same methods in a separate process. Instances passed directly to `createRagPipeline()` and modules referenced from `.ragrc.json` are not validated up front.
 
-```javascript
-import { PluginRegistry } from "@DevilsDev/rag-pipeline-utils";
-
-const registry = new PluginRegistry();
-
-// Register plugins by type
-registry.register("loader", "my-custom-loader", new MyLoader());
-registry.register("embedder", "my-embedder", new MyEmbedder());
-registry.register("retriever", "my-retriever", new MyRetriever());
-registry.register("llm", "my-llm", new MyLLM());
-registry.register("reranker", "my-reranker", new MyReranker());
-
-// Retrieve and use plugins
-const loader = registry.get("loader", "my-custom-loader");
-const result = await loader.load("./document.pdf");
-```
-
-**Supported Plugin Types**:
-
-- **`loader`**: Document ingestion and parsing
-- **`embedder`**: Text-to-vector embedding generation
-- **`retriever`**: Vector similarity search and retrieval
-- **`llm`**: Language model inference and generation
-- **`reranker`**: Context reordering and relevance scoring
+Documents passed between stages are objects such as `{ id, content, score, metadata }`.
 
 ---
 
-## **Plugin Contracts & Interfaces**
+## **Stage Contracts**
 
-### **1. Loader Plugin Contract**
+### **Embedder**
 
-```typescript
-interface LoaderPlugin {
-  name: string;
-  version: string;
-  supportedFormats: string[];
-
-  load(filePath: string, options?: LoaderOptions): Promise<Document[]>;
-  loadBatch(filePaths: string[], options?: LoaderOptions): Promise<Document[]>;
-  validate(filePath: string): Promise<boolean>;
-}
-
-interface Document {
-  id: string;
-  content: string;
-  metadata: Record<string, any>;
-  chunks?: TextChunk[];
-}
-
-interface TextChunk {
-  id: string;
-  content: string;
-  startIndex: number;
-  endIndex: number;
-  metadata: Record<string, any>;
-}
-```
-
-**Example Implementation**:
+`embed(text, options)` returns a vector (`number[]`). The pipeline also accepts a list of vectors or `[{ values | vector | embedding }]` and uses the first entry. If `embedQuery()` exists it is preferred for queries.
 
 ```javascript
-import { BaseLoader } from "@DevilsDev/rag-pipeline-utils";
-import fs from "fs/promises";
-import path from "path";
+class HashEmbedder {
+  constructor(config = {}) {
+    this.dimensions = config.dimensions || 64;
+  }
 
-class CustomMarkdownLoader extends BaseLoader {
+  async embed(text, { signal } = {}) {
+    signal?.throwIfAborted();
+    const vector = new Array(this.dimensions).fill(0);
+    for (const word of String(text).toLowerCase().split(/\W+/)) {
+      if (!word) continue;
+      let h = 0;
+      for (const ch of word) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      vector[h % this.dimensions] += 1;
+    }
+    return vector;
+  }
+}
+
+module.exports = HashEmbedder;
+```
+
+### **Retriever**
+
+`store(docs)` receives `[{ id, vector, content, metadata }]`. `retrieve(request)` receives `{ query, queryVector, topK, signal }` and returns documents sorted by relevance, each with a `score`. The built-in `MemoryRetriever` and `FileVectorStore` implement this contract and are good references.
+
+```javascript
+class ArrayRetriever {
   constructor() {
-    super();
-    this.name = "custom-markdown";
-    this.version = "1.0.0";
-    this.supportedFormats = [".md", ".markdown", ".txt"];
+    this.docs = [];
   }
 
-  async load(filePath, options = {}) {
-    const content = await fs.readFile(filePath, "utf-8");
-    const metadata = {
-      filename: path.basename(filePath),
-      size: content.length,
-      lastModified: (await fs.stat(filePath)).mtime,
-    };
-
-    const chunks = this.chunkText(content, {
-      chunkSize: options.chunkSize || 1000,
-      overlap: options.overlap || 200,
-    });
-
-    return [
-      {
-        id: this.generateId(filePath),
-        content,
-        metadata,
-        chunks,
-      },
-    ];
+  async store(docs) {
+    this.docs.push(...docs);
   }
 
-  async validate(filePath) {
-    const ext = path.extname(filePath).toLowerCase();
-    return this.supportedFormats.includes(ext);
-  }
-
-  chunkText(text, options) {
-    // Custom chunking logic
-    const chunks = [];
-    const sentences = text.split(/[.!?]+/);
-    let currentChunk = "";
-    let chunkIndex = 0;
-
-    for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > options.chunkSize) {
-        if (currentChunk) {
-          chunks.push({
-            id: `chunk-${chunkIndex++}`,
-            content: currentChunk.trim(),
-            startIndex: text.indexOf(currentChunk),
-            endIndex: text.indexOf(currentChunk) + currentChunk.length,
-            metadata: { chunkIndex, wordCount: currentChunk.split(" ").length },
-          });
-        }
-        currentChunk = sentence;
-      } else {
-        currentChunk += sentence;
-      }
-    }
-
-    if (currentChunk) {
-      chunks.push({
-        id: `chunk-${chunkIndex}`,
-        content: currentChunk.trim(),
-        startIndex: text.lastIndexOf(currentChunk),
-        endIndex: text.lastIndexOf(currentChunk) + currentChunk.length,
-        metadata: { chunkIndex, wordCount: currentChunk.split(" ").length },
-      });
-    }
-
-    return chunks;
+  async retrieve({ queryVector, topK = 3, signal } = {}) {
+    signal?.throwIfAborted();
+    const dot = (a, b) => a.reduce((sum, v, i) => sum + v * (b[i] || 0), 0);
+    return this.docs
+      .map((d) => ({ ...d, score: dot(queryVector, d.vector) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
   }
 }
 ```
 
-### **2. Embedder Plugin Contract**
+### **Reranker**
 
-```typescript
-interface EmbedderPlugin {
-  name: string;
-  version: string;
-  dimensions: number;
-  maxTokens: number;
+`rerank(query, docs, { topK, signal })` returns the documents in a new order (and may cut the list to `topK`).
 
-  embed(text: string, options?: EmbedderOptions): Promise<number[]>;
-  embedBatch(texts: string[], options?: EmbedderOptions): Promise<number[][]>;
-  getTokenCount(text: string): number;
-}
-```
+### **LLM**
 
-**Example Implementation**:
+`generate(query, docs, options)` returns the answer string. `options` contains the run options plus `signal`. An optional `generateStream(query, docs, options)` is an async generator of `{ token, done }` chunks used when `run()` is called with `options.stream: true`; without it the pipeline streams the result of `generate()` as one chunk.
 
 ```javascript
-import { BaseEmbedder } from "@DevilsDev/rag-pipeline-utils";
-import OpenAI from "openai";
-
-class CustomOpenAIEmbedder extends BaseEmbedder {
-  constructor(apiKey, options = {}) {
-    super();
-    this.name = "custom-openai";
-    this.version = "1.0.0";
-    this.dimensions = 1536;
-    this.maxTokens = 8191;
-    this.client = new OpenAI({ apiKey });
-    this.model = options.model || "text-embedding-ada-002";
-  }
-
-  async embed(text, options = {}) {
-    try {
-      const response = await this.client.embeddings.create({
-        model: this.model,
-        input: text,
-        encoding_format: "float",
-      });
-
-      return response.data[0].embedding;
-    } catch (error) {
-      throw new Error(`Embedding failed: ${error.message}`);
-    }
-  }
-
-  async embedBatch(texts, options = {}) {
-    const batchSize = options.batchSize || 100;
-    const results = [];
-
-    for (let i = 0; i < texts.length; i += batchSize) {
-      const batch = texts.slice(i, i + batchSize);
-      const response = await this.client.embeddings.create({
-        model: this.model,
-        input: batch,
-        encoding_format: "float",
-      });
-
-      results.push(...response.data.map((item) => item.embedding));
-    }
-
-    return results;
-  }
-
-  getTokenCount(text) {
-    // Approximate token count (actual implementation would use tiktoken)
-    return Math.ceil(text.length / 4);
-  }
-}
-```
-
-### **3. Retriever Plugin Contract**
-
-```typescript
-interface RetrieverPlugin {
-  name: string;
-  version: string;
-
-  retrieve(
-    query: string,
-    options?: RetrievalOptions,
-  ): Promise<RetrievalResult[]>;
-  index(documents: Document[], options?: IndexOptions): Promise<void>;
-  delete(documentIds: string[]): Promise<void>;
-  getStats(): Promise<RetrievalStats>;
-}
-
-interface RetrievalResult {
-  id: string;
-  content: string;
-  score: number;
-  metadata: Record<string, any>;
-}
-```
-
-### **4. LLM Plugin Contract**
-
-```typescript
-interface LLMPlugin {
-  name: string;
-  version: string;
-  maxTokens: number;
-
-  generate(prompt: string, options?: GenerationOptions): Promise<string>;
-  generateStream(
-    prompt: string,
-    options?: GenerationOptions,
-  ): AsyncIterableIterator<string>;
-  getTokenCount(text: string): number;
-}
-```
-
-**Example Implementation**:
-
-```javascript
-import { BaseLLM } from "@DevilsDev/rag-pipeline-utils";
-import OpenAI from "openai";
-
-class CustomOpenAILLM extends BaseLLM {
-  constructor(apiKey, options = {}) {
-    super();
-    this.name = "custom-openai-llm";
-    this.version = "1.0.0";
-    this.maxTokens = 4096;
-    this.client = new OpenAI({ apiKey });
-    this.model = options.model || "gpt-3.5-turbo";
-  }
-
-  async generate(prompt, options = {}) {
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: options.maxTokens || 1000,
-      temperature: options.temperature || 0.7,
-      top_p: options.topP || 1.0,
-    });
-
-    return response.choices[0].message.content;
-  }
-
-  async *generateStream(prompt, options = {}) {
-    const stream = await this.client.chat.completions.create({
-      model: this.model,
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: options.maxTokens || 1000,
-      temperature: options.temperature || 0.7,
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        yield content;
-      }
-    }
-  }
-
-  getTokenCount(text) {
-    // Approximate token count
-    return Math.ceil(text.length / 4);
-  }
-}
-```
-
----
-
-## **Plugin Registration & Management**
-
-### **Dynamic Plugin Loading**
-
-```javascript
-import { PluginManager } from "@DevilsDev/rag-pipeline-utils";
-
-const pluginManager = new PluginManager();
-
-// Load plugin from file
-await pluginManager.loadPlugin("./plugins/my-custom-loader.js");
-
-// Load plugin from npm package
-await pluginManager.loadPlugin("@company/rag-plugin-suite");
-
-// Load plugin from URL
-await pluginManager.loadPlugin("https://github.com/user/plugin.git");
-
-// Register plugin instance directly
-pluginManager.register("loader", "my-loader", new MyCustomLoader());
-
-// List available plugins
-const plugins = pluginManager.listPlugins();
-console.log("Available plugins:", plugins);
-```
-
-### **Plugin Metadata & Validation**
-
-```javascript
-// Plugin metadata export
-export const metadata = {
-  name: "custom-pdf-loader",
-  version: "2.1.0",
-  description: "Advanced PDF loader with OCR support",
-  author: "Your Name <email@example.com>",
-  license: "MIT",
-  keywords: ["pdf", "ocr", "loader"],
-  dependencies: {
-    "pdf-parse": "^1.1.1",
-    "tesseract.js": "^4.0.0",
-  },
-  config: {
-    ocrEnabled: { type: "boolean", default: false },
-    language: { type: "string", default: "eng" },
-    quality: { type: "number", min: 1, max: 5, default: 3 },
+const echoLlm = {
+  async generate(query, docs, { signal } = {}) {
+    signal?.throwIfAborted();
+    const sources = docs.map((d) => d.content).join(" ");
+    return `Q: ${query}\nContext: ${sources}`;
   },
 };
 
-// Plugin validation
-import { validatePlugin } from "@DevilsDev/rag-pipeline-utils";
-
-const validation = await validatePlugin(MyCustomLoader, {
-  strictMode: true,
-  checkDependencies: true,
-  validateContract: true,
-});
-
-if (!validation.isValid) {
-  console.error("Plugin validation failed:", validation.errors);
-}
+module.exports = echoLlm;
 ```
+
+The built-in connectors put retrieved documents in the user message as delimited, untrusted reference data, never in the system role. Do the same in your own LLM plugins.
+
+### **Loader**
+
+`load()` is called with no arguments at the start of every `createRagPipeline` run. The CLI `ingest` command reads `.md`, `.html`, `.csv` and `.txt` files itself, so most projects do not need a custom loader.
 
 ---
 
-## **CLI Plugin Development Tools**
+## **Cancellation (AbortSignal)**
 
-The CLI has no plugin scaffolding, test or packaging commands. Write the
-plugin module yourself, reference it under `plugins` in `.ragrc.json`, and use
-the CLI to check that it loads.
+Each run creates an `AbortController`. Its signal is passed to every component call, as shown in the table above. It aborts when the run's `timeout` expires or when the caller's `options.signal` aborts:
 
-### **Plugin Validation**
+```javascript
+const controller = new AbortController();
+const pending = pipeline.run({
+  query: "What is RAG?",
+  options: { signal: controller.signal, timeout: 10000 },
+});
+controller.abort();
+const result = await pending; // { success: false, error: "Execution aborted" }
+```
+
+Plugins that ignore the signal still work: the run settles on abort anyway and no later stage starts. But the plugin's own work (an HTTP request, for example) keeps running until it finishes. Pass `signal` to `fetch()` or your SDK so the work actually stops. All built-in connectors and rerankers honour it.
+
+---
+
+## **Making a Plugin Available**
+
+### **1. Pass instances directly**
+
+```javascript
+const {
+  createRagPipeline,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
+const HashEmbedder = require("./plugins/hash-embedder");
+const echoLlm = require("./plugins/echo-llm");
+
+const embedder = new HashEmbedder();
+const retriever = new MemoryRetriever();
+await retriever.store([
+  {
+    id: "1",
+    content: "RAG combines retrieval with generation.",
+    vector: await embedder.embed("RAG combines retrieval with generation."),
+  },
+]);
+
+const pipeline = createRagPipeline({ embedder, retriever, llm: echoLlm });
+const result = await pipeline.run({ query: "What is RAG?" });
+console.log(result.answer);
+```
+
+### **2. Register on `pluginRegistry`**
+
+`register(category, name, impl, manifest?, options?)` is asynchronous: await it before building the pipeline. Names are resolved when the pipeline is created. The registry validates the plugin against its stage contract, which also requires a `metadata` object with `name`, `version` and `type` (the stage):
+
+```javascript
+const {
+  createRagPipeline,
+  pluginRegistry,
+} = require("@devilsdev/rag-pipeline-utils");
+
+echoLlm.metadata = { name: "echo", version: "1.0.0", type: "llm" };
+await pluginRegistry.register("llm", "echo", echoLlm);
+console.log(pluginRegistry.list("llm")); // ["echo"]
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever,
+  llm: "echo", // resolved with pluginRegistry.get("llm", "echo")
+});
+```
+
+### **3. Reference a module in `.ragrc.json`**
+
+Each `pipeline` entry is `{ "stage", "name", "config"? }`. Names resolve to a built-in component, then to a module under `plugins` (a path relative to the config file), then to a plugin registered on `pluginRegistry`. A module may export a class (constructed with the entry's `config`), a factory function (called with `config`) or an object, optionally as `default`.
+
+```json
+{
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    {
+      "stage": "embedder",
+      "name": "hash",
+      "config": { "dimensions": 128 }
+    },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    },
+    { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
+  ],
+  "plugins": {
+    "embedder": { "hash": "./plugins/hash-embedder.js" }
+  }
+}
+```
+
+Built-in names are listed by `rag-pipeline info --plugins`; see the [CLI Reference](./CLI.md#configuration-ragrcjson) for the full table.
+
+---
+
+## **CLI Tools**
+
+The CLI has no scaffolding or test generator. Write the module yourself and use the CLI to check, install and score it.
+
+### **Checking a plugin**
 
 ```bash
 # Check the config and resolve every component, including custom plugins
@@ -405,212 +216,79 @@ rag-pipeline doctor --category plugins
 rag-pipeline info --plugins
 ```
 
-### **Plugin Publishing**
-
-Publish to npm with `npm publish` as for any package. To publish to a plugin
-registry, use `hub` (alias `plugin`) with `--registry <url>` or
-`RAG_PLUGIN_REGISTRY`; there is no public registry:
+### **Installing a plugin**
 
 ```bash
-# Validate without publishing
-rag-pipeline hub --registry https://my-registry.com publish ./my-plugin --dry-run
-
-# Publish
-rag-pipeline hub --registry https://my-registry.com publish ./my-plugin
+rag-pipeline hub install ./my-llm                     # local directory
+rag-pipeline hub install ./my-llm-1.0.0.tgz           # npm pack output
+rag-pipeline hub install ./plugins/echo.js --stage llm --name echo
+rag-pipeline hub install npm:@acme/rag-llm-echo@1.2.0 # from npm
+rag-pipeline hub list                                 # plugins in the config
 ```
+
+`hub install` unpacks the plugin into `.rag/plugins/<stage>-<name>/`, statically scans it for risky capabilities (high-risk findings block the install unless you pass `--allow-risky`), checks the stage methods in a separate process and adds it under `plugins` in `.ragrc.json`. Add a `{ "stage", "name" }` entry to `pipeline` to use it. Stage and name come from `package.json` (`"ragPipeline": { "stage": "llm", "name": "echo" }`) or from `--stage` and `--name`. Install scripts are never run.
+
+The scan is not a sandbox: an installed plugin runs in-process with your permissions.
+
+### **Scoring a plugin**
+
+```bash
+rag-pipeline hub certify check ./my-llm
+```
+
+The score is computed from the plugin's files: contract (35), security scan (30), tests (15) and documentation (20). Automated thresholds are BASIC 60, VERIFIED 80 and ENTERPRISE 95. VERIFIED and ENTERPRISE also need a manual review. The report is local and no certificate is issued. See [`hub certify`](./CLI.md) for the details.
+
+### **Registries**
+
+There is no public plugin registry. Registry commands (`search`, `info`, `publish`, registry installs) need `--registry <url>` or the `RAG_PLUGIN_REGISTRY` environment variable. To share a plugin, publish it to npm with `npm publish` and install it with `hub install npm:<package>`.
 
 ---
 
-## **Configuration & Runtime**
+## **Plugin Signatures**
 
-### **Plugin Configuration in .ragrc.json**
-
-Each `pipeline` entry names a component and passes `config` to its
-constructor. Custom plugins are declared under `plugins` as module paths
-relative to the config file (see the [CLI Reference](./CLI.md)):
-
-```json
-{
-  "pipeline": [
-    { "stage": "loader", "name": "auto" },
-    {
-      "stage": "embedder",
-      "name": "custom-embedder",
-      "config": { "batchSize": 100 }
-    },
-    {
-      "stage": "retriever",
-      "name": "file-store",
-      "config": { "path": ".rag/index.json" }
-    },
-    { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
-  ],
-  "plugins": {
-    "embedder": { "custom-embedder": "./plugins/custom-embedder.js" }
-  }
-}
-```
-
-### **Environment-Specific Overrides**
+Plugins can be registered with a signed manifest. `register()` verifies it before importing anything:
 
 ```javascript
-// Development environment
-process.env.NODE_ENV = "development";
-const devConfig = {
-  plugins: {
-    llm: {
-      name: "mock-llm", // Use mock for testing
-      config: { responses: ["Test response"] },
-    },
-  },
-};
-
-// Production environment
-process.env.NODE_ENV = "production";
-const prodConfig = {
-  plugins: {
-    llm: {
-      name: "openai-gpt-4",
-      config: {
-        temperature: 0.3, // Lower temperature for consistency
-        maxTokens: 1500,
-      },
-    },
-  },
-};
+await pluginRegistry.register("llm", "echo", echoLlm, manifest, {
+  content: { files: ["index.js"], baseDir: "/path/to/plugin" },
+});
 ```
+
+- The manifest must carry `signature` (Ed25519, base64) and `signerId`. Signers come from a trusted-keys file; the trust store is empty by default.
+- A signed `contentDigest` in the manifest binds the plugin code. When it is present, it is always checked against `options.content` (`{ files, baseDir, contents }`).
+- The exported `pluginRegistry` verifies signatures only when `NODE_ENV` is `production`. Registries constructed with `requireSignedPlugins: true` refuse plugins that have no signed manifest. With `requireContentDigest: true` they also refuse manifests that have no `contentDigest`.
+- `PluginSignatureVerifier` is exported for verifying manifests yourself (`verifyPluginSignature(manifest, signature, signerId, content?)`).
 
 ---
 
 ## **Best Practices**
 
-### **1. Error Handling**
-
-```javascript
-class RobustPlugin extends BaseLoader {
-  async load(filePath, options = {}) {
-    try {
-      // Validate inputs
-      if (!filePath || typeof filePath !== "string") {
-        throw new Error("Invalid file path provided");
-      }
-
-      // Check file existence
-      if (!(await this.fileExists(filePath))) {
-        throw new Error(`File not found: ${filePath}`);
-      }
-
-      // Implement retry logic
-      return await this.withRetry(() => this.processFile(filePath), {
-        maxRetries: 3,
-        backoff: "exponential",
-      });
-    } catch (error) {
-      // Log error with context
-      this.logger.error("Load operation failed", {
-        filePath,
-        error: error.message,
-        stack: error.stack,
-      });
-
-      // Re-throw with enhanced context
-      throw new Error(`Failed to load ${filePath}: ${error.message}`);
-    }
-  }
-}
-```
-
-### **2. Performance Optimization**
-
-```javascript
-class OptimizedEmbedder extends BaseEmbedder {
-  constructor(options = {}) {
-    super();
-    this.cache = new LRUCache({ max: 1000 });
-    this.batchSize = options.batchSize || 50;
-    this.concurrency = options.concurrency || 3;
-  }
-
-  async embedBatch(texts, options = {}) {
-    // Check cache first
-    const uncachedTexts = texts.filter((text) => !this.cache.has(text));
-
-    if (uncachedTexts.length === 0) {
-      return texts.map((text) => this.cache.get(text));
-    }
-
-    // Process in parallel batches
-    const batches = this.createBatches(uncachedTexts, this.batchSize);
-    const results = await Promise.allSettled(
-      batches.map((batch) => this.processBatch(batch)),
-    );
-
-    // Cache results
-    results.forEach((result, index) => {
-      if (result.status === "fulfilled") {
-        result.value.forEach((embedding, i) => {
-          this.cache.set(uncachedTexts[index * this.batchSize + i], embedding);
-        });
-      }
-    });
-
-    return texts.map((text) => this.cache.get(text));
-  }
-}
-```
-
-### **3. Testing & Quality Assurance**
-
-```javascript
-// Plugin test suite
-import { PluginTester } from "@DevilsDev/rag-pipeline-utils";
-
-const tester = new PluginTester(MyCustomLoader);
-
-// Contract compliance tests
-await tester.testContract();
-
-// Performance benchmarks
-const benchmarks = await tester.benchmark({
-  testData: "./test-documents/",
-  iterations: 100,
-  metrics: ["latency", "throughput", "memory"],
-});
-
-// Integration tests
-await tester.testIntegration({
-  pipeline: myRagPipeline,
-  testCases: "./integration-tests.json",
-});
-
-// Generate test report
-const report = tester.generateReport();
-console.log("Plugin test results:", report);
-```
+- **Honour `signal`.** Pass it to network calls so a timeout or a caller abort stops the work.
+- **Throw on failure.** `run()` catches errors and resolves `{ success: false, error }`; do not return placeholder results.
+- **Check vector dimensions.** `MemoryRetriever` and `FileVectorStore` reject query vectors of the wrong length. Use one embedder for both ingest and query.
+- **Read secrets from the environment** at construction time, and fail fast when they are missing (as the built-in connectors do with `MISSING_API_KEY`).
+- **Test against the contract.** Instantiate the plugin, call its stage method with the arguments shown above, and run it once through `createRagPipeline`.
 
 ---
 
-## **Provider Connectors (v2.4.0)**
+## **Built-in Connectors**
 
-Starting with v2.4.0, the toolkit ships with **7 built-in provider connectors** that cover both cloud and local inference scenarios. These connectors implement the standard plugin contracts and can be used directly or composed into pipelines.
-
-### **Available Connectors**
+The built-in connectors implement the same contracts and can be passed directly to `createRagPipeline()`:
 
 ```javascript
-import { OpenAIConnector, // GPT-4, text-embedding-3
-  AnthropicConnector, // Claude 3 Opus, Sonnet, Haiku
-  CohereConnector, // Embed + Rerank
-  OllamaConnector, // Llama 3, Mistral (local)
-  LocalEmbedder, // TF-IDF (offline, no API)
-  MemoryRetriever, // In-memory cosine similarity } from "@devilsdev/rag-pipeline-utils";
+const {
+  OpenAIConnector,
+  AnthropicConnector,
+  CohereConnector,
+  OllamaConnector,
+  LocalEmbedder,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-// Local model
 const ollama = new OllamaConnector({
   model: "llama3",
   baseURL: "http://localhost:11434",
 });
-
-// Cloud providers
 const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
 const anthropic = new AnthropicConnector({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -618,20 +296,18 @@ const anthropic = new AnthropicConnector({
 const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
 ```
 
-### **Connector Summary**
+| Connector            | Stages             | Notes                                                                |
+| -------------------- | ------------------ | -------------------------------------------------------------------- |
+| `OpenAIConnector`    | llm, embedder      | Default models `gpt-4o-mini` and `text-embedding-3-small`; streaming |
+| `AnthropicConnector` | llm                | Default model `claude-3-5-sonnet-20241022`; streaming                |
+| `CohereConnector`    | embedder, reranker | `embed-english-v3.0`, `rerank-english-v3.0`                          |
+| `OllamaConnector`    | llm, embedder      | Local server; defaults `llama3` and `nomic-embed-text`; streaming    |
+| `LocalEmbedder`      | embedder           | Offline TF-IDF; call `train(documents)` first                        |
+| `MemoryRetriever`    | retriever          | In-memory cosine similarity; `maxDocuments`, `eviction: 'fifo'`      |
+| `FileVectorStore`    | retriever          | JSON-file index used by the CLI (`file-store`)                       |
 
-| Connector              | Type                | Use Case                                   |
-| ---------------------- | ------------------- | ------------------------------------------ |
-| `OpenAIConnector`      | LLM + Embedder      | GPT-4 generation, text-embedding-3 vectors |
-| `AnthropicConnector`   | LLM                 | Claude 3 Opus, Sonnet, Haiku generation    |
-| `CohereConnector`      | Embedder + Reranker | Embed v3 vectors, reranking                |
-| `OllamaConnector`      | LLM + Embedder      | Local Llama 3, Mistral inference           |
-| `LocalEmbedder`        | Embedder            | Offline TF-IDF embeddings (no API key)     |
-| `MemoryRetriever`      | Retriever           | In-memory cosine similarity search         |
-| `HuggingFaceConnector` | LLM + Embedder      | Hosted Inference API models                |
-
-All connectors support the standard plugin lifecycle (registration, validation, hot-swapping) and can be configured through `.ragrc.json` or passed directly to `createRagPipeline()`.
+API keys are read when the connector is constructed (from `apiKey` or `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY`). Transient failures (network errors, 408/409/425/429/5xx) are retried with exponential backoff and jitter, and `Retry-After` is honoured.
 
 ---
 
-_This comprehensive plugin development guide enables you to build production-ready extensions for @DevilsDev/rag-pipeline-utils. For usage examples, see the [Usage Guide](./Usage.md), or explore [CLI Reference](./CLI.md) for plugin management commands._
+_For running pipelines see the [Usage Guide](./Usage.md); for plugin management commands see the [CLI Reference](./CLI.md)._

@@ -9,12 +9,13 @@
   },
   "scripts": {
     "start": "node server.js",
+    "start:offline": "node server.js --offline",
     "dev": "node --watch server.js",
     "ingest": "node scripts/ingest.js",
     "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
-    "@devilsdev/rag-pipeline-utils": "^2.4.4",
+    "@devilsdev/rag-pipeline-utils": "^2.5.0",
     "@fastify/cors": "^10.0.0",
     "@fastify/rate-limit": "^10.0.0",
     "fastify": "^5.0.0"

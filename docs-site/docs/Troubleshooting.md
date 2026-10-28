@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This comprehensive troubleshooting guide helps you diagnose and resolve common issues with **@DevilsDev/rag-pipeline-utils**. From installation problems to performance optimization, this guide provides step-by-step solutions and debugging strategies.
+This comprehensive troubleshooting guide helps you diagnose and resolve common issues with **@devilsdev/rag-pipeline-utils**. From installation problems to performance optimization, this guide provides step-by-step solutions and debugging strategies.
 
 ---
 
@@ -8,7 +8,7 @@ This comprehensive troubleshooting guide helps you diagnose and resolve common i
 
 ### **1. Package Installation Failures**
 
-**Problem**: `npm install @DevilsDev/rag-pipeline-utils` fails with dependency errors.
+**Problem**: `npm install @devilsdev/rag-pipeline-utils` fails with dependency errors.
 
 **Solutions**:
 
@@ -16,22 +16,17 @@ This comprehensive troubleshooting guide helps you diagnose and resolve common i
 # Clear npm cache
 npm cache clean --force
 
-# Use specific Node.js version (18+ required)
+# Use a supported Node.js version (18+ required)
 nvm use 18
-npm install @DevilsDev/rag-pipeline-utils
-
-# Install with legacy peer deps
-npm install @DevilsDev/rag-pipeline-utils --legacy-peer-deps
-
-# Force resolution of conflicting dependencies
-npm install @DevilsDev/rag-pipeline-utils --force
+npm install @devilsdev/rag-pipeline-utils
 ```
 
-**Common Dependency Conflicts**:
+**Common Dependency Problems**:
 
-- **OpenAI SDK version mismatch**: Ensure OpenAI SDK v4+ is installed
-- **Node.js version**: Requires Node.js 18+ for ES modules support
-- **Python dependencies**: Some embedders require Python 3.8+ for native modules
+- **Node.js version**: Node.js 18 or newer is required (`engines.node >= 18`).
+- **`Cannot find module 'isolated-vm'`**: importing 2.4.5 failed in clean installs with this error. Upgrade to 2.5.0, where `isolated-vm` is an optional peer dependency loaded only when the experimental `PluginSandbox` runs. Install it yourself only if you use `PluginSandbox`.
+- **`pino-pretty`** is an optional peer dependency as well; install it only for pretty-printed logs.
+- **OpenAI SDK**: the package uses the `openai` 4.x SDK.
 
 ### **2. Configuration File Issues**
 
@@ -79,16 +74,11 @@ rag-pipeline init --no-interactive --force
 **Debug Steps**:
 
 ```bash
-# Check environment variables
+# Check that the variable is set in the shell that runs the CLI
 echo $OPENAI_API_KEY
-echo $PINECONE_API_KEY
 
-# Test environment loading
-node -e "console.log(process.env.OPENAI_API_KEY)"
-
-# Use dotenv for local development
-npm install dotenv
-echo "OPENAI_API_KEY=your-key-here" > .env
+# Report missing keys for the configured providers
+rag-pipeline doctor --category environment
 ```
 
 **Environment Variable Precedence**:
@@ -97,8 +87,12 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 2. Environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
    `COHERE_API_KEY`)
 
-The CLI has no `--api-key` option. `rag-pipeline doctor --category
-environment` reports missing keys for the configured providers.
+API keys are read when a connector is constructed. A call without a key
+fails fast with a `MISSING_API_KEY` error, so set the variable before
+creating the pipeline. The package does not load `.env` files itself; export
+the variables in your shell or load them in your application.
+
+The CLI has no `--api-key` option.
 
 ---
 
@@ -130,10 +124,7 @@ rag-pipeline validate
 **Plugin Debugging**:
 
 ```javascript
-// Enable plugin debugging
-process.env.DEBUG = "rag-pipeline:plugins";
-
-// Add logging to plugin
+// Add logging to a custom loader plugin
 class MyPlugin {
   async load(filePath) {
     console.log(`Loading file: ${filePath}`);
@@ -151,7 +142,7 @@ class MyPlugin {
 
 ### **2. API Integration Problems**
 
-**Problem**: External API calls failing (OpenAI, Pinecone, etc.).
+**Problem**: Calls to a provider (OpenAI, Anthropic, Cohere, Ollama) fail.
 
 **OpenAI API Issues**:
 
@@ -162,25 +153,21 @@ curl -H "Authorization: Bearer $OPENAI_API_KEY" \
 
 # Run a query with extra output (the model is set in .ragrc.json)
 rag-pipeline query "test" --verbose
-```
 
-**Pinecone API Issues**:
-
-```bash
-# Test Pinecone connection
-curl -H "Api-Key: $PINECONE_API_KEY" \
-  https://controller.pinecone.io/databases
-
-# Check API keys and whether the local index has been built
+# Check API keys for the configured providers
 rag-pipeline doctor --category environment
 ```
 
+**Retries**: built-in connectors retry only transient failures (network
+errors and HTTP 408/409/425/429/5xx) with exponential backoff, jitter and
+`Retry-After`, up to `maxRetries` (default 3). Other errors fail immediately.
+
 **Common API Error Codes**:
 
-- **401 Unauthorized**: Invalid API key
-- **429 Rate Limited**: Too many requests
-- **503 Service Unavailable**: API service down
-- **400 Bad Request**: Invalid request format
+- **401 Unauthorized**: Invalid API key (not retried)
+- **400 Bad Request**: Invalid request format (not retried)
+- **429 Rate Limited**: Too many requests (retried with backoff)
+- **503 Service Unavailable**: API service down (retried with backoff)
 
 ---
 
@@ -192,17 +179,29 @@ rag-pipeline doctor --category environment
 
 **Performance Optimization**:
 
+`createRagPipeline` takes component instances (or registered names), not
+inline config objects. Configure the connector itself, and bound each run
+with `options.timeout` or an `AbortSignal`:
+
 ```javascript
-// Enable parallel processing
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  FileVectorStore,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const openai = new OpenAIConnector({ maxRetries: 3, retryDelay: 1000 });
 const pipeline = createRagPipeline({
-  embedder: {
-    name: "openai",
-    config: {
-      batchSize: 100, // Process in batches
-      maxConcurrency: 5, // Parallel requests
-      timeout: 30000, // 30 second timeout
-    },
-  },
+  embedder: openai,
+  retriever: new FileVectorStore({ path: ".rag/index.json" }),
+  llm: openai,
+});
+
+// The run resolves { success: false, error: 'Execution timeout' } after 30 s
+// and the abort signal is passed to every component call.
+const result = await pipeline.run({
+  query: "What is RAG?",
+  options: { timeout: 30000 },
 });
 ```
 
@@ -220,18 +219,22 @@ rag-pipeline ingest ./large-docs --verbose
 
 **Memory Optimization**:
 
-```javascript
-// Enable streaming for large documents
-const pipeline = createRagPipeline({
-  streaming: true,
-  memoryLimit: "2GB",
-  chunkSize: 1000,
-  batchSize: 10,
-});
+There is no pipeline-level memory limit option. Bound memory with the
+components you choose:
 
-// Monitor memory usage
-process.on("warning", (warning) => {
-  console.warn("Memory warning:", warning);
+- `MemoryRetriever` keeps every vector in memory. It enforces `maxDocuments`
+  (default 100000) and throws when full, or drops the oldest documents with
+  `eviction: "fifo"`.
+- `FileVectorStore` (the CLI's `file-store` retriever) persists the index to
+  a JSON file; vectors that are mostly zero are stored sparsely.
+- `EmbeddingReranker` caches document embeddings; limit it with `cacheSize`.
+
+```javascript
+const { MemoryRetriever } = require("@devilsdev/rag-pipeline-utils");
+
+const retriever = new MemoryRetriever({
+  maxDocuments: 50000,
+  eviction: "fifo", // default "error"
 });
 ```
 
@@ -277,21 +280,17 @@ rag-pipeline query "test query" --top-k 10 --json
 
 **Retrieval Tuning**:
 
-```json
-{
-  "retriever": {
-    "name": "pinecone",
-    "config": {
-      "topK": 5,
-      "minScore": 0.75,
-      "includeMetadata": true,
-      "filter": {
-        "category": "technical"
-      }
-    }
-  }
-}
-```
+- Retrieve more candidates with `--top-k` (CLI) or `options.topK` (library),
+  then add a reranker (`{ "stage": "reranker", "name": "scoring" }` in
+  `.ragrc.json`, or `EmbeddingReranker` / `CascadeReranker` in code).
+- Drop low-scoring documents before generation with `RetrievalGuard`
+  (`minRelevanceScore`), applied through `GuardrailsPipeline`.
+- If you switch embedders, rebuild the index
+  (`rag-pipeline ingest <path> --rebuild`): vectors from different embedders are not comparable, and
+  `MemoryRetriever` / `FileVectorStore` reject query vectors whose dimension
+  does not match the stored ones.
+- With the `local` TF-IDF embedder, `rag-pipeline ai train embedding` refits
+  it on your corpus and re-embeds the index.
 
 ### **2. LLM Generation Issues**
 
@@ -310,18 +309,25 @@ rag-pipeline query "test" --json
 **Prompt Engineering**:
 
 ```javascript
-// Custom prompt template
-const pipeline = createRagPipeline({
-  llm: {
-    name: "openai-gpt-4",
-    config: {
-      systemPrompt: `You are a helpful assistant. Use the provided context to answer questions accurately and concisely.`,
-      temperature: 0.3,
-      maxTokens: 1500,
-    },
-  },
+const {
+  createRagPipeline,
+  OpenAIConnector,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const llm = new OpenAIConnector({
+  model: "gpt-4o-mini", // default
+  systemPrompt:
+    "You are a helpful assistant. Answer only from the reference data.",
+  temperature: 0.3,
+  maxTokens: 1500,
 });
+
+const pipeline = createRagPipeline({ embedder: llm, retriever, llm });
 ```
+
+Since 2.5.0 the built-in connectors put retrieved context in the user message
+as delimited, untrusted reference data, with a system prompt telling the model
+to treat it as data. Answers may differ from earlier versions.
 
 ---
 
@@ -329,7 +335,15 @@ const pipeline = createRagPipeline({
 
 ### **1. Evaluation Metric Failures**
 
-**Problem**: Evaluation metrics returning NaN or unexpected values.
+**Problem**: Evaluation metrics returning unexpected values.
+
+**Scores changed after upgrading to 2.5.0**: grounding metrics now measure
+content-word coverage per sentence (scores for grounded answers are
+noticeably higher), the default per-sentence threshold is `0.5` (was `0.3`),
+and sentences whose numbers are not in the source are not grounded. Context
+recall is only computed when you pass a `referenceAnswer`; without one it is
+missing from `scores` and listed in `metadata.metricsSkipped`. See
+[Evaluation](./Evaluation.md#how-grounding-is-measured-250).
 
 **Metric Debugging**:
 
@@ -347,24 +361,31 @@ console.log(
 
 **Data Format Validation**:
 
+The package has no dataset validator. Check the fields your evaluation loop
+reads before running it:
+
 ```javascript
-// Ensure proper test data format
 const testData = [
   {
     id: "test-001",
     prompt: "What is RAG?",
-    groundTruth: "RAG stands for Retrieval-Augmented Generation...",
-    category: "definition",
+    expected: "RAG stands for Retrieval-Augmented Generation...",
   },
 ];
 
-// Validate before evaluation
-import { validateDataset } from "@DevilsDev/rag-pipeline-utils";
-const validation = await validateDataset(testData);
-if (!validation.isValid) {
-  console.error("Invalid test data:", validation.errors);
+const invalid = testData.filter(
+  (c) => typeof c.prompt !== "string" || typeof c.expected !== "string",
+);
+if (invalid.length) {
+  console.error(
+    "Invalid test cases:",
+    invalid.map((c) => c.id),
+  );
 }
 ```
+
+`PipelineEvaluator.evaluate()` expects `{ query, answer, results }`, where
+`results` is an array of `{ content }` documents.
 
 ### **2. Dashboard Connection Issues**
 
@@ -373,7 +394,7 @@ if (!validation.isValid) {
 The CLI has no `dashboard` command. Dashboards are HTML files
 produced by `DashboardGenerator.generate(snapshot)`; if one is empty, check
 that metrics were recorded on the `MetricsAggregator` before calling
-`getSnapshot()`. See [Evaluation](./Evaluation.md#dashboard-visualization).
+`getSnapshot()`. See [Evaluation](./Evaluation.md#dashboards).
 
 ---
 
@@ -431,24 +452,28 @@ rag-pipeline query "test" --verbose > debug.log 2>&1
 
 ### **Custom Logging Configuration**
 
-```javascript
-import { createLogger } from "@DevilsDev/rag-pipeline-utils";
+The library logs JSON lines through pino. Set the level with the `LOG_LEVEL`
+environment variable (`trace`, `debug`, `info`, `warn`, `error`, `fatal`,
+`silent`; default `info`, or `silent` when `NODE_ENV=test`):
 
-const logger = createLogger({
-  level: "debug",
-  format: "json",
-  transports: [
-    { type: "console" },
-    { type: "file", filename: "rag-pipeline.log" },
-  ],
-});
-
-// Use custom logger
-const pipeline = createRagPipeline({
-  logger,
-  logLevel: "debug",
-});
+```bash
+LOG_LEVEL=debug node app.js > rag-pipeline.log
 ```
+
+The `logger` export is the logging module. Use its `logger` instance, or
+`createLogger(correlationId, context)` for a child logger that tags every
+line:
+
+```javascript
+const { logger } = require("@devilsdev/rag-pipeline-utils");
+
+logger.logger.info("Pipeline initialized", { stage: "startup" });
+
+const requestLog = logger.createLogger("req-123", { tenant: "acme" });
+requestLog.debug("Running query", { topK: 5 });
+```
+
+`createRagPipeline` does not take a logger option.
 
 ---
 
@@ -500,17 +525,9 @@ rag-pipeline info
 ### **Community Support**
 
 - **GitHub Issues**: [Report bugs and feature requests](https://github.com/DevilsDev/rag-pipeline-utils/issues)
-- **Documentation**: [Complete documentation](https://docs.rag-pipeline-utils.dev)
-- **Discord**: [Join our community](https://discord.gg/rag-pipeline-utils)
-- **Stack Overflow**: Tag questions with `rag-pipeline-utils`
-
-### **Professional Support**
-
-For enterprise support and consulting:
-
-- **Email**: support@devilsdev.com
-- **Enterprise Portal**: [enterprise.rag-pipeline-utils.dev](https://enterprise.rag-pipeline-utils.dev)
+- **Discussions**: [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
+- **Security issues**: report privately as described in [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md)
 
 ---
 
-_This troubleshooting guide covers the most common issues encountered with @DevilsDev/rag-pipeline-utils. For additional help, consult the [FAQ](./FAQ.md) or reach out to our community support channels._
+_This troubleshooting guide covers the most common issues encountered with @devilsdev/rag-pipeline-utils. For additional help, consult the [FAQ](./FAQ.md) or reach out to our community support channels._

@@ -42,17 +42,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --legacy-peer-deps || npm install --legacy-peer-deps
-        shell: bash
+        run: npm ci --prefer-offline
 
       - name: Run npm audit
-        run: npm audit --audit-level=high --production
-        shell: bash
+        run: npm audit --audit-level=high --omit=dev
         continue-on-error: true
-
-      - name: Run security linting
-        run: npm run lint:security --if-present
-        shell: bash
 
   codeql:
     name: CodeQL Analysis

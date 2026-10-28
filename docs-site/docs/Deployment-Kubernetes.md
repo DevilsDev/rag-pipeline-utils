@@ -6,6 +6,12 @@ sidebar_position: 18
 
 Deploy RAG Pipeline Utils on Kubernetes with production-grade configurations, Helm charts, auto-scaling, and comprehensive monitoring.
 
+:::note What you deploy
+
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+
+:::
+
 ## Overview
 
 This guide covers:
@@ -41,7 +47,7 @@ metadata:
   namespace: production
   labels:
     app: rag-pipeline
-    version: v2.4.0
+    version: v2.5.0
 spec:
   replicas: 3
   selector:
@@ -51,7 +57,7 @@ spec:
     metadata:
       labels:
         app: rag-pipeline
-        version: v2.4.0
+        version: v2.5.0
     spec:
       serviceAccountName: rag-pipeline
       securityContext:
@@ -60,7 +66,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: rag-app
-          image: your-registry.com/rag-pipeline-utils:2.4.2
+          image: your-registry.com/rag-pipeline-utils:2.5.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -185,22 +191,20 @@ data:
   log-level: "info"
   max-concurrent-requests: "100"
   embedding-batch-size: "100"
-  # Application configuration
-  app-config.json: |
+  # Pipeline configuration read by loadRagConfig() / the CLI
+  # (entries are { stage, name, config }; API keys come from the Secret below)
+  .ragrc.json: |
     {
-      "pipeline": {
-        "timeout": 30000,
-        "retryAttempts": 3,
-        "retryDelay": 1000
-      },
-      "cache": {
-        "enabled": true,
-        "ttl": 3600
-      },
-      "rateLimit": {
-        "windowMs": 900000,
-        "maxRequests": 100
-      }
+      "pipeline": [
+        { "stage": "loader", "name": "auto" },
+        { "stage": "embedder", "name": "openai" },
+        {
+          "stage": "retriever",
+          "name": "file-store",
+          "config": { "path": "/data/index.json" }
+        },
+        { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
+      ]
     }
 ```
 
@@ -262,8 +266,8 @@ helm/rag-pipeline/
 apiVersion: v2
 name: rag-pipeline
 description: RAG Pipeline Utils Helm Chart
-version: 2.4.2
-appVersion: "2.4.2"
+version: 2.5.0
+appVersion: "2.5.0"
 keywords:
   - rag
   - ai
@@ -282,7 +286,7 @@ replicaCount: 3
 
 image:
   repository: your-registry.com/rag-pipeline-utils
-  tag: "2.4.2"
+  tag: "2.5.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -624,7 +628,7 @@ spec:
     spec:
       containers:
         - name: rag-app
-          image: rag-pipeline:2.3.0
+          image: rag-pipeline:2.4.5
 ---
 # Green deployment
 apiVersion: apps/v1
@@ -645,7 +649,7 @@ spec:
     spec:
       containers:
         - name: rag-app
-          image: rag-pipeline:2.4.2
+          image: rag-pipeline:2.5.0
 ---
 # Service switches between blue and green
 apiVersion: v1
@@ -668,7 +672,7 @@ helm install rag-pipeline ./helm/rag-pipeline \
   --namespace production \
   --create-namespace \
   --values values-production.yaml \
-  --set image.tag=2.4.2 \
+  --set image.tag=2.5.0 \
   --set secrets.openaiApiKey=$OPENAI_API_KEY
 
 # Dry run first
@@ -684,7 +688,7 @@ helm install rag-pipeline ./helm/rag-pipeline \
 helm upgrade rag-pipeline ./helm/rag-pipeline \
   --namespace production \
   --values values-production.yaml \
-  --set image.tag=2.3.2 \
+  --set image.tag=2.5.0 \
   --wait --timeout 5m
 
 # Check rollout status

@@ -6,6 +6,12 @@ sidebar_position: 21
 
 Deploy RAG Pipeline Utils on Google Cloud Platform using Cloud Run, GKE, or Cloud Functions with enterprise-grade scalability and monitoring.
 
+:::note What you deploy
+
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+
+:::
+
 ## Overview
 
 Deployment options:
@@ -40,10 +46,10 @@ gcloud artifacts repositories create rag-pipeline \
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.3.1 \
-  us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1
+docker tag rag-pipeline-utils:2.5.0 \
+  us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
 
-docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1
+docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
 ```
 
 ## Google Cloud Run
@@ -53,7 +59,7 @@ docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1
 ```bash
 # Deploy to Cloud Run
 gcloud run deploy rag-pipeline \
-  --image us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1 \
+  --image us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0 \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -93,7 +99,7 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-        - image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1
+        - image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
           resources:
             limits:
               cpu: "2000m"
@@ -164,7 +170,7 @@ spec:
       serviceAccountName: rag-pipeline-sa
       containers:
         - name: rag-app
-          image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.3.1
+          image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
           ports:
             - containerPort: 3000
           env:
@@ -230,37 +236,36 @@ kubectl annotate serviceaccount rag-pipeline-sa \
 ```javascript
 // index.js
 const functions = require("@google-cloud/functions-framework");
-import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  FileVectorStore,
+} = require("@devilsdev/rag-pipeline-utils");
 
 let pipeline;
 
 functions.http("query", async (req, res) => {
-  try {
-    if (!pipeline) {
-      pipeline = createRagPipeline({
-        embedder: {
-          type: "openai",
-          apiKey: process.env.OPENAI_API_KEY,
-        },
-        retriever: {
-          type: "pinecone",
-          apiKey: process.env.PINECONE_API_KEY,
-        },
-      });
-    }
-
-    const { query } = req.body;
-
-    const result = await pipeline.run({
-      query,
-      options: { topK: 5, timeout: 25000 },
+  if (!pipeline) {
+    // OpenAIConnector reads OPENAI_API_KEY. The index is built ahead of time
+    // with `rag-pipeline ingest` (openai embedder) and deployed with the source.
+    const openai = new OpenAIConnector({ model: "gpt-4o-mini" });
+    pipeline = createRagPipeline({
+      embedder: openai,
+      retriever: new FileVectorStore({ path: "./index.json" }),
+      llm: openai,
     });
-
-    res.json(result);
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: error.message });
   }
+
+  const { query } = req.body || {};
+
+  // run() resolves { success: false, error } on failure or timeout
+  const result = await pipeline.run({
+    query,
+    options: { topK: 5, timeout: 25000 },
+  });
+
+  if (!result.success) return res.status(500).json({ error: result.error });
+  res.json({ answer: result.answer, results: result.results });
 });
 ```
 

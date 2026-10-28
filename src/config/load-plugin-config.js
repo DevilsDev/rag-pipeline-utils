@@ -18,6 +18,48 @@ const { logger } = require("../utils/logger.js");
 // eslint-disable-line global-require
 
 /**
+ * Verify a plugin file against its signed manifest BEFORE it is imported
+ * (importing runs the plugin's code).
+ *
+ * The manifest is read from `<plugin file>.manifest.json`. Its
+ * `contentDigest` (if any) must cover the plugin file plus any extra files
+ * listed in `manifest.files` (paths relative to the plugin file's
+ * directory). Nothing is checked when the registry's signature verification
+ * is disabled; when it is enabled and the registry was created with
+ * `requireSignedPlugins: true`, a missing manifest is an error.
+ *
+ * @param {string} name - Plugin name
+ * @param {string} absPath - Absolute path of the plugin entry file
+ * @returns {Promise<void>}
+ */
+async function verifyPluginBeforeImport(name, absPath) {
+  if (
+    typeof registry.isSignatureVerificationEnabled !== "function" ||
+    !registry.isSignatureVerificationEnabled()
+  ) {
+    return;
+  }
+
+  const manifestPath = `${absPath}.manifest.json`;
+  if (!fs.existsSync(manifestPath)) {
+    if (registry.requiresSignedPlugins()) {
+      throw new Error(
+        `Plugin ${name} has no signed manifest (${manifestPath}) and requireSignedPlugins is enabled`,
+      );
+    }
+    return;
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+  const baseDir = path.dirname(absPath);
+  const extraFiles = Array.isArray(manifest.files) ? manifest.files : [];
+  await registry.verifyPluginContent(name, manifest, {
+    baseDir,
+    files: [absPath, ...extraFiles.map((f) => path.resolve(baseDir, f))],
+  });
+}
+
+/**
  * Loads plugins from validated _config path and registers them.
  * @param {string} configPath
  */
@@ -43,6 +85,7 @@ async function loadPluginsFromJson(configPath) {
       const fileUrl = pathToFileURL(absPath).href;
 
       try {
+        await verifyPluginBeforeImport(name, absPath);
         const mod = await import(fileUrl);
         const PluginClass = mod?.default;
         if (typeof PluginClass !== "function") {
@@ -52,7 +95,8 @@ async function loadPluginsFromJson(configPath) {
         }
 
         const _instance = new PluginClass();
-        registry.register(_type, name, _instance);
+        // register() is async; await it so failures are not unhandled
+        await registry.register(_type, name, _instance);
 
         logger.info({ _type, name }, `Registered plugin: ${_type}:${name}`);
       } catch (err) {
@@ -66,4 +110,4 @@ async function loadPluginsFromJson(configPath) {
   }
 }
 
-module.exports = { loadPluginsFromJson };
+module.exports = { loadPluginsFromJson, verifyPluginBeforeImport };

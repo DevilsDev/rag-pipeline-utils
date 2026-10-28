@@ -16,6 +16,16 @@ const path = require('path');
 const { logger } = require('../utils/logger');
 
 /**
+ * Parse an integer env value; unset or invalid values use the fallback but
+ * an explicit 0 is kept (unlike `parseInt(v) || fallback`).
+ * @private
+ */
+function intOrDefault(value, fallback) {
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+/**
  * Load JWT configuration from environment or defaults
  *
  * Environment variables:
@@ -145,9 +155,10 @@ function loadJWTConfig() {
     audience: process.env.JWT_AUDIENCE || 'rag-pipeline-api',
 
     // Timing configuration
-    clockTolerance: parseInt(process.env.JWT_CLOCK_TOLERANCE, 10) || 30,
+    // An explicit 0 is honoured (only unset/invalid values fall back to 30)
+    clockTolerance: intOrDefault(process.env.JWT_CLOCK_TOLERANCE, 30),
     maxTokenAge: parseInt(process.env.JWT_EXPIRY, 10) || 3600, // 1 hour
-    notBeforeTolerance: parseInt(process.env.JWT_NBF_TOLERANCE, 10) || 30,
+    notBeforeTolerance: intOrDefault(process.env.JWT_NBF_TOLERANCE, 30),
 
     // Security options
     requireJti: process.env.JWT_REQUIRE_JTI !== 'false',

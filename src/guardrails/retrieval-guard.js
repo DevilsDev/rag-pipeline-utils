@@ -1,6 +1,7 @@
 'use strict';
 
 const { EventEmitter } = require('events');
+const { detectInjection } = require('./injection-detector');
 
 /**
  * Default configuration for the RetrievalGuard.
@@ -10,6 +11,12 @@ const DEFAULT_CONFIG = {
   minRelevanceScore: 0,
   maxAgeDays: 0, // 0 = disabled
   enforceACL: false,
+  // Opt-in scan of retrieved document text for prompt injection (indirect
+  // injection). 'remove' drops flagged documents, 'flag' keeps them and
+  // marks them with `injection` details.
+  detectInjection: false,
+  injectionAction: 'remove',
+  injectionPatterns: [],
 };
 
 /**
@@ -25,6 +32,9 @@ class RetrievalGuard extends EventEmitter {
    * @param {number} [options.minRelevanceScore=0] - Minimum relevance score threshold
    * @param {number} [options.maxAgeDays=0] - Maximum document age in days (0 = disabled)
    * @param {boolean} [options.enforceACL=false] - Whether to enforce access control
+   * @param {boolean} [options.detectInjection=false] - Scan document text for prompt injection
+   * @param {'remove'|'flag'} [options.injectionAction='remove'] - Remove flagged documents or keep and mark them
+   * @param {RegExp[]} [options.injectionPatterns=[]] - Extra injection patterns for the scan
    */
   constructor(options = {}) {
     super();
@@ -90,11 +100,11 @@ class RetrievalGuard extends EventEmitter {
       // treated as having no roles, so restricted documents are removed.
       if (!dominated && this.config.enforceACL) {
         const userPermissions = context.userPermissions || [];
-        const requiredRoles = doc.requiredRole
-          ? [].concat(doc.requiredRole)
-          : doc.acl
-            ? [].concat(doc.acl)
-            : null;
+        // Read the restriction from the result itself or its metadata, so a
+        // top-level `acl` is not ignored when the result also has metadata.
+        const restriction =
+          result.requiredRole ?? result.acl ?? doc.requiredRole ?? doc.acl;
+        const requiredRoles = restriction ? [].concat(restriction) : null;
 
         if (requiredRoles && requiredRoles.length > 0) {
           const hasAccess = requiredRoles.some((role) =>
@@ -104,6 +114,25 @@ class RetrievalGuard extends EventEmitter {
             dominated = true;
             reasons.acl = (reasons.acl || 0) + 1;
           }
+        }
+      }
+
+      // 4. Indirect prompt injection in document text (opt-in)
+      if (!dominated && this.config.detectInjection) {
+        const text = documentText(result);
+        const found = detectInjection(text, {
+          patterns: this.config.injectionPatterns,
+        });
+        if (found.detected) {
+          reasons.injection = (reasons.injection || 0) + 1;
+          if (this.config.injectionAction === 'flag') {
+            kept.push({
+              ...result,
+              injection: { detected: true, matches: found.matches },
+            });
+            continue;
+          }
+          dominated = true;
         }
       }
 
@@ -123,6 +152,25 @@ class RetrievalGuard extends EventEmitter {
     this.emit('filtered', { original: results, filtered: kept, removed });
     return output;
   }
+}
+
+/**
+ * Text of a retrieval result for injection scanning.
+ * @param {object|string} result
+ * @returns {string}
+ */
+function documentText(result) {
+  if (typeof result === 'string') return result;
+  if (!result || typeof result !== 'object') return '';
+  const doc = result.doc && typeof result.doc === 'object' ? result.doc : {};
+  return String(
+    result.content ||
+      result.text ||
+      result.pageContent ||
+      doc.content ||
+      doc.text ||
+      '',
+  );
 }
 
 module.exports = { RetrievalGuard, DEFAULT_CONFIG };

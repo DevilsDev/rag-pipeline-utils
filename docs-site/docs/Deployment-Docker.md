@@ -6,6 +6,12 @@ sidebar_position: 17
 
 Deploy RAG Pipeline Utils in production using Docker containers with optimized configurations, security best practices, and scalability patterns.
 
+:::note What you deploy
+
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+
+:::
+
 ## Overview
 
 This guide covers:
@@ -141,7 +147,7 @@ CMD ["node", "dist/index.js"]
 **Build optimized image:**
 
 ```bash
-docker build -t rag-pipeline-utils:2.3.1 -f Dockerfile.production .
+docker build -t rag-pipeline-utils:2.5.0 -f Dockerfile.production .
 ```
 
 ## Docker Compose Setup
@@ -157,7 +163,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    image: rag-pipeline-utils:2.3.1
+    image: rag-pipeline-utils:2.5.0
     container_name: rag-pipeline-app
     restart: unless-stopped
     ports:
@@ -216,7 +222,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    image: rag-pipeline-utils:2.3.1
+    image: rag-pipeline-utils:2.5.0
     container_name: rag-app
     restart: unless-stopped
     ports:
@@ -370,7 +376,7 @@ version: "3.8"
 
 services:
   rag-app:
-    image: rag-pipeline-utils:2.3.1
+    image: rag-pipeline-utils:2.5.0
     secrets:
       - openai_api_key
       - jwt_secret
@@ -457,10 +463,10 @@ services:
 
 ```bash
 # Scan image for vulnerabilities
-docker scan rag-pipeline-utils:2.3.1
+docker scan rag-pipeline-utils:2.5.0
 
 # Use Trivy for comprehensive scanning
-trivy image rag-pipeline-utils:2.3.1
+trivy image rag-pipeline-utils:2.5.0
 ```
 
 ## Monitoring and Logging
@@ -506,24 +512,24 @@ scrape_configs:
 ```bash
 # Build production image
 docker build \
-  -t rag-pipeline-utils:2.3.1 \
+  -t rag-pipeline-utils:2.5.0 \
   -f Dockerfile.production \
   --build-arg NODE_ENV=production \
   .
 
 # Tag for registry
-docker tag rag-pipeline-utils:2.3.1 your-registry.com/rag-pipeline-utils:2.3.1
+docker tag rag-pipeline-utils:2.5.0 your-registry.com/rag-pipeline-utils:2.5.0
 ```
 
 ### 2. Push to Registry
 
 ```bash
 # Push to Docker Hub
-docker push your-registry.com/rag-pipeline-utils:2.3.1
+docker push your-registry.com/rag-pipeline-utils:2.5.0
 
 # Or use private registry
 docker login your-registry.com
-docker push your-registry.com/rag-pipeline-utils:2.3.1
+docker push your-registry.com/rag-pipeline-utils:2.5.0
 ```
 
 ### 3. Deploy to Production

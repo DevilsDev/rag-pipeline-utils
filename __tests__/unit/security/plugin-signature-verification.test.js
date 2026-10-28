@@ -41,10 +41,10 @@ describe("Plugin Signature Verification", () => {
       expect(defaultVerifier.failClosed).toBe(true);
     });
 
-    test("should load trusted keys from configuration", () => {
-      const trustedKeys = verifier.listTrustedSigners();
-      expect(trustedKeys).toHaveLength(1);
-      expect(trustedKeys[0].signerId).toBe("devilsdev-official");
+    test("should start with an empty trust store (no placeholder key)", () => {
+      // 2.5.0: the placeholder 'devilsdev-official' key was removed; nothing
+      // verifies until a signer is explicitly trusted.
+      expect(verifier.listTrustedSigners()).toHaveLength(0);
     });
 
     describe("addTrustedSigner", () => {
@@ -53,7 +53,7 @@ describe("Plugin Signature Verification", () => {
         verifier.addTrustedSigner("test-signer", publicKey, "Test Signer");
 
         const signers = verifier.listTrustedSigners();
-        expect(signers).toHaveLength(2);
+        expect(signers).toHaveLength(1);
 
         const testSigner = signers.find((s) => s.signerId === "test-signer");
         expect(testSigner).toBeDefined();
@@ -87,6 +87,11 @@ describe("Plugin Signature Verification", () => {
 
     describe("removeTrustedSigner", () => {
       test("should remove existing signer", () => {
+        verifier.addTrustedSigner(
+          "devilsdev-official",
+          "1234567890abcdef".repeat(4),
+          "DevilsDev",
+        );
         const removed = verifier.removeTrustedSigner("devilsdev-official");
         expect(removed).toBe(true);
 

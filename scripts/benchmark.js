@@ -12,10 +12,12 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const { EnhancedDAGEngine } = require("../src/dag/enhanced-dag-engine.js");
+// The exported engine (DAG / DAGEngine in the package entry).
+const { DAG } = require("../src/dag/dag-engine.js");
 const { createRetryPolicy } = require("../src/utils/retry-policy.js");
 const {
   createPerformanceMonitor,
+  monitor: defaultMonitor,
 } = require("../src/utils/performance-monitor.js");
 const { createLogger } = require("../src/utils/structured-logger.js");
 
@@ -82,9 +84,14 @@ class BenchmarkSuite {
   async runBenchmark(name, fn, iterations = this.iterations) {
     this.log(`Running benchmark: ${name}`);
 
-    // Warmup
+    // Warmup. Some benchmarks fail on purpose (simulated errors in the retry
+    // policy runs); a warmup failure must not abort the whole suite.
     for (let i = 0; i < this.warmupIterations; i++) {
-      await fn();
+      try {
+        await fn();
+      } catch {
+        // counted only in the measured iterations below
+      }
     }
 
     // Force garbage collection if available
@@ -187,7 +194,7 @@ class BenchmarkSuite {
       await this.runBenchmark(
         `DAG execution (${size} nodes)`,
         async () => {
-          const dag = new EnhancedDAGEngine({ enableMetrics: false });
+          const dag = new DAG();
 
           // Create a linear chain of nodes
           for (let i = 0; i < size; i++) {
@@ -223,10 +230,7 @@ class BenchmarkSuite {
       await this.runBenchmark(
         `Concurrent DAG (${concurrency} concurrency)`,
         async () => {
-          const dag = new EnhancedDAGEngine({
-            enableMetrics: false,
-            enableTracing: false,
-          });
+          const dag = new DAG();
 
           // Create a tree structure that can be executed concurrently
           for (let i = 0; i < 20; i++) {
@@ -448,6 +452,9 @@ class BenchmarkSuite {
       throw error;
     } finally {
       this.monitor.shutdown();
+      // performance-monitor.js starts a module-level default monitor whose
+      // intervals would otherwise keep the process alive after the run.
+      defaultMonitor.shutdown();
     }
   }
 
@@ -536,6 +543,24 @@ class BenchmarkSuite {
   }
 }
 
+/**
+ * Read a CLI option given as `--name=value`, `--name value` or `-x value`.
+ * @param {string[]} args - process.argv.slice(2)
+ * @param {string} long - Long flag, e.g. "--iterations"
+ * @param {string} [short] - Short flag, e.g. "-i"
+ * @returns {string|undefined} The value, or undefined when absent
+ */
+function readOption(args, long, short) {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg.startsWith(`${long}=`)) return arg.slice(long.length + 1);
+    if ((arg === long || (short && arg === short)) && i + 1 < args.length) {
+      return args[i + 1];
+    }
+  }
+  return undefined;
+}
+
 // CLI interface
 if (require.main === module) {
   const args = process.argv.slice(2);
@@ -546,18 +571,19 @@ if (require.main === module) {
     outputDir: path.join(process.cwd(), "benchmark-results"),
   };
 
-  // Parse iterations
-  const iterIndex = args.findIndex(
-    (arg) => arg === "--iterations" || arg === "-i",
-  );
-  if (iterIndex !== -1 && args[iterIndex + 1]) {
-    options.iterations = parseInt(args[iterIndex + 1], 10);
+  const iterations = readOption(args, "--iterations", "-i");
+  if (iterations !== undefined) {
+    const n = parseInt(iterations, 10);
+    if (!Number.isInteger(n) || n < 1) {
+      console.error(`Invalid --iterations value: ${iterations}`);
+      process.exit(1);
+    }
+    options.iterations = n;
   }
 
-  // Parse output directory
-  const outIndex = args.findIndex((arg) => arg === "--output" || arg === "-o");
-  if (outIndex !== -1 && args[outIndex + 1]) {
-    options.outputDir = args[outIndex + 1];
+  const outputDir = readOption(args, "--output", "-o");
+  if (outputDir) {
+    options.outputDir = outputDir;
   }
 
   console.log("🔧 RAG Pipeline Utils - Performance Benchmark Suite");
@@ -566,9 +592,13 @@ if (require.main === module) {
   );
 
   const suite = new BenchmarkSuite(options);
-  suite.runAllBenchmarks().catch(console.error);
+  suite.runAllBenchmarks().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
 
 module.exports = {
   BenchmarkSuite,
+  readOption,
 };

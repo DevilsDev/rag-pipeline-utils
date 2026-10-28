@@ -82,7 +82,11 @@ class PluginRegistry {
       failClosed:
         options.failClosed !== undefined ? options.failClosed : isProduction, // Fail closed in production, fail open in development
       trustedKeysPath: options.trustedKeysPath,
+      requireContentDigest: options.requireContentDigest === true,
     });
+    // Opt-in: when verification is enabled, refuse plugins registered
+    // without a signed manifest (default false for backward compatibility).
+    this._requireSignedPlugins = options.requireSignedPlugins === true;
     this._loadContracts();
   }
 
@@ -411,7 +415,20 @@ class PluginRegistry {
     return methods;
   }
 
-  async register(category, name, impl, manifest = null) {
+  /**
+   * Register a plugin.
+   *
+   * @param {string} category - Plugin type
+   * @param {string} name - Plugin name
+   * @param {object} impl - Plugin implementation
+   * @param {object|null} [manifest] - Signed manifest; when given, its
+   *   signature is verified before registration
+   * @param {object} [options]
+   * @param {object} [options.content] - Plugin content checked against the
+   *   manifest's contentDigest: `{ files, baseDir, contents }`
+   * @returns {Promise<PluginRegistry>}
+   */
+  async register(category, name, impl, manifest = null, options = {}) {
     if (!category || typeof category !== 'string') {
       throw new Error('Category must be a non-empty string');
     }
@@ -427,7 +444,22 @@ class PluginRegistry {
 
     // Verify plugin signature if manifest provided
     if (manifest) {
-      await this._verifyPluginSignature(manifest, name);
+      await this._verifyPluginSignature(manifest, name, options.content);
+    } else if (
+      this._requireSignedPlugins &&
+      this.isSignatureVerificationEnabled()
+    ) {
+      this._emitAuditEntry('plugin_verification_failed', {
+        pluginName: name,
+        signerId: 'unknown',
+        version: 'unknown',
+        verified: false,
+        error: 'missing signed manifest',
+        timestamp: new Date().toISOString(),
+      });
+      throw new Error(
+        `Plugin ${name} has no signed manifest and requireSignedPlugins is enabled`,
+      );
     }
 
     // Validate plugin against contract
@@ -443,7 +475,7 @@ class PluginRegistry {
    * @param {object} manifest - Plugin manifest
    * @param {string} pluginName - Plugin name
    */
-  async _verifyPluginSignature(manifest, pluginName) {
+  async _verifyPluginSignature(manifest, pluginName, content = undefined) {
     try {
       // Extract signature information from manifest
       if (!manifest.signature || !manifest.signerId) {
@@ -452,12 +484,12 @@ class PluginRegistry {
         );
       }
 
+      const args = [manifest, manifest.signature, manifest.signerId];
+      if (content) {
+        args.push(content);
+      }
       const verificationResult =
-        await this._signatureVerifier.verifyPluginSignature(
-          manifest,
-          manifest.signature,
-          manifest.signerId,
-        );
+        await this._signatureVerifier.verifyPluginSignature(...args);
 
       if (!verificationResult.verified) {
         throw new Error(
@@ -486,6 +518,35 @@ class PluginRegistry {
 
       throw error;
     }
+  }
+
+  /**
+   * Whether plugin signature verification is enabled for this registry.
+   * @returns {boolean}
+   */
+  isSignatureVerificationEnabled() {
+    return Boolean(this._signatureVerifier && this._signatureVerifier.enabled);
+  }
+
+  /**
+   * Whether plugins without a signed manifest are rejected.
+   * @returns {boolean}
+   */
+  requiresSignedPlugins() {
+    return this._requireSignedPlugins && this.isSignatureVerificationEnabled();
+  }
+
+  /**
+   * Verify a plugin's signed manifest and code before it is loaded (use this
+   * before importing plugin files, since importing executes them).
+   *
+   * @param {string} pluginName - Plugin name (for audit entries)
+   * @param {object} manifest - Signed manifest
+   * @param {object} content - `{ files, baseDir, contents }`
+   * @returns {Promise<void>} Rejects if verification fails
+   */
+  async verifyPluginContent(pluginName, manifest, content) {
+    await this._verifyPluginSignature(manifest, pluginName, content);
   }
 
   /**

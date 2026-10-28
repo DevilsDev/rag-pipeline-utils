@@ -49,6 +49,8 @@ const {
   scoreAnswer,
   computeBLEU,
   computeROUGE,
+  checkNumericConsistency,
+  extractNumbers,
 } = require('./evaluate/scoring');
 const { computeFaithfulness } = require('./evaluate/faithfulness');
 const { computeAnswerRelevance } = require('./evaluate/relevance');
@@ -78,6 +80,7 @@ const { FileVectorStore } = require('./retrieval/file-vector-store');
 
 // Guardrails
 const { PreRetrievalGuard } = require('./guardrails/pre-retrieval-guard');
+const { detectInjection } = require('./guardrails/injection-detector');
 const { RetrievalGuard } = require('./guardrails/retrieval-guard');
 const { PostGenerationGuard } = require('./guardrails/post-generation-guard');
 const { GuardrailsPipeline } = require('./guardrails/guardrails-pipeline');
@@ -89,7 +92,7 @@ const { SelfCritiqueChecker } = require('./agentic/self-critique');
 const { AgenticPipeline } = require('./agentic/agentic-pipeline');
 
 // Cost Management
-const { CostCalculator } = require('./cost/cost-calculator');
+const { CostCalculator, PRICING_METADATA } = require('./cost/cost-calculator');
 const { CostTracker } = require('./cost/cost-tracker');
 const { TokenBudget } = require('./cost/token-budget');
 
@@ -219,6 +222,8 @@ module.exports = {
   scoreAnswer,
   computeBLEU,
   computeROUGE,
+  checkNumericConsistency,
+  extractNumbers,
   computeFaithfulness,
   computeAnswerRelevance,
   computeContextPrecision,
@@ -243,6 +248,7 @@ module.exports = {
 
   // Guardrails
   PreRetrievalGuard,
+  detectInjection,
   RetrievalGuard,
   PostGenerationGuard,
   GuardrailsPipeline,
@@ -255,6 +261,7 @@ module.exports = {
 
   // Cost Management
   CostCalculator,
+  PRICING_METADATA,
   CostTracker,
   TokenBudget,
 

@@ -16,44 +16,50 @@ defined as a JSON schema in `contracts/`.
 
 ### Embedders
 
-| Connector            | Notes                                                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `OpenAIEmbedder`     | Calls OpenAI's `embeddings` API. Configurable model (`text-embedding-3-small`, `-3-large`, `ada-002`). Batch + retry built in. |
-| `CohereEmbedder`     | Calls Cohere's `embed` API. Supports the `embed-multilingual-v3.0` family.                                                     |
-| `LocalTfidfEmbedder` | Pure-JS TF-IDF for development, tests, and small corpora. No network.                                                          |
-| Custom (your code)   | Implement the `embedder` contract — one async `embed(texts: string[])` method returning `number[][]`.                          |
+| Connector          | Notes                                                                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OpenAIConnector`  | `embed()` / `embedQuery()` via OpenAI embeddings (`embeddingModel`, default `text-embedding-3-small`). Reads `OPENAI_API_KEY`.                           |
+| `CohereConnector`  | `embed()` / `embedQuery()` via Cohere embed; also `rerank()`. Reads `COHERE_API_KEY`.                                                                    |
+| `OllamaConnector`  | `embed()` / `embedQuery()` against a local Ollama server.                                                                                                |
+| `LocalEmbedder`    | Pure-JS TF-IDF for development, tests and small corpora. No network. Fit it with `train(documents)`; `getState()` / `setState()` persist the vocabulary. |
+| Custom (your code) | Implement the `embedder` contract: `embed(text, { signal })` returning `number[]` (optionally `embedQuery()` for queries).                               |
 
 ### Retrievers / Vector stores
 
-| Connector                            | Notes                                                                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `MemoryRetriever`                    | In-process cosine-similarity store. Honors `tenantId` for multi-tenant scoping. Production-suitable for small corpora (under 100k chunks). |
-| Pinecone, Weaviate, Qdrant, pgvector | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                               |
+| Connector                            | Notes                                                                                                                                                                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MemoryRetriever`                    | In-process cosine-similarity store. Needs a `queryVector` (pass an embedder to the pipeline). Enforces `maxDocuments` (default 100000; `eviction: 'fifo'` drops the oldest) and rejects mismatched vector dimensions. |
+| `FileVectorStore`                    | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
+| `HybridRetriever`                    | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
+| `GraphRetriever`                     | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
+| Pinecone, Weaviate, Qdrant, pgvector | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
 
 ### LLMs
 
-| Connector            | Notes                                                                                                     |
-| -------------------- | --------------------------------------------------------------------------------------------------------- |
-| `OpenAIConnector`    | OpenAI Chat Completions + streaming. Cost tracking integrated.                                            |
-| `AnthropicConnector` | Anthropic Messages API + streaming.                                                                       |
-| `OllamaConnector`    | Local Ollama server for offline development and self-hosted production.                                   |
-| Custom               | Implement the `llm` contract: one `generate({ prompt, context, options })` and an optional `stream(...)`. |
+| Connector            | Notes                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `OpenAIConnector`    | OpenAI Chat Completions (default model `gpt-4o-mini`) + streaming via `generateStream()`.                                               |
+| `AnthropicConnector` | Anthropic Messages API + streaming. Reads `ANTHROPIC_API_KEY`.                                                                          |
+| `OllamaConnector`    | Local Ollama server for offline development and self-hosted production.                                                                 |
+| Custom               | Implement the `llm` contract: `generate(query, docs, { signal, ...options })` returning a string, and optionally `generateStream(...)`. |
+
+All built-in connectors retry only transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`, fail fast with `MISSING_API_KEY` when no key is configured, honour the run's `AbortSignal`, and pass retrieved context to the model as delimited, untrusted reference data in the user message.
 
 ### Loaders
 
-| Connector                                                  | Notes                                                         |
-| ---------------------------------------------------------- | ------------------------------------------------------------- |
-| Document loaders for PDF, DOCX, HTML, Markdown, plain text | Configurable per-format.                                      |
-| Custom                                                     | Implement the `loader` contract: `load(source) → Document[]`. |
+| Connector                                           | Notes                                                             |
+| --------------------------------------------------- | ----------------------------------------------------------------- |
+| Built-in document reader (`auto` loader in the CLI) | Markdown, HTML, CSV and plain text files, or a directory of them. |
+| Custom                                              | Implement the `loader` contract: `load()`.                        |
 
 ### Rerankers
 
-| Connector           | Notes                                                                        |
-| ------------------- | ---------------------------------------------------------------------------- |
-| `BM25Reranker`      | Lexical reranking on top of vector retrieval.                                |
-| `EmbeddingReranker` | Re-scores using a different embedding model than retrieval.                  |
-| `LLMReranker`       | LLM-judged relevance scoring. Slowest and highest quality.                   |
-| `CascadedReranker`  | Chains the above (cheap first, expensive last) for cost-effective reranking. |
+| Connector           | Notes                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `ScoringReranker`   | Lexical (BM25-style) scoring on top of vector retrieval.                                               |
+| `EmbeddingReranker` | Re-scores with an embedder; LRU cache of document embeddings (`cacheSize`), `concurrency` (default 4). |
+| `CascadeReranker`   | Chains rerankers (cheap first, expensive last) for cost-effective reranking.                           |
+| `CohereConnector`   | `rerank()` via Cohere's rerank API.                                                                    |
 
 ## Why a connector layer
 
@@ -72,24 +78,31 @@ Three reasons:
 ## Adding a connector
 
 ```js
-import { pluginRegistry } from "@devilsdev/rag-pipeline-utils";
+import {
+  pluginRegistry,
+  createRagPipeline,
+} from "@devilsdev/rag-pipeline-utils";
 
 const myEmbedder = {
-  name: "vendor-x-embedder",
-  type: "embedder",
-  version: "1.0.0",
-  async embed(texts) {
-    /* call vendor X */
-    return embeddings;
+  metadata: { name: "vendor-x-embedder", version: "1.0.0", type: "embedder" },
+  async embed(text, { signal } = {}) {
+    /* call vendor X, passing signal to fetch */
+    return vector; // number[]
   },
 };
 
-pluginRegistry.register(myEmbedder);
-// Now usable in createRagPipeline({ embedder: "vendor-x-embedder" })
+await pluginRegistry.register("embedder", "vendor-x-embedder", myEmbedder);
+
+// Now usable by name
+const pipeline = createRagPipeline({
+  embedder: "vendor-x-embedder",
+  retriever,
+  llm,
+});
 ```
 
-The registry validates the plugin against `contracts/embedder-contract.json`
-on registration. See [Plugins](./Plugins) for the full guide.
+The registry checks the plugin's `metadata` (`name`, `version`, `type`) and validates it against
+`contracts/embedder-contract.json` on registration; registration throws if either check fails. See [Plugins](./Plugins) for the full guide.
 
 ## Stability
 
@@ -103,5 +116,5 @@ is breaking and ships only in major versions.
 ## Related
 
 - [Plugins](./Plugins) — full plugin development guide
-- [Architecture](./Architecture#plugin-system) — internal plugin registry design
+- [Architecture](./Architecture.md#plugin-system) — internal plugin registry design
 - [Examples](./Examples) — recipe for a custom Pinecone retriever, custom embedder, etc.

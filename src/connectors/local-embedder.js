@@ -2,6 +2,7 @@
 
 const { BaseConnector } = require('./base-connector');
 const { tokenize } = require('../evaluate/scoring');
+const { throwIfAborted } = require('./connector-utils');
 
 /**
  * Default configuration for the local TF-IDF embedder.
@@ -88,11 +89,16 @@ class LocalEmbedder extends BaseConnector {
 
   /**
    * Compute a TF-IDF vector for the given text.
-   * The vector length equals the vocabulary size.
+   * The vector length equals the vocabulary size. Synchronous; when
+   * options.signal is already aborted it throws an AbortError (which an
+   * awaiting caller sees as a rejection).
    * @param {string} text - Text to embed
+   * @param {Object} [options={}]
+   * @param {AbortSignal} [options.signal] - Cancellation signal
    * @returns {number[]} L2-normalized TF-IDF vector
    */
-  embed(text) {
+  embed(text, options = {}) {
+    throwIfAborted(options && options.signal);
     const vocabSize = this.vocabulary.size;
 
     if (vocabSize === 0) {
@@ -139,10 +145,11 @@ class LocalEmbedder extends BaseConnector {
    * Compute a TF-IDF vector for a query string.
    * Alias for {@link embed}.
    * @param {string} query - Query text to embed
+   * @param {Object} [options={}] - Same as embed()
    * @returns {number[]} L2-normalized TF-IDF vector
    */
-  embedQuery(query) {
-    return this.embed(query);
+  embedQuery(query, options = {}) {
+    return this.embed(query, options);
   }
 
   /**

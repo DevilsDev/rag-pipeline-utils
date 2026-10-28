@@ -1,10 +1,44 @@
 # Migration Guide
 
-This comprehensive migration guide helps you upgrade between versions of **@DevilsDev/rag-pipeline-utils** and migrate from other RAG frameworks. Whether you're upgrading from an older version or switching from another solution, this guide provides step-by-step instructions and best practices.
+This guide helps you upgrade between versions of **@devilsdev/rag-pipeline-utils** and move from other RAG frameworks. The full list of changes in each release is in the [CHANGELOG](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md).
 
 ---
 
 ## **Version Migration**
+
+### **Upgrading to v2.5.0**
+
+```bash
+npm install @devilsdev/rag-pipeline-utils@^2.5.0
+```
+
+**Package import fixed**: in clean installs, `require()` / `import` of 2.4.5 failed with `Cannot find module 'isolated-vm'`. In 2.5.0 `isolated-vm` is loaded only when `PluginSandbox` runs, and it is an optional peer dependency (as is `pino-pretty`). If you pinned 2.4.4 to work around this, you can upgrade.
+
+**Experimental modules moved**: these classes are simulated or incomplete and now have their own entry point, `@devilsdev/rag-pipeline-utils/experimental`:
+
+`ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, `SSOManager`, `SAMLProvider`, `OAuth2Provider`, `ActiveDirectoryProvider`, `OIDCProvider`, `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`.
+
+You can still import them from the main entry, but that use is deprecated. It emits a one-time `DeprecationWarning` (`RAG_DEP_*` codes), and the exports will be removed from the main entry in the next major release. To migrate, change the import path. Both entries share the same classes, so `instanceof` checks keep working.
+
+```diff
+- import { TenantManager } from "@devilsdev/rag-pipeline-utils";
++ import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
+```
+
+See [Experimental modules](./Experimental.md) for what each one actually does.
+
+**Behaviour changes to check**:
+
+- **Pipelines without an LLM**: `createRagPipeline` without an `llm` runs retrieval only and returns `answer: null` (it used to return `'ok'`). When an `llm` is configured, results always include `answer`.
+- **Context recall needs a reference answer**: it now measures how much of a ground-truth answer the retrieved documents support. Pass the reference via `PipelineEvaluator.evaluate(result, { referenceAnswer })` or `run({ query, options: { evaluate: true, referenceAnswer } })`. Without one, `scores.contextRecall` is omitted and `metadata.metricsSkipped` lists it.
+- **Grounding scores are higher**: citations, faithfulness, context precision and recall, groundedness, `PostGenerationGuard` and `SelfCritiqueChecker` now measure the share of a sentence's content words found in a document, instead of Jaccard similarity against the whole document. Expect noticeably higher scores for grounded answers. The default per-sentence threshold went from 0.3 to 0.5. Sentences whose numbers are not in the source are not grounded. Re-baseline any thresholds or dashboards that use these scores.
+- **`RetrievalGuard` with `enforceACL`** now fails closed: when `context.userPermissions` is missing, documents are removed.
+- **`DevServer` now listens**: `start()` binds port 3000 by default (pass `port: 0` for a free port), so existing callers may see `EADDRINUSE`. The default host is `127.0.0.1` (was `localhost`), and the default `watchPaths` is `[]`.
+- **No default plugin registry**: `rag-pipeline hub` / `plugin` registry operations need `--registry <url>` or the `RAG_PLUGIN_REGISTRY` environment variable.
+- **Removed CLI flags**: `--trace`, `--stats`, `--parallel`, `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`, `--abort-timeout`, `--quiet` and `config show --format` had no effect and were removed. Remove them from scripts. See the [CLI reference](./CLI.md).
+- **Prompts**: built-in connectors now put retrieved context in the user message as delimited, untrusted data. Answers may differ slightly.
+
+**New in 2.5.0**: `options.signal` (an `AbortSignal`) on `run()` for cancellation; `FileVectorStore`; a working CLI workflow (`init`, `ingest`, `query`, `run`, `serve`); and `checkNumericConsistency`, `extractNumbers`, `detectInjection` and `PRICING_METADATA` exports. See the [API Reference](./API-Reference.md).
 
 ### **Upgrading from v2.0.x to v2.1.x**
 
@@ -19,7 +53,7 @@ This comprehensive migration guide helps you upgrade between versions of **@Devi
 1. **Update Package**:
 
 ```bash
-npm update @DevilsDev/rag-pipeline-utils
+npm update @devilsdev/rag-pipeline-utils
 ```
 
 2. **Update Configuration**:
@@ -35,18 +69,20 @@ rag-pipeline validate
 
 3. **Update Plugin Registrations**:
 
-```javascript
-// v2.0.x (deprecated)
-registry.register("llm", "openai", {
-  ask: async (prompt) => {
-    /* implementation */
-  },
-});
+LLM plugins implement `generate(query, docs, options)`. `pluginRegistry.register()` is asynchronous, and a registered plugin needs a `metadata` object with `name`, `version` and `type`.
 
-// v2.1.x (current)
-registry.register("llm", "openai", {
-  generate: async (prompt) => {
-    /* implementation */
+```javascript
+const { pluginRegistry } = require("@devilsdev/rag-pipeline-utils");
+
+// v2.0.x (deprecated)
+// { ask: async (prompt) => { ... } }
+
+// current
+await pluginRegistry.register("llm", "my-llm", {
+  metadata: { name: "my-llm", version: "1.0.0", type: "llm" },
+  async generate(query, docs, options = {}) {
+    /* implementation; honour options.signal for cancellation */
+    return "answer text";
   },
 });
 ```
@@ -57,9 +93,22 @@ The CLI has no `eval` or `evaluate` command. Run dataset evaluation through
 the library instead (see [Evaluation](./Evaluation.md)):
 
 ```javascript
-const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
+const {
+  createRagPipeline,
+  PipelineEvaluator,
+} = require("@devilsdev/rag-pipeline-utils");
 
-const results = await evaluateRagDataset("./test-data.json", pipelineConfig);
+const pipeline = createRagPipeline({ embedder, retriever, llm });
+const evaluator = new PipelineEvaluator();
+
+for (const { prompt, expected } of testCases) {
+  const result = await pipeline.run({ query: prompt });
+  const report = evaluator.evaluate(
+    { query: prompt, answer: result.answer, results: result.results },
+    { referenceAnswer: expected },
+  );
+  console.log(prompt, report.scores);
+}
 ```
 
 ### **Upgrading from v1.x to v2.x**
@@ -69,97 +118,74 @@ const results = await evaluateRagDataset("./test-data.json", pipelineConfig);
 - Complete plugin architecture overhaul
 - New streaming support
 - Enhanced evaluation framework
-- TypeScript-first approach
 
 **Migration Checklist**:
 
 1. **Install New Version**:
 
 ```bash
-npm uninstall @DevilsDev/rag-pipeline-utils
-npm install @DevilsDev/rag-pipeline-utils@^2.0.0
+npm uninstall @devilsdev/rag-pipeline-utils
+npm install @devilsdev/rag-pipeline-utils@^2
 ```
 
 2. **Migrate Configuration**:
 
-```json
-// v1.x format
-{
-  "openai_api_key": "sk-...",
-  "pinecone_api_key": "...",
-  "chunk_size": 1000
-}
+The CLI reads a `.ragrc.json` whose `pipeline` array lists one entry per stage. Generate a starting point with `rag-pipeline init --template <name>`; API keys come from environment variables (for example `OPENAI_API_KEY`), not from the file.
 
-// v2.x format
+```json
 {
-  "plugins": {
-    "embedder": {
-      "name": "openai",
-      "config": {
-        "apiKey": "${OPENAI_API_KEY}",
-        "model": "text-embedding-ada-002"
-      }
-    },
-    "retriever": {
-      "name": "pinecone",
-      "config": {
-        "apiKey": "${PINECONE_API_KEY}",
-        "environment": "us-west1-gcp"
-      }
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "local" },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
     }
-  },
-  "pipeline": {
-    "chunkSize": 1000
-  }
+  ]
 }
 ```
 
 3. **Update Code**:
 
+There is no `RAGPipeline` class. Build a pipeline from component instances with `createRagPipeline`:
+
 ```javascript
-// v1.x (deprecated)
-import { RAGPipeline } from "@DevilsDev/rag-pipeline-utils";
+// v1.x (removed): new RAGPipeline({ openaiKey, pineconeKey })
 
-const pipeline = new RAGPipeline({
-  openaiKey: process.env.OPENAI_API_KEY,
-  pineconeKey: process.env.PINECONE_API_KEY,
-});
+// v2.x
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-// v2.x (current)
-import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
-
+const openai = new OpenAIConnector(); // reads OPENAI_API_KEY
 const pipeline = createRagPipeline({
-  embedder: { name: "openai" },
-  retriever: { name: "pinecone" },
-  llm: { name: "openai-gpt-4" },
+  embedder: openai,
+  retriever: new MemoryRetriever(),
+  llm: openai,
 });
+
+const result = await pipeline.run({ query: "What is RAG?" });
+console.log(result.answer);
 ```
 
 4. **Update Plugin Development**:
 
+Plugins are plain objects or classes that implement the stage's method. There is no `BaseLoader` base class.
+
 ```javascript
-// v1.x plugin interface
+// v2.x loader plugin
 class MyLoader {
-  load(filePath) {
-    return { content: '...', chunks: [...] };
-  }
-}
-
-// v2.x plugin interface
-class MyLoader extends BaseLoader {
-  constructor() {
-    super();
-    this.name = 'my-loader';
-    this.version = '1.0.0';
-  }
-
   async load(filePath, options = {}) {
-    return [{
-      id: this.generateId(filePath),
-      content: '...',
-      metadata: {},
-      chunks: [...]
-    }];
+    return [
+      {
+        id: filePath,
+        content: "...",
+        metadata: { source: filePath },
+      },
+    ];
   }
 }
 ```
@@ -174,74 +200,69 @@ class MyLoader extends BaseLoader {
 
 - Plugin-based vs. chain-based architecture
 - Built-in evaluation framework
-- Streaming-first design
-- TypeScript-native
+- Streaming support built in
+
+The pipeline itself only exposes `run()`. To load, embed, index or generate outside a run, call the component directly.
 
 **Migration Steps**:
 
-1. **Document Loaders**:
-
-```python
-# LangChain (Python)
-from langchain.document_loaders import PyPDFLoader
-loader = PyPDFLoader("document.pdf")
-docs = loader.load()
-
-# @DevilsDev/rag-pipeline-utils (JavaScript)
-import { createRagPipeline } from '@DevilsDev/rag-pipeline-utils';
-const pipeline = createRagPipeline({
-  loader: { name: 'pdf' }
-});
-const docs = await pipeline.load('./document.pdf');
-```
-
-2. **Embeddings**:
+1. **Embeddings**:
 
 ```python
 # LangChain
 from langchain.embeddings import OpenAIEmbeddings
 embeddings = OpenAIEmbeddings()
 vectors = embeddings.embed_documents(texts)
-
-# @DevilsDev/rag-pipeline-utils
-const pipeline = createRagPipeline({
-  embedder: { name: 'openai' }
-});
-const vectors = await pipeline.embed(texts);
 ```
 
-3. **Vector Stores**:
+```javascript
+// @devilsdev/rag-pipeline-utils
+const { OpenAIConnector } = require("@devilsdev/rag-pipeline-utils");
+
+const embedder = new OpenAIConnector();
+const vectors = await Promise.all(texts.map((t) => embedder.embed(t)));
+```
+
+2. **Vector Stores**:
 
 ```python
 # LangChain
 from langchain.vectorstores import Pinecone
 vectorstore = Pinecone.from_documents(docs, embeddings)
 results = vectorstore.similarity_search(query)
-
-# @DevilsDev/rag-pipeline-utils
-const pipeline = createRagPipeline({
-  retriever: { name: 'pinecone' }
-});
-await pipeline.index(docs);
-const results = await pipeline.retrieve(query);
 ```
 
-4. **LLM Integration**:
+```javascript
+// @devilsdev/rag-pipeline-utils
+const { MemoryRetriever } = require("@devilsdev/rag-pipeline-utils");
+
+const retriever = new MemoryRetriever();
+await retriever.store(
+  docs.map((d, i) => ({ id: d.id, content: d.content, vector: vectors[i] })),
+);
+const results = await retriever.retrieve({
+  queryVector: await embedder.embedQuery(query),
+  topK: 5,
+});
+```
+
+For a vector index that persists to disk, use `FileVectorStore`. Hosted vector databases need a custom retriever plugin (see [Plugins](./Plugins.md)).
+
+3. **LLM Integration**:
 
 ```python
 # LangChain
 from langchain.llms import OpenAI
 llm = OpenAI(temperature=0.7)
 response = llm(prompt)
+```
 
-# @DevilsDev/rag-pipeline-utils
-const pipeline = createRagPipeline({
-  llm: {
-    name: 'openai-gpt-4',
-    config: { temperature: 0.7 }
-  }
-});
-const response = await pipeline.generate(prompt);
+```javascript
+// @devilsdev/rag-pipeline-utils
+const { OpenAIConnector } = require("@devilsdev/rag-pipeline-utils");
+
+const llm = new OpenAIConnector({ model: "gpt-4o-mini", temperature: 0.7 });
+const response = await llm.generate(prompt, []);
 ```
 
 ### **Migrating from Haystack**
@@ -249,7 +270,7 @@ const response = await pipeline.generate(prompt);
 **Architecture Mapping**:
 
 - Haystack Nodes → RAG Pipeline Plugins
-- Haystack Pipelines → RAG Pipeline Configurations
+- Haystack Pipelines → `createRagPipeline` (or a `.ragrc.json` `pipeline` array for the CLI)
 - Haystack Document Stores → RAG Retrievers
 
 **Migration Example**:
@@ -262,11 +283,14 @@ from haystack.nodes import EmbeddingRetriever, FARMReader
 pipeline = Pipeline()
 pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
 pipeline.add_node(component=reader, name="Reader", inputs=["Retriever"])
+```
 
-# @DevilsDev/rag-pipeline-utils
+```javascript
+// @devilsdev/rag-pipeline-utils
 const pipeline = createRagPipeline({
-  retriever: { name: 'elasticsearch' },
-  llm: { name: 'huggingface-bert' }
+  embedder, // e.g. new OllamaConnector()
+  retriever, // e.g. new MemoryRetriever() or a custom retriever plugin
+  llm, // e.g. new OllamaConnector()
 });
 ```
 
@@ -276,38 +300,37 @@ const pipeline = createRagPipeline({
 
 1. **Custom Vector Search**:
 
+A retriever plugin implements `store(docs)` and `retrieve({ query, queryVector, topK, signal })`. The pipeline embeds the query with the configured embedder and passes `queryVector` in.
+
 ```javascript
-// Custom implementation
-class CustomVectorSearch {
-  async search(query, vectors) {
-    // Custom similarity calculation
-    const similarities = vectors.map((v) => cosineSimilarity(query, v));
-    return similarities.sort((a, b) => b.score - a.score).slice(0, 5);
-  }
-}
-
-// Migrate to plugin
-class CustomRetriever extends BaseRetriever {
+// Custom implementation wrapped as a retriever plugin
+class CustomRetriever {
   constructor() {
-    super();
-    this.name = "custom-vector-search";
-    this.version = "1.0.0";
+    this.docs = [];
   }
 
-  async retrieve(query, options = {}) {
-    const queryVector = await this.embedder.embed(query);
-    const results = await this.search(queryVector, this.vectors);
-    return results.map((r) => ({
-      id: r.id,
-      content: r.content,
-      score: r.score,
-      metadata: r.metadata,
-    }));
+  async store(docs) {
+    this.docs.push(...docs);
+  }
+
+  async retrieve({ queryVector, topK = 5 }) {
+    return this.docs
+      .map((d) => ({ ...d, score: cosineSimilarity(queryVector, d.vector) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK)
+      .map(({ id, content, score, metadata }) => ({
+        id,
+        content,
+        score,
+        metadata,
+      }));
   }
 }
 ```
 
 2. **Custom Chunking Logic**:
+
+Use the built-in `ChunkingEngine`, or keep your own function inside a loader plugin:
 
 ```javascript
 // Custom implementation
@@ -328,11 +351,15 @@ function chunkDocument(text, chunkSize = 1000) {
   return chunks;
 }
 
-// Migrate to loader plugin
-class CustomLoader extends BaseLoader {
-  chunkText(text, options) {
-    // Integrate existing chunking logic
-    return chunkDocument(text, options.chunkSize);
+// Use it from a loader plugin
+class CustomLoader {
+  async load(filePath) {
+    const text = await fs.promises.readFile(filePath, "utf8");
+    return chunkDocument(text).map((content, i) => ({
+      id: `${filePath}#${i}`,
+      content,
+      metadata: { source: filePath },
+    }));
   }
 }
 ```
@@ -357,49 +384,27 @@ rag-pipeline ingest ./docs --rebuild
 
 **Cross-Platform Migration**:
 
+There is no built-in migrator between vector databases. Re-embed and store your documents with the new retriever, or copy stored records between retrievers yourself. For example, from a `FileVectorStore` index into another retriever that accepts the same vectors:
+
 ```javascript
-// Migration script
-import { createMigrator } from "@DevilsDev/rag-pipeline-utils";
+const { FileVectorStore } = require("@devilsdev/rag-pipeline-utils");
 
-const migrator = createMigrator({
-  source: {
-    type: "pinecone",
-    config: {
-      /* source config */
-    },
-  },
-  target: {
-    type: "weaviate",
-    config: {
-      /* target config */
-    },
-  },
-});
-
-await migrator.migrate({
-  batchSize: 500,
-  parallel: 3,
-  validateIntegrity: true,
-});
+const source = new FileVectorStore({ path: ".rag/index.json" });
+source.load();
+// list() returns { id, content, metadata } without vectors, so re-embed:
+const records = source.list();
+const batch = await Promise.all(
+  records.map(async (r) => ({
+    ...r,
+    vector: await embedder.embed(r.content),
+  })),
+);
+await targetRetriever.store(batch);
 ```
 
 ### **Configuration Migration**
 
-**Manual Migration**:
-
-```javascript
-// Migration helper
-import { migrateConfig } from "@DevilsDev/rag-pipeline-utils";
-
-const oldConfig = require("./old-config.json");
-const newConfig = migrateConfig(oldConfig, {
-  targetVersion: "2.1.0",
-  preserveCustomFields: true,
-  updatePluginNames: true,
-});
-
-fs.writeFileSync("./.ragrc.json", JSON.stringify(newConfig, null, 2));
-```
+There is no automated configuration migration helper. Edit `.ragrc.json` by hand (or regenerate it with `rag-pipeline init --force`) and check the result with `rag-pipeline validate`. From code, `loadRagConfig()` and `validateRagrc()` load and validate a configuration.
 
 ---
 
@@ -420,20 +425,19 @@ rag-pipeline info --plugins
 2. **Functionality Testing**:
 
 ```bash
-# Test basic pipeline operations
-rag-pipeline query "test query" --dry-run
+# Show what would be done without executing
+rag-pipeline --dry-run query "test query"
 
 # Run a real query and inspect the passages and citations
 rag-pipeline query "test query" --json
 ```
 
-To score sample data, use `evaluateRagDataset` (see
+To score sample data, use `PipelineEvaluator` (see
 [Evaluation](./Evaluation.md)).
 
 3. **Performance Comparison**:
 
-There is no benchmark command. Time the same representative queries before
-and after migrating:
+`rag-pipeline ai benchmark` reports measured p50/p95/mean latency per stage. You can also time the same representative queries before and after migrating:
 
 ```bash
 # Before migration
@@ -464,8 +468,8 @@ rm -rf .rag && cp -r .rag.pre-migration .rag
 # Restore configuration
 cp .ragrc.json.pre-migration .ragrc.json
 
-# Downgrade package if needed
-npm install @DevilsDev/rag-pipeline-utils@1.9.0
+# Downgrade package if needed (pin the version you came from)
+npm install @devilsdev/rag-pipeline-utils@2.4.4
 ```
 
 ---
@@ -474,54 +478,11 @@ npm install @DevilsDev/rag-pipeline-utils@1.9.0
 
 ### **Checking a Migrated Project**
 
-The CLI has no `migration` command. After migrating, check the project with:
+The CLI has no `migration` command and the library has no migration API. After migrating, check the project with:
 
 ```bash
 rag-pipeline validate   # config schema and component resolution
 rag-pipeline doctor     # plugins, environment, API keys, index status
-```
-
-### **Custom Migration Scripts**
-
-```javascript
-// Custom migration script
-import {
-  createMigrationPlan,
-  executeMigration,
-  validateMigration,
-} from "@DevilsDev/rag-pipeline-utils";
-
-async function migrateProject() {
-  // 1. Create migration plan
-  const plan = await createMigrationPlan({
-    from: "2.0.5",
-    to: "2.1.0",
-    projectPath: process.cwd(),
-  });
-
-  console.log("Migration plan:", plan);
-
-  // 2. Execute migration
-  const result = await executeMigration(plan, {
-    backup: true,
-    validateEachStep: true,
-    rollbackOnFailure: true,
-  });
-
-  // 3. Validate migration
-  const validation = await validateMigration({
-    testSuite: "./migration-tests.json",
-    performanceBaseline: "./baseline-metrics.json",
-  });
-
-  if (validation.success) {
-    console.log("Migration completed successfully!");
-  } else {
-    console.error("Migration validation failed:", validation.errors);
-  }
-}
-
-migrateProject().catch(console.error);
 ```
 
 ---
@@ -561,15 +522,14 @@ migrateProject().catch(console.error);
 
 1. **Plugin Compatibility**: Some v1.x plugins may not work with v2.x
 2. **Configuration Format**: Manual updates may be required for complex configs
-3. **Performance Changes**: New architecture may have different performance characteristics
+3. **Score Changes**: 2.5.0 grounding and context-recall scores are not comparable with earlier releases
 4. **API Changes**: Some programmatic APIs have changed signatures
 
 ### **Getting Help**
 
-- **Migration Documentation**: [Complete migration docs](https://docs.rag-pipeline-utils.dev/migration)
-- **Community Forum**: [Ask migration questions](https://community.rag-pipeline-utils.dev)
-- **Professional Services**: [Enterprise migration support](mailto:migration@devilsdev.com)
+- **Issues**: [GitHub Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
 
 ---
 
-_This migration guide ensures smooth transitions between versions and frameworks. For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md) or contact our migration specialists._
+_For additional support, consult the [Troubleshooting Guide](./Troubleshooting.md)._

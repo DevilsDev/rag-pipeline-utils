@@ -1,447 +1,78 @@
 # Performance Optimization Guide
 
-This comprehensive performance guide helps you optimize **@DevilsDev/rag-pipeline-utils** for maximum throughput, minimal latency, and efficient resource utilization. From embedding generation to vector retrieval and LLM inference, this guide covers optimization strategies for every component.
+This guide covers the performance controls that **@devilsdev/rag-pipeline-utils** actually provides: per-run timeouts and cancellation, batched and streaming embedding, reranker caching and concurrency, bounded in-memory retrieval, and tools for measuring latency and cost. Anything not listed here (connection pools for a hosted vector database, model-side tuning) belongs to the provider SDK or service you plug in.
 
 ---
 
-## **Performance Overview**
+## **Measuring First**
 
-### **Key Performance Metrics**
-
-- **Throughput**: Documents processed per second
-- **Latency**: Time from query to response
-- **Memory Usage**: RAM consumption during processing
-- **Token Efficiency**: Cost optimization for LLM usage
-- **Concurrent Processing**: Parallel operation capabilities
-
-### **Performance Monitoring**
-
-The CLI has no `benchmark` or `monitor` command. Time individual commands,
-and use `rag-pipeline doctor` for memory and configuration checks:
+### **From the CLI**
 
 ```bash
-# Time a query end to end
+# Measured p50/p95/mean latency per stage for the configured pipeline and index
+rag-pipeline ai benchmark
+
+# Time a single query end to end
 time rag-pipeline query "test" --json
 
 # Memory, config size and other performance checks
 rag-pipeline doctor --category performance
 ```
 
-For in-process metrics, use `MetricsAggregator` and `DashboardGenerator`
-(see [Evaluation](./Evaluation.md#dashboard-visualization)). The repository's
-internal benchmark suite runs with `npm run benchmark` from a clone; see
-[Benchmarks](./Benchmarks.md).
+`ai benchmark` takes `--queries <file>` (JSON array of strings or one per line; by default queries are sampled from the index), `--runs <n>` (default 3), `--top-k <n>` and `--json`. The repository's internal benchmark suite (DAG engine, retry policy, monitoring overhead) runs with `npm run benchmark` from a clone; see [Benchmarks](./Benchmarks.md).
 
----
+### **In your application**
 
-## **Component-Specific Optimization**
-
-### **1. Embedding Performance**
-
-**Batch Processing Optimization**:
+`ExecutionTracer` wraps a pipeline and records the duration of each run and its steps:
 
 ```javascript
-import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
+const {
+  createRagPipeline,
+  ExecutionTracer,
+} = require("@devilsdev/rag-pipeline-utils");
 
-const pipeline = createRagPipeline({
-  embedder: {
-    name: "openai",
-    config: {
-      batchSize: 100, // Process 100 texts at once
-      maxConcurrency: 5, // 5 parallel API calls
-      timeout: 30000, // 30 second timeout
-      retryAttempts: 3, // Retry failed requests
-      cacheEnabled: true, // Cache embeddings
-      cacheSize: 10000, // Cache up to 10k embeddings
-    },
-  },
-});
+const pipeline = createRagPipeline({ embedder, retriever, llm });
+
+const tracer = new ExecutionTracer({ captureInputs: false });
+const traced = tracer.trace(pipeline);
+
+await traced.run({ query: "What is RAG?" });
+
+const [trace] = tracer.getTraces();
+console.log(
+  trace.totalDurationMs,
+  trace.steps.map((s) => s.durationMs),
+);
 ```
 
-**Parallel Embedding Strategy**:
+`MetricsAggregator` keeps rolling latency, throughput, cost and error statistics, and `DashboardGenerator` renders them as a self-contained HTML page or a text report:
 
 ```javascript
-// Custom parallel embedding implementation
-class OptimizedEmbedder extends BaseEmbedder {
-  constructor(options = {}) {
-    super();
-    this.concurrencyLimit = options.concurrency || 5;
-    this.batchSize = options.batchSize || 50;
-    this.cache = new LRUCache({ max: options.cacheSize || 5000 });
-  }
-
-  async embedBatch(texts, options = {}) {
-    // Filter cached texts
-    const uncachedTexts = texts.filter(text =&gt; !this.cache.has(text));
-
-    if (uncachedTexts.length === 0) {
-      return texts.map(text =&gt; this.cache.get(text));
-    }
-
-    // Create batches for parallel processing
-    const batches = this.createBatches(uncachedTexts, this.batchSize);
-
-    // Process batches with concurrency limit
-    const results = await this.processBatchesParallel(batches, {
-      concurrency: this.concurrencyLimit,
-      retryOnFailure: true
-    });
-
-    // Cache results
-    results.forEach((embedding, index) =&gt; {
-      this.cache.set(uncachedTexts[index], embedding);
-    });
-
-    return texts.map(text =&gt; this.cache.get(text));
-  }
-
-  async processBatchesParallel(batches, options) {
-    const semaphore = new Semaphore(options.concurrency);
-
-    return Promise.all(
-      batches.map(async (batch) =&gt; {
-        await semaphore.acquire();
-        try {
-          return await this.processBatch(batch);
-        } finally {
-          semaphore.release();
-        }
-      })
-    );
-  }
-}
-```
-
-### **2. Vector Retrieval Optimization**
-
-**Index Configuration**:
-
-```javascript
-const pipeline = createRagPipeline({
-  retriever: {
-    name: "pinecone",
-    config: {
-      indexType: "approximateSearch", // Faster but less precise
-      dimensions: 1536,
-      metric: "cosine",
-      pods: 1,
-      replicas: 1,
-      podType: "p1.x1", // Optimize for your workload
-
-      // Query optimization
-      topK: 5, // Limit results
-      includeMetadata: false, // Reduce payload size
-      includeValues: false, // Reduce payload size
-
-      // Connection pooling
-      maxConnections: 10,
-      keepAlive: true,
-      timeout: 5000,
-    },
-  },
-});
-```
-
-**Query Optimization**:
-
-```javascript
-// Optimized retrieval with filtering
-async function optimizedRetrieve(query, options = {}) {
-  const queryVector = await this.embedder.embed(query);
-
-  return await this.retriever.retrieve(queryVector, {
-    topK: options.topK || 5,
-    filter: options.filter, // Pre-filter to reduce search space
-    includeMetadata: options.includeMetadata || false,
-    namespace: options.namespace, // Use namespaces for isolation
-
-    // Performance optimizations
-    approximateSearch: true, // Trade accuracy for speed
-    searchTimeout: 2000, // 2 second timeout
-    maxRetries: 2,
-  });
-}
-```
-
-### **3. LLM Generation Optimization**
-
-**Model Selection Strategy**:
-
-```javascript
-// Choose optimal model for use case
-const modelConfigs = {
-  "fast-responses": {
-    name: "openai-gpt-3.5-turbo",
-    config: {
-      maxTokens: 500,
-      temperature: 0.3,
-      topP: 0.9,
-      frequencyPenalty: 0.1,
-    },
-  },
-  "high-quality": {
-    name: "openai-gpt-4",
-    config: {
-      maxTokens: 1500,
-      temperature: 0.7,
-      topP: 0.95,
-    },
-  },
-  "cost-optimized": {
-    name: "openai-gpt-3.5-turbo",
-    config: {
-      maxTokens: 300,
-      temperature: 0.1,
-      stop: ["\n\n", "###"],
-    },
-  },
-};
-```
-
-**Streaming Optimization**:
-
-```javascript
-// Implement streaming for better perceived performance
-async function* optimizedGenerate(prompt, options = {}) {
-  const stream = await this.llm.generateStream(prompt, {
-    ...options,
-    bufferSize: 10, // Buffer tokens for smoother streaming
-    flushInterval: 50, // Flush every 50ms
-    earlyStop: true, // Stop on complete sentences
-  });
-
-  let buffer = "";
-  for await (const token of stream) {
-    buffer += token;
-
-    // Flush on sentence boundaries for better UX
-    if (buffer.match(/[.!?]\s/)) {
-      yield buffer;
-      buffer = "";
-    }
-  }
-
-  if (buffer) yield buffer;
-}
-```
-
-**Token Usage Optimization**:
-
-```javascript
-// Optimize prompts for token efficiency
-class TokenOptimizer {
-  constructor(tokenizer) {
-    this.tokenizer = tokenizer;
-    this.maxContextTokens = 4096;
-    this.maxResponseTokens = 1000;
-  }
-
-  optimizePrompt(context, query) {
-    const basePrompt = `Context: {context}\n\nQuestion: ${query}\n\nAnswer:`;
-    const baseTokens = this.tokenizer.encode(basePrompt.replace('{context}', '')).length;
-    const availableTokens = this.maxContextTokens - baseTokens - this.maxResponseTokens;
-
-    // Truncate context to fit token limit
-    const optimizedContext = this.truncateContext(context, availableTokens);
-
-    return basePrompt.replace('{context}', optimizedContext);
-  }
-
-  truncateContext(context, maxTokens) {
-    const sentences = context.split(/[.!?]+/);
-    let truncated = '';
-    let tokenCount = 0;
-
-    for (const sentence of sentences) {
-      const sentenceTokens = this.tokenizer.encode(sentence).length;
-      if (tokenCount + sentenceTokens &gt; maxTokens) break;
-
-      truncated += sentence + '.';
-      tokenCount += sentenceTokens;
-    }
-
-    return truncated;
-  }
-}
-```
-
----
-
-## **Pipeline-Level Optimization**
-
-### **Streaming Architecture**
-
-```javascript
-// Implement full pipeline streaming
-class StreamingPipeline {
-  constructor(config) {
-    this.config = config;
-    this.bufferSize = config.bufferSize || 1000;
-    this.concurrency = config.concurrency || 3;
-  }
-
-  async* processStream(documents) {
-    const documentStream = this.createDocumentStream(documents);
-    const chunkStream = this.createChunkStream(documentStream);
-    const embeddingStream = this.createEmbeddingStream(chunkStream);
-
-    for await (const batch of embeddingStream) {
-      // Process embeddings in parallel
-      const results = await Promise.allSettled(
-        batch.map(item =&gt; this.processEmbedding(item))
-      );
-
-      yield results.filter(r =&gt; r.status === 'fulfilled').map(r =&gt; r.value);
-    }
-  }
-
-  async* createChunkStream(documentStream) {
-    let buffer = [];
-
-    for await (const document of documentStream) {
-      const chunks = await this.chunkDocument(document);
-      buffer.push(...chunks);
-
-      if (buffer.length &gt;= this.bufferSize) {
-        yield buffer.splice(0, this.bufferSize);
-      }
-    }
-
-    if (buffer.length &gt; 0) yield buffer;
-  }
-}
-```
-
-### **Memory Management**
-
-```javascript
-// Implement memory-efficient processing
-class MemoryOptimizedPipeline {
-  constructor(options = {}) {
-    this.maxMemoryUsage = options.maxMemory || '2GB';
-    this.gcThreshold = options.gcThreshold || 0.8;
-    this.batchSize = options.batchSize || 100;
-  }
-
-  async processLargeDataset(documents) {
-    const batches = this.createBatches(documents, this.batchSize);
-
-    for (const batch of batches) {
-      // Monitor memory usage
-      const memoryUsage = process.memoryUsage();
-      const memoryPercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
-
-      if (memoryPercent &gt; this.gcThreshold) {
-        // Force garbage collection
-        if (global.gc) global.gc();
-
-        // Reduce batch size if memory pressure continues
-        if (memoryPercent &gt; 0.9) {
-          this.batchSize = Math.max(10, Math.floor(this.batchSize * 0.8));
-        }
-      }
-
-      await this.processBatch(batch);
-
-      // Clear batch references
-      batch.length = 0;
-    }
-  }
-}
-```
-
-### **Caching Strategy**
-
-```javascript
-// Multi-level caching implementation
-class CacheManager {
-  constructor(options = {}) {
-    // L1: In-memory cache (fastest)
-    this.l1Cache = new LRUCache({
-      max: options.l1Size || 1000,
-      ttl: options.l1TTL || 300000, // 5 minutes
-    });
-
-    // L2: Redis cache (shared across instances)
-    this.l2Cache = new RedisCache({
-      host: options.redisHost,
-      ttl: options.l2TTL || 3600000, // 1 hour
-    });
-
-    // L3: Disk cache (persistent)
-    this.l3Cache = new DiskCache({
-      directory: options.cacheDir || "./cache",
-      maxSize: options.l3Size || "1GB",
-    });
-  }
-
-  async get(key) {
-    // Try L1 first
-    let value = this.l1Cache.get(key);
-    if (value) return value;
-
-    // Try L2
-    value = await this.l2Cache.get(key);
-    if (value) {
-      this.l1Cache.set(key, value);
-      return value;
-    }
-
-    // Try L3
-    value = await this.l3Cache.get(key);
-    if (value) {
-      this.l1Cache.set(key, value);
-      this.l2Cache.set(key, value);
-      return value;
-    }
-
-    return null;
-  }
-
-  async set(key, value) {
-    this.l1Cache.set(key, value);
-    await this.l2Cache.set(key, value);
-    await this.l3Cache.set(key, value);
-  }
-}
-```
-
----
-
-## **Monitoring & Profiling**
-
-### **Performance Metrics Collection**
-
-```javascript
-// Built-in performance monitoring
-import { createPerformanceMonitor } from "@DevilsDev/rag-pipeline-utils";
-
-const monitor = createPerformanceMonitor({
-  metrics: ["throughput", "latency", "memory", "tokens", "errors"],
-  interval: 1000, // Collect every second
-  retention: 3600, // Keep 1 hour of data
-  alerts: {
-    highLatency: { threshold: 5000, action: "log" },
-    memoryUsage: { threshold: 0.9, action: "gc" },
-    errorRate: { threshold: 0.05, action: "alert" },
-  },
+const fs = require("fs");
+const {
+  MetricsAggregator,
+  DashboardGenerator,
+} = require("@devilsdev/rag-pipeline-utils");
+
+const aggregator = new MetricsAggregator();
+
+const start = Date.now();
+const result = await pipeline.run({ query: "What is RAG?" });
+aggregator.recordQuery({
+  duration: Date.now() - start,
+  success: result.success,
 });
 
-const pipeline = createRagPipeline({
-  monitor,
-  // ... other config
-});
-
-// Access performance data
-const metrics = monitor.getMetrics();
-console.log("Average latency:", metrics.latency.average);
-console.log("Throughput:", metrics.throughput.current);
+const snapshot = aggregator.getSnapshot(); // { latency, throughput, cost, memory, errorRate, ... }
+fs.writeFileSync("dashboard.html", new DashboardGenerator().generate(snapshot));
 ```
 
-### **Profiling Tools**
+`MetricsAggregator` only knows what you record with `recordQuery`, `recordEmbedding`, `recordRetrieval`, `recordGeneration`, `recordError` and `recordMemory`.
+
+### **Profiling**
 
 ```bash
-# Profile memory usage
+# Inspect memory during a large ingest
 node --inspect --max-old-space-size=4096 \
   node_modules/@devilsdev/rag-pipeline-utils/bin/cli.js ingest ./large-dataset
 
@@ -450,273 +81,184 @@ node --cpu-prof node_modules/@devilsdev/rag-pipeline-utils/bin/cli.js \
   query "test"
 ```
 
-### **Custom Metrics**
-
-```javascript
-// Define custom performance metrics
-class CustomMetrics {
-  constructor() {
-    this.metrics = new Map();
-    this.startTimes = new Map();
-  }
-
-  startTimer(operation) {
-    this.startTimes.set(operation, Date.now());
-  }
-
-  endTimer(operation) {
-    const startTime = this.startTimes.get(operation);
-    if (startTime) {
-      const duration = Date.now() - startTime;
-      this.recordMetric(operation, duration);
-      this.startTimes.delete(operation);
-    }
-  }
-
-  recordMetric(name, value) {
-    if (!this.metrics.has(name)) {
-      this.metrics.set(name, []);
-    }
-    this.metrics.get(name).push({
-      value,
-      timestamp: Date.now()
-    });
-  }
-
-  getStats(name) {
-    const values = this.metrics.get(name) || [];
-    if (values.length === 0) return null;
-
-    const nums = values.map(v =&gt; v.value);
-    return {
-      count: nums.length,
-      average: nums.reduce((a, b) =&gt; a + b, 0) / nums.length,
-      min: Math.min(...nums),
-      max: Math.max(...nums),
-      p95: this.percentile(nums, 0.95),
-      p99: this.percentile(nums, 0.99)
-    };
-  }
-}
-```
-
 ---
 
-## **Production Optimization**
+## **Bounding Latency: Timeouts and Cancellation**
 
-### **Deployment Configuration**
-
-```yaml
-# Docker optimization
-FROM node:18-alpine
-WORKDIR /app
-
-# Optimize Node.js for production
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=4096 --optimize-for-size"
-
-# Install dependencies
-COPY package*.json ./
-RUN npm ci --only=production --no-audit
-
-# Copy application
-COPY . .
-
-# Optimize startup
-CMD ["node", "--experimental-worker", "index.js"]
-```
-
-### **Load Balancing**
+`createRagPipeline` creates an `AbortController` for every run. A `timeout` or a caller-supplied `signal` aborts the run, no later stage starts, and the signal is passed to every component call, so built-in connectors and rerankers cancel their in-flight requests:
 
 ```javascript
-// Horizontal scaling with load balancing
-class LoadBalancer {
-  constructor(instances) {
-    this.instances = instances;
-    this.currentIndex = 0;
-    this.healthChecks = new Map();
-  }
+const controller = new AbortController();
 
-  async getHealthyInstance() {
-    const startIndex = this.currentIndex;
-
-    do {
-      const instance = this.instances[this.currentIndex];
-      this.currentIndex = (this.currentIndex + 1) % this.instances.length;
-
-      if (await this.isHealthy(instance)) {
-        return instance;
-      }
-    } while (this.currentIndex !== startIndex);
-
-    throw new Error("No healthy instances available");
-  }
-
-  async isHealthy(instance) {
-    try {
-      const response = await instance.healthCheck();
-      return response.status === "healthy";
-    } catch (error) {
-      return false;
-    }
-  }
-}
+const result = await pipeline.run({
+  query: "Summarise the refund policy",
+  options: {
+    topK: 5,
+    timeout: 10000, // resolves { success: false, error: 'Execution timeout' }
+    signal: controller.signal, // abort() resolves { success: false, error: 'Execution aborted' }
+  },
+});
 ```
 
-### **Auto-scaling Configuration**
+`run()` resolves rather than throws in both cases. Custom components receive the signal as `retriever.retrieve({ ..., signal })`, `embedder.embed(text, { signal })` / `embedQuery(text, { signal })`, `reranker.rerank(query, docs, { topK, signal })` and `llm.generate(query, docs, { ..., signal })`; components that ignore it still work, but their work is not cancelled.
+
+### **Streaming for perceived latency**
+
+With `stream: true`, `run()` returns an async iterable of `{ token, done }` chunks. If the LLM has no `generateStream()`, the pipeline falls back to `generate()` and emits the whole answer as one chunk:
 
 ```javascript
-// Auto-scaling based on load
-class AutoScaler {
-  constructor(options = {}) {
-    this.minInstances = options.min || 1;
-    this.maxInstances = options.max || 10;
-    this.targetCPU = options.targetCPU || 0.7;
-    this.scaleUpThreshold = options.scaleUpThreshold || 0.8;
-    this.scaleDownThreshold = options.scaleDownThreshold || 0.3;
-    this.instances = [];
-  }
-
-  async monitor() {
-    const metrics = await this.collectMetrics();
-    const avgCPU = metrics.cpu.average;
-    const avgMemory = metrics.memory.average;
-
-    if (avgCPU &gt; this.scaleUpThreshold && this.instances.length &lt; this.maxInstances) {
-      await this.scaleUp();
-    } else if (avgCPU &lt; this.scaleDownThreshold && this.instances.length &gt; this.minInstances) {
-      await this.scaleDown();
-    }
-  }
-
-  async scaleUp() {
-    const newInstance = await this.createInstance();
-    this.instances.push(newInstance);
-    console.log(`Scaled up to ${this.instances.length} instances`);
-  }
-
-  async scaleDown() {
-    const instance = this.instances.pop();
-    await this.terminateInstance(instance);
-    console.log(`Scaled down to ${this.instances.length} instances`);
-  }
-}
-```
-
----
-
-## **Performance Best Practices**
-
-### **1. Configuration Optimization**
-
-```json
-{
-  "performance": {
-    "embedder": {
-      "batchSize": 100,
-      "maxConcurrency": 5,
-      "cacheEnabled": true,
-      "timeout": 30000
-    },
-    "retriever": {
-      "topK": 5,
-      "approximateSearch": true,
-      "connectionPoolSize": 10
-    },
-    "llm": {
-      "maxTokens": 1000,
-      "temperature": 0.3,
-      "streaming": true
-    },
-    "pipeline": {
-      "parallelProcessing": true,
-      "memoryLimit": "2GB",
-      "gcThreshold": 0.8
-    }
-  }
-}
-```
-
-### **2. Resource Management**
-
-- **Memory**: Use streaming for large datasets
-- **CPU**: Leverage parallel processing
-- **Network**: Implement connection pooling
-- **Storage**: Use appropriate caching strategies
-
-### **3. Monitoring Checklist**
-
-- [ ] Track response latency (target: less than 2s)
-- [ ] Monitor throughput (documents/second)
-- [ ] Watch memory usage (keep under 80%)
-- [ ] Monitor error rates (keep under 1%)
-- [ ] Track token usage costs
-- [ ] Set up alerting for anomalies
-
----
-
-## **Performance Benchmarks**
-
-### **Reference Performance**
-
-| Component          | Throughput      | Latency (P95) | Memory Usage |
-| ------------------ | --------------- | ------------- | ------------ |
-| PDF Loader         | 50 docs/sec     | 200ms         | 100MB        |
-| OpenAI Embedder    | 1000 texts/sec  | 500ms         | 50MB         |
-| Pinecone Retriever | 500 queries/sec | 100ms         | 25MB         |
-| GPT-4 Generation   | 10 queries/sec  | 3000ms        | 75MB         |
-
-### **Optimization Targets**
-
-- **Embedding**: greater than 500 texts/second
-- **Retrieval**: under 200ms P95 latency
-- **Generation**: under 5s P95 latency
-- **Memory**: under 1GB for 10k documents
-- **Error Rate**: under 0.5%
-
----
-
-## **Streaming Embeddings (v2.4.0)**
-
-The `StreamingEmbedder` wrapper enables real-time embedding of large document sets with built-in backpressure control, memory management, and progress tracking. Instead of embedding an entire corpus in one blocking call, documents flow through an async iterator that yields results as they become available.
-
-```javascript
-import { StreamingEmbedder } from "@devilsdev/rag-pipeline-utils";
-
-const streamer = new StreamingEmbedder(myEmbedder, {
-  batchSize: 50,
-  maxMemoryMB: 512,
+const stream = await pipeline.run({
+  query: "What is RAG?",
+  options: { stream: true, citations: true },
 });
 
-for await (const { id, vector, progress } of streamer.embedStream(documents)) {
-  console.log(`${(progress * 100).toFixed(0)}% complete`);
+for await (const chunk of stream) {
+  if (chunk.done) {
+    console.log("\ncitations:", chunk.citations); // final chunk when citations/evaluate are on
+  } else {
+    process.stdout.write(chunk.token);
+  }
 }
 ```
 
-**Key capabilities:**
+---
 
-- **Backpressure control** -- the stream pauses automatically when the consumer falls behind, preventing unbounded memory growth.
-- **Memory management** -- the `maxMemoryMB` option caps heap usage; when the threshold is reached the stream throttles until memory is freed.
-- **Progress tracking** -- every yielded result includes a `progress` value (0-1) so callers can render progress bars or log completion percentage.
+## **Embedding Throughput**
 
-### **Performance Dashboard**
+### **Connector retries**
 
-The `MetricsAggregator` and `DashboardGenerator` pair provides a turnkey performance dashboard for monitoring query latency, cost, and success rates across your RAG pipeline.
+Built-in connectors retry only transient failures (network errors, HTTP 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`. Tune `maxRetries` (default 3) and `retryDelay` (base delay, default 1000 ms) on the connector:
 
 ```javascript
-import {
-  MetricsAggregator,
-  DashboardGenerator,
-} from "@devilsdev/rag-pipeline-utils";
+const { OpenAIConnector } = require("@devilsdev/rag-pipeline-utils");
 
-const aggregator = new MetricsAggregator();
-aggregator.recordQuery({ duration: 250, cost: 0.003, success: true });
-
-const html = new DashboardGenerator().generate(aggregator.getSnapshot());
+const openai = new OpenAIConnector({
+  embeddingModel: "text-embedding-3-small", // default
+  maxRetries: 3,
+  retryDelay: 1000,
+});
 ```
 
-The generated HTML dashboard includes latency histograms, cost-over-time charts, success/failure ratios, and P95/P99 breakdowns. Write the output to a file or serve it from an Express route for live monitoring.
+### **Streaming embeddings**
+
+`StreamingEmbedder` embeds a large document set in batches and yields results as they complete, applying backpressure when heap usage approaches `maxMemoryMB`:
+
+```javascript
+const { StreamingEmbedder } = require("@devilsdev/rag-pipeline-utils");
+
+const streamer = new StreamingEmbedder(myEmbedder, {
+  batchSize: 50, // default
+  maxConcurrency: 3, // default
+  maxMemoryMB: 512, // default
+  backpressureThreshold: 0.8, // fraction of maxMemoryMB, default
+});
+
+// documents: [{ id, content }]
+for await (const { id, vector, progress } of streamer.embedStream(documents)) {
+  console.log(id, `${(progress * 100).toFixed(0)}% complete`);
+}
+
+// Or collect everything: const all = await streamer.embedAll(documents);
+```
+
+`StreamingEmbedder` is an `EventEmitter` (`start`, `embedding`, `batch`, `backpressure`, `done`, `error`); `getStats()` returns cumulative statistics. The lower-level `createEmbeddingStream` is exported as well.
+
+### **Parallel batches**
+
+`ParallelProcessor.ParallelEmbedder` splits text chunks into batches and embeds them with a concurrency limit and per-batch retries. It calls `embedder.embed(batch)` with an **array** of strings and expects an array of vectors back, so use it with embedders that accept batches:
+
+```javascript
+const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
+
+const parallel = new ParallelProcessor.ParallelEmbedder(batchEmbedder, {
+  batchSize: 10, // default
+  maxConcurrency: 3, // default
+  retryAttempts: 2, // default
+});
+
+const vectors = await parallel.embedBatch(chunks); // chunks: string[]
+```
 
 ---
 
-_This performance guide provides comprehensive optimization strategies for @DevilsDev/rag-pipeline-utils. For troubleshooting performance issues, see the [Troubleshooting Guide](./Troubleshooting.md)._
+## **Retrieval and Reranking**
+
+- **Index choice.** `MemoryRetriever` holds all vectors in memory and compares every one per query; it enforces `maxDocuments` (default 100000) and, with `eviction: "fifo"`, drops the oldest documents instead of throwing when full. `FileVectorStore` (the CLI's `file-store` retriever) persists the index to JSON, stores mostly-zero vectors sparsely and rounds values to 7 significant digits (about 10x smaller files for the `local` embedder). Both do an exhaustive cosine scan; for large corpora, plug in a dedicated vector database as a custom retriever.
+- **`topK`.** Retrieve only what the next stage needs. With a reranker, retrieve more candidates and let the reranker cut them down.
+- **`EmbeddingReranker`** caches document embeddings in an LRU (`cacheSize`, default 1000; `0` disables) and limits concurrent embedding calls (`concurrency`, default 4). Call `clearCache()` after retraining the embedder.
+- **`CascadeReranker`** lets a cheap reranker (for example `ScoringReranker`) prune candidates before an expensive one runs.
+
+```javascript
+const { EmbeddingReranker } = require("@devilsdev/rag-pipeline-utils");
+
+// embedder must expose embedQuery(text) or embed(text)
+const reranker = new EmbeddingReranker(embedder, {
+  cacheSize: 5000,
+  concurrency: 4,
+});
+
+const pipeline = createRagPipeline({ embedder, retriever, reranker, llm });
+```
+
+---
+
+## **Generation Cost and Tokens**
+
+Use smaller models and lower `maxTokens` on the LLM connector where quality allows (`OpenAIConnector` defaults: `model: "gpt-4o-mini"`, `maxTokens: 4096`, `temperature: 0.7`).
+
+`CostTracker` wraps a pipeline and attaches a cost estimate to every result; with `enableBudget` it enforces a `TokenBudget`:
+
+```javascript
+const { CostTracker } = require("@devilsdev/rag-pipeline-utils");
+
+const tracker = new CostTracker({
+  model: "gpt-4o-mini",
+  enableBudget: true,
+  budgetOptions: { maxCost: 5 }, // USD
+});
+const tracked = tracker.wrap(pipeline);
+
+const result = await tracked.run({ query: "What is RAG?" });
+console.log(result.cost); // { inputTokens, outputTokens, estimatedCost, model, currency }
+console.log(tracker.getSummary()); // { totalTokens, totalCost, sessionCount, avgCostPerQuery, breakdown }
+```
+
+Built-in prices are list prices marked unverified (see `PRICING_METADATA` for their `asOf` date and sources). Pass your own prices through `calculatorOptions` (`pricing` / `customPricing`) when the numbers matter.
+
+---
+
+## **Production Deployment**
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+
+ENV NODE_ENV=production
+# Size the heap to the container's memory limit
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit
+
+COPY . .
+CMD ["node", "index.js"]
+```
+
+The pipeline object holds no per-request state, so you can scale horizontally behind a load balancer as long as every instance can reach the same index. A `FileVectorStore` index is a local file: share it read-only or rebuild it per instance, and do not write to it from several processes at once. See the [deployment guides](./Deployment-Docker.md) for container and orchestration setups.
+
+---
+
+## **Checklist**
+
+- [ ] Measure with `rag-pipeline ai benchmark` or `ExecutionTracer` before tuning
+- [ ] Set `options.timeout` (or pass an `AbortSignal`) on every user-facing run
+- [ ] Stream answers to users when latency matters
+- [ ] Keep `topK` small; rerank a larger candidate set only if it improves quality
+- [ ] Bound memory: `maxDocuments` / `eviction` on `MemoryRetriever`, `cacheSize` on `EmbeddingReranker`
+- [ ] Track token cost with `CostTracker` and set a budget
+
+There are no published reference throughput or latency figures for this package; numbers depend on your providers, models, corpus and hardware. Measure your own.
+
+---
+
+_For troubleshooting performance issues, see the [Troubleshooting Guide](./Troubleshooting.md)._

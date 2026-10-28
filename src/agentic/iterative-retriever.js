@@ -113,10 +113,24 @@ class IterativeRetriever extends EventEmitter {
    * @param {Array<number>} [params.queryVector] - Optional pre-computed query vector
    * @param {object} [params.embedder] - Optional embedder; when given, each
    *   refined query is re-embedded instead of reusing queryVector
+   * @param {AbortSignal} [params.signal] - Cancels the loop: passed to
+   *   retriever.retrieve({ ..., signal }), the embedder and llm.generate(...,
+   *   { signal }); no further iteration, retry or refinement starts once it
+   *   has aborted, and the call rejects with the signal's reason
    * @returns {Promise<{results: Array<object>, iterations: number, converged: boolean, coverage: number}>}
    * @throws {Error} If query or retriever is missing
    */
-  async retrieve({ query, retriever, llm, queryVector, embedder }) {
+  async retrieve({ query, retriever, llm, queryVector, embedder, signal }) {
+    const throwIfAborted = () => {
+      if (signal && signal.aborted) {
+        throw signal.reason instanceof Error
+          ? signal.reason
+          : new Error('Execution aborted');
+      }
+    };
+    // Only add the signal when there is one, so components keep the
+    // argument shapes they had before.
+    const withSignal = (obj) => (signal ? { ...obj, signal } : obj);
     // 1. Validate inputs
     if (!query || typeof query !== 'string' || !query.trim()) {
       throw new Error(
@@ -138,23 +152,31 @@ class IterativeRetriever extends EventEmitter {
 
     // 3. Retrieval loop
     while (iterations < this.config.maxIterations) {
+      throwIfAborted();
       // a. Retrieve with retry
       const retrieveQuery = currentQuery;
       // Without an embedder the caller's vector is all we have; it only
       // matches the original query, so refined queries need re-embedding.
       const retrieveVector =
         canEmbed(embedder) && (retrieveQuery !== query || !queryVector)
-          ? await embedQuery(embedder, retrieveQuery)
+          ? await embedQuery(
+              embedder,
+              retrieveQuery,
+              signal ? { signal } : undefined,
+            )
           : queryVector;
-      const newResults = await retry(
-        () =>
-          retriever.retrieve({
+      const newResults = await retry(() => {
+        // Do not retry (or start) a retrieval after an abort.
+        throwIfAborted();
+        return retriever.retrieve(
+          withSignal({
             query: retrieveQuery,
             queryVector: retrieveVector,
             topK: 10,
           }),
-        this.config.retryOptions,
-      );
+        );
+      }, this.config.retryOptions);
+      throwIfAborted();
 
       // b. Merge and deduplicate
       const resultsArray = Array.isArray(newResults) ? newResults : [];
@@ -186,16 +208,18 @@ class IterativeRetriever extends EventEmitter {
         // Try LLM-based refinement first
         if (llm && typeof llm.generate === 'function') {
           try {
-            refined = await llm.generate(
-              `Given the query "${query}" and that current results don't fully cover the topic, generate a refined search query to find missing information.`,
-              accumulatedResults,
-            );
+            const prompt = `Given the query "${query}" and that current results don't fully cover the topic, generate a refined search query to find missing information.`;
+            refined = signal
+              ? await llm.generate(prompt, accumulatedResults, { signal })
+              : await llm.generate(prompt, accumulatedResults);
             if (refined && typeof refined === 'string' && refined.trim()) {
               refined = refined.trim();
             } else {
               refined = null;
             }
           } catch (_err) {
+            // An abort is not an LLM failure: stop instead of falling back.
+            throwIfAborted();
             // LLM failed -- fall through to heuristic
             refined = null;
           }

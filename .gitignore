@@ -257,3 +257,9 @@ dist/
 # Local IDE/editor settings
 .claude/
 .github.zip
+
+# The example env file documents required variables and must be committed
+!.env.example
+
+# vhs demo scratch directory (assets/demo.tape)
+.demo/

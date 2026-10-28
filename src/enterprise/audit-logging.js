@@ -15,6 +15,39 @@ const { logger } = require('../utils/logger');
 
 const INTEGRITY_VERSION = 2;
 const ENCRYPTION_VERSION = 2;
+const ENCRYPTION_KEY_ENV = 'RAG_AUDIT_ENCRYPTION_KEY';
+
+/**
+ * OpenSSL EVP_BytesToKey with MD5, one iteration and no salt: the key/IV
+ * derivation used by the removed crypto.createCipher/createDecipher.
+ * D_1 = MD5(pass), D_i = MD5(D_{i-1} || pass); key || iv = D_1 || D_2 || ...
+ *
+ * @param {Buffer|string} password - Passphrase given to createCipher
+ * @param {number} keyLen - Key length in bytes
+ * @param {number} ivLen - IV length in bytes (12 for GCM)
+ * @returns {{key: Buffer, iv: Buffer}}
+ */
+function evpBytesToKey(password, keyLen, ivLen) {
+  const pass = Buffer.isBuffer(password)
+    ? password
+    : Buffer.from(String(password), 'utf8');
+  const blocks = [];
+  let total = 0;
+  let prev = Buffer.alloc(0);
+  while (total < keyLen + ivLen) {
+    prev = crypto
+      .createHash('md5')
+      .update(Buffer.concat([prev, pass]))
+      .digest();
+    blocks.push(prev);
+    total += prev.length;
+  }
+  const out = Buffer.concat(blocks);
+  return {
+    key: out.subarray(0, keyLen),
+    iv: out.subarray(keyLen, keyLen + ivLen),
+  };
+}
 
 class AuditLogger extends EventEmitter {
   constructor(_options = {}) {
@@ -56,8 +89,7 @@ class AuditLogger extends EventEmitter {
     };
 
     this.logBuffer = [];
-    this.encryptionKey =
-      _options.encryptionKey || this._generateEncryptionKey();
+    this.encryptionKey = this._resolveEncryptionKey(_options);
     this.signingKey = _options.signingKey || this._generateSigningKey();
     this.sequenceNumber = 0;
 
@@ -785,8 +817,51 @@ class AuditLogger extends EventEmitter {
       .substring(0, 16);
   }
 
-  _generateEncryptionKey() {
-    return crypto.randomBytes(32);
+  /**
+   * Resolve the field-encryption key.
+   *
+   * Order: the `encryptionKey` option, then the RAG_AUDIT_ENCRYPTION_KEY
+   * environment variable (used as a passphrase, like a string option). A
+   * random per-process key is never generated: records written with it
+   * could not be decrypted after a restart.
+   *
+   * If encryption is enabled but no key is configured, encryption is
+   * disabled for this instance with a loud warning (an `encryption_disabled`
+   * event is also emitted on the next tick). Pass `requireEncryption: true`
+   * to throw instead.
+   *
+   * @param {Object} _options - Constructor options
+   * @returns {Buffer|string|null} Key material, or null when unavailable
+   * @private
+   */
+  _resolveEncryptionKey(_options) {
+    const configured =
+      _options.encryptionKey || process.env[ENCRYPTION_KEY_ENV] || null;
+    if (configured || !this._config.compliance.encryption) {
+      return configured;
+    }
+
+    const message =
+      `AuditLogger: encryption is enabled but no key is configured. Set the ` +
+      `encryptionKey option or the ${ENCRYPTION_KEY_ENV} environment variable.`;
+
+    if (_options.requireEncryption === true) {
+      throw new Error(message);
+    }
+
+    logger.warn(
+      `[AUDIT] WARNING: ${message} Sensitive audit fields (details, data, ` +
+        `request) will be written UNENCRYPTED by this instance. Pass ` +
+        `requireEncryption: true to make this an error.`,
+    );
+    this._config.compliance = {
+      ...this._config.compliance,
+      encryption: false,
+    };
+    process.nextTick(() =>
+      this.emit('encryption_disabled', { reason: 'no_encryption_key' }),
+    );
+    return null;
   }
 
   /**
@@ -800,6 +875,11 @@ class AuditLogger extends EventEmitter {
   }
 
   _createDecipher(encryptedField) {
+    if (!this.encryptionKey) {
+      throw new Error(
+        `No audit encryption key configured (set encryptionKey or ${ENCRYPTION_KEY_ENV})`,
+      );
+    }
     if (encryptedField.v === ENCRYPTION_VERSION) {
       return crypto.createDecipheriv(
         'aes-256-gcm',
@@ -807,14 +887,13 @@ class AuditLogger extends EventEmitter {
         Buffer.from(encryptedField.iv, 'hex'),
       );
     }
-    // Legacy records were written with crypto.createCipher, which was
-    // removed in Node 22; they can only be read on older runtimes.
-    if (typeof crypto.createDecipher !== 'function') {
-      throw new Error(
-        'Legacy audit record encryption is not supported on this Node.js version',
-      );
-    }
-    return crypto.createDecipher('aes-256-gcm', this.encryptionKey);
+    // Legacy (v1) records were written with crypto.createCipher, which was
+    // removed in Node 22. Re-derive its key and IV exactly as it did and use
+    // createDecipheriv so they decrypt on every supported Node version. The
+    // passphrase is the raw key material createCipher was given, not the
+    // SHA-256-reduced key used for v2 records.
+    const { key, iv } = evpBytesToKey(this.encryptionKey, 32, 12);
+    return crypto.createDecipheriv('aes-256-gcm', key, iv);
   }
 
   _generateSigningKey() {
@@ -879,8 +958,14 @@ class AuditLogger extends EventEmitter {
 
   async _verifySignature(auditEvent) {
     const { signature, ...eventData } = auditEvent;
+    if (typeof signature !== 'string') return false;
     const expectedSignature = await this._signAuditEvent(eventData);
-    return signature === expectedSignature;
+    const actual = Buffer.from(signature, 'utf8');
+    const expected = Buffer.from(expectedSignature, 'utf8');
+    // timingSafeEqual requires equal lengths; a length mismatch is not secret
+    // (the expected length is fixed by the HMAC algorithm).
+    if (actual.length !== expected.length) return false;
+    return crypto.timingSafeEqual(actual, expected);
   }
 
   async _getLogFilesInRange(startDate, endDate) {

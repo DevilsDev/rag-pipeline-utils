@@ -44,8 +44,13 @@ FROM deps AS build
 # Copy source code
 COPY . .
 
-# Run security audit and tests
-RUN npm run security:audit:critical || true
+# Fail the build on critical vulnerabilities in the runtime dependency tree.
+# Only production dependencies are audited because dev dependencies are
+# pruned below and never ship in the runtime image. (The npm script
+# security:audit:critical swallows failures, so it is not used here.)
+RUN npm audit --omit=dev --audit-level=critical
+
+# Run lint and tests
 RUN npm run lint
 RUN npm test -- --passWithNoTests
 
@@ -118,7 +123,8 @@ ENV RAG_LOG_LEVEL=debug
 USER ragpipeline
 
 # Expose development ports
-EXPOSE 3000 3001 9229
+# The debugger port (9229) is not exposed; see docker-compose.yml.
+EXPOSE 3000 3001
 
 # Development entrypoint
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

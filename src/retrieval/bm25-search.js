@@ -1,7 +1,8 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { tokenize } = require('../evaluate/scoring');
+// Called through the module object so tests can observe tokenization.
+const scoring = require('../evaluate/scoring');
 
 const DEFAULT_CONFIG = { k1: 1.2, b: 0.75 };
 
@@ -11,6 +12,8 @@ class BM25Search extends EventEmitter {
     this.config = { ...DEFAULT_CONFIG, ...options };
     this.invertedIndex = new Map(); // token -> [{docIndex, tf}]
     this.documents = [];
+    /** @type {number[]} token count per document, computed at index time */
+    this.docLengths = [];
     this.avgDocLength = 0;
     this.docCount = 0;
   }
@@ -27,14 +30,16 @@ class BM25Search extends EventEmitter {
     this.documents = documents;
     this.docCount = documents.length;
     this.invertedIndex.clear();
+    this.docLengths = new Array(documents.length);
 
     let totalLength = 0;
 
     for (let docIndex = 0; docIndex < documents.length; docIndex++) {
       const doc = documents[docIndex];
       const text = doc.content || doc.text || '';
-      const tokens = tokenize(text);
+      const tokens = scoring.tokenize(text);
 
+      this.docLengths[docIndex] = tokens.length;
       totalLength += tokens.length;
 
       // Count term frequencies for this document
@@ -73,7 +78,7 @@ class BM25Search extends EventEmitter {
       return [];
     }
 
-    const queryTokens = tokenize(query);
+    const queryTokens = scoring.tokenize(query);
     if (queryTokens.length === 0) {
       return [];
     }
@@ -94,9 +99,9 @@ class BM25Search extends EventEmitter {
       const idf = Math.log((N - df + 0.5) / (df + 0.5) + 1);
 
       for (const { docIndex, tf } of postings) {
-        const doc = this.documents[docIndex];
-        const docText = doc.content || doc.text || '';
-        const docLen = tokenize(docText).length;
+        // Document lengths were computed at index time; scoring never
+        // re-tokenizes documents.
+        const docLen = this.docLengths[docIndex];
 
         const numerator = tf * (k1 + 1);
         const denominator =
@@ -137,6 +142,7 @@ class BM25Search extends EventEmitter {
   clear() {
     this.invertedIndex.clear();
     this.documents = [];
+    this.docLengths = [];
     this.avgDocLength = 0;
     this.docCount = 0;
   }
