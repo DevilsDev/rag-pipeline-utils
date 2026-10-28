@@ -414,18 +414,28 @@ function reportEnvironment(checks, log) {
   );
 }
 
-/** Run fn() with a time limit; the timer never keeps the process alive. */
+/**
+ * Run fn(signal) with a time limit. On timeout the AbortSignal handed to fn
+ * is aborted (with the timeout error as its reason) so a connector that
+ * honours `options.signal` cancels its request instead of leaving a socket
+ * open; the timer is unref'd and always cleared.
+ */
 async function withTimeout(fn, ms, label) {
+  const controller = new AbortController();
   let timer;
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(
-      () => reject(new Error(`${label} timed out after ${ms} ms`)),
-      ms,
-    );
+    timer = setTimeout(() => {
+      const error = new Error(`${label} timed out after ${ms} ms`);
+      controller.abort(error);
+      reject(error);
+    }, ms);
     if (timer && typeof timer.unref === "function") timer.unref();
   });
   try {
-    return await Promise.race([Promise.resolve().then(fn), timeout]);
+    return await Promise.race([
+      Promise.resolve().then(() => fn(controller.signal)),
+      timeout,
+    ]);
   } finally {
     clearTimeout(timer);
   }
@@ -462,7 +472,7 @@ async function testConnections(config, options) {
       const component = components[stage];
       if (stage === "embedder") {
         const vector = await withTimeout(
-          () => embedQuery(component, "test"),
+          (signal) => embedQuery(component, "test", { signal }),
           timeoutMs,
           'embedQuery("test")',
         );
@@ -476,7 +486,7 @@ async function testConnections(config, options) {
         });
       } else {
         const reply = await withTimeout(
-          () => component.generate("Say OK", []),
+          (signal) => component.generate("Say OK", [], { signal }),
           timeoutMs,
           'generate("Say OK")',
         );

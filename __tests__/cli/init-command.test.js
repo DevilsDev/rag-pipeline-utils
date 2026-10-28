@@ -11,6 +11,7 @@ const { buildComponents } = require("../../src/config/component-factory.js");
 const {
   buildInitConfig,
   handleInit,
+  exitAfterConnectionTest,
   TEMPLATES,
 } = require("../../src/cli/handlers/init-handler.js");
 
@@ -170,5 +171,74 @@ describe("handleInit", () => {
 
     expect(process.exitCode).toBe(1);
     expect(fs.existsSync(output)).toBe(false);
+  });
+  test("reports when the connection test built a provider", async () => {
+    const isTTY = process.stdin.isTTY;
+    process.stdin.isTTY = true;
+    const script = { llm: "openai", testConnection: true };
+    const prompt = async ([question]) => ({
+      [question.name]:
+        question.name in script ? script[question.name] : question.default,
+    });
+    const buildComponents = jest.fn(() => ({
+      llm: { generate: async () => "OK" },
+    }));
+    let result;
+    try {
+      result = await handleInit(
+        {},
+        { output },
+        { prompt, env: {}, log: () => {}, buildComponents },
+      );
+    } finally {
+      process.stdin.isTTY = isTTY;
+    }
+
+    expect(buildComponents).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ written: true, connectionTested: true });
+  });
+
+  test("non-interactive init reports no connection test", async () => {
+    const result = await handleInit({}, { output, interactive: false });
+
+    expect(result).toEqual({ written: true, connectionTested: false });
+  });
+});
+
+describe("exitAfterConnectionTest", () => {
+  beforeEach(() => {
+    jest.useRealTimers();
+    process.exitCode = undefined;
+  });
+
+  afterEach(() => {
+    process.exitCode = undefined;
+  });
+
+  test("does nothing when no connection test ran", () => {
+    const exit = jest.fn();
+
+    expect(exitAfterConnectionTest(undefined, { exit })).toBeNull();
+    expect(
+      exitAfterConnectionTest(
+        { written: true, connectionTested: false },
+        { exit },
+      ),
+    ).toBeNull();
+    expect(exit).not.toHaveBeenCalled();
+  });
+
+  test("schedules an unref'd exit with the current exit code", async () => {
+    const exit = jest.fn();
+    process.exitCode = 1;
+
+    const timer = exitAfterConnectionTest(
+      { written: true, connectionTested: true },
+      { exit, graceMs: 5 },
+    );
+
+    expect(timer.hasRef()).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(exit).toHaveBeenCalledWith(1);
   });
 });
