@@ -49,15 +49,9 @@ jobs:
         run: npm run docs:build
 
       # Lighthouse on pull requests: accessibility, best practices and SEO
-      # must score at least 90 (performance warns below 90). The site is
-      # served under /rag-pipeline-utils/ like GitHub Pages; reports are
-      # uploaded as an artifact. See docs-site/lighthouserc.json.
-      - name: Prepare site for Lighthouse
-        if: github.event_name == 'pull_request'
-        run: |
-          mkdir -p docs-site/.lighthouse-site
-          cp -r docs-site/build docs-site/.lighthouse-site/rag-pipeline-utils
-
+      # must score at least 90 (performance warns below 90). Pages are served
+      # by `docusaurus serve`, which resolves routes like GitHub Pages does;
+      # reports are uploaded as an artifact. See docs-site/lighthouserc.json.
       - name: Lighthouse
         if: github.event_name == 'pull_request'
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2

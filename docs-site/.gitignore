@@ -23,6 +23,5 @@ yarn-error.log*
 /docs/Changelog.md
 
 # Lighthouse CI (docs-build.yml)
-/.lighthouse-site
 /.lighthouse-reports
 /.lighthouseci

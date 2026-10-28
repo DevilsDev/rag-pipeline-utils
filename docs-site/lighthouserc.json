@@ -1,23 +1,44 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./docs-site/.lighthouse-site",
       "url": [
-        "http://localhost/rag-pipeline-utils/",
-        "http://localhost/rag-pipeline-utils/docs/Introduction.html",
-        "http://localhost/rag-pipeline-utils/docs/Config-Builder.html"
+        "http://localhost:9017/rag-pipeline-utils/",
+        "http://localhost:9017/rag-pipeline-utils/docs/Introduction",
+        "http://localhost:9017/rag-pipeline-utils/docs/Config-Builder"
       ],
       "numberOfRuns": 3,
       "settings": {
         "preset": "desktop"
-      }
+      },
+      "startServerCommand": "npx docusaurus serve docs-site --port 9017 --no-open",
+      "startServerReadyPattern": "Serving"
     },
     "assert": {
       "assertions": {
-        "categories:accessibility": ["error", { "minScore": 0.9 }],
-        "categories:best-practices": ["error", { "minScore": 0.9 }],
-        "categories:seo": ["error", { "minScore": 0.9 }],
-        "categories:performance": ["warn", { "minScore": 0.9 }]
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:best-practices": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:seo": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:performance": [
+          "warn",
+          {
+            "minScore": 0.9
+          }
+        ]
       }
     },
     "upload": {
