@@ -119,6 +119,27 @@ describe("JWT Configuration", () => {
       expect(config.maxTokenAge).toBe(7200);
     });
 
+    it("should honour an explicit clock tolerance of 0", () => {
+      process.env.JWT_CLOCK_TOLERANCE = "0";
+      process.env.JWT_NBF_TOLERANCE = "0";
+      process.env.JWT_SECRET = crypto.randomBytes(64).toString("hex");
+
+      const config = loadJWTConfig();
+
+      expect(config.clockTolerance).toBe(0);
+      expect(config.notBeforeTolerance).toBe(0);
+    });
+
+    it("passes singleUseTokens/maxTrackedJtis overrides through createJWTConfig", () => {
+      process.env.JWT_SECRET = crypto.randomBytes(64).toString("hex");
+      const config = createJWTConfig({
+        singleUseTokens: false,
+        maxTrackedJtis: 50,
+      });
+      expect(config.singleUseTokens).toBe(false);
+      expect(config.maxTrackedJtis).toBe(50);
+    });
+
     it("should load security options from environment", () => {
       process.env.JWT_REQUIRE_JTI = "false";
       process.env.JWT_REQUIRE_SUB = "false";
