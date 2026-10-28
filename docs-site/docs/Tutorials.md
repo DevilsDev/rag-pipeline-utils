@@ -107,26 +107,24 @@ npx rag-pipeline doctor --category configuration plugins
 
 ---
 
-## 6. Run All Tests + Coverage
+## 6. Run the Project's Checks (Contributors)
+
+In a clone of the repository:
 
 ```bash
-npm run ci
+npm run lint          # ESLint
+npm run format:check  # Prettier
+npm test              # Jest (parallel); npm run test:serial runs in band
+npm run smoke:pack    # pack the tarball and import it in a clean project
 ```
-
-This runs:
-
-- Linting
-- Fixture validation
-- Unit/integration tests
-- Coverage reporting
 
 ---
 
 ## Next Steps
 
-- Explore `/src/core/plugin-registry.js` for plugin orchestration
-- Browse `/scripts/` for CI and release utilities
-- View `/__tests__/` for end-to-end RAG validation flows
+- Explore `src/core/plugin-registry.js` for plugin registration
+- Browse `scripts/` for build and release utilities
+- View `__tests__/` for end-to-end RAG validation flows
 
 ---
 

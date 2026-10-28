@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to **@DevilsDev/rag-pipeline-utils**, a production-ready, modular Node.js toolkit for building scalable, enterprise-grade Retrieval-Augmented Generation (RAG) systems. This comprehensive library provides everything you need to create sophisticated RAG pipelines with pluggable components, streaming support, and built-in evaluation capabilities.
+Welcome to **@devilsdev/rag-pipeline-utils**, a modular Node.js toolkit for building Retrieval-Augmented Generation (RAG) systems. It provides composable pipelines with pluggable components, streaming, cancellation, citations, guardrails and built-in evaluation.
 
 ---
 
@@ -32,35 +32,39 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ---
 
-## Why Choose @DevilsDev/rag-pipeline-utils?
+## Why Choose @devilsdev/rag-pipeline-utils?
 
-### **Enterprise-Grade Architecture**
+### **Composable Pipeline**
 
-- **Dependency Injection Container**: IoC pattern with singleton/factory support for modular, testable code
-- **SLO Monitoring System**: Built-in Service Level Objectives tracking with error budgets and alerting
-- **Semantic Release Automation**: Automated versioning, changelog generation, and NPM publishing
-- **External API Mocking**: Deterministic test infrastructure with network simulation for reliable CI/CD
-- **Production Observability**: Structured logging with correlation IDs and comprehensive metrics
+- **`createRagPipeline`**: embed, retrieve, filter, rerank and generate with any components that implement the stage contracts
+- **Cancellation**: `options.signal` (an `AbortSignal`) and `options.timeout` cancel work in every built-in connector and reranker
+- **Streaming**: token streams, with citations and evaluation delivered in the final chunk
+- **Provider connectors**: OpenAI, Anthropic, Cohere and Ollama, plus an offline TF-IDF `LocalEmbedder`, `MemoryRetriever` and the persistent `FileVectorStore`
 
-### **Advanced AI Capabilities**
+### **Quality and Safety**
 
-- **Experimental AI modules**: multi-modal processing, federated learning, adaptive retrieval and a model training orchestrator are simulations, exported from `@devilsdev/rag-pipeline-utils/experimental`. See [Experimental modules](./Experimental.md).
-- **Intelligent Reranking**: Context-aware reranking with multiple scoring algorithms
+- **Evaluation**: faithfulness, answer relevance, context precision, context recall (with a reference answer) and groundedness via `PipelineEvaluator`
+- **Citations**: per-sentence source attribution and hallucination detection, including a numeric-consistency check
+- **Guardrails**: pre-retrieval injection detection, retrieval filtering (ACL, relevance, freshness, optional injection scan) and post-generation checks
+- **Reranking**: scoring, embedding, LLM and cascade rerankers
 
-### **Developer Experience Excellence**
+### **Developer Experience**
 
-- **CLI**: `init`, `ingest`, `query`, `serve`, `validate` and `doctor` against a local file-backed index
-- **Streaming Evaluation**: Real-time dashboard with live metrics and performance monitoring
-- **Configuration Schema**: Validated `.ragrc.json` with IntelliSense and error checking
-- **Hot Module Reloading**: Dynamic plugin updates without pipeline restarts
+- **CLI**: `init`, `ingest`, `query`, `run`, `serve`, `validate`, `doctor`, `hub` and `ai` against a local file-backed index
+- **Configuration Schema**: validated `.ragrc.json`
+- **Hot Reload**: `HotReloadManager` and `DevServer` for local development
+- **TypeScript**: declarations for every runtime export
 
-### **Production Monitoring & Analytics**
+### **Observability**
 
-- **SLO Dashboard**: Real-time service health with error budget tracking and alerting
-- **Performance Profiling**: Built-in performance monitoring with bottleneck identification
-- **Audit Logging**: Comprehensive security and compliance logging for enterprise deployments
-- **Metrics Collection**: Prometheus-compatible metrics with Grafana dashboard templates
-- **Distributed Tracing**: Request correlation across microservices and external APIs
+- **Structured logging** (pino), in-process metrics and `ExecutionTracer` run traces
+- **Cost tracking**: `CostCalculator`, `CostTracker`, `TokenBudget` with pricing provenance (`PRICING_METADATA`)
+- **Audit logging**: `AuditLogger` with optional field encryption and HMAC integrity checks
+- **Dashboards**: self-contained HTML reports from `MetricsAggregator` and `DashboardGenerator`
+
+### **Experimental Modules**
+
+Multi-modal processing, federated learning, adaptive retrieval, model training, SSO, multi-tenancy, data governance, plugin sandboxing and plugin certification classes are simulated or incomplete. They are exported from `@devilsdev/rag-pipeline-utils/experimental`. See [Experimental modules](./Experimental.md).
 
 ---
 
@@ -89,82 +93,57 @@ graph TD
 
 ### Core Components
 
-#### **Loader Plugins**
+Each stage is a plugin that implements one contract method: loader `load()`, embedder `embed()` (optionally `embedQuery()`), retriever `store()` and `retrieve()`, llm `generate()` (optionally `generateStream()`), reranker `rerank()`. Built-in implementations:
 
-Handle document ingestion and preprocessing:
+| Stage     | Library classes                                                              | `.ragrc.json` names (CLI)             |
+| --------- | ---------------------------------------------------------------------------- | ------------------------------------- |
+| Loader    | (bring your own)                                                             | `auto` (.md, .html, .csv, .txt)       |
+| Embedder  | `LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`     | `local`, `openai`, `ollama`, `cohere` |
+| Retriever | `MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`    | `memory`, `file-store`                |
+| LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                   | `openai`, `anthropic`, `ollama`       |
+| Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector` | `scoring`                             |
 
-- `pdf-loader`: Extract text from PDF documents
-- `markdown-loader`: Process Markdown files with metadata
-- `html-loader`: Parse HTML content and extract text
-- `docx-loader`: Handle Microsoft Word documents
-- `csv-loader`: Process structured CSV data
-
-#### **Embedder Plugins**
-
-Convert text into vector representations:
-
-- `openai-embedder`: Use OpenAI's text-embedding models
-- `cohere-embedder`: Leverage Cohere's embedding API
-- `huggingface-embedder`: Local embeddings via Hugging Face
-- `sentence-transformers`: High-performance local embeddings
-
-#### **Retriever Plugins**
-
-Manage vector storage and similarity search:
-
-- `pinecone-retriever`: Cloud-native vector database
-- `chroma-retriever`: Open-source vector store
-- `weaviate-retriever`: GraphQL-based vector database
-- `qdrant-retriever`: High-performance vector search engine
-
-#### **LLM Plugins**
-
-Generate responses using language models:
-
-- `openai-llm`: GPT-3.5, GPT-4, and GPT-4 Turbo
-- `anthropic-llm`: Claude models with large context windows
-- `ollama-llm`: Local LLM execution with Ollama
-- `azure-openai-llm`: Enterprise Azure OpenAI integration
+Hosted vector databases (Pinecone, Chroma, Weaviate, Qdrant and others) are not built in; connect them with a custom retriever plugin (see [Plugins](./Plugins.md)).
 
 ---
 
 ## Quick Start Example
 
-Here's a complete example showing how to set up and use a RAG pipeline:
+This example runs fully offline with the TF-IDF `LocalEmbedder`. Swap in `OpenAIConnector`, `AnthropicConnector` or `OllamaConnector` for real embeddings and generation.
 
 ```javascript
-import { createRagPipeline } from "@DevilsDev/rag-pipeline-utils";
+const {
+  createRagPipeline,
+  LocalEmbedder,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
 
-// Create a pipeline with your preferred components
-const pipeline = createRagPipeline({
-  loader: "markdown",
-  embedder: "openai",
-  retriever: "pinecone",
-  llm: "openai-gpt-4",
-  useReranker: true,
-  config: {
-    openai: {
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "text-embedding-3-large",
-    },
-    pinecone: {
-      apiKey: process.env.PINECONE_API_KEY,
-      environment: "us-west1-gcp",
-      indexName: "rag-documents",
-    },
+const docs = [
+  {
+    id: "1",
+    content: "Plugins implement one stage method, such as generate().",
   },
-});
+  { id: "2", content: "Register plugins on pluginRegistry with metadata." },
+];
 
-// Documents are loaded via the loader plugin configured in createRagPipeline()
+// Index the documents
+const embedder = new LocalEmbedder();
+embedder.train(docs);
+const retriever = new MemoryRetriever();
+await retriever.store(
+  docs.map((d) => ({ ...d, vector: embedder.embed(d.content) })),
+);
 
-// Query the pipeline
+// Pass the embedder so each query is embedded before retrieval
+const pipeline = createRagPipeline({ embedder, retriever /*, llm */ });
+
 const response = await pipeline.run({
   query: "How do I implement custom plugins?",
 });
 
 console.log("Success:", response.success);
-console.log("Query:", response.query);
 console.log("Results:", response.results.length);
+console.log("Answer:", response.answer); // null without an llm
 ```
 
 ### CLI Usage
@@ -195,40 +174,26 @@ Evaluation and dashboards are library APIs (`evaluateRagDataset`,
 
 ## Project Status & Roadmap
 
-### **Current Status: Enterprise Ready v2.4.0 — 104 Exports**
+### **Supported Features**
 
-**Production Features:**
+- **Core pipeline**: `createRagPipeline` with cancellation, timeouts and streaming
+- **Provider connectors**: OpenAI, Anthropic, Cohere and Ollama, plus `LocalEmbedder`
+- **Storage**: `MemoryRetriever` and the JSON-file `FileVectorStore`
+- **Citation & Grounding**: source attribution, hallucination detection, numeric consistency
+- **Evaluation**: `PipelineEvaluator`, `evaluateRagDataset` and the `compute*` metric functions
+- **3-Layer Guardrails**: pre-retrieval, retrieval and post-generation guards via `GuardrailsPipeline`
+- **Hybrid Retrieval (BM25 + RRF)**: combined sparse and dense retrieval with reciprocal rank fusion
+- **Agentic RAG**: `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`
+- **GraphRAG**: knowledge graph construction and graph-based retrieval
+- **Streaming Embeddings**: `StreamingEmbedder` and `createEmbeddingStream` for large corpora
+- **Cost Management**: token and cost tracking with documented pricing provenance
+- **Dashboards**: HTML and text reports from collected metrics
+- **MCP Integration**: `MCPServer` and `MCPToolBuilder`
+- **Developer Tools**: CLI with a local index, `doctor` diagnostics, plugin install and certification checks, and a local HTTP dev server
 
-- **Enterprise Architecture**: Dependency injection, SLO monitoring, semantic release automation
-- **Experimental** (`/experimental` entry): simulated AI, SSO, multi-tenancy and data-governance modules
-- **Developer Tools**: CLI with a local index, doctor diagnostics and a local HTTP dev server
-- **Observability**: Structured logging, performance profiling, distributed tracing
-- **Testing Infrastructure**: External API mocking, deterministic test environments
-- **Security & Compliance**: Audit logging, vulnerability scanning, enterprise authentication
-- **Deployment**: Kubernetes templates, Helm charts, Prometheus/Grafana monitoring
-- **GraphRAG Implementation**: Knowledge graph-based retrieval with entity linking
-- **Agentic Workflows**: Tool calling and autonomous agent capabilities
-- **Citation & Grounding**: Source attribution and factual grounding for generated responses
-- **3-Layer Guardrails**: Input validation, output filtering, and content safety checks
-- **Hybrid Retrieval (BM25 + RRF)**: Combined sparse and dense retrieval with reciprocal rank fusion
-- **Streaming Embeddings**: Real-time streaming embedding generation for large document sets
-- **Cost Management**: Token usage tracking and cost optimization across providers
-- **Performance Dashboard**: Real-time metrics visualization and pipeline monitoring
-- **MCP Integration**: Model Context Protocol support for tool-augmented generation
-- **Provider Connectors**: OpenAI, Anthropic, Cohere, and Ollama provider integrations
-- **Quick Start Templates**: Pre-configured project templates for common RAG use cases
+### **Experimental**
 
-**Active Development:**
-
-- **Advanced Caching**: Multi-tier caching with intelligent invalidation strategies
-- **Fine-tuning Integration**: Custom model training with pipeline-specific optimization
-
-**Enterprise Roadmap:**
-
-- **Multi-tenant Architecture**: Isolated workspaces with RBAC and resource quotas
-- **Advanced Security**: Zero-trust networking, encryption at rest, compliance reporting
-- **Global Distribution**: Edge deployment with regional data residency
-- **AI Governance**: Model versioning, A/B testing, bias detection and mitigation
+SSO, multi-tenancy, data governance, model training, federated learning, multi-modal processing, adaptive retrieval, plugin sandboxing and `PluginCertification` are simulated or incomplete and live in the `/experimental` entry. Do not rely on them for authentication, tenant isolation, compliance or plugin isolation. See [Experimental modules](./Experimental.md).
 
 ---
 
@@ -236,7 +201,7 @@ Evaluation and dashboards are library APIs (`evaluateRagDataset`,
 
 - **GitHub Repository**: [DevilsDev/rag-pipeline-utils](https://github.com/DevilsDev/rag-pipeline-utils)
 - **Documentation**: [https://devilsdev.github.io/rag-pipeline-utils](https://devilsdev.github.io/rag-pipeline-utils)
-- **NPM Package**: [@DevilsDev/rag-pipeline-utils](https://www.npmjs.com/package/@DevilsDev/rag-pipeline-utils)
+- **NPM Package**: [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
 - **Issues & Bug Reports**: [GitHub Issues](https://github.com/DevilsDev/rag-pipeline-utils/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions)
 
@@ -255,7 +220,7 @@ We welcome contributions! See our [Contributing Guide](https://github.com/Devils
 _Ready to build powerful RAG applications? Continue to the [Architecture](./Architecture.md) guide to understand the system design, or jump to [Usage](./Usage.md) for hands-on examples._
 
 - Compatible with Node.js `>=18`
-- Published to npm under `DevilsDev`
+- Published to npm as `@devilsdev/rag-pipeline-utils`
 
 ---
 

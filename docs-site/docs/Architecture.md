@@ -1,12 +1,10 @@
 # Architecture
 
-This comprehensive guide outlines the internal architecture of @DevilsDev/rag-pipeline-utils, emphasizing enterprise-grade modularity, plugin design patterns, and SOLID-compliant structure. Understanding this architecture is crucial for extending the system, creating custom plugins, and optimizing performance.
+This guide outlines the internal architecture of @devilsdev/rag-pipeline-utils: the pipeline factory, the plugin contracts and registry, the guardrails, and how the CLI builds on them. Understanding it helps when you extend the system, write custom plugins or tune performance.
 
 ---
 
 ## Core Design Philosophy
-
-The architecture is built on proven software engineering principles that ensure scalability, maintainability, and extensibility:
 
 ### **SOLID Principles Implementation**
 
@@ -20,34 +18,32 @@ The architecture is built on proven software engineering principles that ensure 
 - **Open/Closed Principle (OCP)**: System is open for extension but closed for modification
 
   - New plugins can be added without changing core code
-  - Plugin interfaces define stable contracts
-  - Middleware can be injected without core changes
+  - Plugin contracts (`contracts/*.json`) define the required methods per stage
+  - Cross-cutting behaviour wraps the pipeline (for example `GuardrailsPipeline`, `CostTracker.wrap()`, `ExecutionTracer.trace()`) instead of changing it
 
 - **Liskov Substitution Principle (LSP)**: Any plugin can be replaced with another of the same type
 
-  - All PDF loaders implement the same interface
-  - OpenAI embedder can be swapped with Cohere embedder
-  - Vector stores are interchangeable
+  - An OpenAI embedder can be swapped for the Cohere or local TF-IDF embedder
+  - Retrievers (`MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, custom stores) are interchangeable as long as they implement `retrieve()`
 
-- **Interface Segregation Principle (ISP)**: Plugins only depend on interfaces they use
+- **Interface Segregation Principle (ISP)**: Plugins only implement the methods of their stage
 
   - Loaders don't depend on LLM interfaces
   - Embedders don't need retriever methods
-  - Clean separation of concerns
 
-- **Dependency Inversion Principle (DIP)**: High-level modules don't depend on low-level modules
-  - Pipeline depends on plugin abstractions, not implementations
-  - Configuration drives dependency injection
+- **Dependency Inversion Principle (DIP)**: The pipeline depends on stage contracts, not implementations
+  - Components are passed in as instances or resolved by name from a registry
+  - Configuration (`.ragrc.json`) drives which components the CLI builds
   - Easy testing with mock implementations
 
 ### **Additional Architectural Principles**
 
-- **Plugin-Based Architecture**: Complete modularity with hot-swappable components
-- **Streaming-First Design**: Async flows with real-time, token-by-token output
-- **Configuration-Driven**: Environment-safe config via `.ragrc.json` files
-- **Event-Driven Processing**: Comprehensive event system for monitoring and hooks
-- **Fail-Fast Validation**: Early error detection with detailed error messages
-- **Observability Built-In**: Comprehensive logging, tracing, and metrics collection
+- **Plugin-Based Architecture**: Every stage is a replaceable component
+- **Cancellable by design**: Every run has an `AbortSignal` that reaches every component call
+- **Streaming support**: `run({ options: { stream: true } })` returns an async iterable of tokens
+- **Configuration-Driven CLI**: `.ragrc.json` pipeline entries resolve to built-in components or custom plugin modules
+- **Fail-Fast Validation**: Plugin contracts and configuration are validated early with detailed error messages
+- **Results, not exceptions**: `run()` resolves `{ success: false, error }` on failure, timeout or abort
 
 ---
 
@@ -58,54 +54,52 @@ The architecture is built on proven software engineering principles that ensure 
 ```mermaid
 graph TB
     subgraph "Application Layer"
-        CLI[CLI Interface]
+        CLI[CLI: rag-pipeline]
         API[Programmatic API]
-        Dashboard[Evaluation Dashboard]
+        Serve[serve / DevServer]
     end
 
     subgraph "Core Pipeline"
-        Factory[Pipeline Factory]
-        Registry[Plugin Registry]
-        Pipeline[RAG Pipeline]
-        Middleware[Middleware Stack]
+        Factory[createRagPipeline]
+        Registry[pluginRegistry]
+        Guardrails[GuardrailsPipeline]
     end
 
-    subgraph "Plugin Ecosystem"
-        Loaders[Document Loaders]
-        Embedders[Embedding Models]
-        Retrievers[Vector Stores]
-        LLMs[Language Models]
-        Rerankers[Context Rerankers]
+    subgraph "Components"
+        Loaders[Loaders]
+        Embedders[Embedders]
+        Retrievers[Retrievers / Vector Stores]
+        Rerankers[Rerankers]
+        LLMs[LLMs]
     end
 
-    subgraph "Infrastructure"
-        Config[Configuration Manager]
-        Logger[Event Logger]
-        Metrics[Metrics Collector]
-        Cache[Caching Layer]
+    subgraph "Quality and Observability"
+        Citations[CitationTracker]
+        Evaluator[PipelineEvaluator]
+        Tracing[ExecutionTracer / metrics]
     end
 
     CLI --> Factory
     API --> Factory
-    Dashboard --> API
+    API --> Guardrails
+    Serve --> Factory
+    Guardrails --> Factory
 
     Factory --> Registry
-    Factory --> Pipeline
-    Pipeline --> Middleware
-
     Registry --> Loaders
     Registry --> Embedders
     Registry --> Retrievers
-    Registry --> LLMs
     Registry --> Rerankers
+    Registry --> LLMs
 
-    Pipeline --> Config
-    Pipeline --> Logger
-    Pipeline --> Metrics
-    Pipeline --> Cache
+    Factory --> Citations
+    Factory --> Evaluator
+    Tracing --> Factory
 ```
 
 ### **Data Flow Architecture**
+
+The library pipeline (`createRagPipeline`) handles the query path. Ingestion is done by the CLI (`rag-pipeline ingest`) or by your own code calling the embedder and the retriever's `store()`.
 
 ```mermaid
 sequenceDiagram
@@ -114,670 +108,205 @@ sequenceDiagram
     participant L as Loader
     participant E as Embedder
     participant R as Retriever
-    participant LLM as Language Model
     participant Re as Reranker
+    participant LLM as Language Model
 
-    Note over U,Re: Document Ingestion Phase
-    U->>P: ingest(documents)
-    P->>L: load(document)
-    L->>P: chunks[]
-    P->>E: embed(chunks)
-    E->>P: embeddings[]
-    P->>R: store(embeddings)
-    R->>P: success
+    Note over U,LLM: Ingestion (CLI ingest or your code)
+    U->>L: load(path)
+    L->>U: chunks[]
+    U->>E: embed(chunk)
+    E->>U: vector
+    U->>R: store([{ id, vector, content, metadata }])
 
-    Note over U,Re: Query Processing Phase
-    U->>P: query(prompt)
-    P->>E: embed(prompt)
+    Note over U,LLM: Query: run({ query, options })
+    U->>P: run({ query, options })
+    P->>E: embedQuery(query, { signal })
     E->>P: queryVector
-    P->>R: search(queryVector)
-    R->>P: candidates[]
-    P->>Re: rerank(candidates, prompt)
-    Re->>P: rankedContext[]
-    P->>LLM: generate(prompt, context)
-    LLM->>P: response
-    P->>U: answer + metadata
+    P->>R: retrieve({ query, queryVector, topK, signal })
+    R->>P: docs[]
+    P->>P: options.filterResults(docs)
+    P->>Re: rerank(query, docs, { topK, signal })
+    Re->>P: ranked docs[]
+    P->>LLM: generate(query, docs, { ...options, signal })
+    LLM->>P: answer
+    P->>U: { success, query, results, answer, citations?, evaluation? }
 ```
 
 ---
 
-## Plugin System Architecture
+## Plugin System
 
-### **Plugin Registry Implementation**
+### **Plugin Registry**
 
-The `PluginRegistry` is the heart of the plugin system, managing plugin lifecycle and dependency injection:
+`pluginRegistry` (exported singleton) maps a stage and a name to a component, so pipelines and `.ragrc.json` files can refer to plugins by name:
 
-```typescript
-// Core plugin registry structure
-class PluginRegistry {
-  private plugins: Map<string, Map<string, Plugin>> = new Map();
-  private contracts: Map<string, PluginContract> = new Map();
+```javascript
+import {
+  pluginRegistry,
+  createRagPipeline,
+} from "@devilsdev/rag-pipeline-utils";
 
-  register<T extends Plugin>(
-    type: PluginType,
-    name: string,
-    plugin: T,
-    metadata?: PluginMetadata,
-  ): void {
-    // Validate plugin against contract
-    this.validateContract(type, plugin);
+const myEmbedder = {
+  metadata: { name: "my-embedder", version: "1.0.0", type: "embedder" },
+  async embed(text, { signal } = {}) {
+    // return number[]
+  },
+};
 
-    // Register plugin with metadata
-    if (!this.plugins.has(type)) {
-      this.plugins.set(type, new Map());
-    }
-    this.plugins.get(type)!.set(name, plugin);
+await pluginRegistry.register("embedder", "my-embedder", myEmbedder);
 
-    // Emit registration event
-    this.eventEmitter.emit("plugin:registered", {
-      type,
-      name,
-      plugin,
-      metadata,
-    });
-  }
-
-  get<T extends Plugin>(type: PluginType, name: string): T {
-    const typePlugins = this.plugins.get(type);
-    if (!typePlugins?.has(name)) {
-      throw new PluginNotFoundError(`Plugin ${type}:${name} not found`);
-    }
-    return typePlugins.get(name) as T;
-  }
-
-  list(type?: PluginType): PluginInfo[] {
-    // Return available plugins with metadata
-  }
-}
+const pipeline = createRagPipeline({
+  embedder: "my-embedder", // resolved from pluginRegistry
+  retriever,
+  llm,
+});
 ```
+
+- `register(category, name, impl, manifest?, { content }?)` is asynchronous. Categories are `loader`, `embedder`, `retriever`, `llm` and `reranker`.
+- The implementation must carry `metadata: { name, version, type }` (with `type` equal to the category) and the methods of the stage contract, otherwise registration throws.
+- If a signed manifest is supplied, its Ed25519 signature (and `contentDigest`, if present) is verified before registration. Verification is on and fails closed when `NODE_ENV=production`; the trust store is empty by default. See the [Security guide](./Security.md#plugin-signature-verification).
+- `get(category, name)` and `list(category)` look plugins up.
 
 ### **Plugin Contract System**
 
-Each plugin type implements a strict contract interface:
+Each stage has a JSON contract under `contracts/` listing its required methods:
 
-```typescript
-// Loader Plugin Contract
-interface LoaderPlugin {
-  readonly metadata: PluginMetadata;
+| Stage       | Required methods        | Called by the pipeline as                                                                                  |
+| ----------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `loader`    | `load()`                | `loader.load()` at the start of a run (if a loader is configured)                                          |
+| `embedder`  | `embed()`               | `embedder.embedQuery(query, { signal })` if present, else `embedder.embed(query, { signal })`              |
+| `retriever` | `store()`, `retrieve()` | `retriever.retrieve({ query, queryVector, topK, signal })`                                                 |
+| `reranker`  | `rerank()`              | `reranker.rerank(query, docs, { topK, signal })`                                                           |
+| `llm`       | `generate()`            | `llm.generate(query, docs, { ...options, signal })`; `generateStream()` is used for streaming when present |
 
-  load(source: string | Buffer, options?: LoaderOptions): Promise<Document[]>;
-  supports(mimeType: string): boolean;
-  validate(source: string | Buffer): Promise<ValidationResult>;
-}
+Components that ignore `signal` still work: on abort the run settles anyway and no later stage starts.
 
-// Embedder Plugin Contract
-interface EmbedderPlugin {
-  readonly metadata: PluginMetadata;
+### **Configuration-driven components (CLI)**
 
-  embed(texts: string[], options?: EmbedderOptions): Promise<Embedding[]>;
-  embedSingle(text: string, options?: EmbedderOptions): Promise<Embedding>;
-  getDimensions(): number;
-  getMaxTokens(): number;
-}
-
-// Retriever Plugin Contract
-interface RetrieverPlugin {
-  readonly metadata: PluginMetadata;
-
-  store(embeddings: EmbeddingDocument[]): Promise<void>;
-  search(query: Embedding, options?: SearchOptions): Promise<SearchResult[]>;
-  delete(ids: string[]): Promise<void>;
-  getStats(): Promise<IndexStats>;
-}
-
-// LLM Plugin Contract
-interface LLMPlugin {
-  readonly metadata: PluginMetadata;
-
-  generate(
-    prompt: string,
-    context?: string[],
-    options?: LLMOptions,
-  ): AsyncIterable<string>;
-  generateSync(
-    prompt: string,
-    context?: string[],
-    options?: LLMOptions,
-  ): Promise<string>;
-  getTokenCount(text: string): number;
-  getMaxContextLength(): number;
-}
-```
-
-### **Plugin Metadata System**
-
-```typescript
-interface PluginMetadata {
-  name: string;
-  version: string;
-  description: string;
-  author: string;
-  license: string;
-  homepage?: string;
-  repository?: string;
-  keywords: string[];
-
-  // Plugin-specific metadata
-  capabilities: string[];
-  requirements: {
-    node: string;
-    dependencies?: Record<string, string>;
-    environment?: string[];
-  };
-
-  // Performance characteristics
-  performance: {
-    throughput?: string;
-    latency?: string;
-    memoryUsage?: string;
-  };
-
-  // Configuration schema
-  configSchema?: JSONSchema;
-}
-```
+The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name resolves to a built-in component (for example `local`, `openai`, `ollama`, `cohere` embedders; `file-store` and `memory` retrievers; `openai`, `anthropic`, `ollama` LLMs; `scoring` reranker), to a custom module listed under `plugins`, or to a plugin registered on `pluginRegistry`. See the [CLI reference](./CLI.md).
 
 ---
 
 ## Pipeline Factory Pattern
 
-The `createRagPipeline` function implements the Factory pattern to create configured pipeline instances:
+`createRagPipeline({ loader, embedder, retriever, llm, reranker, registry })` returns `{ run, cleanup }`. Each component may be an instance or a name resolved from `registry` (default: the exported `pluginRegistry`).
 
-```typescript
-export function createRagPipeline(config: PipelineConfig): RagPipeline {
-  // Initialize plugin registry
-  const registry = new PluginRegistry();
+`run({ query, queryVector, options })` performs, in order:
 
-  // Register built-in plugins
-  registerBuiltinPlugins(registry);
+1. `loader.load()` if a loader is configured.
+2. Query embedding with the embedder, unless `queryVector` is given.
+3. `retriever.retrieve({ query, queryVector, topK, signal })` (`topK` defaults to 3).
+4. `options.filterResults(docs)`, a hook that runs before anything downstream (including the LLM) sees the documents. `GuardrailsPipeline` uses it for the retrieval guard.
+5. `reranker.rerank(query, docs, { topK, signal })` if a reranker is configured.
+6. `llm.generate(query, docs, { ...options, signal })`. Without an llm the pipeline is retrieval-only and returns `answer: null`.
+7. Citations (`options.citations`) and evaluation (`options.evaluate`, with `referenceAnswer` for context recall).
 
-  // Load custom plugins from config
-  if (config.plugins) {
-    await loadCustomPlugins(registry, config.plugins);
-  }
-
-  // Resolve plugin instances
-  const loader = registry.get("loader", config.loader);
-  const embedder = registry.get("embedder", config.embedder);
-  const retriever = registry.get("retriever", config.retriever);
-  const llm = registry.get("llm", config.llm);
-  const reranker = config.useReranker
-    ? registry.get("reranker", config.reranker || "default")
-    : null;
-
-  // Create middleware stack
-  const middleware = createMiddlewareStack(config.middleware || []);
-
-  // Initialize pipeline with dependencies
-  return new RagPipeline({
-    loader,
-    embedder,
-    retriever,
-    llm,
-    reranker,
-    middleware,
-    config: config.pipelineConfig || {},
-    eventEmitter: new EventEmitter(),
-    logger: createLogger(config.logging || {}),
-    metrics: new MetricsCollector(config.metrics || {}),
-  });
-}
-```
+Run options also include `timeout` (ms, resolves `{ success: false, error: 'Execution timeout' }`), `signal` (caller cancellation, resolves `'Execution aborted'`) and `stream`. With `stream` plus `citations` or `evaluate`, the stream ends with one `{ token: '', done: true, citations, evaluation }` chunk.
 
 ---
 
-## Middleware Architecture
+## Cross-cutting Concerns
 
-The middleware system allows for cross-cutting concerns like retry logic, caching, and monitoring:
+There is no middleware stack. Cross-cutting behaviour is added by wrapping the pipeline or the components:
 
-```typescript
-// Middleware interface
-interface Middleware {
-  name: string;
-  priority: number;
-
-  beforeLoad?(context: LoadContext): Promise<LoadContext>;
-  afterLoad?(context: LoadContext, result: Document[]): Promise<Document[]>;
-
-  beforeEmbed?(context: EmbedContext): Promise<EmbedContext>;
-  afterEmbed?(context: EmbedContext, result: Embedding[]): Promise<Embedding[]>;
-
-  beforeRetrieve?(context: RetrieveContext): Promise<RetrieveContext>;
-  afterRetrieve?(
-    context: RetrieveContext,
-    result: SearchResult[],
-  ): Promise<SearchResult[]>;
-
-  beforeGenerate?(context: GenerateContext): Promise<GenerateContext>;
-  afterGenerate?(context: GenerateContext, result: string): Promise<string>;
-
-  onError?(error: Error, context: any): Promise<void>;
-}
-
-// Built-in middleware examples
-class RetryMiddleware implements Middleware {
-  constructor(private options: RetryOptions) {}
-
-  async beforeGenerate(context: GenerateContext): Promise<GenerateContext> {
-    context.retryCount = 0;
-    context.maxRetries = this.options.maxRetries;
-    return context;
-  }
-
-  async onError(error: Error, context: any): Promise<void> {
-    if (context.retryCount < context.maxRetries) {
-      context.retryCount++;
-      // Implement exponential backoff
-      await this.delay(Math.pow(2, context.retryCount) * 1000);
-      throw new RetryableError(error);
-    }
-    throw error;
-  }
-}
-
-class CachingMiddleware implements Middleware {
-  constructor(private cache: Cache) {}
-
-  async beforeEmbed(context: EmbedContext): Promise<EmbedContext> {
-    const cacheKey = this.generateCacheKey(context.texts);
-    const cached = await this.cache.get(cacheKey);
-    if (cached) {
-      context.cachedResult = cached;
-    }
-    return context;
-  }
-
-  async afterEmbed(
-    context: EmbedContext,
-    result: Embedding[],
-  ): Promise<Embedding[]> {
-    if (!context.cachedResult) {
-      const cacheKey = this.generateCacheKey(context.texts);
-      await this.cache.set(cacheKey, result, { ttl: 3600 });
-    }
-    return context.cachedResult || result;
-  }
-}
-```
+- **Guardrails**: `GuardrailsPipeline` wraps any object with a `run()` method (see [Guardrails](#guardrails)).
+- **Retries**: built-in connectors retry transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`. `retry` / `withRetry` are exported for your own components.
+- **Cost**: `CostTracker` wraps a pipeline and records token usage and cost; `CostCalculator` exposes pricing provenance (`PRICING_METADATA`).
+- **Tracing**: `ExecutionTracer` wraps a pipeline and records per-run traces; `TraceInspector` analyses them.
+- **Caching**: `EmbeddingReranker` keeps an LRU cache of document embeddings (`cacheSize`).
 
 ---
 
 ## Event System & Observability
 
-The architecture includes a comprehensive event system for monitoring, debugging, and analytics:
-
-```typescript
-// Event types emitted by the system
-interface PipelineEvents {
-  "pipeline:created": { config: PipelineConfig };
-  "pipeline:destroyed": { pipelineId: string };
-
-  "document:loading": { source: string; loader: string };
-  "document:loaded": { source: string; chunks: number; duration: number };
-  "document:error": { source: string; error: Error };
-
-  "embedding:started": { texts: number; embedder: string };
-  "embedding:completed": { embeddings: number; duration: number };
-  "embedding:cached": { texts: number; cacheHit: boolean };
-
-  "retrieval:query": { query: string; retriever: string };
-  "retrieval:results": { results: number; duration: number };
-
-  "generation:started": { prompt: string; llm: string };
-  "generation:token": { token: string; position: number };
-  "generation:completed": {
-    response: string;
-    duration: number;
-    tokens: number;
-  };
-
-  "error:handled": { error: Error; context: string; recovered: boolean };
-}
-
-// Event-driven metrics collection
-class MetricsCollector {
-  constructor(private config: MetricsConfig) {
-    this.setupEventListeners();
-  }
-
-  private setupEventListeners(): void {
-    // Track performance metrics
-    this.on("embedding:completed", (event) => {
-      this.histogram("embedding.duration", event.duration);
-      this.counter("embedding.requests").inc();
-    });
-
-    this.on("generation:completed", (event) => {
-      this.histogram("generation.duration", event.duration);
-      this.histogram("generation.tokens", event.tokens);
-      this.counter("generation.requests").inc();
-    });
-
-    // Track error rates
-    this.on("error:handled", (event) => {
-      this.counter("errors.total", {
-        context: event.context,
-        recovered: event.recovered.toString(),
-      }).inc();
-    });
-  }
-}
-```
+Several classes are `EventEmitter`s and report what they do: `PipelineEvaluator` emits `evaluated`, the guards emit `checked` / `filtered`, `GuardrailsPipeline` emits `preRetrieval`, and `DevServer` / `HotReloadManager` emit reload events. The `metrics` export provides `Counter`, `Histogram`, `Gauge`, `MetricsRegistry` and a `pipelineMetrics` instance; `eventLogger` provides `PipelineEventLogger`. `MetricsAggregator` and `DashboardGenerator` turn recorded metrics into a self-contained HTML dashboard. See [Observability](./Observability.md).
 
 ---
 
 ## Security Architecture
 
-Security is built into the architecture at multiple levels:
+### **Plugins run in-process**
 
-### **Plugin Sandboxing**
-
-- Plugins run in isolated contexts with limited system access
-- API key management through secure configuration
-- Input validation and sanitization at plugin boundaries
+Plugins run in the same Node.js process with your permissions; there is no working sandbox (`PluginSandbox` is experimental and non-functional). Trust is established before code runs: signed manifests with a `contentDigest`, and, for `rag-pipeline hub install`, a static security scan and a contract check in a separate process.
 
 ### **Configuration Security**
 
-- Encrypted storage of sensitive configuration data
-- Environment variable injection for secrets
-- Configuration schema validation
+- API keys come from environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY`) or explicit options; a call without a key fails fast with `MISSING_API_KEY`.
+- `.ragrc.json` is validated against a schema; `rag-pipeline validate` and `doctor` report unknown components, missing stages and missing API keys.
+
+### **Untrusted retrieved content**
+
+Built-in LLM connectors put retrieved context in the user message as delimited, untrusted reference data, never in the system role, and tell the model to treat it as data. `RetrievalGuard` can scan retrieved documents for indirect prompt injection (`detectInjection: true`).
 
 ### **Network Security**
 
-- TLS/SSL enforcement for all external API calls
-- Request rate limiting and timeout handling
-- Secure credential rotation support
+- Built-in cloud connectors call HTTPS APIs.
+- `DevServer` / `rag-pipeline serve` bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and require a loopback `Host` header while bound to loopback.
 
 ---
 
-## Enterprise Architecture Components
+## Experimental Modules
 
-### **Dependency Injection Container**
-
-The enterprise-grade dependency injection system provides IoC (Inversion of Control) for modular, testable architecture:
-
-```typescript
-// src/core/dependency-injection.js
-class DependencyContainer {
-  private services: Map<string, ServiceDefinition> = new Map();
-  private instances: Map<string, any> = new Map();
-
-  register<T>(
-    name: string,
-    factory: ServiceFactory<T>,
-    options?: ServiceOptions,
-  ): void {
-    this.services.set(name, {
-      factory,
-      lifecycle: options?.lifecycle || "singleton",
-      dependencies: options?.dependencies || [],
-    });
-  }
-
-  resolve<T>(name: string): T {
-    if (this.instances.has(name)) {
-      return this.instances.get(name);
-    }
-
-    const service = this.services.get(name);
-    if (!service) {
-      throw new ServiceNotFoundError(`Service ${name} not registered`);
-    }
-
-    // Resolve dependencies
-    const dependencies = service.dependencies.map((dep) => this.resolve(dep));
-
-    // Create instance
-    const instance = service.factory(...dependencies);
-
-    if (service.lifecycle === "singleton") {
-      this.instances.set(name, instance);
-    }
-
-    return instance;
-  }
-}
-```
-
-### **SLO Monitoring System**
-
-Built-in Service Level Objectives tracking with error budgets and alerting:
-
-```typescript
-// src/observability/slo-monitor.js
-class SLOMonitor {
-  private slos: Map<string, SLODefinition> = new Map();
-  private measurements: TimeSeriesDB = new TimeSeriesDB();
-
-  defineSLO(name: string, definition: SLODefinition): void {
-    this.slos.set(name, {
-      ...definition,
-      errorBudget: this.calculateErrorBudget(definition),
-    });
-  }
-
-  recordMeasurement(sloName: string, success: boolean, latency?: number): void {
-    const measurement = {
-      timestamp: Date.now(),
-      success,
-      latency,
-      slo: sloName,
-    };
-
-    this.measurements.record(measurement);
-    this.checkSLOViolation(sloName, measurement);
-  }
-
-  getErrorBudgetStatus(sloName: string): ErrorBudgetStatus {
-    const slo = this.slos.get(sloName);
-    const recentMeasurements = this.measurements.getRecent(sloName, slo.window);
-
-    return {
-      remaining: this.calculateRemainingBudget(slo, recentMeasurements),
-      burnRate: this.calculateBurnRate(recentMeasurements),
-      alerting: this.shouldAlert(slo, recentMeasurements),
-    };
-  }
-}
-```
-
-### **External API Mocking Infrastructure**
-
-Deterministic test infrastructure with network simulation for reliable CI/CD:
-
-```typescript
-// __tests__/mocks/external-apis.js
-class ExternalAPIMocker {
-  private mocks: Map<string, MockDefinition> = new Map();
-  private networkSimulator: NetworkSimulator;
-
-  mockAPI(service: string, config: MockConfig): void {
-    this.mocks.set(service, {
-      responses: config.responses,
-      latency: config.latency || { min: 100, max: 500 },
-      errorRate: config.errorRate || 0.05,
-      rateLimiting: config.rateLimiting,
-    });
-  }
-
-  async simulateRequest(
-    service: string,
-    request: APIRequest,
-  ): Promise<APIResponse> {
-    const mock = this.mocks.get(service);
-
-    // Simulate network conditions
-    await this.networkSimulator.delay(mock.latency);
-
-    // Simulate errors
-    if (Math.random() < mock.errorRate) {
-      throw new MockNetworkError("Simulated network failure");
-    }
-
-    // Return mock response
-    return this.generateResponse(mock, request);
-  }
-}
-```
+Some classes are simulations or incomplete: `ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, the SSO providers (`SSOManager`, `SAMLProvider`, `OAuth2Provider`, `OIDCProvider`, `ActiveDirectoryProvider`), `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`. Since 2.5.0 they are exported from `@devilsdev/rag-pipeline-utils/experimental`. Their main-entry exports still work but emit a one-time `DeprecationWarning` and will be removed from the main entry in the next major release. They are not part of the architecture described on this page; see [Experimental](./Experimental.md) for what each one really does.
 
 ---
 
-## Advanced AI Architecture
-
-### **Multi-Modal Processing Engine**
-
-Handle text, images, and structured data in unified pipelines:
-
-```typescript
-// src/ai/multimodal.js
-class MultiModalProcessor {
-  private processors: Map<string, ModalityProcessor> = new Map();
-
-  async process(input: MultiModalInput): Promise<ProcessedContent> {
-    const results = await Promise.all(
-      input.modalities.map(async (modality) => {
-        const processor = this.processors.get(modality.type);
-        return processor.process(modality.content, modality.metadata);
-      }),
-    );
-
-    return this.fuseResults(results, input.fusionStrategy);
-  }
-}
-```
-
-### **Federated Learning Coordinator**
-
-Distributed model training with privacy-preserving aggregation:
-
-```typescript
-// src/ai/federation/federated-learning-coordinator.js
-class FederatedLearningCoordinator {
-  async coordinateTraining(
-    participants: FederatedNode[],
-  ): Promise<GlobalModel> {
-    // Distribute training tasks
-    const localUpdates = await this.distributeTraining(participants);
-
-    // Aggregate updates with differential privacy
-    const aggregatedUpdate = await this.aggregateWithPrivacy(localUpdates);
-
-    // Update global model
-    return this.updateGlobalModel(aggregatedUpdate);
-  }
-}
-```
-
-### **Adaptive Retrieval Engine**
-
-Dynamic retrieval strategies with performance optimization:
-
-```typescript
-// src/ai/retrieval-engine.js
-class AdaptiveRetrievalEngine {
-  async adaptiveRetrieve(
-    query: Query,
-    context: RetrievalContext,
-  ): Promise<RetrievalResult> {
-    // Analyze query complexity
-    const strategy = await this.selectStrategy(query, context);
-
-    // Execute retrieval with chosen strategy
-    const results = await this.executeStrategy(strategy, query);
-
-    // Learn from results for future optimization
-    await this.updateStrategyPerformance(strategy, results);
-
-    return results;
-  }
-}
-```
-
----
-
-## Enhanced Developer Tools
+## Developer Tools
 
 ### **CLI Doctor Diagnostics**
 
-Comprehensive system health checking and troubleshooting:
+`rag-pipeline doctor` checks configuration, plugins, dependencies, performance, security and environment, and exits 1 on errors. `--auto-fix` fixes what it can (npm install, file permissions) and `--report <path>` saves a JSON report.
 
-```typescript
-// src/cli/doctor-command.js
-class DoctorCommand {
-  async runDiagnostics(): Promise<DiagnosticReport> {
-    const checks = [
-      this.checkNodeVersion(),
-      this.checkDependencies(),
-      this.checkConfiguration(),
-      this.checkPluginHealth(),
-      this.checkExternalServices(),
-      this.checkPerformanceBottlenecks(),
-    ];
+### **Plugin Hub**
 
-    const results = await Promise.allSettled(checks);
-    return this.generateReport(results);
-  }
-}
-```
-
-### **Plugin Marketplace**
-
-Certified plugin ecosystem with discovery and installation workflows:
-
-```typescript
-// src/core/plugin-marketplace/marketplace.js
-class PluginMarketplace {
-  async discoverPlugins(criteria: SearchCriteria): Promise<PluginListing[]> {
-    const plugins = await this.searchRegistry(criteria);
-    return plugins.filter((plugin) => this.meetsCertificationStandards(plugin));
-  }
-
-  async installPlugin(pluginId: string): Promise<InstallationResult> {
-    // Verify plugin certification
-    await this.verifyCertification(pluginId);
-
-    // Install with security scanning
-    return this.secureInstall(pluginId);
-  }
-}
-```
+`rag-pipeline hub` (alias `plugin`) installs plugins from a local directory, `.tgz`, single `.js` file, `npm:<package>` or a registry, lists the plugins registered in the config, and scores a local plugin with `hub certify check <path>`. There is no default registry; registry operations need `--registry <url>` or `RAG_PLUGIN_REGISTRY`. `PluginHub.installPlugin()` uses the same installer.
 
 ---
 
-## Modern Pipeline Architecture (v2.4.0)
+## Pipeline Flow
 
-The v2.4.0 release introduces an expanded pipeline flow that integrates guardrails, hybrid retrieval, reranking, citation tracking, and evaluation directly into the query path:
-
-### **Updated Pipeline Flow**
+The flow below describes 2.5.0. Hybrid retrieval, reranking, citations, evaluation, guardrails and agentic RAG were added in 2.4.0; cancellation, the pre-generation retrieval guard and retrieval-only runs in 2.5.0.
 
 ```
-Documents → Chunking Engine → Embedder → Vector Store
+Ingestion:  Documents → Loader (chunks) → Embedder → Retriever.store() (e.g. FileVectorStore)
 ```
 
 ```
-Query → Guardrails → Query Planner → Retriever + BM25 → Reranker → LLM → Citation Tracker → Evaluator → Response
+Query:      PreRetrievalGuard → Embedder → Retriever → RetrievalGuard (filterResults) → Reranker → LLM
+            → PostGenerationGuard → CitationTracker / PipelineEvaluator → Result
 ```
 
-**Ingestion path**: Documents are split by the Chunking Engine, converted to vectors by the Embedder, and persisted in the Vector Store.
+**Ingestion path**: `rag-pipeline ingest` loads files, splits them into chunks, embeds each chunk and stores it in the configured retriever (by default a `FileVectorStore` at `.rag/index.json`). Re-ingesting a source replaces its previous chunks; corpus-fitted embedders such as `LocalEmbedder` are retrained and the index re-embedded.
 
-**Query path**: Incoming queries pass through the Guardrails layer (prompt-injection detection, topic filtering, query validation), then the Query Planner selects a retrieval strategy. The Retriever performs vector search while BM25 handles keyword matching; their results are merged and scored by the Reranker. The top-ranked context is sent to the LLM for generation. The Citation Tracker maps each claim in the response back to its source chunk, and the Evaluator produces faithfulness, relevance, and groundedness scores before the final response is returned.
+### **Guardrails**
+
+`GuardrailsPipeline` wraps the pipeline rather than living inside it:
+
+1. **Pre-retrieval**: `PreRetrievalGuard.check(query)` validates length and topics and detects prompt injection on normalised text. The query is never rewritten; in strict mode a failed check returns `{ success: false }` before anything is retrieved.
+2. **Retrieval**: `RetrievalGuard.filter(docs, context)` is passed to the pipeline as `options.filterResults`, so it runs after retrieval and **before generation**. It applies the relevance threshold, freshness, ACL (`enforceACL` fails closed without `context.userPermissions`) and the optional injection scan. Removed documents are reported by id only.
+3. **Post-generation**: `PostGenerationGuard` checks the answer for PII, groundedness and length. PII is also redacted in citations and evaluation details; strict-mode blocks never return the raw answer.
+
+**Query path**: the embedder turns the query into a vector, the retriever returns candidates (a `HybridRetriever` merges vector and BM25 results with Reciprocal Rank Fusion), the guard filters them, the reranker reorders them and the LLM generates the answer. `CitationTracker` maps each answer sentence to supporting documents and `PipelineEvaluator` computes faithfulness, relevance, context precision, context recall (only with a reference answer) and groundedness. Grounding is lexical plus a numeric-consistency check. `AgenticPipeline` adds query planning (`QueryPlanner`, optionally LLM-proposed sub-queries), iterative retrieval and self-critique on top of the same components, and propagates the run's `signal`.
 
 ### **GraphRAG Architecture**
 
 GraphRAG adds a knowledge-graph layer on top of the standard vector retrieval pipeline:
 
-- **KnowledgeGraph**: Stores entities (people, organizations, concepts, locations) and the relationships between them as a directed graph. Entities are deduplicated and merged across documents.
-- **EntityExtractor**: Finds entities in source documents using heuristic NER (named-entity recognition). It applies pattern-based and dictionary-based extraction to identify entity types and their spans.
-- **GraphRetriever**: Combines graph traversal with text matching. Given a query, it identifies relevant entities, traverses their relationships in the knowledge graph, and merges graph-sourced context with traditional vector search results for richer answers.
+- **KnowledgeGraph**: Stores entities and the relationships between them as a directed graph.
+- **EntityExtractor**: Finds entities in source documents using heuristic, pattern-based extraction.
+- **GraphRetriever**: Combines graph traversal with text overlap. Given a query, it identifies relevant entities, traverses their relationships and scores documents by entity and text weights.
 
 ```javascript
 import { GraphRetriever } from "@devilsdev/rag-pipeline-utils";
 
-const retriever = new GraphRetriever();
-await retriever.store(docs);
-const results = await retriever.retrieve(query);
+const retriever = new GraphRetriever({ traversalDepth: 2 });
+await retriever.store(docs); // [{ id, content, metadata? }]
+const results = await retriever.retrieve({
+  query: "Who founded Acme?",
+  topK: 5,
+});
 ```
 
 ---
 
-_This enterprise-grade architecture enables @DevilsDev/rag-pipeline-utils to scale from simple prototypes to mission-critical production systems while maintaining flexibility, security, and observability. Continue to [Usage](./Usage.md) for practical implementation examples, or explore [Plugins](./Plugins.md) to learn about creating custom components._
+_Continue to [Usage](./Usage.md) for practical implementation examples, or explore [Plugins](./Plugins.md) to learn about creating custom components._

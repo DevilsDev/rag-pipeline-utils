@@ -12,7 +12,7 @@ This project goes beyond traditional RAG tools — it’s a **developer-focused 
 
 ### 1. Customizable LLM Workflows
 
-**Use Case:** A team wants to test three different retrievers (Pinecone, Weaviate, Redis) and switch LLMs dynamically during eval.
+**Use Case:** A team wants to compare LLM providers (or embedders and retrievers) on the same documents.
 
 Components are chosen in `.ragrc.json`, so keep one config per variant and
 select it with `--config`:
@@ -42,32 +42,52 @@ const results = await evaluateRagDataset("tests/eval.json", pipelineConfig);
 **Use Case:** Embed RAG processing into a backend:
 
 ```js
-import { PluginRegistry, runPipeline } from "rag-pipeline-utils";
+const {
+  createRagPipeline,
+  OpenAIConnector,
+  FileVectorStore,
+} = require("@devilsdev/rag-pipeline-utils");
 
-const registry = new PluginRegistry();
-registry.register("embedder", "openai", new OpenAIEmbedder());
+// Index built earlier with `rag-pipeline ingest` from a config created by
+// `rag-pipeline init --template openai`; query vectors must come from the
+// same embedder that built the index
+const store = new FileVectorStore({ path: ".rag/index.json" });
 
-const output = await runPipeline({
-  loader: "pdf",
-  retriever: "pinecone",
-  llm: "openai",
-  query: "How does this work?",
+const openai = new OpenAIConnector();
+const pipeline = createRagPipeline({
+  embedder: openai,
+  retriever: store,
+  llm: openai,
+});
+
+app.post("/ask", async (req, res) => {
+  const controller = new AbortController();
+  req.on("close", () => controller.abort()); // stop work if the client leaves
+  const output = await pipeline.run({
+    query: req.body.question,
+    options: { signal: controller.signal, citations: true },
+  });
+  res.json(output);
 });
 ```
 
+For a quick local HTTP API without writing a server, use `rag-pipeline serve` (binds 127.0.0.1, `GET /health`, `POST /query`).
+
 ---
 
-### 4. GitHub + NPM Automation for ML Pipelines
+### 4. Installing and Checking Third-Party Plugins
 
-**Use Case:** You want a release blog post + versioned package published automatically:
+**Use Case:** You want to use a community plugin, but only after checking it.
 
-- Commit code
-- Push to `main`
-- GitHub Action triggers:
-  - Semantic release
-  - CHANGELOG update
-  - Blog post generation
-  - NPM publish
+```bash
+# Install from a local directory, .tgz, single .js file or npm:<package>
+rag-pipeline hub install npm:some-rag-plugin
+
+# Score a local plugin against the automated certification thresholds
+rag-pipeline hub certify check ./my-plugin
+```
+
+`hub install` runs a static security scan (high-risk findings block unless `--allow-risky`), checks the stage contract in a separate process, and registers the plugin in `.ragrc.json`. See the [CLI Reference](./CLI.md).
 
 ---
 

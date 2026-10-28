@@ -24,21 +24,20 @@ the abstract.
 | -------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
 | **Primary focus**          | Production RAG pipelines for Node.js services                                                      | General-purpose LLM orchestration                               | Indexing-first RAG with rich data structures |
 | **License**                | MIT                                                                                                | MIT                                                             | MIT                                          |
-| **Bundle**                 | Single package, ~530 KB tarball                                                                    | Many packages (`@langchain/core`, `@langchain/community`, etc.) | Single package, larger surface               |
+| **Bundle**                 | Single package (plus an `/experimental` entry for simulated modules)                               | Many packages (`@langchain/core`, `@langchain/community`, etc.) | Single package, larger surface               |
 | **Built-in evaluation**    | ✅ Faithfulness, relevance, context P/R, groundedness                                              | 🟡 Via separate `langsmith` (paid SaaS option)                  | 🟡 Some metrics, evolving                    |
 | **Built-in citations**     | ✅ Per-sentence attribution + groundedness score                                                   | 🟡 Doable manually                                              | 🟡 Doable manually                           |
 | **Built-in guardrails**    | ✅ 3-layer (pre / retrieval / post)                                                                | 🟡 Via integrations (Guardrails AI, etc.)                       | 🟡 Via integrations                          |
-| **Vector store ecosystem** | Memory + plugin contract for any                                                                   | ✅ 50+ integrations                                             | ✅ Many integrations + native indexes        |
+| **Vector store ecosystem** | In-memory and JSON-file stores + plugin contract for any                                           | ✅ 50+ integrations                                             | ✅ Many integrations + native indexes        |
 | **LLM provider ecosystem** | OpenAI, Anthropic, Cohere, Ollama + plugin contract                                                | ✅ Largest ecosystem                                            | ✅ Large ecosystem                           |
-| **Agentic / tools**        | 🟡 Query planning + iterative retrieval via DAG                                                    | ✅ Mature agent framework, tool use                             | ✅ Agent framework                           |
+| **Agentic / tools**        | 🟡 Query planning (heuristic or LLM-proposed) + iterative retrieval via DAG                        | ✅ Mature agent framework, tool use                             | ✅ Agent framework                           |
 | **GraphRAG**               | ✅ Knowledge-graph construction + traversal                                                        | 🟡 Via integrations                                             | 🟡 Via property graphs                       |
 | **MCP support**            | ✅ First-class                                                                                     | 🟡 Community add-ons                                            | 🟡 Community add-ons                         |
-| **TypeScript types**       | ✅ Hand-curated `.d.ts`                                                                            | ✅ Native TS                                                    | ✅ Native TS                                 |
+| **TypeScript types**       | ✅ `.d.ts` generated from JSDoc; build fails on undeclared exports                                 | ✅ Native TS                                                    | ✅ Native TS                                 |
 | **Module format**          | Dual ESM + CJS                                                                                     | Mostly ESM, some CJS                                            | Mostly ESM                                   |
-| **Test count**             | 2,050+                                                                                             | Many across packages                                            | Many                                         |
 | **Stability policy**       | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) | Versioned per package                                           | Versioned                                    |
 | **Security policy**        | ✅ Documented disclosure + capability matrix                                                       | Via GitHub Security                                             | Via GitHub Security                          |
-| **Production complexity**  | Low — three core primitives                                                                        | Medium — many abstractions                                      | Medium — index types vocabulary              |
+| **Production complexity**  | Low — pipeline + components                                                                        | Medium — many abstractions                                      | Medium — index types vocabulary              |
 
 ## Where each one wins
 
@@ -75,7 +74,8 @@ the abstract.
   primitives: `pipeline`, `plugin`, `connector`.
 - **Evaluation, citations, and guardrails are required, not optional.**
   Faithfulness scoring, per-sentence attribution, and 3-layer guardrails
-  ship in the box and cost zero to enable.
+  ship in the box. The metrics are lexical (no judge LLM calls), so they
+  add no API spend; they are also less nuanced than LLM-judged metrics.
 - You need a **predictable, narrow surface area for security review**.
   One package, MIT-licensed, no required SaaS.
 - You want **ESM-first dual-build** and a documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)
@@ -102,7 +102,6 @@ dominated by:
   frequency)
 - **LLM API spend** (proportional to query volume × tokens per query)
 - **Vector store hosting** (pinecone / weaviate / etc.)
-- **Eval-judge LLM calls** if you enable online evaluation
 
 `@devilsdev/rag-pipeline-utils` does **not** ship a paid tier or
 require a SaaS account for any feature. LangChain offers LangSmith as
