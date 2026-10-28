@@ -9,7 +9,7 @@
  */
 
 import { readdir, readFile, stat } from "node:fs/promises";
-import { resolve, join, basename, extname } from "node:path";
+import { resolve, join, basename, extname, relative } from "node:path";
 
 const SERVER = process.env.SERVER ?? "http://localhost:3000";
 const SUPPORTED = new Set([".txt", ".md", ".mdx"]);
@@ -33,7 +33,7 @@ async function main() {
 
   for await (const file of walk(dir)) {
     const text = await readFile(file, "utf8");
-    const id = file.replace(dir + "/", "").replace(/\\/g, "/");
+    const id = relative(dir, file).replace(/\\/g, "/");
 
     const res = await fetch(`${SERVER}/ingest`, {
       method: "POST",
@@ -50,11 +50,12 @@ async function main() {
       console.log(`✓ ${id}`);
     } else {
       failed++;
-      console.error(`✗ ${id} — ${res.status}`);
+      console.error(`✗ ${id} — ${res.status} ${await res.text()}`);
     }
   }
 
   console.log(`\nIngested ${count} document(s), ${failed} failed.`);
+  if (failed > 0) process.exitCode = 1;
 }
 
 main().catch((err) => {
