@@ -545,39 +545,56 @@ The `PipelineEvaluator` class provides a unified interface for evaluating RAG pi
 import { PipelineEvaluator } from "@devilsdev/rag-pipeline-utils";
 
 const evaluator = new PipelineEvaluator();
-const metrics = evaluator.evaluate({ query, answer, results: retrievedDocs });
+const metrics = evaluator.evaluate(
+  { query, answer, results: retrievedDocs },
+  { referenceAnswer }, // optional ground truth; needed for context recall
+);
 // metrics.scores.faithfulness, metrics.scores.relevance, etc.
 ```
 
 The returned `metrics` object contains:
 
-- **`scores.faithfulness`** -- how well the answer is grounded in the retrieved documents
+- **`scores.faithfulness`** -- share of answer sentences supported by the retrieved documents
 - **`scores.relevance`** -- how directly the answer addresses the original query
-- **`scores.contextPrecision`** -- proportion of retrieved chunks that are actually relevant
-- **`scores.contextRecall`** -- proportion of relevant information that was retrieved
+- **`scores.contextPrecision`** -- proportion of retrieved chunks that are relevant to the query
+- **`scores.contextRecall`** -- share of the **reference answer's** sentences that the retrieved documents support (did retrieval find everything needed?). Only reported when `referenceAnswer` is passed; otherwise it is absent from `scores`, `details.contextRecall` is `{ score: null, skipped: true, reason }` and it is listed in `metadata.metricsSkipped`.
 - **`scores.groundedness`** -- composite score (see `computeGroundedness` below)
+
+A sentence counts as supported when a document contains at least half of its content words **and** every number it states (digits, decimals, percentages or number words, so "thirty days" is not supported by "twenty days", while "20 days" is).
 
 ---
 
 ## **computeGroundedness**
 
-`computeGroundedness` is a composite metric that combines three sub-scores into a single groundedness rating:
+`computeGroundedness(query, answer, retrievedDocs, options)` combines the component metrics into one rating:
 
-1. **Faithfulness** -- every claim in the answer can be traced to the retrieved context
+1. **Faithfulness** -- the answer's sentences are supported by the retrieved context
 2. **Context Precision** -- the retrieved chunks are relevant rather than noisy
-3. **Context Recall** -- the retrieval step captured all the information needed to answer
+3. **Context Recall** -- the retrieved chunks support the reference answer (only with `options.referenceAnswer`)
 
-The final groundedness score is the weighted harmonic mean of these three values, giving a single number that reflects how well the generated answer is supported by evidence. A high groundedness score means the answer is both accurate and well-sourced.
+The score is a weighted mean over the available components, `sum(w * m) / sum(w)`. With the default weights (0.4, 0.3, 0.3) and a reference answer:
+
+```
+groundedness = 0.4 * faithfulness + 0.3 * contextPrecision + 0.3 * contextRecall
+```
+
+Without a reference answer, context recall is left out and the weights are renormalised:
+
+```
+groundedness = (0.4 * faithfulness + 0.3 * contextPrecision) / 0.7
+```
 
 ```javascript
 import { computeGroundedness } from "@devilsdev/rag-pipeline-utils";
 
-const score = computeGroundedness({
-  faithfulness: 0.9,
-  contextPrecision: 0.85,
-  contextRecall: 0.8,
-});
-// score ≈ 0.849
+const { score, components } = computeGroundedness(
+  query,
+  answer,
+  retrievedDocs,
+  {
+    referenceAnswer, // optional
+  },
+);
 ```
 
 ---
@@ -587,9 +604,14 @@ const score = computeGroundedness({
 You can enable evaluation directly inside a pipeline run without creating a separate evaluator instance. Pass `evaluate: true` in the run options and the pipeline will automatically score the response before returning it:
 
 ```javascript
-const result = await pipeline.run({ query, options: { evaluate: true } });
+const result = await pipeline.run({
+  query,
+  options: { evaluate: true, referenceAnswer }, // referenceAnswer is optional
+});
 // result.evaluation contains faithfulness, relevance, groundedness, etc.
 ```
+
+In stream mode (`stream: true`) with `citations` or `evaluate`, the stream ends with one chunk `{ token: '', done: true, citations, evaluation }` computed from the full streamed answer. A pipeline without an LLM returns `answer: null`, skips citations and evaluates the retrieval metrics only.
 
 This is useful for development and debugging workflows where you want immediate quality feedback on every query.
 

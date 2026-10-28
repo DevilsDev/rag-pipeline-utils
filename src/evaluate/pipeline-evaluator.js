@@ -10,7 +10,7 @@ const {
   computeContextPrecision,
   computeContextRecall,
 } = require('./context-metrics');
-const { computeGroundedness } = require('./groundedness');
+const { computeGroundedness, NO_REFERENCE_REASON } = require('./groundedness');
 const { scoreAnswer } = require('./scoring');
 
 /**
@@ -64,8 +64,14 @@ class PipelineEvaluator extends EventEmitter {
    * @param {Array<{content: string}>} pipelineResult.results - Retrieved documents
    * @param {object} [options={}] - Additional evaluation options
    * @param {object} [options.citationResult] - Pre-computed citation result for faithfulness shortcut
-   * @param {string} [options.referenceAnswer] - Reference answer for BLEU/ROUGE scoring
-   * @returns {{ scores: Object<string, number>, details: Object<string, object>, metadata: { metricsComputed: string[], threshold: number, timestamp: string } }}
+   * @param {string} [options.referenceAnswer] - Reference (ground-truth)
+   *   answer. Required for context recall (how much of it the retrieved
+   *   documents support) and used for BLEU/ROUGE. Without it, contextRecall is
+   *   left out of `scores`, `details.contextRecall` is
+   *   `{ score: null, skipped: true, reason }`, it is listed in
+   *   `metadata.metricsSkipped`, and groundedness renormalises over
+   *   faithfulness and context precision.
+   * @returns {{ scores: Object<string, number>, details: Object<string, object>, metadata: { metricsComputed: string[], metricsSkipped: Array<{metric: string, reason: string}>, threshold: number, timestamp: string } }}
    */
   evaluate(pipelineResult, options = {}) {
     const { citationResult, referenceAnswer } = options;
@@ -76,6 +82,7 @@ class PipelineEvaluator extends EventEmitter {
     const scores = {};
     const details = {};
     const metricsComputed = [];
+    const metricsSkipped = [];
     const { metrics, threshold } = this.config;
 
     if (metrics.includes('faithfulness')) {
@@ -106,16 +113,35 @@ class PipelineEvaluator extends EventEmitter {
       metricsComputed.push('contextPrecision');
     }
 
+    const hasReference =
+      typeof referenceAnswer === 'string' && referenceAnswer.trim().length > 0;
+
     if (metrics.includes('contextRecall')) {
-      const recallResult = computeContextRecall(answer, results, { threshold });
-      scores.contextRecall = recallResult.score;
-      details.contextRecall = recallResult;
-      metricsComputed.push('contextRecall');
+      if (hasReference) {
+        const recallResult = computeContextRecall(referenceAnswer, results, {
+          threshold,
+        });
+        scores.contextRecall = recallResult.score;
+        details.contextRecall = recallResult;
+        metricsComputed.push('contextRecall');
+      } else {
+        // No ground truth: report why instead of a made-up score.
+        details.contextRecall = {
+          score: null,
+          skipped: true,
+          reason: NO_REFERENCE_REASON,
+        };
+        metricsSkipped.push({
+          metric: 'contextRecall',
+          reason: NO_REFERENCE_REASON,
+        });
+      }
     }
 
     if (metrics.includes('groundedness')) {
       const groundednessResult = computeGroundedness(query, answer, results, {
         threshold,
+        referenceAnswer: hasReference ? referenceAnswer : undefined,
       });
       scores.groundedness = groundednessResult.score;
       details.groundedness = groundednessResult;
@@ -142,6 +168,7 @@ class PipelineEvaluator extends EventEmitter {
       details,
       metadata: {
         metricsComputed,
+        metricsSkipped,
         threshold,
         timestamp: new Date().toISOString(),
       },

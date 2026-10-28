@@ -265,7 +265,9 @@ describe("PipelineEvaluator", () => {
           },
         ],
       };
-      const result = evaluator.evaluate(pipelineResult);
+      const result = evaluator.evaluate(pipelineResult, {
+        referenceAnswer: "Python is used for web development and data science.",
+      });
 
       expect(result).toHaveProperty("scores");
       expect(result).toHaveProperty("details");
@@ -322,7 +324,9 @@ describe("PipelineEvaluator", () => {
       expect(result.scores.faithfulness).toBe(0);
       expect(result.scores.relevance).toBe(0);
       expect(result.scores.contextPrecision).toBe(0);
-      expect(result.scores.contextRecall).toBe(0);
+      // No reference answer: recall is not reported as a score.
+      expect(result.scores).not.toHaveProperty("contextRecall");
+      expect(result.details.contextRecall.score).toBeNull();
       expect(result.scores.groundedness).toBe(0);
     });
 
@@ -404,11 +408,14 @@ describe("PipelineEvaluator", () => {
     });
 
     test("empty doc arrays return zero for doc-dependent metrics", () => {
-      const result = evaluator.evaluate({
-        query: "test query",
-        answer: "Test answer.",
-        results: [],
-      });
+      const result = evaluator.evaluate(
+        {
+          query: "test query",
+          answer: "Test answer.",
+          results: [],
+        },
+        { referenceAnswer: "Test answer." },
+      );
       expect(result.scores.faithfulness).toBe(0);
       expect(result.scores.contextPrecision).toBe(0);
       expect(result.scores.contextRecall).toBe(0);
@@ -423,5 +430,91 @@ describe("PipelineEvaluator", () => {
       // Should not throw — text field fallback
       expect(typeof result.scores.faithfulness).toBe("number");
     });
+  });
+});
+
+describe("context recall against a reference answer", () => {
+  const DOCS = [
+    { content: "Employees receive twenty days of paid vacation per year." },
+    { content: "Remote work is allowed two days per week." },
+  ];
+  const QUERY = "What are the vacation and remote work rules?";
+  const REFERENCE =
+    "Employees receive twenty days of paid vacation per year. Remote work is allowed two days per week.";
+
+  test("measures how much of the reference the retrieved docs support", () => {
+    const evaluator = new PipelineEvaluator();
+    const full = evaluator.evaluate(
+      { query: QUERY, answer: "Twenty days of vacation.", results: DOCS },
+      { referenceAnswer: REFERENCE },
+    );
+    expect(full.scores.contextRecall).toBe(1);
+    expect(full.metadata.metricsComputed).toContain("contextRecall");
+
+    // Retrieval missed the remote-work document: half the reference is
+    // unsupported, whatever the generated answer says.
+    const partial = evaluator.evaluate(
+      { query: QUERY, answer: "Twenty days of vacation.", results: [DOCS[0]] },
+      { referenceAnswer: REFERENCE },
+    );
+    expect(partial.scores.contextRecall).toBe(0.5);
+    expect(partial.details.contextRecall.details[1].isSupported).toBe(false);
+  });
+
+  test("is independent of the generated answer (unlike faithfulness)", () => {
+    const evaluator = new PipelineEvaluator();
+    const result = evaluator.evaluate(
+      {
+        query: QUERY,
+        answer: "Our stock price rose after the earnings call.",
+        results: DOCS,
+      },
+      { referenceAnswer: REFERENCE },
+    );
+    expect(result.scores.faithfulness).toBe(0);
+    expect(result.scores.contextRecall).toBe(1);
+  });
+
+  test("without a reference it is skipped with a reason, not faked", () => {
+    const evaluator = new PipelineEvaluator();
+    const result = evaluator.evaluate({
+      query: QUERY,
+      answer: "Employees receive twenty days of paid vacation per year.",
+      results: DOCS,
+    });
+    expect(result.scores).not.toHaveProperty("contextRecall");
+    expect(result.metadata.metricsComputed).not.toContain("contextRecall");
+    expect(result.details.contextRecall).toEqual({
+      score: null,
+      skipped: true,
+      reason: expect.stringMatching(/reference/i),
+    });
+    expect(result.metadata.metricsSkipped).toEqual([
+      { metric: "contextRecall", reason: expect.any(String) },
+    ]);
+  });
+
+  test("a reference with a wrong number is not supported", () => {
+    const result = computeContextRecall(
+      "Employees receive thirty days of paid vacation per year.",
+      DOCS,
+    );
+    expect(result.score).toBe(0);
+  });
+
+  test("groundedness renormalises weights when recall is unavailable", () => {
+    const answer = "Employees receive twenty days of paid vacation per year.";
+    const without = computeGroundedness(QUERY, answer, DOCS);
+    const f = without.components.faithfulness.score;
+    const p = without.components.contextPrecision.score;
+    expect(without.components.contextRecall.score).toBeNull();
+    expect(without.score).toBeCloseTo((0.4 * f + 0.3 * p) / 0.7, 10);
+
+    const withRef = computeGroundedness(QUERY, answer, DOCS, {
+      referenceAnswer: REFERENCE,
+    });
+    const r = withRef.components.contextRecall.score;
+    expect(r).toBe(1);
+    expect(withRef.score).toBeCloseTo(0.4 * f + 0.3 * p + 0.3 * r, 10);
   });
 });

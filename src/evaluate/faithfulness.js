@@ -56,7 +56,10 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
       }
 
       const docTokens = tokenize(docContent);
-      const similarity = computeSupportScore(sentenceTokens, docTokens);
+      const similarity = computeSupportScore(sentenceTokens, docTokens, null, {
+        claimText: sentence,
+        docText: docContent,
+      });
 
       if (similarity > bestScore) {
         bestScore = similarity;

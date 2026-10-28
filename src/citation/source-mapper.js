@@ -59,7 +59,10 @@ function mapSentenceToSources(sentence, docs, options = {}) {
 
     // Share of the sentence's content tokens found in this document.
     const docSet = new Set(docTokens);
-    const score = computeSupportScore(sentenceTokens, docSet, idfWeights);
+    const score = computeSupportScore(sentenceTokens, docSet, idfWeights, {
+      claimText: sentence,
+      docText,
+    });
     const matched = [...new Set(sentenceTokens)].filter((t) => docSet.has(t));
 
     if (score >= threshold) {
