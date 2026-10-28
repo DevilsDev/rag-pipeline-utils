@@ -3,6 +3,12 @@ __tests__/
 coverage/
 .env
 .env.*
+# local secrets used by act (.actrc --secret-file); never bake into images
+.secrets
+secrets.json
+*.pem
+*.key
+.claude/
 node_modules/
 .dockerignore
 .git

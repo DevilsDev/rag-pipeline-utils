@@ -140,15 +140,8 @@ if (process.platform === "win32") {
   // Enable experimental VM modules for Windows
   process.env.NODE_OPTIONS =
     (process.env.NODE_OPTIONS || "") + " --experimental-vm-modules";
-
-  // Set Windows-specific path handling
-  const path = require("path");
-  const originalResolve = path.resolve;
-  path.resolve = function (...args) {
-    const result = originalResolve.apply(this, args);
-    // Normalize Windows paths for consistent testing
-    return result.replace(/\\/g, "/");
-  };
+  // path.resolve is deliberately NOT patched: forcing "/" separators on
+  // Windows broke path.relative, containment checks and coverage mapping.
 }
 
 // Use modern fake timers by default for determinism (Windows-friendly)
