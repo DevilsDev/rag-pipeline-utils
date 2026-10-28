@@ -68,3 +68,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+      # A deploy that "succeeds" can still publish the wrong folder (see #94).
+      # Fail the run unless the homepage and a docs page are served.
+      - name: Check the deployed site
+        env:
+          SITE: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for path in "" "docs/Introduction"; do
+            code=000
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "${SITE}${path}")
+              [ "$code" = "200" ] && break
+              sleep 10
+            done
+            echo "${SITE}${path} -> HTTP ${code}"
+            [ "$code" = "200" ] || exit 1
+          done

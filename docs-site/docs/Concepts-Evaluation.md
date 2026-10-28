@@ -1,7 +1,7 @@
 ---
 id: Concepts-Evaluation
-title: Concept — rag-eval
-sidebar_label: Evaluation (rag-eval)
+title: "Evaluation and citations"
+sidebar_label: Evaluation and citations
 description: Faithfulness, relevance, citation tracking, and groundedness scoring. The pieces that turn a working pipeline into one you can trust in production.
 ---
 

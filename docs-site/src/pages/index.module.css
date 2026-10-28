@@ -70,26 +70,6 @@
   flex-wrap: wrap;
 }
 
-.codeExample {
-  background-color: #1e293b;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.codeExample pre {
-  margin: 0;
-  padding: 1.5rem;
-  background-color: transparent;
-}
-
-.codeExample code {
-  color: #e2e8f0;
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
 /* Use Cases Section */
 .useCasesSection {
   padding: 4rem 0;
@@ -156,26 +136,15 @@
 }
 
 .useCaseCode {
-  background-color: #1e293b;
-  color: #e2e8f0;
-  font-family: var(--ifm-font-family-monospace);
+  /* Colours and padding come from the theme's CodeBlock. */
   font-size: 0.8125rem;
-  line-height: 1.55;
-  padding: 1rem;
-  border-radius: 6px;
-  overflow-x: auto;
   margin: 0 0 1.25rem;
   flex-grow: 1;
-  white-space: pre;
 }
 
 [data-theme="dark"] .useCaseCard {
   background: var(--ifm-background-surface-color);
   border-color: var(--ifm-color-emphasis-300);
-}
-
-[data-theme="dark"] .useCaseCode {
-  background-color: #0f172a;
 }
 
 /* Key Features Section */
@@ -267,10 +236,6 @@
   border-color: var(--ifm-color-emphasis-300);
 }
 
-[data-theme="dark"] .codeExample {
-  background-color: #0f172a;
-}
-
 [data-theme="dark"] .ctaSection {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 }
@@ -295,10 +260,6 @@
 
   .quickStartSection .col {
     max-width: 100%;
-  }
-
-  .codeExample {
-    margin-bottom: 2rem;
   }
 
   .keyFeaturesSection h2 {
@@ -335,9 +296,5 @@
   .quickStartButtons .button,
   .ctaButtons .button {
     width: 100%;
-  }
-
-  .codeExample code {
-    font-size: 0.75rem;
   }
 }
