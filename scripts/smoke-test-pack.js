@@ -125,6 +125,7 @@ const results = [
       "config",
       "info",
       "hub",
+      "ai",
     ]) {
       run(process.execPath, [binPath, command, "--help"], consumerDir);
     }

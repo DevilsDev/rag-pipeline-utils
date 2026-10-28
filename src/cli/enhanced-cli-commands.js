@@ -159,6 +159,9 @@ class EnhancedCLI {
     const { PluginHubCLI } = require("./commands/plugin-hub.js");
     this.program.addCommand(new PluginHubCLI().createCommands());
 
+    const { createAiCommand } = require("./commands/ai.js");
+    this.program.addCommand(createAiCommand(() => this.program.opts()));
+
     // Configuration management commands
     const configCmd = new Command("config");
     configCmd.description("Configuration management commands");

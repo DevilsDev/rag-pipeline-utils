@@ -26,6 +26,14 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   (`GET /health`, `POST /query`) bound to 127.0.0.1, JSON only, 64 KB body
   limit, no CORS.
 - `LocalEmbedder.getState()` / `setState()`.
+- **`rag-pipeline ai`**, built on the configured pipeline and index:
+  `ai train embedding [path]` refits the `local` TF-IDF embedder and
+  re-embeds the index; `ai benchmark` reports measured p50/p95/mean latency
+  per stage; `ai feedback <question> <docId> --rating up|down` stores votes in
+  `.rag/feedback.json` and `ai search` applies them as a capped,
+  explained score adjustment; `ai multimodal process <path>` reports type,
+  characters and chunks for text files (images exit 1: no built-in connector
+  accepts image input).
 
 ### Removed
 
@@ -35,6 +43,11 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`,
   `--abort-timeout`, `--quiet`, `config show --format`).
 - The interactive wizard built on hard-coded mock registry data.
+- The unregistered `src/cli/commands/ai-ml*` command modules: federated
+  learning, LLM fine-tuning, `ai train status|deploy`, `ai dashboard`,
+  adaptive profiles and multimodal `search`/`describe`. They called methods
+  missing from the `src/ai` engines, exited 0 on failure and printed
+  hard-coded or simulated numbers. The `src/ai` library modules are unchanged.
 - Unreachable modules that were never exported or registered: `src/dx/`
   (including a realtime debugger exposing an unauthenticated WebSocket),
   `src/cli/commands/{dx,docs}.js`, `src/cli/input-sanitization-middleware.js`,
