@@ -47,7 +47,7 @@ rag-pipeline init --no-interactive --force
 
 **Common Configuration Errors**:
 
-```json
+```jsonc
 // Invalid: Missing required fields
 {
   "embedder": "openai"
@@ -308,7 +308,7 @@ rag-pipeline query "test" --json
 
 **Prompt Engineering**:
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   OpenAIConnector,

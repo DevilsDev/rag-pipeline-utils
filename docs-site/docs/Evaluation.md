@@ -25,7 +25,7 @@ Grounding is lexical plus a numeric-consistency check. It does not detect negati
 
 `PipelineEvaluator` evaluates one pipeline result against several metrics in a single synchronous call:
 
-```javascript
+```javascript no-run
 const { PipelineEvaluator } = require("@devilsdev/rag-pipeline-utils");
 
 const evaluator = new PipelineEvaluator({
@@ -157,7 +157,7 @@ Without a reference answer, context recall is left out and the weights are renor
 groundedness = (0.4 * faithfulness + 0.3 * contextPrecision) / 0.7
 ```
 
-```javascript
+```javascript no-run
 const { computeGroundedness } = require("@devilsdev/rag-pipeline-utils");
 
 const { score, components } = computeGroundedness(
@@ -187,7 +187,7 @@ const { bleu, rouge } = scoreAnswer(
 
 `computeBLEU(candidateTokens, referenceTokens)` and `computeROUGE(candidateTokens, referenceTokens)` take **token arrays**, not strings, and return a number:
 
-```javascript
+```javascript no-run
 const { computeBLEU, computeROUGE } = require("@devilsdev/rag-pipeline-utils");
 
 const tokens = (s) => s.toLowerCase().split(/\s+/).filter(Boolean);
@@ -219,7 +219,7 @@ Use `evaluateOptions` to pass `PipelineEvaluator` options (for example `{ metric
 
 To evaluate a test set, run each case through your pipeline and score it with `PipelineEvaluator` and `scoreAnswer`:
 
-```javascript
+```javascript no-run
 const fs = require("fs");
 const {
   createRagPipeline,
@@ -273,7 +273,7 @@ A JSON array of cases is enough. The loop above reads `prompt` and `expected`; a
 
 `CitationTracker` maps each sentence of an answer to the retrieved documents that support it:
 
-```javascript
+```javascript no-run
 const {
   CitationTracker,
   detectHallucinations,

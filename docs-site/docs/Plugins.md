@@ -125,7 +125,7 @@ Plugins that ignore the signal still work: the run settles on abort anyway and n
 
 ### **1. Pass instances directly**
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   MemoryRetriever,
@@ -152,7 +152,7 @@ console.log(result.answer);
 
 `register(category, name, impl, manifest?, options?)` is asynchronous: await it before building the pipeline. Names are resolved when the pipeline is created. The registry validates the plugin against its stage contract, which also requires a `metadata` object with `name`, `version` and `type` (the stage):
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   pluginRegistry,

@@ -423,7 +423,7 @@ spec:
 
 ### Lambda Function Code
 
-```javascript
+```javascript no-run
 // lambda/index.js
 const {
   createRagPipeline,

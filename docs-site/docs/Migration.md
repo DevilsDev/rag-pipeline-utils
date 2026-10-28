@@ -92,7 +92,7 @@ await pluginRegistry.register("llm", "my-llm", {
 The CLI has no `eval` or `evaluate` command. Run dataset evaluation through
 the library instead (see [Evaluation](./Evaluation.md)):
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   PipelineEvaluator,
@@ -215,7 +215,7 @@ embeddings = OpenAIEmbeddings()
 vectors = embeddings.embed_documents(texts)
 ```
 
-```javascript
+```javascript no-run
 // @devilsdev/rag-pipeline-utils
 const { OpenAIConnector } = require("@devilsdev/rag-pipeline-utils");
 
@@ -232,7 +232,7 @@ vectorstore = Pinecone.from_documents(docs, embeddings)
 results = vectorstore.similarity_search(query)
 ```
 
-```javascript
+```javascript no-run
 // @devilsdev/rag-pipeline-utils
 const { MemoryRetriever } = require("@devilsdev/rag-pipeline-utils");
 
@@ -257,7 +257,7 @@ llm = OpenAI(temperature=0.7)
 response = llm(prompt)
 ```
 
-```javascript
+```javascript no-run
 // @devilsdev/rag-pipeline-utils
 const { OpenAIConnector } = require("@devilsdev/rag-pipeline-utils");
 
@@ -285,7 +285,7 @@ pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
 pipeline.add_node(component=reader, name="Reader", inputs=["Retriever"])
 ```
 
-```javascript
+```javascript no-run
 // @devilsdev/rag-pipeline-utils
 const pipeline = createRagPipeline({
   embedder, // e.g. new OllamaConnector()
@@ -386,7 +386,7 @@ rag-pipeline ingest ./docs --rebuild
 
 There is no built-in migrator between vector databases. Re-embed and store your documents with the new retriever, or copy stored records between retrievers yourself. For example, from a `FileVectorStore` index into another retriever that accepts the same vectors:
 
-```javascript
+```javascript no-run
 const { FileVectorStore } = require("@devilsdev/rag-pipeline-utils");
 
 const source = new FileVectorStore({ path: ".rag/index.json" });

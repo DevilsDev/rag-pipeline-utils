@@ -28,7 +28,7 @@ rag-pipeline --config configs/anthropic.json run --ingest ./docs --query "How do
 
 **Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents. Evaluation is a library API (there is no CLI command for it):
 
-```js
+```js no-run
 const { scoreAnswer } = require("@devilsdev/rag-pipeline-utils");
 
 // cases: [{ "prompt": "...", "expected": "..." }, ...]
@@ -44,7 +44,7 @@ for (const { prompt, expected } of cases) {
 
 **Use Case:** Embed RAG processing into a backend:
 
-```js
+```js no-run
 const {
   createRagPipeline,
   OpenAIConnector,

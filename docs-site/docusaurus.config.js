@@ -12,6 +12,7 @@
 
 const path = require("path");
 const { themes: prismThemes } = require("prism-react-renderer");
+const { accessiblePrismTheme } = require("./src/lib/accessiblePrismTheme");
 // Read once at config-load. Docusaurus invokes this file at build time,
 // so picking up the version from the root package.json is fine here.
 const ROOT_PKG = require(path.resolve(__dirname, "..", "package.json"));
@@ -151,8 +152,9 @@ const config = {
     },
 
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.oneDark,
+      // Token colours raised to WCAG AA (4.5:1) against each background.
+      theme: accessiblePrismTheme(prismThemes.github),
+      darkTheme: accessiblePrismTheme(prismThemes.oneDark),
       additionalLanguages: ["bash", "json", "yaml", "diff"],
     },
 
@@ -160,7 +162,8 @@ const config = {
       title: "rag-pipeline-utils",
       hideOnScroll: false,
       logo: {
-        alt: "rag-pipeline-utils",
+        // Decorative: the site name is shown next to it.
+        alt: "",
         src: "img/logo.svg",
       },
       items: [

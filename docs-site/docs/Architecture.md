@@ -140,7 +140,7 @@ sequenceDiagram
 
 `pluginRegistry` (exported singleton) maps a stage and a name to a component, so pipelines and `.ragrc.json` files can refer to plugins by name:
 
-```javascript
+```javascript no-run
 import {
   pluginRegistry,
   createRagPipeline,
@@ -296,7 +296,7 @@ GraphRAG adds a knowledge-graph layer on top of the standard vector retrieval pi
 - **EntityExtractor**: Finds entities in source documents using heuristic, pattern-based extraction.
 - **GraphRetriever**: Combines graph traversal with text overlap. Given a query, it identifies relevant entities, traverses their relationships and scores documents by entity and text weights.
 
-```javascript
+```javascript no-run
 import { GraphRetriever } from "@devilsdev/rag-pipeline-utils";
 
 const retriever = new GraphRetriever({ traversalDepth: 2 });

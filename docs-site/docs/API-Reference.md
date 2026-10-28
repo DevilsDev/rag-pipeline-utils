@@ -226,7 +226,7 @@ function loadConfig(location?: string): object;
 
 **Example:**
 
-```javascript
+```javascript no-run
 import { loadConfig } from "@devilsdev/rag-pipeline-utils";
 
 const config = loadConfig("./config/.ragrc.json");
@@ -361,7 +361,7 @@ evaluate(
 
 **Context recall needs a reference answer.** It measures how much of a ground-truth answer the retrieved documents support. Without `referenceAnswer`, `scores.contextRecall` is omitted, `details.contextRecall` is `{ score: null, skipped: true, reason }` and `metadata.metricsSkipped` lists it. Groundedness is then `(0.4 * faithfulness + 0.3 * contextPrecision) / 0.7`.
 
-```javascript
+```javascript no-run
 import { PipelineEvaluator } from "@devilsdev/rag-pipeline-utils";
 
 const evaluator = new PipelineEvaluator();
@@ -444,7 +444,7 @@ verify(token: string, options?: object): object   // synchronous; throws on fail
 
 **Example:**
 
-```javascript
+```javascript no-run
 import { JWTValidator } from "@devilsdev/rag-pipeline-utils";
 
 const validator = new JWTValidator({
@@ -579,7 +579,7 @@ validate(): void
 
 **Example:**
 
-```javascript
+```javascript no-run
 import { DAG } from "@devilsdev/rag-pipeline-utils";
 
 const dag = new DAG();
@@ -664,7 +664,7 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 
 **Example:**
 
-```javascript
+```javascript no-run
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
@@ -701,7 +701,7 @@ const records = await audit.queryLogs({ _tenantId: "acme", limit: 100 });
 
 Watches plugin files and reloads them during development. Only JavaScript changes trigger a reload.
 
-```javascript
+```javascript no-run
 import { createHotReloadManager } from "@devilsdev/rag-pipeline-utils";
 
 const hotReload = createHotReloadManager({
@@ -731,7 +731,7 @@ Local HTTP API: `GET /health` and `POST /query`. JSON only, 64 KB body limit, no
 
 `POST /query` takes `{ "question": "...", "topK": 3 }`. Without a `query` handler it answers from the pipeline and index described by `configPath`, like `rag-pipeline query`.
 
-```javascript
+```javascript no-run
 import { createDevServer } from "@devilsdev/rag-pipeline-utils";
 
 const server = createDevServer({
@@ -753,7 +753,7 @@ console.log(server.getStatus().url);
 
 The `logger` export is the logging module. Its `logger` property is a structured logger whose methods take the message first and an optional metadata object; `createLogger` creates additional instances. The level comes from the `LOG_LEVEL` environment variable.
 
-```javascript
+```javascript no-run
 import { logger } from "@devilsdev/rag-pipeline-utils";
 
 logger.logger.info("Pipeline initialized", {
@@ -773,7 +773,7 @@ wrapError(error: Error, code: string, context?: object): EnhancedError
 
 **Example:**
 
-```javascript
+```javascript no-run
 import {
   createError,
   wrapError,
@@ -839,7 +839,7 @@ list(category: PluginType): string[]
 
 **Example:**
 
-```javascript
+```javascript no-run
 import {
   pluginRegistry,
   createRagPipeline,
@@ -880,7 +880,7 @@ new ParallelRetriever(retriever, { maxConcurrency?: 2 })
 
 **Example:**
 
-```javascript
+```javascript no-run
 import { ParallelProcessor } from "@devilsdev/rag-pipeline-utils";
 
 const { ParallelEmbedder } = ParallelProcessor;

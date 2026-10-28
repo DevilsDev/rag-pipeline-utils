@@ -125,7 +125,7 @@ const pipeline = createRagPipeline({
 
 #### **Local-First Setup**
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   LocalEmbedder,
@@ -270,7 +270,7 @@ Run `rag-pipeline info --plugins` to list the built-in names, and `rag-pipeline 
 
 `run()` does not throw for stage failures: check `success` and `error`. For your own code, `createError(code, context)` and `wrapError(error, code, context)` create errors with a `code` from `ERROR_CODES`, a formatted message and suggestions.
 
-```javascript
+```javascript no-run
 const {
   createError,
   wrapError,
@@ -297,7 +297,7 @@ try {
 
 The pipeline object does not emit events. To record what each run did, wrap it with `ExecutionTracer`:
 
-```javascript
+```javascript no-run
 const { ExecutionTracer } = require("@devilsdev/rag-pipeline-utils");
 
 const tracer = new ExecutionTracer();
@@ -337,7 +337,7 @@ const timed = withTiming(pipeline);
 
 You can register plugins by name on the exported `pluginRegistry` and then refer to them by name in `createRagPipeline` or `.ragrc.json`. `register()` is asynchronous. Each plugin needs a `metadata` object with `name`, `version` and `type` (the stage), plus the stage's methods (a retriever needs both `store()` and `retrieve()`).
 
-```javascript
+```javascript no-run
 const {
   pluginRegistry,
   createRagPipeline,

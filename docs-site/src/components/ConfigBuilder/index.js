@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CodeBlock from "@theme/CodeBlock";
 import {
   STAGES,
@@ -88,6 +88,10 @@ export default function ConfigBuilder() {
   const [llmConfig, setLlmConfig] = useState({});
   const [indexPath, setIndexPath] = useState("");
   const [copied, setCopied] = useState(false);
+  // Set after hydration: a timestamp computed during server rendering would
+  // differ from the browser's, and React would re-render the whole builder.
+  const [createdAt, setCreatedAt] = useState("");
+  useEffect(() => setCreatedAt(new Date().toISOString()), []);
 
   const selection = { embedder, retriever, reranker, llm };
   const json = useMemo(
@@ -98,11 +102,21 @@ export default function ConfigBuilder() {
           embedderConfig,
           llmConfig,
           indexPath: indexPath.trim() || DEFAULT_INDEX_PATH,
+          createdAt,
         }),
         null,
         2,
       ),
-    [embedder, retriever, reranker, llm, embedderConfig, llmConfig, indexPath],
+    [
+      embedder,
+      retriever,
+      reranker,
+      llm,
+      embedderConfig,
+      llmConfig,
+      indexPath,
+      createdAt,
+    ],
   );
 
   const template = matchingTemplate(selection);
@@ -216,7 +230,7 @@ export default function ConfigBuilder() {
         </CodeBlock>
 
         <div className={styles.next}>
-          <h4>Next</h4>
+          <h2 className={styles.nextTitle}>Next steps</h2>
           {template && noCustomOptions ? (
             <p>
               Same as <code>rag-pipeline init --template {template}</code>.

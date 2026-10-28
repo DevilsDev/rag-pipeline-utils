@@ -69,7 +69,7 @@ layer to disable it; the others still run.
 
 ## Wiring it up
 
-```js
+```js no-run
 import {
   createRagPipeline,
   GuardrailsPipeline,

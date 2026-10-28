@@ -233,7 +233,7 @@ kubectl annotate serviceaccount rag-pipeline-sa \
 
 ### Function Code
 
-```javascript
+```javascript no-run
 // index.js
 const functions = require("@google-cloud/functions-framework");
 const {

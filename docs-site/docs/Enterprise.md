@@ -24,7 +24,7 @@ This page covers the supported building blocks in **@devilsdev/rag-pipeline-util
 
 `AuditLogger` writes audit events as JSON lines under `logDir/daily/`. Each event gets a sequence number, an integrity hash and an HMAC signature. With an encryption key, sensitive fields are encrypted with AES-GCM, using a random IV per field.
 
-```javascript
+```javascript no-run
 const { once } = require("events");
 const { AuditLogger } = require("@devilsdev/rag-pipeline-utils");
 
@@ -66,7 +66,7 @@ const integrity = await audit.verifyIntegrity();
 
 `JWTValidator` signs and verifies JWTs with an explicit algorithm allow-list. With strict validation (the default), `issuer` and `audience` are required.
 
-```javascript
+```javascript no-run
 const { JWTValidator } = require("@devilsdev/rag-pipeline-utils");
 
 const jwt = new JWTValidator({
@@ -90,7 +90,7 @@ const claims = jwt.verify(token); // throws if invalid
 
 `GuardrailsPipeline` wraps a pipeline with the pre-retrieval, retrieval and post-generation guards. The retrieval guard runs between retrieval and generation (through `options.filterResults`), so documents the user may not see never reach the LLM.
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   GuardrailsPipeline,
@@ -137,7 +137,7 @@ See [Plugin Signatures](./Plugins.md#plugin-signatures).
 
 ## Cost Controls
 
-```javascript
+```javascript no-run
 const {
   CostTracker,
   PRICING_METADATA,
