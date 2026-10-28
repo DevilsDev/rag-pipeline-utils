@@ -131,6 +131,10 @@ console.log(result.evaluation.scores); // { faithfulness, relevance, contextPrec
 
 The `rag-pipeline` CLI builds a local index from your files and answers questions against it.
 
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/demo.gif" alt="Terminal recording: rag-pipeline init, ingest ./docs, then a query that returns the vacation policy as the top passage" width="720">
+</p>
+
 ```bash
 npx rag-pipeline init                      # writes .ragrc.json (interactive in a terminal)
 npx rag-pipeline ingest ./docs             # indexes .md, .html, .csv and .txt files
@@ -418,6 +422,7 @@ A short summary of the [comparison page](https://devilsdev.github.io/rag-pipelin
 | Stability        | Documented [SEMVER policy](SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
 
 Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
+3
 
 ## Connectors and plugins
 
