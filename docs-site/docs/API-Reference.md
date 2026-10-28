@@ -803,6 +803,15 @@ The shared plugin registry. Plugins registered here are resolvable by name in `c
 
 **Methods:**
 
+#### validatePlugin()
+
+```typescript
+validatePlugin(stage: PluginType, plugin: object, options?: { registry?: boolean }):
+  { valid: boolean; errors: string[]; warnings: string[] }
+```
+
+Checks a plugin without throwing; `{ registry: true }` adds the rules `register()` enforces. Coming in 2.6.0. See [Testing a plugin in code](./Plugins.md#testing-a-plugin-in-code).
+
 #### register()
 
 ```typescript
@@ -869,14 +878,22 @@ To install third-party plugins into a project, use `rag-pipeline hub install <so
 An object with `ParallelEmbedder`, `ParallelRetriever` and `Semaphore`.
 
 ```typescript
-new ParallelEmbedder(embedder, { batchSize?: 10, maxConcurrency?: 3, retryAttempts?: 2, retryDelay?: 1000 })
+new ParallelEmbedder(embedder, { batchSize?: 10, maxConcurrency?: 3, retryAttempts?: 2, retryDelay?: 1000, mode?: 'auto' | 'batch' | 'single' })
   .embedBatch(chunks: string[]): Promise<number[][]>
 
 new ParallelRetriever(retriever, { maxConcurrency?: 2 })
   .retrieveBatch(queryVectors: number[][]): Promise<any[]>
 ```
 
-`ParallelEmbedder` calls `embedder.embed(batch)` with an **array** of texts and expects one vector per text back; failed batches are retried.
+`ParallelEmbedder` splits the texts into batches and runs up to `maxConcurrency` at once; failed batches are retried.
+
+:::info[Coming in 2.6.0]
+
+The `mode` option is in the next release. In 2.5.0 `ParallelEmbedder` always calls `embed(batch)` with an array, so it fails with the built-in connectors, which embed one string at a time.
+
+:::
+
+`mode` decides how each batch is embedded: `'batch'` calls `embed(texts)` and expects one vector per text, `'single'` calls `embed(text)` for each text. The default, `'auto'`, uses `embedBatch(texts)` if the embedder has it, `'single'` for the built-in connectors (`LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`) and `'batch'` for other embedders.
 
 **Example:**
 

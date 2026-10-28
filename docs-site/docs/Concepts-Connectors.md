@@ -45,6 +45,36 @@ defined as a JSON schema in `contracts/`.
 
 All built-in connectors retry only transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`, fail fast with `MISSING_API_KEY` when no key is configured, honour the run's `AbortSignal`, and pass retrieved context to the model as delimited, untrusted reference data in the user message.
 
+### OpenAI-compatible providers (`baseURL`)
+
+:::info[Coming in 2.6.0]
+
+`baseURL` is in the next release. In 2.5.0 `OpenAIConnector` talks only to the OpenAI API.
+
+:::
+
+`OpenAIConnector` works with any server that implements the OpenAI API (Groq, Together, the Hugging Face router, vLLM, LM Studio, Ollama's `/v1` endpoint) when you pass `baseURL` and the provider's model names.
+
+```javascript no-run
+import { OpenAIConnector } from "@devilsdev/rag-pipeline-utils";
+
+// A hosted provider: pass its key explicitly.
+const groq = new OpenAIConnector({
+  baseURL: "https://api.groq.com/openai/v1",
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama-3.1-8b-instant",
+});
+
+// A local server that needs no key.
+const local = new OpenAIConnector({
+  baseURL: "http://localhost:1234/v1",
+  model: "qwen2.5-7b-instruct",
+  embeddingModel: "nomic-embed-text",
+});
+```
+
+With a custom `baseURL` the connector **never** reads `OPENAI_API_KEY`, so your OpenAI key is not sent to another provider. Pass `apiKey` for hosted providers, or leave it out for local servers that need none.
+
 ### Loaders
 
 | Connector                                           | Notes                                                             |
