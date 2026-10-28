@@ -8,6 +8,7 @@
  */
 
 const { EventEmitter } = require('events');
+const { throwIfAborted } = require('../connectors/connector-utils');
 
 /** @type {object} */
 const DEFAULT_CONFIG = {};
@@ -37,6 +38,7 @@ class CascadeReranker extends EventEmitter {
    * @param {Array<object|string>} documents - Documents to rerank
    * @param {object} [options]
    * @param {number} [options.topK] - Maximum number of results to return
+   * @param {AbortSignal} [options.signal] - Forwarded to every stage; checked between stages
    * @returns {Promise<object[]>} Reranked documents from the final stage
    * @throws {Error} If no rerankers are configured
    */
@@ -52,6 +54,7 @@ class CascadeReranker extends EventEmitter {
     let currentDocs = documents;
 
     for (let i = 0; i < this.rerankers.length; i++) {
+      throwIfAborted(options.signal);
       const reranker = this.rerankers[i];
       currentDocs = await reranker.rerank(query, currentDocs, options);
 

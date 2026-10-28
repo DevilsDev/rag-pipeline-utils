@@ -3,6 +3,7 @@
 const { EventEmitter } = require('events');
 const { validateInput } = require('../security/validator');
 const { tokenize } = require('../evaluate/scoring');
+const { detectInjection, DEFAULT_RULES } = require('./injection-detector');
 
 /**
  * Default configuration for the PreRetrievalGuard.
@@ -14,18 +15,10 @@ const DEFAULT_CONFIG = {
   enableTopicFiltering: false,
   blockedTopics: [],
   allowedTopics: [],
-  injectionPatterns: [
-    /ignore\s+(all\s+)?previous\s+instructions/i,
-    /you\s+are\s+now/i,
-    /forget\s+everything/i,
-    /act\s+as\s+(a|an)?\s*/i,
-    /pretend\s+(you\s+are|to\s+be)/i,
-    /system\s*:/i,
-    /\bDAN\b/,
-    /bypass\s+(all\s+)?restrictions/i,
-    /override\s+(safety|content|system)/i,
-    /jailbreak/i,
-  ],
+  // Built-in rules (see ./injection-detector). They match against normalised
+  // text (NFKC, zero-width/control characters removed, homoglyph and
+  // leetspeak folding). options.injectionPatterns adds extra patterns.
+  injectionPatterns: DEFAULT_RULES.map((rule) => rule.pattern),
 };
 
 /**
@@ -48,6 +41,10 @@ class PreRetrievalGuard extends EventEmitter {
   constructor(options = {}) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...options };
+    /** @private Extra patterns supplied by the caller */
+    this._customPatterns = options.injectionPatterns
+      ? [...options.injectionPatterns]
+      : [];
     if (options.injectionPatterns) {
       this.config.injectionPatterns = [
         ...DEFAULT_CONFIG.injectionPatterns,
@@ -63,8 +60,13 @@ class PreRetrievalGuard extends EventEmitter {
    * @returns {{
    *   safe: boolean,
    *   issues: string[],
-   *   sanitizedQuery: string
+   *   sanitizedQuery: string,
+   *   injection: { detected: boolean, matches: Array<{id: string, pattern: string, match: string}> }
    * }}
+   * `sanitizedQuery` is the query truncated to maxQueryLength; it is never
+   * rewritten. Injection findings are reported in `issues` and `injection`
+   * and make `safe` false; blocking is up to the caller (GuardrailsPipeline
+   * blocks in strict mode).
    * @fires PreRetrievalGuard#checked
    */
   check(query) {
@@ -77,7 +79,12 @@ class PreRetrievalGuard extends EventEmitter {
       query.trim().length === 0
     ) {
       issues.push('Query must be a non-empty string');
-      const result = { safe: false, issues, sanitizedQuery: '' };
+      const result = {
+        safe: false,
+        issues,
+        sanitizedQuery: '',
+        injection: { detected: false, matches: [] },
+      };
       this.emit('checked', result);
       return result;
     }
@@ -92,16 +99,22 @@ class PreRetrievalGuard extends EventEmitter {
       }
     }
 
-    let sanitizedQuery = validation.sanitized;
+    // The query is passed on unchanged (apart from length truncation).
+    // Deleting only the matched phrase used to leave the rest of an attack
+    // payload in place, so detections are reported instead.
+    const sanitizedQuery = validation.sanitized;
 
-    // 3. Injection detection
-    const matchedPatterns = [];
+    // 3. Injection detection on a normalised copy of the query
+    let injection = { detected: false, matches: [] };
     if (this.config.enableInjectionDetection) {
-      for (const pattern of this.config.injectionPatterns) {
-        if (pattern.test(sanitizedQuery)) {
-          matchedPatterns.push(pattern);
-          issues.push(`Potential prompt injection detected: ${pattern}`);
-        }
+      const found = detectInjection(sanitizedQuery, {
+        patterns: this._customPatterns,
+      });
+      injection = { detected: found.detected, matches: found.matches };
+      for (const m of found.matches) {
+        issues.push(
+          `Potential prompt injection detected: ${m.id} (${JSON.stringify(m.match)})`,
+        );
       }
     }
 
@@ -133,24 +146,11 @@ class PreRetrievalGuard extends EventEmitter {
       }
     }
 
-    // 5. Sanitize: strip matched injection patterns from query
-    if (matchedPatterns.length > 0) {
-      for (const pattern of matchedPatterns) {
-        // Create a global version of the pattern for replacement
-        const flags = pattern.flags.includes('g')
-          ? pattern.flags
-          : pattern.flags + 'g';
-        const globalPattern = new RegExp(pattern.source, flags);
-        sanitizedQuery = sanitizedQuery.replace(globalPattern, '').trim();
-      }
-      // Collapse multiple spaces left after stripping
-      sanitizedQuery = sanitizedQuery.replace(/\s{2,}/g, ' ').trim();
-    }
-
     const result = {
       safe: issues.length === 0,
       issues,
       sanitizedQuery,
+      injection,
     };
 
     this.emit('checked', result);

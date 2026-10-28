@@ -2,18 +2,31 @@
 
 const axios = require('axios');
 const { BaseConnector } = require('./base-connector');
+const {
+  missingApiKeyError,
+  resolveApiKey,
+  throwIfAborted,
+} = require('./connector-utils');
+
+const API_KEY_ENV = 'COHERE_API_KEY';
 
 /**
  * Default configuration for the Cohere connector.
+ * `apiKey` is a getter so the environment is read when a connector is
+ * constructed, not when this module is first required.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  apiKey: process.env.COHERE_API_KEY || '',
+  get apiKey() {
+    return process.env[API_KEY_ENV] || '';
+  },
   baseURL: 'https://api.cohere.ai/v1',
   embeddingModel: 'embed-english-v3.0',
   rerankModel: 'rerank-english-v3.0',
   inputType: 'search_document',
   queryInputType: 'search_query',
+  maxRetries: 3,
+  retryDelay: 1000,
 };
 
 /**
@@ -35,7 +48,11 @@ class CohereConnector extends BaseConnector {
    */
   constructor(options = {}) {
     super({ name: 'cohere', ...options });
-    this.config = { ...DEFAULT_CONFIG, ...options };
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...options,
+      apiKey: resolveApiKey(options, API_KEY_ENV),
+    };
     this.client = axios.create({
       baseURL: this.config.baseURL,
       headers: {
@@ -46,17 +63,49 @@ class CohereConnector extends BaseConnector {
   }
 
   /**
+   * @throws {Error} code MISSING_API_KEY when no key is configured
+   * @private
+   */
+  _requireApiKey() {
+    if (!this.config.apiKey) {
+      throw missingApiKeyError('Cohere', API_KEY_ENV);
+    }
+  }
+
+  /**
    * Connect to Cohere. Verifies the API key is present.
    * @returns {Promise<void>}
    * @throws {Error} If no API key is configured
    */
   async connect() {
-    if (!this.config.apiKey) {
-      throw new Error(
-        'Cohere API key required. Set COHERE_API_KEY or pass apiKey option.',
-      );
-    }
+    this._requireApiKey();
     await super.connect();
+  }
+
+  /**
+   * POST with the connector's retry policy and cancellation.
+   * @param {string} path
+   * @param {object} body
+   * @param {AbortSignal} [signal]
+   * @returns {Promise<object>} Response data
+   * @private
+   */
+  async _post(path, body, signal) {
+    throwIfAborted(signal);
+    this._requireApiKey();
+    return this.withRetry(
+      async () => {
+        const response = await this.client.post(
+          path,
+          body,
+          signal ? { signal } : undefined,
+        );
+        return response.data;
+      },
+      this.config.maxRetries,
+      this.config.retryDelay,
+      { signal },
+    );
   }
 
   /**
@@ -64,18 +113,21 @@ class CohereConnector extends BaseConnector {
    * Uses the document input type by default.
    *
    * @param {string} text - Input text to embed
+   * @param {Object} [options={}]
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<number[]>} Embedding vector
    */
-  async embed(text) {
-    return this.withRetry(async () => {
-      const response = await this.client.post('/embed', {
+  async embed(text, options = {}) {
+    const data = await this._post(
+      '/embed',
+      {
         texts: [text],
         model: this.config.embeddingModel,
         input_type: this.config.inputType,
-      });
-
-      return response.data.embeddings[0];
-    });
+      },
+      options.signal,
+    );
+    return data.embeddings[0];
   }
 
   /**
@@ -83,18 +135,21 @@ class CohereConnector extends BaseConnector {
    * Uses the query input type for better retrieval accuracy.
    *
    * @param {string} query - Query text to embed
+   * @param {Object} [options={}]
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<number[]>} Embedding vector
    */
-  async embedQuery(query) {
-    return this.withRetry(async () => {
-      const response = await this.client.post('/embed', {
+  async embedQuery(query, options = {}) {
+    const data = await this._post(
+      '/embed',
+      {
         texts: [query],
         model: this.config.embeddingModel,
         input_type: this.config.queryInputType,
-      });
-
-      return response.data.embeddings[0];
-    });
+      },
+      options.signal,
+    );
+    return data.embeddings[0];
   }
 
   /**
@@ -104,26 +159,27 @@ class CohereConnector extends BaseConnector {
    * @param {Array<Object|string>} documents - Documents to rerank
    * @param {Object} [options={}]
    * @param {number} [options.topK] - Number of top results to return (defaults to all)
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<Array<Object>>} Reranked documents with relevance scores
    */
   async rerank(query, documents, options = {}) {
-    return this.withRetry(async () => {
-      const docs = documents.map(
-        (doc) => doc.content || doc.text || String(doc),
-      );
+    const docs = documents.map((doc) => doc.content || doc.text || String(doc));
 
-      const response = await this.client.post('/rerank', {
+    const data = await this._post(
+      '/rerank',
+      {
         model: this.config.rerankModel,
         query,
         documents: docs,
         top_n: options.topK || documents.length,
-      });
+      },
+      options.signal,
+    );
 
-      return response.data.results.map((result) => ({
-        ...documents[result.index],
-        score: result.relevance_score,
-      }));
-    });
+    return data.results.map((result) => ({
+      ...documents[result.index],
+      score: result.relevance_score,
+    }));
   }
 
   /**
