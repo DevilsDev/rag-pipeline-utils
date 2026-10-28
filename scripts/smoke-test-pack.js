@@ -114,6 +114,40 @@ const results = [
     );
     run(process.execPath, [binPath, "--help"], consumerDir);
   }),
+  check("type declarations compile", () => {
+    // Uses the repo's TypeScript and @types/node; the consumer only has
+    // production dependencies installed.
+    fs.writeFileSync(
+      path.join(consumerDir, "check.ts"),
+      [
+        `import { createRagPipeline, CitationTracker, GuardrailsPipeline } from "${pkgName}";`,
+        "const pipeline = createRagPipeline({});",
+        "const tracker = new CitationTracker({ similarityThreshold: 0.5 });",
+        "const score: number = tracker.track('answer', []).groundednessScore;",
+        "new GuardrailsPipeline(pipeline, { strict: true });",
+        "export { score };",
+      ].join("\n"),
+    );
+    run(
+      process.execPath,
+      [
+        require.resolve("typescript/bin/tsc", { paths: [root] }),
+        "--noEmit",
+        "--strict",
+        "--module",
+        "commonjs",
+        "--moduleResolution",
+        "node",
+        "--esModuleInterop",
+        "--typeRoots",
+        path.join(root, "node_modules", "@types"),
+        "--types",
+        "node",
+        "check.ts",
+      ],
+      consumerDir,
+    );
+  }),
 ];
 
 if (keep) {

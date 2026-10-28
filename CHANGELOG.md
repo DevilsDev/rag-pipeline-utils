@@ -44,6 +44,11 @@ page.
   question, keeps documents the LLM omits, and honours `topK`.
 - **Agentic RAG**: with an `embedder`, each sub-query and refined query is
   embedded on its own instead of reusing the original query vector.
+- **TypeScript**: 52 runtime exports (citations, guardrails, hybrid
+  retrieval, agentic RAG, connectors, rerankers, GraphRAG, ...) had no
+  declarations. They are now generated from JSDoc at build time into
+  `dist/types/` and re-exported from `dist/index.d.ts`; the build fails if
+  any export is undeclared, and the smoke test compiles a TypeScript consumer.
 - **Logger**: console-style calls such as `logger.error("Failed:", msg)` no
   longer log the message as one key per character.
 

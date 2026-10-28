@@ -22,7 +22,8 @@ jobs:
   test:
     name: Test & Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Includes packing and installing the tarball for the smoke test
+    timeout-minutes: 25
     permissions:
       contents: read
       actions: read

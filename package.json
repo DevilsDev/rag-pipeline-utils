@@ -20,7 +20,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "node scripts/build.js && node scripts/generate-types.js",
+    "build": "node scripts/build.js && node scripts/generate-types.js && node scripts/check-type-exports.js",
     "prepack": "npm run build",
     "docs:validate": "node scripts/validate-docs-examples.js",
     "verify:esm": "node scripts/verify-esm.mjs",
@@ -188,6 +188,7 @@
     "@semantic-release/npm": "13.1.5",
     "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/jest": "^29.5.14",
+    "@types/node": "22.14.1",
     "acorn": "8.15.0",
     "babel-jest": "^29.7.0",
     "conventional-changelog-conventionalcommits": "^8.0.0",
@@ -210,6 +211,7 @@
     "semantic-release": "25.0.3",
     "sharp": "^0.34.1",
     "ts-jest": "^29.3.2",
+    "typescript": "5.8.3",
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
