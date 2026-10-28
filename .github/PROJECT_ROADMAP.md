@@ -1,101 +1,113 @@
-# 🛣️ Project Roadmap - RAG Pipeline Utils
+# Project Roadmap: RAG Pipeline Utils
 
-> Version: 1.2.0  
-> Status: In Progress  
-> Last Updated: 2025-04-22
+> Current release: 2.5.0 (2026-10-28)
+> Last updated: 2026-10-29
 
-This roadmap guides the feature evolution, developer tooling, CI/CD automation, and community integration for the `@devilsdev/rag-pipeline-utils` project. Changes here are synchronized to GitHub Issues and CI workflows.
+This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what comes next. The scope and order of the 3.0 work are explained in [PROJECT_v3_PLAN.md](PROJECT_v3_PLAN.md); the reasoning behind this version of the roadmap is in [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md).
 
----
+**Direction:** be the grounding, evaluation and guardrails layer for RAG in Node.js. It should work on its own through `createRagPipeline`, and next to LangChain, the Vercel AI SDK and Mastra.
 
-## ✅ Legend
+**Status:** ✅ Done · 🚧 In progress · 🔜 Planned
 
-| Symbol | Meaning      |
-| ------ | ------------ |
-| ✅     | Done         |
-| 🚧     | In Progress  |
-| 🔜     | Upcoming     |
-| 🧪     | Experimental |
+<!--
+This file is read by scripts/create-roadmap-issues.js,
+scripts/close-done-roadmap-issues.js and scripts/label-roadmap-issues.js.
+Keep every tracked item in the single table below, with the columns
+Release, Area, Feature, Description, Status, Tags (the scripts use the
+third column as the issue title, the fourth as its body and the fifth as
+the status). Do not add other tables or lines starting with a pipe,
+and do not use "|" inside a cell. Renaming a Feature changes its issue title.
+-->
 
----
+## Roadmap
 
-## 📦 Phase 1: Foundation & CI/CD
+| Release     | Area          | Feature                                         | Description                                                                                                          | Status  | Tags               |
+| ----------- | ------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- | ------------------ |
+| v2.0.0      | CI            | Automated test coverage with Jest               | Jest suite with coverage thresholds enforced in CI                                                                   | ✅ Done | test, ci           |
+| v2.0.0      | CI            | Codecov upload in CI                            | Coverage uploaded to Codecov from ci.yml                                                                             | ✅ Done | ci                 |
+| v2.0.0      | CI            | GitHub Actions CI: lint, test, release          | ci.yml (Test & Lint on Node 18, 20, 22) and release.yml                                                              | ✅ Done | ci                 |
+| v2.0.0      | Docs          | GitHub Pages deploy for Docusaurus              | docs-site built and deployed to GitHub Pages                                                                         | ✅ Done | docs, deploy       |
+| v2.1.0      | Tooling       | Roadmap to GitHub Issues sync                   | npm run roadmap:\* scripts create, label and close issues from this file (run by hand)                               | ✅ Done | ci, roadmap        |
+| v2.1.0      | Tooling       | Label sync from roadmap                         | npm run labels:sync creates the roadmap labels                                                                       | ✅ Done | ci, labels         |
+| v2.1.1      | Tooling       | Release notes and blog post generation          | npm run release:tag generates release notes and a blog post from a tag (run by hand)                                 | ✅ Done | cli, release, blog |
+| v2.1.0      | Docs          | Performance tuning and SSR check                | docs-site build validation (validate-build.js, test-build.js)                                                        | ✅ Done | perf, ssr          |
+| v2.1.1      | Docs          | Blog subscribe and RSS                          | Docusaurus blog with RSS and Atom feeds                                                                              | ✅ Done | blog               |
+| v2.1.1      | Docs          | SEO and Open Graph cards                        | Social card and page metadata on the docs site                                                                       | ✅ Done | seo, meta          |
+| v2.4.5      | Release       | OIDC trusted publishing with provenance         | release.yml publishes to npm without a long-lived token and attaches provenance                                      | ✅ Done | release, security  |
+| v2.5.0      | CLI           | Interactive onboarding via CLI                  | rag-pipeline init wizard with local, openai, anthropic and ollama templates                                          | ✅ Done | devx, onboarding   |
+| v2.5.0      | CLI           | Plugin support via CLI                          | hub install (path, .tgz, npm, registry) with checksum and security scan; hub certify                                 | ✅ Done | cli, plugin        |
+| v2.5.0      | CLI           | Working ingest, query, serve and doctor         | Persistent local index with FileVectorStore; local HTTP API; real diagnostics                                        | ✅ Done | cli                |
+| v2.5.0      | Docs          | Real-world RAG examples and use cases           | Three runnable examples with offline modes; use cases in the README                                                  | ✅ Done | docs, showcase     |
+| v2.5.0      | Community     | GitHub Discussions                              | Discussions enabled on the repository                                                                                | ✅ Done | community          |
+| v2.5.0      | Core          | Cancellation and real timeouts                  | AbortSignal passed to every stage; no stage starts after an abort                                                    | ✅ Done | core               |
+| v2.5.0      | Core          | Experimental entry point                        | Simulated modules moved to /experimental with deprecation warnings on the main entry                                 | ✅ Done | core, semver       |
+| v2.5.0      | Docs          | README examples tested in CI                    | Every JavaScript example in the README runs in the test suite                                                        | ✅ Done | docs, test         |
+| v2.0.0      | Community     | Contributor guide                               | docs/CONTRIBUTING.md (GitHub shows it from docs/)                                                                    | ✅ Done | community, docs    |
+| v2.5.x      | Community     | Issue templates                                 | Bug, feature and plugin submission templates and good-first-issue labels                                             | 🔜      | community          |
+| v2.5.x      | Community     | Launch post and listings                        | Publish the drafted dev.to post; submit to awesome-RAG, awesome-LLM and MCP server directories                       | 🔜      | community          |
+| v2.5.x      | Core          | Fix ExecutionTracer JSON export                 | exportTraces('json') throws on circular structures when captureOutputs is true                                       | 🔜      | bug                |
+| v2.5.x      | Core          | Fix ParallelEmbedder with single-text embedders | ParallelEmbedder calls embed(array) but built-in connectors embed one string                                         | 🔜      | bug                |
+| v2.5.x      | Docs site     | Docs site deploy fix                            | Only docs-build.yml deploys Pages; post-deploy check that the homepage and a docs page return 200                    | 🔜      | docs, ci           |
+| v2.5.x      | Docs site     | Accurate docs homepage                          | Working quick start, current stats and connector count, tagline from package.json, sidebar without 3.0 package names | 🔜      | docs               |
+| v2.5.x      | Docs site     | Docusaurus upgrade and cleanup                  | Docusaurus 3.10, retire the 2.3.1 snapshot from the version menu, remove unused components                           | 🔜      | docs               |
+| v2.6.0      | Docs site     | Docs site redesign                              | Banner-based theme for light and dark, new hero with pipeline diagram and CLI demo, CodeBlock everywhere, new navbar | 🔜      | docs, design       |
+| v2.6.0      | Docs site     | Docs search                                     | Ctrl/Cmd K local search now, Algolia DocSearch later                                                                 | 🔜      | docs, devx         |
+| v2.6.0      | Docs site     | Config builder on the docs site                 | Interactive .ragrc.json builder validated against the schema in the browser                                          | 🔜      | docs, devx         |
+| v2.6.0      | Docs site     | Generated API reference                         | TypeDoc pages from the generated type declarations                                                                   | 🔜      | docs               |
+| v2.6.0      | Docs site     | llms.txt for AI assistants                      | /llms.txt and /llms-full.txt generated from the docs                                                                 | 🔜      | docs, devx         |
+| v2.6.0      | Docs site     | Mermaid diagrams and changelog page             | Diagrams as code that work in dark mode; CHANGELOG rendered on the site                                              | 🔜      | docs               |
+| v2.6.0      | Docs site     | Docs examples tested in CI                      | Run docs-site JavaScript blocks like the README examples; Lighthouse and link checks                                 | 🔜      | docs, test         |
+| v2.6.0      | Core          | Intelligent caching                             | Opt-in embedding, retrieval and generation caches with MemoryCache, RedisCache and a CacheBackend contract           | 🔜      | core, perf         |
+| v2.6.0      | Integration   | Vercel AI SDK adapter                           | Use AI SDK embedding and language models as embedder and llm                                                         | 🔜      | integration        |
+| v2.6.0      | Integration   | Grounding on any framework's output             | Documented and tested use of citations, evaluation and guardrails on answers from LangChain, Mastra or the AI SDK    | 🔜      | integration, eval  |
+| v2.6.0      | Connectors    | OpenAI-compatible baseURL                       | baseURL option on OpenAIConnector for Hugging Face, Groq, Together, vLLM and LM Studio                               | 🔜      | connectors         |
+| v2.6.0      | Testing       | Testing entry point                             | /testing export with a deterministic offline connector and fixtures                                                  | 🔜      | test, devx         |
+| v2.6.0      | Eval          | Semantic similarity metric                      | calculateSemanticSimilarity scores an answer against a reference with any embedder                                   | 🔜      | eval               |
+| v2.6.0      | Plugins       | validatePlugin export                           | Export the existing plugin contract validator for use in plugin tests                                                | 🔜      | plugin             |
+| v2.6.0      | CLI           | Query trace, explain, stats and streaming       | query --trace, --explain, --stats, --streaming and --timeout; global --quiet                                         | 🔜      | cli                |
+| v2.6.0      | Docs          | Run examples in the browser                     | StackBlitz links for the three examples                                                                              | 🔜      | docs, devx         |
+| v2.6.0      | Packaging     | Lazy-load CLI dependencies                      | Library require() no longer loads CLI-only dependencies                                                              | 🔜      | perf, packaging    |
+| v2.7.0      | Eval          | rag-eval GitHub Action                          | Fails a pull request when groundedness, faithfulness or citation coverage drops; posts a summary                     | 🔜      | eval, ci           |
+| v2.7.0      | Eval          | Dataset validation and comparison               | validateDataset and compareConfigurations for test sets and A/B pipeline runs                                        | 🔜      | eval               |
+| v2.7.0      | Eval          | Synthetic test set generation                   | generateSyntheticDataset writes question and answer pairs with source IDs from a corpus                              | 🔜      | eval               |
+| v2.7.0      | CLI           | rag-pipeline eval command                       | Run a test set from the CLI with an HTML report                                                                      | 🔜      | cli, eval          |
+| v2.7.0      | Connectors    | pgvector and Qdrant retrievers                  | First-party vector-store connectors following the retriever contract; Pinecone next                                  | 🔜      | connectors         |
+| v2.7.0      | Docs          | Public benchmark                                | Reproducible hallucination-detection, citation-accuracy and cache-latency results                                    | 🔜      | docs, perf         |
+| v3.0.0      | Packaging     | Scoped packages                                 | Split into rag-core, rag-connectors, rag-eval and rag-guardrails; this package becomes a meta-package                | 🔜      | packaging, semver  |
+| v3.0.0      | Core          | Remove experimental classes from main entry     | The 15 deprecated classes stay available under /experimental only                                                    | 🔜      | core, semver       |
+| v3.0.0      | Platform      | Require Node.js 20                              | Drop Node 18 (end of life April 2025) from engines and CI                                                            | 🔜      | platform, semver   |
+| v3.0.0      | Connectors    | OpenAI SDK major upgrade                        | Move the openai dependency to its next major version                                                                 | 🔜      | connectors, semver |
+| v3.0.0      | Packaging     | Smaller install                                 | Provider SDKs become optional peer dependencies; CLI dependencies move to a separate package                         | 🔜      | packaging, semver  |
+| v3.0.0      | Docs          | Migration guide for 3.0                         | Covers keeping the meta-package and switching to direct sub-package imports                                          | 🔜      | docs, semver       |
+| v3.x        | Observability | OpenTelemetry exporter                          | Export ExecutionTracer spans to OpenTelemetry as an optional peer dependency                                         | 🔜      | observability      |
+| v3.x        | Core          | Context packing to a token budget               | Fit retrieved passages into a token budget using TokenBudget                                                         | 🔜      | core               |
+| v3.x        | Plugins       | Plugin contract test kit                        | runContractTests(plugin) for Jest or Vitest                                                                          | 🔜      | plugin, test       |
+| v3.x        | Core          | Streaming-first API                             | Time to first token as a primary metric                                                                              | 🔜      | core               |
+| v3.x        | Platform      | Edge runtime support                            | Cloudflare Workers and Vercel Edge after a dependency audit                                                          | 🔜      | platform           |
+| v3.x        | Examples      | MCP server template                             | Standalone MCP server exposing a pipeline in examples/                                                               | 🔜      | examples           |
+| v3.x        | Core          | Cost-aware routing                              | Pick the cheapest suitable LLM per query class                                                                       | 🔜      | core               |
+| Unscheduled | Docs          | Automated release blog post                     | A workflow that runs the release:tag blog generation when a release is published                                     | 🔜      | blog, release      |
+| Unscheduled | Infra         | Prebuilt Docker image                           | Publish the image from CI, only if the server use case warrants it                                                   | 🔜      | infra, deploy      |
+| Unscheduled | Docs          | i18n for the docs site                          | Translations and a language toggle, if there is demand                                                               | 🔜      | i18n               |
+| Unscheduled | Docs          | Comments on blog posts                          | Comment system for the docs blog, if there is demand                                                                 | 🔜      | blog, community    |
+| Unscheduled | DevX          | VS Code snippets and workspace                  | Snippets for pipelines and plugins                                                                                   | 🔜      | devx               |
+| Unscheduled | Infra         | Release notification webhook                    | Post releases to Slack or Discord                                                                                    | 🔜      | infra, notify      |
 
-| Feature                                | Status  | Target Version | Tags          |
-| -------------------------------------- | ------- | -------------- | ------------- |
-| Automated test coverage with Jest      | ✅ Done | v2.0.0         | test, ci      |
-| Codecov integration + badge            | ✅ Done | v2.0.0         | ci, badge     |
-| GitHub Actions CI: lint, test, release | ✅ Done | v2.0.0         | ci            |
-| GitHub Pages deploy for Docusaurus     | ✅ Done | v2.0.0         | docs, deploy  |
-| CHANGELOG auto-generation              | ✅ Done | v2.0.0         | release       |
-| Blog post sync from changelog          | ✅ Done | v2.1.0         | blog, release |
+## Considered, not planned
 
----
+These are listed here instead of the table so the issue scripts do not open issues for them.
 
-## 🚀 Phase 2: Community & Docs
+- **Hydra.js integration for dynamic config.** It was marked in progress for v2.2.0 but never started. `.ragrc.json`, `loadRagConfig` and `validate` cover configuration.
+- **Graph-based pipeline UI.** It was targeted at v2.5.0 and never started. A web UI is an anti-goal in the v3 plan.
+- **CHANGELOG auto-generation.** semantic-release was removed in 2.5.0. The changelog is written by hand and releases go through `release.yml`.
+- **Previously marked done, but no implementation found:** "Status badge: Release Review Passed" (no badge in the README and no workflow for it) and "Kanban sync for roadmap issues" (no workflow or script). They are dropped from tracking; re-add either as a new row if it is still wanted.
+- **Anti-goals from the v3 plan:** web UI, hosted SaaS, built-in hosted vector store, Python port, general-purpose agent framework, native binaries, Rust bindings, Kubernetes operator.
 
-| Feature                             | Status         | Target Version | Tags             |
-| ----------------------------------- | -------------- | -------------- | ---------------- |
-| Interactive onboarding via CLI      | 🚧 In Progress | v2.2.0         | devx, onboarding |
-| GitHub Discussions integration      | 🔜             | v2.2.0         | community        |
-| Contributor guide & issue templates | ✅ Done        | v2.0.0         | community, docs  |
-| Roadmap → GitHub Issues sync        | ✅ Done        | v2.1.0         | ci, roadmap      |
-| Label sync from roadmap             | ✅ Done        | v2.1.0         | ci, labels       |
-| Manual & automated blog generation  | ✅ Done        | v2.1.1         | blog, release    |
+## How this file is used
 
----
-
-## 🧠 Phase 3: Developer Tooling
-
-| Feature                                      | Status         | Target Version | Tags          |
-| -------------------------------------------- | -------------- | -------------- | ------------- |
-| CLI for `release:tag` with changelog preview | ✅ Done        | v2.1.1         | cli, release  |
-| Hydra.js integration for dynamic RAG config  | 🚧 In Progress | v2.2.0         | config, hydra |
-| CLI for roadmap issue tagging                | ✅ Done        | v2.1.1         | cli, roadmap  |
-| Status badge: Release Review Passed          | ✅ Done        | v2.1.1         | badge, ci     |
-| Kanban sync for roadmap issues               | ✅ Done        | v2.1.1         | roadmap, ci   |
-| Custom VS Code snippets & workspace          | 🔜             | v2.4.0         | devx          |
-
----
-
-## 🌐 Phase 4: International & Advanced UX
-
-| Feature                             | Status  | Target Version | Tags            |
-| ----------------------------------- | ------- | -------------- | --------------- |
-| Blog subscribe + RSS                | ✅ Done | v2.1.1         | blog            |
-| i18n translation support            | 🔜      | v2.4.0         | i18n            |
-| SEO optimization + open graph cards | ✅ Done | v2.1.1         | seo, meta       |
-| Comment system on blog posts        | 🔜      | v2.4.0         | blog, community |
-| Performance tuning + SSR check      | ✅ Done | v2.1.0         | perf, ssr       |
-| Multilingual toggle in header       | 🔜      | v2.4.0         | i18n, ui        |
-
----
-
-## 🧩 Future Enhancements
-
-| Feature                             | Status | Target Version | Tags           |
-| ----------------------------------- | ------ | -------------- | -------------- |
-| Plugin support via CLI              | 🔜     | v2.4.0         | cli, plugin    |
-| Graph-based pipeline UI             | 🔜     | v2.5.0         | ux, devx       |
-| Real-world RAG examples + use cases | 🔜     | v2.4.0         | docs, showcase |
-| Prebuilt Docker image               | 🔜     | v2.4.0         | infra, deploy  |
-| Slack/Discord webhook for releases  | 🔜     | v2.4.0         | infra, notify  |
-
----
-
-## 📊 Contributor Stats
-
-- GitHub Insights Badge: ![Contributors](https://img.shields.io/github/contributors/DevilsDev/rag-pipeline-utils)
-- Roadmap Sync: `scripts/create-roadmap-issues.js`
-- Label Sync: `scripts/ensure-roadmap-labels.js`
-- CLI Integration: `scripts/release-changelog.js`, `scripts/sync-roadmap-cli.js`
-
----
-
-## 📁 Files
-
-- `.github/PROJECT_ROADMAP.md` ← source
-- `scripts/ensure-roadmap-labels.js` ← label sync
-- `scripts/create-roadmap-issues.js` ← issue sync
-- `scripts/close-roadmap-done.js` ← close done items
-- `.github/workflows/sync-roadmap.yml` ← automation trigger
+- `npm run roadmap:sync`, `npm run roadmap:close` and `npm run labels:sync` read this file. They run by hand; no workflow runs them.
+  - `scripts/create-roadmap-issues.js` and `scripts/roadmap-sync.js` open an issue for each row not marked ✅.
+  - `scripts/close-done-roadmap-issues.js` closes the issue for each ✅ row.
+  - `scripts/label-roadmap-issues.js` labels matching issues.
+  - `scripts/ensure-roadmap-labels.js` creates the labels.
+- The full plan for 3.0 is in [PROJECT_v3_PLAN.md](PROJECT_v3_PLAN.md).
