@@ -1,7 +1,7 @@
 ---
 id: Concepts-Guardrails
-title: Concept — rag-guardrails
-sidebar_label: Guardrails (rag-guardrails)
+title: "Guardrails"
+sidebar_label: Guardrails
 description: Three-layer defense — prompt-injection detection pre-retrieval, relevance gating during retrieval, PII and groundedness checks post-generation.
 ---
 

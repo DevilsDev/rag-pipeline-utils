@@ -3,16 +3,18 @@
 import React from "react";
 import Layout from "@theme/Layout";
 import Link from "@docusaurus/Link";
+import CodeBlock from "@theme/CodeBlock";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import HomepageHeader from "@site/src/components/HomepageHeader";
 import HomepageFeatures from "@site/src/components/HomepageFeatures";
 import styles from "./index.module.css";
 
 function HomepageStats() {
   const stats = [
-    { value: "3", label: "Core Primitives" },
-    { value: "2050+", label: "Tests" },
+    { value: "4 + 1", label: "Model providers + offline" },
+    { value: "3", label: "Guardrail layers" },
+    { value: "ESM + CJS", label: "With TypeScript types" },
     { value: "MIT", label: "License" },
-    { value: "Zero", label: "Production Vulnerabilities" },
   ];
 
   return (
@@ -33,18 +35,57 @@ function HomepageStats() {
   );
 }
 
+// Same example as the README "Quick start", which runs in the test suite
+// (__tests__/docs/readme-examples.test.js). Keep the two in sync.
+const QUICK_START = `import {
+  createRagPipeline,
+  LocalEmbedder,
+  MemoryRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const docs = [
+  {
+    id: "vacation",
+    content: "Full-time employees receive twenty days of paid vacation per year.",
+  },
+  {
+    id: "remote",
+    content: "Remote work is allowed two days per week with manager approval.",
+  },
+];
+
+// Fit the offline embedder to your corpus and index the documents.
+const embedder = new LocalEmbedder();
+embedder.train(docs.map((doc) => doc.content));
+
+const retriever = new MemoryRetriever();
+await retriever.store(
+  docs.map((doc) => ({ ...doc, vector: embedder.embed(doc.content) })),
+);
+
+const pipeline = createRagPipeline({ embedder, retriever });
+const result = await pipeline.run({
+  query: "How many vacation days do I get?",
+});
+
+console.log(result.results[0].id); // "vacation"`;
+
 function HomepageQuickStart() {
   return (
     <section className={styles.quickStartSection}>
       <div className="container">
         <div className="row">
-          <div className="col col--6">
+          <div className="col col--5">
             <h2>Quick Start</h2>
             <p className={styles.quickStartDesc}>
-              Build a complete RAG pipeline in minutes. Install the package,
-              configure your plugins, and start querying your documents with
-              AI-powered retrieval.
+              Install the package and run a pipeline in under a minute. This
+              example needs no API keys: it uses the built-in TF-IDF embedder
+              and an in-memory store. Add an LLM connector to generate cited
+              answers.
             </p>
+            <CodeBlock language="bash">
+              npm install @devilsdev/rag-pipeline-utils
+            </CodeBlock>
             <div className={styles.quickStartButtons}>
               <Link
                 className="button button--primary button--lg"
@@ -60,30 +101,10 @@ function HomepageQuickStart() {
               </Link>
             </div>
           </div>
-          <div className="col col--6">
-            <div className={styles.codeExample}>
-              <pre>
-                <code>
-                  {`npm install @devilsdev/rag-pipeline-utils
-
-import {
-  createRagPipeline,
-  OpenAIConnector,
-  MemoryRetriever,
-} from '@devilsdev/rag-pipeline-utils';
-
-const pipeline = createRagPipeline({
-  retriever: new MemoryRetriever(),
-  llm: new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY }),
-});
-
-const result = await pipeline.run({
-  query: 'What is the vacation policy?',
-  options: { citations: true, evaluate: true },
-});`}
-                </code>
-              </pre>
-            </div>
+          <div className="col col--7">
+            <CodeBlock language="js" title="quick-start.mjs">
+              {QUICK_START}
+            </CodeBlock>
           </div>
         </div>
       </div>
@@ -157,9 +178,9 @@ function HomepageUseCases() {
                 <span className={styles.useCaseTag}>{c.tag}</span>
                 <h3>{c.title}</h3>
                 <p>{c.description}</p>
-                <pre className={styles.useCaseCode}>
-                  <code>{c.code}</code>
-                </pre>
+                <CodeBlock language="js" className={styles.useCaseCode}>
+                  {c.code}
+                </CodeBlock>
                 <Link to={c.link} className={styles.featureLink}>
                   {c.linkLabel} →
                 </Link>
@@ -177,7 +198,7 @@ function HomepageKeyFeatures() {
     {
       title: "Modular Plugin Architecture",
       description:
-        "5 plugin types with JSON Schema contracts and 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, and more).",
+        "5 plugin types with JSON Schema contracts; connectors for OpenAI, Anthropic, Cohere and Ollama, plus an offline embedder.",
       link: "/docs/Plugins",
     },
     {
@@ -189,13 +210,13 @@ function HomepageKeyFeatures() {
     {
       title: "RAG Evaluation",
       description:
-        "Faithfulness, relevance, context precision/recall, and groundedness metrics to measure and improve pipeline quality.",
+        "Faithfulness, relevance, context precision, context recall (with a reference answer) and groundedness.",
       link: "/docs/Evaluation",
     },
     {
       title: "Citation & Grounding",
       description:
-        "Source attribution, hallucination detection, and groundedness scoring to ensure trustworthy AI-generated answers.",
+        "Per-sentence source attribution, a hallucination report and a check that numbers in the answer appear in the sources.",
       link: "/docs/Evaluation",
     },
     {
@@ -223,9 +244,9 @@ function HomepageKeyFeatures() {
       link: "/docs/Performance",
     },
     {
-      title: "Enterprise Security",
+      title: "Security Building Blocks",
       description:
-        "JWT replay protection, plugin sandboxing, audit logging, and multi-tenancy support for production deployments.",
+        "JWT validation with replay protection, signed plugins, and encrypted audit logs. Multi-tenancy, SSO and the plugin sandbox are experimental.",
       link: "/docs/Security",
     },
   ];
@@ -258,10 +279,10 @@ function HomepageCTA() {
   return (
     <section className={styles.ctaSection}>
       <div className="container text--center">
-        <h2>Ready to Build Production RAG Systems?</h2>
+        <h2>Build RAG you can check</h2>
         <p className={styles.ctaDesc}>
-          Join developers building enterprise-grade RAG pipelines with modular
-          architecture, comprehensive security, and production observability.
+          Start offline with the quick start, then add a model, citations,
+          evaluation and guardrails as you need them.
         </p>
         <div className={styles.ctaButtons}>
           <Link
@@ -283,11 +304,9 @@ function HomepageCTA() {
 }
 
 export default function Home() {
+  const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout
-      title="Enterprise RAG Pipeline Utils"
-      description="Enterprise-grade composable RAG pipelines with advanced AI capabilities, comprehensive observability, and production-ready architecture for Node.js"
-    >
+    <Layout title="Composable RAG for Node.js" description={siteConfig.tagline}>
       <HomepageHeader />
       <main>
         <HomepageStats />

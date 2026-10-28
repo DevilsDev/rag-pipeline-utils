@@ -1,7 +1,7 @@
 ---
 id: Concepts-Connectors
-title: Concept — rag-connectors
-sidebar_label: Connectors (rag-connectors)
+title: "Connectors: providers and stores"
+sidebar_label: Connectors
 description: Provider integrations for embedders, vector stores, and LLMs. Swappable, contract-validated, and isolatable from your pipeline orchestration.
 ---
 

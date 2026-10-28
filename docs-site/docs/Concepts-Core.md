@@ -1,7 +1,7 @@
 ---
 id: Concepts-Core
-title: Concept — rag-core
-sidebar_label: Core (rag-core)
+title: "Core: pipeline and contracts"
+sidebar_label: Core
 description: The pipeline orchestrator, plugin registry, and primitive contracts. The minimal surface you need to run a RAG query end-to-end.
 ---
 

@@ -84,3 +84,55 @@ path-traversal:
 defense-in-depth:
   label: Defense-in-Depth
   permalink: /blog/tags/defense-in-depth
+
+embeddings:
+  label: "Embeddings"
+  permalink: /blog/tags/embeddings
+
+customization:
+  label: "Customization"
+  permalink: /blog/tags/customization
+
+tutorial:
+  label: "Tutorial"
+  permalink: /blog/tags/tutorial
+
+production:
+  label: "Production"
+  permalink: /blog/tags/production
+
+best-practices:
+  label: "Best practices"
+  permalink: /blog/tags/best-practices
+
+authentication:
+  label: "Authentication"
+  permalink: /blog/tags/authentication
+
+v2.4.0:
+  label: "v2.4.0"
+  permalink: /blog/tags/v2.4.0
+
+features:
+  label: "Features"
+  permalink: /blog/tags/features
+
+comparison:
+  label: "Comparison"
+  permalink: /blog/tags/comparison
+
+langchain:
+  label: "LangChain"
+  permalink: /blog/tags/langchain
+
+performance:
+  label: "Performance"
+  permalink: /blog/tags/performance
+
+optimization:
+  label: "Optimization"
+  permalink: /blog/tags/optimization
+
+case-study:
+  label: "Case study"
+  permalink: /blog/tags/case-study

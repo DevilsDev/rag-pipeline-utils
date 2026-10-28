@@ -13,20 +13,23 @@
 const path = require("path");
 // Read once at config-load. Docusaurus invokes this file at build time,
 // so picking up the version from the root package.json is fine here.
-const PKG_VERSION = require(
-  path.resolve(__dirname, "..", "package.json"),
-).version;
+const ROOT_PKG = require(path.resolve(__dirname, "..", "package.json"));
+const PKG_VERSION = ROOT_PKG.version;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "RAG Pipeline Utils",
-  tagline:
-    "Enterprise-grade composable RAG pipelines with advanced AI capabilities",
+  // Same wording as the npm package and the README.
+  tagline: ROOT_PKG.description,
   url: "https://devilsdev.github.io",
   baseUrl: "/rag-pipeline-utils/",
   deploymentBranch: "gh-pages",
-  onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "throw",
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: "throw",
+    },
+  },
   trailingSlash: false,
 
   favicon: "img/favicon.ico",
@@ -70,9 +73,12 @@ const config = {
           label: "Documentation",
         },
         {
-          type: "docsVersionDropdown",
+          // Only the current version is published; older snapshots were
+          // removed from the menu because they documented APIs that never
+          // existed. The label links to the release notes.
+          href: `https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v${PKG_VERSION}`,
+          label: `v${PKG_VERSION}`,
           position: "left",
-          dropdownActiveClassDisabled: true,
         },
         { to: "/blog", label: "Blog", position: "left" },
         {
@@ -193,14 +199,13 @@ const config = {
         docs: {
           sidebarPath: "./sidebars.js",
           lastVersion: "current",
+          // versioned_docs/version-2.3.1 is kept on disk until 3.0 but no
+          // longer built or listed.
+          onlyIncludeVersions: ["current"],
           versions: {
             current: {
-              label: `${PKG_VERSION} (Latest)`,
+              label: PKG_VERSION,
               banner: "none",
-            },
-            "2.3.1": {
-              label: "2.3.1",
-              banner: "unmaintained",
             },
           },
         },

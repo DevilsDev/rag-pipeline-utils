@@ -14,7 +14,7 @@ const features = [
   {
     title: "Modular Plugin Architecture",
     description:
-      "5 plugin types with JSON Schema contracts and 7 provider connectors (OpenAI, Anthropic, Cohere, Ollama, and more). Swap any component without rewriting your pipeline.",
+      "5 plugin types with JSON Schema contracts, connectors for OpenAI, Anthropic, Cohere and Ollama, and an offline embedder. Swap any component without rewriting your pipeline.",
   },
   {
     title: "Smart Chunking & Retrieval",
@@ -24,7 +24,7 @@ const features = [
   {
     title: "RAG Evaluation",
     description:
-      "Faithfulness, relevance, context precision/recall, and groundedness metrics to measure and improve RAG pipeline quality.",
+      "Faithfulness, relevance, context precision, context recall (with a reference answer) and groundedness, including a check that numbers in an answer appear in its sources.",
   },
 ];
 
