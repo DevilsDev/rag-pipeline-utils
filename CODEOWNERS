@@ -45,7 +45,6 @@ README.md @tech-lead @tech-writer
 
 # Release and versioning
 CHANGELOG.md @release-manager @tech-lead
-release.config.js @release-manager @devops
 
 # Scripts and automation
 scripts/ @devops @tech-lead

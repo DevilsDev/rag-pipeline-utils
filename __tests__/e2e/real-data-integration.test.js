@@ -6,6 +6,7 @@
 
 // Jest is available globally in CommonJS mode;
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { createRagPipeline } = require("../../src/index.js");
 const {
@@ -22,22 +23,17 @@ describe("End-to-End Real Data Integration", () => {
   let sandboxConfig;
   let registry;
 
+  afterAll(() => {
+    fs.rmSync(testDataPath, { recursive: true, force: true });
+  });
+
   beforeAll(async () => {
     // Initialize plugin registry
     registry = new PluginRegistry();
 
     // Setup test data directory
-    testDataPath = path.join(
-      process.cwd(),
-      "__tests__",
-      "fixtures",
-      "real-data",
-    );
-
-    // Ensure test data directory exists
-    if (!fs.existsSync(testDataPath)) {
-      fs.mkdirSync(testDataPath, { recursive: true });
-    }
+    // Scratch files go to a temp dir so the run never touches the repo tree
+    testDataPath = fs.mkdtempSync(path.join(os.tmpdir(), "rag-e2e-real-data-"));
 
     // Create sandbox configuration
     sandboxConfig = {

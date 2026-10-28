@@ -45,10 +45,6 @@ updates:
       docusaurus:
         patterns:
           - "@docusaurus/*"
-      semantic-release:
-        patterns:
-          - "@semantic-release/*"
-          - "semantic-release"
       testing:
         patterns:
           - "jest*"

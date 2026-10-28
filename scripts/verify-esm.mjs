@@ -60,7 +60,7 @@ const classExports = [
 for (const name of classExports) {
   if (name in esmModule && typeof esmModule[name] !== "function") {
     console.error(
-      `TYPE MISMATCH: ${name} should be function/class, got ${typeof esmModule[name]}`
+      `TYPE MISMATCH: ${name} should be function/class, got ${typeof esmModule[name]}`,
     );
     errors++;
   }
@@ -87,7 +87,7 @@ const functionExports = [
 for (const name of functionExports) {
   if (name in esmModule && typeof esmModule[name] !== "function") {
     console.error(
-      `TYPE MISMATCH: ${name} should be function, got ${typeof esmModule[name]}`
+      `TYPE MISMATCH: ${name} should be function, got ${typeof esmModule[name]}`,
     );
     errors++;
   }
@@ -108,6 +108,6 @@ if (errors > 0) {
   process.exit(1);
 } else {
   console.log(
-    `ESM verification passed - ${cjsExports.length} CJS exports, ${esmExports.length} ESM exports.`
+    `ESM verification passed - ${cjsExports.length} CJS exports, ${esmExports.length} ESM exports.`,
   );
 }
