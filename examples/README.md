@@ -1,30 +1,55 @@
 # Examples
 
-End-to-end runnable examples that demonstrate
-`@devilsdev/rag-pipeline-utils` in real deployment shapes.
+Runnable examples for `@devilsdev/rag-pipeline-utils` 2.5.
 
-| Example                                   | Stack                                    | What it shows                                                                                                                                    |
-| ----------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`fastify-rag-demo/`](./fastify-rag-demo) | Fastify 5 + OpenAI + in-memory retriever | Minimal RAG service with citations, evaluation, and 3-layer guardrails. Ships with Dockerfile + Fly.io + Railway configs for one-command deploy. |
+| Example                                   | Stack                                    | What it shows                                                                                                                                       | Offline mode            |
+| ----------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| [`basic-pipeline/`](./basic-pipeline)     | Node 18+, built-ins only                 | `createRagPipeline` with `LocalEmbedder` + `MemoryRetriever`, a custom LLM plugin, citations/evaluation, retrieval-only runs, `AbortSignal` cancel. | Always offline          |
+| [`openai-pinecone/`](./openai-pinecone)   | OpenAI + Pinecone                        | `OpenAIConnector` as embedder and llm, a Pinecone retriever adapter, citations and evaluation.                                                      | `npm run mock`          |
+| [`fastify-rag-demo/`](./fastify-rag-demo) | Fastify 5 + OpenAI + in-memory retriever | HTTP RAG service with citations, evaluation, strict guardrails and request cancellation. Ships with Dockerfile + Fly.io + Railway configs.          | `npm run start:offline` |
 
-Each example is **self-contained** — its own `package.json`, its own
-`README.md`, its own deploy story. Pick the one closest to your stack
-and use it as a starting point.
+Each example is **self-contained**: its own `package.json`, its own
+`README.md` with run instructions. Pick the one closest to your stack and
+use it as a starting point.
 
 ## Running an example
 
 ```bash
 cd examples/<example-name>
-cp .env.example .env       # configure your provider keys
 npm install
 npm start
 ```
 
-Smoke test it:
+Then follow the example's README for API keys and extras:
 
-```bash
-node scripts/smoke.js
+- `basic-pipeline`: nothing else needed.
+- `openai-pinecone`: `cp .env.example .env` and fill in `OPENAI_API_KEY`
+  and `PINECONE_API_KEY`, or run `npm run mock` without keys.
+- `fastify-rag-demo`: set `OPENAI_API_KEY` in the environment (or use
+  `npm run start:offline`), then run `npm run smoke` in another terminal.
+
+## The 2.5 API in brief
+
+```javascript
+const pipeline = createRagPipeline({
+  loader,
+  embedder,
+  retriever,
+  llm,
+  reranker,
+});
+
+const result = await pipeline.run({
+  query: "What is RAG?",
+  options: { topK: 3, citations: true, evaluate: true, signal, timeout: 30000 },
+});
+// { success, query, results, answer, citations?, evaluation? }
+// answer is null when no llm is configured
+// failures resolve { success: false, error } (e.g. "Execution aborted")
 ```
+
+A vector retriever such as `MemoryRetriever` needs an `embedder` (or a
+`queryVector` passed to `run()`).
 
 ## Suggesting a new example
 
