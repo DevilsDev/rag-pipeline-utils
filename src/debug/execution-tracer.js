@@ -28,10 +28,17 @@ function generateTraceId() {
 }
 
 /**
- * Truncate a value if its JSON representation exceeds maxSize bytes
- * @param {*} value - Value to truncate
+ * Snapshot a value for a trace: a JSON copy, or a truncated string when its
+ * JSON exceeds maxSize characters.
+ *
+ * Always a copy, never the live object: the traced run attaches the trace to
+ * its result (`result.trace`), so storing the result itself made the trace
+ * circular and exportTraces('json') threw. A copy also keeps later changes to
+ * the result out of the recorded trace.
+ *
+ * @param {*} value - Value to snapshot
  * @param {number} maxSize - Maximum serialized size in characters
- * @returns {*} Original value or truncated string
+ * @returns {*} JSON copy of the value, or a truncated string
  */
 function truncatePayload(value, maxSize) {
   if (value === undefined || value === null) {
@@ -43,8 +50,11 @@ function truncatePayload(value, maxSize) {
   } catch {
     return '[unserializable]';
   }
+  if (serialized === undefined) {
+    return undefined; // functions and symbols have no JSON form
+  }
   if (serialized.length <= maxSize) {
-    return value;
+    return JSON.parse(serialized);
   }
   return serialized.slice(0, maxSize) + '...[truncated]';
 }
