@@ -28,6 +28,22 @@ function parsePositiveInteger(value) {
   return parsed;
 }
 
+// Top-level commands offered by shell completion
+const COMMANDS = [
+  "init",
+  "ingest",
+  "query",
+  "run",
+  "serve",
+  "doctor",
+  "validate",
+  "hub",
+  "plugin",
+  "config",
+  "info",
+  "completion",
+].join(" ");
+
 /**
  * Generate shell completion script
  */
@@ -36,7 +52,7 @@ function generateCompletionScript(shell) {
     case "bash":
       return `# RAG Pipeline bash completion
 _rag_pipeline_completions() {
-  COMPREPLY=($(compgen -W "init doctor ingest query plugin config info validate completion" -- "\${COMP_WORDS[COMP_CWORD]}"))
+  COMPREPLY=($(compgen -W "${COMMANDS}" -- "\${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _rag_pipeline_completions rag-pipeline`;
 
@@ -45,13 +61,13 @@ complete -F _rag_pipeline_completions rag-pipeline`;
 #compdef rag-pipeline
 _rag_pipeline() {
   _arguments \\
-    '1:command:(init doctor ingest query plugin config info validate completion)'
+    '1:command:(${COMMANDS})'
 }
 _rag_pipeline "$@"`;
 
     case "fish":
       return `# RAG Pipeline fish completion
-complete -c rag-pipeline -n '__fish_use_subcommand' -a 'init doctor ingest query plugin config info validate completion'`;
+complete -c rag-pipeline -n '__fish_use_subcommand' -a '${COMMANDS}'`;
 
     default:
       return `# Completion not available for ${shell}`;

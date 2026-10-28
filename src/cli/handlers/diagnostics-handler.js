@@ -124,6 +124,33 @@ async function handleInfo(globalOptions, options) {
         console.log("");
       }
     }
+
+    // Available components: built-ins plus custom plugins from the config
+    if ((!options.system && !options.config) || options.plugins) {
+      const { BUILT_INS } = require("../../config/component-factory.js");
+      console.log("Built-in components:");
+      for (const [stage, names] of Object.entries(BUILT_INS)) {
+        console.log(`  ${stage}: ${Object.keys(names).join(", ")}`);
+      }
+      let custom = {};
+      try {
+        custom =
+          JSON.parse(await fs.readFile(globalOptions.config, "utf-8"))
+            .plugins || {};
+      } catch {
+        // no or invalid config: built-ins only
+      }
+      const entries = Object.entries(custom).flatMap(([stage, plugins]) =>
+        Object.entries(plugins || {}).map(
+          ([name, modulePath]) => `  ${stage}/${name}: ${modulePath}`,
+        ),
+      );
+      if (entries.length > 0) {
+        console.log("Custom plugins:");
+        entries.forEach((line) => console.log(line));
+      }
+      console.log("");
+    }
   } catch (error) {
     logger.error("❌ Failed to get system information:", error.message);
     process.exit(1);

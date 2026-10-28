@@ -61,7 +61,6 @@ class EnhancedCLI {
       .version(getVersion(), "-v, --version", "Display version information")
       .option("--config <path>", "Configuration file path", ".ragrc.json")
       .option("--verbose", "Enable verbose output")
-      .option("--quiet", "Suppress non-essential output")
       .option("--no-color", "Disable colored output")
       .option("--dry-run", "Show what would be done without executing")
       .helpOption("-h, --help", "Display help information")
@@ -167,7 +166,6 @@ class EnhancedCLI {
     configCmd
       .command("show")
       .description("Show current configuration")
-      .option("--format <format>", "Output format (json, yaml, table)", "json")
       .option("--section <section>", "Show specific configuration section")
       .action(async (options) => {
         await handleConfigShow(this.program.opts(), options);
@@ -196,7 +194,7 @@ class EnhancedCLI {
     this.program
       .command("info")
       .description("Show system and plugin information")
-      .option("--plugins", "Show registered plugin versions")
+      .option("--plugins", "Show built-in components and custom plugins")
       .option("--system", "Show system information")
       .option("--config", "Show configuration summary")
       .action(async (options) => {
