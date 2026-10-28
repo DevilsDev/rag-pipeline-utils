@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Deprecation wrappers for public exports (see SEMVER.md, "Deprecation
@@ -11,7 +11,7 @@ const warned = new Set();
 function warnOnce(code, message) {
   if (warned.has(code)) return;
   warned.add(code);
-  process.emitWarning(message, { type: "DeprecationWarning", code });
+  process.emitWarning(message, { type: 'DeprecationWarning', code });
 }
 
 /**
@@ -31,8 +31,8 @@ function deprecateClass(Class, { name, message }) {
   if (wrapped.has(Class)) return wrapped.get(Class);
   // SSOManager -> RAG_DEP_SSO_MANAGER, OAuth2Provider -> RAG_DEP_O_AUTH2_PROVIDER
   const snake = name
-    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
     .toUpperCase();
   const code = `RAG_DEP_${snake}`;
   const proxy = new Proxy(Class, {
@@ -50,8 +50,8 @@ function deprecateClass(Class, { name, message }) {
       // members (call, bind, toString, Symbol.hasInstance for instanceof)
       // must not warn.
       const ownStatic =
-        typeof value === "function" &&
-        property !== "prototype" &&
+        typeof value === 'function' &&
+        property !== 'prototype' &&
         Object.prototype.hasOwnProperty.call(target, property);
       if (ownStatic) {
         return function deprecatedStatic(...args) {

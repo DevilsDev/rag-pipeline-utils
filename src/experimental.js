@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * @devilsdev/rag-pipeline-utils/experimental
@@ -22,28 +22,28 @@
  *   `rag-pipeline hub certify check` for computed scores).
  */
 
-const { MultiModalProcessor } = require("./ai/multimodal");
-const { AdaptiveRetrievalEngine } = require("./ai/retrieval-engine");
+const { MultiModalProcessor } = require('./ai/multimodal');
+const { AdaptiveRetrievalEngine } = require('./ai/retrieval-engine');
 const {
   FederatedLearningCoordinator,
-} = require("./ai/federation/federated-learning-coordinator");
+} = require('./ai/federation/federated-learning-coordinator');
 const {
   ModelTrainingOrchestrator,
-} = require("./ai/training/model-training-orchestrator");
-const { DataGovernanceManager } = require("./enterprise/data-governance");
+} = require('./ai/training/model-training-orchestrator');
+const { DataGovernanceManager } = require('./enterprise/data-governance');
 const {
   TenantManager,
   ResourceMonitor,
-} = require("./enterprise/multi-tenancy");
+} = require('./enterprise/multi-tenancy');
 const {
   SSOManager,
   SAMLProvider,
   OAuth2Provider,
   ActiveDirectoryProvider,
   OIDCProvider,
-} = require("./enterprise/sso-integration");
-const { PluginSandbox } = require("./security/plugin-sandbox");
-const { PluginCertification } = require("./ecosystem/plugin-certification");
+} = require('./enterprise/sso-integration');
+const { PluginSandbox } = require('./security/plugin-sandbox');
+const { PluginCertification } = require('./ecosystem/plugin-certification');
 
 module.exports = {
   // AI/ML
