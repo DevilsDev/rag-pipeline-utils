@@ -48,22 +48,34 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
 }
 
 /**
- * Compute context recall: the fraction of answer claims that are supported by retrieved documents.
+ * Compute context recall: the fraction of the claims in a REFERENCE
+ * (ground-truth) answer that the retrieved documents support. It measures
+ * whether retrieval found everything needed to answer correctly; pass the
+ * expected answer, not the generated one (scoring the generated answer
+ * against the documents is faithfulness).
  *
- * @param {string} answer - The generated answer text
+ * A claim is one sentence of the reference answer. It is supported when some
+ * document scores at least `threshold` with computeSupportScore, including
+ * the numeric consistency check.
+ *
+ * @param {string} referenceAnswer - The reference (ground-truth) answer text
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
  * @param {number} [options.threshold=0.5] - Minimum share of a claim's content terms a doc must contain to support it
  * @returns {{ score: number, supportedClaims: number, totalClaims: number, details: Array<{ claim: string, score: number, isSupported: boolean, bestDocIndex: number }> }}
  */
-function computeContextRecall(answer, retrievedDocs, options = {}) {
+function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
   const { threshold = 0.5 } = options;
 
-  if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
+  if (
+    !referenceAnswer ||
+    typeof referenceAnswer !== 'string' ||
+    referenceAnswer.trim().length === 0
+  ) {
     return { score: 0, supportedClaims: 0, totalClaims: 0, details: [] };
   }
 
-  const claims = splitSentences(answer);
+  const claims = splitSentences(referenceAnswer);
 
   if (claims.length === 0) {
     return { score: 0, supportedClaims: 0, totalClaims: 0, details: [] };
@@ -98,7 +110,10 @@ function computeContextRecall(answer, retrievedDocs, options = {}) {
       }
 
       const docTokens = tokenize(docContent);
-      const similarity = computeSupportScore(claimTokens, docTokens);
+      const similarity = computeSupportScore(claimTokens, docTokens, null, {
+        claimText: claim,
+        docText: docContent,
+      });
 
       if (similarity > bestScore) {
         bestScore = similarity;

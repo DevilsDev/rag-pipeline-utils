@@ -53,6 +53,7 @@ describe("createRagPipeline", () => {
     expect(result.success).toBe(true);
     expect(embedder.embedQuery).toHaveBeenCalledWith(
       "How much vacation do I get?",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result.results[0].id).toBe("vacation");
     expect(typeof result.citations.groundednessScore).toBe("number");

@@ -62,23 +62,68 @@ describe("grounding metrics on realistic chunks", () => {
   test("PipelineEvaluator gives a verbatim answer non-zero faithfulness and recall", () => {
     const evaluator = new PipelineEvaluator();
 
-    const good = evaluator.evaluate({
-      query: QUERY,
-      answer: VERBATIM,
-      results: DOCS,
-    });
+    // Context recall scores a reference answer against the retrieved docs.
+    const good = evaluator.evaluate(
+      { query: QUERY, answer: VERBATIM, results: DOCS },
+      { referenceAnswer: VERBATIM },
+    );
     expect(good.scores.faithfulness).toBe(1);
     expect(good.scores.contextRecall).toBe(1);
     expect(good.scores.contextPrecision).toBeGreaterThan(0);
     expect(good.details.faithfulness.details[0].isFaithful).toBe(true);
 
-    const bad = evaluator.evaluate({
-      query: QUERY,
-      answer: UNRELATED,
-      results: DOCS,
-    });
+    const bad = evaluator.evaluate(
+      { query: QUERY, answer: UNRELATED, results: DOCS },
+      { referenceAnswer: UNRELATED },
+    );
     expect(bad.scores.faithfulness).toBe(0);
     expect(bad.scores.contextRecall).toBe(0);
+  });
+
+  describe("numeric consistency", () => {
+    // VERBATIM with the number changed: lexically almost identical.
+    const WRONG_NUMBER = VERBATIM.replace("five", "thirty");
+    const WRONG_DIGITS =
+      "Full-time employees receive 30 days of paid vacation per year.";
+    const RIGHT_DIGITS =
+      "Full-time employees receive 20 days of paid vacation per year.";
+
+    test("the wrong-number sentence is lexically close to the source", () => {
+      expect(WRONG_NUMBER).not.toBe(VERBATIM);
+      expect(WRONG_NUMBER).toMatch(/thirty days/);
+    });
+
+    test("CitationTracker does not ground a wrong number", () => {
+      const tracker = new CitationTracker();
+      const result = tracker.track(WRONG_NUMBER, DOCS);
+      expect(result.groundednessScore).toBe(0);
+      expect(tracker.track(WRONG_DIGITS, DOCS).groundednessScore).toBe(0);
+    });
+
+    test("a number written as digits grounds against the same number in words", () => {
+      const result = new CitationTracker().track(RIGHT_DIGITS, DOCS);
+      expect(result.groundednessScore).toBe(1);
+    });
+
+    test("faithfulness and context recall flag the wrong number", () => {
+      const evaluator = new PipelineEvaluator();
+      const result = evaluator.evaluate(
+        { query: QUERY, answer: WRONG_NUMBER, results: DOCS },
+        { referenceAnswer: WRONG_NUMBER },
+      );
+      expect(result.scores.faithfulness).toBe(0);
+      expect(result.scores.contextRecall).toBe(0);
+      expect(result.details.faithfulness.details[0].score).toBeLessThan(0.5);
+    });
+
+    test("PostGenerationGuard and SelfCritiqueChecker reject the wrong number", () => {
+      expect(new PostGenerationGuard().check(WRONG_NUMBER, DOCS).safe).toBe(
+        false,
+      );
+      expect(new SelfCritiqueChecker().check(WRONG_NUMBER, DOCS).approved).toBe(
+        false,
+      );
+    });
   });
 
   test("faithfulness details from citations agree with the headline score", () => {

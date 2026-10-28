@@ -502,13 +502,11 @@ describe("Load Testing Suite", () => {
       const secondHalfAvg =
         secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
 
-      // Performance shouldn't degrade more than 50%, but handle edge cases
-      if (firstHalfAvg > 0) {
-        expect(secondHalfAvg).toBeLessThan(firstHalfAvg * 1.5);
-      } else {
-        // If first half avg is 0, just check that second half is reasonable
-        expect(secondHalfAvg).toBeLessThan(10000); // Less than 10 seconds per operation
-      }
+      // Performance shouldn't degrade more than 50%. Iterations take only a
+      // few ms (Date.now() resolution is 1 ms), so allow a small absolute
+      // slack instead of comparing near-zero averages as ratios.
+      const SLACK_MS = 5;
+      expect(secondHalfAvg).toBeLessThan(firstHalfAvg * 1.5 + SLACK_MS);
     }, 90000); // 90 second timeout for endurance test
 
     it.skip("should handle memory stability over time", async () => {
