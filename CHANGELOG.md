@@ -21,10 +21,14 @@ page.
   unused `dotenv`. Importing the bundle no longer prints "Missing Contract"
   warnings. A tarball smoke test (`npm run smoke:pack`) now runs in CI and
   before publish.
-- **`createRagPipeline`**: the query embedding was computed and discarded, so
-  the README quick start returned `success: false`. Plugins registered on the
-  exported `pluginRegistry` are now resolvable by name, and the timeout timer
-  is cleared when a run finishes.
+- **`createRagPipeline`**: the `embedder` result was computed and discarded,
+  so vector retrievers never received a `queryVector`. Plugins registered on
+  the exported `pluginRegistry` are now resolvable by name, and the timeout
+  timer is cleared when a run finishes.
+- **`MemoryRetriever`** throws a clear error when no `queryVector` is given
+  instead of crashing inside cosine similarity.
+- **README / docs quick start** now passes an `embedder`; as previously
+  written it could not retrieve anything from `MemoryRetriever`.
 - **Citations** with zero retrieved documents no longer fail the run; every
   sentence is reported as unsupported.
 - **`HybridRetriever`** passes the full request (including `queryVector`) to

@@ -93,6 +93,18 @@ describe("createRagPipeline", () => {
     expect(result.results[0].id).toBe("remote");
   });
 
+  test("explains a missing embedder instead of crashing in cosine similarity", async () => {
+    const pipeline = createRagPipeline({
+      retriever: await makeRetriever(),
+      llm: echoLlm,
+    });
+
+    const result = await pipeline.run({ query: "vacation" });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/queryVector is required.*embedder/);
+  });
+
   test("citations succeed with zero retrieved documents", async () => {
     const pipeline = createRagPipeline({ llm: echoLlm });
 
@@ -132,6 +144,56 @@ describe("createRagPipeline", () => {
     });
 
     expect(result).toEqual({ success: false, error: "Execution timeout" });
+  });
+
+  test("stream mode uses generateStream when the LLM provides it", async () => {
+    async function* tokens() {
+      yield { token: "a", done: false };
+      yield { token: "", done: true };
+    }
+    const pipeline = createRagPipeline({
+      llm: { generateStream: () => tokens() },
+    });
+
+    const stream = await pipeline.run({
+      query: "q",
+      options: { stream: true },
+    });
+    const received = [];
+    for await (const chunk of stream) received.push(chunk.token);
+
+    expect(received).toEqual(["a", ""]);
+  });
+
+  test("stream mode falls back to generate() as a single chunk", async () => {
+    const pipeline = createRagPipeline({ llm: echoLlm });
+
+    const stream = await pipeline.run({
+      query: "q",
+      options: { stream: true },
+    });
+    const received = [];
+    for await (const chunk of stream) received.push(chunk);
+
+    expect(received).toEqual([
+      { token: "I could not find an answer.", done: false },
+      { token: "", done: true },
+    ]);
+  });
+
+  test("applies the reranker to retrieved documents", async () => {
+    const reranker = {
+      rerank: jest.fn(async (_q, docs) => [...docs].reverse()),
+    };
+    const pipeline = createRagPipeline({
+      retriever: { retrieve: async () => [{ id: "a" }, { id: "b" }] },
+      reranker,
+      llm: echoLlm,
+    });
+
+    const result = await pipeline.run({ query: "q" });
+
+    expect(result.results.map((d) => d.id)).toEqual(["b", "a"]);
   });
 
   test("resolves plugins registered on the exported pluginRegistry", async () => {

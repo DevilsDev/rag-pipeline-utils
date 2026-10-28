@@ -31,7 +31,7 @@ jobs:
   publish:
     name: NPM Release (OIDC + provenance)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     environment: npm
     permissions:
       contents: read

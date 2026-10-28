@@ -25,9 +25,20 @@ import {
   MemoryRetriever,
 } from "@devilsdev/rag-pipeline-utils";
 
+const openai = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+
+// Index a document (vector + content) in the in-memory store
+const retriever = new MemoryRetriever();
+const policy =
+  "Full-time employees receive twenty days of paid vacation per year.";
+await retriever.store([
+  { id: "vacation", vector: await openai.embed(policy), content: policy },
+]);
+
 const pipeline = createRagPipeline({
-  retriever: new MemoryRetriever(),
-  llm: new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY }),
+  embedder: openai, // embeds the query for vector search
+  retriever,
+  llm: openai,
 });
 
 const result = await pipeline.run({
