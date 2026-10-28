@@ -1,5 +1,12 @@
 'use strict';
 
+const {
+  createAbortError,
+  isAbortError,
+  raceAbort,
+  throwIfAborted,
+} = require('../connectors/connector-utils');
+
 // Characters of each document shown to the LLM; keeps the ranking prompt small.
 const DEFAULT_MAX_DOC_CHARS = 500;
 
@@ -49,6 +56,8 @@ class LLMReranker {
     if (!Array.isArray(docs)) {
       return [];
     }
+    const signal = opts.signal;
+    throwIfAborted(signal);
 
     // If no LLM provided, fall back to simple overlap scoring
     if (!this.llm) {
@@ -58,10 +67,11 @@ class LLMReranker {
     try {
       // Ask the LLM for a ranking. Documents are inlined in the prompt, so no
       // separate retrieval context is passed.
-      const response = await this.llm.generate(
-        this._buildRankingPrompt(query, docs),
-        [],
-        opts,
+      const response = await raceAbort(
+        Promise.resolve().then(() =>
+          this.llm.generate(this._buildRankingPrompt(query, docs), [], opts),
+        ),
+        signal,
       );
 
       // Validate and sanitize LLM output before parsing (security fix)
@@ -107,6 +117,10 @@ class LLMReranker {
 
       return this._limit(reranked, opts);
     } catch (error) {
+      // Cancellation is not an LLM failure: propagate it instead of falling back.
+      if (isAbortError(error) || (signal && signal.aborted)) {
+        throw createAbortError(signal);
+      }
       // Fall back to simple overlap scoring on LLM error
       return this._limit(this._fallbackRerank(query, docs), opts);
     }

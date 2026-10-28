@@ -9,6 +9,7 @@
 
 const { EventEmitter } = require('events');
 const { tokenize } = require('../evaluate/scoring');
+const { throwIfAborted } = require('../connectors/connector-utils');
 
 /** @type {{ k1: number, b: number }} */
 const DEFAULT_CONFIG = { k1: 1.2, b: 0.75 };
@@ -37,9 +38,11 @@ class ScoringReranker extends EventEmitter {
    * @param {Array<object|string>} documents - Documents to rerank
    * @param {object} [options]
    * @param {number} [options.topK] - Maximum number of results to return
+   * @param {AbortSignal} [options.signal] - Rejects with AbortError when already aborted
    * @returns {Promise<object[]>} Reranked documents with .relevanceScore
    */
   async rerank(query, documents, options = {}) {
+    throwIfAborted(options.signal);
     if (!Array.isArray(documents) || documents.length === 0) {
       return [];
     }
