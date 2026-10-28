@@ -96,7 +96,11 @@ class DocumentationGenerator {
         const relativePath = path.relative(this.rootDir, file);
 
         // Extract JSDoc blocks using regex
-        const jsdocRegex = /\/\*\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\//g;
+        // Linear-time lazy match. The previous pattern
+        // /\/\*\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+\//g had overlapping
+        // alternatives and backtracked exponentially on an unterminated "/**"
+        // (e.g. a glob inside a string), hanging the docs build.
+        const jsdocRegex = /\/\*\*[\s\S]*?\*\//g;
         const matches = content.match(jsdocRegex) || [];
 
         for (const match of matches) {
