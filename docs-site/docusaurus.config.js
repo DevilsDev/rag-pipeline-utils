@@ -27,6 +27,8 @@ const config = {
   deploymentBranch: "gh-pages",
   onBrokenLinks: "throw",
   markdown: {
+    // ```mermaid code blocks render as diagrams (theme-mermaid below).
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
     },
@@ -64,7 +66,45 @@ const config = {
   // Fonts are self-hosted; see src/fonts.js.
   clientModules: [require.resolve("./src/fonts.js")],
 
+  plugins: [
+    [
+      // /llms.txt (an index) and /llms-full.txt (every docs page as plain
+      // Markdown) for AI coding assistants; see https://llmstxt.org.
+      "docusaurus-plugin-llms",
+      {
+        docsDir: "docs",
+        includeBlog: false,
+        excludeImports: true,
+        removeDuplicateHeadings: true,
+        // The config builder is interactive; its page has nothing to read.
+        ignoreFiles: ["Config-Builder.mdx"],
+        includeOrder: [
+          "Introduction.md",
+          "Usage.md",
+          "API-Reference.md",
+          "CLI.md",
+          "Concepts-*.md",
+          "Evaluation.md",
+          "Plugins.md",
+          "Examples.md",
+          "Use-Cases.md",
+          "Security*.md",
+          "Experimental.md",
+          "Migration.md",
+          "Troubleshooting.md",
+          "FAQ.md",
+        ],
+        includeUnmatchedLast: true,
+        rootContent:
+          "Composable RAG for Node.js. Install with `npm install @devilsdev/rag-pipeline-utils`. The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
+        fullRootContent:
+          "Composable RAG for Node.js. Install with `npm install @devilsdev/rag-pipeline-utils`. The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
+      },
+    ],
+  ],
+
   themes: [
+    "@docusaurus/theme-mermaid",
     [
       // Local search: the index is built with the site, so it needs no
       // external service or API key. Open it with Ctrl+K / Cmd+K.
@@ -104,6 +144,10 @@ const config = {
         hideable: true,
         autoCollapseCategories: true,
       },
+    },
+
+    mermaid: {
+      theme: { light: "neutral", dark: "dark" },
     },
 
     prism: {
@@ -173,6 +217,12 @@ const config = {
             { label: "CLI reference", to: "/docs/CLI" },
             { label: "Plugins", to: "/docs/Plugins" },
             { label: "Migration", to: "/docs/Migration" },
+            { label: "Config builder", to: "/docs/Config-Builder" },
+            {
+              // Plain-text docs for AI coding assistants (llmstxt.org).
+              label: "llms.txt",
+              href: "https://devilsdev.github.io/rag-pipeline-utils/llms.txt",
+            },
           ],
         },
         {
@@ -195,10 +245,7 @@ const config = {
               label: "Discussions",
               href: "https://github.com/DevilsDev/rag-pipeline-utils/discussions",
             },
-            {
-              label: "Changelog",
-              href: "https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md",
-            },
+            { label: "Changelog", to: "/docs/Changelog" },
             { label: "Blog", to: "/blog" },
           ],
         },

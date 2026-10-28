@@ -4,6 +4,8 @@ dist/**
 # generated docs internals
 docs-site/.docusaurus/**
 docs-site/build/
+# generated from CHANGELOG.md by docs-site/scripts/sync-changelog.js
+docs-site/docs/Changelog.md
 # test artifacts & data
 test-results-current.json
 pipelines/**

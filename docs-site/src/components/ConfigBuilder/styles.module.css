@@ -1,0 +1,146 @@
+.builder {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 2rem;
+  align-items: start;
+  margin: 1.5rem 0 2rem;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.stage {
+  margin: 0;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 12px;
+  background: var(--rag-card-bg);
+}
+
+.stage legend {
+  padding: 0 0.35rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.choices {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: var(--ifm-background-surface-color);
+}
+
+.choice input {
+  accent-color: var(--ifm-color-primary);
+}
+
+.choiceName {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+.choiceNote {
+  color: var(--ifm-color-content-secondary);
+  font-size: 0.85rem;
+}
+
+.options {
+  display: grid;
+  gap: 0.6rem;
+  margin: -0.4rem 0 0.2rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px dashed var(--rag-border);
+  border-radius: 12px;
+}
+
+.option {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+}
+
+.option small {
+  color: var(--ifm-color-content-secondary);
+}
+
+.option input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 8px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+}
+
+.option input:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 1px;
+}
+
+.output {
+  position: sticky;
+  top: calc(var(--ifm-navbar-height) + 1rem);
+  min-width: 0;
+}
+
+.outputHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.valid {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #047857;
+}
+
+[data-theme="dark"] .valid {
+  color: #6ee7b7;
+}
+
+.valid::before {
+  content: "✓ ";
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.next h4 {
+  margin: 1rem 0 0.4rem;
+}
+
+.next p {
+  margin-bottom: 0.5rem;
+  font-size: 0.925rem;
+}
+
+@media (max-width: 996px) {
+  .builder {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .output {
+    position: static;
+  }
+}
