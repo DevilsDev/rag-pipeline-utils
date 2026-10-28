@@ -1,13 +1,25 @@
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/banner.svg" alt="rag-pipeline-utils: composable RAG for Node.js with grounded citations, evaluation, guardrails and a working CLI" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg" alt="npm version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml"><img src="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils.svg" alt="TypeScript types"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg" alt="Node.js version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#use-cases">Use cases</a> ·
+  <a href="#how-it-compares">How it compares</a> ·
+  <a href="https://devilsdev.github.io/rag-pipeline-utils/">Documentation</a> ·
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples">Examples</a>
+</p>
+
 # rag-pipeline-utils
-
-**Composable retrieval-augmented generation (RAG) for Node.js, with grounded citations, evaluation, guardrails and a working CLI.**
-
-[![npm version](https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
-[![CI](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml)
-[![Downloads](https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
-[![Types](https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils.svg)](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
-[![Node.js](https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 `rag-pipeline-utils` gives you the building blocks of a RAG system as small, replaceable parts: an embedder, a retriever, an optional reranker and an LLM, wired together by one `createRagPipeline()` call. Evaluation, per-sentence citations, guardrails and agentic retrieval are opt-in layers on top. Every part follows a plain JavaScript contract, so you can swap a built-in connector for your own code without touching the rest.
 
@@ -24,6 +36,7 @@
 - [Use cases](#use-cases)
 - [How it works](#how-it-works)
 - [Capabilities](#capabilities)
+- [How it compares](#how-it-compares)
 - [Connectors and plugins](#connectors-and-plugins)
 - [Experimental modules](#experimental-modules)
 - [Compatibility](#compatibility)
@@ -387,6 +400,24 @@ The result of `run()` is:
 | **Streaming**  | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`     |
 | **Cost**       | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                           |
 | **Operations** | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                      |
+
+## How it compares
+
+A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (competitor details as of April 2026). The other libraries are broader frameworks; this one is narrower on purpose.
+
+|                  | rag-pipeline-utils                                      | LangChain.js                          | LlamaIndex.TS                        |
+| ---------------- | ------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
+| Focus            | RAG pipelines for Node.js services                      | General-purpose LLM orchestration     | Indexing-first RAG                   |
+| Evaluation       | Built in: faithfulness, relevance, context P/R          | Via LangSmith (separate, paid option) | Some metrics, evolving               |
+| Citations        | Built in: per-sentence, with groundedness score         | Possible, wired up by hand            | Possible, wired up by hand           |
+| Guardrails       | Built in: pre-retrieval, retrieval, post-generation     | Via integrations (Guardrails AI etc.) | Via integrations                     |
+| Vector stores    | Memory and file-backed, plus a plugin contract          | 50+ integrations                      | Many integrations and native indexes |
+| LLM providers    | OpenAI, Anthropic, Cohere, Ollama, plus plugins         | Largest ecosystem                     | Large ecosystem                      |
+| Agents and tools | Query planning and iterative retrieval                  | Mature agent framework                | Agent framework                      |
+| Packaging        | One package, dual ESM and CommonJS                      | Many packages, mostly ESM             | One package, mostly ESM              |
+| Stability        | Documented [SEMVER policy](SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
+
+Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
 
 ## Connectors and plugins
 
