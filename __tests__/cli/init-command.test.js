@@ -71,26 +71,98 @@ describe("handleInit", () => {
     expect(loadRagConfig(output).pipeline).toHaveLength(3);
   });
 
-  test("uses prompt answers in interactive mode", async () => {
+  /** Run handleInit as if at a terminal, answering from a script. */
+  async function interactiveInit(options, script) {
     const isTTY = process.stdin.isTTY;
     process.stdin.isTTY = true;
-    const prompt = jest.fn(async () => ({
-      embedder: "openai",
-      llm: "anthropic",
-      indexPath: "i.json",
-    }));
-
+    const asked = [];
+    const prompt = async ([question]) => {
+      asked.push(question.name);
+      const value =
+        question.name in script ? script[question.name] : question.default;
+      return { [question.name]: value };
+    };
     try {
-      await handleInit({}, { output, template: "local" }, { prompt });
+      await handleInit(
+        {},
+        { output, ...options },
+        { prompt, env: {}, log: () => {} },
+      );
     } finally {
       process.stdin.isTTY = isTTY;
     }
+    return asked;
+  }
 
-    expect(prompt).toHaveBeenCalledWith(TEMPLATES.local);
-    const names = JSON.parse(fs.readFileSync(output, "utf8")).pipeline.map(
-      (p) => p.name,
+  test("runs the setup wizard in interactive mode", async () => {
+    const asked = await interactiveInit(
+      { template: "local" },
+      { embedder: "openai", llm: "anthropic", indexPath: "i.json" },
     );
-    expect(names).toEqual(["auto", "openai", "file-store", "anthropic"]);
+
+    expect(asked).toEqual(
+      expect.arrayContaining(["embedder", "llm", "retriever", "confirmWrite"]),
+    );
+    const config = JSON.parse(fs.readFileSync(output, "utf8"));
+    expect(config.pipeline.map((p) => p.name)).toEqual([
+      "auto",
+      "openai",
+      "file-store",
+      "anthropic",
+    ]);
+    expect(config.pipeline[2].config).toEqual({ path: "i.json" });
+    expect(() => buildComponents(config, { configDir: dir })).not.toThrow();
+  });
+
+  test("--template sets the wizard defaults", async () => {
+    await interactiveInit({ template: "ollama" }, {});
+
+    const names = loadRagConfig(output).pipeline.map((p) => p.name);
+    expect(names).toEqual(["auto", "ollama", "file-store", "ollama"]);
+  });
+
+  test("declining the preview writes nothing", async () => {
+    await interactiveInit({}, { confirmWrite: false });
+
+    expect(process.exitCode).toBeUndefined();
+    expect(fs.existsSync(output)).toBe(false);
+  });
+
+  test("asks before replacing an existing file and keeps it on no", async () => {
+    fs.writeFileSync(output, "{}");
+
+    const asked = await interactiveInit({}, { overwrite: false });
+
+    expect(asked).toEqual(["overwrite"]);
+    expect(fs.readFileSync(output, "utf8")).toBe("{}");
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  test("replaces an existing file when the user agrees", async () => {
+    fs.writeFileSync(output, "{}");
+
+    const asked = await interactiveInit({}, { overwrite: true });
+
+    expect(asked[0]).toBe("overwrite");
+    expect(loadRagConfig(output).pipeline).toHaveLength(3);
+  });
+
+  test("--force skips the overwrite question", async () => {
+    fs.writeFileSync(output, "{}");
+
+    const asked = await interactiveInit({ force: true }, {});
+
+    expect(asked).not.toContain("overwrite");
+    expect(loadRagConfig(output).pipeline).toHaveLength(3);
+  });
+
+  test("refuses to overwrite without --force when not interactive", async () => {
+    fs.writeFileSync(output, "{}");
+
+    await handleInit({}, { output, interactive: false });
+
+    expect(process.exitCode).toBe(1);
+    expect(fs.readFileSync(output, "utf8")).toBe("{}");
   });
 
   test("rejects an unknown template", async () => {

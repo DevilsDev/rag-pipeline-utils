@@ -122,4 +122,4 @@ function resolveComponent(entry, config, configDir) {
   }
 }
 
-module.exports = { buildComponents, BUILT_INS, STAGES };
+module.exports = { buildComponents, loadPluginModule, BUILT_INS, STAGES };

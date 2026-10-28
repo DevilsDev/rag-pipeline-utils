@@ -26,6 +26,7 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   (`GET /health`, `POST /query`) bound to 127.0.0.1, JSON only, 64 KB body
   limit, no CORS.
 - `LocalEmbedder.getState()` / `setState()`.
+- **`rag-pipeline init` setup wizard**: chooses the embedder, LLM, retriever and an optional reranker, using only built-ins or custom plugin modules. Connector options are pre-filled with the connector defaults. Each custom plugin is loaded and its stage method checked before it is accepted. The wizard reports which API key environment variables are missing, can run a connection test on request, and previews the JSON before writing.
 
 ### Removed
 
