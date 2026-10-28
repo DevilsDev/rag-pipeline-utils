@@ -60,6 +60,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Runs inside the required job so a formatting failure blocks merges.
+      # src/ is formatted by ESLint (Lint step); format:check covers the rest.
+      - name: Check formatting
+        if: matrix.node == 20
+        run: npm run format:check
+
       # jest-junit writes ./junit.xml (gitignored) for the artifact below.
       - name: Test
         run: npm test -- --ci --coverage --reporters=default --reporters=jest-junit
@@ -98,38 +104,6 @@ jobs:
             junit.xml
           if-no-files-found: ignore
           retention-days: 7
-
-  format:
-    name: Format & Types
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install
-        run: npm ci --prefer-offline
-
-      # src/ is formatted by ESLint (checked in the Lint step above);
-      # format:check covers everything else with Prettier.
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Type check
-        run: npm run typecheck --if-present
 
   build:
     name: Build
