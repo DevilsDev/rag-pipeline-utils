@@ -9,7 +9,11 @@
 
 const { EventEmitter } = require('events');
 const { createHash } = require('crypto');
-const { throwIfAborted, raceAbort } = require('../connectors/connector-utils');
+const {
+  isAbortError,
+  throwIfAborted,
+  raceAbort,
+} = require('../connectors/connector-utils');
 
 /** @type {{ cacheSize: number, concurrency: number }} */
 const DEFAULT_CONFIG = {
@@ -97,7 +101,14 @@ class EmbeddingReranker extends EventEmitter {
       // Refresh recency.
       this._cache.delete(key);
       this._cache.set(key, cached);
-      return cached;
+      // The shared promise may have been started by another request whose
+      // signal aborted; that abort must not fail this request.
+      return cached.catch((err) => {
+        if (isAbortError(err) && !(signal && signal.aborted)) {
+          return this._embedDocument(text, signal);
+        }
+        throw err;
+      });
     }
 
     this.cacheStats.misses++;

@@ -92,6 +92,39 @@ describe("EmbeddingReranker document embedding cache", () => {
 });
 
 describe("EmbeddingReranker concurrency limit", () => {
+  test("one request's abort does not fail another sharing the cache", async () => {
+    const pending = new Map();
+    const embedder = {
+      embedQuery: jest.fn((text, opts = {}) => {
+        if (text === "q") return Promise.resolve([1, 0]);
+        return new Promise((resolve, reject) => {
+          const list = pending.get(text) || [];
+          list.push(resolve);
+          pending.set(text, list);
+          if (opts.signal) {
+            opts.signal.addEventListener("abort", () =>
+              reject(
+                Object.assign(new Error("aborted"), { name: "AbortError" }),
+              ),
+            );
+          }
+        });
+      }),
+    };
+    const reranker = new EmbeddingReranker(embedder);
+    const a = new AbortController();
+    const b = new AbortController();
+    const pA = reranker.rerank("q", ["shared"], { signal: a.signal });
+    const pB = reranker.rerank("q", ["shared"], { signal: b.signal });
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    a.abort();
+    await expect(pA).rejects.toMatchObject({ name: "AbortError" });
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    // B re-embedded with its own signal; resolve every pending embedding.
+    for (const resolve of pending.get("shared")) resolve([1, 0]);
+    await expect(pB).resolves.toEqual([{ text: "shared", relevanceScore: 1 }]);
+  });
+
   test("never has more than `concurrency` document embeddings in flight", async () => {
     let inFlight = 0;
     let maxInFlight = 0;
