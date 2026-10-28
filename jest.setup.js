@@ -15,8 +15,23 @@ function prettyUrl(target) {
   }
 }
 
+// Loopback is allowed: tests may start their own local servers (e.g.
+// DevServer). Everything else is external network and is blocked.
+function isLoopback(target) {
+  try {
+    const host =
+      typeof target === "string" || target instanceof URL
+        ? new URL(String(target)).hostname
+        : target.hostname || (target.host || "").split(":")[0];
+    return ["127.0.0.1", "localhost", "::1", "[::1]"].includes(host);
+  } catch {
+    return false;
+  }
+}
+
 function deny(fnName, orig) {
   return (...args) => {
+    if (isLoopback(args[0])) return orig(...args);
     const msg = `🚫 ${fnName} blocked in tests: ${prettyUrl(args[0])}`;
     // eslint-disable-next-line no-console
     console.error(msg, "\n", new Error().stack);
@@ -35,6 +50,7 @@ if (globalThis.fetch) {
   const original = globalThis.fetch;
   globalThis.fetch = async (input, init) => {
     const url = typeof input === "string" ? input : input?.url;
+    if (isLoopback(url)) return original(input, init);
     const msg = `🚫 fetch blocked in tests: ${url}`;
     // eslint-disable-next-line no-console
     console.error(msg, "\n", new Error().stack);

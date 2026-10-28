@@ -182,3 +182,58 @@ describe("rag-pipeline CLI workflow", () => {
     ]);
   });
 });
+
+describe("rag-pipeline serve", () => {
+  let dir;
+  let child;
+
+  beforeAll(() => jest.useRealTimers());
+
+  afterEach(async () => {
+    if (child && child.exitCode === null) {
+      // Windows keeps the cwd locked until the process has exited
+      await new Promise((resolve) => {
+        child.once("exit", resolve);
+        child.kill();
+      });
+    }
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("answers POST /query from the ingested index", async () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "rag-serve-"));
+    writeDocs(dir);
+    expect(cli(dir, "init", "--no-interactive").code).toBe(0);
+    expect(cli(dir, "ingest", "docs").code).toBe(0);
+
+    const { spawn } = require("child_process");
+    child = spawn(process.execPath, [CLI, "serve", "--port", "0"], {
+      cwd: dir,
+      env: { ...process.env, NODE_ENV: "test" },
+    });
+    const url = await new Promise((resolve, reject) => {
+      let out = "";
+      child.stdout.on("data", (d) => {
+        out += d;
+        const match = out.match(/at (http:\/\/127\.0\.0\.1:\d+)/);
+        if (match) resolve(match[1]);
+      });
+      child.on("exit", (code) => reject(new Error(`serve exited ${code}`)));
+    });
+
+    const { httpRequest } = require("../utils/http-request");
+    const health = await httpRequest(`${url}/health`);
+    expect(health.status).toBe(200);
+
+    const res = await httpRequest(`${url}/query`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ question: "paid vacation days", topK: 1 }),
+    });
+    const { body } = res;
+
+    expect(res.status).toBe(200);
+    expect(body.answer).toBeNull();
+    expect(body.results[0].metadata.source).toBe("docs/vacation.md");
+  });
+});

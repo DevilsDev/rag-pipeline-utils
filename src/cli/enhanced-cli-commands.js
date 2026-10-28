@@ -33,6 +33,14 @@ const {
 const { handleIngest } = require("./handlers/ingest-handler.js");
 const { handleQuery } = require("./handlers/query-handler.js");
 
+function parseNonNegativeInt(value) {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0) {
+    throw new Error(`Expected a non-negative integer, got "${value}"`);
+  }
+  return n;
+}
+
 /**
  * Enhanced CLI with improved UX and additional features
  */
@@ -132,6 +140,21 @@ class EnhancedCLI {
       .description("Validate the configuration and resolve its components")
       .action(async () => {
         await handleValidate(this.program.opts());
+      });
+
+    this.program
+      .command("serve")
+      .description("Serve GET /health and POST /query over HTTP (local use)")
+      .option(
+        "--port <n>",
+        "Port (0 picks a free one)",
+        parseNonNegativeInt,
+        3000,
+      )
+      .option("--host <host>", "Interface to bind", "127.0.0.1")
+      .action(async (options) => {
+        const { handleServe } = require("./handlers/serve-handler.js");
+        await handleServe(this.program.opts(), options);
       });
 
     const { PluginHubCLI } = require("./commands/plugin-hub.js");

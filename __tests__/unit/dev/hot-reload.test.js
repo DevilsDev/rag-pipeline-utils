@@ -172,7 +172,7 @@ describe("HotReloadManager", () => {
       expect(chokidar.watch).toHaveBeenCalledWith(
         ["./src/plugins", "./src/custom"],
         expect.objectContaining({
-          ignored: expect.any(Array),
+          ignored: expect.any(Function), // globs are compiled to a matcher (chokidar 4 has no glob support)
           persistent: true,
           ignoreInitial: true,
         }),
