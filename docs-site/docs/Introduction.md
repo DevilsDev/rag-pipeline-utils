@@ -52,9 +52,8 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 
 ### **Developer Experience Excellence**
 
-- **Enhanced CLI Suite**: Interactive wizards, doctor diagnostics, and plugin management
+- **CLI**: `init`, `ingest`, `query`, `serve`, `validate` and `doctor` against a local file-backed index
 - **Streaming Evaluation**: Real-time dashboard with live metrics and performance monitoring
-- **Plugin Marketplace**: Certified plugin ecosystem with discovery and installation workflows
 - **Configuration Schema**: Validated `.ragrc.json` with IntelliSense and error checking
 - **Hot Module Reloading**: Dynamic plugin updates without pipeline restarts
 
@@ -175,23 +174,25 @@ console.log("Results:", response.results.length);
 
 ```bash
 # Install globally
-npm install -g @DevilsDev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 
-# Initialize a new project
-rag-pipeline init my-rag-project
+# Write .ragrc.json in the current directory (OpenAI embeddings and LLM)
+rag-pipeline init --no-interactive --template openai
 
-# Ingest documents
-rag-pipeline ingest ./docs --loader markdown --embedder openai
+# Ingest documents (.md, .html, .csv, .txt)
+rag-pipeline ingest ./docs
 
 # Query your knowledge base
-rag-pipeline query "What is the plugin architecture?" --llm openai-gpt-4
+rag-pipeline query "What is the plugin architecture?"
 
-# Run evaluation
-rag-pipeline evaluate ./test-queries.json --output results.csv
-
-# Start the evaluation dashboard
-rag-pipeline dashboard --port 3000
+# Serve the pipeline as a local HTTP API (GET /health, POST /query)
+rag-pipeline serve --port 3000
 ```
+
+Evaluation and dashboards are library APIs (`evaluateRagDataset`,
+`PipelineEvaluator`, `DashboardGenerator`) rather than CLI commands; see
+[Evaluation](./Evaluation.md). The full command list is in the
+[CLI Reference](./CLI.md).
 
 ---
 
@@ -203,7 +204,7 @@ rag-pipeline dashboard --port 3000
 
 - **Enterprise Architecture**: Dependency injection, SLO monitoring, semantic release automation
 - **Advanced AI**: Multi-modal processing, federated learning, adaptive retrieval engines
-- **Developer Tools**: Enhanced CLI with doctor diagnostics, interactive wizards, plugin marketplace
+- **Developer Tools**: CLI with a local index, doctor diagnostics and a local HTTP dev server
 - **Observability**: Structured logging, performance profiling, distributed tracing
 - **Testing Infrastructure**: External API mocking, deterministic test environments
 - **Security & Compliance**: Audit logging, vulnerability scanning, enterprise authentication

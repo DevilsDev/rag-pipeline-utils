@@ -28,8 +28,9 @@ npm update @DevilsDev/rag-pipeline-utils
 # Backup existing config
 cp .ragrc.json .ragrc.json.backup
 
-# Migrate configuration format
-rag-pipeline config migrate --from 2.0 --to 2.1
+# There is no automated config migration command: edit .ragrc.json by hand
+# (format in the CLI reference), then check it
+rag-pipeline validate
 ```
 
 3. **Update Plugin Registrations**:
@@ -50,14 +51,15 @@ registry.register("llm", "openai", {
 });
 ```
 
-4. **Update CLI Commands**:
+4. **Update Evaluation Scripts**:
 
-```bash
-# v2.0.x (deprecated)
-rag-pipeline eval ./test-data.json
+The CLI has no `eval` or `evaluate` command. Run dataset evaluation through
+the library instead (see [Evaluation](./Evaluation.md)):
 
-# v2.1.x (current)
-rag-pipeline evaluate ./test-data.json
+```javascript
+const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
+
+const results = await evaluateRagDataset("./test-data.json", pipelineConfig);
 ```
 
 ### **Upgrading from v1.x to v2.x**
@@ -341,26 +343,16 @@ class CustomLoader extends BaseLoader {
 
 ### **Vector Store Migration**
 
-**Export from Existing System**:
+**CLI Index**:
+
+The CLI has no `export` or `import` command. Its index is a single JSON file
+(the `file-store` retriever's `config.path`, `.rag/index.json` by default),
+so you can copy it, or rebuild it from your source documents after changing
+the embedder or retriever:
 
 ```bash
-# Export vectors and metadata
-rag-pipeline export \
-  --source pinecone \
-  --index old-index \
-  --output vectors-backup.json \
-  --include-metadata
-```
-
-**Import to New System**:
-
-```bash
-# Import to new vector store
-rag-pipeline import \
-  --target chroma \
-  --input vectors-backup.json \
-  --create-index \
-  --batch-size 1000
+# Re-index from source documents into the newly configured store
+rag-pipeline ingest ./docs --rebuild
 ```
 
 **Cross-Platform Migration**:
@@ -393,17 +385,6 @@ await migrator.migrate({
 
 ### **Configuration Migration**
 
-**Automated Migration Tool**:
-
-```bash
-# Migrate configuration files
-rag-pipeline migrate-config \
-  --from ./old-config.json \
-  --to ./.ragrc.json \
-  --format v2.1 \
-  --validate
-```
-
 **Manual Migration**:
 
 ```javascript
@@ -429,11 +410,11 @@ fs.writeFileSync("./.ragrc.json", JSON.stringify(newConfig, null, 2));
 1. **Configuration Validation**:
 
 ```bash
-# Validate migrated configuration
-rag-pipeline config validate --strict
+# Validate migrated configuration and resolve every component
+rag-pipeline validate
 
-# Test plugin loading
-rag-pipeline plugins list --validate
+# List built-in components and custom plugins
+rag-pipeline info --plugins
 ```
 
 2. **Functionality Testing**:
@@ -442,18 +423,24 @@ rag-pipeline plugins list --validate
 # Test basic pipeline operations
 rag-pipeline query "test query" --dry-run
 
-# Run evaluation on sample data
-rag-pipeline evaluate ./test-queries.json --metrics bleu,rouge
+# Run a real query and inspect the passages and citations
+rag-pipeline query "test query" --json
 ```
+
+To score sample data, use `evaluateRagDataset` (see
+[Evaluation](./Evaluation.md)).
 
 3. **Performance Comparison**:
 
-```bash
-# Benchmark before migration
-rag-pipeline benchmark --baseline --output before-migration.json
+There is no benchmark command. Time the same representative queries before
+and after migrating:
 
-# Benchmark after migration
-rag-pipeline benchmark --compare before-migration.json
+```bash
+# Before migration
+time rag-pipeline query "test query" --json > before-migration.json
+
+# After migration
+time rag-pipeline query "test query" --json > after-migration.json
 ```
 
 ### **Rollback Strategy**
@@ -461,8 +448,8 @@ rag-pipeline benchmark --compare before-migration.json
 **Backup Before Migration**:
 
 ```bash
-# Create complete backup
-rag-pipeline export --all --output pre-migration-backup.json
+# Back up the index directory (default file-store path is .rag/index.json)
+cp -r .rag .rag.pre-migration
 
 # Backup configuration
 cp .ragrc.json .ragrc.json.pre-migration
@@ -471,8 +458,8 @@ cp .ragrc.json .ragrc.json.pre-migration
 **Rollback Process**:
 
 ```bash
-# Restore from backup
-rag-pipeline import pre-migration-backup.json --overwrite
+# Restore the index
+rm -rf .rag && cp -r .rag.pre-migration .rag
 
 # Restore configuration
 cp .ragrc.json.pre-migration .ragrc.json
@@ -485,20 +472,13 @@ npm install @DevilsDev/rag-pipeline-utils@1.9.0
 
 ## **Migration Tools & Utilities**
 
-### **Built-in Migration Commands**
+### **Checking a Migrated Project**
+
+The CLI has no `migration` command. After migrating, check the project with:
 
 ```bash
-# Check migration requirements
-rag-pipeline migration check --target-version 2.1.0
-
-# Generate migration plan
-rag-pipeline migration plan --from 2.0.5 --to 2.1.0
-
-# Execute migration
-rag-pipeline migration execute --plan migration-plan.json
-
-# Verify migration
-rag-pipeline migration verify --post-migration-tests
+rag-pipeline validate   # config schema and component resolution
+rag-pipeline doctor     # plugins, environment, API keys, index status
 ```
 
 ### **Custom Migration Scripts**

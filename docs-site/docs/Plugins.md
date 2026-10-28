@@ -388,45 +388,35 @@ if (!validation.isValid) {
 
 ## **CLI Plugin Development Tools**
 
-### **Plugin Scaffolding**
+The CLI has no plugin scaffolding, test or packaging commands. Write the
+plugin module yourself, reference it under `plugins` in `.ragrc.json`, and use
+the CLI to check that it loads.
+
+### **Plugin Validation**
 
 ```bash
-# Create new plugin
-rag-pipeline plugins create my-loader --type loader
-rag-pipeline plugins create my-embedder --type embedder --template typescript
+# Check the config and resolve every component, including custom plugins
+rag-pipeline validate
 
-# Plugin templates available:
-# - javascript (default)
-# - typescript
-# - minimal
-# - advanced
-```
+# Check that each module under "plugins" exists and loads
+rag-pipeline doctor --category plugins
 
-### **Plugin Testing & Validation**
-
-```bash
-# Validate plugin
-rag-pipeline plugins validate ./my-plugin
-rag-pipeline plugins validate ./my-plugin --strict
-
-# Test plugin
-rag-pipeline plugins test ./my-plugin --test-data ./test-cases.json
-
-# Benchmark plugin
-rag-pipeline plugins benchmark ./my-plugin --iterations 1000
+# List built-in components and the custom plugins in the config
+rag-pipeline info --plugins
 ```
 
 ### **Plugin Publishing**
 
+Publish to npm with `npm publish` as for any package. To publish to a plugin
+registry, use `hub` (alias `plugin`) with `--registry <url>` or
+`RAG_PLUGIN_REGISTRY`; there is no public registry:
+
 ```bash
-# Package plugin
-rag-pipeline plugins package ./my-plugin --output my-plugin-v1.0.0.tgz
+# Validate without publishing
+rag-pipeline hub --registry https://my-registry.com publish ./my-plugin --dry-run
 
-# Publish to npm
-rag-pipeline plugins publish ./my-plugin --registry npm
-
-# Publish to private registry
-rag-pipeline plugins publish ./my-plugin --registry https://my-registry.com
+# Publish
+rag-pipeline hub --registry https://my-registry.com publish ./my-plugin
 ```
 
 ---
@@ -435,39 +425,28 @@ rag-pipeline plugins publish ./my-plugin --registry https://my-registry.com
 
 ### **Plugin Configuration in .ragrc.json**
 
+Each `pipeline` entry names a component and passes `config` to its
+constructor. Custom plugins are declared under `plugins` as module paths
+relative to the config file (see the [CLI Reference](./CLI.md)):
+
 ```json
 {
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    {
+      "stage": "embedder",
+      "name": "custom-embedder",
+      "config": { "batchSize": 100 }
+    },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    },
+    { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
+  ],
   "plugins": {
-    "loader": {
-      "name": "custom-pdf-loader",
-      "version": "^2.1.0",
-      "config": {
-        "ocrEnabled": true,
-        "language": "eng",
-        "quality": 4
-      }
-    },
-    "embedder": {
-      "name": "custom-openai",
-      "config": {
-        "model": "text-embedding-ada-002",
-        "batchSize": 100
-      }
-    },
-    "retriever": {
-      "name": "pinecone",
-      "config": {
-        "environment": "us-west1-gcp",
-        "indexName": "my-index"
-      }
-    },
-    "llm": {
-      "name": "openai-gpt-4",
-      "config": {
-        "temperature": 0.7,
-        "maxTokens": 2000
-      }
-    }
+    "embedder": { "custom-embedder": "./plugins/custom-embedder.js" }
   }
 }
 ```

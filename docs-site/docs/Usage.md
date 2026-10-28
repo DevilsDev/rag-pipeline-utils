@@ -253,166 +253,48 @@ await pipeline.cleanup();
 
 ## Command Line Interface (CLI)
 
-### **Global CLI Installation**
-
 ```bash
-# Install globally
-npm install -g @DevilsDev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 
-# Verify installation
-rag-pipeline --version
-rag-pipeline --help
-```
-
-### **Project Initialization**
-
-```bash
-# Create a new RAG project
-rag-pipeline init my-rag-project
-cd my-rag-project
-
-# Initialize in existing directory
-rag-pipeline init .
-
-# Initialize with template
-rag-pipeline init my-project --template enterprise
-```
-
-### **Configuration Management**
-
-```bash
-# Create default configuration
-rag-pipeline config init
-
-# Set configuration values
-rag-pipeline config set openai.apiKey sk-your-key-here
-rag-pipeline config set pinecone.environment us-west1-gcp
-
-# View current configuration
-rag-pipeline config show
-
-# Validate configuration
-rag-pipeline config validate
-```
-
-### **Document Ingestion via CLI**
-
-```bash
-# Ingest single file
-rag-pipeline ingest ./document.pdf --loader pdf
-
-# Ingest directory with specific loader
-rag-pipeline ingest ./docs --loader markdown --recursive
-
-# Ingest with custom settings
-rag-pipeline ingest ./docs \
-  --loader markdown \
-  --embedder openai \
-  --chunk-size 1500 \
-  --chunk-overlap 300
-
-# Batch ingest with progress
-rag-pipeline ingest ./large-docs \
-  --loader pdf \
-  --batch-size 10 \
-  --progress
-```
-
-### **Querying via CLI**
-
-```bash
-# Simple query
+rag-pipeline init                      # writes .ragrc.json
+rag-pipeline ingest ./docs             # builds the local index
 rag-pipeline query "What is the plugin architecture?"
-
-# Query with specific LLM
-rag-pipeline query "Explain embeddings" --llm openai-gpt-4
-
-# Query with options
-rag-pipeline query "How to optimize performance?" \
-  --max-tokens 2000 \
-  --temperature 0.3 \
-  --include-sources
-
-# Interactive query mode
-rag-pipeline query --interactive
+rag-pipeline serve --port 3000         # local HTTP API (GET /health, POST /query)
+rag-pipeline doctor                    # diagnose config, plugins and environment
 ```
 
-### **Evaluation and Testing**
-
-```bash
-# Run evaluation on test set
-rag-pipeline evaluate ./test-queries.json --output results.csv
-
-# Evaluate with specific metrics
-rag-pipeline evaluate ./queries.json \
-  --metrics bleu,rouge,bertscore \
-  --output detailed-results.json
-
-# Start evaluation dashboard
-rag-pipeline dashboard --port 3000 --host 0.0.0.0
-```
-
-### **Plugin Management**
-
-```bash
-# List available plugins
-rag-pipeline plugins list
-
-# Install custom plugin
-rag-pipeline plugins install ./my-custom-plugin
-
-# Create plugin template
-rag-pipeline plugins create my-loader --type loader
-
-# Validate plugin
-rag-pipeline plugins validate ./my-plugin
-```
+See the [CLI Reference](./CLI.md) for every command and option.
 
 ---
 
 ## Configuration File (.ragrc.json)
 
-Create a `.ragrc.json` file in your project root for persistent configuration:
+The CLI reads its pipeline from `.ragrc.json`. Each entry names a built-in component or a custom plugin, with optional constructor `config`:
 
 ```json
 {
-  "version": "2.4.0",
-  "pipeline": {
-    "loader": "markdown",
-    "embedder": "openai",
-    "retriever": "pinecone",
-    "llm": "openai-gpt-4",
-    "useReranker": true,
-    "reranker": "cohere-rerank"
-  },
-  "config": {
-    "openai": {
-      "model": "text-embedding-3-large",
-      "maxTokens": 4000,
-      "temperature": 0.1
+  "namespace": "default",
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    {
+      "stage": "embedder",
+      "name": "openai",
+      "config": { "embeddingModel": "text-embedding-3-small" }
     },
-    "pinecone": {
-      "environment": "us-west1-gcp",
-      "indexName": "rag-documents",
-      "topK": 5
-    }
-  },
-  "pipelineConfig": {
-    "chunkSize": 1000,
-    "chunkOverlap": 200,
-    "maxConcurrency": 3,
-    "enableCaching": true
-  },
-  "logging": {
-    "level": "info",
-    "format": "json",
-    "outputs": ["console", "file"]
-  },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    },
+    { "stage": "llm", "name": "my-llm", "config": { "temperature": 0.1 } }
+  ],
   "plugins": {
-    "custom": ["./plugins/my-custom-loader.js", "@company/rag-plugin-suite"]
+    "llm": { "my-llm": "./plugins/my-llm.js" }
   }
 }
 ```
+
+Run `rag-pipeline info --plugins` to list the built-in names, and `rag-pipeline validate` to check that every entry resolves.
 
 ---
 
@@ -522,24 +404,6 @@ You can customize the pipeline by registering plugins:
 registry.register("loader", "custom", new MyCustomLoader());
 registry.register("retriever", "opensearch", new MyOpenSearchRetriever());
 ```
-
----
-
-## Configuration via `.ragrc.json`
-
-Create a JSON file at your root:
-
-```json
-{
-  "loader": "directory",
-  "embedder": "openai",
-  "retriever": "pinecone",
-  "llm": "openai-gpt-4",
-  "useReranker": true
-}
-```
-
-Used automatically when no CLI args are passed.
 
 ---
 

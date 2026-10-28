@@ -268,60 +268,32 @@ evaluationPipeline.start();
 
 ---
 
-## **CLI Evaluation Tools**
+## **Dataset Evaluation**
 
-### **Basic Evaluation**
+Evaluation is a library API; the `rag-pipeline` CLI has no `evaluate`
+command. `evaluateRagDataset` runs every case in a JSON dataset through a
+pipeline and scores each answer against the expected text:
 
-```bash
-# Evaluate with default metrics
-rag-pipeline evaluate ./test-queries.json --output results.csv
+```javascript
+const { evaluateRagDataset } = require("@devilsdev/rag-pipeline-utils");
 
-# Specify custom metrics
-rag-pipeline evaluate ./queries.json \
-  --metrics bleu,rouge,bertscore,semantic \
-  --output detailed-results.json
+// test-queries.json: [{ "prompt": "...", "expected": "..." }, ...]
+// The second argument is the plugin config you pass to createRagPipeline.
+const results = await evaluateRagDataset("./test-queries.json", {
+  embedder,
+  retriever,
+  llm,
+});
 
-# Evaluation with ground truth
-rag-pipeline evaluate ./queries.json \
-  --ground-truth ./expected-answers.json \
-  --metrics all \
-  --detailed
+for (const r of results) {
+  // r: { prompt, expected, actual, success, scores: { bleu, rouge } }
+  console.log(r.prompt, r.scores.bleu, r.scores.rouge);
+}
 ```
 
-### **Advanced Evaluation Options**
-
-```bash
-# Parallel evaluation with custom batch size
-rag-pipeline evaluate ./large-test-set.json \
-  --batch-size 20 \
-  --parallel 4 \
-  --timeout 30
-
-# Comparative evaluation
-rag-pipeline evaluate ./queries.json \
-  --compare-configs baseline.json,optimized.json \
-  --output comparison-report.html
-
-# Evaluation with custom models
-rag-pipeline evaluate ./queries.json \
-  --bertscore-model roberta-large \
-  --semantic-model sentence-transformers/all-mpnet-base-v2
-```
-
-### **Report Generation**
-
-```bash
-# Generate comprehensive HTML report
-rag-pipeline evaluate ./queries.json \
-  --output-format html \
-  --include-charts \
-  --include-examples
-
-# Export to multiple formats
-rag-pipeline evaluate ./queries.json \
-  --output results \
-  --formats json,csv,xlsx,html
-```
+A case that throws is recorded with `success: false` and zero scores instead
+of aborting the run. For faithfulness, relevance and context metrics on
+individual results, use [`PipelineEvaluator`](#pipelineevaluator).
 
 ---
 
@@ -353,22 +325,22 @@ const benchmarks = await benchmarkComponents({
 console.log("Benchmark Results:", benchmarks.summary);
 ```
 
-### **End-to-End Performance**
+### **Repository Benchmark Suite**
+
+The CLI has no `benchmark` command. The repository contains a
+benchmark script (not shipped in the npm package) that measures the DAG
+engine, retry policy and monitoring overhead and writes JSON results to
+`benchmark-results/`:
 
 ```bash
-# Full pipeline benchmark
-rag-pipeline benchmark \
-  --queries 1000 \
-  --concurrent 10 \
-  --duration 600 \
-  --output benchmark-report.json
-
-# Stress testing
-rag-pipeline benchmark --stress \
-  --max-concurrent 50 \
-  --ramp-up 120 \
-  --target-rps 100
+# From a clone of the repository
+npm run benchmark:quick   # 20 iterations
+npm run benchmark         # 100 iterations, verbose
+npm run benchmark:full    # 500 iterations, verbose
 ```
+
+See [Benchmarks](./Benchmarks.md) for methodology and for benchmarking your
+own pipeline end to end.
 
 ---
 
@@ -376,13 +348,14 @@ rag-pipeline benchmark --stress \
 
 ### **Standard Dataset Format**
 
-Each entry in your JSON dataset should include:
+The dataset is a JSON array. `evaluateRagDataset` reads `prompt` and
+`expected` from each entry; other fields are ignored by it:
 
 ```json
 {
   "id": "query-001",
   "prompt": "What is a vector index?",
-  "groundTruth": "A data structure for fast similarity search in vector spaces.",
+  "expected": "A data structure for fast similarity search in vector spaces.",
   "category": "technical",
   "difficulty": "intermediate",
   "metadata": {
@@ -433,26 +406,25 @@ console.log(`Generated ${syntheticData.length} synthetic query-answer pairs`);
 
 ### **Interactive Dashboard**
 
-Use the React evaluation dashboard:
+The CLI has no `dashboard` command. `MetricsAggregator` collects
+pipeline metrics and `DashboardGenerator` renders a snapshot as a
+self-contained HTML page (inline CSS and SVG charts) or a plain-text report:
 
-```bash
-# Start the evaluation dashboard
-rag-pipeline dashboard --port 3000 --data ./evaluation-results.json
+```javascript
+const fs = require("fs");
+const {
+  MetricsAggregator,
+  DashboardGenerator,
+} = require("@devilsdev/rag-pipeline-utils");
 
-# Or use the built-in dashboard server
-node public/server.js
+const aggregator = new MetricsAggregator();
+aggregator.recordQuery({ duration: 420, tokens: 812, success: true });
+
+const generator = new DashboardGenerator({ title: "Evaluation run" });
+const snapshot = aggregator.getSnapshot();
+fs.writeFileSync("dashboard.html", generator.generate(snapshot));
+console.log(generator.generateReport(snapshot));
 ```
-
-Visit: [http://localhost:3000](http://localhost:3000)
-
-**Dashboard Features**:
-
-- **Real-time Metrics**: Live updating evaluation scores
-- **Interactive Charts**: BLEU, ROUGE, BERTScore visualizations
-- **Query Analysis**: Detailed breakdown of individual queries
-- **Comparison Views**: Side-by-side configuration comparisons
-- **Export Options**: CSV, JSON, PDF report generation
-- **Filtering & Search**: Advanced result filtering capabilities
 
 ### **Custom Dashboard Integration**
 

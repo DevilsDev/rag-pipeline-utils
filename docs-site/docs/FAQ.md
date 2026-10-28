@@ -20,7 +20,7 @@ Yes. LLM runners can yield async output tokens. This is handled internally via `
 
 ### How do I evaluate performance?
 
-Use `rag-pipeline evaluate dataset.json` or open the dashboard at `http://localhost:3000` to visualize BLEU/ROUGE and pass rates.
+Evaluation is a library API, not a CLI command. Use `evaluateRagDataset(datasetPath, pipelineConfig)` to score a `{ prompt, expected }[]` dataset with BLEU/ROUGE, or `PipelineEvaluator` to score individual pipeline results. `DashboardGenerator` renders metrics as a standalone HTML page. See [Evaluation](./Evaluation.md).
 
 ---
 

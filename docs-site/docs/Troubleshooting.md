@@ -40,14 +40,14 @@ npm install @DevilsDev/rag-pipeline-utils --force
 **Diagnostic Commands**:
 
 ```bash
-# Validate configuration
-rag-pipeline config validate
+# Validate configuration and resolve every component
+rag-pipeline validate
 
-# Show current config location and values
-rag-pipeline config show --verbose
+# Show the current configuration
+rag-pipeline config show
 
-# Initialize default configuration
-rag-pipeline config init --force
+# Recreate the default configuration (overwrites .ragrc.json)
+rag-pipeline init --no-interactive --force
 ```
 
 **Common Configuration Errors**:
@@ -58,17 +58,17 @@ rag-pipeline config init --force
   "embedder": "openai"
 }
 
-// Valid: Complete configuration
+// Valid: stages are listed under "pipeline"
 {
-  "plugins": {
-    "embedder": {
-      "name": "openai",
-      "config": {
-        "apiKey": "${OPENAI_API_KEY}",
-        "model": "text-embedding-ada-002"
-      }
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "openai" },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
     }
-  }
+  ]
 }
 ```
 
@@ -93,10 +93,12 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 
 **Environment Variable Precedence**:
 
-1. Command-line arguments (`--api-key`)
-2. Environment variables (`OPENAI_API_KEY`)
-3. Configuration file (`.ragrc.json`)
-4. Default values
+1. `config.apiKey` on the pipeline entry in `.ragrc.json`
+2. Environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+   `COHERE_API_KEY`)
+
+The CLI has no `--api-key` option. `rag-pipeline doctor --category
+environment` reports missing keys for the configured providers.
 
 ---
 
@@ -109,14 +111,14 @@ echo "OPENAI_API_KEY=your-key-here" > .env
 **Diagnostic Commands**:
 
 ```bash
-# List available plugins
-rag-pipeline plugins list
+# List built-in components and custom plugins
+rag-pipeline info --plugins
 
-# Validate plugin
-rag-pipeline plugins validate ./my-plugin --strict
+# Check that every module under "plugins" exists and loads
+rag-pipeline doctor --category plugins
 
-# Test plugin in isolation
-rag-pipeline plugins test ./my-plugin --test-data ./sample.json
+# Resolve every pipeline component
+rag-pipeline validate
 ```
 
 **Common Plugin Issues**:
@@ -158,8 +160,8 @@ class MyPlugin {
 curl -H "Authorization: Bearer $OPENAI_API_KEY" \
   https://api.openai.com/v1/models
 
-# Check rate limits
-rag-pipeline query "test" --verbose --llm openai-gpt-3.5-turbo
+# Run a query with extra output (the model is set in .ragrc.json)
+rag-pipeline query "test" --verbose
 ```
 
 **Pinecone API Issues**:
@@ -169,8 +171,8 @@ rag-pipeline query "test" --verbose --llm openai-gpt-3.5-turbo
 curl -H "Api-Key: $PINECONE_API_KEY" \
   https://controller.pinecone.io/databases
 
-# Verify index exists
-rag-pipeline status --component retriever --detailed
+# Check API keys and whether the local index has been built
+rag-pipeline doctor --category environment
 ```
 
 **Common API Error Codes**:
@@ -194,28 +196,22 @@ rag-pipeline status --component retriever --detailed
 // Enable parallel processing
 const pipeline = createRagPipeline({
   embedder: {
-    name: 'openai',
+    name: "openai",
     config: {
-      batchSize: 100,        // Process in batches
-      maxConcurrency: 5,     // Parallel requests
-      timeout: 30000         // 30 second timeout
-    }
-  }
+      batchSize: 100, // Process in batches
+      maxConcurrency: 5, // Parallel requests
+      timeout: 30000, // 30 second timeout
+    },
+  },
 });
-
-// Monitor performance
-rag-pipeline benchmark --component embedder --queries 100
 ```
 
 **Batch Processing Strategy**:
 
 ```bash
-# Process large documents in chunks
-rag-pipeline ingest ./large-docs \
-  --batch-size 50 \
-  --parallel 3 \
-  --chunk-size 1000 \
-  --progress
+# Ingest a large directory and list each file as it is read
+# (chunking and batching are not CLI flags)
+rag-pipeline ingest ./large-docs --verbose
 ```
 
 ### **2. Memory Usage Issues**
@@ -242,11 +238,12 @@ process.on("warning", (warning) => {
 **Memory Monitoring**:
 
 ```bash
-# Monitor memory during processing
-rag-pipeline ingest ./docs --memory-monitor --verbose
+# Check memory use and other performance diagnostics
+rag-pipeline doctor --category performance
 
-# Set memory limits
-node --max-old-space-size=4096 rag-pipeline ingest ./large-dataset
+# Raise the Node.js heap limit for a large ingest
+node --max-old-space-size=4096 \
+  node_modules/@devilsdev/rag-pipeline-utils/bin/cli.js ingest ./large-dataset
 ```
 
 ### **3. Vector Store Performance**
@@ -256,14 +253,8 @@ node --max-old-space-size=4096 rag-pipeline ingest ./large-dataset
 **Index Optimization**:
 
 ```bash
-# Rebuild index with optimized settings
-rag-pipeline rebuild --chunk-size 1500 --parallel 4
-
-# Check index statistics
-rag-pipeline status --component retriever --stats
-
-# Optimize vector store
-rag-pipeline optimize --component retriever
+# Discard the index and rebuild it from source documents
+rag-pipeline ingest ./docs --rebuild
 ```
 
 ---
@@ -277,11 +268,11 @@ rag-pipeline optimize --component retriever
 **Debugging Steps**:
 
 ```bash
-# Test retrieval with debug output
-rag-pipeline query "your question" --debug --include-sources
+# Print the answer, retrieved passages and citations as JSON
+rag-pipeline query "your question" --json
 
-# Analyze retrieval scores
-rag-pipeline query "test query" --top-k 10 --min-score 0.7 --verbose
+# Retrieve more passages to inspect their scores
+rag-pipeline query "test query" --top-k 10 --json
 ```
 
 **Retrieval Tuning**:
@@ -308,16 +299,12 @@ rag-pipeline query "test query" --top-k 10 --min-score 0.7 --verbose
 
 **Response Quality Debugging**:
 
-```bash
-# Test with different models
-rag-pipeline query "test" --llm openai-gpt-4
-rag-pipeline query "test" --llm openai-gpt-3.5-turbo
+The model and its parameters are set on the `llm` entry in `.ragrc.json`, not
+as `query` flags. Change the entry, then compare answers:
 
-# Adjust generation parameters
-rag-pipeline query "test" \
-  --temperature 0.3 \
-  --max-tokens 1000 \
-  --top-p 0.9
+```bash
+rag-pipeline config show --section pipeline
+rag-pipeline query "test" --json
 ```
 
 **Prompt Engineering**:
@@ -346,13 +333,16 @@ const pipeline = createRagPipeline({
 
 **Metric Debugging**:
 
-```bash
-# Test individual metrics
-rag-pipeline evaluate ./test-queries.json --metrics bleu --verbose
-rag-pipeline evaluate ./test-queries.json --metrics rouge --debug
+Evaluation runs through the library, not the CLI. Score a single pair to
+isolate a metric:
 
-# Validate test data format
-rag-pipeline validate-dataset ./test-queries.json
+```javascript
+const { scoreAnswer } = require("@devilsdev/rag-pipeline-utils");
+
+console.log(
+  scoreAnswer("RAG retrieves context", "RAG retrieves context first"),
+);
+// { bleu: <number>, rouge: <number> }
 ```
 
 **Data Format Validation**:
@@ -378,20 +368,12 @@ if (!validation.isValid) {
 
 ### **2. Dashboard Connection Issues**
 
-**Problem**: Evaluation dashboard not loading or displaying data.
+**Problem**: Generated dashboard is empty or missing data.
 
-**Dashboard Debugging**:
-
-```bash
-# Start dashboard with debug logging
-DEBUG=rag-pipeline:dashboard rag-pipeline dashboard --port 3000
-
-# Check data file format
-rag-pipeline dashboard --data ./results.json --validate
-
-# Test with sample data
-rag-pipeline dashboard --sample-data --port 3000
-```
+The CLI has no `dashboard` command. Dashboards are HTML files
+produced by `DashboardGenerator.generate(snapshot)`; if one is empty, check
+that metrics were recorded on the `MetricsAggregator` before calling
+`getSnapshot()`. See [Evaluation](./Evaluation.md#dashboard-visualization).
 
 ---
 
@@ -405,17 +387,17 @@ rag-pipeline dashboard --sample-data --port 3000
 
 ```bash
 # Global installation
-npm install -g @DevilsDev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 
-# Use npx for local installation
-npx @DevilsDev/rag-pipeline-utils --help
+# Use npx for a local installation
+npx rag-pipeline --help
 
 # Check PATH
 echo $PATH | grep node_modules
 
 # Reinstall CLI
-npm uninstall -g @DevilsDev/rag-pipeline-utils
-npm install -g @DevilsDev/rag-pipeline-utils
+npm uninstall -g @devilsdev/rag-pipeline-utils
+npm install -g @devilsdev/rag-pipeline-utils
 ```
 
 ### **2. Permission Errors**
@@ -428,11 +410,9 @@ npm install -g @DevilsDev/rag-pipeline-utils
 # Fix npm permissions
 sudo chown -R $(whoami) ~/.npm
 
-# Use npx instead of global install
-npx @DevilsDev/rag-pipeline-utils init my-project
-
-# Run with appropriate permissions
-sudo rag-pipeline clear --all --confirm
+# Use a project-local install instead of a global one
+npm install --save-dev @devilsdev/rag-pipeline-utils
+npx rag-pipeline init
 ```
 
 ---
@@ -442,15 +422,10 @@ sudo rag-pipeline clear --all --confirm
 ### **Enable Debug Logging**
 
 ```bash
-# Enable all debug logs
-DEBUG=rag-pipeline:* rag-pipeline query "test"
+# Extra output (for example, the files ingest reads)
+rag-pipeline ingest ./docs --verbose
 
-# Enable specific component logs
-DEBUG=rag-pipeline:embedder rag-pipeline ingest ./docs
-DEBUG=rag-pipeline:retriever rag-pipeline query "test"
-DEBUG=rag-pipeline:llm rag-pipeline query "test"
-
-# Save logs to file
+# Save output to a file
 rag-pipeline query "test" --verbose > debug.log 2>&1
 ```
 
@@ -482,27 +457,27 @@ const pipeline = createRagPipeline({
 ### **Reset Pipeline State**
 
 ```bash
-# Clear all data and caches
-rag-pipeline clear --all --confirm
+# Reset configuration (overwrites .ragrc.json)
+rag-pipeline init --no-interactive --force
 
-# Rebuild from scratch
-rag-pipeline rebuild --force
-
-# Reset configuration
-rag-pipeline config init --force --overwrite
+# Discard the index and rebuild it from source documents
+rag-pipeline ingest ./docs --rebuild
 ```
 
 ### **Backup & Restore**
 
+The index is a JSON file (the `file-store` retriever's `config.path`,
+`.rag/index.json` by default), so back it up by copying it:
+
 ```bash
-# Export current state
-rag-pipeline export --output backup-$(date +%Y%m%d).json
+# Back up the index
+cp .rag/index.json index-backup-$(date +%Y%m%d).json
 
-# Import from backup
-rag-pipeline import backup-20241201.json --merge
+# Restore it
+cp index-backup-20241201.json .rag/index.json
 
-# Verify integrity
-rag-pipeline doctor --comprehensive
+# Verify the config, plugins and environment
+rag-pipeline doctor
 ```
 
 ---
@@ -515,11 +490,11 @@ rag-pipeline doctor --comprehensive
 # Run comprehensive health check
 rag-pipeline doctor
 
-# Get system information
-rag-pipeline --version --verbose
+# Get the version
+rag-pipeline --version
 
-# Check component status
-rag-pipeline status --all --detailed
+# Show system, configuration and component information
+rag-pipeline info
 ```
 
 ### **Community Support**
