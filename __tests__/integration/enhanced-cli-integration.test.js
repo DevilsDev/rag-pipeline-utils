@@ -553,10 +553,18 @@ describe("Enhanced CLI Integration Tests", () => {
       expect(result.stderr).toContain("No plugin registry configured");
     });
 
-    it("should refuse plugin install", async () => {
-      const result = await runCLI(["plugin", "install", "anything"]);
+    it("should explain a plugin install source it cannot resolve", async () => {
+      const result = await runCLI([
+        "--config",
+        "valid.ragrc.json",
+        "plugin",
+        "install",
+        "anything",
+      ]);
       expect(result.code).toBe(1);
-      expect(result.stderr).toContain("hub install is disabled");
+      expect(result.stderr).toContain(
+        "is not a local path or npm:<package>, and no plugin registry is configured",
+      );
     });
   });
 });

@@ -26,6 +26,16 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   (`GET /health`, `POST /query`) bound to 127.0.0.1, JSON only, 64 KB body
   limit, no CORS.
 - `LocalEmbedder.getState()` / `setState()`.
+- **`rag-pipeline hub install <source>`** installs plugins from a local
+  directory, `.tgz`, single `.js` file, `npm:<package>` or a registry
+  (sha256-verified). It contains extraction to `.rag/plugins`, runs a static
+  security scan (high-risk findings block unless `--allow-risky`), checks the
+  stage contract in a separate process, and registers the plugin in
+  `.ragrc.json`. `PluginHub.installPlugin()` uses the same installer.
+- **`rag-pipeline hub certify submit|check <path>`** scores a local plugin
+  from its files (contract, security scan, tests, documentation) against the
+  BASIC/VERIFIED/ENTERPRISE automated thresholds.
+- **`rag-pipeline hub list`** lists plugins registered in the config.
 
 ### Removed
 
@@ -90,8 +100,7 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   longer strips Windows path separators, and runs npm on Windows.
 - **`hub`** (alias `plugin`) commands are registered. There is no default
   registry (the old default host does not exist): pass `--registry <url>` or
-  set `RAG_PLUGIN_REGISTRY`. `hub install` is disabled until it verifies and
-  installs plugin code safely.
+  set `RAG_PLUGIN_REGISTRY` for registry operations.
 - **Hot reload** ignore patterns work again (chokidar 4 dropped glob support)
   and only JavaScript changes trigger a reload.
 - `loadRagConfig()` accepts a config file path as well as a directory and no
@@ -111,9 +120,13 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
 - **`loadRagConfig()`** error messages now include details
   (`Config validation failed: ...`, `Invalid JSON in config file <path>: ...`)
   and it no longer logs.
-- **`rag-pipeline plugin` / `hub`** require `--registry <url>` or
-  `RAG_PLUGIN_REGISTRY`; `hub install` and `hub certify submit` are disabled
-  (`certify submit` issued certificates from fixed placeholder scores).
+- **`rag-pipeline plugin` / `hub`** registry operations require
+  `--registry <url>` or `RAG_PLUGIN_REGISTRY`. `hub certify submit` takes a
+  local plugin path and reports computed scores; it previously issued
+  certificates from fixed placeholder scores. `PluginHub.installPlugin()` now
+  installs into `<project>/.rag/plugins` and registers the plugin in the
+  config (it previously only wrote `metadata.json` to `localCacheDir`), and
+  `getInstalledPlugins()` reads the config.
 - **`FileVectorStore`** index files store mostly-zero vectors sparsely and
   round values to 7 significant digits (about 10x smaller for the `local`
   embedder).

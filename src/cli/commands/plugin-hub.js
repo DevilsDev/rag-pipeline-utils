@@ -11,6 +11,11 @@ const hubCommands = require("./plugin-hub/hub-commands");
 const certificationCommands = require("./plugin-hub/certification-commands");
 const reviewCommands = require("./plugin-hub/review-commands");
 const { setupEventListeners } = require("./plugin-hub/event-handlers");
+const {
+  installFromSource,
+  certifyLocal,
+  listPlugins,
+} = require("./plugin-hub/local-commands");
 
 class PluginHubCLI {
   /**
@@ -64,9 +69,12 @@ class PluginHubCLI {
         "Plugin registry URL (or RAG_PLUGIN_REGISTRY)",
       )
       .hook("preAction", (_hubCommand, actionCommand) => {
-        // requirements is local; install and submit are disabled and explain why
+        // Local commands: requirements and submit never need a registry; install
+        // needs one only for registry ids and checks that itself.
         if (
-          ["requirements", "install", "submit"].includes(actionCommand.name())
+          ["requirements", "install", "submit", "list"].includes(
+            actionCommand.name(),
+          )
         )
           return;
         this.registryUrl = this.registryUrl || program.opts().registry;
@@ -97,19 +105,22 @@ class PluginHubCLI {
         await hubCommands.searchPlugins(this.hub, query, _options);
       });
 
-    // Install is disabled until it is real: the hub's install path discards
-    // its own security-scan result, "sandbox installation" is a timer, it only
-    // writes metadata.json, and a registry-supplied plugin id can write
-    // outside the plugins directory.
     program
-      .command("install <plugin>")
-      .description("Not available yet (see message)")
-      .action(() => {
-        console.error(
-          "❌ hub install is disabled: it does not yet verify or install plugin code safely.\n" +
-            '   Add plugins manually under "plugins" in .ragrc.json instead.',
-        );
-        process.exitCode = 1;
+      .command("install <source>")
+      .description(
+        "Install a plugin from a local path, .tgz, .js, npm:<package> or the registry",
+      )
+      .option("--stage <stage>", "loader, embedder, retriever, llm or reranker")
+      .option("--name <name>", "Name to register the plugin under")
+      .option("-v, --version <version>", "Registry version", "latest")
+      .option("--force", "Replace an installed plugin with the same stage/name")
+      .option("--allow-risky", "Install despite high-risk security findings")
+      .action(async (source, _options, command) => {
+        const globals = command.optsWithGlobals();
+        this.registryUrl = this.registryUrl || globals.registry;
+        const getHub = () =>
+          this.registryUrl || process.env.RAG_PLUGIN_REGISTRY ? this.hub : null;
+        await installFromSource(source, _options, globals, getHub);
       });
 
     // Info command
@@ -124,10 +135,10 @@ class PluginHubCLI {
     program
       .command("list")
       .alias("ls")
-      .description("List installed plugins")
-      .option("--format <format>", "Output format: table, json", "table")
-      .action(async (_options) => {
-        await hubCommands.listInstalledPlugins(this.hub, _options);
+      .description("List plugins registered in the config")
+      .option("--json", "Print as JSON")
+      .action(async (_options, command) => {
+        listPlugins(command.optsWithGlobals(), _options);
       });
 
     // Publish command
@@ -185,16 +196,14 @@ class PluginHubCLI {
       .description("Plugin certification operations");
 
     certifyCmd
-      .command("submit <plugin>")
-      .description("Not available yet (see message)")
-      .action(() => {
-        // PluginCertification's automated checks return fixed scores (code
-        // quality 85, security 90, ...) without examining the plugin, so a
-        // BASIC "certificate" would be issued for anything.
-        console.error(
-          "❌ hub certify submit is disabled: its automated checks are placeholders that do not inspect the plugin.",
-        );
-        process.exitCode = 1;
+      .command("submit <path>")
+      .alias("check")
+      .description("Run automated certification checks on a local plugin")
+      .option("--stage <stage>", "loader, embedder, retriever, llm or reranker")
+      .option("--json", "Print the report as JSON")
+      .option("--output <file>", "Save the report as JSON")
+      .action(async (pluginPath, _options) => {
+        await certifyLocal(pluginPath, _options);
       });
 
     certifyCmd

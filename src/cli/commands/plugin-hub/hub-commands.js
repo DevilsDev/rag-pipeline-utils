@@ -69,34 +69,6 @@ async function searchPlugins(hub, query, _options) {
   }
 }
 
-async function installPlugin(hub, plugin, _options) {
-  try {
-    const installOptions = {
-      securityScan: _options.securityScan,
-      requireCertified: _options.requireCertified,
-      sandboxTimeout: _options.sandboxTimeout,
-    };
-
-    const result = await hub.installPlugin(
-      plugin,
-      _options.version,
-      installOptions,
-    );
-
-    console.log(chalk.green("\n✅ Installation completed successfully!")); // eslint-disable-line no-console
-    console.log(chalk.blue(`Plugin: ${result.pluginInfo.name}`)); // eslint-disable-line no-console
-    console.log(chalk.blue(`Version: ${result.version}`)); // eslint-disable-line no-console
-    console.log(chalk.blue(`Install Path: ${result.installPath}`)); // eslint-disable-line no-console
-
-    if (result.pluginInfo.certified) {
-      console.log(chalk.green("🏆 This plugin is certified!")); // eslint-disable-line no-console
-    }
-  } catch (error) {
-    console.error(chalk.red(`Installation failed: ${error.message}`)); // eslint-disable-line no-console
-    process.exit(1);
-  }
-}
-
 async function getPluginInfo(hub, plugin) {
   const spinner = ora("Fetching plugin information...").start();
 
@@ -170,50 +142,6 @@ async function getPluginInfo(hub, plugin) {
   }
 }
 
-async function listInstalledPlugins(hub, _options) {
-  const spinner = ora("Loading installed plugins...").start();
-
-  try {
-    const installed = await hub.getInstalledPlugins();
-    spinner.stop();
-
-    if (installed.length === 0) {
-      console.log(chalk.yellow("No plugins installed.")); // eslint-disable-line no-console
-      return;
-    }
-
-    if (_options.format === "json") {
-      console.log(JSON.stringify(installed, null, 2)); // eslint-disable-line no-console
-      return;
-    }
-
-    console.log(chalk.green(`${installed.length} plugins installed:\n`)); // eslint-disable-line no-console
-
-    const table = new Table({
-      head: ["Name", "Version", "Type", "Last Used", "Status"],
-      colWidths: [25, 12, 15, 15, 10],
-    });
-
-    for (const plugin of installed) {
-      const lastUsed = plugin.lastUsed
-        ? new Date(plugin.lastUsed).toLocaleDateString()
-        : chalk.gray("Never");
-
-      const status = plugin.certified
-        ? chalk.green("Certified")
-        : chalk.gray("Standard");
-
-      table.push([plugin.name, plugin.version, plugin._type, lastUsed, status]);
-    }
-
-    console.log(table.toString()); // eslint-disable-line no-console
-  } catch (error) {
-    spinner.stop();
-    console.error(chalk.red(`Failed to list plugins: ${error.message}`)); // eslint-disable-line no-console
-    process.exit(1);
-  }
-}
-
 async function publishPlugin(hub, pluginPath, _options) {
   if (_options.dryRun) {
     console.log(
@@ -282,9 +210,7 @@ async function getTrendingPlugins(hub, _options) {
 
 module.exports = {
   searchPlugins,
-  installPlugin,
   getPluginInfo,
-  listInstalledPlugins,
   publishPlugin,
   getTrendingPlugins,
 };

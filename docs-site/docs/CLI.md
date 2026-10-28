@@ -249,7 +249,56 @@ rag-pipeline info --config
 
 ## `hub` (alias `plugin`)
 
-Talk to a plugin registry. There is no public registry: pass `--registry <url>` or set `RAG_PLUGIN_REGISTRY`; without one these commands exit `1`.
+Install, inspect and check plugins. `install`, `list` and `certify submit|check|requirements` work without a registry; the other subcommands talk to a plugin registry. There is no public registry: pass `--registry <url>` or set `RAG_PLUGIN_REGISTRY`; without one those commands exit `1`.
+
+### `hub install <source>`
+
+```bash
+rag-pipeline hub install ./my-llm                         # local directory
+rag-pipeline hub install ./my-llm-1.0.0.tgz               # npm pack output
+rag-pipeline hub install ./plugins/echo.js --stage llm --name echo
+rag-pipeline hub install npm:@acme/rag-llm-echo@1.2.0     # from npm
+rag-pipeline hub --registry https://registry.example.com install echo
+```
+
+What it does:
+
+1. Fetches the plugin. Registry downloads are checked against the registry's sha256, and a mismatch aborts.
+2. Unpacks it into `.rag/plugins/<stage>-<name>/` next to the config. Archive entries that would land outside that folder are rejected, and symlinks are skipped.
+3. Statically scans the code for risky capabilities: running processes, `eval`/`new Function`, `vm`, native addons, network access, file writes and environment access. High-risk findings block the install unless you pass `--allow-risky`.
+4. Loads the entry module in a separate Node process and checks it has the stage's methods (`llm`: `generate`; `embedder`: `embed`; `retriever`: `store` and `retrieve`; `reranker`: `rerank`; `loader`: `load`).
+5. Adds `plugins.<stage>.<name>` to `.ragrc.json`. To use the plugin, add `{ "stage": ..., "name": ... }` to `pipeline`.
+
+Stage and name come from `package.json` (`"ragPipeline": { "stage": "llm", "name": "echo" }`), or from `--stage` and `--name`. Install scripts are never run.
+
+The scan reads source text and doesn't run anything. It is not a sandbox, though: an installed plugin runs with your permissions whenever the pipeline uses it.
+
+| Option              | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| `--stage <stage>`   | `loader`, `embedder`, `retriever`, `llm` or `reranker`   |
+| `--name <name>`     | Name to register the plugin under                        |
+| `-v, --version <v>` | Registry version (default `latest`)                      |
+| `--force`           | Replace an installed plugin with the same stage and name |
+| `--allow-risky`     | Install despite high-risk scan findings                  |
+
+### `hub list`
+
+Lists the plugins registered under `plugins` in the config: installed version, whether the plugin is in the pipeline, and whether its file exists. Add `--json` for JSON output.
+
+### `hub certify submit <path>` (alias `check`)
+
+Runs automated checks on a local plugin and prints a weighted score:
+
+| Check         | Weight | Scored on                                                                   |
+| ------------- | ------ | --------------------------------------------------------------------------- |
+| Contract      | 35     | Required methods present (checked in a separate process)                    |
+| Security scan | 30     | 100 − 40 per high, 10 per medium, 2 per low finding                         |
+| Tests         | 15     | Test files present (60), plus a real `test` script (100)                    |
+| Documentation | 20     | README (50), README of 300+ characters (20), description (15), license (15) |
+
+Automated thresholds: BASIC 60, VERIFIED 80 (also needs manual review), ENTERPRISE 95 (also needs manual review and a security audit). A plugin that fails the contract check never reaches a level. The command exits `1` below BASIC. Options: `--stage`, `--json`, `--output <file>`. The report is local; nothing is uploaded and no certificate is issued.
+
+### Registry commands
 
 ```bash
 rag-pipeline hub --registry https://registry.example.com search markdown
@@ -258,9 +307,7 @@ rag-pipeline hub info markdown-pro
 rag-pipeline hub certify requirements        # works offline
 ```
 
-Subcommands: `search`, `info`, `list`, `publish`, `rate`, `reviews`, `trending`, `certify submit|verify|requirements`, `publisher status|apply`.
-
-`hub install` is currently disabled: it does not yet verify or install plugin code safely. Add plugins to your project and reference them under `plugins` in `.ragrc.json` instead.
+Also available: `publish`, `rate`, `reviews`, `trending`, `certify verify`, and `publisher status|apply`.
 
 ---
 
