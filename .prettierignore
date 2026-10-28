@@ -25,3 +25,5 @@ __tests__/fixtures/**
 **/.png
 **/.jpg
 **/.ico
+# git worktrees of this repo (full copies)
+.claude/
