@@ -322,6 +322,89 @@ Also available: `publish`, `rate`, `reviews`, `trending`, `certify verify`, and 
 
 ---
 
+## `ai`
+
+Tools that work on your configured pipeline and index. Every number they print is computed from your data. Failures exit `1` with the reason on stderr.
+
+### `ai train embedding [path]`
+
+Refits the built-in `local` (TF-IDF) embedder and re-embeds every indexed chunk with the new model, so later queries use it.
+
+```bash
+rag-pipeline ai train embedding          # fit on the indexed chunks
+rag-pipeline ai train embedding ./corpus # fit on these documents instead
+```
+
+- Prints the number of training chunks, the vocabulary size (and the previous size) and how many chunks were re-embedded.
+- With `[path]`, the documents are only used for training. They are not added to the index. Indexed chunks that share no term with the new vocabulary can no longer be retrieved, and the command prints a warning with their count.
+- The next `ingest` refits the embedder on the whole indexed corpus, which replaces a `[path]` fit.
+- Only the `local` embedder can be trained. With `openai`, `ollama`, `cohere` or a custom embedder the command exits `1`, because those use fixed pre-trained models. It also needs a `file-store` index that is not empty.
+
+### `ai benchmark`
+
+Times real queries against the configured pipeline and index.
+
+```bash
+rag-pipeline ai benchmark                          # up to 5 queries sampled from the index, 3 runs
+rag-pipeline ai benchmark --queries queries.txt --runs 10 --top-k 5
+rag-pipeline ai benchmark --json
+```
+
+| Option             | Default | Meaning                                                                                                                   |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `--queries <file>` | sampled | One query per line, or a JSON array of strings. Without a file, the first 8 words of the first 5 indexed chunks are used. |
+| `--runs <n>`       | `3`     | Passes over the query set                                                                                                 |
+| `--top-k <n>`      | `3`     | Passages to retrieve                                                                                                      |
+| `--json`           |         | Print every measurement as JSON                                                                                           |
+
+- Reports the number of samples, p50, p95, mean and max latency for each stage: query embedding, retrieval, reranking (only when a reranker is configured) and end-to-end `query`.
+- Percentiles use the nearest-rank method, so each value is an observed sample.
+- The time to load the config and index, and the first (warm-up) query, are reported separately and are not included in the statistics.
+- If an `llm` stage is configured, end-to-end includes answer generation, so every run makes real provider calls.
+- Also prints the results returned per query and the environment: Node version, platform, indexed chunk count, embedder and dimensions, retriever, reranker and llm.
+
+### `ai feedback` and `ai search`
+
+Record which chunks were good or bad answers to a question, then search with those votes applied.
+
+```bash
+rag-pipeline ai search "paid vacation days"     # shows chunk ids such as docs/vacation.md#0
+rag-pipeline ai feedback "paid vacation days" docs/leave.txt#0 --rating up
+rag-pipeline ai feedback "paid vacation days" docs/vacation.md#0 --rating down
+rag-pipeline ai search "paid vacation days" --top-k 5 --json
+```
+
+- `ai feedback <question> <docId> --rating <up|down>` checks that the chunk id exists in the index. It then appends the vote to `feedback.json` in the same directory as the `file-store` index (by default `.rag/feedback.json`). A corrupt feedback file is reported as an error and is never overwritten.
+- `ai search` is retrieval only. It does not call the `llm`, and the existing `query` command is unchanged.
+- `ai search` embeds and retrieves as `query` does and runs any configured reranker. It then adjusts each candidate's score:
+
+  ```
+  adjustment = sum over the votes for this chunk of
+               (+1 for up, -1 for down) x 0.1 x jaccard(terms(question), terms(voted question))
+  ```
+
+  The total is capped at ±0.3 and added to the retrieval score.
+
+- A vote counts only for the chunk it names, in proportion to how many terms its question shares with yours. A vote on an unrelated question has no effect.
+- Results are re-sorted by the adjusted score. A larger pool (at least `4 × top-k`) is re-scored, so a boosted chunk can move into the top-k.
+- Chunks with no retrieval match (score 0) are not shown.
+- Each result prints its id, its retrieval score, the adjustment and every vote that contributed.
+
+### `ai multimodal process <path>`
+
+Reports what the loaders extract from a file or directory. The index is not modified.
+
+```bash
+rag-pipeline ai multimodal process ./docs
+rag-pipeline ai multimodal process report.html --json
+```
+
+- For text files (`.md`, `.markdown`, `.html`, `.htm`, `.csv`, `.txt`), it prints the detected type, the file's characters, the chunk count and the extracted characters.
+- Images are not supported. The built-in llm connectors (`openai`, `anthropic`, `ollama`) only send text prompts, and image processing needs a vision-capable model. An image path exits `1` with that explanation.
+- In a directory, images and other unsupported files are listed as skipped.
+
+---
+
 ## `completion`
 
 ```bash

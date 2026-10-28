@@ -38,6 +38,7 @@ const COMMANDS = [
   "doctor",
   "validate",
   "hub",
+  "ai",
   "plugin",
   "config",
   "info",

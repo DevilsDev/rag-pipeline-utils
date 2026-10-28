@@ -37,6 +37,14 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   BASIC/VERIFIED/ENTERPRISE automated thresholds.
 - **`rag-pipeline hub list`** lists plugins registered in the config.
 - **`rag-pipeline init` setup wizard**: chooses the embedder, LLM, retriever and an optional reranker, using only built-ins or custom plugin modules. Connector options are pre-filled with the connector defaults. Each custom plugin is loaded and its stage method checked before it is accepted. The wizard reports which API key environment variables are missing, can run a connection test on request, and previews the JSON before writing.
+- **`rag-pipeline ai`**, built on the configured pipeline and index:
+  `ai train embedding [path]` refits the `local` TF-IDF embedder and
+  re-embeds the index; `ai benchmark` reports measured p50/p95/mean latency
+  per stage; `ai feedback <question> <docId> --rating up|down` stores votes in
+  `.rag/feedback.json` and `ai search` applies them as a capped,
+  explained score adjustment; `ai multimodal process <path>` reports type,
+  characters and chunks for text files (images exit 1: no built-in connector
+  accepts image input).
 
 ### Removed
 
@@ -46,6 +54,11 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`,
   `--abort-timeout`, `--quiet`, `config show --format`).
 - The interactive wizard built on hard-coded mock registry data.
+- The unregistered `src/cli/commands/ai-ml*` command modules: federated
+  learning, LLM fine-tuning, `ai train status|deploy`, `ai dashboard`,
+  adaptive profiles and multimodal `search`/`describe`. They called methods
+  missing from the `src/ai` engines, exited 0 on failure and printed
+  hard-coded or simulated numbers. The `src/ai` library modules are unchanged.
 - Unreachable modules that were never exported or registered: `src/dx/`
   (including a realtime debugger exposing an unauthenticated WebSocket),
   `src/cli/commands/{dx,docs}.js`, `src/cli/input-sanitization-middleware.js`,
