@@ -95,7 +95,18 @@ Commands exit with status `1` on failure and print the error on stderr.
 
 ## `init`
 
-Create `.ragrc.json`. In a terminal it asks for the embedder, language model and index path; with `--no-interactive` (or when not attached to a terminal) it writes the template as-is.
+Create `.ragrc.json`. In a terminal, `init` runs a setup wizard; with `--no-interactive` (or when stdin is not a terminal) it writes the `--template` pipeline as-is. In the wizard `--template` only pre-selects the embedder and language model.
+
+The wizard steps:
+
+1. **Embedder**: `local` (TF-IDF, offline), `openai`, `ollama`, `cohere`, or a custom plugin. Provider options are pre-filled with the connector defaults: `embeddingModel` for OpenAI/Cohere, and `baseURL` + `embeddingModel` for Ollama.
+2. **Language model**: none (`query` prints the retrieved passages), `openai`, `anthropic` or `ollama` (`model`, plus `baseURL` for Ollama), or a custom plugin.
+3. **Retriever**: `file-store` with an index path (default `.rag/index.json`, relative to the config file), `memory`, or a custom plugin. `memory` does not persist between CLI commands, so documents from `ingest` are gone by the time `query` runs.
+4. **Reranker** (optional): none, `scoring` (BM25, offline) or a custom plugin.
+5. **Custom plugins**: enter a path to a `.js` module (relative to the current directory). The wizard loads it the same way the pipeline will (a class, factory function or object, optionally as `default`) and checks the stage's method. Embedders need `embed()` or `embedQuery()`, LLMs `generate()`, retrievers `retrieve()` and rerankers `rerank()`. If the check fails, the wizard asks again; enter an empty path to go back. It warns when an embedder has no `embed()` or a retriever has no `store()`, because `ingest` needs them. The path is saved under `plugins.<stage>.<name>`, relative to the config file. The name comes from the file name and is renamed if it clashes with a built-in.
+6. **Environment check**: for each chosen provider, the wizard reports whether `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` or `COHERE_API_KEY` is set, and shows the Ollama URL in use. Keys are never asked for and never written to the file. Export them in your shell instead.
+7. **Connection test** (optional, default no): makes one real call to the embedder (`embedQuery("test")`) and the LLM (`generate("Say OK")`), each with a 15 s timeout, and reports pass or fail. A failure does not stop you from saving.
+8. **Preview**: prints the JSON and asks for confirmation before writing. If the output file already exists, the wizard asks before replacing it, unless you passed `--force`.
 
 ```bash
 rag-pipeline init
@@ -106,9 +117,9 @@ rag-pipeline init --output config/rag.json --force
 | Option              | Description                                        |
 | ------------------- | -------------------------------------------------- |
 | `--template <name>` | `local` (default), `openai`, `ollama`, `anthropic` |
-| `--no-interactive`  | Don't prompt                                       |
+| `--no-interactive`  | Don't run the wizard; write the template           |
 | `--output <path>`   | Output file (default `.ragrc.json`)                |
-| `--force`           | Overwrite an existing file                         |
+| `--force`           | Overwrite an existing file without asking          |
 
 ---
 

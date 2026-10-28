@@ -1,15 +1,18 @@
 /**
  * Init command handler
- * Writes a .ragrc.json whose pipeline names built-in components, so the
- * result works with `ingest` / `query` immediately.
+ * Writes a .ragrc.json whose pipeline names built-in components (or custom
+ * plugins checked by the setup wizard), so the result works with
+ * `ingest` / `query` immediately.
  */
 
 const fs = require("fs/promises");
-const { validateRagrc } = require("../../config/enhanced-ragrc-schema.js");
+const { buildInitConfig } = require("../wizard/config-builder.js");
+const { runInitWizard, ask } = require("../wizard/init-wizard.js");
 
 /**
  * Starting points for `init --template <name>`. "local" needs no API keys or
  * services; it has no llm stage, so `query` prints the retrieved passages.
+ * In interactive mode the template only sets the wizard's defaults.
  */
 const TEMPLATES = {
   local: { embedder: "local", llm: null },
@@ -18,72 +21,21 @@ const TEMPLATES = {
   anthropic: { embedder: "local", llm: "anthropic" },
 };
 
-/**
- * @param {{embedder: string, llm: string|null, indexPath?: string}} choice
- * @returns {object} Normalized, validated configuration
- */
-function buildInitConfig({ embedder, llm, indexPath = ".rag/index.json" }) {
-  const pipeline = [
-    { stage: "loader", name: "auto" },
-    { stage: "embedder", name: embedder },
-    { stage: "retriever", name: "file-store", config: { path: indexPath } },
-  ];
-  if (llm) pipeline.push({ stage: "llm", name: llm });
-
-  const result = validateRagrc({
-    namespace: "default",
-    metadata: { name: "rag-pipeline", createdAt: new Date().toISOString() },
-    pipeline,
-  });
-  if (!result.valid) {
-    throw new Error(
-      `Generated configuration is invalid: ${JSON.stringify(result.errors)}`,
-    );
-  }
-  return result.normalized;
-}
-
-async function promptForChoice(defaults) {
+function inquirerPrompt(questions) {
   const inquirer = require("inquirer");
-  return inquirer.prompt([
-    {
-      type: "list",
-      name: "embedder",
-      message: "Embedder:",
-      default: defaults.embedder,
-      choices: [
-        { name: "local (TF-IDF, offline, no API key)", value: "local" },
-        { name: "openai (OPENAI_API_KEY)", value: "openai" },
-        { name: "ollama (local Ollama server)", value: "ollama" },
-        { name: "cohere (COHERE_API_KEY)", value: "cohere" },
-      ],
-    },
-    {
-      type: "list",
-      name: "llm",
-      message: "Language model:",
-      default: defaults.llm,
-      choices: [
-        { name: "none (query prints retrieved passages)", value: null },
-        { name: "openai (OPENAI_API_KEY)", value: "openai" },
-        { name: "anthropic (ANTHROPIC_API_KEY)", value: "anthropic" },
-        { name: "ollama (local Ollama server)", value: "ollama" },
-      ],
-    },
-    {
-      type: "input",
-      name: "indexPath",
-      message: "Index file (relative to the config):",
-      default: ".rag/index.json",
-    },
-  ]);
+  return inquirer.prompt(questions);
 }
 
 /**
  * Handle init command
  * @param {object} globalOptions - Global CLI options from program.opts()
  * @param {object} options - Command-specific options
- * @param {object} [deps] - Injectable prompt for tests
+ * @param {object} [deps] - Injectable dependencies for tests
+ * @param {Function} [deps.prompt] - inquirer-style prompt([question]) => answers
+ * @param {object} [deps.env] - Environment for the API key check
+ * @param {Function} [deps.buildComponents] - Used by the connection test
+ * @param {Function} [deps.log] - Wizard output (console.log)
+ * @param {number} [deps.timeoutMs] - Connection test timeout
  */
 async function handleInit(globalOptions, options, deps = {}) {
   try {
@@ -108,21 +60,49 @@ async function handleInit(globalOptions, options, deps = {}) {
       return;
     }
 
-    if (!options.force) {
-      const exists = await fs
-        .access(options.output)
-        .then(() => true)
-        .catch(() => false);
-      if (exists) {
+    const prompt = deps.prompt || inquirerPrompt;
+    const exists = await fs
+      .access(options.output)
+      .then(() => true)
+      .catch(() => false);
+    if (exists && !options.force) {
+      if (!interactive) {
         throw new Error(
           `Configuration file already exists: ${options.output}. Use --force to overwrite.`,
         );
       }
+      const overwrite = await ask(prompt, {
+        type: "confirm",
+        name: "overwrite",
+        message: `${options.output} already exists. Replace it?`,
+        default: false,
+      });
+      if (!overwrite) {
+        console.log("Nothing written.");
+        return;
+      }
     }
 
-    const prompt = deps.prompt || promptForChoice;
-    const choice = interactive ? await prompt(template) : template;
-    const config = buildInitConfig(choice);
+    let config;
+    if (interactive) {
+      const result = await runInitWizard({
+        prompt,
+        defaults: template,
+        outputPath: options.output,
+        overwrite: exists,
+        env: deps.env || process.env,
+        buildComponents: deps.buildComponents,
+        log: deps.log || console.log,
+        timeoutMs: deps.timeoutMs,
+      });
+      if (!result) {
+        console.log("Nothing written.");
+        return;
+      }
+      config = result.config;
+    } else {
+      config = buildInitConfig(template);
+    }
 
     await fs.writeFile(options.output, JSON.stringify(config, null, 2) + "\n");
     console.log(`✅ Configuration written: ${options.output}`);
