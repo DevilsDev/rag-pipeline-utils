@@ -1,0 +1,47 @@
+name: Docs links
+
+# Weekly check of external links in the README, the docs site and the blog.
+# Internal links are already checked by the Docusaurus build, which fails
+# on broken links and anchors (docs-build.yml). This runs on a schedule, not
+# on pull requests, so a third-party site going down never blocks a merge.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-links
+  cancel-in-progress: true
+
+jobs:
+  links:
+    name: Check external links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          fail: true
+          args: >-
+            --no-progress
+            --scheme https --scheme http
+            --max-retries 3
+            --retry-wait-time 5
+            --timeout 20
+            --accept 200..=299,403,429
+            --exclude-path docs-site/versioned_docs
+            --exclude '^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)'
+            --exclude '^https?://([a-z0-9-]+\.)*example\.(com|org)'
+            --exclude '^https://github\.com/DevilsDev/rag-pipeline-utils/(edit|compare)/'
+            README.md
+            'docs-site/docs/**/*.md'
+            'docs-site/docs/**/*.mdx'
+            'docs-site/blog/**/*.md'

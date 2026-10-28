@@ -63,7 +63,7 @@ Run a curated query set through the pipeline and produce a regression
 report. Use this in CI for quality gates on PRs that touch retrieval
 or prompting. Passing each case's reference answer enables context recall.
 
-```js
+```js no-run
 import { PipelineEvaluator } from "@devilsdev/rag-pipeline-utils";
 
 const evaluator = new PipelineEvaluator();

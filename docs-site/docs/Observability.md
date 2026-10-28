@@ -50,7 +50,7 @@ requestLog.warn("Slow retrieval", { durationMs: 950 });
 
 The `metrics` export provides `Counter`, `Gauge`, `Histogram`, `MetricsRegistry`, `PipelineMetrics` and a shared `pipelineMetrics` instance.
 
-```javascript
+```javascript no-run
 const { createRagPipeline, metrics } = require("@devilsdev/rag-pipeline-utils");
 
 const registry = new metrics.MetricsRegistry();
@@ -107,7 +107,7 @@ console.log(events.exportEvents()); // JSON string
 
 `ExecutionTracer.trace(pipeline)` returns a wrapped pipeline. Each `run()` is recorded with its input, output, duration, result count and citation and evaluation data, and the trace is attached as `result.trace`. Traces are kept in memory.
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   ExecutionTracer,
@@ -141,7 +141,7 @@ There is no distributed-tracing exporter. To correlate with OpenTelemetry, start
 
 `MetricsAggregator` keeps a rolling window of operations. `DashboardGenerator` renders a snapshot as a self-contained HTML page (inline CSS and SVG) or as a text report.
 
-```javascript
+```javascript no-run
 const fs = require("fs");
 const {
   MetricsAggregator,

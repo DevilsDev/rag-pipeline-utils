@@ -12,6 +12,7 @@ on:
     paths:
       - "docs/**"
       - "docs-site/**"
+      - ".github/workflows/docs-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -25,7 +26,7 @@ jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -46,6 +47,24 @@ jobs:
 
       - name: Build documentation
         run: npm run docs:build
+
+      # Lighthouse on pull requests: accessibility, best practices and SEO
+      # must score at least 90 (performance warns below 90). The site is
+      # served under /rag-pipeline-utils/ like GitHub Pages; reports are
+      # uploaded as an artifact. See docs-site/lighthouserc.json.
+      - name: Prepare site for Lighthouse
+        if: github.event_name == 'pull_request'
+        run: |
+          mkdir -p docs-site/.lighthouse-site
+          cp -r docs-site/build docs-site/.lighthouse-site/rag-pipeline-utils
+
+      - name: Lighthouse
+        if: github.event_name == 'pull_request'
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
+        with:
+          configPath: ./docs-site/lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: false
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

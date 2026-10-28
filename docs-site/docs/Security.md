@@ -226,7 +226,7 @@ The `JWTValidator` class includes replay protection that distinguishes between t
 
 **Setup:**
 
-```javascript
+```javascript no-run
 import { JWTValidator } from "@devilsdev/rag-pipeline-utils";
 
 const validator = new JWTValidator({
@@ -344,7 +344,7 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 
 **Input Validation with built-in helpers**:
 
-```javascript
+```javascript no-run
 import {
   validateInput,
   PreRetrievalGuard,
@@ -527,7 +527,7 @@ There is no default registry: registry operations need `--registry <url>` or `RA
 - **Unsigned plugins**: by default a plugin registered without a manifest is still accepted. A registry created with `requireSignedPlugins: true` refuses them while verification is enabled.
 - Plugins listed in a JSON plugin config are verified (signed manifest and plugin files) before they are imported.
 
-```javascript
+```javascript no-run
 import { PluginSignatureVerifier } from "@devilsdev/rag-pipeline-utils";
 
 const verifier = new PluginSignatureVerifier({ requireContentDigest: true });
@@ -550,7 +550,7 @@ if (!result.verified) throw new Error(result.error);
 
 `AuditLogger` records authentication, authorization, data access, data modification, system change, API access and compliance events, and can query them, build compliance reports and verify their integrity.
 
-```javascript
+```javascript no-run
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
@@ -745,7 +745,7 @@ There is no global `security` block in `.ragrc.json` or in `createRagPipeline`. 
 
 ### **Environment-Specific Settings**
 
-```javascript
+```javascript no-run
 import {
   createRagPipeline,
   GuardrailsPipeline,
@@ -880,7 +880,7 @@ Report vulnerabilities privately through [GitHub private vulnerability reporting
 
 `GuardrailsPipeline` (added in 2.4.0) wraps an existing pipeline with pre-retrieval, retrieval-time and post-generation checks:
 
-```javascript
+```javascript no-run
 import {
   createRagPipeline,
   GuardrailsPipeline,

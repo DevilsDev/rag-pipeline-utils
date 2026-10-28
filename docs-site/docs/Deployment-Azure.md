@@ -210,7 +210,7 @@ spec:
 
 ### Function Code
 
-```javascript
+```javascript no-run
 // function-app/index.js
 const {
   createRagPipeline,

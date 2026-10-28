@@ -77,7 +77,7 @@ Three reasons:
 
 ## Adding a connector
 
-```js
+```js no-run
 import {
   pluginRegistry,
   createRagPipeline,

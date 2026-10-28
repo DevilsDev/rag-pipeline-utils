@@ -25,7 +25,7 @@ rag-pipeline doctor --category performance
 
 `ExecutionTracer` wraps a pipeline and records the duration of each run and its steps:
 
-```javascript
+```javascript no-run
 const {
   createRagPipeline,
   ExecutionTracer,
@@ -47,7 +47,7 @@ console.log(
 
 `MetricsAggregator` keeps rolling latency, throughput, cost and error statistics, and `DashboardGenerator` renders them as a self-contained HTML page or a text report:
 
-```javascript
+```javascript no-run
 const fs = require("fs");
 const {
   MetricsAggregator,
@@ -143,7 +143,7 @@ const openai = new OpenAIConnector({
 
 `StreamingEmbedder` embeds a large document set in batches and yields results as they complete, applying backpressure when heap usage approaches `maxMemoryMB`:
 
-```javascript
+```javascript no-run
 const { StreamingEmbedder } = require("@devilsdev/rag-pipeline-utils");
 
 const streamer = new StreamingEmbedder(myEmbedder, {
@@ -167,7 +167,7 @@ for await (const { id, vector, progress } of streamer.embedStream(documents)) {
 
 `ParallelProcessor.ParallelEmbedder` splits text chunks into batches and embeds them with a concurrency limit and per-batch retries. It calls `embedder.embed(batch)` with an **array** of strings and expects an array of vectors back, so use it with embedders that accept batches:
 
-```javascript
+```javascript no-run
 const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
 
 const parallel = new ParallelProcessor.ParallelEmbedder(batchEmbedder, {
@@ -188,7 +188,7 @@ const vectors = await parallel.embedBatch(chunks); // chunks: string[]
 - **`EmbeddingReranker`** caches document embeddings in an LRU (`cacheSize`, default 1000; `0` disables) and limits concurrent embedding calls (`concurrency`, default 4). Call `clearCache()` after retraining the embedder.
 - **`CascadeReranker`** lets a cheap reranker (for example `ScoringReranker`) prune candidates before an expensive one runs.
 
-```javascript
+```javascript no-run
 const { EmbeddingReranker } = require("@devilsdev/rag-pipeline-utils");
 
 // embedder must expose embedQuery(text) or embed(text)
@@ -208,7 +208,7 @@ Use smaller models and lower `maxTokens` on the LLM connector where quality allo
 
 `CostTracker` wraps a pipeline and attaches a cost estimate to every result; with `enableBudget` it enforces a `TokenBudget`:
 
-```javascript
+```javascript no-run
 const { CostTracker } = require("@devilsdev/rag-pipeline-utils");
 
 const tracker = new CostTracker({

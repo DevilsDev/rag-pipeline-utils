@@ -21,3 +21,8 @@ yarn-error.log*
 
 # Generated from the root CHANGELOG.md by scripts/sync-changelog.js
 /docs/Changelog.md
+
+# Lighthouse CI (docs-build.yml)
+/.lighthouse-site
+/.lighthouse-reports
+/.lighthouseci

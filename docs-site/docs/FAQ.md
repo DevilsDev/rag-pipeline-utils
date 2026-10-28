@@ -58,7 +58,7 @@ PDF and other formats need a custom loader plugin.
 
 Yes. `EmbeddingReranker` reranks with any embedder, including the offline `LocalEmbedder` or a local model via `OllamaConnector`:
 
-```js
+```js no-run
 const {
   EmbeddingReranker,
   OllamaConnector,
