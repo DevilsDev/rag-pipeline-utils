@@ -64,6 +64,31 @@ const esmWrapper = [
 
 fs.writeFileSync(path.join(distDir, "index.mjs"), esmWrapper);
 
+// ./experimental entry: reads the unwrapped classes that index.cjs attaches
+// under a symbol, so both entries share one copy of each class.
+const EXPERIMENTAL_KEY = "@devilsdev/rag-pipeline-utils/experimental";
+fs.writeFileSync(
+  path.join(distDir, "experimental.cjs"),
+  [
+    "'use strict';",
+    `module.exports = require('./index.cjs')[Symbol.for('${EXPERIMENTAL_KEY}')];`,
+    "",
+  ].join("\n"),
+);
+const experimentalNames = Object.keys(cjsModule[Symbol.for(EXPERIMENTAL_KEY)]);
+fs.writeFileSync(
+  path.join(distDir, "experimental.mjs"),
+  [
+    "import { createRequire } from 'module';",
+    "const require = createRequire(import.meta.url);",
+    "const mod = require('./experimental.cjs');",
+    `export const { ${experimentalNames.join(", ")} } = mod;`,
+    "export default mod;",
+    "",
+  ].join("\n"),
+);
+
 console.log("Build completed successfully!");
 console.log(`  CommonJS: ${path.join(distDir, "index.cjs")}`);
 console.log(`  ESM:      ${path.join(distDir, "index.mjs")}`);
+console.log(`  Experimental: ${path.join(distDir, "experimental.{cjs,mjs}")}`);

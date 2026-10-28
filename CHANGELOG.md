@@ -46,6 +46,23 @@ openai | ollama | anthropic`, or interactive prompts in a terminal).
   characters and chunks for text files (images exit 1: no built-in connector
   accepts image input).
 
+### Deprecated
+
+- **Experimental modules moved to `@devilsdev/rag-pipeline-utils/experimental`**:
+  `ModelTrainingOrchestrator`, `FederatedLearningCoordinator`,
+  `MultiModalProcessor`, `AdaptiveRetrievalEngine`, `SSOManager`,
+  `SAMLProvider`, `OAuth2Provider`, `ActiveDirectoryProvider`, `OIDCProvider`,
+  `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` /
+  `DataGovernance`, `PluginSandbox` and `PluginCertification`. They are
+  simulated or incomplete (random metrics, SSO that accepts any code outside
+  production and does not verify SAML or OIDC tokens, random quotas, erasure
+  that deletes nothing, a non-functional sandbox, fixed certification
+  scores); see the Experimental docs page. Their main-entry exports still
+  work but emit a one-time `DeprecationWarning` (`RAG_DEP_*` codes) when
+  used, are marked `@deprecated` in the types, and will be removed from the
+  main entry in the next major release. The same classes are shared by both
+  entries, so `instanceof` checks keep working.
+
 ### Removed
 
 - CLI placeholders that printed success without doing anything (`ingest`,

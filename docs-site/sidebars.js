@@ -45,6 +45,7 @@ const sidebars = {
       collapsed: false,
       items: [
         "Enterprise",
+        "Experimental",
         "Observability",
         "Security",
         "Security-Capabilities",

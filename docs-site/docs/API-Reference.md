@@ -353,7 +353,7 @@ async process(content: MultiModalContent): Promise<ProcessedContent>
 **Example:**
 
 ```javascript
-import { MultiModalProcessor } from "@devilsdev/rag-pipeline-utils";
+import { MultiModalProcessor } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const processor = new MultiModalProcessor({
   textModel: "text-embedding-ada-002",
@@ -386,7 +386,7 @@ async learn(feedback: RelevanceFeedback): Promise<void>
 **Example:**
 
 ```javascript
-import { AdaptiveRetrievalEngine } from "@devilsdev/rag-pipeline-utils";
+import { AdaptiveRetrievalEngine } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const engine = new AdaptiveRetrievalEngine({
   baseRetriever: myRetriever,
@@ -551,7 +551,7 @@ new DataGovernance(options: DataGovernanceOptions)
 **Example:**
 
 ```javascript
-import { DataGovernance } from "@devilsdev/rag-pipeline-utils";
+import { DataGovernance } from "@devilsdev/rag-pipeline-utils/experimental";
 
 const governance = new DataGovernance({
   tenantIdField: "orgId",

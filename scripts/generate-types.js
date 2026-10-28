@@ -486,6 +486,42 @@ if (!fs.existsSync(distDir)) {
 
 fs.writeFileSync(outputPath, typeDefinitions.trim() + "\n");
 appendGeneratedDeclarations();
+markExperimentalDeprecated();
+fs.writeFileSync(
+  path.join(distDir, "experimental.d.ts"),
+  'export * from "./types/experimental";\n',
+);
+
+/**
+ * Experimental classes stay in the main entry as deprecated aliases until the
+ * next major (SEMVER.md): tag their main-entry declarations @deprecated so
+ * IDEs strike them through. The ./experimental declarations are untouched.
+ */
+function markExperimentalDeprecated() {
+  const names = Object.keys(
+    require(path.join(__dirname, "..", "src", "experimental.js")),
+  );
+  const note = (name) =>
+    `/** @deprecated Experimental (simulated or incomplete). Import ${name} from "@devilsdev/rag-pipeline-utils/experimental"; it will be removed from the main entry in the next major release. */`;
+  let dts = fs.readFileSync(outputPath, "utf8");
+  for (const name of names) {
+    const declaration = new RegExp(`^export class ${name}\\b`, "m");
+    if (declaration.test(dts)) {
+      dts = dts.replace(declaration, (line) => `${note(name)}\n${line}`);
+    }
+  }
+  // An `export { A as B }` alias cannot carry @deprecated; declare it instead.
+  dts = dts.replace(
+    "export { DataGovernance as DataGovernanceManager };",
+    [
+      note("DataGovernanceManager"),
+      "export declare const DataGovernanceManager: typeof DataGovernance;",
+      note("DataGovernanceManager"),
+      "export type DataGovernanceManager = DataGovernance;",
+    ].join("\n"),
+  );
+  fs.writeFileSync(outputPath, dts);
+}
 console.log("TypeScript definitions generated: dist/index.d.ts");
 
 /**
@@ -537,8 +573,6 @@ function appendGeneratedDeclarations() {
   const missing = runtimeExports.filter(
     (name) => !declared.has(name) && exportSources.has(name),
   );
-  if (missing.length === 0) return;
-
   const modules = [
     ...new Set(missing.map((n) => exportSources.get(n).modulePath)),
   ];
@@ -550,6 +584,8 @@ function appendGeneratedDeclarations() {
     [
       tscBin,
       ...modules.map((m) => path.join(srcDir, `${m}.js`)),
+      // the ./experimental entry is declared from its source module
+      path.join(srcDir, "experimental.js"),
       "--allowJs",
       "--declaration",
       "--emitDeclarationOnly",

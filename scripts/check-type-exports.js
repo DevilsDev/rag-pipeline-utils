@@ -38,3 +38,35 @@ if (missing.length > 0) {
   process.exit(1);
 }
 console.log(`✅ All ${runtimeExports.length} runtime exports are declared`);
+
+// ./experimental: every runtime export must appear in the generated
+// declaration's export list (dist/types/experimental.d.ts)
+const experimentalExports = Object.keys(
+  require(path.join(dist, "experimental.cjs")),
+);
+const experimentalDts = fs.readFileSync(
+  path.join(dist, "types", "experimental.d.ts"),
+  "utf8",
+);
+const exportedNames = new Set(
+  [...experimentalDts.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((m) =>
+    m[1].split(",").map((part) =>
+      part
+        .trim()
+        .split(/\s+as\s+/)
+        .pop(),
+    ),
+  ),
+);
+const missingExperimental = experimentalExports.filter(
+  (name) => !exportedNames.has(name),
+);
+if (missingExperimental.length > 0) {
+  console.error(
+    `❌ experimental export(s) missing from dist/experimental.d.ts: ${missingExperimental.join(", ")}`,
+  );
+  process.exit(1);
+}
+console.log(
+  `✅ All ${experimentalExports.length} experimental exports are declared`,
+);

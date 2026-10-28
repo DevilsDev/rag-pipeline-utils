@@ -93,6 +93,16 @@ for (const name of functionExports) {
   }
 }
 
+// ./experimental entry: same names as the source module, all classes
+const experimentalCjs = Object.keys(require("../src/experimental.js"));
+const experimentalEsm = await import("../dist/experimental.mjs");
+for (const name of experimentalCjs) {
+  if (typeof experimentalEsm[name] !== "function") {
+    console.error(`MISSING in experimental ESM: ${name}`);
+    errors++;
+  }
+}
+
 if (errors > 0) {
   console.error(`\nESM verification failed with ${errors} error(s).`);
   process.exit(1);

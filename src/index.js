@@ -332,3 +332,29 @@ module.exports = {
   DevServer,
   createDevServer,
 };
+
+// Simulated or incomplete modules now live in the ./experimental entry
+// (src/experimental.js). Their main-entry exports keep working but emit a
+// one-time DeprecationWarning when used, and will be removed from the main
+// entry in the next major release (SEMVER.md, "Deprecation process").
+const experimental = require('./experimental');
+const { deprecateClass } = require('./utils/deprecate');
+
+for (const name of Object.keys(experimental)) {
+  if (!(name in module.exports)) continue;
+  module.exports[name] = deprecateClass(experimental[name], {
+    name,
+    message:
+      `${name} is experimental (simulated or incomplete) and is deprecated in ` +
+      `the main entry. Import it from "@devilsdev/rag-pipeline-utils/experimental"; ` +
+      'it will be removed from the main entry in the next major release.',
+  });
+}
+
+// The ./experimental build entry reads the unwrapped classes from here, so
+// both entries share one copy of each class (non-enumerable: not a named export).
+Object.defineProperty(
+  module.exports,
+  Symbol.for('@devilsdev/rag-pipeline-utils/experimental'),
+  { value: experimental, enumerable: false },
+);
