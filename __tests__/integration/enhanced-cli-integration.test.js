@@ -94,19 +94,12 @@ async function setupTestFixtures() {
       version: "1.0.0",
       createdAt: new Date().toISOString(),
     },
-    plugins: {
-      loader: { "file-loader": "latest" },
-      embedder: { "openai-embedder": "latest" },
-      retriever: { "vector-retriever": "latest" },
-      llm: { "openai-llm": "latest" },
-    },
-    pipeline: {
-      stages: ["loader", "embedder", "retriever", "llm"],
-      middleware: {
-        retry: { enabled: true, maxAttempts: 3 },
-        logging: { enabled: true, level: "info" },
-      },
-    },
+    pipeline: [
+      { stage: "loader", name: "auto" },
+      { stage: "embedder", name: "local" },
+      { stage: "retriever", name: "file-store" },
+    ],
+    plugins: {},
     performance: {
       parallel: { enabled: true, maxConcurrency: 3 },
       streaming: { enabled: true, batchSize: 10, maxMemoryMB: 512 },
@@ -293,9 +286,13 @@ describe("Enhanced CLI Integration Tests", () => {
   describe("Doctor Command", () => {
     it("should run basic diagnostics", async () => {
       const result = await runCLI(["--config", "valid.ragrc.json", "doctor"]);
-      expect(result.success).toBe(true);
-      expect(result.stdout).toContain("🏥 Running pipeline diagnostics");
-      expect(result.stdout).toMatch(/✅|⚠️|❌/);
+      // The fixture package.json lists dependencies that are not installed
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain("🏥 Pipeline diagnostics");
+      expect(result.stdout).toContain(
+        "[NPM_DEPENDENCY_MISSING] NPM dependency missing: commander",
+      );
+      expect(result.stdout).toContain("[INDEX_MISSING]");
     });
 
     it("should detect configuration issues", async () => {
@@ -306,9 +303,10 @@ describe("Enhanced CLI Integration Tests", () => {
         "--category",
         "configuration",
       ]);
-      expect(result.stdout).toContain("Configuration Issues");
-      // Accept either success or error indicators
-      expect(result.stdout).toMatch(/❌|⚠️|✅/);
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain(
+        "[CONFIG_STAGE_MISSING] Pipeline has no embedder stage",
+      );
     });
 
     it("should save diagnostic report", async () => {
@@ -320,7 +318,6 @@ describe("Enhanced CLI Integration Tests", () => {
         "--report",
         "diagnostic-report.json",
       ]);
-      expect(result.success).toBe(true);
       expect(result.stdout).toContain("Diagnostic report saved");
 
       const reportExists = await fs
@@ -345,8 +342,8 @@ describe("Enhanced CLI Integration Tests", () => {
         "plugins",
       ]);
       expect(result.success).toBe(true);
-      expect(result.stdout).toContain("Configuration");
-      expect(result.stdout).toContain("Plugins");
+      expect(result.stdout).toContain("[CONFIG_NO_LLM]");
+      expect(result.stdout).not.toContain("[ENV_VAR_MISSING]");
     });
   });
 
@@ -363,16 +360,19 @@ describe("Enhanced CLI Integration Tests", () => {
         "invalid.ragrc.json",
         "validate",
       ]);
+      expect(result.code).toBe(1);
       expect(result.stdout).toContain("❌ Configuration validation failed");
     });
 
-    it("should detect legacy format", async () => {
+    it("should reject components that do not exist", async () => {
       const result = await runCLI([
         "--config",
         "legacy.ragrc.json",
         "validate",
       ]);
-      expect(result.stdout).toMatch(/legacy format|consider upgrading/i);
+      expect(result.code).toBe(1);
+      expect(result.stdout).toContain("[CONFIG_COMPONENT_UNKNOWN]");
+      expect(result.stdout).toMatch(/Unknown loader "file-loader"/);
     });
   });
 

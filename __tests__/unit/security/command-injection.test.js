@@ -50,9 +50,13 @@ describe("Command Injection Prevention", () => {
 
         try {
           await doctor.execSafe(command, ["--version"]);
+          // On Windows npm runs as `node npm-cli.js` (no .cmd shim / shell)
+          const viaNode = command === "npm" && process.platform === "win32";
           expect(mockExecFile).toHaveBeenCalledWith(
-            command,
-            ["--version"],
+            viaNode ? process.execPath : command,
+            viaNode
+              ? [expect.stringMatching(/npm-cli\.js$/), "--version"]
+              : ["--version"],
             expect.objectContaining({ shell: false }),
             expect.any(Function),
           );
@@ -88,15 +92,12 @@ describe("Command Injection Prevention", () => {
 
       try {
         for (const maliciousArg of maliciousArgs) {
-          await doctor.execSafe("npm", [maliciousArg]);
+          await doctor.execSafe("node", [maliciousArg]);
 
           // Verify the argument was sanitized (shell metacharacters removed)
-          const sanitizedArg = maliciousArg.replace(
-            /[;&|`$(){}[\]<>"'\\]/g,
-            "",
-          );
+          const sanitizedArg = maliciousArg.replace(/[;&|`$(){}[\]<>"']/g, "");
           expect(mockExecFile).toHaveBeenCalledWith(
-            "npm",
+            "node",
             [sanitizedArg],
             expect.objectContaining({ shell: false }),
             expect.any(Function),
@@ -134,10 +135,10 @@ describe("Command Injection Prevention", () => {
       require("child_process").execFile = mockExecFile;
 
       try {
-        await doctor.execSafe("npm", ["--version"]);
+        await doctor.execSafe("node", ["--version"]);
 
         expect(mockExecFile).toHaveBeenCalledWith(
-          "npm",
+          "node",
           ["--version"],
           expect.objectContaining({
             shell: false,
@@ -159,10 +160,10 @@ describe("Command Injection Prevention", () => {
       require("child_process").execFile = mockExecFile;
 
       try {
-        await doctor.execSafe("npm", ["--version"], { timeout: 5000 });
+        await doctor.execSafe("node", ["--version"], { timeout: 5000 });
 
         expect(mockExecFile).toHaveBeenCalledWith(
-          "npm",
+          "node",
           ["--version"],
           expect.objectContaining({
             timeout: 5000,
@@ -314,15 +315,15 @@ describe("Command Injection Prevention", () => {
 
       try {
         for (const chainedCommand of chainedCommands) {
-          await doctor.execSafe("npm", [chainedCommand]);
+          await doctor.execSafe("node", [chainedCommand]);
 
           // Verify shell metacharacters were removed
           const sanitizedArg = chainedCommand.replace(
-            /[;&|`$(){}[\]<>"'\\]/g,
+            /[;&|`$(){}[\]<>"']/g,
             "",
           );
           expect(mockExecFile).toHaveBeenCalledWith(
-            "npm",
+            "node",
             [sanitizedArg],
             expect.objectContaining({ shell: false }),
             expect.any(Function),

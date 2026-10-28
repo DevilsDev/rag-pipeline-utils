@@ -49,40 +49,6 @@ const mockPluginMarketplaceCommands = () => {
   return cmd;
 };
 
-const mockPipelineDoctor = async (options) => {
-  console.log("🏥 Running pipeline diagnostics");
-  if (options.categories) {
-    options.categories.forEach((cat) => {
-      console.log(`${cat.charAt(0).toUpperCase() + cat.slice(1)} Issues:`);
-      console.log("  ✅ No issues found");
-    });
-  } else {
-    console.log("✅ All systems operational");
-  }
-  return {
-    summary: { total: 0, passed: 0, warnings: 0, errors: 0 },
-    categories: {},
-    issues: [],
-  };
-};
-
-const mockValidateSchema = (config) => {
-  if (!config || typeof config !== "object") {
-    return {
-      valid: false,
-      errors: [{ message: "Invalid configuration format" }],
-    };
-  }
-  if (config.plugins && typeof config.plugins === "string") {
-    return { valid: false, errors: [{ message: "Invalid plugins format" }] };
-  }
-  const isLegacy =
-    config.plugins &&
-    typeof config.plugins === "object" &&
-    Object.values(config.plugins).some((p) => typeof p === "string");
-  return { valid: true, legacy: isLegacy };
-};
-
 /**
  * Enhanced CLI with improved UX and additional features
  */
@@ -142,15 +108,20 @@ class EnhancedCLI {
         await handleRun(this.program.opts(), options);
       });
 
-    // Doctor command for diagnostics
     this.program
       .command("doctor")
-      .description("Diagnose and fix common issues")
-      .option("--category <categories...>", "Diagnostic categories to check")
-      .option("--auto-fix", "Automatically fix issues where possible")
-      .option("--report <path>", "Save diagnostic report to file")
+      .description("Diagnose configuration, plugins and environment")
+      .option(
+        "--category <categories...>",
+        "Only run: configuration, plugins, dependencies, performance, security, environment",
+      )
+      .option(
+        "--auto-fix",
+        "Fix issues where possible (npm install, file permissions)",
+      )
+      .option("--report <path>", "Save the diagnostic report as JSON")
       .action(async (options) => {
-        await handleDoctor(this.program.opts(), options, mockPipelineDoctor);
+        await handleDoctor(this.program.opts(), options);
       });
 
     this.program
@@ -172,16 +143,11 @@ class EnhancedCLI {
         await handleQuery(this.program.opts(), question, options);
       });
 
-    // Configuration validation command
     this.program
       .command("validate")
-      .description("Validate configuration file")
-      .option("--schema", "Validate against schema only")
-      .option("--plugins", "Validate plugin availability")
-      .option("--dependencies", "Check plugin dependencies")
-      .option("--fix", "Attempt to fix validation issues")
-      .action(async (options) => {
-        await handleValidate(this.program.opts(), options, mockValidateSchema);
+      .description("Validate the configuration and resolve its components")
+      .action(async () => {
+        await handleValidate(this.program.opts());
       });
 
     // Plugin marketplace commands
