@@ -13,7 +13,7 @@ module.exports = {
     "/__tests__/mocks/",
     "/__tests__/e2e/_debug-open-handles.js",
     // git worktrees (e.g. agent checkouts) contain full copies of the tests
-    "/.claude/",
+    "<rootDir>/.claude/",
   ],
   // transform ESM deps like inquirer to CJS so require() won't crash
   transform: { "^.+\\.js$": "babel-jest" },
