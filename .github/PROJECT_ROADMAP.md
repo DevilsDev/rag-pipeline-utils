@@ -9,6 +9,8 @@ This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what co
 
 **Status:** ✅ Done · 🚧 In progress · 🔜 Planned
 
+**Releases:** fixes and features merge to `main` as they are ready and are published together in the next minor (the 2.5.x fixes ship in 2.6.0); a patch release from `main` stays available for anything urgent. The docs site deploys from `main` on every merge, so documentation for an unreleased feature carries a "Coming in 2.6.0" note until the release PR removes it. "Anytime" rows are not tied to a package release.
+
 <!--
 This file is read by scripts/create-roadmap-issues.js,
 scripts/close-done-roadmap-issues.js and scripts/label-roadmap-issues.js.
@@ -43,10 +45,10 @@ and do not use "|" inside a cell. Renaming a Feature changes its issue title.
 | v2.5.0      | Core          | Experimental entry point                        | Simulated modules moved to /experimental with deprecation warnings on the main entry                                 | ✅ Done | core, semver       |
 | v2.5.0      | Docs          | README examples tested in CI                    | Every JavaScript example in the README runs in the test suite                                                        | ✅ Done | docs, test         |
 | v2.0.0      | Community     | Contributor guide                               | docs/CONTRIBUTING.md (GitHub shows it from docs/)                                                                    | ✅ Done | community, docs    |
-| v2.5.x      | Community     | Issue templates                                 | Bug, feature and plugin submission templates and good-first-issue labels                                             | 🔜      | community          |
-| v2.5.x      | Community     | Launch post and listings                        | Publish the drafted dev.to post; submit to awesome-RAG, awesome-LLM and MCP server directories                       | 🔜      | community          |
-| v2.5.x      | Core          | Fix ExecutionTracer JSON export                 | exportTraces('json') throws on circular structures when captureOutputs is true                                       | 🔜      | bug                |
-| v2.5.x      | Core          | Fix ParallelEmbedder with single-text embedders | ParallelEmbedder calls embed(array) but built-in connectors embed one string                                         | 🔜      | bug                |
+| Anytime     | Community     | Issue templates                                 | Bug, feature and plugin submission templates and good-first-issue labels                                             | 🔜      | community          |
+| Anytime     | Community     | Launch post and listings                        | Publish the drafted dev.to post; submit to awesome-RAG, awesome-LLM and MCP server directories                       | 🔜      | community          |
+| v2.6.0      | Core          | Fix ExecutionTracer JSON export                 | exportTraces('json') throws on circular structures when captureOutputs is true                                       | 🔜      | bug                |
+| v2.6.0      | Core          | Fix ParallelEmbedder with single-text embedders | ParallelEmbedder calls embed(array) but built-in connectors embed one string                                         | 🔜      | bug                |
 | v2.5.x      | Docs site     | Docs site deploy fix                            | Only docs-build.yml deploys Pages; post-deploy check that the homepage and a docs page return 200                    | ✅ Done | docs, ci           |
 | v2.5.x      | Docs site     | Accurate docs homepage                          | Working quick start, current stats and connector count, tagline from package.json, sidebar without 3.0 package names | ✅ Done | docs               |
 | v2.5.x      | Docs site     | Docusaurus upgrade and cleanup                  | Docusaurus 3.10, retire the 2.3.1 snapshot from the version menu, remove unused components                           | ✅ Done | docs               |

@@ -232,8 +232,8 @@ If we ever go through a major repositioning that warrants a rename (e.g. expandi
 ```
 NOW                                   ┐
 ├── v2.5.0 — Shipped 2026-10-28 (fixes, CLI, /experimental)
-├── v2.5.x — Bug-fix patches
-├── v2.6.0 — Intelligent caching      │  Soak in 2.x for ~4 weeks
+├── v2.6.0 — Caching, adapters and   │  Soak in 2.x for ~4 weeks
+│            the 2.5.x bug fixes      │
 ├── v2.7.0 — Evaluation in CI         │  before promoting to v3.0
 ├── (~4 weeks of feedback)            ┘
 │
@@ -294,3 +294,4 @@ NOW                                   ┐
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-04-19 | Initial planning doc, post-v2.4.5                                                                                                                                             |
 | 2026-10-29 | After 2.5.0: caching moved to 2.6.0, 2.7.0 added, deprecated-export removal, `openai` upgrade and smaller install added to scope, `FileVectorStore` note, baselines refreshed |
+| 2026-10-29 | The 2.5.x bug fixes ship in 2.6.0, not a separate patch; a 2.5.1 from `main` stays available for anything urgent                                                              |
