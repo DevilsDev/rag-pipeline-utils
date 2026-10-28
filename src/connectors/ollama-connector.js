@@ -2,6 +2,12 @@
 
 const axios = require('axios');
 const { BaseConnector } = require('./base-connector');
+const {
+  raceAbort,
+  signalOptions,
+  throwIfAborted,
+} = require('./connector-utils');
+const { buildRagPrompt } = require('./rag-prompt');
 
 /**
  * Default configuration for the Ollama connector.
@@ -13,11 +19,14 @@ const DEFAULT_CONFIG = {
   embeddingModel: 'nomic-embed-text',
   timeout: 60000,
   temperature: 0.7,
+  maxRetries: 3,
+  retryDelay: 1000,
 };
 
 /**
  * Connector for Ollama local LLM server.
  * Supports text generation (sync and streaming) and embeddings.
+ * Ollama needs no API key.
  * @extends BaseConnector
  */
 class OllamaConnector extends BaseConnector {
@@ -28,6 +37,9 @@ class OllamaConnector extends BaseConnector {
    * @param {string} [options.embeddingModel='nomic-embed-text'] - Default embedding model
    * @param {number} [options.timeout=60000] - Request timeout in ms
    * @param {number} [options.temperature=0.7] - Generation temperature
+   * @param {number} [options.maxRetries=3] - Retries for transient failures
+   * @param {number} [options.retryDelay=1000] - Base backoff delay in ms
+   * @param {string} [options.systemPrompt] - System prompt used when RAG context is supplied
    */
   constructor(options = {}) {
     super({ name: 'ollama', ...options });
@@ -68,30 +80,59 @@ class OllamaConnector extends BaseConnector {
   }
 
   /**
+   * POST with the connector's retry policy and cancellation.
+   * @private
+   */
+  _post(path, body, signal) {
+    throwIfAborted(signal);
+    return this.withRetry(
+      async () => {
+        const response = await this.client.post(
+          path,
+          body,
+          signal ? { signal } : undefined,
+        );
+        return response.data;
+      },
+      this.config.maxRetries,
+      this.config.retryDelay,
+      { signal },
+    );
+  }
+
+  /**
+   * Build the /api/generate body. Retrieved context goes into the prompt as
+   * delimited, untrusted reference data; instructions go in `system`.
+   * @private
+   */
+  _buildBody(query, context, options, stream) {
+    const prompt = buildRagPrompt(query, context, {
+      systemPrompt: this.config.systemPrompt,
+    });
+    const body = {
+      model: options.model || this.config.model,
+      prompt: prompt.user,
+      stream,
+      options: { temperature: options.temperature ?? this.config.temperature },
+    };
+    if (prompt.system) body.system = prompt.system;
+    return body;
+  }
+
+  /**
    * Generate a response for the given query with optional context documents.
    * @param {string} query - The user query
    * @param {Array<Object|string>} [context=[]] - Context documents for RAG
    * @param {Object} [options={}] - Override options
    * @param {string} [options.model] - Override the generation model
    * @param {number} [options.temperature] - Override temperature
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<string>} Generated response text
    */
   async generate(query, context = [], options = {}) {
-    const model = options.model || this.config.model;
-    const temperature = options.temperature ?? this.config.temperature;
-    const prompt = this._buildPrompt(query, context);
-
-    const result = await this.withRetry(async () => {
-      const response = await this.client.post('/api/generate', {
-        model,
-        prompt,
-        stream: false,
-        options: { temperature },
-      });
-      return response.data.response;
-    });
-
-    return result;
+    const body = this._buildBody(query, context, options, false);
+    const data = await this._post('/api/generate', body, options.signal);
+    return data.response;
   }
 
   /**
@@ -101,31 +142,31 @@ class OllamaConnector extends BaseConnector {
    * @param {Object} [options={}] - Override options
    * @param {string} [options.model] - Override the generation model
    * @param {number} [options.temperature] - Override temperature
+   * @param {AbortSignal} [options.signal] - Cancels the stream
    * @yields {{ token: string, done: boolean }}
    */
   async *generateStream(query, context = [], options = {}) {
-    const model = options.model || this.config.model;
-    const temperature = options.temperature ?? this.config.temperature;
-    const prompt = this._buildPrompt(query, context);
+    const { signal } = options;
+    throwIfAborted(signal);
+    const body = this._buildBody(query, context, options, true);
 
     let response;
     try {
-      response = await this.client.post(
-        '/api/generate',
-        {
-          model,
-          prompt,
-          stream: true,
-          options: { temperature },
-        },
-        { responseType: 'stream' },
+      response = await raceAbort(
+        this.client.post('/api/generate', body, {
+          responseType: 'stream',
+          ...signalOptions(signal),
+        }),
+        signal,
       );
     } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
       throw new Error(`Ollama streaming request failed: ${err.message}`);
     }
 
     let buffer = '';
     for await (const chunk of response.data) {
+      throwIfAborted(signal);
       buffer += chunk.toString();
       const lines = buffer.split('\n');
       // Keep the last potentially incomplete line in the buffer
@@ -157,48 +198,41 @@ class OllamaConnector extends BaseConnector {
   /**
    * Generate an embedding vector for the given text.
    * @param {string} text - Text to embed
+   * @param {Object} [options={}]
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<number[]>} Embedding vector
    */
-  async embed(text) {
-    const result = await this.withRetry(async () => {
-      const response = await this.client.post('/api/embeddings', {
-        model: this.config.embeddingModel,
-        prompt: text,
-      });
-      return response.data.embedding;
-    });
-
-    return result;
+  async embed(text, options = {}) {
+    const data = await this._post(
+      '/api/embeddings',
+      { model: this.config.embeddingModel, prompt: text },
+      options.signal,
+    );
+    return data.embedding;
   }
 
   /**
    * Generate an embedding vector for a query string.
    * Alias for {@link embed}.
    * @param {string} query - Query text to embed
+   * @param {Object} [options={}] - Same as embed()
    * @returns {Promise<number[]>} Embedding vector
    */
-  async embedQuery(query) {
-    return this.embed(query);
+  async embedQuery(query, options = {}) {
+    return this.embed(query, options);
   }
 
   /**
    * Build a prompt string incorporating context documents.
+   * Kept for backward compatibility; context is delimited and labelled as
+   * untrusted reference data.
    * @param {string} query - The user query
    * @param {Array<Object|string>} context - Context documents
    * @returns {string} Formatted prompt
    * @private
    */
   _buildPrompt(query, context) {
-    if (!context || context.length === 0) return query;
-
-    const contextText = context
-      .map((doc) => {
-        const text = doc.content || doc.text || String(doc);
-        return text;
-      })
-      .join('\n\n');
-
-    return `Context:\n${contextText}\n\nQuestion: ${query}\n\nAnswer:`;
+    return buildRagPrompt(query, context).user;
   }
 }
 

@@ -10,6 +10,10 @@ const {
 const { CohereConnector } = require("../../../src/connectors/cohere-connector");
 const { OllamaConnector } = require("../../../src/connectors/ollama-connector");
 
+// withRetry only retries transient failures, so simulate a 503.
+const unavailable = (message) =>
+  Object.assign(new Error(message), { status: 503 });
+
 describe("BaseConnector", () => {
   let connector;
 
@@ -75,8 +79,8 @@ describe("BaseConnector", () => {
     test("retries on failure and succeeds", async () => {
       const fn = jest
         .fn()
-        .mockRejectedValueOnce(new Error("fail1"))
-        .mockRejectedValueOnce(new Error("fail2"))
+        .mockRejectedValueOnce(unavailable("fail1"))
+        .mockRejectedValueOnce(unavailable("fail2"))
         .mockResolvedValue("success");
 
       const result = await connector.withRetry(fn, 3, 1);
@@ -85,7 +89,7 @@ describe("BaseConnector", () => {
     });
 
     test("throws last error after all retries exhausted", async () => {
-      const fn = jest.fn().mockRejectedValue(new Error("always fails"));
+      const fn = jest.fn().mockRejectedValue(unavailable("always fails"));
       await expect(connector.withRetry(fn, 2, 1)).rejects.toThrow(
         "always fails",
       );
@@ -98,7 +102,7 @@ describe("BaseConnector", () => {
 
       const fn = jest
         .fn()
-        .mockRejectedValueOnce(new Error("fail"))
+        .mockRejectedValueOnce(unavailable("fail"))
         .mockResolvedValue("ok");
 
       await connector.withRetry(fn, 2, 1);

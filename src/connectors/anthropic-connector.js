@@ -2,18 +2,34 @@
 
 const axios = require('axios');
 const { BaseConnector } = require('./base-connector');
+const {
+  missingApiKeyError,
+  raceAbort,
+  resolveApiKey,
+  signalOptions,
+  throwIfAborted,
+} = require('./connector-utils');
+const { buildRagPrompt } = require('./rag-prompt');
+
+const API_KEY_ENV = 'ANTHROPIC_API_KEY';
 
 /**
  * Default configuration for the Anthropic connector.
+ * `apiKey` is a getter so the environment is read when a connector is
+ * constructed, not when this module is first required.
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
   model: 'claude-3-5-sonnet-20241022',
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
   baseURL: 'https://api.anthropic.com',
   apiVersion: '2023-06-01',
   maxTokens: 4096,
   temperature: 0.7,
+  maxRetries: 3,
+  retryDelay: 1000,
+  get apiKey() {
+    return process.env[API_KEY_ENV] || '';
+  },
 };
 
 /**
@@ -26,15 +42,22 @@ class AnthropicConnector extends BaseConnector {
   /**
    * @param {Object} [options]
    * @param {string} [options.model='claude-3-5-sonnet-20241022'] - Claude model to use
-   * @param {string} [options.apiKey] - Anthropic API key
+   * @param {string} [options.apiKey] - Anthropic API key (defaults to ANTHROPIC_API_KEY at construction)
    * @param {string} [options.baseURL='https://api.anthropic.com'] - API base URL
    * @param {string} [options.apiVersion='2023-06-01'] - API version header
    * @param {number} [options.maxTokens=4096] - Max tokens in response
    * @param {number} [options.temperature=0.7] - Sampling temperature
+   * @param {number} [options.maxRetries=3] - Retries for transient failures
+   * @param {number} [options.retryDelay=1000] - Base backoff delay in ms
+   * @param {string} [options.systemPrompt] - System prompt used when RAG context is supplied
    */
   constructor(options = {}) {
     super({ name: 'anthropic', ...options });
-    this.config = { ...DEFAULT_CONFIG, ...options };
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...options,
+      apiKey: resolveApiKey(options, API_KEY_ENV),
+    };
     this.client = axios.create({
       baseURL: this.config.baseURL,
       headers: {
@@ -46,17 +69,43 @@ class AnthropicConnector extends BaseConnector {
   }
 
   /**
+   * @throws {Error} code MISSING_API_KEY when no key is configured
+   * @private
+   */
+  _requireApiKey() {
+    if (!this.config.apiKey) {
+      throw missingApiKeyError('Anthropic', API_KEY_ENV);
+    }
+  }
+
+  /**
    * Connect to Anthropic. Verifies the API key is present.
    * @returns {Promise<void>}
    * @throws {Error} If no API key is configured
    */
   async connect() {
-    if (!this.config.apiKey) {
-      throw new Error(
-        'Anthropic API key required. Set ANTHROPIC_API_KEY or pass apiKey option.',
-      );
-    }
+    this._requireApiKey();
     await super.connect();
+  }
+
+  /**
+   * Build the Messages API request body. Retrieved context goes into the
+   * user message as delimited, untrusted reference data; the system prompt
+   * only carries instructions.
+   * @private
+   */
+  _buildBody(query, context, options) {
+    const prompt = buildRagPrompt(query, context, {
+      systemPrompt: this.config.systemPrompt,
+    });
+    const body = {
+      model: options.model || this.config.model,
+      max_tokens: options.maxTokens ?? this.config.maxTokens,
+      temperature: options.temperature ?? this.config.temperature,
+      messages: [{ role: 'user', content: prompt.user }],
+    };
+    if (prompt.system) body.system = prompt.system;
+    return body;
   }
 
   /**
@@ -65,31 +114,27 @@ class AnthropicConnector extends BaseConnector {
    * @param {string} query - The user query / prompt
    * @param {Array<Object|string>} [context=[]] - Retrieved documents for RAG
    * @param {Object} [options={}] - Override model, temperature, maxTokens per-call
+   * @param {AbortSignal} [options.signal] - Cancels the request
    * @returns {Promise<string>} The generated text
    */
   async generate(query, context = [], options = {}) {
-    return this.withRetry(async () => {
-      const body = {
-        model: options.model || this.config.model,
-        max_tokens: options.maxTokens ?? this.config.maxTokens,
-        temperature: options.temperature ?? this.config.temperature,
-        messages: [
-          { role: 'user', content: this._buildPrompt(query, context) },
-        ],
-      };
-
-      // Add system message when context is provided
-      if (context && context.length > 0) {
-        const contextText = context
-          .map((doc) => doc.content || doc.text || String(doc))
-          .join('\n\n');
-        body.system = `Use the following context to answer the question:\n\n${contextText}`;
-        body.messages = [{ role: 'user', content: query }];
-      }
-
-      const response = await this.client.post('/v1/messages', body);
-      return response.data.content[0].text;
-    });
+    const { signal } = options;
+    throwIfAborted(signal);
+    this._requireApiKey();
+    const body = this._buildBody(query, context, options);
+    return this.withRetry(
+      async () => {
+        const response = await this.client.post(
+          '/v1/messages',
+          body,
+          signal ? { signal } : undefined,
+        );
+        return response.data.content[0].text;
+      },
+      this.config.maxRetries,
+      this.config.retryDelay,
+      { signal },
+    );
   }
 
   /**
@@ -98,32 +143,27 @@ class AnthropicConnector extends BaseConnector {
    * @param {string} query - The user query / prompt
    * @param {Array<Object|string>} [context=[]] - Retrieved documents for RAG
    * @param {Object} [options={}] - Override model, temperature, maxTokens per-call
+   * @param {AbortSignal} [options.signal] - Cancels the stream
    * @yields {{ token: string, done: boolean }}
    */
   async *generateStream(query, context = [], options = {}) {
-    const body = {
-      model: options.model || this.config.model,
-      max_tokens: options.maxTokens ?? this.config.maxTokens,
-      temperature: options.temperature ?? this.config.temperature,
-      messages: [{ role: 'user', content: this._buildPrompt(query, context) }],
-      stream: true,
-    };
+    const { signal } = options;
+    throwIfAborted(signal);
+    this._requireApiKey();
+    const body = { ...this._buildBody(query, context, options), stream: true };
 
-    if (context && context.length > 0) {
-      const contextText = context
-        .map((doc) => doc.content || doc.text || String(doc))
-        .join('\n\n');
-      body.system = `Use the following context to answer the question:\n\n${contextText}`;
-      body.messages = [{ role: 'user', content: query }];
-    }
-
-    const response = await this.client.post('/v1/messages', body, {
-      responseType: 'stream',
-    });
+    const response = await raceAbort(
+      this.client.post('/v1/messages', body, {
+        responseType: 'stream',
+        ...signalOptions(signal),
+      }),
+      signal,
+    );
 
     let buffer = '';
 
     for await (const chunk of response.data) {
+      throwIfAborted(signal);
       buffer += chunk.toString();
       const lines = buffer.split('\n');
       // Keep the last incomplete line in the buffer
@@ -160,7 +200,9 @@ class AnthropicConnector extends BaseConnector {
   }
 
   /**
-   * Build a prompt string that includes RAG context when available.
+   * Build a single prompt string that includes RAG context when available.
+   * Kept for backward compatibility; the context is delimited and labelled
+   * as untrusted reference data.
    *
    * @param {string} query - User query
    * @param {Array<Object|string>} context - RAG context documents
@@ -168,11 +210,7 @@ class AnthropicConnector extends BaseConnector {
    * @private
    */
   _buildPrompt(query, context) {
-    if (!context || context.length === 0) return query;
-    const contextText = context
-      .map((doc) => doc.content || doc.text || String(doc))
-      .join('\n\n');
-    return `Context:\n${contextText}\n\nQuestion: ${query}`;
+    return buildRagPrompt(query, context).user;
   }
 }
 
