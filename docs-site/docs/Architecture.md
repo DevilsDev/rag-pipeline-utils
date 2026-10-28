@@ -629,7 +629,7 @@ class ExternalAPIMocker {
 Handle text, images, and structured data in unified pipelines:
 
 ```typescript
-// src/ai/multimodal/multi-modal-processor.js
+// src/ai/multimodal.js
 class MultiModalProcessor {
   private processors: Map<string, ModalityProcessor> = new Map();
 
@@ -673,7 +673,7 @@ class FederatedLearningCoordinator {
 Dynamic retrieval strategies with performance optimization:
 
 ```typescript
-// src/ai/retrieval/adaptive-retrieval-engine.js
+// src/ai/retrieval-engine.js
 class AdaptiveRetrievalEngine {
   async adaptiveRetrieve(
     query: Query,

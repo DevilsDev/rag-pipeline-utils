@@ -14,11 +14,8 @@ console.log("🔧 Fixing Node.js module export issues...");
 
 // Critical modules that must export correctly
 const criticalModules = [
-  "src/ai/index.js",
-  "src/ai/model-training.js",
   "src/ai/adaptive-retrieval.js",
   "src/ai/multimodal-processing.js",
-  "src/ai/federated-learning.js",
   "src/dx/index.js",
   "src/core/create-pipeline.js",
   "src/plugins/registry.js",
