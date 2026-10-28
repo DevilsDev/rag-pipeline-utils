@@ -19,6 +19,8 @@ const {
 } = require("../../config/component-factory");
 const { embedQuery } = require("../../utils/embed-query");
 const { buildInitConfig, DEFAULT_INDEX_PATH } = require("./config-builder");
+// Methods a custom plugin must expose; shared with validatePlugin().
+const { STAGE_CONTRACTS } = require("../../core/stage-contracts");
 
 const CUSTOM = "custom";
 const NONE = "none";
@@ -56,23 +58,6 @@ const OPTION_LABELS = {
   model: "model",
   embeddingModel: "embedding model",
   baseURL: "server URL",
-};
-
-/**
- * Methods a custom plugin must expose (`anyOf`), and methods the CLI needs
- * for some commands (`recommended`, a warning when missing).
- */
-const STAGE_CONTRACTS = {
-  embedder: {
-    anyOf: ["embed", "embedQuery"],
-    recommended: { embed: "`ingest` calls embed() to embed documents" },
-  },
-  llm: { anyOf: ["generate"], recommended: {} },
-  retriever: {
-    anyOf: ["retrieve"],
-    recommended: { store: "`ingest` calls store() to save vectors" },
-  },
-  reranker: { anyOf: ["rerank"], recommended: {} },
 };
 
 const CUSTOM_CHOICE = {

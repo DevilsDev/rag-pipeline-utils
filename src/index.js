@@ -13,6 +13,7 @@ const { normalizeConfig } = require('./config/normalize-config');
 
 // Plugin system
 const pluginRegistry = require('./core/plugin-registry');
+const { validatePlugin } = require('./core/validate-plugin');
 
 // Utilities
 const logger = require('./utils/logger');
@@ -188,6 +189,7 @@ module.exports = {
 
   // Plugin system
   pluginRegistry,
+  validatePlugin,
 
   // Utilities
   logger,
