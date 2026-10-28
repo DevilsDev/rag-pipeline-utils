@@ -345,10 +345,11 @@ describe("JWTValidator Security Suite", () => {
   });
 
   describe("Token Expiration and Timing", () => {
-    it.skip("should reject expired tokens", () => {
-      // SKIP: This test has issues with Jest fake timers interfering with token expiration timing
-      // The core expiration functionality is tested in other integration tests
-      // TODO: Fix this test by properly handling Jest's fake timer environment
+    it("should reject expired tokens", () => {
+      // Previously skipped and blamed on fake timers. The real cause was that
+      // clockTolerance: 0 was coerced to 30 (`|| 30`), so a token that had
+      // expired 5s earlier was still accepted. Fake timers mock Date for both
+      // jwt.sign and verify, so they are consistent here.
 
       const shortLivedValidator = new JWTValidator({
         secret,
@@ -797,6 +798,132 @@ describe("JWTValidator Security Suite", () => {
       expect(() => {
         validator.sign(null);
       }).toThrow("Payload must be an object");
+    });
+  });
+
+  describe("Bounded JTI store and bearer reuse", () => {
+    const baseOptions = () => ({
+      secret,
+      algorithm: "HS256",
+      allowedAlgorithms: ["HS256"],
+      issuer: "test-issuer",
+      audience: "test-audience",
+      enableAuditLog: false,
+    });
+
+    // Tokens signed by a different validator instance are "external".
+    function externalToken(sub, expiresIn = 3600) {
+      return jwt.sign(
+        {
+          sub,
+          iss: "test-issuer",
+          aud: "test-audience",
+          jti: crypto.randomUUID(),
+        },
+        secret,
+        { algorithm: "HS256", expiresIn },
+      );
+    }
+
+    let bounded;
+
+    afterEach(() => {
+      if (bounded) bounded.destroy();
+      bounded = null;
+    });
+
+    it("keeps external tokens single-use by default", () => {
+      bounded = new JWTValidator(baseOptions());
+      expect(bounded.config.singleUseTokens).toBe(true);
+
+      const token = externalToken("user-1");
+      bounded.verify(token);
+      expect(() => bounded.verify(token)).toThrow("Token replay detected");
+    });
+
+    it("allows bearer-token reuse with singleUseTokens: false", () => {
+      bounded = new JWTValidator({ ...baseOptions(), singleUseTokens: false });
+
+      const token = externalToken("user-1");
+      expect(bounded.verify(token).sub).toBe("user-1");
+      expect(bounded.verify(token).sub).toBe("user-1");
+      expect(bounded.verify(token).sub).toBe("user-1");
+      // Nothing is recorded for external tokens in this mode
+      expect(bounded.usedJtis.size).toBe(0);
+    });
+
+    it("never holds more than maxTrackedJtis entries (LRU eviction)", () => {
+      bounded = new JWTValidator({ ...baseOptions(), maxTrackedJtis: 3 });
+      const evicted = [];
+      bounded.on("jti_evicted", (e) => evicted.push(e.jti));
+
+      const tokens = Array.from({ length: 5 }, (_, i) =>
+        externalToken(`user-${i}`),
+      );
+      const jtis = tokens.map((t) => jwt.decode(t).jti);
+      tokens.forEach((t) => bounded.verify(t));
+
+      expect(bounded.usedJtis.size).toBe(3);
+      expect(evicted).toEqual([jtis[0], jtis[1]]);
+      expect([...bounded.usedJtis.keys()]).toEqual(jtis.slice(2));
+      // A still-tracked token is still rejected as a replay
+      expect(() => bounded.verify(tokens[4])).toThrow("Token replay detected");
+    });
+
+    it("bounds self-signed JTIs together with external ones", () => {
+      bounded = new JWTValidator({ ...baseOptions(), maxTrackedJtis: 2 });
+      for (let i = 0; i < 10; i++) bounded.sign({ sub: `user-${i}` });
+
+      expect(bounded.usedJtis.size).toBe(2);
+      expect(bounded.selfSignedJtis.size).toBe(2);
+    });
+
+    it("drops entries once the token's exp has passed", () => {
+      bounded = new JWTValidator({
+        ...baseOptions(),
+        clockTolerance: 0,
+        maxTrackedJtis: 2,
+      });
+      const evicted = [];
+      bounded.on("jti_evicted", (e) => evicted.push(e.jti));
+
+      const shortA = externalToken("a", 60);
+      const shortB = externalToken("b", 60);
+      bounded.verify(shortA);
+      bounded.verify(shortB);
+      expect(bounded.usedJtis.size).toBe(2);
+
+      // Move the clock past both tokens' exp. The test environment pins
+      // Date.now() to a constant, so stub it directly (jsonwebtoken and the
+      // validator both read Date.now()).
+      const later = Date.now() + 120 * 1000;
+      const nowSpy = jest.spyOn(Date, "now").mockReturnValue(later);
+      try {
+        const fresh = externalToken("c", 3600);
+        bounded.verify(fresh);
+
+        // Expired entries were purged instead of evicting live ones
+        expect(evicted).toEqual([]);
+        expect([...bounded.usedJtis.keys()]).toEqual([jwt.decode(fresh).jti]);
+
+        // Lookup of an expired entry also removes it
+        bounded.usedJtis.set("stale", { expirationTime: later - 1000 });
+        expect(bounded._getJtiEntry("stale")).toBeUndefined();
+        expect(bounded.usedJtis.has("stale")).toBe(false);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("rejects an invalid maxTrackedJtis", () => {
+      expect(
+        () => new JWTValidator({ ...baseOptions(), maxTrackedJtis: 0 }),
+      ).toThrow("maxTrackedJtis must be a positive integer");
+    });
+
+    it("honours an explicit clockTolerance of 0", () => {
+      bounded = new JWTValidator({ ...baseOptions(), clockTolerance: 0 });
+      expect(bounded.config.clockTolerance).toBe(0);
     });
   });
 });

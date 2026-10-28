@@ -11,6 +11,21 @@
  * - Replay attacks (with JTI tracking)
  * - Token expiration and timing issues
  *
+ * Replay protection (default): when `enableJtiTracking` is on (the default)
+ * and `singleUseTokens` is on (the default), every externally issued token
+ * (one this validator did not sign) is single-use: a second verify() of the
+ * same JTI throws "Token replay detected". Tokens signed by this validator
+ * instance may be verified repeatedly. To accept ordinary bearer-token reuse
+ * (the same access token presented on many requests until it expires), pass
+ * `singleUseTokens: false`; JTIs are then not recorded on verify().
+ *
+ * The JTI store is bounded: at most `maxTrackedJtis` entries (default
+ * 100000) are kept, each entry expires at the token's `exp` (plus the clock
+ * tolerance), expired entries are dropped first and, if the store is still
+ * full, the least-recently-used entry is evicted (a `jti_evicted` event is
+ * emitted). An evicted external JTI could be replayed until it expires, so
+ * size `maxTrackedJtis` for your peak number of live tokens.
+ *
  * @module security/jwt-validator
  * @since 2.3.0
  */
@@ -91,9 +106,10 @@ class JWTValidator extends EventEmitter {
       audience: options.audience,
 
       // Timing configuration
-      clockTolerance: options.clockTolerance || 30, // seconds
+      // `??` so an explicit 0 is honoured (`||` silently turned 0 into 30).
+      clockTolerance: options.clockTolerance ?? 30, // seconds
       maxTokenAge: options.maxTokenAge || 3600, // 1 hour in seconds
-      notBeforeTolerance: options.notBeforeTolerance || 30, // seconds
+      notBeforeTolerance: options.notBeforeTolerance ?? 30, // seconds
 
       // Security options
       requireJti: options.requireJti !== false, // Require JWT ID by default
@@ -104,6 +120,11 @@ class JWTValidator extends EventEmitter {
       // JTI tracking for replay protection
       enableJtiTracking: options.enableJtiTracking !== false,
       jtiExpirationMs: options.jtiExpirationMs || 7 * 24 * 60 * 60 * 1000, // 7 days
+      // Treat external tokens as single-use (default). Set to false to allow
+      // normal bearer-token reuse until the token expires.
+      singleUseTokens: options.singleUseTokens !== false,
+      // Upper bound on tracked JTIs (LRU eviction beyond this).
+      maxTrackedJtis: options.maxTrackedJtis ?? 100000,
 
       // Additional validation
       validateClaims: options.validateClaims || {},
@@ -114,6 +135,13 @@ class JWTValidator extends EventEmitter {
 
     // Validate configuration
     this._validateConfig();
+
+    if (
+      !Number.isInteger(this.config.maxTrackedJtis) ||
+      this.config.maxTrackedJtis < 1
+    ) {
+      throw new Error('maxTrackedJtis must be a positive integer');
+    }
 
     // Initialize JTI tracking
     if (this.config.enableJtiTracking) {
@@ -300,10 +328,9 @@ class JWTValidator extends EventEmitter {
       // Self-signed tokens are tracked to prevent JTI collisions with external tokens
       // but they can be verified multiple times (marked as reusable)
       if (this.config.enableJtiTracking && jti) {
-        this.selfSignedJtis.add(jti);
         // Also track in usedJtis with reusable flag to prevent external tokens from using same JTI
         const expirationTime = (now + expiresIn) * 1000;
-        this.usedJtis.set(jti, { expirationTime, reusable: true });
+        this._trackJti(jti, { expirationTime, reusable: true });
       }
 
       // Update statistics
@@ -417,22 +444,27 @@ class JWTValidator extends EventEmitter {
       // - External tokens (non-reusable): if race condition occurs, both requests succeed on first use
       //   (acceptable) but subsequent replays are blocked (secure)
       if (this.config.enableJtiTracking && payload.jti) {
-        // Check if this is a self-signed (reusable) token
-        const isSelfSigned = this.selfSignedJtis.has(payload.jti);
+        const jtiEntry = this._getJtiEntry(payload.jti);
+        // Self-signed (reusable) tokens are recorded at sign() time
+        const isSelfSigned = Boolean(
+          jtiEntry && jtiEntry.reusable && this.selfSignedJtis.has(payload.jti),
+        );
 
-        if (!this.usedJtis.has(payload.jti)) {
-          // First time seeing this JTI - atomically track it
-          const expirationTime = payload.exp * 1000;
-          this.usedJtis.set(payload.jti, {
-            expirationTime,
-            reusable: isSelfSigned,
-          });
+        if (!jtiEntry) {
+          // First time seeing this JTI. Record it only when single-use
+          // checking is on; with singleUseTokens: false bearer tokens may be
+          // presented repeatedly until they expire.
+          if (this.config.singleUseTokens) {
+            this._trackJti(payload.jti, {
+              expirationTime: payload.exp * 1000,
+              reusable: false,
+            });
+          }
         } else {
           // JTI has been seen before
-          const jtiEntry = this.usedJtis.get(payload.jti);
 
           // Self-signed tokens are reusable - allow multiple verifications
-          if (jtiEntry.reusable && isSelfSigned) {
+          if (isSelfSigned) {
             // This is valid for refresh flows and load balancer retries
           } else {
             // External token being replayed - this is a security violation
@@ -584,26 +616,98 @@ class JWTValidator extends EventEmitter {
   }
 
   /**
+   * Expiry time (ms) of a JTI store entry, including clock tolerance.
+   * @private
+   */
+  _jtiExpiry(jtiEntry) {
+    // Handle both old format (number) and new format (object)
+    const expirationTime =
+      typeof jtiEntry === 'number' ? jtiEntry : jtiEntry.expirationTime;
+    return expirationTime + this.config.clockTolerance * 1000;
+  }
+
+  /**
+   * Remove a JTI from both tracking structures.
+   * @private
+   */
+  _forgetJti(jti) {
+    this.usedJtis.delete(jti);
+    this.selfSignedJtis.delete(jti);
+  }
+
+  /**
+   * Look up a JTI, dropping it if it has expired and refreshing its LRU
+   * position otherwise.
+   * @private
+   */
+  _getJtiEntry(jti) {
+    const entry = this.usedJtis.get(jti);
+    if (entry === undefined) return undefined;
+    if (this._jtiExpiry(entry) < Date.now()) {
+      this._forgetJti(jti);
+      return undefined;
+    }
+    // Map preserves insertion order: delete + set moves it to most-recent.
+    this.usedJtis.delete(jti);
+    this.usedJtis.set(jti, entry);
+    return entry;
+  }
+
+  /**
+   * Record a JTI in the bounded store. When the store is full, expired
+   * entries are purged first; if it is still full the least-recently-used
+   * entry is evicted.
+   * @private
+   */
+  _trackJti(jti, entry) {
+    this._forgetJti(jti);
+
+    if (this.usedJtis.size >= this.config.maxTrackedJtis) {
+      this._purgeExpiredJtis();
+    }
+
+    while (this.usedJtis.size >= this.config.maxTrackedJtis) {
+      const oldest = this.usedJtis.keys().next().value;
+      this._forgetJti(oldest);
+      this.emit('jti_evicted', {
+        jti: oldest,
+        reason: 'capacity',
+        maxTrackedJtis: this.config.maxTrackedJtis,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    this.usedJtis.set(jti, entry);
+    if (entry.reusable) {
+      this.selfSignedJtis.add(jti);
+    }
+  }
+
+  /**
+   * Drop every expired JTI from the store.
+   * @private
+   * @returns {number} Number of entries removed
+   */
+  _purgeExpiredJtis() {
+    const now = Date.now();
+    let cleanedCount = 0;
+    for (const [jti, jtiEntry] of this.usedJtis.entries()) {
+      if (this._jtiExpiry(jtiEntry) < now) {
+        this._forgetJti(jti);
+        cleanedCount++;
+      }
+    }
+    return cleanedCount;
+  }
+
+  /**
    * Start periodic cleanup of expired JTIs
    * @private
    */
   _startJtiCleanup() {
     this.jtiCleanupInterval = setInterval(
       () => {
-        const now = Date.now();
-        let cleanedCount = 0;
-
-        for (const [jti, jtiEntry] of this.usedJtis.entries()) {
-          // Handle both old format (number) and new format (object)
-          const expirationTime =
-            typeof jtiEntry === 'number' ? jtiEntry : jtiEntry.expirationTime;
-          if (expirationTime < now) {
-            this.usedJtis.delete(jti);
-            // Also remove from selfSignedJtis if it's there
-            this.selfSignedJtis.delete(jti);
-            cleanedCount++;
-          }
-        }
+        const cleanedCount = this._purgeExpiredJtis();
 
         if (cleanedCount > 0 && this.config.enableAuditLog) {
           this.emit('jti_cleanup', {
