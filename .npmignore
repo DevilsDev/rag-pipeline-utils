@@ -54,8 +54,6 @@ comprehensive-test-verification.js
 .github/actions-lockfile.md
 
 # Scripts (keep only what's needed for package users)
-scripts/maintenance/
-scripts/testing/
 scripts/ci/
 scripts/audit/
 

@@ -31,6 +31,5 @@
 # Configuration files
 package.json @DevilsDev
 package-lock.json @DevilsDev
-.releaserc.js @DevilsDev
 jest.config.js @DevilsDev
 .eslintrc.js @DevilsDev
