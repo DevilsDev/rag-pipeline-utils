@@ -9,8 +9,7 @@ mdx:
 const EventSeverity: object;
 ```
 
-Severity levels used by PipelineEventLogger. Memory warnings use 'warn',
-which has no entry here.
+Severity levels used by PipelineEventLogger.
 
 ## Type Declaration
 
@@ -30,4 +29,10 @@ ERROR: string;
 
 ```ts
 INFO: string;
+```
+
+### WARN
+
+```ts
+WARN: string;
 ```

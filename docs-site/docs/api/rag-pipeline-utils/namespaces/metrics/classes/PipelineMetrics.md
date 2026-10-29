@@ -31,7 +31,7 @@ new PipelineMetrics(): PipelineMetrics;
 | `concurrency.concurrencyValues`                                   | `any`[]                 |
 | `concurrency.maxConcurrency`                                      | `number`                |
 | <a id="property-counters"></a> `counters`                         | `object`                |
-| `counters.operationsActive`                                       | [`Counter`](Counter.md) |
+| `counters.operationsActive`                                       | [`Gauge`](Gauge.md)     |
 | `counters.operationsFailed`                                       | [`Counter`](Counter.md) |
 | `counters.operationsSuccessful`                                   | [`Counter`](Counter.md) |
 | `counters.operationsTotal`                                        | [`Counter`](Counter.md) |
@@ -151,7 +151,7 @@ counters: object;
 ###### rawMetrics.counters.operationsActive
 
 ```ts
-operationsActive: Counter;
+operationsActive: Gauge;
 ```
 
 ###### rawMetrics.counters.operationsFailed
@@ -1003,17 +1003,16 @@ recordError(
 ): void;
 ```
 
-Count an error by type and by component. Only the types 'plugin' and
-'stage' are counted by type; other types are counted only by component.
+Count an error by type and by component.
 
 #### Parameters
 
-| Parameter    | Type     | Description                     |
-| ------------ | -------- | ------------------------------- |
-| `type`       | `string` | Error type, 'plugin' or 'stage' |
-| `component?` | `string` | Plugin or component name        |
-| `provider?`  | `string` | Provider name (unused)          |
-| `error?`     | `Error`  | The error (unused)              |
+| Parameter    | Type     | Description                                    |
+| ------------ | -------- | ---------------------------------------------- |
+| `type`       | `string` | Error type, such as 'plugin', 'stage' or 'llm' |
+| `component?` | `string` | Plugin or component name                       |
+| `provider?`  | `string` | Provider name (unused)                         |
+| `error?`     | `Error`  | The error (unused)                             |
 
 #### Returns
 

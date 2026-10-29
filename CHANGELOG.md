@@ -11,6 +11,29 @@ page.
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-10-30
+
+### Fixed
+
+- **`metrics.MetricsRegistry`'s `getOrCreateCounter`, `getOrCreateHistogram`
+  and `getOrCreateGauge` returned a metric of another type** when its name
+  was taken, so a later call such as `.inc()` failed far from the cause.
+  They now throw a `TypeError` naming the name and both types.
+- **`pipelineMetrics` lost errors and could misreport active operations.**
+  `recordError` counted only the types `plugin` and `stage` in
+  `errors.total` and `errors.byType`; every type is now counted.
+  `operationsActive` is now a `Gauge`, so it goes down with `dec()`.
+- **An empty `Histogram`'s `getStatistics()` reported `min: Infinity` and
+  `max: -Infinity`**; they are now `null`, which is also what JSON showed.
+- **`createError` gave 14 error codes the "unknown error" message**, among
+  them `NETWORK_TIMEOUT`, `FS_READ_ERROR`, `DAG_EXECUTION_FAILED` and
+  `AUTH_INSUFFICIENT_PERMISSIONS`. Every code now has its own message and
+  suggestions, and a suggestion whose placeholder has no value in the
+  context is left out rather than shown as `{name}`.
+- `eventLogger.EventTypes` and `EventSeverity` now include `STAGE_END`,
+  `MEMORY_WARNING` and `WARN`, the values `PipelineEventLogger` already
+  records. The recorded values don't change.
+
 ## [2.7.0] - 2026-10-30
 
 ### Added
@@ -700,6 +723,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.7.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.1
 [2.7.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.0
 [2.6.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.2
 [2.6.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.1

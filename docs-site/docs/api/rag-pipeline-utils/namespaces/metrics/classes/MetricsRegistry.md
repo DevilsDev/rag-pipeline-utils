@@ -5,8 +5,6 @@ mdx:
 
 # Class: MetricsRegistry
 
-Registry of Counter, Histogram and Gauge instances keyed by name.
-
 ## Constructors
 
 ### Constructor
@@ -98,7 +96,7 @@ getOrCreateCounter(
 ```
 
 Return the metric registered under name, or create and register a Counter.
-An existing metric is returned as is, even if it is not a Counter.
+Throws a TypeError when the name belongs to a metric of another type.
 
 #### Parameters
 
@@ -125,7 +123,7 @@ getOrCreateGauge(
 ```
 
 Return the metric registered under name, or create and register a Gauge.
-An existing metric is returned as is, even if it is not a Gauge.
+Throws a TypeError when the name belongs to a metric of another type.
 
 #### Parameters
 
@@ -153,7 +151,8 @@ getOrCreateHistogram(
 ```
 
 Return the metric registered under name, or create and register a
-Histogram. An existing metric is returned as is, even if it is not a Histogram.
+Histogram. Throws a TypeError when the name belongs to a metric of
+another type.
 
 #### Parameters
 

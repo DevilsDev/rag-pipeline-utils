@@ -190,16 +190,16 @@ class Histogram {
 
   /**
    * Mean, population standard deviation, min, max, count and sum of the
-   * observed values. With no observations, min is Infinity and max is -Infinity.
-   * @returns {{mean: number, stdDev: number, min: number, max: number, count: number, sum: number}}
+   * observed values. With no observations, min and max are null.
+   * @returns {{mean: number, stdDev: number, min: number|null, max: number|null, count: number, sum: number}}
    */
   getStatistics() {
     if (this.count === 0) {
       return {
         mean: 0,
         stdDev: 0,
-        min: Infinity,
-        max: -Infinity,
+        min: null,
+        max: null,
         count: 0,
         sum: 0,
       };
@@ -265,6 +265,19 @@ class Histogram {
 }
 
 /** Registry of Counter, Histogram and Gauge instances keyed by name. */
+/** The registered metric, checked to be of the requested class. */
+function existingOfType(registry, name, Type) {
+  const metric = registry._metrics.get(name);
+  if (!(metric instanceof Type)) {
+    const actual =
+      metric && metric.constructor ? metric.constructor.name : typeof metric;
+    throw new TypeError(
+      `Metric "${name}" is registered as a ${actual}, not a ${Type.name}`,
+    );
+  }
+  return metric;
+}
+
 class MetricsRegistry {
   constructor() {
     this._metrics = new Map(); // name -> metric instance
@@ -307,7 +320,7 @@ class MetricsRegistry {
   }
   /**
    * Return the metric registered under name, or create and register a Counter.
-   * An existing metric is returned as is, even if it is not a Counter.
+   * Throws a TypeError when the name belongs to a metric of another type.
    * @param {string} name - Metric name
    * @param {string} [description] - Description for a new counter
    * @param {Object<string, string>} [labels={}] - Labels for a new counter
@@ -315,7 +328,7 @@ class MetricsRegistry {
    */
   getOrCreateCounter(name, description, labels = {}) {
     if (this._metrics.has(name)) {
-      return this._metrics.get(name);
+      return existingOfType(this, name, Counter);
     }
     const counter = new Counter(name, description, labels);
     this.register(counter);
@@ -323,7 +336,8 @@ class MetricsRegistry {
   }
   /**
    * Return the metric registered under name, or create and register a
-   * Histogram. An existing metric is returned as is, even if it is not a Histogram.
+   * Histogram. Throws a TypeError when the name belongs to a metric of
+   * another type.
    * @param {string} name - Metric name
    * @param {string} [description] - Description for a new histogram
    * @param {Object<string, string>} [labels={}] - Labels for a new histogram
@@ -332,7 +346,7 @@ class MetricsRegistry {
    */
   getOrCreateHistogram(name, description, labels = {}, buckets) {
     if (this._metrics.has(name)) {
-      return this._metrics.get(name);
+      return existingOfType(this, name, Histogram);
     }
     const histogram = new Histogram(name, description, labels, buckets);
     this.register(histogram);
@@ -340,7 +354,7 @@ class MetricsRegistry {
   }
   /**
    * Return the metric registered under name, or create and register a Gauge.
-   * An existing metric is returned as is, even if it is not a Gauge.
+   * Throws a TypeError when the name belongs to a metric of another type.
    * @param {string} name - Metric name
    * @param {string} [description] - Description for a new gauge
    * @param {Object<string, string>} [labels={}] - Labels for a new gauge
@@ -348,7 +362,7 @@ class MetricsRegistry {
    */
   getOrCreateGauge(name, description, labels = {}) {
     if (this._metrics.has(name)) {
-      return this._metrics.get(name);
+      return existingOfType(this, name, Gauge);
     }
     const gauge = new Gauge(name, description, labels);
     this.register(gauge);
@@ -379,7 +393,8 @@ class PipelineMetrics {
         'Successful operations',
       ),
       operationsFailed: new Counter('operations_failed', 'Failed operations'),
-      operationsActive: new Counter('operations_active', 'Active operations'),
+      // A gauge: it goes down when an operation ends
+      operationsActive: new Gauge('operations_active', 'Active operations'),
     };
     this.errorsByType = { plugin: 0, stage: 0 };
     this.errorsByPlugin = {};
@@ -480,16 +495,15 @@ class PipelineMetrics {
   }
 
   /**
-   * Count an error by type and by component. Only the types 'plugin' and
-   * 'stage' are counted by type; other types are counted only by component.
-   * @param {string} type - Error type, 'plugin' or 'stage'
+   * Count an error by type and by component.
+   * @param {string} type - Error type, such as 'plugin', 'stage' or 'llm'
    * @param {string} [component] - Plugin or component name
    * @param {string} [provider] - Provider name (unused)
    * @param {Error} [error] - The error (unused)
    * @returns {void}
    */
   recordError(type, component, provider, error) {
-    if (type && type in this.errorsByType) this.errorsByType[type]++;
+    if (type) this.errorsByType[type] = (this.errorsByType[type] || 0) + 1;
     if (component)
       this.errorsByPlugin[component] =
         (this.errorsByPlugin[component] || 0) + 1;
@@ -518,10 +532,9 @@ class PipelineMetrics {
    * @returns {void}
    */
   recordOperationEnd(type, component, provider, duration, status) {
-    this.counters.operationsActive.value = Math.max(
-      0,
-      this.counters.operationsActive.value - 1,
-    );
+    if (this.counters.operationsActive.value > 0) {
+      this.counters.operationsActive.dec(1);
+    }
     if (status === 'error' || status === 'failed')
       this.counters.operationsFailed.inc(1);
     else this.counters.operationsSuccessful.inc(1);

@@ -189,8 +189,9 @@ describe("Histogram", () => {
       const stats = histogram.getStatistics();
       expect(stats.mean).toBe(0);
       expect(stats.count).toBe(0);
-      expect(stats.min).toBe(Infinity);
-      expect(stats.max).toBe(-Infinity);
+      // Infinity serialized to null in JSON anyway; now it is null throughout
+      expect(stats.min).toBeNull();
+      expect(stats.max).toBeNull();
     });
   });
 });
@@ -296,6 +297,19 @@ describe("MetricsRegistry", () => {
     });
   });
 
+  describe("getOrCreate with a name taken by another type", () => {
+    it("throws instead of returning the wrong kind of metric", () => {
+      registry.getOrCreateHistogram("latency", "Description");
+      expect(() => registry.getOrCreateCounter("latency")).toThrow(
+        'Metric "latency" is registered as a Histogram, not a Counter',
+      );
+      expect(() => registry.getOrCreateGauge("latency")).toThrow(TypeError);
+      expect(registry.getOrCreateHistogram("latency")).toBeInstanceOf(
+        Histogram,
+      );
+    });
+  });
+
   describe("getAllMetrics", () => {
     it("should return all registered metrics", () => {
       const counter = new Counter("counter", "Counter");
@@ -353,6 +367,34 @@ describe("PipelineMetrics", () => {
 
   beforeEach(() => {
     metrics = new PipelineMetrics();
+  });
+
+  describe("errors and active operations", () => {
+    it("counts every error type in the total", () => {
+      metrics.recordError("plugin", "openai");
+      metrics.recordError("llm", "openai");
+      metrics.recordError("network");
+      const { errors } = metrics.getSummary();
+      expect(errors.total).toBe(3);
+      expect(errors.byType).toEqual({
+        plugin: 1,
+        stage: 0,
+        llm: 1,
+        network: 1,
+      });
+      expect(errors.byPlugin).toEqual({ openai: 2 });
+    });
+
+    it("tracks active operations as a gauge that never goes below 0", () => {
+      expect(metrics.counters.operationsActive).toBeInstanceOf(Gauge);
+      metrics.recordOperationStart();
+      metrics.recordOperationStart();
+      metrics.recordOperationEnd(undefined, undefined, undefined, 5, "ok");
+      expect(metrics.counters.operationsActive.value).toBe(1);
+      metrics.recordOperationEnd();
+      metrics.recordOperationEnd();
+      expect(metrics.counters.operationsActive.value).toBe(0);
+    });
   });
 
   describe("recordEmbedding", () => {

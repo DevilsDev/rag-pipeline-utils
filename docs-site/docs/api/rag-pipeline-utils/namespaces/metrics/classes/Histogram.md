@@ -142,7 +142,7 @@ getStatistics(): object;
 ```
 
 Mean, population standard deviation, min, max, count and sum of the
-observed values. With no observations, min is Infinity and max is -Infinity.
+observed values. With no observations, min and max are null.
 
 #### Returns
 

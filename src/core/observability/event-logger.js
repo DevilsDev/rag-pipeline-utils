@@ -1,9 +1,8 @@
 'use strict';
 
 /**
- * Event type names used by PipelineEventLogger. The logger also emits
- * 'stage.end' and 'memory.warning', which have no entry here.
- * @type {{PLUGIN_START: string, PLUGIN_END: string, PLUGIN_ERROR: string, STAGE_START: string, STAGE_ERROR: string}}
+ * Event type names used by PipelineEventLogger.
+ * @type {{PLUGIN_START: string, PLUGIN_END: string, PLUGIN_ERROR: string, STAGE_START: string, STAGE_END: string, STAGE_ERROR: string, MEMORY_WARNING: string}}
  */
 const EventTypes = {
   /** A plugin call started. */
@@ -14,20 +13,25 @@ const EventTypes = {
   PLUGIN_ERROR: 'plugin.error',
   /** A pipeline stage started. */
   STAGE_START: 'stage.start',
+  /** A pipeline stage finished. */
+  STAGE_END: 'stage.end',
   /** A pipeline stage failed. Not emitted by PipelineEventLogger itself. */
   STAGE_ERROR: 'stage.error',
+  /** Heap use passed the threshold given to logMemoryWarning. */
+  MEMORY_WARNING: 'memory.warning',
 };
 
 /**
- * Severity levels used by PipelineEventLogger. Memory warnings use 'warn',
- * which has no entry here.
- * @type {{DEBUG: string, INFO: string, ERROR: string}}
+ * Severity levels used by PipelineEventLogger.
+ * @type {{DEBUG: string, INFO: string, WARN: string, ERROR: string}}
  */
 const EventSeverity = {
   /** Plugin start and end events. */
   DEBUG: 'debug',
   /** Stage events. */
   INFO: 'info',
+  /** Memory warnings. */
+  WARN: 'warn',
   /** Plugin errors. */
   ERROR: 'error',
 };
@@ -234,9 +238,9 @@ class PipelineEventLogger {
 
     this._events.push({
       timestamp: this.nowISO(),
-      severity: EventSeverity.WARN || 'warn',
+      severity: EventSeverity.WARN,
       sessionId: this._sessionId || this.startSession(),
-      eventType: 'memory.warning',
+      eventType: EventTypes.MEMORY_WARNING,
       message: 'High memory usage',
       metadata: { memoryUsage, threshold, usagePercentage },
     });
@@ -335,9 +339,9 @@ class PipelineEventLogger {
   logStageEnd(stage, duration, metadata = {}) {
     this._events.push({
       timestamp: this.nowISO(),
-      eventType: 'stage.end',
+      eventType: EventTypes.STAGE_END,
       sessionId: this._sessionId || this.startSession(),
-      severity: 'info',
+      severity: EventSeverity.INFO,
       message: `Stage ${stage} completed in ${duration}ms`,
       metadata: {
         stage,
