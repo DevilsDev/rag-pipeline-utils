@@ -41,7 +41,7 @@ async function handleGenerateDataset(globalOptions, options = {}) {
       process.exitCode = 1;
       return;
     }
-    const documents = components.retriever.list();
+    const documents = await components.retriever.list();
     const count = options.count || 20;
 
     if (globalOptions.dryRun) {

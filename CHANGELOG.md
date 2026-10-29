@@ -64,6 +64,13 @@ Planned for 2.7.0.
 
 ### Fixed
 
+- **The CLI didn't wait for retrievers whose methods are async**, as a
+  remote vector store's are: `ingest` didn't wait for `removeBySource`, so
+  re-ingesting a file could keep its old chunks or delete the new ones, and `generate-dataset`,
+  `ai feedback` and `ai benchmark` failed on `list()`. Every retriever call
+  is now awaited. The fitted `local` embedder with a store that can't save
+  its state now stops with a message instead of embedding queries with an
+  empty vocabulary.
 - A bad option value (`--top-k 0`, `--min speed=1`) printed a stack trace;
   the CLI now prints a one-line error naming the option and exits 1.
 
