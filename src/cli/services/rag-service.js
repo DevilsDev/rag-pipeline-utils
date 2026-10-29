@@ -351,10 +351,31 @@ async function query({
   };
 }
 
+/**
+ * A createRagPipeline() pipeline over the configured components and index,
+ * for running many questions (rag-pipeline eval).
+ *
+ * @param {object} params
+ * @param {object} params.config
+ * @param {string} params.configDir
+ * @returns {{ pipeline: object, hasLlm: boolean }}
+ */
+function createPipeline({ config, configDir }) {
+  const c = loadComponents({ config, configDir });
+  const pipeline = createRagPipeline({
+    embedder: c.embedder,
+    retriever: c.retriever,
+    llm: c.llm,
+    reranker: c.reranker,
+  });
+  return { pipeline, hasLlm: Boolean(c.llm) };
+}
+
 module.exports = {
   ingest,
   retrain,
   query,
+  createPipeline,
   retrieve,
   loadComponents,
   restoreEmbedder,

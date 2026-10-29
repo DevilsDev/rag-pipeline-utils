@@ -28,11 +28,49 @@ function parsePositiveInteger(value) {
   return parsed;
 }
 
+/**
+ * Collector for repeatable --min metric=value (rag-pipeline eval). The
+ * metric list loads only when the option is used.
+ */
+function collectMin(value, previous = {}) {
+  const match = /^([A-Za-z]+)=(\d*\.?\d+)$/.exec(String(value).trim());
+  if (!match) {
+    throw new Error(
+      `--min takes metric=value, e.g. faithfulness=0.8 (got "${value}")`,
+    );
+  }
+  const [, metric, number] = match;
+  // eslint-disable-next-line global-require
+  const { EVALUATION_METRICS } = require("../../evaluate/compare.js");
+  if (!EVALUATION_METRICS.includes(metric)) {
+    throw new Error(
+      `Unknown metric "${metric}" for --min; use one of ${EVALUATION_METRICS.join(", ")}`,
+    );
+  }
+  const min = Number(number);
+  if (min > 1) throw new Error(`--min ${metric} must be between 0 and 1`);
+  return { ...previous, [metric]: min };
+}
+
+/**
+ * Parser for a non-negative number (eval --tolerance, --case-tolerance)
+ */
+function parseTolerance(value) {
+  const n = Number(value);
+  if (value === "" || !Number.isFinite(n) || n < 0) {
+    throw new Error(
+      `Invalid value '${value}'. Expected a number of 0 or more.`,
+    );
+  }
+  return n;
+}
+
 // Top-level commands offered by shell completion
 const COMMANDS = [
   "init",
   "ingest",
   "query",
+  "eval",
   "run",
   "serve",
   "doctor",
@@ -100,6 +138,8 @@ For more information, visit: https://github.com/DevilsDev/rag-pipeline-utils
 module.exports = {
   createProgressBar,
   parsePositiveInteger,
+  collectMin,
+  parseTolerance,
   generateCompletionScript,
   getVersion,
   getExtendedHelp,

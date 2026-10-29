@@ -177,6 +177,48 @@ With `--json`, `--trace`, `--stats` and `--explain` add `trace`, `stats` and `ex
 
 ---
 
+## `eval`
+
+:::info[Coming in 2.7.0]
+
+`rag-pipeline eval` is in the next release.
+
+:::
+
+Runs a test set through the configured pipeline and index, prints the scores, and exits `1` when the run fails, so it can gate a CI job. A run fails when a case errors, a metric is below its `--min`, or the run regressed from a `--baseline` report.
+
+```bash
+# On your main branch: save a baseline
+rag-pipeline eval tests.json --output eval-main.json
+
+# On a pull request: compare with it, require minimums, write a summary
+rag-pipeline eval tests.json --baseline eval-main.json \
+  --min faithfulness=0.8 --min sourceRecall=0.9 --report eval-summary.md
+```
+
+The test set is a `.json` file (an array of cases, or `{ "cases": [...] }`) or a `.jsonl` file with one case per line. Each case has a `prompt`, and optionally `expected` (the reference answer), `sourceIds`, `id` and `tags`; see the [dataset format](./Evaluation.md#dataset-format). It is validated before anything runs, and every problem is listed with its case.
+
+A source id matches a retrieved passage's `id` or its `metadata.source`, so with the CLI's index you can name files: `"sourceIds": ["docs/vacation.md"]` matches the chunk `docs/vacation.md#0`.
+
+| Option                 | Description                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--output <file>`      | Save this run's report as JSON, to use later as a `--baseline`                                                             |
+| `--baseline <file>`    | Compare with a saved report; a metric whose mean drops by more than `--tolerance`, or a case that now fails, fails the run |
+| `--min <metric=value>` | Minimum mean for a metric, from 0 to 1. Repeat for more metrics                                                            |
+| `--report <file>`      | Write a summary: a `.html` file gets a standalone page, any other name (e.g. `.md`) Markdown for a pull request comment    |
+| `--tolerance <n>`      | Allowed drop in a metric's mean from the baseline (default 0.02)                                                           |
+| `--case-tolerance <n>` | Drop in one case's score that lists the case under "Cases that got worse" (default 0.1)                                    |
+| `--concurrency <n>`    | Cases run at the same time (default 1)                                                                                     |
+| `--timeout <ms>`       | Abort each case after this many milliseconds; the case is recorded as failed                                               |
+| `--top-k <n>`          | Passages to retrieve (default 3)                                                                                           |
+| `--json`               | Print `{ passed, reasons, thresholds, summary, comparison }` as JSON                                                       |
+
+The metrics are `faithfulness`, `relevance`, `contextPrecision`, `contextRecall` (cases with `expected`), `groundedness`, `citationCoverage` and `sourceRecall` (cases with `sourceIds`); see [Run a test set and compare configurations](./Evaluation.md#run-a-test-set-and-compare-configurations). Without an `llm` stage only `sourceRecall` is measured.
+
+Model answers vary from run to run. Run the same configuration a few times to see how far the scores move, and set `--tolerance` above that.
+
+---
+
 ## `run`
 
 `ingest` and/or `query` in one command.

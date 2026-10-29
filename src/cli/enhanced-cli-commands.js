@@ -12,6 +12,8 @@ const { logger } = require("../utils/logger.js");
 // Shared utilities
 const {
   parsePositiveInteger,
+  collectMin,
+  parseTolerance,
   generateCompletionScript,
   getVersion,
   getExtendedHelp,
@@ -28,6 +30,7 @@ const handlers = {
   config: () => require("./handlers/config-handler.js"),
   ingest: () => require("./handlers/ingest-handler.js"),
   query: () => require("./handlers/query-handler.js"),
+  eval: () => require("./handlers/eval-handler.js"),
 };
 /* eslint-enable global-require */
 
@@ -152,6 +155,50 @@ class EnhancedCLI {
         await handlers
           .query()
           .handleQuery(this.program.opts(), question, options);
+      });
+
+    this.program
+      .command("eval")
+      .description(
+        "Run an evaluation dataset; exit 1 on failures, low scores or regressions",
+      )
+      .argument("<dataset>", "Test set: .json (array or { cases }) or .jsonl")
+      .option("--baseline <report>", "Compare with a report saved by --output")
+      .option("--output <report>", "Save this run's report as JSON")
+      .option(
+        "--report <file>",
+        "Write a summary: .html for a page, .md for Markdown",
+      )
+      .option(
+        "--min <metric=value>",
+        "Minimum mean for a metric, e.g. faithfulness=0.8 (repeatable)",
+        collectMin,
+      )
+      .option(
+        "--tolerance <n>",
+        "Allowed drop in a metric's mean from the baseline (default 0.02)",
+        parseTolerance,
+      )
+      .option(
+        "--case-tolerance <n>",
+        "Drop in one case's score that lists it (default 0.1)",
+        parseTolerance,
+      )
+      .option(
+        "--concurrency <n>",
+        "Cases run at the same time",
+        parsePositiveInteger,
+        1,
+      )
+      .option(
+        "--timeout <ms>",
+        "Abort each case after this many milliseconds",
+        parsePositiveInteger,
+      )
+      .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option("--json", "Print the verdict, summary and comparison as JSON")
+      .action(async (dataset, options) => {
+        await handlers.eval().handleEval(this.program.opts(), dataset, options);
       });
 
     this.program

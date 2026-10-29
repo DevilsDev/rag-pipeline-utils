@@ -141,6 +141,7 @@ npx rag-pipeline ingest ./docs             # indexes .md, .html, .csv and .txt f
 npx rag-pipeline query "What is the remote work policy?"
 npx rag-pipeline serve --port 3000         # local HTTP API: GET /health, POST /query
 npx rag-pipeline doctor                    # checks config, API keys, plugins and the index
+npx rag-pipeline eval tests.json --min faithfulness=0.8   # scores a test set; exits 1 on failure (2.7.0)
 ```
 
 The default `local` template needs no API keys. Use `init --template openai`, `anthropic` or `ollama` to generate answers with a model. Other commands include `validate`, `hub install` for plugins and `ai benchmark` for measured latency.
