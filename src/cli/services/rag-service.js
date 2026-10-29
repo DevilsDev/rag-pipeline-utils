@@ -29,6 +29,30 @@ function embedDocument(embedder, text) {
 }
 
 /**
+ * Corpus-fitted embedders (the built-in `local` TF-IDF embedder) keep a
+ * vocabulary that must be saved with the index and restored before every
+ * query. A store that can't save it (pgvector, Qdrant, custom stores) would
+ * embed queries with an empty vocabulary and return wrong results, so stop
+ * with a clear message instead.
+ */
+function assertEmbedderFits(components) {
+  const { embedder, retriever, names } = components;
+  const fitted =
+    typeof embedder.train === "function" ||
+    typeof embedder.setState === "function";
+  const persists =
+    typeof retriever.getEmbedderInfo === "function" &&
+    typeof retriever.setEmbedderInfo === "function";
+  if (fitted && !persists) {
+    throw new Error(
+      `The "${names.embedder}" embedder is fitted to your documents and needs a retriever ` +
+        `that saves its state, such as "file-store". With "${names.retriever}", use an ` +
+        "embedder like openai, ollama or cohere.",
+    );
+  }
+}
+
+/**
  * Restore embedder state saved with the index (e.g. LocalEmbedder's
  * vocabulary), so queries embed into the same vector space as ingestion.
  */
@@ -65,14 +89,14 @@ async function embedAndStore({
   }
 
   await store.store(vectors);
-  store.setEmbedderInfo?.({
+  await store.setEmbedderInfo?.({
     name: embedderName,
     dimensions,
     ...(typeof embedder.getState === "function" && {
       state: embedder.getState(),
     }),
   });
-  store.save?.();
+  await store.save?.();
   return vectors;
 }
 
@@ -97,10 +121,12 @@ async function ingest({ config, configDir, inputPath, rebuild = false }) {
     );
   }
 
+  assertEmbedderFits(components);
   const embedderName = components.names.embedder;
-  if (rebuild) store.clear?.();
-  const previous = store.getEmbedderInfo?.();
-  if (previous && previous.name !== embedderName && store.size() > 0) {
+  // Stores may be remote (pgvector, Qdrant), so await every call.
+  if (rebuild) await store.clear?.();
+  const previous = await store.getEmbedderInfo?.();
+  if (previous && previous.name !== embedderName && (await store.size()) > 0) {
     throw new Error(
       `The index was built with embedder "${previous.name}" but the config now uses ` +
         `"${embedderName}". Re-run with --rebuild to re-index everything.`,
@@ -108,7 +134,7 @@ async function ingest({ config, configDir, inputPath, rebuild = false }) {
   }
 
   const documents = await readDocuments(inputPath, { baseDir: configDir });
-  for (const { source } of documents) store.removeBySource?.(source);
+  for (const { source } of documents) await store.removeBySource?.(source);
 
   let entries = documents.flatMap(({ source, chunks }) =>
     chunks.map((content, i) => ({
@@ -121,7 +147,7 @@ async function ingest({ config, configDir, inputPath, rebuild = false }) {
   // Corpus-fitted embedders (LocalEmbedder) must be retrained on everything
   // stored, and every stored chunk re-embedded into the new vector space.
   if (typeof embedder.train === "function") {
-    entries = [...(store.list?.() || []), ...entries];
+    entries = [...((await store.list?.()) || []), ...entries];
     embedder.train(entries.map((e) => e.content));
   } else {
     restoreEmbedder(embedder, store);
@@ -138,7 +164,7 @@ async function ingest({ config, configDir, inputPath, rebuild = false }) {
   return {
     files: documents.length,
     chunks: documents.reduce((n, d) => n + d.chunks.length, 0),
-    totalChunks: store.size?.() ?? vectors.length,
+    totalChunks: (await store.size?.()) ?? vectors.length,
     sources: documents.map((d) => d.source),
   };
 }
@@ -186,13 +212,13 @@ async function retrain({ config, configDir, inputPath }) {
     );
   }
 
-  const stored = store.list();
+  const stored = await store.list();
   if (stored.length === 0) {
     throw new Error(
       "The index is empty. Run `rag-pipeline ingest <path>` first.",
     );
   }
-  const previous = store.getEmbedderInfo?.();
+  const previous = await store.getEmbedderInfo?.();
   if (previous && previous.name !== embedderName) {
     throw new Error(
       `The index was built with embedder "${previous.name}". ` +
@@ -241,6 +267,8 @@ function loadComponents({ config, configDir }) {
   const components = buildComponents(config, { configDir });
   const embedder = requireStage(components, "embedder");
   const retriever = requireStage(components, "retriever");
+  assertEmbedderFits(components);
+  // A remote store's size() is a Promise; its callers check emptiness.
   if (retriever.size && retriever.size() === 0) {
     throw new Error(
       "The index is empty. Run `rag-pipeline ingest <path>` first.",

@@ -87,7 +87,7 @@ async function runBenchmark({
 
   const queries = queriesFile
     ? readQueryFile(queriesFile)
-    : sampleQueries(retriever.list ? retriever.list() : []);
+    : sampleQueries(retriever.list ? await retriever.list() : []);
   if (queries.length === 0) {
     throw new Error(
       "No queries: pass --queries <file> (the index has no text to sample from).",
@@ -148,7 +148,7 @@ async function runBenchmark({
     environment: {
       node: process.version,
       platform: `${process.platform} ${process.arch}`,
-      chunks: retriever.size ? retriever.size() : null,
+      chunks: retriever.size ? await retriever.size() : null,
       embedder: components.names.embedder,
       dimensions: retriever.getEmbedderInfo?.()?.dimensions ?? null,
       retriever: components.names.retriever,

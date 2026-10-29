@@ -54,6 +54,8 @@ module.exports = HashEmbedder;
 
 `store(docs)` receives `[{ id, vector, content, metadata }]`. `retrieve(request)` receives `{ query, queryVector, topK, signal }` and returns documents sorted by relevance, each with a `score`. The built-in `MemoryRetriever` and `FileVectorStore` implement this contract and are good references.
 
+For the CLI's `ingest`, `generate-dataset` and `ai` commands, a retriever can also have `list()`, `size()`, `clear()` and `removeBySource(source)`; re-ingesting a file calls `removeBySource` to replace its chunks. Any of these may return a Promise, as a remote store's would. The CLI's `local` embedder is fitted to your documents and needs a store that saves its state (`getEmbedderInfo()` and `setEmbedderInfo()`, as `FileVectorStore` does); with any other store, use an embedder such as `openai`, `ollama` or `cohere`.
+
 ```javascript
 class ArrayRetriever {
   constructor() {

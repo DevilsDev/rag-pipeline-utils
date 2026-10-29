@@ -162,7 +162,7 @@ async function handleFeedback(globalOptions, question, docId, options = {}) {
         `Retriever "${components.names.retriever}" cannot list documents. Use "file-store".`,
       );
     }
-    if (!retriever.list().some((doc) => doc.id === docId)) {
+    if (!(await retriever.list()).some((doc) => doc.id === docId)) {
       throw new Error(
         `No indexed chunk with id "${docId}". Ids are shown by \`rag-pipeline ai search\`.`,
       );
@@ -197,7 +197,7 @@ async function handleSearch(globalOptions, question, options = {}) {
     const topK = options.topK || 3;
     const components = loadComponents({ config, configDir });
     const { retriever } = components;
-    const size = retriever.size ? retriever.size() : topK;
+    const size = retriever.size ? await retriever.size() : topK;
     // Re-score a larger pool so a boosted chunk can move into the top-k.
     const pool = Math.min(size, Math.max(topK * 4, topK + 10));
     const results = await retrieve({ components, question, topK: pool });
