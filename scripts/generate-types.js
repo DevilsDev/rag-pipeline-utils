@@ -9,7 +9,7 @@ const path = require("path");
 
 const typeDefinitions = `/**
  * RAG Pipeline Utils - TypeScript Definitions
- * @module @devilsdev/rag-pipeline-utils
+ * @module rag-pipeline-utils
  */
 
 // =============================================================================

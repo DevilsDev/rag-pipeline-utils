@@ -1,0 +1,33 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "tsconfig": "tsconfig.typedoc.json",
+  "entryPoints": ["dist/index.d.ts", "dist/testing.d.ts"],
+  "out": "docs-site/docs/api",
+  "plugin": ["typedoc-plugin-markdown", "./scripts/typedoc-plugin.js"],
+  "readme": "none",
+  "entryFileName": "index",
+  "skipErrorChecking": true,
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "disableSources": true,
+  "hideBreadcrumbs": true,
+  "hidePageHeader": true,
+  "useCodeBlocks": true,
+  "parametersFormat": "table",
+  "interfacePropertiesFormat": "table",
+  "classPropertiesFormat": "table",
+  "sort": ["kind", "alphabetical"],
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "requiredToBeDocumented": [
+    "Class",
+    "Function",
+    "Method",
+    "Interface",
+    "TypeAlias",
+    "Variable"
+  ]
+}
