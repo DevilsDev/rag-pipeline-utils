@@ -88,6 +88,7 @@
     "benchmark": "node scripts/benchmark.js --iterations=100 --verbose",
     "benchmark:quick": "node scripts/benchmark.js --iterations=20",
     "benchmark:full": "node scripts/benchmark.js --iterations=500 --verbose",
+    "bench:speed": "node benchmarks/speed.js",
     "dev": "node scripts/dev-tools.js menu",
     "dev:health": "node scripts/dev-tools.js health",
     "dev:setup": "node scripts/dev-tools.js setup",

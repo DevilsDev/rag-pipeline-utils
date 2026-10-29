@@ -156,6 +156,7 @@ module.exports = {
     {
       files: [
         "**/scripts/**/*.{js,jsx}",
+        "benchmarks/**/*.{js,jsx}",
         "**/config/**/*.{js,jsx}",
         "**/*.config.{js,jsx}",
         "**/tools/**/*.{js,jsx}",
