@@ -122,6 +122,26 @@ describe("LocalEmbedder", () => {
   });
 
   describe("train()", () => {
+    test("a capped vocabulary keeps the most common tokens, not the rarest", () => {
+      // Each document shares "vacation" and has one word of its own. With
+      // room for 3 tokens, the shared word must be kept: keeping the
+      // highest-IDF (one-document) words left queries with no known token.
+      const capped = new LocalEmbedder({ maxVocabularySize: 3 });
+      capped.train([
+        "vacation policy alpha",
+        "vacation policy bravo",
+        "vacation charlie",
+        "delta",
+      ]);
+      expect([...capped.vocabulary.keys()]).toEqual([
+        "vacation",
+        "policy",
+        "alpha",
+      ]);
+      const vector = capped.embed("how many vacation days");
+      expect(vector.some((x) => x > 0)).toBe(true);
+    });
+
     test("builds vocabulary from string documents", () => {
       embedder.train([
         "the cat sat on the mat",

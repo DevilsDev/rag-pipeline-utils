@@ -9,16 +9,21 @@ description: Published speed numbers for the pipeline and its vector stores, how
 
 Most of a RAG query's time goes to things outside this library: the
 embedding model, the vector store, the LLM and the network between them.
-So the numbers here measure the two parts the library controls or ships:
+So the numbers here measure the parts the library controls or ships:
 
 1. **Pipeline overhead**: the time `createRagPipeline().run()` itself adds
    around your components.
 2. **Vector stores**: ingest throughput, query latency and recall for the
    built-in stores and the pgvector and Qdrant connectors.
+3. **Retrieval quality**: how well the retrievers that run offline find
+   the right documents on a public benchmark, BEIR SciFact.
 
-Everything is reproducible: the benchmark is
-[`benchmarks/speed.js`](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/speed.js),
-its data is generated from a fixed seed, and the tables below are written
+Everything is reproducible: the benchmarks are
+[`benchmarks/speed.js`](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/speed.js)
+and
+[`benchmarks/quality.js`](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/quality.js),
+their data is generated from a fixed seed or downloaded from a pinned
+revision, and the tables below are written
 by `benchmarks/render.js` from the committed report in
 [`benchmarks/results/`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/benchmarks/results).
 Nothing on this page is typed by hand.
@@ -70,7 +75,35 @@ Databases: pgvector `pgvector/pgvector:0.8.7-pg17`, qdrant `qdrant/qdrant:v1.20.
 
 <!-- bench:speed:end -->
 
-## How to read these numbers
+## Retrieval quality
+
+[BEIR](https://github.com/beir-cellar/beir) SciFact asks for the scientific
+abstracts that support or refute a claim. Every retriever here runs offline
+with its default settings and no model, so these are baselines for the
+built-in retrievers, not figures for neural embedders. Higher is better on
+every column.
+
+<!-- bench:quality:start -->
+<!-- bench:quality:end -->
+
+- **`BM25Search` matches the published baseline.** The BEIR paper
+  (Thakur et al., 2021) reports nDCG@10 0.665 for BM25 on SciFact, which
+  is also a check that these metrics are computed the standard way.
+- **TF-IDF trails BM25.** `LocalEmbedder` weights raw term counts and
+  keeps the 10,000 most common tokens of a larger corpus; BM25 saturates
+  repeated terms, adjusts for document length and keeps every token.
+- **Fusing a weaker retriever costs accuracy.** `HybridRetriever` weights
+  both inputs equally, so the TF-IDF results pull BM25's ranking down.
+  Hybrid search pays off when the second retriever is a good dense
+  embedder; weight the retrievers, or measure on your data.
+- **`HashEmbedder` is the testing stand-in**, shown as a floor.
+- The metrics are those of BEIR and trec_eval. Recall@100 shows how many
+  relevant documents a reranker could still recover from the top 100.
+
+To score your own retriever or embedder on a test set of your own, see
+[Evaluation](./Evaluation).
+
+## How to read the speed numbers
 
 - **Pipeline overhead is small next to real components.** The components
   in this test return at once, so the times are the library's own work:
@@ -107,6 +140,9 @@ Databases: pgvector `pgvector/pgvector:0.8.7-pg17`, qdrant `qdrant/qdrant:v1.20.
 ## Reproduce them
 
 ```bash
+# Retrieval quality; downloads BEIR SciFact (4.5 MB) on the first run
+npm run bench:quality
+
 # Memory and file stores only
 npm run bench:speed
 
@@ -118,14 +154,18 @@ QDRANT_URL=http://localhost:6333 \
   node benchmarks/speed.js --output=benchmark-results/speed.json
 ```
 
-Options: `--sizes=1000,10000` (corpus sizes), `--dims=384`,
+Speed options: `--sizes=1000,10000` (corpus sizes), `--dims=384`,
 `--queries=200`, `--runs=5000` (pipeline runs), `--output=<file>`.
+Quality options: `--data-dir=<dir>` (where the dataset is kept),
+`--output=<file>`. The dataset is not committed or published with the
+package, because its license (CC BY-SA 4.0) differs from this project's;
+each file is checked against a pinned SHA-256 before it is read.
 
-The published report comes from the **Benchmarks** workflow
+The published reports come from the **Benchmarks** workflow
 (`.github/workflows/benchmarks.yml`), run by hand from the Actions tab.
-It uploads the JSON report as an artifact; copy it to
-`benchmarks/results/speed.json` and run `node benchmarks/render.js` to
-update this page. CI fails when the page and the report disagree.
+It uploads each JSON report as an artifact; copy them to
+`benchmarks/results/speed.json` and `benchmarks/results/quality.json` and
+run `node benchmarks/render.js` to update this page. CI fails when the page and the report disagree.
 
 ## Benchmark your own stack
 
