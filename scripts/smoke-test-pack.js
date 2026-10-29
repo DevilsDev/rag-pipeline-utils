@@ -92,6 +92,22 @@ run(
 
 const pkgName = require(path.join(root, "package.json")).name;
 const results = [
+  // --ignore-scripts above hides install-time scripts, so check for them:
+  // a postinstall that calls a dev tool (husky) makes `npm install` fail
+  // for everyone who doesn't have that tool installed globally.
+  check("no install-time scripts run in users' projects", () => {
+    const installed = require(
+      path.join(consumerDir, "node_modules", pkgName, "package.json"),
+    );
+    const found = ["preinstall", "install", "postinstall"].filter(
+      (name) => installed.scripts && installed.scripts[name],
+    );
+    if (found.length > 0) {
+      throw new Error(
+        `the package runs ${found.map((n) => `"${n}": "${installed.scripts[n]}"`).join(", ")} on install`,
+      );
+    }
+  }),
   check("require() loads with no console output or warnings", () => {
     const { stdout, stderr } = runCapture(
       [
