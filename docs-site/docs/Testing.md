@@ -9,12 +9,6 @@ description: Deterministic, offline test helpers from @devilsdev/rag-pipeline-ut
 
 `@devilsdev/rag-pipeline-utils/testing` has deterministic, offline stand-ins for the parts of a pipeline that normally call a model. Tests that use them need no network and no API keys, and give the same result on every run.
 
-:::info[Coming in 2.6.0]
-
-The `/testing` entry point is in the next release.
-
-:::
-
 | Export                 | What it is                                                                                                     |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `HashEmbedder`         | Embedder that hashes words into a vector. Texts that share words come out similar, so retrieval ranks sensibly |

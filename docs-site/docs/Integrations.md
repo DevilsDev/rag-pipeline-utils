@@ -12,12 +12,6 @@ You don't have to switch frameworks to use this library. Two pieces work with wh
 - **`checkAnswer`** checks an answer from any framework against its sources: per-sentence citations, groundedness, unsupported sentences and evaluation scores.
 - **`createAiSdkAdapter`** turns Vercel AI SDK models into an embedder and an LLM for `createRagPipeline()`.
 
-:::info[Coming in 2.6.0]
-
-`checkAnswer`, `normalizeSources` and `createAiSdkAdapter` are in the next release.
-
-:::
-
 ## Check an answer from any framework
 
 `checkAnswer({ question, answer, sources })` takes the answer your chain produced and the documents it was given. The sources can be in the shape your framework returns:

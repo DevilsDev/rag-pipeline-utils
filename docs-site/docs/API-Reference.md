@@ -810,7 +810,7 @@ validatePlugin(stage: PluginType, plugin: object, options?: { registry?: boolean
   { valid: boolean; errors: string[]; warnings: string[] }
 ```
 
-Checks a plugin without throwing; `{ registry: true }` adds the rules `register()` enforces. Coming in 2.6.0. See [Testing a plugin in code](./Plugins.md#testing-a-plugin-in-code).
+Checks a plugin without throwing; `{ registry: true }` adds the rules `register()` enforces. See [Testing a plugin in code](./Plugins.md#testing-a-plugin-in-code).
 
 #### register()
 
@@ -886,12 +886,6 @@ new ParallelRetriever(retriever, { maxConcurrency?: 2 })
 ```
 
 `ParallelEmbedder` splits the texts into batches and runs up to `maxConcurrency` at once; failed batches are retried.
-
-:::info[Coming in 2.6.0]
-
-The `mode` option is in the next release. In 2.5.0 `ParallelEmbedder` always calls `embed(batch)` with an array, so it fails with the built-in connectors, which embed one string at a time.
-
-:::
 
 `mode` decides how each batch is embedded: `'batch'` calls `embed(texts)` and expects one vector per text, `'single'` calls `embed(text)` for each text. The default, `'auto'`, uses `embedBatch(texts)` if the embedder has it, `'single'` for the built-in connectors (`LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`) and `'batch'` for other embedders.
 

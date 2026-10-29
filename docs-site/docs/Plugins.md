@@ -218,12 +218,6 @@ rag-pipeline info --plugins
 
 ### **Testing a plugin in code**
 
-:::info[Coming in 2.6.0]
-
-`validatePlugin` is exported from the next release.
-
-:::
-
 `validatePlugin(stage, plugin)` checks that an object can be used as a stage, without throwing, so you can assert on it in your plugin's own tests. By default it checks what `createRagPipeline()` calls. With `{ registry: true }` it also applies the rules `pluginRegistry.register()` enforces: `metadata` with a string `name` and `version`, a `type` equal to the stage, and the methods in the stage's contract.
 
 ```javascript
