@@ -206,7 +206,7 @@ console.log(report.scores); // includes contextRecall because a reference was gi
 if (report.scores.faithfulness < 0.8) process.exitCode = 1;
 ```
 
-Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases. From 2.7.0, `validateDataset` checks it before a run and reports every malformed case, with its index and field. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
+Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases. From 2.7.0, `validateDataset` checks it before a run and reports every malformed case, with its index and field; `runEvaluation` runs it and saves a JSON report; and `compareConfigurations` compares two pipelines, or a pipeline against the report saved from your main branch, and lists the cases that got worse. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
 
 ### Check answers from another framework
 

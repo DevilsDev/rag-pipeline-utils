@@ -22,6 +22,17 @@ Planned for 2.7.0.
   `{ cases: [...] }`; `question` and `referenceAnswer` are accepted as
   aliases, and the `{ prompt, expected }` shape `evaluateRagDataset` reads
   is valid unchanged. Valid datasets come back normalised in `cases`.
+- **`runEvaluation(dataset, pipeline)`** runs every case with citations and
+  evaluation on and returns a JSON report: per-case answers, retrieved ids,
+  scores (faithfulness, relevance, context precision and recall,
+  groundedness, citation coverage, and `sourceRecall` against the case's
+  `sourceIds`) and per-metric means. Failed cases are recorded, not thrown;
+  options for `concurrency`, a per-case `timeout`, `signal` and `onCase`.
+- **`compareConfigurations(dataset, { baseline, candidate })`** compares two
+  runs, where each side is a pipeline or a saved report, and reports
+  `regressed`, per-metric deltas, and the cases that now fail or dropped by
+  more than `caseTolerance`. `tolerance` (default 0.02) sets the allowed
+  drop in a metric's mean.
 
 ## [2.6.1] - 2026-10-29
 
