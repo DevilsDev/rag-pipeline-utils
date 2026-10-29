@@ -152,7 +152,7 @@ Revived from 7.5 (new API, so a minor release rather than a 2.5.x patch):
 
 ### 2.7.0: evaluation in CI, real vector stores, published proof
 
-- **GitHub Action `rag-eval` (6.2):** runs a test set through a pipeline and fails the pull request when groundedness, faithfulness or citation coverage falls below a threshold or drops from the base branch. It posts a summary comment.
+- **GitHub Action `rag-eval` (6.2):** runs a test set through a pipeline and fails the pull request when groundedness, faithfulness or citation coverage falls below a threshold or drops from the base branch. It posts a summary comment. Decided 2026-10-29: it lives in its own public repo, `DevilsDev/rag-eval-action`, so it can be listed on the GitHub Marketplace and its releases stay separate from the npm release workflow. It is a thin `action.yml` that runs `rag-pipeline eval` from the npm package; the comparison and report logic stay in the package.
 - **pgvector and Qdrant connectors (6.5)**, with Pinecone next. They follow the existing retriever contract (`store`, `retrieve`, signal support). This moves the "bundled retrievers" item from 3.1+ forward.
 - **Public benchmark (6.3):** a reproducible script and results page that measure hallucination detection and citation accuracy on a public QA dataset, and latency with and without the 2.6 cache. Publish the results even where they are unflattering.
 
