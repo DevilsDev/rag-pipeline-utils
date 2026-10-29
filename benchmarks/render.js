@@ -65,19 +65,26 @@ function renderSpeed(report) {
   );
 
   for (const [size, stores] of Object.entries(report.stores)) {
-    parts.push(
-      `**${num(Number(size))} vectors** of ${report.settings.dims} dimensions; ${report.settings.queries} queries, top 10, after ${report.settings.warmupQueries} warmup queries.`,
-      "",
-      table(
-        ["Store", "Index", "Ingest", "Query p50", "Query p95", "Recall@10"],
-        Object.entries(stores).map(([name, r]) => [
-          `\`${name}\``,
+    const rows = [];
+    for (const [name, results] of Object.entries(stores)) {
+      results.forEach((r, i) => {
+        rows.push([
+          r.setting ? `\`${name}\`, ${r.setting}` : `\`${name}\``,
           r.index,
-          `${num(r.ingest.docsPerSecond)} docs/s`,
+          // One ingest per store; its settings only change queries
+          i === 0 ? `${num(r.ingest.docsPerSecond)} docs/s` : "same table",
           `${r.query.p50} ms`,
           `${r.query.p95} ms`,
           r.recallAt10.toFixed(3),
-        ]),
+        ]);
+      });
+    }
+    parts.push(
+      `**${num(Number(size))} vectors** of ${report.settings.dims} dimensions (${report.settings.vectors}); ${report.settings.queries} queries, top 10, after ${report.settings.warmupQueries} warmup queries.`,
+      "",
+      table(
+        ["Store", "Index", "Ingest", "Query p50", "Query p95", "Recall@10"],
+        rows,
       ),
       "",
     );

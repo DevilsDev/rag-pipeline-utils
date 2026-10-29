@@ -174,6 +174,8 @@ describe("QdrantRetriever", () => {
     const retriever = new QdrantRetriever({ fetch, apiKey: "secret-key-123" });
     const err = await retriever.retrieve({ queryVector: [1] }).catch((e) => e);
     expect(requests[0].headers["api-key"]).toBe("secret-key-123");
+    // Compressed responses stall each request by ~40 ms
+    expect(requests[0].headers["accept-encoding"]).toBe("identity");
     expect(err.message).toBe(
       "QdrantRetriever: Qdrant refused the request (403); check QDRANT_API_KEY",
     );

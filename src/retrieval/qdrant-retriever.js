@@ -118,7 +118,12 @@ class QdrantRetriever {
    */
   async _request(method, path, body, { signal, allow404 = false } = {}) {
     throwIfAborted(signal);
-    const headers = { 'content-type': 'application/json' };
+    const headers = {
+      'content-type': 'application/json',
+      // fetch asks for gzip by default, and Qdrant's compressed responses
+      // stall each request by about 40 ms; uncompressed they take ~1 ms.
+      'accept-encoding': 'identity',
+    };
     if (this._apiKey) headers['api-key'] = this._apiKey;
     let res;
     try {

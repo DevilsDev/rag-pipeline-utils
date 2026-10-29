@@ -53,6 +53,7 @@ const BATCH = 500;
 const PIPELINE_RUNS = Number(args.runs || 5000);
 const PIPELINE_WARMUP = 500;
 const SEED = 42;
+const CLUSTERS = 100;
 
 // mulberry32: small, fast, and the same sequence on every platform
 function rng(seed) {
@@ -84,6 +85,20 @@ function unitVectors(count, dims, random) {
   return out;
 }
 
+/**
+ * Unit vectors around `clusters` random centres, like embeddings of a
+ * corpus with topics. Uniformly random vectors would be the worst case
+ * for approximate (HNSW) search and understate its recall.
+ */
+function clusteredVectors(count, centres, random, spread = 0.35) {
+  return Array.from({ length: count }, () => {
+    const c = centres[Math.floor(random() * centres.length)];
+    const v = c.map((x) => x + spread * (random() + random() + random() - 1.5));
+    const norm = Math.sqrt(v.reduce((sum, x) => sum + x * x, 0));
+    return v.map((x) => x / norm);
+  });
+}
+
 function exactTopK(corpus, query, k) {
   const scored = corpus.map((v, i) => {
     let dot = 0;
@@ -111,6 +126,7 @@ function stats(samples) {
 }
 
 const round = (x, digits = 3) => Number(x.toFixed(digits));
+const num = (x) => x.toLocaleString("en-US");
 const roundStats = (s, digits) => ({
   p50: round(s.p50, digits),
   p95: round(s.p95, digits),
@@ -164,13 +180,33 @@ async function pipelineOverhead() {
   return results;
 }
 
-/** One store per name, or null when it can't run here. */
+const EF_SEARCH = [40, 100, 200];
+
+/** Waits until Qdrant has finished optimizing, then describes its index. */
+async function qdrantIndex(url, collection) {
+  let last = -1;
+  for (let i = 0; i < 120; i++) {
+    const res = await fetch(`${url}/collections/${collection}`);
+    const { result } = await res.json();
+    const indexed = result.indexed_vectors_count || 0;
+    if (result.status === "green" && indexed === last) {
+      return indexed > 0
+        ? `HNSW (${num(indexed)} of ${num(result.points_count)} vectors indexed)`
+        : "exact: below Qdrant's indexing threshold";
+    }
+    last = indexed;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error("Qdrant did not finish optimizing");
+}
+
+/** The stores that can run here, by name. */
 function storeFactories(size) {
   const tmp = path.join(os.tmpdir(), `rag-bench-${process.pid}-${size}.json`);
   const factories = {
     MemoryRetriever: {
       create: () => new MemoryRetriever(),
-      index: "exact (brute force)",
+      index: async () => "exact",
     },
     FileVectorStore: {
       create: () => {
@@ -180,18 +216,24 @@ function storeFactories(size) {
       // Ingest includes writing the index file
       afterStore: (store) => store.save(),
       cleanup: () => fs.rmSync(tmp, { force: true }),
-      index: "exact (brute force)",
+      index: async () => "exact",
     },
   };
   if (process.env.PGVECTOR_URL) {
+    const options = {
+      connectionString: process.env.PGVECTOR_URL,
+      table: `rag_bench_${size}`,
+      dimensions: DIMS,
+    };
     factories.PgVectorRetriever = {
-      create: () =>
-        new PgVectorRetriever({
-          connectionString: process.env.PGVECTOR_URL,
-          table: `rag_bench_${size}`,
-          dimensions: DIMS,
-        }),
-      index: "HNSW (pgvector defaults)",
+      create: () => new PgVectorRetriever(options),
+      index: async () => "HNSW (m 16, ef_construction 64)",
+      // The same table queried at several efSearch settings
+      variants: EF_SEARCH.map((efSearch) => ({
+        label: `efSearch ${efSearch}${efSearch === 40 ? " (default)" : ""}`,
+        open: () => new PgVectorRetriever({ ...options, efSearch }),
+        close: (r) => r.close(),
+      })),
       cleanup: async (store) => {
         await store.clear();
         await store.close();
@@ -199,21 +241,53 @@ function storeFactories(size) {
     };
   }
   if (process.env.QDRANT_URL) {
+    const collection = `rag_bench_${size}`;
     factories.QdrantRetriever = {
       create: () =>
         new QdrantRetriever({
           url: process.env.QDRANT_URL,
-          collection: `rag_bench_${size}`,
+          collection,
           dimensions: DIMS,
         }),
-      index: "HNSW (Qdrant defaults)",
+      index: () => qdrantIndex(process.env.QDRANT_URL, collection),
       cleanup: (store) => store.clear(),
     };
   }
   return factories;
 }
 
-async function benchStore(name, factory, corpus, queries, truth) {
+async function timeQueries(retriever, queries, truth) {
+  for (let i = 0; i < WARMUP_QUERIES; i++) {
+    await retriever.retrieve({
+      queryVector: queries[i % queries.length],
+      topK: TOP_K,
+    });
+  }
+  const samples = [];
+  let hits = 0;
+  for (let q = 0; q < queries.length; q++) {
+    const start = performance.now();
+    const results = await retriever.retrieve({
+      queryVector: queries[q],
+      topK: TOP_K,
+    });
+    samples.push(performance.now() - start);
+    const expected = new Set(truth[q]);
+    hits += results.filter((r) => expected.has(r.id)).length;
+  }
+  // A store must return topK results even when topK is large
+  const many = await retriever.retrieve({ queryVector: queries[0], topK: 50 });
+  if (many.length !== 50) {
+    throw new Error(`topK 50 returned ${many.length} results`);
+  }
+  return {
+    query: { unit: "ms", topK: TOP_K, ...roundStats(stats(samples), 3) },
+    recallAt10: round(hits / (queries.length * TOP_K), 4),
+  };
+}
+
+/** Results for one store: one row, or one per query setting. */
+async function benchStore(factory, corpus, queries, truth) {
   const store = await factory.create();
   if (typeof store.clear === "function") await store.clear();
   const docs = corpus.map((vector, i) => ({
@@ -228,37 +302,35 @@ async function benchStore(name, factory, corpus, queries, truth) {
   }
   if (factory.afterStore) await factory.afterStore(store);
   const ingestMs = performance.now() - ingestStart;
+  const ingest = {
+    docsPerSecond: Math.round(docs.length / (ingestMs / 1000)),
+    totalMs: round(ingestMs, 1),
+    batchSize: BATCH,
+  };
+  const index = await factory.index(store);
 
-  for (let i = 0; i < WARMUP_QUERIES; i++) {
-    await store.retrieve({
-      queryVector: queries[i % queries.length],
-      topK: TOP_K,
+  const rows = [];
+  if (factory.variants) {
+    for (const variant of factory.variants) {
+      const retriever = variant.open();
+      rows.push({
+        setting: variant.label,
+        index,
+        ingest,
+        ...(await timeQueries(retriever, queries, truth)),
+      });
+      await variant.close(retriever);
+    }
+  } else {
+    rows.push({
+      setting: null,
+      index,
+      ingest,
+      ...(await timeQueries(store, queries, truth)),
     });
-  }
-  const samples = [];
-  let hits = 0;
-  for (let q = 0; q < queries.length; q++) {
-    const start = performance.now();
-    const results = await store.retrieve({
-      queryVector: queries[q],
-      topK: TOP_K,
-    });
-    samples.push(performance.now() - start);
-    const expected = new Set(truth[q]);
-    hits += results.filter((r) => expected.has(r.id)).length;
   }
   if (factory.cleanup) await factory.cleanup(store);
-
-  return {
-    index: factory.index,
-    ingest: {
-      docsPerSecond: Math.round(docs.length / (ingestMs / 1000)),
-      totalMs: round(ingestMs, 1),
-      batchSize: BATCH,
-    },
-    query: { unit: "ms", topK: TOP_K, ...roundStats(stats(samples), 3) },
-    recallAt10: round(hits / (queries.length * TOP_K), 4),
-  };
+  return rows;
 }
 
 function environment() {
@@ -300,6 +372,7 @@ async function main() {
     environment: environment(),
     settings: {
       seed: SEED,
+      vectors: `unit vectors around ${CLUSTERS} random centres`,
       dims: DIMS,
       sizes: SIZES,
       queries: QUERIES,
@@ -319,17 +392,20 @@ async function main() {
 
   for (const size of SIZES) {
     const random = rng(SEED + size);
-    const corpus = unitVectors(size, DIMS, random);
-    const queries = unitVectors(QUERIES, DIMS, random);
+    const centres = unitVectors(CLUSTERS, DIMS, random);
+    const corpus = clusteredVectors(size, centres, random);
+    const queries = clusteredVectors(QUERIES, centres, random);
     const truth = queries.map((q) => exactTopK(corpus, q, TOP_K));
     report.stores[size] = {};
     for (const [name, factory] of Object.entries(storeFactories(size))) {
-      process.stdout.write(`${name} with ${size} vectors… `);
-      const result = await benchStore(name, factory, corpus, queries, truth);
-      report.stores[size][name] = result;
-      console.log(
-        `ingest ${result.ingest.docsPerSecond}/s, query p50 ${result.query.p50} ms, p95 ${result.query.p95} ms, recall@10 ${result.recallAt10}`,
-      );
+      console.log(`${name} with ${num(size)} vectors…`);
+      const rows = await benchStore(factory, corpus, queries, truth);
+      report.stores[size][name] = rows;
+      for (const r of rows) {
+        console.log(
+          `  ${r.setting || ""} ingest ${r.ingest.docsPerSecond}/s, query p50 ${r.query.p50} ms, p95 ${r.query.p95} ms, recall@10 ${r.recallAt10} [${r.index}]`,
+        );
+      }
     }
   }
 
