@@ -11,6 +11,8 @@ page.
 
 ## [Unreleased]
 
+Planned for 2.7.0.
+
 ## [2.6.1] - 2026-10-29
 
 Documentation only; no code changes.

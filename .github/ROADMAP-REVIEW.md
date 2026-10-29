@@ -1,5 +1,7 @@
 # Roadmap review and proposed plan
 
+> **Status, 2026-10-29:** 2.6.0 and 2.6.1 have shipped everything in section 4's 2.6.0 plan except the generated API reference, which moved to 2.7.0. 2.7.0 work starts with the dataset format: `validateDataset`, then `compareConfigurations`, the `rag-pipeline eval` command and the `rag-eval` Action, in that order; synthetic datasets, the pgvector and Qdrant connectors and the API reference can proceed alongside, and the benchmark comes last. Section 9.5 is still open.
+
 _Written 2026-10-29, the day after `@devilsdev/rag-pipeline-utils@2.5.0` was published. Its recommendations are applied in `PROJECT_ROADMAP.md` and `PROJECT_v3_PLAN.md` (2026-10-29); the decisions in section 8 record the defaults that were chosen._
 
 **Contents:** 1. Where things stand · 2. `PROJECT_ROADMAP.md` problems · 3. `PROJECT_v3_PLAN.md` conflicts · 4. Proposed plan · 5. Edits to the two files · 6. Competitive strategy · 7. What was dropped, and what to revive · 8. Decisions needed · 9. Docs site: fixes and redesign
