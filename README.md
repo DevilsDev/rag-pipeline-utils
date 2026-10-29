@@ -143,7 +143,15 @@ npx rag-pipeline serve --port 3000         # local HTTP API: GET /health, POST /
 npx rag-pipeline doctor                    # checks config, API keys, plugins and the index
 ```
 
-The default `local` template needs no API keys. Use `init --template openai`, `anthropic` or `ollama` to generate answers with a model. Other commands include `validate`, `hub install` for plugins and `ai benchmark` for measured latency. See the [CLI reference](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI).
+The default `local` template needs no API keys. Use `init --template openai`, `anthropic` or `ollama` to generate answers with a model. Other commands include `validate`, `hub install` for plugins and `ai benchmark` for measured latency.
+
+`query` can also show its work: `--explain` lists each passage's score and which passages support each sentence, `--trace` times each stage, `--stats` estimates tokens and cost, and `--streaming` prints the answer as it is generated:
+
+```bash
+npx rag-pipeline query "How many vacation days do I get?" --explain --trace
+```
+
+See the [CLI reference](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI).
 
 ## Use cases
 
@@ -196,6 +204,45 @@ const report = evaluator.evaluate(
 
 console.log(report.scores); // includes contextRecall because a reference was given
 if (report.scores.faithfulness < 0.8) process.exitCode = 1;
+```
+
+### Check answers from another framework
+
+Already on LangChain, LlamaIndex, Mastra or the AI SDK? `checkAnswer` checks the answer your chain produced against the sources it was given, in the shape your framework returns them:
+
+```js
+import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
+
+const check = await checkAnswer({
+  question: "How many vacation days do I get?",
+  answer: "Full-time employees receive thirty days of paid vacation per year.",
+  sources: [
+    {
+      pageContent:
+        "Full-time employees receive twenty days of paid vacation per year.",
+      metadata: { source: "handbook.md" },
+    },
+  ],
+});
+
+console.log(check.grounded); // false
+console.log(check.unsupported.length); // 1
+```
+
+### Test your RAG code offline
+
+`@devilsdev/rag-pipeline-utils/testing` has a deterministic embedder, an LLM that echoes the top passage and records its calls, and fixture documents, so tests need no network or API keys:
+
+```js
+import { createTestPipeline } from "@devilsdev/rag-pipeline-utils/testing";
+
+const { pipeline, llm } = await createTestPipeline();
+const result = await pipeline.run({
+  query: "How many vacation days do I get?",
+});
+
+console.log(result.results[0].id); // "vacation"
+console.log(llm.calls.length); // 1
 ```
 
 ### Protect an internal assistant
@@ -354,6 +401,30 @@ const result = await pipeline.run({
 if (!result.success) console.error(result.error); // "Execution timeout" or "Execution aborted"
 ```
 
+### Cache repeated questions
+
+`cache: true` caches query embeddings, retrieval results and answers in memory, so a repeated question makes no model calls. Use `RedisCache` to share the cache between processes. Cached results are not reused when the index, embedder, model or its settings change, and access-control filtering still runs on every request:
+
+```js
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
+import {
+  createTestPipeline,
+  EchoLLM,
+} from "@devilsdev/rag-pipeline-utils/testing";
+
+const { embedder, retriever } = await createTestPipeline();
+const llm = new EchoLLM();
+const pipeline = createRagPipeline({ embedder, retriever, llm, cache: true });
+
+await pipeline.run({ query: "How many vacation days do I get?" });
+const again = await pipeline.run({ query: "How many vacation days do I get?" });
+
+console.log(again.cache.generation); // "hit"
+console.log(llm.calls.length); // 1
+```
+
+Answers are cached only at temperature 0. See [Caching](https://devilsdev.github.io/rag-pipeline-utils/docs/Caching).
+
 ### Run fully local
 
 Pair the `LocalEmbedder` or Ollama embeddings with an Ollama model and `FileVectorStore` for a private, offline setup. The CLI's `local` and `ollama` templates set this up for you:
@@ -391,19 +462,22 @@ The result of `run()` is:
 
 ## Capabilities
 
-| Area           | What you get                                                                                               |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Chunking**   | `ChunkingEngine` with sentence, fixed-size, recursive, semantic and structure-aware strategies             |
-| **Retrieval**  | `MemoryRetriever`, persistent `FileVectorStore`, `BM25Search`, `HybridRetriever` (Reciprocal Rank Fusion)  |
-| **Reranking**  | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                         |
-| **Citations**  | Per-sentence source mapping, hallucination report, numeric-consistency check                               |
-| **Evaluation** | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE    |
-| **Guardrails** | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction |
-| **Agentic**    | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                             |
-| **GraphRAG**   | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                      |
-| **Streaming**  | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`     |
-| **Cost**       | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                           |
-| **Operations** | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                      |
+| Area             | What you get                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Chunking**     | `ChunkingEngine` with sentence, fixed-size, recursive, semantic and structure-aware strategies                                                 |
+| **Retrieval**    | `MemoryRetriever`, persistent `FileVectorStore`, `BM25Search`, `HybridRetriever` (Reciprocal Rank Fusion)                                      |
+| **Reranking**    | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                                                             |
+| **Citations**    | Per-sentence source mapping, hallucination report, numeric-consistency check                                                                   |
+| **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder |
+| **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                               |
+| **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                   |
+| **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; `validatePlugin` for plugin tests                       |
+| **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                     |
+| **Agentic**      | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                                                                 |
+| **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                          |
+| **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                         |
+| **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                                                               |
+| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                                                          |
 
 ## How it compares
 
@@ -422,17 +496,18 @@ A short summary of the [comparison page](https://devilsdev.github.io/rag-pipelin
 | Stability        | Documented [SEMVER policy](SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
 
 Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
-3
 
 ## Connectors and plugins
 
-| Connector            | Embeddings | Generation | Notes                                      |
-| -------------------- | :--------: | :--------: | ------------------------------------------ |
-| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`                           |
-| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                        |
-| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY` |
-| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                       |
-| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus      |
+| Connector            | Embeddings | Generation | Notes                                                                                    |
+| -------------------- | :--------: | :--------: | ---------------------------------------------------------------------------------------- |
+| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`; `baseURL` for OpenAI-compatible APIs (Groq, Together, vLLM, LM Studio) |
+| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                                                                      |
+| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY`                                               |
+| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                     |
+| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                    |
+
+Vercel AI SDK models (any provider it supports) work as the embedder and LLM through `createAiSdkAdapter`; see [Use with other frameworks](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations).
 
 Connectors read API keys when they are created, retry only transient failures (network errors, 429, 5xx) with backoff, and send retrieved documents to the model as clearly delimited, untrusted reference data rather than as instructions.
 
@@ -451,7 +526,7 @@ Simulated or incomplete modules live under a separate entry point and are not co
 import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
 ```
 
-They are still exported from the main entry in 2.5 with a one-time deprecation warning, and will be removed from it in 3.0. Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
+They are still exported from the main entry in 2.x with a one-time deprecation warning, and will be removed from it in 3.0. Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
 
 ## Compatibility
 
