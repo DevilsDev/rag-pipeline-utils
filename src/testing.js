@@ -43,6 +43,15 @@ class HashEmbedder {
     };
   }
 
+  /**
+   * Cache identity for createRagPipeline({ cache }).
+   * @param {string} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    return role === 'embedder' ? `hash-embedder|${this.dimensions}` : null;
+  }
+
   /** @private */
   _vector(text) {
     const vector = new Array(this.dimensions).fill(0);
@@ -120,6 +129,17 @@ class EchoLLM {
     /** @type {Array<{query: string, docs: Array<Object>, options: Object}>} */
     this.calls = [];
     this.metadata = { name: 'echo-llm', version: '1.0.0', type: 'llm' };
+  }
+
+  /**
+   * Cache identity for createRagPipeline({ cache }); none when `answer` is a
+   * function, since its output cannot be identified.
+   * @param {string} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    if (role !== 'llm' || typeof this.answer === 'function') return null;
+    return `echo-llm|${JSON.stringify([this.answer ?? null, this.fallback])}`;
   }
 
   /** @private */

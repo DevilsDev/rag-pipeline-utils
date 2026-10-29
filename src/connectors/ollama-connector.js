@@ -10,6 +10,7 @@ const {
   throwIfAborted,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
+const { componentCacheKey } = require('../cache/component-keys');
 
 /**
  * Default configuration for the Ollama connector.
@@ -32,6 +33,30 @@ const DEFAULT_CONFIG = {
  * @extends BaseConnector
  */
 class OllamaConnector extends BaseConnector {
+  /**
+   * Cache identity for createRagPipeline({ cache }).
+   * @param {'embedder'|'llm'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    const c = this.config;
+    if (role === 'embedder') {
+      return componentCacheKey('ollama-embed', {
+        baseURL: c.baseURL,
+        model: c.embeddingModel,
+      });
+    }
+    if (role === 'llm') {
+      return componentCacheKey('ollama', {
+        baseURL: c.baseURL,
+        model: c.model,
+        temperature: c.temperature,
+        systemPrompt: c.systemPrompt,
+      });
+    }
+    return null;
+  }
+
   /**
    * @param {Object} options
    * @param {string} [options.baseURL='http://localhost:11434'] - Ollama server URL

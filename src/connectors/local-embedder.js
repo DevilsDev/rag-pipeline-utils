@@ -1,4 +1,5 @@
 'use strict';
+const { digest } = require('../cache/component-keys');
 
 const { BaseConnector } = require('./base-connector');
 const { tokenize } = require('../evaluate/scoring');
@@ -42,6 +43,7 @@ class LocalEmbedder extends BaseConnector {
    * @param {Array<string|{ content?: string, text?: string }>} documents - Training documents
    */
   train(documents) {
+    this._fingerprint = null; // the cache key changes with the training
     const docs = documents.map((doc) => {
       if (typeof doc === 'string') return doc;
       return doc.content || doc.text || String(doc);
@@ -171,9 +173,27 @@ class LocalEmbedder extends BaseConnector {
    * @param {{docCount: number, vocabulary: Array<[string, number]>, idf: Array<[string, number]>}} state
    */
   setState(state) {
+    this._fingerprint = null;
     this.docCount = state.docCount || 0;
     this.vocabulary = new Map(state.vocabulary || []);
     this.idf = new Map(state.idf || []);
+  }
+
+  /**
+   * Cache identity for createRagPipeline({ cache }): a fingerprint of the
+   * trained vocabulary and IDF weights, so retraining invalidates cached
+   * query vectors (also across processes sharing a Redis cache).
+   * @param {'embedder'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    if (role !== 'embedder') return null;
+    if (!this._fingerprint) {
+      this._fingerprint = digest(
+        JSON.stringify([this.docCount, [...this.vocabulary], [...this.idf]]),
+      );
+    }
+    return `local-embedder|${this._fingerprint}`;
   }
 
   /** @returns {number} Vector length produced by embed() once trained */

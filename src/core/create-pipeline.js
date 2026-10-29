@@ -3,6 +3,10 @@
 // `pluginRegistry.register()` are resolvable by name here.
 const defaultRegistry = require('./plugin-registry.js');
 const { embedQuery, canEmbed } = require('../utils/embed-query');
+const {
+  normalizeCacheOption,
+  PipelineCache,
+} = require('../cache/pipeline-cache');
 const { createRunAbort } = require('../utils/run-abort');
 
 /** Metrics that only need the query, the retrieved docs and a reference. */
@@ -103,6 +107,26 @@ async function* guardStream(source, { signal, finalize, onEnd }) {
 }
 
 /**
+ * Pass a stream through and report its text when it completed: it reached a
+ * done chunk or its end, and the run was not aborted. A stream the consumer
+ * stops reading early is not reported, so a partial answer is never cached.
+ */
+async function* reportWhenComplete(source, signal, onComplete) {
+  let text = '';
+  let completed = false;
+  try {
+    for await (const chunk of source) {
+      text += typeof chunk === 'string' ? chunk : String(chunk?.token ?? '');
+      if (chunk && chunk.done) completed = true;
+      yield chunk;
+    }
+    completed = true;
+  } finally {
+    if (completed && !signal.aborted) await onComplete(text);
+  }
+}
+
+/**
  * Create a RAG pipeline: (embed) -> retrieve -> (filter) -> (rerank) ->
  * generate -> (citations, evaluation).
  *
@@ -115,6 +139,12 @@ async function* guardStream(source, { signal, finalize, onEnd }) {
  * - `citations`, `citationOptions`, `evaluate`, `evaluateOptions`,
  *   `referenceAnswer` (ground truth for context recall)
  * - `filterResults(docs)`: hook applied after retrieval
+ *
+ * `cache` (factory option): `true`, a CacheBackend, or
+ * `{ embeddings, retrieval, generation, ttlSeconds }` - see
+ * src/cache/pipeline-cache.js. Results then carry `cache: { embeddings,
+ * retrieval, generation }` ('hit', 'miss' or 'skip'), and the pipeline has
+ * `cacheStats()`.
  *
  * Every component call receives the run's AbortSignal: `retriever.retrieve({
  * ..., signal })`, `embedder.embedQuery(text, { signal })` /
@@ -133,6 +163,7 @@ module.exports.createRagPipeline = function createRagPipeline({
   retriever,
   llm,
   reranker,
+  cache,
 } = {}) {
   const reg = registry || defaultRegistry;
   const loaderI = loader ? resolve(reg, 'loader', loader) : null;
@@ -147,12 +178,27 @@ module.exports.createRagPipeline = function createRagPipeline({
   const llmI = llm ? resolve(reg, 'llm', llm) : null;
   const rerankerI = reranker ? resolve(reg, 'reranker', reranker) : null;
 
+  const cacheLayers = normalizeCacheOption(cache);
+  const pc = cacheLayers
+    ? new PipelineCache(cacheLayers, {
+        embedder: embedderI,
+        // The default stand-in retriever returns nothing; never cache it.
+        retriever: retriever ? retrieverI : null,
+        llm: llmI,
+      })
+    : null;
+
   async function runOnce({ query, queryVector, options = {} } = {}) {
     const opts = options || {};
     const { timeout, stream } = opts;
     const run = createRunAbort({ timeout, signal: opts.signal });
     const { signal } = run;
     let streaming = false;
+
+    // Per-run cache outcome per layer: 'hit', 'miss' or 'skip'.
+    const cacheStatus = {};
+    const withCache = (result) =>
+      pc ? { ...result, cache: { ...cacheStatus } } : result;
 
     const doWork = (async () => {
       run.throwIfAborted();
@@ -162,16 +208,34 @@ module.exports.createRagPipeline = function createRagPipeline({
       }
       let vector = queryVector;
       if (!vector && query && canEmbed(embedderI)) {
-        vector = await embedQuery(embedderI, query, { signal });
+        const key = pc && pc.embeddingKey(query);
+        vector = pc && (await pc.get('embeddings', key, cacheStatus));
+        if (!vector) {
+          vector = await embedQuery(embedderI, query, { signal });
+          run.throwIfAborted();
+          if (pc) await pc.set('embeddings', key, vector);
+        }
         run.throwIfAborted();
       }
 
-      let docs = await retrieverI.retrieve({
-        query,
-        queryVector: vector,
-        topK: opts.topK ?? 3,
-        signal,
-      });
+      // Raw retriever output is cached before filterResults (guardrail ACLs)
+      // and the reranker, so both still run on every request.
+      const topK = opts.topK ?? 3;
+      const retrievalKey =
+        pc && pc.retrievalKey({ query, queryVector: vector, topK });
+      let docs = pc && (await pc.get('retrieval', retrievalKey, cacheStatus));
+      if (!docs) {
+        docs = await retrieverI.retrieve({
+          query,
+          queryVector: vector,
+          topK,
+          signal,
+        });
+        run.throwIfAborted();
+        if (pc && Array.isArray(docs)) {
+          await pc.set('retrieval', retrievalKey, docs);
+        }
+      }
       run.throwIfAborted();
       // Hook for filtering (e.g. ACL guardrails) before anything downstream,
       // including the LLM, sees the retrieved documents.
@@ -190,6 +254,15 @@ module.exports.createRagPipeline = function createRagPipeline({
 
       const genOptions = { ...opts, signal };
       const wantsQuality = Boolean(opts.citations || opts.evaluate);
+      const generationKey =
+        pc && llmI
+          ? pc.generationKey({ query, docs: results, options: opts })
+          : null;
+      const cachedAnswer =
+        pc && llmI
+          ? await pc.get('generation', generationKey, cacheStatus)
+          : undefined;
+      run.throwIfAborted();
 
       if (stream) {
         let source;
@@ -207,6 +280,11 @@ module.exports.createRagPipeline = function createRagPipeline({
           });
           source = (async function* noAnswer() {})();
           finalize = () => ({ results, ...quality });
+        } else if (typeof cachedAnswer === 'string') {
+          source = (async function* cached() {
+            yield { token: cachedAnswer, done: false };
+            yield { token: '', done: true };
+          })();
         } else if (llmI.generateStream) {
           source = await llmI.generateStream(query, results, genOptions);
         } else if (llmI.generate) {
@@ -221,6 +299,11 @@ module.exports.createRagPipeline = function createRagPipeline({
         if (source) {
           run.throwIfAborted();
           streaming = true;
+          if (pc && llmI && generationKey && typeof cachedAnswer !== 'string') {
+            source = reportWhenComplete(source, signal, (text) =>
+              pc.set('generation', generationKey, text),
+            );
+          }
           return guardStream(source, {
             signal,
             finalize,
@@ -230,26 +313,33 @@ module.exports.createRagPipeline = function createRagPipeline({
       }
 
       if (!llmI) {
-        return {
+        return withCache({
           success: true,
           query,
           results,
           answer: null,
           ...computeQuality({ query, answer: null, results, options: opts }),
-        };
+        });
       }
 
-      const raw = (await llmI.generate?.(query, results, genOptions)) ?? '';
-      run.throwIfAborted();
-      const answer = String(raw);
+      let answer;
+      if (typeof cachedAnswer === 'string') {
+        answer = cachedAnswer;
+      } else {
+        const raw = (await llmI.generate?.(query, results, genOptions)) ?? '';
+        run.throwIfAborted();
+        answer = String(raw);
+        if (pc) await pc.set('generation', generationKey, answer);
+        run.throwIfAborted();
+      }
 
-      return {
+      return withCache({
         success: true,
         query,
         results,
         answer,
         ...computeQuality({ query, answer, results, options: opts }),
-      };
+      });
     })();
 
     try {
@@ -264,5 +354,12 @@ module.exports.createRagPipeline = function createRagPipeline({
     }
   }
 
-  return { run: runOnce, cleanup() {} };
+  return {
+    run: runOnce,
+    cleanup() {},
+    /** Cache hits, misses and skips per layer; null when caching is off. */
+    cacheStats() {
+      return pc ? pc.stats() : null;
+    },
+  };
 };

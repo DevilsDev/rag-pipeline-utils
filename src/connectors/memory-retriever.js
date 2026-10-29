@@ -1,4 +1,5 @@
 'use strict';
+const { randomBytes } = require('crypto');
 
 const { BaseConnector } = require('./base-connector');
 const { throwIfAborted } = require('./connector-utils');
@@ -40,6 +41,21 @@ class MemoryRetriever extends BaseConnector {
     /** @type {number|null} Vector dimension, fixed by the first stored vector */
     this.dimensions = null;
     this.connected = true;
+    // Cache identity: unique per instance, bumped on every change, so a
+    // shared cache never returns another store's or an older state's results.
+    this._cacheId = randomBytes(8).toString('hex');
+    this._revision = 0;
+  }
+
+  /**
+   * Cache identity for createRagPipeline({ cache }).
+   * @param {'retriever'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    return role === 'retriever'
+      ? `memory|${this._cacheId}|${this._revision}`
+      : null;
   }
 
   /**
@@ -111,6 +127,7 @@ class MemoryRetriever extends BaseConnector {
       this.emit('evicted', { count: evicted, total: this.documents.size });
     }
 
+    this._revision += 1;
     this.emit('stored', { count: vectors.length, total: this.documents.size });
   }
 
@@ -209,6 +226,7 @@ class MemoryRetriever extends BaseConnector {
   async clear() {
     this.documents.clear();
     this.dimensions = null;
+    this._revision += 1;
   }
 
   /**

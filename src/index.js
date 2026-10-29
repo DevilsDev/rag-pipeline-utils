@@ -70,6 +70,8 @@ const { ChunkingEngine } = require('./chunking/chunking-engine');
 const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
 const { createAiSdkAdapter } = require('./adapters/ai-sdk');
+const { MemoryCache } = require('./cache/memory-cache');
+const { RedisCache } = require('./cache/redis-cache');
 const {
   mapSentenceToSources,
   buildIDFWeights,
@@ -245,6 +247,8 @@ module.exports = {
   checkAnswer,
   normalizeSources,
   createAiSdkAdapter,
+  MemoryCache,
+  RedisCache,
   mapSentenceToSources,
   buildIDFWeights,
   detectHallucinations,

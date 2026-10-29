@@ -23,7 +23,37 @@ export interface RagPipelineConfig {
   llm?: string | LLMPlugin;
   reranker?: string | RerankerPlugin;
   registry?: PluginRegistry;
+  /**
+   * Cache query embeddings, retrieval results and answers. \`true\` caches
+   * all three in memory; a CacheBackend (MemoryCache, RedisCache, your own)
+   * caches all three in it; or configure each layer.
+   */
+  cache?: boolean | CacheBackend | CacheOptions;
   [key: string]: any;
+}
+
+/** A cache store: get / set / delete, optionally stats. */
+export interface CacheBackend {
+  get(key: string): Promise<unknown | undefined>;
+  set(key: string, value: unknown, options?: { ttlSeconds?: number }): Promise<void>;
+  delete?(key: string): Promise<void>;
+  stats?(): Promise<Record<string, number>>;
+}
+
+export interface CacheOptions {
+  embeddings?: boolean | CacheBackend;
+  retrieval?: boolean | CacheBackend;
+  generation?: boolean | CacheBackend;
+  /** Defaults: embeddings 30 days, retrieval 1 hour, generation 24 hours. */
+  ttlSeconds?: { embeddings?: number; retrieval?: number; generation?: number };
+}
+
+export type CacheOutcome = "hit" | "miss" | "skip";
+
+export interface CacheLayerStats {
+  hits: number;
+  misses: number;
+  skipped: number;
 }
 
 export interface PipelineRunOptions {
@@ -42,11 +72,23 @@ export interface PipelineRunResult {
   query?: string;
   results?: any;
   error?: string;
+  /** Per-layer cache outcome; present when the pipeline has a cache. */
+  cache?: {
+    embeddings?: CacheOutcome;
+    retrieval?: CacheOutcome;
+    generation?: CacheOutcome;
+  };
 }
 
 export interface Pipeline {
   run(options: PipelineRunOptions): Promise<PipelineRunResult>;
   cleanup(): void;
+  /** Hits, misses and skips per cache layer; null without a cache. */
+  cacheStats(): {
+    embeddings?: CacheLayerStats;
+    retrieval?: CacheLayerStats;
+    generation?: CacheLayerStats;
+  } | null;
 }
 
 export interface LoadConfigOptions {
