@@ -31,6 +31,7 @@ const handlers = {
   ingest: () => require("./handlers/ingest-handler.js"),
   query: () => require("./handlers/query-handler.js"),
   eval: () => require("./handlers/eval-handler.js"),
+  generate: () => require("./handlers/generate-handler.js"),
 };
 /* eslint-enable global-require */
 
@@ -199,6 +200,37 @@ class EnhancedCLI {
       .option("--json", "Print the verdict, summary and comparison as JSON")
       .action(async (dataset, options) => {
         await handlers.eval().handleEval(this.program.opts(), dataset, options);
+      });
+
+    this.program
+      .command("generate-dataset")
+      .description(
+        "Write a test set from the index: the llm writes questions about each chunk",
+      )
+      .requiredOption("--output <file>", "Where to write the test set (.json)")
+      .option("--count <n>", "Cases to write at most", parsePositiveInteger, 20)
+      .option(
+        "--per-document <n>",
+        "Questions to ask per chunk",
+        parsePositiveInteger,
+        1,
+      )
+      .option(
+        "--min-faithfulness <n>",
+        "Share of an answer's sentences its chunk must support (default 1)",
+        parseTolerance,
+      )
+      .option(
+        "--concurrency <n>",
+        "Chunks processed at the same time",
+        parsePositiveInteger,
+        1,
+      )
+      .option("--force", "Replace --output if it exists")
+      .action(async (options) => {
+        await handlers
+          .generate()
+          .handleGenerateDataset(this.program.opts(), options);
       });
 
     this.program

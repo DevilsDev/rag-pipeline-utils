@@ -36,6 +36,15 @@ Planned for 2.7.0.
   `regressed`, per-metric deltas, and the cases that now fail or dropped by
   more than `caseTolerance`. `tolerance` (default 0.02) sets the allowed
   drop in a metric's mean.
+- **`generateSyntheticDataset(documents, { llm, count })`** drafts a test set:
+  an LLM writes question and answer pairs about one document at a time, and
+  each case records the document in `sourceIds`. Answers their document
+  doesn't support (by `computeFaithfulness`), repeated questions, malformed
+  replies and short documents are skipped and listed with a reason. Cases
+  are tagged `synthetic` and marked `reviewed: false`.
+- **`rag-pipeline generate-dataset --output <file>`** does the same from the
+  index with the configured `llm`, and won't overwrite a file without
+  `--force`.
 - **`rag-pipeline eval <dataset>`** runs a `.json` or `.jsonl` test set
   through the configured pipeline and exits 1 when a case fails, a metric
   is below its `--min metric=value`, or the run regressed from a

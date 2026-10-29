@@ -329,6 +329,69 @@ It returns:
 
 It never throws. Pass `{ requireExpected: true }` or `{ requireSourceIds: true }` when a run needs reference answers or source ids for every case.
 
+### Generate a test set
+
+:::info[Coming in 2.7.0]
+
+`generateSyntheticDataset` and `rag-pipeline generate-dataset` are in the next release.
+
+:::
+
+Writing questions by hand is the slowest part of starting. `generateSyntheticDataset(documents, { llm })` has an LLM write question and answer pairs about your documents, one document at a time, so each case knows which document it came from:
+
+```javascript
+import { generateSyntheticDataset } from "@devilsdev/rag-pipeline-utils";
+import { EchoLLM, fixtures } from "@devilsdev/rag-pipeline-utils/testing";
+
+// In a real run, pass your llm (OpenAIConnector, an AI SDK adapter, ...).
+// This stand-in replies with the same JSON pair for every document.
+const llm = new EchoLLM({
+  answer: JSON.stringify([
+    {
+      question: "How many paid vacation days do full-time employees get?",
+      answer:
+        "Full-time employees receive twenty days of paid vacation per year.",
+    },
+  ]),
+});
+
+const dataset = await generateSyntheticDataset(fixtures.documents, {
+  llm,
+  count: 10,
+});
+
+console.log(dataset.cases.length); // 1
+console.log(dataset.cases[0].sourceIds); // ["vacation.md"]
+console.log(dataset.cases[0].reviewed); // false
+console.log(dataset.skipped.length); // 2
+```
+
+Each generated answer is checked against its document with `computeFaithfulness`, and a pair is dropped when the document doesn't support its answer. Above, the same answer came back for the remote-work and expenses documents, which don't support it. Repeated questions, malformed replies and documents shorter than 80 characters are dropped too. Each is listed in `skipped` with its reason.
+
+Every case gets:
+
+- `sourceIds`: the document's `metadata.source`, or its `id`, so `sourceRecall` checks that retrieval finds it;
+- `expected`: the generated answer, which serves as the reference;
+- `tags: ["synthetic"]` and `reviewed: false`.
+
+The result is a dataset (`{ cases }`) that `validateDataset`, `runEvaluation` and `rag-pipeline eval` accept.
+
+| Option             | Default | Description                                                                |
+| ------------------ | ------- | -------------------------------------------------------------------------- |
+| `llm`              |         | Any `llm` stage                                                            |
+| `count`            | 20      | Cases to write at most                                                     |
+| `perDocument`      | 1       | Questions to ask per document                                              |
+| `minFaithfulness`  | 1       | Share of an answer's sentences its document must support                   |
+| `minLength`        | 80      | Documents shorter than this many characters are skipped                    |
+| `prompt`           |         | Replaces the instruction; `{count}` becomes `perDocument`                  |
+| `concurrency`      | 1       | Documents processed at the same time                                       |
+| `generateOptions`  |         | Extra options for every `llm.generate()` call, e.g. `{ temperature: 0.7 }` |
+| `signal`, `onCase` |         | Cancellation, and a callback for each case kept                            |
+
+Generated cases are a starting point, not ground truth. The model writes the questions it thinks of, which may not be the ones your users ask. Read them, fix or delete the wrong ones, add the questions that matter to you, and set `reviewed: true` on the ones you've checked. The instruction asks for a JSON reply; models that ignore it produce cases that are skipped with "the reply had no JSON array of pairs".
+
+From the command line, `rag-pipeline generate-dataset --output tests.json` does the same with the chunks in your index and the `llm` in your config; see [the CLI reference](./CLI.md#generate-dataset).
+
 ### Run a test set and compare configurations
 
 :::info[Coming in 2.7.0]
