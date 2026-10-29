@@ -12,6 +12,14 @@ Each example is **self-contained**: its own `package.json`, its own
 `README.md` with run instructions. Pick the one closest to your stack and
 use it as a starting point.
 
+## Run one in your browser
+
+Each example opens on StackBlitz, which installs it and runs its offline mode. Nothing to install, no API keys needed:
+
+- [basic-pipeline](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline)
+- [openai-pinecone](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) (runs `npm run mock`)
+- [fastify-rag-demo](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo) (runs `npm run start:offline`)
+
 ## Running an example
 
 ```bash
