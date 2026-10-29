@@ -26,13 +26,80 @@ defined as a JSON schema in `contracts/`.
 
 ### Retrievers / Vector stores
 
-| Connector                            | Notes                                                                                                                                                                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MemoryRetriever`                    | In-process cosine-similarity store. Needs a `queryVector` (pass an embedder to the pipeline). Enforces `maxDocuments` (default 100000; `eviction: 'fifo'` drops the oldest) and rejects mismatched vector dimensions. |
-| `FileVectorStore`                    | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
-| `HybridRetriever`                    | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
-| `GraphRetriever`                     | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
-| Pinecone, Weaviate, Qdrant, pgvector | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
+| Connector                  | Notes                                                                                                                                                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MemoryRetriever`          | In-process cosine-similarity store. Needs a `queryVector` (pass an embedder to the pipeline). Enforces `maxDocuments` (default 100000; `eviction: 'fifo'` drops the oldest) and rejects mismatched vector dimensions. |
+| `FileVectorStore`          | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
+| `HybridRetriever`          | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
+| `GraphRetriever`           | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
+| `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector). Coming in 2.7.0.                                                   |
+| Pinecone, Weaviate, Qdrant | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
+
+### PostgreSQL with pgvector
+
+:::info[Coming in 2.7.0]
+
+`PgVectorRetriever` is in the next release.
+
+:::
+
+`PgVectorRetriever` keeps documents in a PostgreSQL table with the [pgvector](https://github.com/pgvector/pgvector) extension. Pass a [`pg`](https://www.npmjs.com/package/pg) Pool you manage, or a connection string and install `pg` (an optional dependency, loaded only when used):
+
+```javascript no-run
+import pg from "pg";
+import {
+  createRagPipeline,
+  OpenAIConnector,
+  PgVectorRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const retriever = new PgVectorRetriever({ pool, table: "rag_documents" });
+const embedder = new OpenAIConnector();
+
+await retriever.store([
+  {
+    id: "handbook.md#0",
+    content: "Full-time employees receive twenty days of paid vacation.",
+    metadata: { source: "handbook.md" },
+    vector: await embedder.embed(
+      "Full-time employees receive twenty days of paid vacation.",
+    ),
+  },
+]);
+
+const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
+```
+
+The first `store()` creates the extension, the table (sized to the first vector, or to `dimensions`) and an HNSW cosine index, unless you pass `createTable: false`. The table has the columns `id` (text, primary key), `content`, `metadata` (jsonb) and `embedding` (vector). Storing a document under an existing id replaces it, and each `store()` runs in one transaction, so a failed batch changes nothing. `score` is 1 minus the cosine distance.
+
+| Option             | Default         | Description                                                     |
+| ------------------ | --------------- | --------------------------------------------------------------- |
+| `pool`             |                 | A `pg` Pool or Client you manage; it stays open after `close()` |
+| `connectionString` |                 | Creates a Pool when there is no `pool`; `close()` ends it       |
+| `table`            | `rag_documents` | Table name, optionally `schema.table`                           |
+| `dimensions`       | first vector's  | Vector size for a new table                                     |
+| `createTable`      | `true`          | Create the extension, table and index on the first `store()`    |
+| `index`            | `hnsw`          | `none` skips the index                                          |
+| `cacheKey`         |                 | Cache identity; see below                                       |
+
+It also has `removeBySource(source)`, `delete(ids)`, `clear()`, `size()` and `list()`, so the CLI can re-ingest files into it.
+
+- **Permissions.** `CREATE EXTENSION` needs a database owner on many managed services. If it fails, run `CREATE EXTENSION IF NOT EXISTS vector;` once as the owner.
+- **Caching.** Other processes can write to the table without this one knowing, so the retriever has no cache identity and `createRagPipeline({ cache })` doesn't cache its results. Pass `cacheKey` to cache them, and change the key (or rely on the cache's time to live) when the table changes.
+- **Cancellation.** A run's `AbortSignal` stops the wait for a query, but PostgreSQL finishes the query itself.
+
+In `.ragrc.json`, the connection string comes from an environment variable, `DATABASE_URL` unless `connectionStringEnv` names another, so it never sits in the config file:
+
+```json
+{
+  "stage": "retriever",
+  "name": "pgvector",
+  "config": { "table": "rag_documents" }
+}
+```
+
+The CLI's `local` embedder can't be used with it: its vocabulary is stored with the `file-store` index. Use `openai`, `ollama` or `cohere`.
 
 ### LLMs
 

@@ -131,6 +131,7 @@ const { BaseConnector } = require('./connectors/base-connector');
 const { OllamaConnector } = require('./connectors/ollama-connector');
 const { LocalEmbedder } = require('./connectors/local-embedder');
 const { MemoryRetriever } = require('./connectors/memory-retriever');
+const { PgVectorRetriever } = require('./retrieval/pgvector-retriever');
 const { OpenAIConnector } = require('./connectors/openai-connector');
 const { AnthropicConnector } = require('./connectors/anthropic-connector');
 const { CohereConnector } = require('./connectors/cohere-connector');
@@ -313,6 +314,7 @@ module.exports = {
   OllamaConnector,
   LocalEmbedder,
   MemoryRetriever,
+  PgVectorRetriever,
   OpenAIConnector,
   AnthropicConnector,
   CohereConnector,
