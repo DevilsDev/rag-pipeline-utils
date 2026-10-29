@@ -1,6 +1,6 @@
 # Project Roadmap: RAG Pipeline Utils
 
-> Current release: 2.6.1 (2026-10-29)
+> Current release: 2.6.2 (2026-10-29)
 > Last updated: 2026-10-29
 
 This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what comes next. The scope and order of the 3.0 work are explained in [PROJECT_v3_PLAN.md](PROJECT_v3_PLAN.md); the reasoning behind this version of the roadmap is in [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md).
