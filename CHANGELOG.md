@@ -11,6 +11,21 @@ page.
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-10-29
+
+Documentation only; no code changes.
+
+### Changed
+
+- **README covers the 2.6.0 features**, so the npm package page shows
+  them: `checkAnswer` for answers from other frameworks, the `/testing`
+  entry, caching, the `query` `--explain`, `--trace`, `--stats` and
+  `--streaming` options, `OpenAIConnector` `baseURL` and the AI SDK
+  adapter.
+- **StackBlitz examples checked**: the basic pipeline, OpenAI with
+  Pinecone (offline mock) and the Fastify service each install and run.
+  The docs now say to reload if StackBlitz stalls while cloning.
+
 ## [2.6.0] - 2026-10-29
 
 ### Added
@@ -552,6 +567,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.6.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.1
 [2.6.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.0
 [2.5.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.5.0
 [2.4.5]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.5

@@ -8,7 +8,7 @@ Examples of common RAG Pipeline Utils use cases. They use the package's real exp
 
 :::tip[Run the examples in your browser]
 
-The repository's [runnable examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) open on StackBlitz in their offline modes, with no install and no API keys: [basic pipeline](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline), [OpenAI with Pinecone](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) and [Fastify service](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo).
+The repository's [runnable examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) open on StackBlitz in their offline modes, with no install and no API keys: [basic pipeline](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline), [OpenAI with Pinecone](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) and [Fastify service](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo). If StackBlitz stays on "Cloning repo from GitHub" for more than a minute, reload the page.
 
 :::
 

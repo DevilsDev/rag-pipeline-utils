@@ -20,6 +20,8 @@ Each example opens on StackBlitz, which installs it and runs its offline mode. N
 - [openai-pinecone](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) (runs `npm run mock`)
 - [fastify-rag-demo](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo) (runs `npm run start:offline`)
 
+If StackBlitz stays on "Cloning repo from GitHub" for more than a minute, reload the page.
+
 ## Running an example
 
 ```bash
