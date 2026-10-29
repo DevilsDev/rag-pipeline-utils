@@ -28,6 +28,9 @@ Planned for 2.7.0.
   groundedness, citation coverage, and `sourceRecall` against the case's
   `sourceIds`) and per-metric means. Failed cases are recorded, not thrown;
   options for `concurrency`, a per-case `timeout`, `signal` and `onCase`.
+  Reports record the `libraryVersion`, and `compareConfigurations` warns
+  when two runs used different versions, since scoring can change between
+  releases.
 - **`compareConfigurations(dataset, { baseline, candidate })`** compares two
   runs, where each side is a pipeline or a saved report, and reports
   `regressed`, per-metric deltas, and the cases that now fail or dropped by

@@ -197,7 +197,7 @@ function renderMarkdown(input, verdict, title) {
     out.push('', '</details>', '');
   }
   if (comparison && comparison.warnings.length > 0) {
-    out.push('<details><summary>Warnings</summary>', '');
+    out.push('<details open><summary>Warnings</summary>', '');
     for (const w of comparison.warnings) out.push(`- ${mdCell(w)}`);
     out.push('', '</details>', '');
   }

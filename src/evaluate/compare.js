@@ -8,6 +8,7 @@
  */
 
 const { validateDataset } = require('./dataset');
+const { version: LIBRARY_VERSION } = require('../../package.json');
 
 const REPORT_VERSION = 1;
 
@@ -116,6 +117,7 @@ function checkedCases(dataset) {
  * @param {(caseResult: Object, index: number) => void} [options.onCase] - Called as each case finishes
  * @returns {Promise<{
  *   version: number,
+ *   libraryVersion: string,
  *   createdAt: string,
  *   summary: { cases: number, succeeded: number, failed: number, metrics: Object<string, { mean: number, count: number }> },
  *   cases: Array<{ id: string, prompt: string, success: boolean, error?: string, answer: string|null, retrievedIds: string[], scores: Object<string, number>, durationMs: number }>
@@ -197,6 +199,9 @@ async function runEvaluation(dataset, pipeline, options = {}) {
 
   return {
     version: REPORT_VERSION,
+    // Scores can change between library versions (2.5.0 changed grounding),
+    // so a comparison warns when two reports come from different ones.
+    libraryVersion: LIBRARY_VERSION,
     createdAt: new Date().toISOString(),
     summary: summarise(results),
     cases: results,
@@ -283,6 +288,15 @@ async function compareConfigurations(dataset, options = {}) {
   const base = await toReport(baseline, 'baseline', dataset, runOptions);
   const cand = await toReport(candidate, 'candidate', dataset, runOptions);
   const warnings = [];
+  if (
+    base.libraryVersion &&
+    cand.libraryVersion &&
+    base.libraryVersion !== cand.libraryVersion
+  ) {
+    warnings.push(
+      `The runs used different library versions (${base.libraryVersion} and ${cand.libraryVersion}); scores may differ because of that`,
+    );
+  }
 
   const names = (only || METRICS).filter(
     (name) =>

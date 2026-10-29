@@ -425,7 +425,7 @@ The result:
 | `warnings`              | Cases in only one run, a case whose prompt changed, a requested metric that is missing              |
 | `baseline`, `candidate` | The two reports                                                                                     |
 
-Cases are matched by `id`, so give cases stable ids when you compare runs over time. Pass `metrics: ["faithfulness", "sourceRecall"]` to compare only some metrics. Answers from a model vary between runs; run the same configuration a few times to see how much the scores move, and set the tolerances above that.
+Cases are matched by `id`, so give cases stable ids when you compare runs over time. Each report records the `libraryVersion` that produced it, and the comparison warns when the two differ: scoring can change between releases, so save a new baseline after upgrading. Pass `metrics: ["faithfulness", "sourceRecall"]` to compare only some metrics. Answers from a model vary between runs; run the same configuration a few times to see how much the scores move, and set the tolerances above that.
 
 `renderEvaluationReport({ report, comparison, min }, { format })` renders a run as Markdown (the default, for a pull request comment) or a standalone HTML page, and `evaluationVerdict({ report, comparison, min })` returns the `{ passed, reasons, thresholds }` the page shows. The [`rag-pipeline eval`](./CLI.md#eval) command does all of this from the command line.
 

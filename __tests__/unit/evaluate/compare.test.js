@@ -249,6 +249,28 @@ describe("compareConfigurations", () => {
     });
   });
 
+  it("records the library version and warns when two runs differ", async () => {
+    const { pipeline } = await createTestPipeline();
+    const baseline = await runEvaluation(DATASET, pipeline);
+    expect(baseline.libraryVersion).toBe(
+      require("../../../package.json").version,
+    );
+    const candidate = { ...baseline, libraryVersion: "0.0.1" };
+    const comparison = await compareConfigurations(null, {
+      baseline,
+      candidate,
+    });
+    expect(comparison.warnings).toEqual([
+      `The runs used different library versions (${baseline.libraryVersion} and 0.0.1); scores may differ because of that`,
+    ]);
+    // Reports saved before the field existed still compare without a warning.
+    const { libraryVersion, ...older } = baseline;
+    expect(
+      (await compareConfigurations(null, { baseline: older, candidate }))
+        .warnings,
+    ).toEqual([]);
+  });
+
   it("rejects sides that are neither pipelines nor reports", async () => {
     const { pipeline } = await createTestPipeline();
     await expect(
