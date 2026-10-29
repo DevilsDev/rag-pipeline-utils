@@ -60,6 +60,7 @@ const {
   computeContextRecall,
 } = require('./evaluate/context-metrics');
 const { computeGroundedness } = require('./evaluate/groundedness');
+const { computeSemanticSimilarity } = require('./evaluate/semantic-similarity');
 const { PipelineEvaluator } = require('./evaluate/pipeline-evaluator');
 
 // Chunking
@@ -229,6 +230,7 @@ module.exports = {
   checkNumericConsistency,
   extractNumbers,
   computeFaithfulness,
+  computeSemanticSimilarity,
   computeAnswerRelevance,
   computeContextPrecision,
   computeContextRecall,
@@ -364,6 +366,15 @@ for (const name of Object.keys(experimental)) {
       'it will be removed from the main entry in the next major release.',
   });
 }
+
+// The ./testing build entry reads its module from here, so it shares the
+// main bundle's classes (MemoryRetriever, createRagPipeline). A getter, so
+// importing the package does not load the testing helpers.
+Object.defineProperty(
+  module.exports,
+  Symbol.for('@devilsdev/rag-pipeline-utils/testing'),
+  { get: () => require('./testing'), enumerable: false }, // eslint-disable-line global-require
+);
 
 // The ./experimental build entry reads the unwrapped classes from here, so
 // both entries share one copy of each class (non-enumerable: not a named export).

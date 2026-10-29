@@ -31,6 +31,20 @@ Planned for 2.6.0.
   sentences, per-sentence `citations` and `evaluation` scores. Sources may be
   strings, `{ id, content }`, LangChain Documents or LlamaIndex nodes;
   `normalizeSources` is exported for the conversion alone.
+- **`@devilsdev/rag-pipeline-utils/testing`**: deterministic, offline test
+  helpers. `HashEmbedder`, `EchoLLM` (answers with the top document or a set
+  answer, records every call, streams), `fixtures.documents` and
+  `createTestPipeline()`. Shares classes with the main entry and is not
+  loaded by it.
+- **`computeSemanticSimilarity(answer, reference, { embedder })`**: cosine
+  similarity of the two embeddings, 0 to 1. `checkAnswer` adds it as
+  `evaluation.scores.semanticSimilarity` when given a `referenceAnswer` and
+  an `embedder`.
+- **`rag-pipeline query`** options: `--trace` (time per stage), `--explain`
+  (passage scores, and the passages supporting each answer sentence, with
+  unsupported sentences flagged), `--stats` (latency, estimated tokens and
+  cost), `--streaming` and `--timeout <ms>`; global `--quiet`. `--json`
+  includes trace, stats and explanation when asked.
 - **`createAiSdkAdapter({ ai, embeddingModel, languageModel })`** wraps
   Vercel AI SDK models as an `embedder` and an `llm` for
   `createRagPipeline()`, with streaming, `embedMany` batching and the run's
@@ -41,6 +55,11 @@ Planned for 2.6.0.
 
 ### Changed
 
+- **Faster CLI.** Commands load only their own dependencies: `--help`
+  takes about 0.5 s and `query` about 0.5 s instead of about 3.6 s. Loading
+  the CLI drops from 1281 modules and 93 packages to 55 and 13. The HTML,
+  Markdown and CSV loaders load `jsdom`, `marked` and `csv-parse` when they
+  read a file.
 - **Faster import.** `require('@devilsdev/rag-pipeline-utils')` takes about
   125 ms instead of about 515 ms and loads 31 modules from 9 packages
   instead of 245 from 54 (published bundle, Node 22). `axios`,

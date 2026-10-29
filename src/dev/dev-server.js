@@ -356,7 +356,14 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
     const { config, configDir } = loadCliConfig({
       config: this.options.configPath,
     });
-    return query({ config, configDir, question, topK });
+    // The HTTP response keeps its shape: answer, results, citations.
+    const { timings, durationMs, ...result } = await query({
+      config,
+      configDir,
+      question,
+      topK,
+    });
+    return result;
   }
 
   /** @private */

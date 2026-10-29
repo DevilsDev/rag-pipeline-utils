@@ -195,7 +195,32 @@ const bleu = computeBLEU(tokens(answer), tokens(reference));
 const rouge = computeROUGE(tokens(answer), tokens(reference));
 ```
 
-There are no BERTScore or embedding-based semantic-similarity metrics in the package.
+### Semantic similarity
+
+:::info[Coming in 2.6.0]
+
+`computeSemanticSimilarity` is in the next release.
+
+:::
+
+`computeSemanticSimilarity(answer, reference, { embedder })` is the cosine similarity of the two texts' embeddings, from 0 to 1. Unlike BLEU and ROUGE it does not penalise a correct answer that is worded differently. Any embedder works: a built-in connector, an AI SDK adapter, or `HashEmbedder` from [`/testing`](./Testing.md) in tests.
+
+```javascript
+import { computeSemanticSimilarity } from "@devilsdev/rag-pipeline-utils";
+import { HashEmbedder } from "@devilsdev/rag-pipeline-utils/testing";
+
+const embedder = new HashEmbedder();
+const reference = "Employees get twenty days of paid vacation per year.";
+
+const same = await computeSemanticSimilarity(reference, reference, {
+  embedder,
+});
+console.log(same); // 1
+```
+
+Embeddings capture meaning, not facts: "twenty days" and "thirty days" come out as very similar. Use semantic similarity next to the grounding checks (faithfulness, `checkAnswer`), not instead of them. `checkAnswer` adds `evaluation.scores.semanticSimilarity` when you pass a `referenceAnswer` and an `embedder`.
+
+There is no BERTScore metric in the package.
 
 ---
 

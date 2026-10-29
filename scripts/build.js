@@ -88,7 +88,32 @@ fs.writeFileSync(
   ].join("\n"),
 );
 
+// ./testing entry: reads src/testing.js through the main bundle (see the
+// getter in src/index.js), so it shares one copy of each class.
+const TESTING_KEY = "@devilsdev/rag-pipeline-utils/testing";
+fs.writeFileSync(
+  path.join(distDir, "testing.cjs"),
+  [
+    "'use strict';",
+    `module.exports = require('./index.cjs')[Symbol.for('${TESTING_KEY}')];`,
+    "",
+  ].join("\n"),
+);
+const testingNames = Object.keys(cjsModule[Symbol.for(TESTING_KEY)]);
+fs.writeFileSync(
+  path.join(distDir, "testing.mjs"),
+  [
+    "import { createRequire } from 'module';",
+    "const require = createRequire(import.meta.url);",
+    "const mod = require('./testing.cjs');",
+    `export const { ${testingNames.join(", ")} } = mod;`,
+    "export default mod;",
+    "",
+  ].join("\n"),
+);
+
 console.log("Build completed successfully!");
 console.log(`  CommonJS: ${path.join(distDir, "index.cjs")}`);
 console.log(`  ESM:      ${path.join(distDir, "index.mjs")}`);
 console.log(`  Experimental: ${path.join(distDir, "experimental.{cjs,mjs}")}`);
+console.log(`  Testing:      ${path.join(distDir, "testing.{cjs,mjs}")}`);

@@ -491,6 +491,10 @@ fs.writeFileSync(
   path.join(distDir, "experimental.d.ts"),
   'export * from "./types/experimental";\n',
 );
+fs.writeFileSync(
+  path.join(distDir, "testing.d.ts"),
+  'export * from "./types/testing";\n',
+);
 
 /**
  * Experimental classes stay in the main entry as deprecated aliases until the
@@ -584,8 +588,10 @@ function appendGeneratedDeclarations() {
     [
       tscBin,
       ...modules.map((m) => path.join(srcDir, `${m}.js`)),
-      // the ./experimental entry is declared from its source module
+      // the ./experimental and ./testing entries are declared from their
+      // source modules
       path.join(srcDir, "experimental.js"),
+      path.join(srcDir, "testing.js"),
       "--allowJs",
       "--declaration",
       "--emitDeclarationOnly",

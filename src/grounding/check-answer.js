@@ -9,6 +9,9 @@
 
 const { CitationTracker } = require('../citation/citation-tracker');
 const { PipelineEvaluator } = require('../evaluate/pipeline-evaluator');
+const {
+  computeSemanticSimilarity,
+} = require('../evaluate/semantic-similarity');
 
 /**
  * Text of one source in the shapes common frameworks use.
@@ -102,6 +105,9 @@ function normalizeSources(sources) {
  *   generated from (see normalizeSources for accepted shapes)
  * @param {string} [params.question] - The question; needed for relevance
  * @param {string} [params.referenceAnswer] - Ground truth, for context recall
+ *   (and semantic similarity when an embedder is given)
+ * @param {Object} [params.embedder] - With a referenceAnswer, adds
+ *   `evaluation.scores.semanticSimilarity` (computeSemanticSimilarity)
  * @param {boolean} [params.evaluate=true] - Also compute evaluation scores
  * @returns {Promise<AnswerCheck>}
  */
@@ -110,6 +116,7 @@ async function checkAnswer({
   sources,
   question,
   referenceAnswer,
+  embedder,
   evaluate = true,
 } = {}) {
   if (typeof answer !== 'string') {
@@ -144,6 +151,13 @@ async function checkAnswer({
       { query: question || '', answer, results: docs },
       referenceAnswer ? { referenceAnswer } : {},
     );
+    if (referenceAnswer && embedder) {
+      evaluation.scores.semanticSimilarity = await computeSemanticSimilarity(
+        answer,
+        referenceAnswer,
+        { embedder },
+      );
+    }
   }
 
   return {

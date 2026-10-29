@@ -4,7 +4,8 @@
 
 const fs = require('fs/promises');
 const path = require('path');
-const { parse } = require('csv-parse/sync');
+// csv-parse loads when a CSV file is read, not on import.
+const loadCsvParse = () => require('csv-parse/sync'); // eslint-disable-line global-require
 
 class CSVLoader {
   /**
@@ -20,7 +21,7 @@ class CSVLoader {
       const src = raw.replace(/^\uFEFF/, ''); // Remove BOM
       const normalizedSrc = src.replace(/\r\n|\r/g, '\n'); // Normalize line endings
 
-      const records = parse(normalizedSrc, { columns: true });
+      const records = loadCsvParse().parse(normalizedSrc, { columns: true });
 
       return [
         {

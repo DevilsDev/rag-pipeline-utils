@@ -103,6 +103,16 @@ for (const name of experimentalCjs) {
   }
 }
 
+// ./testing entry: same names as the source module
+const testingCjs = Object.keys(require("../src/testing.js"));
+const testingEsm = await import("../dist/testing.mjs");
+for (const name of testingCjs) {
+  if (testingEsm[name] === undefined) {
+    console.error(`MISSING in testing ESM: ${name}`);
+    errors++;
+  }
+}
+
 if (errors > 0) {
   console.error(`\nESM verification failed with ${errors} error(s).`);
   process.exit(1);

@@ -10,7 +10,8 @@ const fs = require('fs/promises');
 // eslint-disable-line global-require
 const path = require('path');
 // eslint-disable-line global-require
-const { marked } = require('marked');
+// marked loads when a Markdown file is read, not on import.
+const loadMarked = () => require('marked'); // eslint-disable-line global-require
 // eslint-disable-line global-require
 
 /**
@@ -26,7 +27,7 @@ class MarkdownLoader {
   async load(_filePath) {
     const absPath = path.resolve(_filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
-    const html = marked(raw);
+    const html = loadMarked().marked(raw);
     const text = html.replace(/<[^>]+>/g, ''); // strip tags
 
     return [
