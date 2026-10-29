@@ -143,8 +143,8 @@ npx rag-pipeline ingest ./docs             # indexes .md, .html, .csv and .txt f
 npx rag-pipeline query "What is the remote work policy?"
 npx rag-pipeline serve --port 3000         # local HTTP API: GET /health, POST /query
 npx rag-pipeline doctor                    # checks config, API keys, plugins and the index
-npx rag-pipeline generate-dataset --output tests.json     # drafts a test set from the index with your llm (2.7.0)
-npx rag-pipeline eval tests.json --min faithfulness=0.8   # scores a test set; exits 1 on failure (2.7.0)
+npx rag-pipeline generate-dataset --output tests.json     # drafts a test set from the index with your llm
+npx rag-pipeline eval tests.json --min faithfulness=0.8   # scores a test set; exits 1 on failure
 ```
 
 The default `local` template needs no API keys. Use `init --template openai`, `anthropic` or `ollama` to generate answers with a model. Other commands include `validate`, `hub install` for plugins and `ai benchmark` for measured latency.
@@ -210,9 +210,9 @@ console.log(report.scores); // includes contextRecall because a reference was gi
 if (report.scores.faithfulness < 0.8) process.exitCode = 1;
 ```
 
-Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases; from 2.7.0, `generateSyntheticDataset` (or `rag-pipeline generate-dataset`) drafts one from your documents for you to review. From 2.7.0, `validateDataset` checks it before a run and reports every malformed case, with its index and field; `runEvaluation` runs it and saves a JSON report; and `compareConfigurations` compares two pipelines, or a pipeline against the report saved from your main branch, and lists the cases that got worse. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
+Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases; `generateSyntheticDataset` (or `rag-pipeline generate-dataset`) drafts one from your documents for you to review. `validateDataset` checks it before a run and reports every malformed case, with its index and field; `runEvaluation` runs it and saves a JSON report, which `renderEvaluationReport` turns into Markdown or HTML; and `compareConfigurations` compares two pipelines, or a pipeline against the report saved from your main branch, and lists the cases that got worse. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
 
-On GitHub, [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs this on every pull request, compares it with your main branch and posts the summary as a comment. It is published with 2.7.0.
+On GitHub, [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs this on every pull request, compares it with your main branch and posts the summary as a comment.
 
 ### Check answers from another framework
 
@@ -472,22 +472,22 @@ The result of `run()` is:
 
 ## Capabilities
 
-| Area             | What you get                                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Chunking**     | `ChunkingEngine` with sentence, fixed-size, recursive, semantic and structure-aware strategies                                                 |
-| **Retrieval**    | `MemoryRetriever`, persistent `FileVectorStore`, `BM25Search`, `HybridRetriever` (Reciprocal Rank Fusion)                                      |
-| **Reranking**    | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                                                             |
-| **Citations**    | Per-sentence source mapping, hallucination report, numeric-consistency check                                                                   |
-| **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder |
-| **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                               |
-| **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                   |
-| **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; `validatePlugin` for plugin tests                       |
-| **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                     |
-| **Agentic**      | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                                                                 |
-| **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                          |
-| **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                         |
-| **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                                                               |
-| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                                                          |
+| Area             | What you get                                                                                                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Chunking**     | `ChunkingEngine` with sentence, fixed-size, recursive, semantic and structure-aware strategies                                                                                                                                                                                 |
+| **Retrieval**    | `MemoryRetriever`, persistent `FileVectorStore`, `PgVectorRetriever` (PostgreSQL), `QdrantRetriever`, `BM25Search`, `HybridRetriever` (Reciprocal Rank Fusion)                                                                                                                 |
+| **Reranking**    | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                                                                                                                                                                                             |
+| **Citations**    | Per-sentence source mapping, hallucination report, numeric-consistency check                                                                                                                                                                                                   |
+| **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder; test sets with `validateDataset`, `runEvaluation`, `compareConfigurations`, `generateSyntheticDataset` and `rag-pipeline eval` |
+| **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                               |
+| **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                                                                                                                                                   |
+| **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; `validatePlugin` for plugin tests                                                                                                                                                       |
+| **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                                                                                                                                                     |
+| **Agentic**      | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                                                                                                                                                                                                 |
+| **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                                                                                                                                                          |
+| **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                                                                                                                                                         |
+| **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                                                                                                                                                                                               |
+| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                                                                                                                                                                                          |
 
 ## How it compares
 
@@ -517,7 +517,7 @@ Choose LangChain.js for the widest integration catalogue or work that goes well 
 | `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                     |
 | `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                    |
 
-From 2.7.0, `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
+`PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
 
 Vercel AI SDK models (any provider it supports) work as the embedder and LLM through `createAiSdkAdapter`; see [Use with other frameworks](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations).
 
@@ -542,13 +542,13 @@ They are still exported from the main entry in 2.x with a one-time deprecation w
 
 ## Compatibility
 
-|                |                                                                           |
-| -------------- | ------------------------------------------------------------------------- |
-| Node.js        | 18, 20, 22 (Node 18 support ends with 3.0)                                |
-| Module formats | CommonJS (`require`) and ESM (`import`)                                   |
-| TypeScript     | Declarations for every export, including `/experimental`                  |
-| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md) |
-| Supply chain   | Published from GitHub Actions with npm provenance                         |
+|                |                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
+| Node.js        | 18, 20, 22 (Node 18 support ends with 3.0)                                                           |
+| Module formats | CommonJS (`require`) and ESM (`import`)                                                              |
+| TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI |
+| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md)                            |
+| Supply chain   | Published from GitHub Actions with npm provenance                                                    |
 
 ## Documentation
 

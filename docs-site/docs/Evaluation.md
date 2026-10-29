@@ -298,12 +298,6 @@ The file can also be an object, `{ "cases": [...] }`, which leaves room for fiel
 
 ### Validate a test set
 
-:::info[Coming in 2.7.0]
-
-`validateDataset` is in the next release.
-
-:::
-
 `validateDataset(dataset)` checks a test set before anything runs, and reports every problem with the case it is in rather than failing on the first:
 
 ```javascript
@@ -330,12 +324,6 @@ It returns:
 It never throws. Pass `{ requireExpected: true }` or `{ requireSourceIds: true }` when a run needs reference answers or source ids for every case.
 
 ### Generate a test set
-
-:::info[Coming in 2.7.0]
-
-`generateSyntheticDataset` and `rag-pipeline generate-dataset` are in the next release.
-
-:::
 
 Writing questions by hand is the slowest part of starting. `generateSyntheticDataset(documents, { llm })` has an LLM write question and answer pairs about your documents, one document at a time, so each case knows which document it came from:
 
@@ -393,12 +381,6 @@ Generated cases are a starting point, not ground truth. The model writes the que
 From the command line, `rag-pipeline generate-dataset --output tests.json` does the same with the chunks in your index and the `llm` in your config; see [the CLI reference](./CLI.md#generate-dataset).
 
 ### Run a test set and compare configurations
-
-:::info[Coming in 2.7.0]
-
-`runEvaluation` and `compareConfigurations` are in the next release.
-
-:::
 
 `runEvaluation(dataset, pipeline)` runs every case with citations and evaluation on, using the case's `expected` answer as the reference. It returns a report that is plain JSON, so you can save it:
 

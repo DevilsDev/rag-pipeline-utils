@@ -58,13 +58,13 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
 
 1. **Built-in components** (`rag-pipeline info --plugins` lists them):
 
-   | Stage     | Names                                        | Notes                                                                                                                                                                                                                                                                                                                                |
-   | --------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | loader    | `auto`                                       | Picks a loader per file extension                                                                                                                                                                                                                                                                                                    |
-   | embedder  | `local`, `openai`, `ollama`, `cohere`        | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                                           |
-   | retriever | `file-store`, `memory`, `pgvector`, `qdrant` | `file-store` persists to `config.path` (relative to the config file); `pgvector` (2.7.0) reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` (2.7.0) reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant) |
-   | llm       | `openai`, `anthropic`, `ollama`              | Optional                                                                                                                                                                                                                                                                                                                             |
-   | reranker  | `scoring`                                    | Optional                                                                                                                                                                                                                                                                                                                             |
+   | Stage     | Names                                        | Notes                                                                                                                                                                                                                                                                                                                |
+   | --------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | loader    | `auto`                                       | Picks a loader per file extension                                                                                                                                                                                                                                                                                    |
+   | embedder  | `local`, `openai`, `ollama`, `cohere`        | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                           |
+   | retriever | `file-store`, `memory`, `pgvector`, `qdrant` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant) |
+   | llm       | `openai`, `anthropic`, `ollama`              | Optional                                                                                                                                                                                                                                                                                                             |
+   | reranker  | `scoring`                                    | Optional                                                                                                                                                                                                                                                                                                             |
 
 2. **Custom plugins** declared under `plugins`, as module paths relative to the config file. The module may export a class (constructed with the entry's `config`) or an object:
 
@@ -179,12 +179,6 @@ With `--json`, `--trace`, `--stats` and `--explain` add `trace`, `stats` and `ex
 
 ## `eval`
 
-:::info[Coming in 2.7.0]
-
-`rag-pipeline eval` is in the next release.
-
-:::
-
 Runs a test set through the configured pipeline and index, prints the scores, and exits `1` when the run fails, so it can gate a CI job. A run fails when a case errors, a metric is below its `--min`, or the run regressed from a `--baseline` report.
 
 ```bash
@@ -232,17 +226,11 @@ Model answers vary from run to run. Run the same configuration a few times to se
     min: faithfulness=0.8
 ```
 
-The Action is published with 2.7.0, which it needs; see its README for the inputs, permissions and fork pull requests.
+It needs 2.7.0 or later; see its README for the inputs, permissions and fork pull requests.
 
 ---
 
 ## `generate-dataset`
-
-:::info[Coming in 2.7.0]
-
-`rag-pipeline generate-dataset` is in the next release.
-
-:::
 
 Writes a test set for [`eval`](#eval) from your index: the configured `llm` writes a question and answer about each chunk, and each case records the chunk's source file.
 

@@ -32,17 +32,11 @@ defined as a JSON schema in `contracts/`.
 | `FileVectorStore`          | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
 | `HybridRetriever`          | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
 | `GraphRetriever`           | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
-| `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector). Coming in 2.7.0.                                                   |
-| `QdrantRetriever`          | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant). Coming in 2.7.0.                                                                                                                             |
+| `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector).                                                                    |
+| `QdrantRetriever`          | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant).                                                                                                                                              |
 | Pinecone, Weaviate, Qdrant | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
 
 ### PostgreSQL with pgvector
-
-:::info[Coming in 2.7.0]
-
-`PgVectorRetriever` is in the next release.
-
-:::
 
 `PgVectorRetriever` keeps documents in a PostgreSQL table with the [pgvector](https://github.com/pgvector/pgvector) extension. Pass a [`pg`](https://www.npmjs.com/package/pg) Pool you manage, or a connection string and install `pg` (an optional dependency, loaded only when used):
 
@@ -106,12 +100,6 @@ In `.ragrc.json`, the connection string comes from an environment variable, `DAT
 The CLI's `local` embedder can't be used with it: its vocabulary is stored with the `file-store` index. Use `openai`, `ollama` or `cohere`.
 
 ### Qdrant
-
-:::info[Coming in 2.7.0]
-
-`QdrantRetriever` is in the next release.
-
-:::
 
 `QdrantRetriever` keeps documents in a [Qdrant](https://qdrant.tech) collection. It talks to Qdrant's REST API with Node's built-in `fetch`, so there's no package to install. It's written against the Qdrant 1.20 API and tested against Qdrant 1.20.
 
