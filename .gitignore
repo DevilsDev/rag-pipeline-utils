@@ -263,3 +263,6 @@ dist/
 
 # vhs demo scratch directory (assets/demo.tape)
 .demo/
+
+# Downloaded benchmark datasets (not redistributable)
+benchmarks/.data/

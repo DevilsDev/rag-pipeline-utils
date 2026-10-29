@@ -92,7 +92,33 @@ function renderSpeed(report) {
   return parts.join("\n").trim();
 }
 
-const RENDERERS = { speed: renderSpeed };
+function renderQuality(report) {
+  const d = report.dataset;
+  const rev = d.revisions.scifact.slice(0, 7);
+  return [
+    `Measured with ${report.environment.libraryVersion}` +
+      (report.environment.commit
+        ? ` (commit \`${report.environment.commit}\`)`
+        : "") +
+      ` on ${report.environment.runner}, Node ${report.environment.node}.`,
+    "",
+    `Dataset: ${d.dataset}, ${num(d.documents)} documents, ${num(d.queries)} queries, ${num(d.judgements)} relevance judgements (${d.license}, Hugging Face revision \`${rev}\`). Each system returns ${report.depth} results per query.`,
+    "",
+    table(
+      ["System", "nDCG@10", "Recall@10", "Recall@100", "MRR@10", "Per query"],
+      Object.entries(report.systems).map(([name, s]) => [
+        `\`${name}\``,
+        s.ndcg10.toFixed(3),
+        s.recall10.toFixed(3),
+        s.recall100.toFixed(3),
+        s.mrr10.toFixed(3),
+        `${s.msPerQuery} ms`,
+      ]),
+    ),
+  ].join("\n");
+}
+
+const RENDERERS = { speed: renderSpeed, quality: renderQuality };
 
 function render(content) {
   let out = content;

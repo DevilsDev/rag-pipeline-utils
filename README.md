@@ -345,6 +345,8 @@ const results = await hybrid.retrieve({
 console.log(results[0].id); // "err-4012"
 ```
 
+On the BEIR SciFact benchmark, `BM25Search` alone matches the published BM25 baseline (nDCG@10 0.665); fusion helps when the vector side is a strong embedder, so weight the retrievers to suit. See [retrieval quality](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#retrieval-quality).
+
 ### Answer multi-part questions
 
 `AgenticPipeline` splits compound questions into sub-queries, retrieves for each, and self-checks the answer against the sources before returning it.

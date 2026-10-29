@@ -79,14 +79,24 @@ Planned for 2.7.0.
 - **Published speed benchmarks** on the docs site: pipeline overhead, and
   ingest throughput, query latency and recall@10 for `MemoryRetriever`,
   `FileVectorStore`, `PgVectorRetriever` and `QdrantRetriever`, measured in
-  CI against real pgvector and Qdrant (`npm run bench:speed`). The tables
-  are generated from the committed report in `benchmarks/results/`.
+  CI against real pgvector and Qdrant (`npm run bench:speed`), and
+  retrieval quality (nDCG@10, recall, MRR) of the offline retrievers on
+  BEIR SciFact (`npm run bench:quality`), where `BM25Search` matches the
+  published BM25 baseline. The tables are generated from the committed
+  reports in `benchmarks/results/`.
 - `logger.info()`, `.warn()`, `.error()` and `.debug()` log through the
   shared logger. The `logger` export is the logger module, so these were
   undefined; `logger.logger.info()` keeps working.
 
 ### Fixed
 
+- **`LocalEmbedder` ignored most words on a large corpus.** When a corpus
+  had more distinct tokens than `maxVocabularySize` (10,000), `train()`
+  kept the rarest ones, mostly words that occur in a single document, so
+  most queries embedded to all zeros. It now keeps the most common tokens.
+  On BEIR SciFact nDCG@10 rose from 0.12 to 0.47. Indexes built before
+  keep their saved vocabulary until you ingest again; re-run `ingest` to
+  benefit.
 - **The TypeScript declarations for the core API didn't match the code.**
   Plugins written to them failed at runtime. `RetrieverPlugin.retrieve`
   takes one `{ query, queryVector, topK, signal }` object,
