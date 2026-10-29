@@ -11,6 +11,19 @@ page.
 
 ## [Unreleased]
 
+## [2.6.2] - 2026-10-29
+
+### Fixed
+
+- **`npm install` failed on machines without husky installed globally.**
+  Every release from 2.2.1 to 2.6.1 declared
+  `"postinstall": "husky install"`. husky is a development tool that isn't
+  installed in users' projects, so installing the package failed with
+  `husky: not found` (or `'husky' is not recognized` on Windows) on clean
+  machines and CI runners. The hook now runs from `prepare`, which npm runs
+  only in this repository, and the pack smoke test fails if the package
+  has any install-time script. No code changes.
+
 ## [2.6.1] - 2026-10-29
 
 Documentation only; no code changes.
@@ -567,6 +580,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.6.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.2
 [2.6.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.1
 [2.6.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.0
 [2.5.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.5.0
