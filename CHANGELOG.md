@@ -58,6 +58,9 @@ Planned for 2.7.0.
   repository, and the pack smoke test fails if the package has any
   install-time script.
 
+- A bad option value (`--top-k 0`, `--min speed=1`) printed a stack trace;
+  the CLI now prints a one-line error naming the option and exits 1.
+
 ## [2.6.1] - 2026-10-29
 
 Documentation only; no code changes.
