@@ -15,12 +15,6 @@ description: Cache query embeddings, retrieval results and answers in memory or 
 | `retrieval`  | The retriever's raw results | The retriever's current state, the query vector and text, and `topK`                        | 1 hour               |
 | `generation` | The answer                  | The LLM's identity, the query, the exact documents it was given, and the generation options | 24 hours             |
 
-:::info[Coming in 2.6.0]
-
-Caching, `MemoryCache` and `RedisCache` are in the next release.
-
-:::
-
 ```mermaid
 flowchart LR
   Q[query] --> E{embeddings<br/>cache}

@@ -89,7 +89,7 @@ API keys come from the environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHE
 | `--verbose`       | Extra output (e.g. the files `ingest` read)                                          |
 | `--no-color`      | Disable colored output                                                               |
 | `--dry-run`       | Show what `init`, `ingest`, `query` or `run` would do without doing it               |
-| `--quiet`         | `query` prints only the answer (or the passages), no status lines. Coming in 2.6.0   |
+| `--quiet`         | `query` prints only the answer (or the passages), no status lines                    |
 | `-v, --version`   | Print the version                                                                    |
 
 Commands exit with status `1` on failure and print the error on stderr.
@@ -157,19 +157,10 @@ rag-pipeline query "What is the remote work policy?"
 rag-pipeline query "remote work" --top-k 5 --json
 ```
 
-| Option        | Description                                    |
-| ------------- | ---------------------------------------------- |
-| `--top-k <n>` | Passages to retrieve (default 3)               |
-| `--json`      | Print `{ answer, results, citations }` as JSON |
-
-:::info[Coming in 2.6.0]
-
-The options below are in the next release.
-
-:::
-
 | Option           | Description                                                                                                                                     |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                |
+| `--json`         | Print `{ answer, results, citations }` as JSON                                                                                                  |
 | `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                               |
 | `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                |
 | `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate                                                                                     |

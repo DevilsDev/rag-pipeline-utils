@@ -11,7 +11,7 @@ page.
 
 ## [Unreleased]
 
-Planned for 2.6.0.
+## [2.6.0] - 2026-10-29
 
 ### Added
 
@@ -552,6 +552,8 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[2.6.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.0
+[2.5.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.5.0
 [2.4.5]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.5
 [2.4.4]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.4
 [2.4.3]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.3

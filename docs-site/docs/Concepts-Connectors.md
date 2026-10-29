@@ -47,12 +47,6 @@ All built-in connectors retry only transient failures (network errors, 408/409/4
 
 ### OpenAI-compatible providers (`baseURL`)
 
-:::info[Coming in 2.6.0]
-
-`baseURL` is in the next release. In 2.5.0 `OpenAIConnector` talks only to the OpenAI API.
-
-:::
-
 `OpenAIConnector` works with any server that implements the OpenAI API (Groq, Together, the Hugging Face router, vLLM, LM Studio, Ollama's `/v1` endpoint) when you pass `baseURL` and the provider's model names.
 
 ```javascript no-run

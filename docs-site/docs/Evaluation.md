@@ -197,12 +197,6 @@ const rouge = computeROUGE(tokens(answer), tokens(reference));
 
 ### Semantic similarity
 
-:::info[Coming in 2.6.0]
-
-`computeSemanticSimilarity` is in the next release.
-
-:::
-
 `computeSemanticSimilarity(answer, reference, { embedder })` is the cosine similarity of the two texts' embeddings, from 0 to 1. Unlike BLEU and ROUGE it does not penalise a correct answer that is worded differently. Any embedder works: a built-in connector, an AI SDK adapter, or `HashEmbedder` from [`/testing`](./Testing.md) in tests.
 
 ```javascript
