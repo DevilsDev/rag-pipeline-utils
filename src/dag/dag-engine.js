@@ -26,6 +26,14 @@ class DAG {
     this.errorContext = new ErrorContext();
   }
 
+  /**
+   * Adds a node. A source node receives the seed; a node with one input
+   * receives that node's result, and with several, an array of them.
+   * @param {string} id - Unique node id
+   * @param {function(*): *} fn - The node's work; may be async
+   * @param {Object} [options]
+   * @returns {DAGNode} The node; set `optional` or `retry` on it to change how failures are handled
+   */
   addNode(id, _fn, options = {}) {
     if (this.nodes.has(id)) {
       throw new Error(`Node with ID "${id}" already exists`);
@@ -35,6 +43,11 @@ class DAG {
     return node;
   }
 
+  /**
+   * Adds an edge: `toId` runs after `fromId` and receives its result.
+   * @param {string} fromId
+   * @param {string} toId
+   */
   connect(fromId, toId) {
     const from = this.nodes.get(fromId);
     const to = this.nodes.get(toId);

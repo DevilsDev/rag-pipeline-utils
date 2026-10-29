@@ -9,37 +9,50 @@ const path = require("path");
 
 const typeDefinitions = `/**
  * RAG Pipeline Utils - TypeScript Definitions
- * @module @devilsdev/rag-pipeline-utils
+ * @module rag-pipeline-utils
  */
 
 // =============================================================================
-// Core Configuration Types
+// Pipeline
 // =============================================================================
 
+/** Options for {@link createRagPipeline}. */
 export interface RagPipelineConfig {
-  loader?: string | LoaderPlugin;
-  embedder?: string | EmbedderPlugin;
-  retriever?: string | RetrieverPlugin;
-  llm?: string | LLMPlugin;
-  reranker?: string | RerankerPlugin;
+  /** Resolves plugin names given as strings; defaults to the shared {@link pluginRegistry}. */
   registry?: PluginRegistry;
+  /** Called with no arguments at the start of every run; its result is ignored. */
+  loader?: string | LoaderPlugin;
+  /** Embeds the query when \`run()\` gets a \`query\` and no \`queryVector\`. */
+  embedder?: string | EmbedderPlugin;
+  /** Finds the documents for a query. Without one, every run retrieves nothing. */
+  retriever?: string | RetrieverPlugin;
+  /** Writes the answer. Without one the pipeline is retrieval-only and \`answer\` is null. */
+  llm?: string | LLMPlugin;
+  /** Reorders the retrieved documents before generation. */
+  reranker?: string | RerankerPlugin;
   /**
    * Cache query embeddings, retrieval results and answers. \`true\` caches
    * all three in memory; a CacheBackend (MemoryCache, RedisCache, your own)
    * caches all three in it; or configure each layer.
    */
   cache?: boolean | CacheBackend | CacheOptions;
+  /** Other keys are ignored. */
   [key: string]: any;
 }
 
 /** A cache store: get / set / delete, optionally stats. */
 export interface CacheBackend {
+  /** Resolves the stored value, or undefined when the key is missing or expired. */
   get(key: string): Promise<unknown | undefined>;
+  /** Stores a value, expiring it after \`ttlSeconds\` when given. */
   set(key: string, value: unknown, options?: { ttlSeconds?: number }): Promise<void>;
+  /** Removes a key. */
   delete?(key: string): Promise<void>;
+  /** Backend-specific counters, such as size or hits. */
   stats?(): Promise<Record<string, number>>;
 }
 
+/** Per-layer cache settings: \`true\` for memory, a CacheBackend, or false/omitted for none. */
 export interface CacheOptions {
   embeddings?: boolean | CacheBackend;
   retrieval?: boolean | CacheBackend;
@@ -48,29 +61,62 @@ export interface CacheOptions {
   ttlSeconds?: { embeddings?: number; retrieval?: number; generation?: number };
 }
 
+/** What a cache layer did for one run: served it, stored it, or was not used. */
 export type CacheOutcome = "hit" | "miss" | "skip";
 
+/** Counts for one cache layer since the pipeline was created. */
 export interface CacheLayerStats {
   hits: number;
   misses: number;
   skipped: number;
 }
 
+/** The argument of {@link Pipeline.run}. Give a \`query\`, a \`queryVector\`, or both. */
 export interface PipelineRunOptions {
+  /** The question. Embedded by the embedder unless \`queryVector\` is given. */
   query?: string;
+  /** A precomputed query embedding; skips the embedder. */
   queryVector?: number[];
+  /** Per-run options. The whole object is also passed to \`llm.generate\`. */
   options?: {
-    timeout?: number;
-    stream?: boolean;
+    /** Documents to retrieve. Default 3. */
     topK?: number;
+    /** Abort the run after this many milliseconds; it resolves \`{ success: false, error: "Execution timeout" }\`. */
+    timeout?: number;
+    /** Cancel the run; it resolves \`{ success: false, error: "Execution aborted" }\`. */
+    signal?: AbortSignal;
+    /** Resolve to an async iterable of {@link StreamChunk} instead of a result. */
+    stream?: boolean;
+    /** Attribute the answer's sentences to the retrieved documents (see CitationTracker). */
+    citations?: boolean;
+    citationOptions?: Record<string, any>;
+    /** Score the run (see PipelineEvaluator). */
+    evaluate?: boolean;
+    evaluateOptions?: Record<string, any>;
+    /** Ground-truth answer, used by evaluation for context recall. */
+    referenceAnswer?: string;
+    /** Filter or transform the retrieved documents before reranking. */
+    filterResults?: (docs: SearchResult[]) => SearchResult[] | Promise<SearchResult[]>;
     [key: string]: any;
   };
 }
 
+/**
+ * What {@link Pipeline.run} resolves to without streaming. A failed, timed-out
+ * or aborted run resolves \`{ success: false, error }\`; \`run\` never rejects.
+ */
 export interface PipelineRunResult {
   success: boolean;
   query?: string;
-  results?: any;
+  /** The retrieved (filtered, reranked) documents. */
+  results?: SearchResult[];
+  /** The LLM's answer; null when the pipeline has no llm. */
+  answer?: string | null;
+  /** Present when \`options.citations\` was set and there is an answer. */
+  citations?: any;
+  /** Present when \`options.evaluate\` was set. */
+  evaluation?: any;
+  /** The error message when \`success\` is false. */
   error?: string;
   /** Per-layer cache outcome; present when the pipeline has a cache. */
   cache?: {
@@ -80,8 +126,32 @@ export interface PipelineRunResult {
   };
 }
 
+/**
+ * One chunk of a streamed answer. The last chunk has \`done: true\` and, when
+ * requested, the run's \`citations\` and \`evaluation\`. Without an llm the
+ * stream is a single done chunk carrying \`results\`.
+ */
+export interface StreamChunk {
+  token: string;
+  done: boolean;
+  results?: SearchResult[];
+  citations?: any;
+  evaluation?: any;
+}
+
+/** A pipeline returned by {@link createRagPipeline}. */
 export interface Pipeline {
-  run(options: PipelineRunOptions): Promise<PipelineRunResult>;
+  /**
+   * Answer one query: (embed) → retrieve → (filter) → (rerank) → generate →
+   * (citations, evaluation). Resolves a {@link PipelineRunResult}, or with
+   * \`options.stream\` an async iterable of {@link StreamChunk}.
+   */
+  run(options: PipelineRunOptions & { options: { stream: true } }): Promise<PipelineRunResult | AsyncIterable<StreamChunk>>;
+  /** Answer one query; see the streaming overload above. */
+  run(options?: PipelineRunOptions & { options?: { stream?: false } }): Promise<PipelineRunResult>;
+  /** Answer one query; with \`options.stream\` it may resolve a stream. */
+  run(options?: PipelineRunOptions): Promise<PipelineRunResult | AsyncIterable<StreamChunk>>;
+  /** Does nothing; kept for compatibility. */
   cleanup(): void;
   /** Hits, misses and skips per cache layer; null without a cache. */
   cacheStats(): {
@@ -91,36 +161,53 @@ export interface Pipeline {
   } | null;
 }
 
+/**
+ * @deprecated loadConfig takes a path, not an options object. This type is
+ * unused and will be removed in the next major release.
+ */
 export interface LoadConfigOptions {
   configPath?: string;
   validate?: boolean;
 }
 
 // =============================================================================
-// Document and Search Types
+// Documents and results
 // =============================================================================
 
+/** A document as stored in a retriever. */
 export interface Document {
   id: string;
   content: string;
   metadata?: Record<string, any>;
+  /** The document's embedding (the built-in stores call it \`vector\`). */
+  vector?: number[];
+  /** @deprecated Use \`vector\`; the built-in stores do not read \`embedding\`. */
   embedding?: number[];
 }
 
+/** A retrieved document, as the built-in retrievers return it. */
 export interface SearchResult {
   id: string;
+  /** Similarity; higher is closer. */
   score: number;
-  document?: Document;
+  content?: string;
   metadata?: Record<string, any>;
+  [key: string]: any;
 }
 
+/** What the pipeline passes to {@link RetrieverPlugin.retrieve}. */
 export interface RetrieveOptions {
-  topK?: number;
-  minScore?: number;
-  includeMetadata?: boolean;
-  filter?: Record<string, any>;
+  query?: string;
+  queryVector?: number[];
+  topK: number;
+  signal?: AbortSignal;
 }
 
+/**
+ * @deprecated The pipeline reads \`llm.generate()\` as a string; an object
+ * like this becomes "[object Object]". Return the answer text instead. This
+ * type will be removed in the next major release.
+ */
 export interface LLMResponse {
   text: string;
   usage?: {
@@ -132,33 +219,134 @@ export interface LLMResponse {
 }
 
 // =============================================================================
-// Plugin Contract Interfaces
+// Plugin contracts: what createRagPipeline calls on each component
 // =============================================================================
 
+/** A loader. To register it with pluginRegistry it needs \`metadata: { name, version, type: "loader" }\`. */
 export interface LoaderPlugin {
-  load(source: string, options?: any): Promise<Document[]>;
+  /** The pipeline calls \`load()\` with no arguments at the start of each run and ignores the result. */
+  load(source?: string, options?: any): unknown;
 }
 
+/** An embedding returned by an embedder: a vector, a batch whose first vector is used, or \`[{ values | vector | embedding }]\`. */
+export type EmbeddingOutput =
+  | number[]
+  | number[][]
+  | Array<{ values?: number[]; vector?: number[]; embedding?: number[] }>;
+
+/** An embedder. To register it with pluginRegistry it needs \`metadata: { name, version, type: "embedder" }\`. */
 export interface EmbedderPlugin {
-  embed(text: string, options?: any): Promise<number[]>;
+  /** Embeds one text. Used for the query when \`embedQuery\` is absent. */
+  embed(text: string, options?: { signal?: AbortSignal; [key: string]: any }): EmbeddingOutput | Promise<EmbeddingOutput>;
+  /** Embeds a query; preferred over \`embed\` when present. */
+  embedQuery?(text: string, options?: { signal?: AbortSignal; [key: string]: any }): EmbeddingOutput | Promise<EmbeddingOutput>;
 }
 
+/** A retriever. To register it with pluginRegistry it needs \`store()\` and \`metadata: { name, version, type: "retriever" }\`. */
 export interface RetrieverPlugin {
-  retrieve(query: string | { embedding: number[] }, options?: RetrieveOptions): Promise<SearchResult[]>;
+  /** Returns up to \`topK\` documents for the query, closest first. */
+  retrieve(options: RetrieveOptions): SearchResult[] | Promise<SearchResult[]>;
+  /** Adds documents. Not called by the pipeline; required by pluginRegistry and the CLI. */
+  store?(documents: Document[]): unknown;
 }
 
+/** An LLM. To register it with pluginRegistry it needs \`metadata: { name, version, type: "llm" }\`. */
 export interface LLMPlugin {
-  generate(prompt: string, options?: any): Promise<LLMResponse>;
+  /**
+   * Answers the query from the retrieved documents. Must resolve to the
+   * answer text: the pipeline converts the result with \`String()\`.
+   * \`options\` is the run's \`options\` plus its AbortSignal.
+   */
+  generate(query: string, documents: SearchResult[], options?: { signal?: AbortSignal; [key: string]: any }): string | Promise<string>;
+  /** Streams the answer; used with \`options.stream\` when present, otherwise \`generate\` is yielded as one chunk. */
+  generateStream?(query: string, documents: SearchResult[], options?: { signal?: AbortSignal; [key: string]: any }): AsyncIterable<string | { token: string; done?: boolean }>;
 }
 
+/** A reranker. To register it with pluginRegistry it needs \`metadata: { name, version, type: "reranker" }\`. */
 export interface RerankerPlugin {
-  rerank(results: SearchResult[], query: string, options?: any): Promise<SearchResult[]>;
+  /** Reorders (and may trim) the retrieved documents for the query. */
+  rerank(query: string, documents: SearchResult[], options?: { topK?: number; signal?: AbortSignal }): SearchResult[] | Promise<SearchResult[]>;
+}
+
+/** The interface of {@link pluginRegistry}. */
+export interface PluginRegistry {
+  /**
+   * Registers a plugin after checking it against its type's contract and,
+   * when signature verification is enabled, its signed manifest.
+   * Types: loader, embedder, retriever, reranker, llm, evaluator.
+   */
+  register(type: string, name: string, implementation: any, manifest?: any, options?: { content?: any }): Promise<PluginRegistry>;
+  /** Returns a registered plugin; throws when it is not registered. */
+  get(type: string, name: string): any;
+  /** The names registered for a type. */
+  list(type: string): string[];
+}
+
+/** The interface of the \`logger\` export's methods and of \`logger.logger\`. */
+export interface Logger {
+  /** Logs at info level; \`meta\` may be an object, an Error or a value. */
+  info(message: string, meta?: any): void;
+  /** Logs at error level. */
+  error(message: string, meta?: any): void;
+  /** Logs at warn level. */
+  warn(message: string, meta?: any): void;
+  /** Logs at debug level. */
+  debug(message: string, meta?: any): void;
+}
+
+/** An error created by {@link createError} or {@link wrapError}. */
+export interface EnhancedError extends Error {
+  code: string;
+  context: Record<string, any>;
+  suggestions: string[];
+  documentation?: string;
+  originalError?: Error | null;
+  timestamp: string;
 }
 
 // =============================================================================
-// DAG Engine Types
+// Pipeline factory and errors
 // =============================================================================
 
+/**
+ * Creates a RAG pipeline from components: plugin objects, or names
+ * registered in the registry. A name that is not registered throws here.
+ */
+export function createRagPipeline(config?: RagPipelineConfig): Pipeline;
+export { createRagPipeline as createPipeline };
+
+/**
+ * Creates an error whose message and suggestions come from the code's
+ * template, with \`{placeholders}\` filled from \`context\`.
+ * @param code - One of {@link ERROR_CODES}
+ * @param context - Values for the message template's placeholders
+ * @param originalError - The underlying error, kept as \`originalError\`
+ */
+export function createError(code: string, context?: Record<string, any>, originalError?: Error | null): EnhancedError;
+
+/**
+ * Wraps an error in an EnhancedError with the given code, keeping the
+ * original as \`originalError\` and its message as \`context.originalMessage\`.
+ * @param error - The error to wrap
+ * @param code - One of {@link ERROR_CODES}
+ * @param context - Values for the message template's placeholders
+ */
+export function wrapError(error: Error, code: string, context?: Record<string, any>): EnhancedError;
+
+/** The error codes {@link createError} accepts; each key equals its value. */
+export const ERROR_CODES: Record<string, string>;
+
+/** The DAG class under its older name. */
+export { DAG as DAGEngine } from "./types/dag/dag-engine";
+
+/** The same function as loadRagConfig. */
+export { loadRagConfig as loadConfig } from "./types/config/load-config";
+
+// =============================================================================
+// Deprecated types (kept so code that imports them still compiles)
+// =============================================================================
+
+/** @deprecated Not what DAG.addNode reads; see the DAG class. This type will be removed in the next major release. */
 export interface DAGNode {
   id: string;
   run: (input: any) => Promise<any>;
@@ -169,6 +357,7 @@ export interface DAGNode {
   retryDelay?: number;
 }
 
+/** @deprecated See DAG.execute for the options it reads. This type will be removed in the next major release. */
 export interface DAGOptions {
   timeout?: number;
   concurrency?: number;
@@ -179,24 +368,7 @@ export interface DAGOptions {
   maxRetries?: number;
 }
 
-// =============================================================================
-// Utility Types
-// =============================================================================
-
-export interface PluginRegistry {
-  register(type: string, name: string, implementation: any, contract?: any): void;
-  get(type: string, name: string): any;
-  has(type: string, name: string): boolean;
-  list(type: string): any[];
-}
-
-export interface Logger {
-  info(message: string, meta?: any): void;
-  error(message: string, meta?: any): void;
-  warn(message: string, meta?: any): void;
-  debug(message: string, meta?: any): void;
-}
-
+/** @deprecated Does not describe the errorFormatter export; see createError and wrapError. This type will be removed in the next major release. */
 export interface ErrorFormatter {
   formatError(error: Error): string;
   createError(code: string, message: string, details?: any): Error;
@@ -204,10 +376,7 @@ export interface ErrorFormatter {
   ERROR_CODES: Record<string, string>;
 }
 
-// =============================================================================
-// Evaluation Types
-// =============================================================================
-
+/** @deprecated evaluateRagDataset returns \`{ prompt, expected, actual, success, scores: { bleu, rouge } }\`. This type will be removed in the next major release. */
 export interface EvalResult {
   question: string;
   expected: string;
@@ -218,120 +387,7 @@ export interface EvalResult {
 }
 
 // =============================================================================
-// Core API
-// =============================================================================
-
-export function createRagPipeline(config: RagPipelineConfig): Pipeline;
-export { createRagPipeline as createPipeline };
-
-// Configuration
-export function loadConfig(options?: LoadConfigOptions): Promise<RagPipelineConfig>;
-export { loadConfig as loadRagConfig };
-export function validateRagrc(config: any): boolean;
-export function normalizeConfig(config: any): RagPipelineConfig;
-
-// Plugin system
-export const pluginRegistry: PluginRegistry;
-
-// Utilities
-export const logger: Logger;
-export const errorFormatter: ErrorFormatter;
-export function createError(code: string, message: string, details?: any): Error;
-export function wrapError(error: Error, context: string): Error;
-export const ERROR_CODES: Record<string, string>;
-
-// =============================================================================
-// Utility Classes
-// =============================================================================
-
-export class BatchProcessor {
-  constructor(options?: {
-    batchSize?: number;
-    maxConcurrent?: number;
-    retryAttempts?: number;
-    onProgress?: (progress: any) => void;
-    [key: string]: any;
-  });
-  process(items: any[], handler: (batch: any[]) => Promise<any[]>): Promise<any[]>;
-  cancel(): void;
-}
-
-export class RateLimiter {
-  constructor(options?: {
-    maxRequests?: number;
-    windowMs?: number;
-    [key: string]: any;
-  });
-  tryAcquire(identifier?: string): boolean;
-  reset(identifier?: string): void;
-}
-
-export function retry<T>(fn: () => Promise<T>, options?: {
-  maxAttempts?: number;
-  delay?: number;
-  backoff?: number;
-  retryIf?: (error: Error) => boolean;
-}): Promise<T>;
-
-export function withRetry<T>(fn: () => Promise<T>, options?: {
-  maxAttempts?: number;
-  delay?: number;
-  backoff?: number;
-}): Promise<T>;
-
-export class ConnectionPoolManager {
-  constructor(options?: {
-    maxSockets?: number;
-    maxFreeSockets?: number;
-    timeout?: number;
-    [key: string]: any;
-  });
-  getPool(hostname: string): any;
-  getMetrics(): any;
-  destroy(): void;
-}
-
-// =============================================================================
-// Security
-// =============================================================================
-
-export class JWTValidator {
-  constructor(options?: {
-    secret?: string;
-    algorithms?: string[];
-    issuer?: string;
-    audience?: string;
-    clockTolerance?: number;
-    maxAge?: string;
-    [key: string]: any;
-  });
-  sign(payload: any, options?: any): string;
-  verify(token: string, options?: any): any;
-}
-
-export class PluginSandbox {
-  constructor(options?: {
-    memoryLimit?: number;
-    timeout?: number;
-    permissions?: string[];
-    [key: string]: any;
-  });
-  execute(code: string, context?: any): Promise<any>;
-}
-
-export class PluginSignatureVerifier {
-  constructor(options?: {
-    trustedKeysPath?: string;
-    failClosed?: boolean;
-    [key: string]: any;
-  });
-  verify(pluginPath: string): Promise<boolean>;
-}
-
-export function validateInput(input: string, options?: any): { valid: boolean; errors?: string[] };
-
-// =============================================================================
-// AI/ML
+// Experimental (also exported from ./experimental)
 // =============================================================================
 
 export class MultiModalProcessor {
@@ -360,65 +416,6 @@ export class ModelTrainingOrchestrator {
   getJobStatus(jobId: string): Promise<any>;
   optimizeModel(config: any): Promise<any>;
   deployModel(jobId: string, deployConfig: any): Promise<any>;
-}
-
-// =============================================================================
-// Workflow Engine
-// =============================================================================
-
-export class DAGEngine {
-  constructor(options?: DAGOptions);
-  addNode(id: string, fn: (input: any) => Promise<any>, options?: Partial<DAGNode>): void;
-  connect(fromId: string, toId: string): void;
-  execute(seed?: any, options?: DAGOptions): Promise<Map<string, any>>;
-  validate(): void;
-}
-
-export { DAGEngine as DAG };
-
-// =============================================================================
-// Evaluation
-// =============================================================================
-
-export function evaluateRagDataset(dataset: Array<{
-  question: string;
-  expected: string;
-  actual: string;
-}>): EvalResult[];
-
-export function scoreAnswer(expected: string, actual: string): number;
-export function computeBLEU(reference: string, hypothesis: string): number;
-export function computeROUGE(reference: string, hypothesis: string): number;
-
-// =============================================================================
-// Performance & Observability
-// =============================================================================
-
-export class ParallelProcessor {
-  constructor(options?: any);
-  process(items: any[], handler: (item: any) => Promise<any>): Promise<any[]>;
-}
-
-export const eventLogger: {
-  log(event: string, data?: any): void;
-  info(event: string, data?: any): void;
-  error(event: string, data?: any): void;
-};
-
-export const metrics: {
-  counter(name: string): { inc(): void };
-  timer(name: string): { end(): void };
-};
-
-// =============================================================================
-// Enterprise
-// =============================================================================
-
-export class AuditLogger {
-  constructor(options?: any);
-  logAuthentication(event: any): Promise<void>;
-  logDataAccess(event: any): Promise<void>;
-  logDataModification(event: any): Promise<void>;
 }
 
 export class DataGovernance {
@@ -468,21 +465,14 @@ export class OIDCProvider {
   authenticate(request: any): Promise<any>;
 }
 
-// =============================================================================
-// Ecosystem
-// =============================================================================
-
-export class PluginHub {
-  constructor(options?: any);
-  search(query: string, options?: any): Promise<any[]>;
-  install(pluginName: string, options?: any): Promise<any>;
-  publish(pluginPath: string, options?: any): Promise<any>;
-}
-
-export class PluginAnalytics {
-  constructor(options?: any);
-  trackDownload(pluginName: string): void;
-  getStats(pluginName: string): any;
+export class PluginSandbox {
+  constructor(options?: {
+    memoryLimit?: number;
+    timeout?: number;
+    permissions?: string[];
+    [key: string]: any;
+  });
+  execute(code: string, context?: any): Promise<any>;
 }
 
 export class PluginCertification {
@@ -491,31 +481,6 @@ export class PluginCertification {
   verify(pluginName: string): Promise<boolean>;
 }
 
-export class PluginAnalyticsDashboard {
-  constructor(options?: any);
-  generateReport(options?: any): Promise<any>;
-  getMetrics(): any;
-}
-
-// =============================================================================
-// Development Tools
-// =============================================================================
-
-export class HotReloadManager {
-  constructor(options?: any);
-  watch(paths: string[]): void;
-  stop(): void;
-}
-
-export function createHotReloadManager(options?: any): HotReloadManager;
-
-export class DevServer {
-  constructor(options?: any);
-  start(port?: number): Promise<void>;
-  stop(): Promise<void>;
-}
-
-export function createDevServer(options?: any): DevServer;
 `;
 
 const distDir = path.join(__dirname, "..", "dist");
@@ -596,6 +561,15 @@ function appendGeneratedDeclarations() {
       }
     }
   }
+  // const name = require('./dir/module'); exports the whole module.exports
+  const wholeModulePattern =
+    /const\s+([\w$]+)\s*=\s*require\(\s*['"](\.\/[^'"]+)['"]\s*\)/g;
+  for (const [, name, modulePath] of indexSource.matchAll(wholeModulePattern)) {
+    exportSources.set(name, {
+      imported: null,
+      modulePath: modulePath.replace(/\.js$/, ""),
+    });
+  }
 
   const template = fs.readFileSync(outputPath, "utf8");
   const declared = new Set(
@@ -648,8 +622,12 @@ function appendGeneratedDeclarations() {
 
   const lines = missing.map((name) => {
     const { imported, modulePath } = exportSources.get(name);
+    const from = `./types/${modulePath.replace(/^\.\//, "")}`;
+    if (imported === null) {
+      return `import ${name} = require("${from}");\nexport { ${name} };`;
+    }
     const spec = imported === name ? name : `${imported} as ${name}`;
-    return `export { ${spec} } from "./types/${modulePath.replace(/^\.\//, "")}";`;
+    return `export { ${spec} } from "${from}";`;
   });
   fs.appendFileSync(
     outputPath,

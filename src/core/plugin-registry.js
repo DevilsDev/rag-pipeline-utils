@@ -627,7 +627,11 @@ class PluginRegistry {
   }
 }
 
-// Create singleton instance with default security settings
+/**
+ * The shared plugin registry: maps (type, name) to plugins, checking each
+ * against its contract. Signed manifests are required when NODE_ENV is
+ * production.
+ */
 const registry = new PluginRegistry({
   verifySignatures: process.env.NODE_ENV === 'production',
   failClosed: process.env.NODE_ENV === 'production',

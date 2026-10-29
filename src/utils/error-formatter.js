@@ -11,7 +11,9 @@
  */
 
 /**
- * Error codes organized by category
+ * Known error codes, grouped by prefix (CONFIG_, PLUGIN_, PIPELINE_,
+ * VALIDATION_, FS_, NETWORK_, HOT_RELOAD_, DAG_, AUTH_). Each value equals
+ * its key.
  */
 const ERROR_CODES = {
   // Configuration errors (CONFIG_*)
@@ -75,7 +77,9 @@ const ERROR_CODES = {
 };
 
 /**
- * Error message templates with suggestions
+ * Message, suggestion and documentation templates keyed by error code.
+ * Placeholders such as {path} are filled from the context passed to
+ * formatError. Codes without an entry fall back to UNKNOWN_ERROR.
  */
 const ERROR_TEMPLATES = {
   [ERROR_CODES.CONFIG_NOT_FOUND]: {
@@ -351,9 +355,15 @@ const ERROR_TEMPLATES = {
 };
 
 /**
- * Enhanced Error class with code and context
+ * Error carrying a code, the context used to build its message, suggested
+ * fixes and a documentation path, all taken from ERROR_TEMPLATES.
  */
 class EnhancedError extends Error {
+  /**
+   * @param {string} code - Error code, normally one of ERROR_CODES
+   * @param {Object<string, *>} [context={}] - Values for the template placeholders
+   * @param {Error|null} [originalError=null] - Underlying error, if any
+   */
   constructor(code, context = {}, originalError = null) {
     const formattedMessage = formatError(code, context);
     super(formattedMessage.message);
@@ -373,14 +383,17 @@ class EnhancedError extends Error {
   }
 
   /**
-   * Get formatted error message with all details
+   * Format this error for display with formatErrorMessage's default options.
+   * @returns {string} Multi-line message with code, suggestions and documentation link
    */
   getFormattedMessage() {
     return formatErrorMessage(this);
   }
 
   /**
-   * Convert to JSON for logging
+   * Plain object for JSON logging, including the stack and the original
+   * error's message and stack (or null).
+   * @returns {{name: string, code: string, message: string, suggestions: string[], documentation: string, context: Object<string, *>, timestamp: string, stack: string, originalError: ({message: string, stack: string}|null)}}
    */
   toJSON() {
     return {
@@ -403,11 +416,13 @@ class EnhancedError extends Error {
 }
 
 /**
- * Format an error message with context
+ * Fill the template for an error code with context values. Unknown codes use
+ * the UNKNOWN_ERROR template. Each placeholder is replaced at its first
+ * occurrence only; placeholders with no context value stay as written.
  *
  * @param {string} code - Error code
- * @param {object} context - Context variables
- * @returns {object} Formatted error details
+ * @param {Object<string, *>} [context={}] - Placeholder values, converted with String()
+ * @returns {{code: string, message: string, suggestions: string[], documentation: string, context: Object<string, *>}} Formatted error details
  */
 function formatError(code, context = {}) {
   const template =
@@ -438,10 +453,17 @@ function formatError(code, context = {}) {
 }
 
 /**
- * Format error message for display
+ * Build a multi-line display string for an error. Fields the error lacks
+ * (code, suggestions, documentation) are skipped.
  *
  * @param {Error|EnhancedError} error - Error to format
- * @param {object} options - Formatting options
+ * @param {Object} [options] - Formatting options
+ * @param {boolean} [options.includeCode=true] - Prefix the message with the error code
+ * @param {boolean} [options.includeSuggestions=true] - List the suggestions
+ * @param {boolean} [options.includeDocumentation=true] - Add the documentation URL
+ * @param {boolean} [options.includeContext=false] - List the context values as JSON
+ * @param {boolean} [options.includeStack=false] - Append the stack trace
+ * @param {boolean} [options.color=false] - Accepted but unused
  * @returns {string} Formatted error message
  */
 function formatErrorMessage(error, options = {}) {
@@ -500,11 +522,11 @@ function formatErrorMessage(error, options = {}) {
 }
 
 /**
- * Create an enhanced error
+ * Create an EnhancedError. Same as calling its constructor.
  *
  * @param {string} code - Error code
- * @param {object} context - Context variables
- * @param {Error} originalError - Original error (optional)
+ * @param {Object<string, *>} [context={}] - Placeholder values
+ * @param {Error|null} [originalError=null] - Underlying error, if any
  * @returns {EnhancedError} Enhanced error instance
  */
 function createError(code, context = {}, originalError = null) {
@@ -512,11 +534,12 @@ function createError(code, context = {}, originalError = null) {
 }
 
 /**
- * Wrap an existing error with enhanced context
+ * Wrap an existing error in an EnhancedError. The original message is added
+ * to the context as originalMessage and the error is kept as originalError.
  *
  * @param {Error} error - Original error
  * @param {string} code - Error code
- * @param {object} context - Additional context
+ * @param {Object<string, *>} [context={}] - Additional placeholder values
  * @returns {EnhancedError} Enhanced error
  */
 function wrapError(error, code, context = {}) {
@@ -531,7 +554,7 @@ function wrapError(error, code, context = {}) {
 }
 
 /**
- * Check if an error is an EnhancedError
+ * Check whether a value is an EnhancedError instance.
  *
  * @param {*} error - Value to check
  * @returns {boolean} True if enhanced error
@@ -541,10 +564,12 @@ function isEnhancedError(error) {
 }
 
 /**
- * Get error severity level
+ * Severity for an error code: 'critical' for PIPELINE_CREATION_FAILED,
+ * CONFIG_NOT_FOUND, FS_PERMISSION_DENIED and AUTH_INVALID_TOKEN, 'warning'
+ * for the HOT_RELOAD_FAILED and HOT_RELOAD_STATE_ERROR codes, 'error' otherwise.
  *
  * @param {string} code - Error code
- * @returns {string} Severity level (critical, error, warning)
+ * @returns {'critical'|'warning'|'error'} Severity level
  */
 function getErrorSeverity(code) {
   const critical = [
@@ -565,10 +590,13 @@ function getErrorSeverity(code) {
 }
 
 /**
- * Log error with appropriate formatting
+ * Format an error and write it to a logger. Warnings go to logger.warn,
+ * everything else to logger.error; critical errors include the stack trace.
+ * Errors that are not EnhancedError are treated as 'error'.
  *
  * @param {Error|EnhancedError} error - Error to log
- * @param {object} logger - Logger instance (optional)
+ * @param {Pick<Console, 'error'|'warn'>} [logger=console] - Logger to write to
+ * @returns {void}
  */
 function logError(error, logger = console) {
   const severity = isEnhancedError(error)

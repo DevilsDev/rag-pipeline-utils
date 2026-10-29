@@ -195,6 +195,16 @@ jobs:
       - name: Verify package
         run: npm run verify:pack
 
+      - name: API reference is up to date
+        run: |
+          npx typedoc
+          npx prettier --write docs-site/docs/api --log-level warn
+          if [ -n "$(git status --porcelain -- docs-site/docs/api)" ]; then
+            git status --short -- docs-site/docs/api
+            echo "::error::docs-site/docs/api is out of date. Run 'npm run docs:api' and commit the result."
+            exit 1
+          fi
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

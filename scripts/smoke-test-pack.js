@@ -277,6 +277,126 @@ const results = [
       );
     }
   }),
+  check("plugins written to the declared contracts work", () => {
+    // Each component is typed only by the published interfaces. If the
+    // declarations drift from what createRagPipeline calls, either this
+    // stops compiling or the assertions below fail.
+    fs.writeFileSync(
+      path.join(consumerDir, "contracts.ts"),
+      `
+import {
+  createRagPipeline, logger, loadConfig, validateRagrc, normalizeConfig,
+  pluginRegistry, BatchProcessor, RateLimiter, retry, withRetry,
+  ConnectionPoolManager, JWTValidator, PluginSignatureVerifier, validateInput,
+  DAG, DAGEngine, scoreAnswer, computeBLEU, computeROUGE, evaluateRagDataset,
+  createHotReloadManager, createDevServer, AuditLogger, PluginHub, metrics,
+  eventLogger, ParallelProcessor, createError, wrapError, ERROR_CODES,
+  type EmbedderPlugin, type RetrieverPlugin, type RerankerPlugin,
+  type LLMPlugin, type PipelineRunResult, type SearchResult,
+} from "${pkgName}";
+
+const docs: SearchResult[] = [
+  { id: "a", score: 0.9, content: "Employees get 25 paid vacation days." },
+  { id: "b", score: 0.5, content: "The office opens at 9." },
+];
+const calls: string[] = [];
+const embedder: EmbedderPlugin = {
+  embed(text) { calls.push("embed:" + text); return [1, 0]; },
+};
+const retriever: RetrieverPlugin = {
+  retrieve({ query, queryVector, topK }) {
+    calls.push("retrieve:" + query + ":" + (queryVector || []).join(",") + ":" + topK);
+    return docs.slice(0, topK);
+  },
+};
+const reranker: RerankerPlugin = {
+  rerank(query, documents) { calls.push("rerank:" + query); return [...documents].reverse(); },
+};
+const llm: LLMPlugin = {
+  generate(query, documents) { return query + " -> " + documents.map((d) => d.id).join(","); },
+};
+
+async function main(): Promise<void> {
+  const pipeline = createRagPipeline({ embedder, retriever, reranker, llm });
+  const result: PipelineRunResult = await pipeline.run({ query: "vacation", options: { topK: 2 } });
+  const expected = ["embed:vacation", "retrieve:vacation:1,0:2", "rerank:vacation"];
+  if (!result.success) throw new Error("run failed: " + result.error);
+  if (result.answer !== "vacation -> b,a") throw new Error("answer: " + result.answer);
+  if (calls.join("|") !== expected.join("|")) throw new Error("calls: " + calls.join("|"));
+  const stream = await pipeline.run({ query: "vacation", options: { stream: true } });
+  if (!(Symbol.asyncIterator in stream)) throw new Error("stream: not iterable");
+  let streamed = "";
+  for await (const chunk of stream) streamed += chunk.token;
+  if (streamed !== "vacation -> b,a") throw new Error("stream: " + streamed);
+  logger.debug("contracts ok");
+}
+
+// Type-checked only, never called: typical calls to the rest of the API
+// must compile under --strict.
+async function surface(): Promise<void> {
+  const config = loadConfig(".");
+  const checked = validateRagrc({ pipeline: [] });
+  const normalized = normalizeConfig({ pipeline: [] });
+  const names: string[] = pluginRegistry.list("llm");
+  const batches = new BatchProcessor({ maxItemsPerBatch: 10 });
+  await batches.processBatches(["a"], async (texts) => texts);
+  const limiter = new RateLimiter({ maxAttempts: 10 });
+  const allowed: boolean = limiter.allowRequest("ip").allowed;
+  await retry(async () => 1, { retries: 2 });
+  await withRetry(async () => 1, { retries: 1 });
+  new ConnectionPoolManager({ maxSockets: 5 }).destroy();
+  const jwt = new JWTValidator({ secret: "s".repeat(32) });
+  jwt.verify(jwt.sign({ sub: "u" }));
+  new PluginSignatureVerifier({});
+  const valid: boolean = validateInput("x").valid;
+  const dag = new DAG();
+  dag.addNode("a", async (x: number) => x + 1);
+  dag.addNode("b", async (x: number) => x * 2);
+  dag.connect("a", "b");
+  await dag.execute(1);
+  new DAGEngine();
+  const scores = scoreAnswer("an answer", "the answer");
+  const bleu: number = computeBLEU(["a"], ["a"]) + computeROUGE(["a"], ["a"]);
+  await evaluateRagDataset("dataset.json", {});
+  await createHotReloadManager({ watchPaths: [] }).stop();
+  await createDevServer({ port: 0 }).stop();
+  await new AuditLogger().logDataAccess({});
+  await new PluginHub().searchPlugins("pdf");
+  new metrics.Counter("requests").inc();
+  new eventLogger.PipelineEventLogger().clearHistory();
+  const slot = new ParallelProcessor.Semaphore(2);
+  await slot.acquire();
+  slot.release();
+  logger.info("message", { a: 1 });
+  logger.logger.warn("message");
+  const error = wrapError(createError(ERROR_CODES.CONFIG_NOT_FOUND, { path: "x" }), "UNKNOWN_ERROR");
+  void [config, checked, normalized, names, allowed, valid, scores, bleu, error.code];
+}
+void surface;
+main().catch((error) => { console.error(error); process.exit(1); });
+`,
+    );
+    run(
+      process.execPath,
+      [
+        require.resolve("typescript/bin/tsc", { paths: [root] }),
+        "--strict",
+        "--module",
+        "node16",
+        "--moduleResolution",
+        "node16",
+        "--typeRoots",
+        path.join(root, "node_modules", "@types"),
+        "--types",
+        "node",
+        "--outDir",
+        "out",
+        "contracts.ts",
+      ],
+      consumerDir,
+    );
+    run(process.execPath, [path.join("out", "contracts.js")], consumerDir);
+  }),
 ];
 
 if (keep) {

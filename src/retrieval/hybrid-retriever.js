@@ -8,6 +8,10 @@ const DEFAULT_CONFIG = {
   fusionK: 60,
 };
 
+/**
+ * Runs several retrievers in parallel (for example vector and BM25) and
+ * fuses their results with weighted reciprocal rank fusion.
+ */
 class HybridRetriever extends EventEmitter {
   /**
    * @param {Array<{retriever: object, weight: number, name: string}>} retrievers

@@ -16,6 +16,8 @@ The package has three entry points:
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
+This page is a guided tour of the main API with examples. For every export, with each class's methods, options and types, see the [generated API reference](./api/), built from the same declarations your editor shows.
+
 ## Core API
 
 ### createRagPipeline

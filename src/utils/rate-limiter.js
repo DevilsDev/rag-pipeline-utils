@@ -11,14 +11,19 @@
 
 const crypto = require('crypto');
 
+/**
+ * Sliding-window limiter: allows up to `maxAttempts` requests per identifier
+ * in `windowMs`, then blocks that identifier for `blockDurationMs`. Check a
+ * request with allowRequest(identifier).
+ */
 class RateLimiter {
   /**
    * Create a rate limiter instance
    * @param {Object} options - Configuration options
-   * @param {number} options.maxAttempts - Maximum attempts allowed (default: 5)
-   * @param {number} options.windowMs - Time window in milliseconds (default: 15 minutes)
-   * @param {number} options.blockDurationMs - How long to block after exceeding limit (default: 1 hour)
-   * @param {number} options.cleanupIntervalMs - How often to cleanup expired entries (default: 5 minutes)
+   * @param {number} [options.maxAttempts=5] - Maximum attempts allowed (default: 5)
+   * @param {number} [options.windowMs=900000] - Time window in milliseconds (default: 15 minutes)
+   * @param {number} [options.blockDurationMs=3600000] - How long to block after exceeding limit (default: 1 hour)
+   * @param {number} [options.cleanupIntervalMs=300000] - How often to cleanup expired entries (default: 5 minutes)
    */
   constructor(options = {}) {
     this.maxAttempts = options.maxAttempts || 5;

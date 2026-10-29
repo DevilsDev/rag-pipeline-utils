@@ -55,7 +55,7 @@ jobs:
         run: npm run lint
 
       - name: Generate API documentation
-        run: npm run docs:api
+        run: node scripts/generate-docs.js --formats=html,markdown,json
 
       - name: Generate project report
         run: npm run dev:report
@@ -124,7 +124,7 @@ jobs:
         run: npm ci
 
       - name: Generate documentation
-        run: npm run docs:api
+        run: node scripts/generate-docs.js --formats=html,markdown,json
 
       - name: Check for documentation changes
         id: docs-changes

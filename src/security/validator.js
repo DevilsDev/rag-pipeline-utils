@@ -1,5 +1,13 @@
 'use strict';
 
+/**
+ * Checks input against a maximum length and a fixed list of disallowed
+ * tokens (code fences, `${`, `</script`, `--`, `;`, `||`, `&&`).
+ * @param {*} input - Converted to a string
+ * @param {Object} [opts]
+ * @param {number} [opts.maxLength=20000]
+ * @returns {{valid: boolean, reasons: string[], sanitized: string}} `sanitized` is the input cut to `maxLength`
+ */
 function validateInput(input, opts = {}) {
   const maxLength = opts.maxLength || 20000;
   const inputStr = String(input);

@@ -5,8 +5,13 @@ const MetricType = {
   GAUGE: 'gauge',
 };
 
-/** Counter */
+/** Monotonic counter that only goes up until reset. */
 class Counter {
+  /**
+   * @param {string} name - Metric name
+   * @param {string} [description=''] - Human-readable description
+   * @param {Object<string, string>} [labels={}] - Static labels attached to the metric
+   */
   constructor(name, description = '', labels = {}) {
     this._type = MetricType.COUNTER;
     this.name = name;
@@ -14,14 +19,28 @@ class Counter {
     this.labels = labels || {};
     this.value = 0;
   }
+  /**
+   * Add to the counter.
+   * @param {number} [n=1] - Amount to add
+   * @returns {void}
+   * @throws {Error} If n is negative
+   */
   inc(n = 1) {
     if (n < 0)
       throw new Error('Counter can only be incremented by non-negative values');
     this.value += n;
   }
+  /**
+   * Set the value back to 0.
+   * @returns {void}
+   */
   reset() {
     this.value = 0;
   }
+  /**
+   * Snapshot of the metric with the current time as timestamp.
+   * @returns {{name: string, description: string, type: string, value: number, labels: Object<string, string>, timestamp: string}}
+   */
   toJSON() {
     return {
       name: this.name,
@@ -34,8 +53,13 @@ class Counter {
   }
 }
 
-/** Gauge */
+/** Gauge holding a value that can be set, raised or lowered. */
 class Gauge {
+  /**
+   * @param {string} name - Metric name
+   * @param {string} [description=''] - Human-readable description
+   * @param {Object<string, string>} [labels={}] - Static labels attached to the metric
+   */
   constructor(name, description = '', labels = {}) {
     this._type = MetricType.GAUGE;
     this.name = name;
@@ -43,18 +67,41 @@ class Gauge {
     this.labels = labels || {};
     this.value = 0;
   }
+  /**
+   * Set the value.
+   * @param {number} v - New value
+   * @returns {void}
+   */
   set(v) {
     this.value = v;
   }
+  /**
+   * Add to the value.
+   * @param {number} [n=1] - Amount to add
+   * @returns {void}
+   */
   inc(n = 1) {
     this.value += n;
   }
+  /**
+   * Subtract from the value.
+   * @param {number} [n=1] - Amount to subtract
+   * @returns {void}
+   */
   dec(n = 1) {
     this.value -= n;
   }
+  /**
+   * Set the value back to 0.
+   * @returns {void}
+   */
   reset() {
     this.value = 0;
   }
+  /**
+   * Snapshot of the metric with the current time as timestamp.
+   * @returns {{name: string, description: string, type: string, value: number, labels: Object<string, string>, timestamp: string}}
+   */
   toJSON() {
     return {
       name: this.name,
@@ -67,8 +114,17 @@ class Gauge {
   }
 }
 
-/** Histogram with cumulative bucketCounts and raw observations for stats/percentiles */
+/**
+ * Histogram with cumulative bucket counts. It also keeps every observed value
+ * in memory to compute percentiles and standard deviation.
+ */
 class Histogram {
+  /**
+   * @param {string} name - Metric name
+   * @param {string} [description=''] - Human-readable description
+   * @param {Object<string, string>} [labels={}] - Static labels attached to the metric
+   * @param {number[]} [buckets] - Bucket upper bounds, sorted ascending on construction. A +Inf bucket is added.
+   */
   constructor(
     name,
     description = '',
@@ -88,6 +144,11 @@ class Histogram {
     this._obs = [];
   }
 
+  /**
+   * Record a value. Non-numbers and NaN are ignored.
+   * @param {number} v - Observed value
+   * @returns {void}
+   */
   observe(v) {
     if (typeof v !== 'number' || Number.isNaN(v)) return;
     this._obs.push(v);
@@ -105,6 +166,12 @@ class Histogram {
       this.bucketCounts[i] += 1;
   }
 
+  /**
+   * Percentiles of the observed values by the nearest-rank method. Returns 0
+   * for each percentile when nothing has been observed.
+   * @param {number[]} [percentiles=[50, 95, 99]] - Percentiles to compute, 0-100
+   * @returns {Object<number, number>} Value for each requested percentile
+   */
   getPercentiles(percentiles = [50, 95, 99]) {
     if (this._obs.length === 0)
       return Object.fromEntries(percentiles.map((p) => [p, 0]));
@@ -121,6 +188,11 @@ class Histogram {
     return out;
   }
 
+  /**
+   * Mean, population standard deviation, min, max, count and sum of the
+   * observed values. With no observations, min is Infinity and max is -Infinity.
+   * @returns {{mean: number, stdDev: number, min: number, max: number, count: number, sum: number}}
+   */
   getStatistics() {
     if (this.count === 0) {
       return {
@@ -147,6 +219,10 @@ class Histogram {
     };
   }
 
+  /**
+   * Clear all bucket counts, statistics and stored observations.
+   * @returns {void}
+   */
   reset() {
     this.bucketCounts.fill(0);
     this.sum = 0;
@@ -155,6 +231,10 @@ class Histogram {
     this.max = -Infinity;
     this._obs = [];
   }
+  /**
+   * Cumulative count per bucket bound (plus '+Inf') together with getStatistics().
+   * @returns {{buckets: Object<string, number>, mean: number, stdDev: number, min: number, max: number, count: number, sum: number}}
+   */
   export() {
     // Map bucket value -> cumulative count
     const bucketsObj = {};
@@ -164,6 +244,11 @@ class Histogram {
     const stats = this.getStatistics();
     return { buckets: bucketsObj, ...stats };
   }
+  /**
+   * Snapshot of the histogram with the current time as timestamp. Does not
+   * include min, max or percentiles.
+   * @returns {{name: string, description: string, type: string, count: number, sum: number, buckets: number[], bucketCounts: number[], labels: Object<string, string>, timestamp: string}}
+   */
   toJSON() {
     return {
       name: this.name,
@@ -179,11 +264,17 @@ class Histogram {
   }
 }
 
-/** Metrics registry (simple) */
+/** Registry of Counter, Histogram and Gauge instances keyed by name. */
 class MetricsRegistry {
   constructor() {
     this._metrics = new Map(); // name -> metric instance
   }
+  /**
+   * Add a metric under its name.
+   * @param {Counter|Histogram|Gauge} metric - Metric to register
+   * @returns {void}
+   * @throws {Error} If a metric with the same name is already registered
+   */
   register(metric) {
     if (this._metrics.has(metric.name)) {
       throw new Error(
@@ -192,15 +283,36 @@ class MetricsRegistry {
     }
     this._metrics.set(metric.name, metric);
   }
+  /**
+   * Look up a metric by name.
+   * @param {string} name - Metric name
+   * @returns {Counter|Histogram|Gauge|undefined} The metric, or undefined if not registered
+   */
   getMetric(name) {
     return this._metrics.get(name);
   }
+  /**
+   * All registered metrics in registration order.
+   * @returns {Array<Counter|Histogram|Gauge>}
+   */
   getAllMetrics() {
     return Array.from(this._metrics.values());
   }
+  /**
+   * Remove every registered metric.
+   * @returns {void}
+   */
   clear() {
     this._metrics.clear();
   }
+  /**
+   * Return the metric registered under name, or create and register a Counter.
+   * An existing metric is returned as is, even if it is not a Counter.
+   * @param {string} name - Metric name
+   * @param {string} [description] - Description for a new counter
+   * @param {Object<string, string>} [labels={}] - Labels for a new counter
+   * @returns {Counter}
+   */
   getOrCreateCounter(name, description, labels = {}) {
     if (this._metrics.has(name)) {
       return this._metrics.get(name);
@@ -209,6 +321,15 @@ class MetricsRegistry {
     this.register(counter);
     return counter;
   }
+  /**
+   * Return the metric registered under name, or create and register a
+   * Histogram. An existing metric is returned as is, even if it is not a Histogram.
+   * @param {string} name - Metric name
+   * @param {string} [description] - Description for a new histogram
+   * @param {Object<string, string>} [labels={}] - Labels for a new histogram
+   * @param {number[]} [buckets] - Bucket bounds for a new histogram
+   * @returns {Histogram}
+   */
   getOrCreateHistogram(name, description, labels = {}, buckets) {
     if (this._metrics.has(name)) {
       return this._metrics.get(name);
@@ -217,6 +338,14 @@ class MetricsRegistry {
     this.register(histogram);
     return histogram;
   }
+  /**
+   * Return the metric registered under name, or create and register a Gauge.
+   * An existing metric is returned as is, even if it is not a Gauge.
+   * @param {string} name - Metric name
+   * @param {string} [description] - Description for a new gauge
+   * @param {Object<string, string>} [labels={}] - Labels for a new gauge
+   * @returns {Gauge}
+   */
   getOrCreateGauge(name, description, labels = {}) {
     if (this._metrics.has(name)) {
       return this._metrics.get(name);
@@ -225,6 +354,10 @@ class MetricsRegistry {
     this.register(gauge);
     return gauge;
   }
+  /**
+   * Serialize all metrics (their toJSON output) with a timestamp.
+   * @returns {string} JSON string with timestamp and metrics fields
+   */
   exportMetrics() {
     return JSON.stringify({
       timestamp: new Date().toISOString(),
@@ -233,7 +366,10 @@ class MetricsRegistry {
   }
 }
 
-/** Pipeline-level convenience aggregator used by tests */
+/**
+ * In-memory totals for pipeline operations: embedding, retrieval and LLM
+ * calls, errors, operation counts, concurrency, backpressure and heap usage.
+ */
 class PipelineMetrics {
   constructor() {
     this.counters = {
@@ -279,6 +415,14 @@ class PipelineMetrics {
     this.concurrency = { maxConcurrency: 0, concurrencyValues: [] };
   }
 
+  /**
+   * Record one embedding call.
+   * @param {string} provider - Provider name (unused)
+   * @param {number} duration - Duration in milliseconds
+   * @param {number} tokens - Tokens embedded
+   * @param {number} batches - Batches sent
+   * @returns {void}
+   */
   recordEmbedding(provider, duration, tokens, batches) {
     this.embedding.operations++;
     this.embedding.totalDuration += duration;
@@ -287,6 +431,13 @@ class PipelineMetrics {
     this.embedding.durations.push(duration);
   }
 
+  /**
+   * Record one retrieval call.
+   * @param {string} provider - Provider name (unused)
+   * @param {number} duration - Duration in milliseconds
+   * @param {number} results - Number of results returned
+   * @returns {void}
+   */
   recordRetrieval(provider, duration, results) {
     this.retrieval.operations++;
     this.retrieval.totalDuration += duration;
@@ -294,6 +445,15 @@ class PipelineMetrics {
     this.retrieval.durations.push(duration);
   }
 
+  /**
+   * Record one LLM call.
+   * @param {string} provider - Provider name (unused)
+   * @param {number} duration - Duration in milliseconds
+   * @param {number} inputTokens - Prompt tokens
+   * @param {number} outputTokens - Completion tokens
+   * @param {boolean} [streaming] - Whether the call streamed its output
+   * @returns {void}
+   */
   recordLLM(provider, duration, inputTokens, outputTokens, streaming) {
     this.llm.operations++;
     this.llm.totalDuration += duration;
@@ -305,6 +465,11 @@ class PipelineMetrics {
     this.llm.outputTokens.push(outputTokens);
   }
 
+  /**
+   * Store heapUsed and heapTotal from process.memoryUsage() and the used
+   * percentage, rounded.
+   * @returns {void}
+   */
   recordMemoryUsage() {
     const memUsage = process.memoryUsage();
     this.memory.heapUsed = memUsage.heapUsed;
@@ -314,6 +479,15 @@ class PipelineMetrics {
     );
   }
 
+  /**
+   * Count an error by type and by component. Only the types 'plugin' and
+   * 'stage' are counted by type; other types are counted only by component.
+   * @param {string} type - Error type, 'plugin' or 'stage'
+   * @param {string} [component] - Plugin or component name
+   * @param {string} [provider] - Provider name (unused)
+   * @param {Error} [error] - The error (unused)
+   * @returns {void}
+   */
   recordError(type, component, provider, error) {
     if (type && type in this.errorsByType) this.errorsByType[type]++;
     if (component)
@@ -321,11 +495,28 @@ class PipelineMetrics {
         (this.errorsByPlugin[component] || 0) + 1;
   }
 
+  /**
+   * Count an operation as started and active.
+   * @param {string} [type] - Operation type (unused)
+   * @param {string} [component] - Component name (unused)
+   * @param {string} [provider] - Provider name (unused)
+   * @returns {void}
+   */
   recordOperationStart(type, component, provider) {
     this.counters.operationsTotal.inc(1);
     this.counters.operationsActive.inc(1);
   }
 
+  /**
+   * Mark an active operation as finished. A status of 'error' or 'failed'
+   * counts as failed; any other status counts as successful.
+   * @param {string} [type] - Operation type (unused)
+   * @param {string} [component] - Component name (unused)
+   * @param {string} [provider] - Provider name (unused)
+   * @param {number} [duration] - Duration in milliseconds (unused)
+   * @param {string} [status] - Outcome of the operation
+   * @returns {void}
+   */
   recordOperationEnd(type, component, provider, duration, status) {
     this.counters.operationsActive.value = Math.max(
       0,
@@ -336,6 +527,12 @@ class PipelineMetrics {
     else this.counters.operationsSuccessful.inc(1);
   }
 
+  /**
+   * Record a concurrency sample. Keeps the highest max seen and every average.
+   * @param {number} maxConcurrency - Peak concurrency in the sample
+   * @param {number} avgConcurrency - Average concurrency in the sample
+   * @returns {void}
+   */
   recordConcurrency(maxConcurrency, avgConcurrency) {
     this.concurrency.maxConcurrency = Math.max(
       this.concurrency.maxConcurrency,
@@ -344,6 +541,13 @@ class PipelineMetrics {
     this.concurrency.concurrencyValues.push(avgConcurrency);
   }
 
+  /**
+   * Count a backpressure event and keep the buffer size as a sample.
+   * @param {string} action - 'applied' or 'released'; other values are not counted
+   * @param {number} [bufferSize] - Buffer size at the time of the event
+   * @param {number} [threshold] - Backpressure threshold (unused)
+   * @returns {void}
+   */
   recordBackpressure(action, bufferSize, threshold) {
     if (action === 'applied') this.backpressureApplied++;
     if (action === 'released') this.backpressureReleased++;
@@ -351,6 +555,11 @@ class PipelineMetrics {
       this.backpressureSamples.push(bufferSize);
   }
 
+  /**
+   * Totals and averages for every recorded category. Averages are 0 when
+   * nothing was recorded.
+   * @returns Summary grouped by embedding, retrieval, llm, memory, errors, operations, concurrency and backpressure
+   */
   getSummary() {
     const backpressureMean = this.backpressureSamples.length
       ? this.backpressureSamples.reduce((a, b) => a + b, 0) /
@@ -426,6 +635,10 @@ class PipelineMetrics {
     };
   }
 
+  /**
+   * getSummary() plus the raw recorded values, with a timestamp.
+   * @returns Object with timestamp, summary and rawMetrics
+   */
   exportMetrics() {
     return {
       timestamp: new Date().toISOString(),
@@ -447,6 +660,10 @@ class PipelineMetrics {
     };
   }
 
+  /**
+   * Reset every counter, total and sample to its initial value.
+   * @returns {void}
+   */
   clearMetrics() {
     this.counters.operationsTotal.reset();
     this.counters.operationsSuccessful.reset();
@@ -485,6 +702,7 @@ class PipelineMetrics {
   }
 }
 
+/** Shared PipelineMetrics instance. */
 const pipelineMetrics = new PipelineMetrics();
 
 module.exports = {

@@ -68,7 +68,10 @@ class MemoryCache {
     }
   }
 
-  /** @param {string} key */
+  /**
+   * Removes a key.
+   * @param {string} key
+   */
   async delete(key) {
     this._entries.delete(key);
   }

@@ -1,31 +1,72 @@
 'use strict';
 
+/**
+ * Event type names used by PipelineEventLogger. The logger also emits
+ * 'stage.end' and 'memory.warning', which have no entry here.
+ * @type {{PLUGIN_START: string, PLUGIN_END: string, PLUGIN_ERROR: string, STAGE_START: string, STAGE_ERROR: string}}
+ */
 const EventTypes = {
+  /** A plugin call started. */
   PLUGIN_START: 'plugin.start',
+  /** A plugin call finished. */
   PLUGIN_END: 'plugin.end',
+  /** A plugin call failed. */
   PLUGIN_ERROR: 'plugin.error',
+  /** A pipeline stage started. */
   STAGE_START: 'stage.start',
+  /** A pipeline stage failed. Not emitted by PipelineEventLogger itself. */
   STAGE_ERROR: 'stage.error',
 };
 
-const EventSeverity = { DEBUG: 'debug', INFO: 'info', ERROR: 'error' };
+/**
+ * Severity levels used by PipelineEventLogger. Memory warnings use 'warn',
+ * which has no entry here.
+ * @type {{DEBUG: string, INFO: string, ERROR: string}}
+ */
+const EventSeverity = {
+  /** Plugin start and end events. */
+  DEBUG: 'debug',
+  /** Stage events. */
+  INFO: 'info',
+  /** Plugin errors. */
+  ERROR: 'error',
+};
 
+/**
+ * In-memory log of pipeline events (plugin and stage lifecycle, memory
+ * warnings, custom events) tagged with a session id. A session is started
+ * on the first event if startSession was not called.
+ */
 class PipelineEventLogger {
   constructor() {
     this._events = [];
     this._sessionId = null;
   }
 
+  /**
+   * Start a new session with a fresh id and start time. Existing events are kept.
+   * @returns {string} The new session id
+   */
   startSession() {
     this._sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     this._sessionStartTime = new Date().toISOString();
     return this._sessionId;
   }
 
+  /**
+   * Current time as an ISO 8601 string.
+   * @returns {string}
+   */
   nowISO() {
     return new Date().toISOString();
   }
 
+  /**
+   * Describe a value's size: length for arrays and strings, key count for
+   * objects, type only for null and primitives.
+   * @param {*} v - Value to describe
+   * @returns {{type: string, length?: number, keys?: number}}
+   */
   getInputSize(v) {
     if (Array.isArray(v)) return { type: 'array', length: v.length };
     if (typeof v === 'string') return { type: 'string', length: v.length };
@@ -34,10 +75,24 @@ class PipelineEventLogger {
       return { type: 'object', keys: Object.keys(v).length };
     return { type: typeof v };
   }
+  /**
+   * Same as getInputSize.
+   * @param {*} v - Value to describe
+   * @returns {{type: string, length?: number, keys?: number}}
+   */
   getResultSize(v) {
     return this.getInputSize(v);
   }
 
+  /**
+   * Record a debug-level plugin.start event with the input size and process info.
+   * @param {Object} event
+   * @param {string} event.pluginType - Plugin type, such as embedder or retriever
+   * @param {string} event.pluginName - Plugin name
+   * @param {*} [event.input] - Plugin input; only its size is recorded
+   * @param {Object<string, *>} [event.context={}] - Extra metadata
+   * @returns {void}
+   */
   logPluginStart({ pluginType, pluginName, input, context = {} }) {
     this._events.push({
       timestamp: this.nowISO(),
@@ -58,6 +113,18 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Record a debug-level plugin.end event. When the result is an array, or
+   * has a vectors array, its length is recorded as resultSize.vectorCount.
+   * @param {Object} event
+   * @param {string} event.pluginType - Plugin type
+   * @param {string} event.pluginName - Plugin name
+   * @param {number} [event.duration] - Duration in milliseconds
+   * @param {*} [event.result] - Plugin result; only its length is recorded
+   * @param {string} [event.status='success'] - Outcome
+   * @param {Object<string, *>} [event.context={}] - Extra metadata
+   * @returns {void}
+   */
   logPluginEnd({
     pluginType,
     pluginName,
@@ -92,6 +159,16 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Record an error-level plugin.error event with the error's name, message and code.
+   * @param {Object} event
+   * @param {string} event.pluginType - Plugin type
+   * @param {string} event.pluginName - Plugin name
+   * @param {number} [event.duration] - Duration in milliseconds
+   * @param {Error & {code?: string}} [event.error] - The error thrown
+   * @param {Object<string, *>} [event.context={}] - Extra metadata
+   * @returns {void}
+   */
   logPluginError({ pluginType, pluginName, duration, error, context = {} }) {
     this._events.push({
       timestamp: this.nowISO(),
@@ -116,6 +193,11 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Record an info-level stage.start event.
+   * @param {string} stage - Stage name
+   * @returns {void}
+   */
   logStageStart(stage) {
     this._events.push({
       timestamp: this.nowISO(),
@@ -132,6 +214,14 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Record a warn-level memory.warning event. usagePercentage is heapUsed
+   * (or rss if heapUsed is missing) in MB as a percentage of threshold.
+   * @param {Object} event
+   * @param {{heapUsed?: number, rss?: number}} event.memoryUsage - Memory figures in bytes, as from process.memoryUsage()
+   * @param {number} [event.threshold=512] - Threshold in MB
+   * @returns {void}
+   */
   logMemoryWarning({ memoryUsage, threshold = 512 }) {
     const usedBytes =
       typeof memoryUsage?.heapUsed === 'number'
@@ -152,6 +242,17 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Recorded events, oldest first, optionally filtered.
+   * @param {Object} [filters]
+   * @param {string} [filters.eventType]
+   * @param {string} [filters.severity]
+   * @param {string} [filters.pluginType]
+   * @param {string|number|Date} [filters.since] - Only events at or after this time
+   * @param {string|number|Date} [filters.until] - Only events at or before this time
+   * @param {number} [filters.limit] - Keep only the most recent `limit` events
+   * @returns {Object[]}
+   */
   getEventHistory({
     eventType,
     severity,
@@ -181,6 +282,11 @@ class PipelineEventLogger {
     return list;
   }
 
+  /**
+   * Serialize the session id and the events matching the filters.
+   * @param {Object} [filters] - Same filters as getEventHistory
+   * @returns {string} JSON string with sessionId, eventCount and events
+   */
   exportEvents(filters) {
     const filtered = this.getEventHistory(filters);
     return JSON.stringify({
@@ -190,6 +296,14 @@ class PipelineEventLogger {
     });
   }
 
+  /**
+   * Record an event of any type.
+   * @param {string} eventType - Event type
+   * @param {string} severity - Severity level
+   * @param {Object<string, *>} [metadata={}] - Event metadata
+   * @param {string} [message] - Message; defaults to 'Event: ' plus the event type
+   * @returns {this}
+   */
   logEvent(eventType, severity, metadata = {}, message) {
     this._events.push({
       timestamp: this.nowISO(),
@@ -202,11 +316,22 @@ class PipelineEventLogger {
     return this;
   }
 
+  /**
+   * Remove all recorded events. The session id is kept.
+   * @returns {this}
+   */
   clearHistory() {
     this._events = [];
     return this;
   }
 
+  /**
+   * Record an info-level stage.end event.
+   * @param {string} stage - Stage name
+   * @param {number} duration - Duration in milliseconds
+   * @param {Object<string, *>} [metadata={}] - Extra metadata merged into the event metadata
+   * @returns {this}
+   */
   logStageEnd(stage, duration, metadata = {}) {
     this._events.push({
       timestamp: this.nowISO(),
@@ -224,10 +349,19 @@ class PipelineEventLogger {
     return this;
   }
 
+  /**
+   * Current session id. Starts a session if none is active.
+   * @returns {string}
+   */
   get sessionId() {
     return this._sessionId || this.startSession();
   }
 
+  /**
+   * Session id, total event count, session start time and the distinct event
+   * types recorded. Starts a session if none is active.
+   * @returns {{sessionId: string, totalEvents: number, startTime: string, eventTypes: string[]}}
+   */
   getSessionStats() {
     return {
       sessionId: this.sessionId,

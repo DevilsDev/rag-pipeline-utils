@@ -553,6 +553,7 @@ They are still exported from the main entry in 2.x with a one-time deprecation w
 - [Documentation site](https://devilsdev.github.io/rag-pipeline-utils/): guides, API reference and deployment
 - [CLI reference](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI)
 - [API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/API-Reference)
+- [Generated API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/api): every export, with its methods, options and types
 - [Evaluation guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation)
 - [Examples](examples/): basic pipeline, OpenAI with Pinecone, and a deployable Fastify service ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
 - [Changelog](CHANGELOG.md) and [benchmarks methodology](BENCHMARKS.md)

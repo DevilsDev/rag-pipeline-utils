@@ -42,6 +42,10 @@ async function parseJsonSafe(res) {
   return {};
 }
 
+/**
+ * Client for a plugin hub registry: search, inspect, install, publish and
+ * rate plugins.
+ */
 class PluginHub extends EventEmitter {
   constructor(_options = {}) {
     super();
