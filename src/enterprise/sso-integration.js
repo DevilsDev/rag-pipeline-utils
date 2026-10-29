@@ -17,7 +17,8 @@
 
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
-const jwt = require('jsonwebtoken');
+// jsonwebtoken loads on first use (about 90 ms otherwise, on every import).
+const loadJwt = () => require('jsonwebtoken'); // eslint-disable-line global-require
 const RateLimiter = require('../utils/rate-limiter');
 const { logger } = require('../utils/logger');
 const { JWTValidator } = require('../security/jwt-validator');
@@ -1386,7 +1387,7 @@ class OIDCProvider {
       if (!this._config.clientId) {
         throw new Error('clientId must be configured');
       }
-      const decoded = jwt.decode(idToken, { complete: true });
+      const decoded = loadJwt().decode(idToken, { complete: true });
       if (!decoded || !decoded.header || !decoded.payload) {
         throw new Error('malformed id_token');
       }
@@ -1410,7 +1411,7 @@ class OIDCProvider {
         throw new Error('id_token has no sub claim');
       }
 
-      const claims = jwt.verify(idToken, key, {
+      const claims = loadJwt().verify(idToken, key, {
         algorithms: [header.alg],
         issuer: this._config.issuer,
         audience: this._config.clientId,

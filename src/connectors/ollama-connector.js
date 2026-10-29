@@ -1,6 +1,8 @@
 'use strict';
 
-const axios = require('axios');
+// axios loads on first use, so importing the package does not pay for it
+// (about 125 ms) unless this connector is constructed.
+const loadAxios = () => require('axios'); // eslint-disable-line global-require
 const { BaseConnector } = require('./base-connector');
 const {
   raceAbort,
@@ -44,7 +46,7 @@ class OllamaConnector extends BaseConnector {
   constructor(options = {}) {
     super({ name: 'ollama', ...options });
     this.config = { ...DEFAULT_CONFIG, ...options };
-    this.client = axios.create({
+    this.client = loadAxios().create({
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
     });
