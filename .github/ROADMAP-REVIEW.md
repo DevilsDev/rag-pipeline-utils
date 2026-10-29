@@ -1,6 +1,6 @@
 # Roadmap review and proposed plan
 
-> **Status, 2026-10-29:** 2.6.0 and 2.6.1 have shipped everything in section 4's 2.6.0 plan except the generated API reference, which moved to 2.7.0. 2.7.0 work starts with the dataset format: `validateDataset`, then `compareConfigurations`, the `rag-pipeline eval` command and the `rag-eval` Action, in that order; synthetic datasets, the pgvector and Qdrant connectors and the API reference can proceed alongside, and the benchmark comes last. Section 9.5 is still open.
+> **Status, 2026-10-29 (after 2.6.2):** 2.6.0, 2.6.1 and 2.6.2 have shipped section 4's 2.6.0 plan, except the generated API reference, which moved to 2.7.0. 2.6.2 fixed `npm install` on machines without husky, a bug in every release since 2.2.1. For 2.7.0, `validateDataset`, `runEvaluation`, `compareConfigurations` and `rag-pipeline eval` are merged, and the `rag-eval` Action is built and tested in `DevilsDev/rag-eval-action`; its `v1` waits for 2.7.0 on npm. Left for 2.7.0: synthetic datasets, the pgvector and Qdrant connectors, the API reference and, last, the benchmark. `DashboardGenerator` turned out to be an operations dashboard, so the evaluation report has its own renderer (section 7.5 assumed otherwise). Section 9.5 is still open.
 
 _Written 2026-10-29, the day after `@devilsdev/rag-pipeline-utils@2.5.0` was published. Its recommendations are applied in `PROJECT_ROADMAP.md` and `PROJECT_v3_PLAN.md` (2026-10-29); the decisions in section 8 record the defaults that were chosen._
 
