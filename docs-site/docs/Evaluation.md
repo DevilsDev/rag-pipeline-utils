@@ -286,6 +286,49 @@ A JSON array of cases is enough. The loop above reads `prompt` and `expected`; a
 ]
 ```
 
+| Field       | Required | Meaning                                                                                                        |
+| ----------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `prompt`    | Yes      | The question. `question` is accepted too                                                                       |
+| `expected`  | No       | The reference answer, used for context recall, BLEU/ROUGE and semantic similarity. `referenceAnswer` works too |
+| `sourceIds` | No       | Ids of the documents that should be retrieved for this question, matching the `id` of retrieval results        |
+| `id`        | No       | A stable id for the case; defaults to `case-1`, `case-2` and so on                                             |
+| `tags`      | No       | Strings for grouping results                                                                                   |
+
+The file can also be an object, `{ "cases": [...] }`, which leaves room for fields of your own such as a version.
+
+### Validate a test set
+
+:::info[Coming in 2.7.0]
+
+`validateDataset` is in the next release.
+
+:::
+
+`validateDataset(dataset)` checks a test set before anything runs, and reports every problem with the case it is in rather than failing on the first:
+
+```javascript
+import { validateDataset } from "@devilsdev/rag-pipeline-utils";
+
+const report = validateDataset([
+  { prompt: "How many vacation days do I get?", expected: "Twenty." },
+  { question: "", sourceIds: "vacation" },
+]);
+
+console.log(report.valid); // false
+console.log(report.errors.length); // 2
+console.log(report.errors[0].field); // "prompt"
+console.log(report.errors[0].index); // 1
+```
+
+It returns:
+
+- `valid`;
+- `errors`, each with the case's `index` and `id`, the `field` and a `message` such as `Case 2: "question" must be a non-empty string`;
+- `warnings` for likely mistakes that don't stop a run, such as a duplicate question or an empty `sourceIds`;
+- `cases`, the normalised cases when the dataset is valid: aliases resolved to `prompt` and `expected`, ids filled in, and other fields kept.
+
+It never throws. Pass `{ requireExpected: true }` or `{ requireSourceIds: true }` when a run needs reference answers or source ids for every case.
+
 ---
 
 ## **Citation & Grounding**

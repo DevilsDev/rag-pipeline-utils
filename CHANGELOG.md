@@ -13,6 +13,16 @@ page.
 
 Planned for 2.7.0.
 
+### Added
+
+- **`validateDataset(dataset, { requireExpected, requireSourceIds })`**
+  checks an evaluation test set before it runs and reports every problem
+  with its case index, id and field, without throwing. A dataset is an
+  array of `{ prompt, expected, sourceIds, id, tags }` cases or
+  `{ cases: [...] }`; `question` and `referenceAnswer` are accepted as
+  aliases, and the `{ prompt, expected }` shape `evaluateRagDataset` reads
+  is valid unchanged. Valid datasets come back normalised in `cases`.
+
 ## [2.6.1] - 2026-10-29
 
 Documentation only; no code changes.
