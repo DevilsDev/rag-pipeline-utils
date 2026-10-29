@@ -84,36 +84,21 @@ async function qdrant() {
     }),
   );
 
-  for (const url of ["http://localhost:6333", "http://127.0.0.1:6333"]) {
-    const s = new QdrantRetriever({ url, collection: "diag" });
-    await time(`qdrant retriever ${url}`, (i) =>
-      s.retrieve({ queryVector: queries[i % 50], topK: 10 }),
-    );
-  }
-  const body = (i, filter) =>
-    JSON.stringify({
-      query: queries[i % 50],
-      limit: 10,
-      with_payload: true,
-      ...(filter && {
-        filter: { must_not: [{ is_empty: { key: "rag_id" } }] },
-      }),
-    });
-  for (const filter of [true, false]) {
-    await time(`fetch 127.0.0.1 filter=${filter}`, (i) =>
-      fetch("http://127.0.0.1:6333/collections/diag/points/query", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: body(i, filter),
-      }).then((res) => res.text()),
-    );
-  }
+  const body = (i) =>
+    JSON.stringify({ query: queries[i % 50], limit: 10, with_payload: true });
+  const URL_ = "http://127.0.0.1:6333/collections/diag/points/query";
+  const viaFetch = (headers) => (i) =>
+    fetch(URL_, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...headers },
+      body: body(i),
+    }).then((res) => res.text());
   const agent = new http.Agent({ keepAlive: true });
-  await time(
-    "http keepAlive noDelay filter=true",
+  const viaHttp =
+    ({ noDelay, split, headers = {} }) =>
     (i) =>
       new Promise((resolve, reject) => {
-        const data = body(i, true);
+        const data = body(i);
         const req = http.request(
           {
             host: "127.0.0.1",
@@ -124,6 +109,7 @@ async function qdrant() {
             headers: {
               "content-type": "application/json",
               "content-length": Buffer.byteLength(data),
+              ...headers,
             },
           },
           (res) => {
@@ -131,58 +117,130 @@ async function qdrant() {
             res.on("end", resolve);
           },
         );
-        req.on("socket", (s) => s.setNoDelay(true));
+        if (noDelay) req.on("socket", (sock) => sock.setNoDelay(true));
         req.on("error", reject);
-        req.end(data);
-      }),
+        if (split) {
+          req.flushHeaders();
+          setImmediate(() => req.end(data));
+        } else req.end(data);
+      });
+  const fetchHeaders = {
+    accept: "*/*",
+    "accept-language": "*",
+    "sec-fetch-mode": "cors",
+    "user-agent": "node",
+    "accept-encoding": "gzip, deflate",
+  };
+  await time("fetch default", viaFetch({}));
+  await time(
+    "fetch accept-encoding identity",
+    viaFetch({ "accept-encoding": "identity" }),
   );
+  await time("fetch connection close", viaFetch({ connection: "close" }));
+  await time("http noDelay single-write", viaHttp({ noDelay: true }));
+  await time("http no-noDelay single-write", viaHttp({ noDelay: false }));
+  await time(
+    "http noDelay split-write",
+    viaHttp({ noDelay: true, split: true }),
+  );
+  await time(
+    "http no-noDelay split-write",
+    viaHttp({ noDelay: false, split: true }),
+  );
+  await time(
+    "http noDelay fetch-headers",
+    viaHttp({ noDelay: true, headers: fetchHeaders }),
+  );
+  const fr = await fetch(URL_, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: body(0),
+  });
+  await fr.text();
+  console.log(
+    "fetch response headers:",
+    JSON.stringify(Object.fromEntries(fr.headers)),
+  );
+  await new Promise((resolve) => {
+    const data = body(0);
+    const req = http.request(
+      {
+        host: "127.0.0.1",
+        port: 6333,
+        path: "/collections/diag/points/query",
+        method: "POST",
+        agent,
+        headers: {
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(data),
+        },
+      },
+      (res) => {
+        console.log("http response headers:", JSON.stringify(res.headers));
+        res.resume();
+        res.on("end", resolve);
+      },
+    );
+    req.end(data);
+  });
 }
 
 async function pgvector() {
-  for (const kind of ["random", "clustered"]) {
-    const r = rng(2);
-    const centroids = randomVecs(100, r);
-    const make = (n) =>
-      kind === "random" ? randomVecs(n, r) : clusteredVecs(n, r, centroids);
-    const corpus = make(10000);
-    const queries = make(50);
-    const truth = queries.map((q) => exact(corpus, q, 10));
-    // One connection, so SET hnsw.ef_search applies to every query
-    const pool = new (require("pg").Pool)({
-      connectionString: process.env.PGVECTOR_URL,
-      max: 1,
-    });
+  const { Pool } = require("pg");
+  const r = rng(2);
+  const centroids = randomVecs(100, r);
+  const corpus = clusteredVecs(10000, r, centroids);
+  const queries = clusteredVecs(50, r, centroids);
+  const truth = queries.map((q) => exact(corpus, q, 10));
+  const docs = corpus.map((vector, j) => ({
+    id: `doc-${j}`,
+    vector,
+    content: "x",
+  }));
+  for (const index of ["hnsw", "none"]) {
     const store = new PgVectorRetriever({
-      pool,
-      table: `diag_${kind}`,
+      connectionString: process.env.PGVECTOR_URL,
+      table: `diag_${index}`,
       dimensions: DIMS,
+      index,
     });
     await store.clear().catch(() => {});
     const s0 = performance.now();
-    for (let i = 0; i < corpus.length; i += 500) {
-      await store.store(
-        corpus
-          .slice(i, i + 500)
-          .map((vector, j) => ({ id: `doc-${i + j}`, vector, content: "x" })),
-      );
-    }
+    for (let i = 0; i < docs.length; i += 500)
+      await store.store(docs.slice(i, i + 500));
     console.log(
-      `pgvector ${kind} ingest: ${Math.round(corpus.length / ((performance.now() - s0) / 1000))} docs/s`,
+      `pgvector index=${index} ingest: ${Math.round(docs.length / ((performance.now() - s0) / 1000))} docs/s`,
     );
-    for (const ef of [40, 100, 200]) {
-      await pool.query(`SET hnsw.ef_search = ${ef}`);
-      let hits = 0;
-      for (let q = 0; q < queries.length; q++) {
-        const res = await store.retrieve({ queryVector: queries[q], topK: 10 });
-        const t = new Set(truth[q]);
-        hits += res.filter((x) => t.has(x.id)).length;
+    if (index === "hnsw") {
+      const rows = await store.retrieve({ queryVector: queries[0], topK: 50 });
+      console.log(`pgvector topK=50 at default ef_search: ${rows.length} rows`);
+      for (const ef of [40, 100, 200]) {
+        const pool = new Pool({
+          connectionString: process.env.PGVECTOR_URL,
+          options: `-c hnsw.ef_search=${ef}`,
+        });
+        const tuned = new PgVectorRetriever({ pool, table: "diag_hnsw" });
+        let hits = 0;
+        const xs = [];
+        for (let q = 0; q < queries.length; q++) {
+          const t0 = performance.now();
+          const res = await tuned.retrieve({
+            queryVector: queries[q],
+            topK: 10,
+          });
+          xs.push(performance.now() - t0);
+          const t = new Set(truth[q]);
+          hits += res.filter((x) => t.has(x.id)).length;
+        }
+        const big = await tuned.retrieve({ queryVector: queries[0], topK: 50 });
+        console.log(
+          `pgvector ef_search=${ef} (pool options): recall@10 ${(hits / 500).toFixed(3)}, p50 ${p50(xs)} ms, topK=50 rows ${big.length}`,
+        );
+        await pool.end();
       }
-      console.log(
-        `pgvector ${kind} ef_search=${ef}: recall@10 ${(hits / 500).toFixed(3)}`,
-      );
     }
     await store.clear();
-    await pool.end();
+    await store.close();
   }
 }
 
