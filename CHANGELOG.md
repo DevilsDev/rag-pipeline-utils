@@ -45,6 +45,16 @@ Planned for 2.7.0.
 - `sourceIds` match a retrieved result's `id` or its `metadata.source`, so
   a case can name a file when the index stores chunks of it.
 
+### Fixed
+
+- **`npm install` failed on machines without husky installed globally.**
+  Every release since 2.2.1 declared `"postinstall": "husky install"`, a
+  development tool that isn't installed in users' projects, so installing
+  the package failed with `husky: not found` on clean machines and CI
+  runners. The hook now runs from `prepare`, which npm runs only in this
+  repository, and the pack smoke test fails if the package has any
+  install-time script.
+
 ## [2.6.1] - 2026-10-29
 
 Documentation only; no code changes.

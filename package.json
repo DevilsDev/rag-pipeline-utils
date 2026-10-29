@@ -65,7 +65,7 @@
     "lint:diagnostic:ts": "eslint . --ext .js,.jsx,.ts,.tsx --format=stylish",
     "lint:errors-only:ts": "eslint . --ext .js,.jsx,.ts,.tsx --quiet",
     "lint-staged": "lint-staged",
-    "postinstall": "husky install",
+    "prepare": "husky install",
     "verify:mocks": "node scripts/verify-fixture-mocks.js",
     "build:docs": "npm run docs:build",
     "ci": "node scripts/ci-runner.js",
