@@ -236,6 +236,37 @@ The Action is published with 2.7.0, which it needs; see its README for the input
 
 ---
 
+## `generate-dataset`
+
+:::info[Coming in 2.7.0]
+
+`rag-pipeline generate-dataset` is in the next release.
+
+:::
+
+Writes a test set for [`eval`](#eval) from your index: the configured `llm` writes a question and answer about each chunk, and each case records the chunk's source file.
+
+```bash
+rag-pipeline ingest ./docs
+rag-pipeline generate-dataset --output tests.json --count 30
+rag-pipeline eval tests.json --output eval-main.json
+```
+
+Answers that their chunk doesn't support, repeated questions and chunks shorter than 80 characters are skipped, with a count per reason. It needs an `llm` stage, and won't replace an existing file unless you pass `--force`, so a test set you've reviewed isn't lost.
+
+| Option                   | Description                                                       |
+| ------------------------ | ----------------------------------------------------------------- |
+| `--output <file>`        | Where to write the test set (required)                            |
+| `--count <n>`            | Cases to write at most (default 20)                               |
+| `--per-document <n>`     | Questions per chunk (default 1)                                   |
+| `--min-faithfulness <n>` | Share of an answer's sentences its chunk must support (default 1) |
+| `--concurrency <n>`      | Chunks processed at the same time (default 1)                     |
+| `--force`                | Replace `--output` if it exists                                   |
+
+The cases are marked `"reviewed": false` and tagged `synthetic`. Read them before relying on them; see [Generate a test set](./Evaluation.md#generate-a-test-set).
+
+---
+
 ## `run`
 
 `ingest` and/or `query` in one command.

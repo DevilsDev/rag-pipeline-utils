@@ -69,6 +69,7 @@ const COMMANDS = [
   "ingest",
   "query",
   "eval",
+  "generate-dataset",
   "run",
   "serve",
   "doctor",
