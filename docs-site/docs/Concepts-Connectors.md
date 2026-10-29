@@ -33,6 +33,7 @@ defined as a JSON schema in `contracts/`.
 | `HybridRetriever`          | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
 | `GraphRetriever`           | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
 | `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector). Coming in 2.7.0.                                                   |
+| `QdrantRetriever`          | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant). Coming in 2.7.0.                                                                                                                             |
 | Pinecone, Weaviate, Qdrant | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
 
 ### PostgreSQL with pgvector
@@ -100,6 +101,59 @@ In `.ragrc.json`, the connection string comes from an environment variable, `DAT
 ```
 
 The CLI's `local` embedder can't be used with it: its vocabulary is stored with the `file-store` index. Use `openai`, `ollama` or `cohere`.
+
+### Qdrant
+
+:::info[Coming in 2.7.0]
+
+`QdrantRetriever` is in the next release.
+
+:::
+
+`QdrantRetriever` keeps documents in a [Qdrant](https://qdrant.tech) collection. It talks to Qdrant's REST API with Node's built-in `fetch`, so there's no package to install. It's written against the Qdrant 1.20 API and tested against Qdrant 1.20.
+
+```javascript no-run
+import {
+  createRagPipeline,
+  OpenAIConnector,
+  QdrantRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const retriever = new QdrantRetriever({
+  url: process.env.QDRANT_URL, // default http://localhost:6333
+  apiKey: process.env.QDRANT_API_KEY, // Qdrant Cloud
+  collection: "rag_documents",
+});
+const embedder = new OpenAIConnector();
+const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
+```
+
+The first `store()` creates the collection (cosine distance, sized to the first vector or to `dimensions`) and a keyword index on `metadata.source`, unless you pass `createCollection: false`. Writes wait until Qdrant has applied them, so a query right after `ingest` sees the new documents.
+
+Qdrant point ids must be integers or UUIDs. Each document's id is turned into a UUID derived from it, and the original id is kept in the payload as `rag_id`, alongside `content` and `metadata`. Results report your original id. Queries, `clear()`, `size()` and `list()` only touch points that have a `rag_id`, so a collection can hold other data too.
+
+| Option             | Default                 | Description                                                  |
+| ------------------ | ----------------------- | ------------------------------------------------------------ |
+| `url`              | `http://localhost:6333` | Qdrant's REST endpoint                                       |
+| `apiKey`           |                         | Sent as the `api-key` header; never included in errors       |
+| `collection`       | `rag_documents`         | Letters, digits, `_` and `-`                                 |
+| `dimensions`       | first vector's          | Vector size for a new collection                             |
+| `createCollection` | `true`                  | Create the collection and index on the first `store()`       |
+| `cacheKey`         |                         | Cache identity, as for [pgvector](#postgresql-with-pgvector) |
+
+Like `PgVectorRetriever`, it has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI. It isn't cached unless you set `cacheKey`, and the run's `AbortSignal` cancels the HTTP request.
+
+In `.ragrc.json`, the URL comes from `config.url` or `QDRANT_URL`, and the API key only from `QDRANT_API_KEY`:
+
+```json
+{
+  "stage": "retriever",
+  "name": "qdrant",
+  "config": { "collection": "rag_documents" }
+}
+```
+
+As with pgvector, the CLI's `local` embedder can't be used with it; use `openai`, `ollama` or `cohere`.
 
 ### LLMs
 

@@ -29,6 +29,42 @@ function databaseSuite(name, variable, run) {
   }
 }
 
+databaseSuite("QdrantRetriever", "QDRANT_URL", (url) => {
+  describe("QdrantRetriever server", () => {
+    // jest.setup.js blocks network access for every test: loopback needs an
+    // opt-in, and fetch goes through an undici MockAgent that refuses all
+    // connections. This suite talks to the Qdrant service, so lift both.
+    let savedDispatcher;
+    beforeAll(() => {
+      const undici = require("undici");
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = true;
+      savedDispatcher = undici.getGlobalDispatcher();
+      undici.setGlobalDispatcher(new undici.Agent());
+    });
+    afterAll(() => {
+      require("undici").setGlobalDispatcher(savedDispatcher);
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = false;
+    });
+    const { QdrantRetriever } = require("../../src/retrieval/qdrant-retriever");
+    describeRetrieverContract(
+      "QdrantRetriever",
+      () =>
+        new QdrantRetriever({
+          url,
+          collection: `contract_${randomBytes(4).toString("hex")}`,
+        }),
+      {
+        extended: true,
+        cleanup: async (retriever) => {
+          await fetch(`${url}/collections/${retriever.collection}`, {
+            method: "DELETE",
+          });
+        },
+      },
+    );
+  });
+});
+
 describeRetrieverContract("MemoryRetriever", () => {
   const { MemoryRetriever } = require("../../src/connectors/memory-retriever");
   return new MemoryRetriever();

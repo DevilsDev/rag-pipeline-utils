@@ -52,6 +52,11 @@ Planned for 2.7.0.
   optional peer dependency, loaded only when used). In `.ragrc.json` it is
   the `pgvector` retriever and reads its connection string from
   `DATABASE_URL`. It isn't cached unless you give it a `cacheKey`.
+- **`QdrantRetriever`** stores and searches documents in a Qdrant
+  collection through its REST API, with no client package. Document ids map
+  to stable UUIDs, with the original id kept in the payload; writes wait
+  until Qdrant applies them. In `.ragrc.json` it is the `qdrant` retriever,
+  reading `QDRANT_URL` and `QDRANT_API_KEY`. Tested against Qdrant 1.20.
 - **`rag-pipeline eval <dataset>`** runs a `.json` or `.jsonl` test set
   through the configured pipeline and exits 1 when a case fails, a metric
   is below its `--min metric=value`, or the run regressed from a

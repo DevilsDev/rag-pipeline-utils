@@ -50,6 +50,18 @@ const BUILT_INS = {
         cacheKey: cfg.cacheKey,
       });
     },
+    // The API key comes only from QDRANT_API_KEY, never the config file.
+    qdrant: (cfg) => {
+      const { QdrantRetriever } = require("../retrieval/qdrant-retriever");
+      return new QdrantRetriever({
+        url: cfg.url || process.env.QDRANT_URL || "http://localhost:6333",
+        apiKey: process.env.QDRANT_API_KEY,
+        collection: cfg.collection,
+        dimensions: cfg.dimensions,
+        createCollection: cfg.createCollection,
+        cacheKey: cfg.cacheKey,
+      });
+    },
   },
   llm: {
     openai: (cfg) =>

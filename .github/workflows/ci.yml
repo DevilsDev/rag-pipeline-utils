@@ -126,8 +126,13 @@ jobs:
           --health-interval 2s
           --health-timeout 5s
           --health-retries 30
+      qdrant:
+        image: qdrant/qdrant:v1.20.0
+        ports:
+          - 6333:6333
     env:
       PGVECTOR_URL: postgres://rag:rag@localhost:5432/rag
+      QDRANT_URL: http://localhost:6333
       # Fail, don't skip, when a database URL is missing.
       REQUIRE_VECTOR_STORES: "1"
     steps:
@@ -147,6 +152,15 @@ jobs:
 
       - name: Install
         run: npm ci --prefer-offline
+
+      # The qdrant image has no health-check tool, so wait for its API here.
+      - name: Wait for Qdrant
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:6333/readyz && exit 0
+            sleep 2
+          done
+          echo "Qdrant did not become ready" && exit 1
 
       - name: Retriever contract
         run: npx jest __tests__/integration/vector-stores.test.js --ci
