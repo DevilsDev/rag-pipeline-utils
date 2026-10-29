@@ -196,6 +196,8 @@
     "@types/jest": "^29.5.14",
     "@types/node": "22.14.1",
     "acorn": "8.15.0",
+    "ai": "6.0.317",
+    "ai-v7": "npm:ai@7.0.156",
     "babel-jest": "^29.7.0",
     "cross-env": "7.0.3",
     "docusaurus-plugin-llms": "0.6.1",
