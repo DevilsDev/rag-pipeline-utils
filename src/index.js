@@ -60,6 +60,7 @@ const {
   computeContextRecall,
 } = require('./evaluate/context-metrics');
 const { computeGroundedness } = require('./evaluate/groundedness');
+const { computeSemanticSimilarity } = require('./evaluate/semantic-similarity');
 const { PipelineEvaluator } = require('./evaluate/pipeline-evaluator');
 
 // Chunking
@@ -229,6 +230,7 @@ module.exports = {
   checkNumericConsistency,
   extractNumbers,
   computeFaithfulness,
+  computeSemanticSimilarity,
   computeAnswerRelevance,
   computeContextPrecision,
   computeContextRecall,
