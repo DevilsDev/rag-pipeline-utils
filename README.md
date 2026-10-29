@@ -487,7 +487,7 @@ The result of `run()` is:
 | **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                                                                                                                                                          |
 | **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                                                                                                                                                         |
 | **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                                                                                                                                                                                               |
-| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `AuditLogger`, MCP tool server (`MCPServer`)                                                                                                                                                                                          |
+| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `metrics` (counters, gauges, histograms), `eventLogger`, coded errors with suggestions (`createError`), `AuditLogger`, MCP tool server (`MCPServer`)                                                                                  |
 
 ## How it compares
 

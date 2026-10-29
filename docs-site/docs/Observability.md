@@ -81,6 +81,10 @@ console.log(registry.exportMetrics()); // JSON string
 
 `exportMetrics()` returns JSON, not the Prometheus text format. To scrape the numbers with Prometheus, expose them through a client such as `prom-client` in your own service.
 
+- **Names are per type.** `getOrCreateCounter`, `getOrCreateHistogram` and `getOrCreateGauge` return the metric already registered under a name, and throw a `TypeError` when that name belongs to a metric of another type (before 2.7.1 they returned it anyway).
+- **An empty histogram** reports `mean` 0 and `min` and `max` as `null` from `getStatistics()`.
+- **`pipelineMetrics`** counts every error type passed to `recordError(type, component)` in `getSummary().errors`, and tracks running operations in the `operationsActive` gauge.
+
 ---
 
 ## Event Log
@@ -100,6 +104,8 @@ events.logEvent("custom.cache_miss", eventLogger.EventSeverity.INFO, {
 console.log(events.getSessionStats());
 console.log(events.exportEvents()); // JSON string
 ```
+
+Every event it records has an `eventLogger.EventTypes` entry (`PLUGIN_START`, `PLUGIN_END`, `PLUGIN_ERROR`, `STAGE_START`, `STAGE_END`, `STAGE_ERROR`, `MEMORY_WARNING`) and an `EventSeverity` (`DEBUG`, `INFO`, `WARN`, `ERROR`), so you can filter `getEventHistory({ eventType, severity })` with the constants rather than strings.
 
 ---
 
