@@ -626,6 +626,8 @@ console.log(latency.getPercentiles([50, 95]));
 console.log(registry.exportMetrics());
 ```
 
+A `getOrCreate…` call for a name registered as another type throws a `TypeError`. An empty histogram's `getStatistics()` reports `min` and `max` as `null`.
+
 ### eventLogger
 
 Structured pipeline events.
@@ -771,7 +773,7 @@ createError(code: string, context?: object, originalError?: Error): EnhancedErro
 wrapError(error: Error, code: string, context?: object): EnhancedError
 ```
 
-`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED` and `VALIDATION_FAILED`.
+`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED`, `VALIDATION_FAILED`, `NETWORK_TIMEOUT` and `FS_READ_ERROR`. Every code has its own message and suggestions, whose `{placeholders}` are filled from `context`; a suggestion whose placeholder has no value is left out. See the [generated reference](./api/rag-pipeline-utils/namespaces/errorFormatter/) for the full list.
 
 **Example:**
 

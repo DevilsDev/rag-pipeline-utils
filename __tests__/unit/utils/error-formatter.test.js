@@ -554,4 +554,26 @@ describe("Error Formatter", () => {
       expect(json.originalError.message).toBe("Original error");
     });
   });
+
+  describe("templates and placeholders", () => {
+    it("has a template for every error code", () => {
+      const missing = Object.values(ERROR_CODES).filter(
+        (code) => !ERROR_TEMPLATES[code],
+      );
+      expect(missing).toEqual([]);
+      expect(
+        createError(ERROR_CODES.NETWORK_TIMEOUT, { url: "http://q" }).message,
+      ).toBe("Request to http://q timed out");
+    });
+
+    it("leaves out suggestions whose placeholder has no value", () => {
+      const { suggestions } = formatError(ERROR_CODES.CONFIG_INVALID_TYPE, {
+        field: "topK",
+        expected: "number",
+        actual: "string",
+      });
+      expect(suggestions.some((s) => s.includes("{"))).toBe(false);
+      expect(suggestions).not.toContain("Current value: {currentValue}");
+    });
+  });
 });

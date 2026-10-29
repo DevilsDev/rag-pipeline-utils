@@ -342,6 +342,122 @@ const ERROR_TEMPLATES = {
     documentation: 'security.md#token-expiration',
   },
 
+  [ERROR_CODES.CONFIG_INVALID_VALUE]: {
+    message: 'Invalid value for configuration field "{field}"',
+    suggestions: [
+      'Check the allowed values for "{field}" in the configuration reference',
+      'Current value: {currentValue}',
+    ],
+    documentation: 'configuration.md#field-types',
+  },
+
+  [ERROR_CODES.PLUGIN_INITIALIZATION_FAILED]: {
+    message: 'Plugin "{plugin}" failed to initialize',
+    suggestions: [
+      'Check the options passed to the plugin',
+      'Check that services the plugin connects to are reachable',
+    ],
+    documentation: 'plugins.md#troubleshooting',
+  },
+
+  [ERROR_CODES.PIPELINE_INVALID_STAGE]: {
+    message: 'Invalid pipeline stage "{stage}"',
+    suggestions: [
+      'Use one of the stages loader, embedder, retriever, reranker or llm',
+      'Check the stage names in your .ragrc.json',
+    ],
+    documentation: 'pipeline.md#stage-configuration',
+  },
+
+  [ERROR_CODES.VALIDATION_SCHEMA_ERROR]: {
+    message: 'The value does not match its schema',
+    suggestions: ['Check the value against the documented schema'],
+    documentation: 'validation.md',
+  },
+
+  [ERROR_CODES.VALIDATION_CONSTRAINT_ERROR]: {
+    message: 'The value breaks a constraint on "{field}"',
+    suggestions: ['Check the allowed range or format for "{field}"'],
+    documentation: 'validation.md',
+  },
+
+  [ERROR_CODES.FS_READ_ERROR]: {
+    message: 'Could not read "{path}"',
+    suggestions: [
+      'Check that the file exists and you can read it',
+      'Check that the file is not locked by another process',
+    ],
+    documentation: 'troubleshooting.md#file-errors',
+  },
+
+  [ERROR_CODES.FS_WRITE_ERROR]: {
+    message: 'Could not write "{path}"',
+    suggestions: [
+      'Check that the directory exists and you can write to it',
+      'Check that the disk is not full',
+    ],
+    documentation: 'troubleshooting.md#file-errors',
+  },
+
+  [ERROR_CODES.NETWORK_REQUEST_FAILED]: {
+    message: 'Request to {url} failed',
+    suggestions: [
+      'Check that the service is running and reachable',
+      'Check your network connection and proxy settings',
+    ],
+    documentation: 'troubleshooting.md',
+  },
+
+  [ERROR_CODES.NETWORK_TIMEOUT]: {
+    message: 'Request to {url} timed out',
+    suggestions: [
+      'Check that the service is reachable',
+      'Raise the timeout if the service is slow to respond',
+    ],
+    documentation: 'troubleshooting.md',
+  },
+
+  [ERROR_CODES.NETWORK_INVALID_RESPONSE]: {
+    message: 'Unexpected response from {url}',
+    suggestions: [
+      'Check that the URL points to the right service and API version',
+    ],
+    documentation: 'troubleshooting.md',
+  },
+
+  [ERROR_CODES.HOT_RELOAD_WATCH_ERROR]: {
+    message: 'Could not watch "{path}" for changes',
+    suggestions: [
+      'Check that the path exists',
+      'Raise the system limit on watched files if it was reached',
+    ],
+    documentation: 'hot-reload.md#troubleshooting',
+  },
+
+  [ERROR_CODES.DAG_EXECUTION_FAILED]: {
+    message: 'DAG node "{node}" failed',
+    suggestions: [
+      'Check the error from the node\'s function',
+      'Mark the node optional if the run can continue without it',
+    ],
+    documentation: 'dag.md#nodes',
+  },
+
+  [ERROR_CODES.DAG_INVALID_TOPOLOGY]: {
+    message: 'The DAG is not valid',
+    suggestions: [
+      'Check that every edge connects two existing nodes',
+      'Check that the graph has no cycles',
+    ],
+    documentation: 'dag.md#cycles',
+  },
+
+  [ERROR_CODES.AUTH_INSUFFICIENT_PERMISSIONS]: {
+    message: 'Not allowed to {action}',
+    suggestions: ['Check the roles or scopes granted to this identity'],
+    documentation: 'security.md#authentication',
+  },
+
   [ERROR_CODES.UNKNOWN_ERROR]: {
     message: 'An unexpected error occurred: {reason}',
     suggestions: [
@@ -428,20 +544,20 @@ function formatError(code, context = {}) {
   const template =
     ERROR_TEMPLATES[code] || ERROR_TEMPLATES[ERROR_CODES.UNKNOWN_ERROR];
 
-  // Replace placeholders in message
-  let message = template.message;
-  for (const [key, value] of Object.entries(context)) {
-    message = message.replace(`{${key}}`, String(value));
-  }
-
-  // Replace placeholders in suggestions
-  const suggestions = template.suggestions.map((suggestion) => {
-    let formatted = suggestion;
+  const fill = (text) => {
+    let filled = text;
     for (const [key, value] of Object.entries(context)) {
-      formatted = formatted.replace(`{${key}}`, String(value));
+      filled = filled.replaceAll(`{${key}}`, String(value));
     }
-    return formatted;
-  });
+    return filled;
+  };
+
+  const message = fill(template.message);
+  // A suggestion whose placeholder has no value would show it literally
+  // ("Current value: {currentValue}"), so it is left out.
+  const suggestions = template.suggestions
+    .map(fill)
+    .filter((suggestion) => !/\{[A-Za-z]\w*\}/.test(suggestion));
 
   return {
     code,

@@ -9,10 +9,15 @@ mdx:
 const EventTypes: object;
 ```
 
-Event type names used by PipelineEventLogger. The logger also emits
-'stage.end' and 'memory.warning', which have no entry here.
+Event type names used by PipelineEventLogger.
 
 ## Type Declaration
+
+### MEMORY_WARNING
+
+```ts
+MEMORY_WARNING: string;
+```
 
 ### PLUGIN_END
 
@@ -30,6 +35,12 @@ PLUGIN_ERROR: string;
 
 ```ts
 PLUGIN_START: string;
+```
+
+### STAGE_END
+
+```ts
+STAGE_END: string;
 ```
 
 ### STAGE_ERROR
