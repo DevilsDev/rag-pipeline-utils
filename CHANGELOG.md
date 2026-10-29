@@ -40,6 +40,11 @@ Planned for 2.7.0.
   writes a standalone HTML page (`.html`) or a Markdown summary for a pull
   request comment, and `--json` prints the verdict. Also `--tolerance`,
   `--case-tolerance`, `--concurrency`, `--timeout` and `--top-k`.
+- **[`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action)**,
+  a GitHub Action that runs `rag-pipeline eval` on pull requests, compares
+  them with the default branch's report from the Actions cache, posts a
+  summary comment that later runs update, and fails the check when scores
+  drop. Its `v1` is published with this release.
 - **`renderEvaluationReport`** (Markdown or HTML) and
   **`evaluationVerdict`** for the same reports in code.
 - `sourceIds` match a retrieved result's `id` or its `metadata.source`, so

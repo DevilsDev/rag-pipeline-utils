@@ -217,6 +217,23 @@ The metrics are `faithfulness`, `relevance`, `contextPrecision`, `contextRecall`
 
 Model answers vary from run to run. Run the same configuration a few times to see how far the scores move, and set `--tolerance` above that.
 
+### In GitHub Actions
+
+[`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs `rag-pipeline eval` on pull requests. It compares each pull request with the report from your default branch (kept in the Actions cache), posts the summary as a pull request comment that later runs update in place, and fails the check when scores drop:
+
+```yaml no-run
+- uses: DevilsDev/rag-eval-action@v1
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  with:
+    ingest: docs
+    dataset: eval/tests.json
+    baseline-cache: true
+    min: faithfulness=0.8
+```
+
+The Action is published with 2.7.0, which it needs; see its README for the inputs, permissions and fork pull requests.
+
 ---
 
 ## `run`

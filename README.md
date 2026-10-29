@@ -209,6 +209,8 @@ if (report.scores.faithfulness < 0.8) process.exitCode = 1;
 
 Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases. From 2.7.0, `validateDataset` checks it before a run and reports every malformed case, with its index and field; `runEvaluation` runs it and saves a JSON report; and `compareConfigurations` compares two pipelines, or a pipeline against the report saved from your main branch, and lists the cases that got worse. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
 
+On GitHub, [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs this on every pull request, compares it with your main branch and posts the summary as a comment. It is published with 2.7.0.
+
 ### Check answers from another framework
 
 Already on LangChain, LlamaIndex, Mastra or the AI SDK? `checkAnswer` checks the answer your chain produced against the sources it was given, in the shape your framework returns them:
