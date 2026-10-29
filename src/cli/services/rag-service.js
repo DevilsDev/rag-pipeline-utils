@@ -11,6 +11,8 @@ const { buildComponents } = require("../../config/component-factory");
 const { readDocuments } = require("../../loader/document-reader");
 const { embedQuery } = require("../../utils/embed-query");
 const { createRagPipeline } = require("../../core/create-pipeline");
+const { performance } = require("perf_hooks");
+const { instrumentComponents } = require("./instrument");
 
 function requireStage(components, stage) {
   if (!components[stage]) {
@@ -284,15 +286,24 @@ async function retrieve({ components, config, configDir, question, topK = 3 }) {
  * @param {string} params.question
  * @param {number} [params.topK=3]
  * @param {object} [params.components] - Prebuilt components (loadComponents)
- * @returns {Promise<{answer: string|null, results: Array, citations?: object}>}
+ * @param {number} [params.timeout] - Abort the run after this many ms
+ * @param {function(string): void} [params.onToken] - Stream the answer: called
+ *   with each token (only with an llm stage)
+ * @returns {Promise<{answer: string|null, results: Array, citations?: object,
+ *   timings: Array<{stage: string, ms: number}>, durationMs: number}>}
  */
-async function query({ config, configDir, question, topK = 3, components }) {
-  const c = components || loadComponents({ config, configDir });
-
-  if (!c.llm) {
-    const results = await retrieve({ components: c, question, topK });
-    return { answer: null, results };
-  }
+async function query({
+  config,
+  configDir,
+  question,
+  topK = 3,
+  components,
+  timeout,
+  onToken,
+}) {
+  const loaded = components || loadComponents({ config, configDir });
+  const { components: c, timings, captured } = instrumentComponents(loaded);
+  const started = performance.now();
 
   const pipeline = createRagPipeline({
     embedder: c.embedder,
@@ -300,15 +311,43 @@ async function query({ config, configDir, question, topK = 3, components }) {
     llm: c.llm,
     reranker: c.reranker,
   });
+  const stream = Boolean(onToken && c.llm);
   const result = await pipeline.run({
     query: question,
-    options: { topK, citations: true },
+    options: {
+      topK,
+      citations: Boolean(c.llm),
+      ...(timeout && { timeout }),
+      ...(stream && { stream: true }),
+    },
   });
-  if (!result.success) throw new Error(result.error);
+  if (result && result.success === false) throw new Error(result.error);
+
+  if (stream) {
+    let answer = "";
+    let citations;
+    for await (const chunk of result) {
+      if (chunk.token) {
+        answer += chunk.token;
+        onToken(chunk.token);
+      }
+      if (chunk.done) citations = chunk.citations;
+    }
+    return {
+      answer,
+      results: captured.results || [],
+      citations,
+      timings,
+      durationMs: performance.now() - started,
+    };
+  }
+
   return {
-    answer: result.answer,
+    answer: c.llm ? result.answer : null,
     results: result.results,
-    citations: result.citations,
+    ...(result.citations && { citations: result.citations }),
+    timings,
+    durationMs: performance.now() - started,
   };
 }
 

@@ -4,7 +4,8 @@
 
 const fs = require('fs/promises');
 const path = require('path');
-const { JSDOM } = require('jsdom');
+// jsdom (about 100 packages) loads when an HTML file is read, not on import.
+const loadJsdom = () => require('jsdom'); // eslint-disable-line global-require
 
 /**
  * HTMLLoader reads HTML files and extracts visible text.
@@ -19,6 +20,7 @@ class HTMLLoader {
   async load(filePath) {
     const absPath = path.resolve(filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
+    const { JSDOM } = loadJsdom();
     const dom = new JSDOM(raw);
     let text = dom.window.document.body.textContent || '';
 

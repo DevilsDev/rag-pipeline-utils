@@ -7,9 +7,14 @@ const { Command } = require("commander");
 const { PluginHub } = require("../../ecosystem/plugin-hub");
 const { PluginCertification } = require("../../ecosystem/plugin-certification");
 
-const hubCommands = require("./plugin-hub/hub-commands");
-const certificationCommands = require("./plugin-hub/certification-commands");
-const reviewCommands = require("./plugin-hub/review-commands");
+// Command modules (and inquirer, ora, cli-table3) load when a hub command
+// runs, not when the CLI starts.
+/* eslint-disable global-require */
+const hubCommands = () => require("./plugin-hub/hub-commands");
+const certificationCommands = () =>
+  require("./plugin-hub/certification-commands");
+const reviewCommands = () => require("./plugin-hub/review-commands");
+/* eslint-enable global-require */
 const { setupEventListeners } = require("./plugin-hub/event-handlers");
 const {
   installFromSource,
@@ -102,7 +107,7 @@ class PluginHubCLI {
         "relevance",
       )
       .action(async (query, _options) => {
-        await hubCommands.searchPlugins(this.hub, query, _options);
+        await hubCommands().searchPlugins(this.hub, query, _options);
       });
 
     program
@@ -128,7 +133,7 @@ class PluginHubCLI {
       .command("info <plugin>")
       .description("Get detailed information about a plugin")
       .action(async (plugin) => {
-        await hubCommands.getPluginInfo(this.hub, plugin);
+        await hubCommands().getPluginInfo(this.hub, plugin);
       });
 
     // List installed command
@@ -148,7 +153,7 @@ class PluginHubCLI {
       .option("--dry-run", "Validate without publishing")
       .option("--tag <tag>", "Release tag")
       .action(async (pluginPath, _options) => {
-        await hubCommands.publishPlugin(
+        await hubCommands().publishPlugin(
           this.hub,
           pluginPath || process.cwd(),
           _options,
@@ -161,7 +166,7 @@ class PluginHubCLI {
       .description("Rate a plugin (1-5 stars)")
       .option("-r, --review <review>", "Written review")
       .action(async (plugin, rating, _options) => {
-        await reviewCommands.ratePlugin(
+        await reviewCommands().ratePlugin(
           this.hub,
           plugin,
           parseInt(rating),
@@ -176,7 +181,7 @@ class PluginHubCLI {
       .option("-l, --limit <limit>", "Number of reviews", parseInt, 10)
       .option("--sort <sort>", "Sort by: helpful, recent, rating", "helpful")
       .action(async (plugin, _options) => {
-        await reviewCommands.getPluginReviews(this.hub, plugin, _options);
+        await reviewCommands().getPluginReviews(this.hub, plugin, _options);
       });
 
     // Trending command
@@ -187,7 +192,7 @@ class PluginHubCLI {
       .option("-c, --category <category>", "Filter by category")
       .option("-l, --limit <limit>", "Number of results", parseInt, 20)
       .action(async (_options) => {
-        await hubCommands.getTrendingPlugins(this.hub, _options);
+        await hubCommands().getTrendingPlugins(this.hub, _options);
       });
 
     // Certification commands
@@ -210,7 +215,7 @@ class PluginHubCLI {
       .command("verify <plugin> <certificationId>")
       .description("Verify plugin certification")
       .action(async (plugin, certificationId) => {
-        await certificationCommands.verifyCertification(
+        await certificationCommands().verifyCertification(
           this.certification,
           plugin,
           certificationId,
@@ -222,7 +227,7 @@ class PluginHubCLI {
       .description("Show certification requirements")
       .action(async (level) => {
         // Requirements are a static list; no registry is contacted.
-        await certificationCommands.showCertificationRequirements(
+        await certificationCommands().showCertificationRequirements(
           new PluginCertification(),
           level,
         );
@@ -237,7 +242,7 @@ class PluginHubCLI {
       .command("status [publisherId]")
       .description("Check publisher verification status")
       .action(async (publisherId) => {
-        await certificationCommands.getPublisherStatus(
+        await certificationCommands().getPublisherStatus(
           this.certification,
           publisherId,
         );
@@ -247,7 +252,7 @@ class PluginHubCLI {
       .command("apply")
       .description("Apply for publisher verification")
       .action(async () => {
-        await certificationCommands.applyForPublisherVerification(
+        await certificationCommands().applyForPublisherVerification(
           this.certification,
         );
       });

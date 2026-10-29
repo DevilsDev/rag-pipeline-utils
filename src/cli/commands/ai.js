@@ -7,13 +7,9 @@
 
 const { Command, Option } = require("commander");
 const { parsePositiveInteger } = require("../shared/cli-utils.js");
-const {
-  handleTrainEmbedding,
-  handleBenchmark,
-  handleFeedback,
-  handleSearch,
-  handleMultimodalProcess,
-} = require("../handlers/ai-handler.js");
+// The handler (document loaders: jsdom, marked, csv-parse) loads when an
+// ai command runs, not when the CLI starts.
+const aiHandler = () => require("../handlers/ai-handler.js"); // eslint-disable-line global-require
 
 /**
  * @param {() => object} getGlobalOptions - Returns program.opts()
@@ -37,7 +33,7 @@ function createAiCommand(getGlobalOptions) {
       "Train on documents from this file or directory instead",
     )
     .action(async (inputPath) => {
-      await handleTrainEmbedding(getGlobalOptions(), inputPath);
+      await aiHandler().handleTrainEmbedding(getGlobalOptions(), inputPath);
     });
 
   ai.command("benchmark")
@@ -52,7 +48,7 @@ function createAiCommand(getGlobalOptions) {
     .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
     .option("--json", "Print the measurements as JSON")
     .action(async (options) => {
-      await handleBenchmark(getGlobalOptions(), options);
+      await aiHandler().handleBenchmark(getGlobalOptions(), options);
     });
 
   ai.command("feedback")
@@ -67,7 +63,12 @@ function createAiCommand(getGlobalOptions) {
         .makeOptionMandatory(),
     )
     .action(async (question, docId, options) => {
-      await handleFeedback(getGlobalOptions(), question, docId, options);
+      await aiHandler().handleFeedback(
+        getGlobalOptions(),
+        question,
+        docId,
+        options,
+      );
     });
 
   ai.command("search")
@@ -78,7 +79,7 @@ function createAiCommand(getGlobalOptions) {
     .option("--top-k <n>", "Passages to return", parsePositiveInteger, 3)
     .option("--json", "Print the results as JSON")
     .action(async (question, options) => {
-      await handleSearch(getGlobalOptions(), question, options);
+      await aiHandler().handleSearch(getGlobalOptions(), question, options);
     });
 
   const multimodal = ai
@@ -92,7 +93,11 @@ function createAiCommand(getGlobalOptions) {
     .argument("<path>", "File or directory")
     .option("--json", "Print the report as JSON")
     .action(async (inputPath, options) => {
-      await handleMultimodalProcess(getGlobalOptions(), inputPath, options);
+      await aiHandler().handleMultimodalProcess(
+        getGlobalOptions(),
+        inputPath,
+        options,
+      );
     });
 
   return ai;

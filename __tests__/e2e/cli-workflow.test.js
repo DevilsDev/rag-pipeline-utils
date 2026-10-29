@@ -244,3 +244,128 @@ describe("rag-pipeline serve", () => {
     expect(body.results[0].metadata.source).toBe("docs/vacation.md");
   });
 });
+
+describe("rag-pipeline query options", () => {
+  let dir;
+  const ANSWER =
+    "Employees receive twenty days of paid vacation per year. The office is in Paris.";
+
+  beforeAll(() => jest.useRealTimers());
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "rag-cli-opts-"));
+    writeDocs(dir);
+    fs.writeFileSync(
+      path.join(dir, "stream-llm.js"),
+      `const ANSWER = ${JSON.stringify(ANSWER)};\n` +
+        "module.exports = class StreamLLM {\n" +
+        "  async generate() { return ANSWER; }\n" +
+        "  async *generateStream() {\n" +
+        "    for (const w of ANSWER.split(/(?<= )/)) yield { token: w, done: false };\n" +
+        "    yield { token: '', done: true };\n" +
+        "  }\n" +
+        "};\n",
+    );
+    fs.writeFileSync(
+      path.join(dir, "slow-llm.js"),
+      "module.exports = class SlowLLM {\n" +
+        "  async generate(q, d, { signal } = {}) {\n" +
+        "    await new Promise((resolve, reject) => {\n" +
+        "      const t = setTimeout(resolve, 10000);\n" +
+        "      if (signal) signal.addEventListener('abort', () => { clearTimeout(t); reject(signal.reason); });\n" +
+        "    });\n" +
+        "    return 'too late';\n" +
+        "  }\n" +
+        "};\n",
+    );
+    expect(cli(dir, "init", "--no-interactive").code).toBe(0);
+    expect(cli(dir, "ingest", "docs").code).toBe(0);
+  });
+
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  function useLlm(file, model) {
+    const configPath = path.join(dir, ".ragrc.json");
+    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    config.pipeline.push({
+      stage: "llm",
+      name: "test",
+      ...(model && { config: { model } }),
+    });
+    config.plugins = { llm: { test: `./${file}` } };
+    fs.writeFileSync(configPath, JSON.stringify(config));
+  }
+
+  test("--trace shows per-stage timings", () => {
+    const q = cli(dir, "query", "paid vacation days", "--trace");
+    expect(q.code).toBe(0);
+    expect(q.out).toMatch(
+      /Trace\n\s+embed\s+[\d.]+ ms\n\s+retrieve\s+[\d.]+ ms/,
+    );
+    expect(q.out).toMatch(/total\s+[\d.]+ ms/);
+  });
+
+  test("--explain flags the unsupported sentence; --stats prices the model", () => {
+    useLlm("stream-llm.js", "gpt-4o-mini");
+    const q = cli(
+      dir,
+      "query",
+      "paid vacation days",
+      "--top-k",
+      "1",
+      "--explain",
+      "--stats",
+    );
+    expect(q.code).toBe(0);
+    expect(q.out).toMatch(/"The office is in Paris\."\n\s+-> not supported/);
+    expect(q.out).toMatch(/Groundedness: 0\.50/);
+    expect(q.out).toMatch(/cost\s+~\$[\d.]+ \(gpt-4o-mini, estimated\)/);
+  });
+
+  test("--streaming prints the streamed answer and the sources", () => {
+    useLlm("stream-llm.js");
+    const q = cli(
+      dir,
+      "query",
+      "paid vacation days",
+      "--streaming",
+      "--top-k",
+      "1",
+    );
+    expect(q.code).toBe(0);
+    expect(q.out.startsWith(ANSWER)).toBe(true);
+    expect(q.out).toMatch(/Sources:\n\n\[1\] docs\/vacation\.md/);
+  });
+
+  test("--timeout aborts a slow llm and exits 1", () => {
+    useLlm("slow-llm.js");
+    const started = Date.now();
+    const q = cli(dir, "query", "vacation", "--timeout", "300");
+    expect(q.code).toBe(1);
+    expect(q.err).toMatch(/Execution timeout/);
+    expect(Date.now() - started).toBeLessThan(9000);
+  });
+
+  test("--quiet prints only the answer; --json includes the trace", () => {
+    useLlm("stream-llm.js");
+    const quiet = cli(dir, "--quiet", "query", "paid vacation days");
+    expect(quiet.code).toBe(0);
+    expect(quiet.out.trim()).toBe(ANSWER);
+
+    const json = cli(
+      dir,
+      "query",
+      "paid vacation days",
+      "--json",
+      "--trace",
+      "--stats",
+    );
+    const parsed = JSON.parse(json.out);
+    expect(parsed.answer).toBe(ANSWER);
+    expect(Object.keys(parsed.trace.stages)).toEqual(
+      expect.arrayContaining(["embed", "retrieve", "generate"]),
+    );
+    expect(parsed.stats.passages).toBeGreaterThan(0);
+    expect(parsed).not.toHaveProperty("timings");
+  });
+});

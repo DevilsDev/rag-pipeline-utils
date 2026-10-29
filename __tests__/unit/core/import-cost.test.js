@@ -61,4 +61,23 @@ describe("import cost", () => {
       expect.arrayContaining(["axios", "jsonwebtoken", "ajv"]),
     );
   });
+
+  test("starting the CLI loads no command's heavy dependencies", () => {
+    // Each loads when the command that needs it runs: inquirer (init,
+    // hub), ora and cli-table3 (hub), jsdom, marked and csv-parse (ingest).
+    const loaded = packagesLoadedBy(
+      path.join(ROOT, "src/cli/enhanced-cli-commands.js"),
+    );
+    const heavy = [
+      "inquirer",
+      "ora",
+      "cli-table3",
+      "jsdom",
+      "marked",
+      "csv-parse",
+      "axios",
+      "ajv",
+    ];
+    expect(loaded.filter((p) => heavy.includes(p))).toEqual([]);
+  });
 });

@@ -17,24 +17,19 @@ const {
   getExtendedHelp,
 } = require("./shared/cli-utils.js");
 
-// Handler modules
-const { handleRun } = require("./handlers/run-handler.js");
-const {
-  handleInit,
-  exitAfterConnectionTest,
-} = require("./handlers/init-handler.js");
-const {
-  handleDoctor,
-  handleValidate,
-  handleInfo,
-} = require("./handlers/diagnostics-handler.js");
-const {
-  handleConfigShow,
-  handleConfigSet,
-  handleConfigGet,
-} = require("./handlers/config-handler.js");
-const { handleIngest } = require("./handlers/ingest-handler.js");
-const { handleQuery } = require("./handlers/query-handler.js");
+// Handler modules load when their command runs, so `--help` or one command
+// does not pay for every other command's dependencies (inquirer, jsdom, ora,
+// marked, csv-parse...).
+/* eslint-disable global-require */
+const handlers = {
+  run: () => require("./handlers/run-handler.js"),
+  init: () => require("./handlers/init-handler.js"),
+  diagnostics: () => require("./handlers/diagnostics-handler.js"),
+  config: () => require("./handlers/config-handler.js"),
+  ingest: () => require("./handlers/ingest-handler.js"),
+  query: () => require("./handlers/query-handler.js"),
+};
+/* eslint-enable global-require */
 
 function parseNonNegativeInt(value) {
   const n = Number(value);
@@ -64,6 +59,7 @@ class EnhancedCLI {
       .version(getVersion(), "-v, --version", "Display version information")
       .option("--config <path>", "Configuration file path", ".ragrc.json")
       .option("--verbose", "Enable verbose output")
+      .option("--quiet", "Print only results, no status messages")
       .option("--no-color", "Disable colored output")
       .option("--dry-run", "Show what would be done without executing")
       .helpOption("-h, --help", "Display help information")
@@ -87,10 +83,12 @@ class EnhancedCLI {
       .option("--output <path>", "Output configuration file", ".ragrc.json")
       .option("--force", "Overwrite existing configuration")
       .action(async (options) => {
-        const result = await handleInit(this.program.opts(), options);
+        const result = await handlers
+          .init()
+          .handleInit(this.program.opts(), options);
         // After a connection test, exit even if a provider call left a
         // socket or timer open (see exitAfterConnectionTest).
-        exitAfterConnectionTest(result);
+        handlers.init().exitAfterConnectionTest(result);
       });
 
     this.program
@@ -102,7 +100,7 @@ class EnhancedCLI {
       .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
       .option("--json", "Print the query result as JSON")
       .action(async (options) => {
-        await handleRun(this.program.opts(), options);
+        await handlers.run().handleRun(this.program.opts(), options);
       });
 
     this.program
@@ -118,7 +116,7 @@ class EnhancedCLI {
       )
       .option("--report <path>", "Save the diagnostic report as JSON")
       .action(async (options) => {
-        await handleDoctor(this.program.opts(), options);
+        await handlers.diagnostics().handleDoctor(this.program.opts(), options);
       });
 
     this.program
@@ -127,7 +125,9 @@ class EnhancedCLI {
       .argument("<path>", "File or directory (.md, .html, .csv, .txt)")
       .option("--rebuild", "Discard the existing index before ingesting")
       .action(async (inputPath, options) => {
-        await handleIngest(this.program.opts(), inputPath, options);
+        await handlers
+          .ingest()
+          .handleIngest(this.program.opts(), inputPath, options);
       });
 
     this.program
@@ -136,15 +136,29 @@ class EnhancedCLI {
       .argument("<question>", "Question text")
       .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
       .option("--json", "Print the result as JSON")
+      .option("--streaming", "Print the answer as it is generated")
+      .option(
+        "--timeout <ms>",
+        "Abort the query after this many milliseconds",
+        parsePositiveInteger,
+      )
+      .option("--trace", "Show time spent in each stage")
+      .option(
+        "--explain",
+        "Show passage scores and which passages support each answer sentence",
+      )
+      .option("--stats", "Show latency and estimated tokens and cost")
       .action(async (question, options) => {
-        await handleQuery(this.program.opts(), question, options);
+        await handlers
+          .query()
+          .handleQuery(this.program.opts(), question, options);
       });
 
     this.program
       .command("validate")
       .description("Validate the configuration and resolve its components")
       .action(async () => {
-        await handleValidate(this.program.opts());
+        await handlers.diagnostics().handleValidate(this.program.opts());
       });
 
     this.program
@@ -177,7 +191,7 @@ class EnhancedCLI {
       .description("Show current configuration")
       .option("--section <section>", "Show specific configuration section")
       .action(async (options) => {
-        await handleConfigShow(this.program.opts(), options);
+        await handlers.config().handleConfigShow(this.program.opts(), options);
       });
 
     configCmd
@@ -186,7 +200,9 @@ class EnhancedCLI {
       .argument("<key>", "Configuration key (dot notation supported)")
       .argument("<value>", "Configuration value")
       .action(async (key, value, options) => {
-        await handleConfigSet(this.program.opts(), key, value);
+        await handlers
+          .config()
+          .handleConfigSet(this.program.opts(), key, value);
       });
 
     configCmd
@@ -194,7 +210,7 @@ class EnhancedCLI {
       .description("Get configuration value")
       .argument("<key>", "Configuration key (dot notation supported)")
       .action(async (key, options) => {
-        await handleConfigGet(this.program.opts(), key);
+        await handlers.config().handleConfigGet(this.program.opts(), key);
       });
 
     this.program.addCommand(configCmd);
@@ -207,7 +223,7 @@ class EnhancedCLI {
       .option("--system", "Show system information")
       .option("--config", "Show configuration summary")
       .action(async (options) => {
-        await handleInfo(this.program.opts(), options);
+        await handlers.diagnostics().handleInfo(this.program.opts(), options);
       });
 
     // Completion command for shell autocompletion
