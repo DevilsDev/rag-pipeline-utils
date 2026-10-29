@@ -11,6 +11,11 @@
  */
 
 const { buildRagPrompt } = require('../connectors/rag-prompt');
+const { componentCacheKey } = require('../cache/component-keys');
+
+/** Identity of an AI SDK model object (provider and model id). */
+const modelId = (model) =>
+  `${model.provider || 'unknown'}:${model.modelId || model.modelName || 'unknown'}`;
 
 /**
  * @typedef {Object} AiSdkFunctions
@@ -123,6 +128,12 @@ function createAiSdkAdapter(options = {}) {
     };
     embedder = {
       metadata: { name: 'ai-sdk-embedder', version: '1.0.0', type: 'embedder' },
+      getCacheKey: (role) =>
+        role === 'embedder'
+          ? componentCacheKey('ai-sdk-embed', {
+              model: modelId(embeddingModel),
+            })
+          : null,
       embed: embedOne,
       embedQuery: embedOne,
       /** One vector per text; uses embedMany when it was passed in. */
@@ -148,6 +159,18 @@ function createAiSdkAdapter(options = {}) {
     requireFunction(ai, 'generateText', 'a languageModel');
     llm = {
       metadata: { name: 'ai-sdk-llm', version: '1.0.0', type: 'llm' },
+      // The AI SDK leaves an unset temperature to the provider, whose default
+      // is usually 1, so unset counts as non-deterministic: generation
+      // caching needs `settings.temperature: 0`.
+      config: { temperature: settings.temperature ?? 1 },
+      getCacheKey: (role) =>
+        role === 'llm'
+          ? componentCacheKey('ai-sdk', {
+              model: modelId(languageModel),
+              settings: JSON.stringify(settings),
+              systemPrompt,
+            })
+          : null,
       async generate(query, docs = [], callOptions = {}) {
         const { text } = await ai.generateText(
           textCallOptions(

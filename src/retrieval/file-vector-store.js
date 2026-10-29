@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { randomBytes } = require('crypto');
+const { digest } = require('../cache/component-keys');
 
 const FORMAT_VERSION = 1;
 
@@ -25,6 +27,25 @@ class FileVectorStore {
     }
     this.path = path.resolve(options.path);
     this._index = null;
+    this._loadedDigest = null;
+    this._cacheId = randomBytes(8).toString('hex');
+    this._revision = 0;
+  }
+
+  /**
+   * Cache identity for createRagPipeline({ cache }): a digest of the index
+   * as loaded, so processes reading the same unchanged index share cached
+   * results; after this instance changes the index the key also carries the
+   * instance and a revision.
+   * @param {'retriever'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    if (role !== 'retriever') return null;
+    this.load();
+    return this._revision === 0
+      ? `file|${this._loadedDigest}`
+      : `file|${this._loadedDigest}|${this._cacheId}|${this._revision}`;
   }
 
   _emptyIndex() {
@@ -39,15 +60,18 @@ class FileVectorStore {
     if (this._index) return this._index;
     if (!fs.existsSync(this.path)) {
       this._index = this._emptyIndex();
+      this._loadedDigest = 'empty';
       return this._index;
     }
-    const parsed = JSON.parse(fs.readFileSync(this.path, 'utf8'));
+    const raw = fs.readFileSync(this.path, 'utf8');
+    const parsed = JSON.parse(raw);
     if (parsed.version !== FORMAT_VERSION || !parsed.documents) {
       throw new Error(
         `Unsupported index format in ${this.path} (version ${parsed.version})`,
       );
     }
     this._index = parsed;
+    this._loadedDigest = digest(raw);
     return this._index;
   }
 
@@ -68,6 +92,7 @@ class FileVectorStore {
   /** @param {{name: string, dimensions: number, state?: object}} info */
   setEmbedderInfo(info) {
     this.load().embedder = info;
+    this._revision += 1;
   }
 
   /**
@@ -78,6 +103,7 @@ class FileVectorStore {
    */
   async store(docs) {
     const { documents } = this.load();
+    this._revision += 1;
     for (const doc of docs) {
       if (!doc.id || !Array.isArray(doc.vector)) {
         throw new Error(
@@ -99,6 +125,7 @@ class FileVectorStore {
    */
   removeBySource(source) {
     const { documents } = this.load();
+    this._revision += 1;
     let removed = 0;
     for (const [id, doc] of Object.entries(documents)) {
       if (doc.metadata?.source === source) {
@@ -111,7 +138,9 @@ class FileVectorStore {
 
   /** Remove every document and the recorded embedder info. */
   clear() {
+    this.load();
     this._index = this._emptyIndex();
+    this._revision += 1;
   }
 
   /** @returns {Array<{id: string, content: string, metadata: object}>} */

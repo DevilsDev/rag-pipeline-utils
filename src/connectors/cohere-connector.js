@@ -3,6 +3,7 @@
 // axios loads on first use, so importing the package does not pay for it
 // (about 125 ms) unless this connector is constructed.
 const loadAxios = () => require('axios'); // eslint-disable-line global-require
+const { componentCacheKey } = require('../cache/component-keys');
 const { BaseConnector } = require('./base-connector');
 const {
   missingApiKeyError,
@@ -39,6 +40,21 @@ const DEFAULT_CONFIG = {
  * @extends BaseConnector
  */
 class CohereConnector extends BaseConnector {
+  /**
+   * Cache identity for createRagPipeline({ cache }).
+   * @param {'embedder'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    if (role !== 'embedder') return null;
+    const c = this.config;
+    return componentCacheKey('cohere-embed', {
+      baseURL: c.baseURL,
+      model: c.embeddingModel,
+      queryInputType: c.queryInputType,
+    });
+  }
+
   /**
    * @param {Object} [options]
    * @param {string} [options.apiKey] - Cohere API key

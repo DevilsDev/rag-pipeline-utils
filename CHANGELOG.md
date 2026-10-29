@@ -31,6 +31,18 @@ Planned for 2.6.0.
   sentences, per-sentence `citations` and `evaluation` scores. Sources may be
   strings, `{ id, content }`, LangChain Documents or LlamaIndex nodes;
   `normalizeSources` is exported for the conversion alone.
+- **Caching**: `createRagPipeline({ cache })` caches query embeddings,
+  retrieval results and answers (`true`, a store, or per layer with time to
+  live). `MemoryCache` (LRU and TTL) and `RedisCache` (node-redis or
+  ioredis) are included; any `get`/`set` store works. A layer caches only
+  when its component identifies itself (`getCacheKey(role)` or `cacheKey`;
+  all built-ins do), retrieval is keyed by the store's state and the query
+  vector, answers by the exact documents and generation options, and
+  answers are not cached when the temperature is above 0. Retrieval is
+  cached before `filterResults` and the reranker, so guardrail ACLs run on
+  every request. Nothing from a failed, aborted or timed-out run, or from an
+  unfinished stream, is stored. Results carry `cache` per layer and the
+  pipeline has `cacheStats()`.
 - **`@devilsdev/rag-pipeline-utils/testing`**: deterministic, offline test
   helpers. `HashEmbedder`, `EchoLLM` (answers with the top document or a set
   answer, records every call, streams), `fixtures.documents` and

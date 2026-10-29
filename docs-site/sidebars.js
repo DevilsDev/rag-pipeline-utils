@@ -43,6 +43,7 @@ const sidebars = {
         "Config-Builder",
         "Integrations",
         "Testing",
+        "Caching",
         "API-Reference",
         "Examples",
         "Plugins",

@@ -8,6 +8,7 @@ const {
   throwIfAborted,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
+const { componentCacheKey } = require('../cache/component-keys');
 
 const API_KEY_ENV = 'OPENAI_API_KEY';
 
@@ -36,6 +37,32 @@ const DEFAULT_CONFIG = {
  * @extends BaseConnector
  */
 class OpenAIConnector extends BaseConnector {
+  /**
+   * Cache identity for createRagPipeline({ cache }): the settings that
+   * change this connector's output in the given role.
+   * @param {'embedder'|'llm'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    const c = this.config;
+    if (role === 'embedder') {
+      return componentCacheKey('openai-embed', {
+        baseURL: c.baseURL,
+        model: c.embeddingModel,
+      });
+    }
+    if (role === 'llm') {
+      return componentCacheKey('openai', {
+        baseURL: c.baseURL,
+        model: c.model,
+        temperature: c.temperature,
+        maxTokens: c.maxTokens,
+        systemPrompt: c.systemPrompt,
+      });
+    }
+    return null;
+  }
+
   /**
    * @param {Object} [options]
    * @param {string} [options.model='gpt-4o-mini'] - Chat model to use

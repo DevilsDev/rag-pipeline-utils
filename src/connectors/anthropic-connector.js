@@ -12,6 +12,7 @@ const {
   throwIfAborted,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
+const { componentCacheKey } = require('../cache/component-keys');
 
 const API_KEY_ENV = 'ANTHROPIC_API_KEY';
 
@@ -41,6 +42,23 @@ const DEFAULT_CONFIG = {
  * @extends BaseConnector
  */
 class AnthropicConnector extends BaseConnector {
+  /**
+   * Cache identity for createRagPipeline({ cache }).
+   * @param {'llm'} role
+   * @returns {string|null}
+   */
+  getCacheKey(role) {
+    if (role !== 'llm') return null;
+    const c = this.config;
+    return componentCacheKey('anthropic', {
+      baseURL: c.baseURL,
+      model: c.model,
+      temperature: c.temperature,
+      maxTokens: c.maxTokens,
+      systemPrompt: c.systemPrompt,
+    });
+  }
+
   /**
    * @param {Object} [options]
    * @param {string} [options.model='claude-3-5-sonnet-20241022'] - Claude model to use
