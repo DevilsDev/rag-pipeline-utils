@@ -146,6 +146,10 @@ export interface Pipeline {
    * (citations, evaluation). Resolves a {@link PipelineRunResult}, or with
    * \`options.stream\` an async iterable of {@link StreamChunk}.
    */
+  run(options: PipelineRunOptions & { options: { stream: true } }): Promise<PipelineRunResult | AsyncIterable<StreamChunk>>;
+  /** Answer one query; see the streaming overload above. */
+  run(options?: PipelineRunOptions & { options?: { stream?: false } }): Promise<PipelineRunResult>;
+  /** Answer one query; with \`options.stream\` it may resolve a stream. */
   run(options?: PipelineRunOptions): Promise<PipelineRunResult | AsyncIterable<StreamChunk>>;
   /** Does nothing; kept for compatibility. */
   cleanup(): void;
@@ -173,7 +177,7 @@ export interface LoadConfigOptions {
 /** A document as stored in a retriever. */
 export interface Document {
   id: string;
-  content?: string;
+  content: string;
   metadata?: Record<string, any>;
   /** The document's embedding (the built-in stores call it \`vector\`). */
   vector?: number[];

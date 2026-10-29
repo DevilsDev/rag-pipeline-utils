@@ -21,13 +21,13 @@ Create a rate limiter instance
 
 #### Parameters
 
-| Parameter                   | Type                                                                                                             | Description                                               |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `options?`                  | \{ `blockDurationMs`: `number`; `cleanupIntervalMs`: `number`; `maxAttempts`: `number`; `windowMs`: `number`; \} | Configuration options                                     |
-| `options.blockDurationMs`   | `number`                                                                                                         | How long to block after exceeding limit (default: 1 hour) |
-| `options.cleanupIntervalMs` | `number`                                                                                                         | How often to cleanup expired entries (default: 5 minutes) |
-| `options.maxAttempts`       | `number`                                                                                                         | Maximum attempts allowed (default: 5)                     |
-| `options.windowMs`          | `number`                                                                                                         | Time window in milliseconds (default: 15 minutes)         |
+| Parameter                    | Type                                                                                                                 | Description                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `options?`                   | \{ `blockDurationMs?`: `number`; `cleanupIntervalMs?`: `number`; `maxAttempts?`: `number`; `windowMs?`: `number`; \} | Configuration options                                     |
+| `options.blockDurationMs?`   | `number`                                                                                                             | How long to block after exceeding limit (default: 1 hour) |
+| `options.cleanupIntervalMs?` | `number`                                                                                                             | How often to cleanup expired entries (default: 5 minutes) |
+| `options.maxAttempts?`       | `number`                                                                                                             | Maximum attempts allowed (default: 5)                     |
+| `options.windowMs?`          | `number`                                                                                                             | Time window in milliseconds (default: 15 minutes)         |
 
 #### Returns
 

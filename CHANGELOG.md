@@ -89,7 +89,8 @@ Planned for 2.7.0.
   takes `(query, documents, options)` and must return the answer text: an
   `LLMResponse` object became the answer `"[object Object]"`.
   `PipelineRunResult` now has `answer`, `citations` and `evaluation`, and
-  `run()` is typed to resolve a stream with `options.stream`. The
+  `run()` with `options: { stream: true }` is typed to resolve a stream.
+  The
   declarations of `loadConfig` (synchronous, takes a path), `validateRagrc`,
   `normalizeConfig`, `pluginRegistry`, `createError` and `wrapError`,
   `computeBLEU`, `computeROUGE` and `scoreAnswer` (token arrays,
@@ -98,8 +99,10 @@ Planned for 2.7.0.
   `PluginSignatureVerifier`, `validateInput`, `DAG`, `evaluateRagDataset`,
   `HotReloadManager`, `DevServer`, `AuditLogger`, `PluginHub`, `metrics`,
   `eventLogger` and `ParallelProcessor` are now generated from the source,
-  so they describe what each one does. TypeScript code written against the
-  old declarations may no longer compile; it would have failed when run.
+  so they describe what each one does. A call that matched an old
+  declaration but not the code, such as `rerank(results, query)` or
+  `await loadConfig({ configPath })`, may no longer compile; it didn't
+  work when run.
   `LLMResponse`, `LoadConfigOptions`, `DAGNode`, `DAGOptions`,
   `ErrorFormatter` and `EvalResult` are deprecated.
 

@@ -11,7 +11,7 @@ A document as stored in a retriever.
 
 | Property                                         | Type                        | Description                                                               |
 | ------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------- |
-| <a id="property-content"></a> `content?`         | `string`                    | -                                                                         |
+| <a id="property-content"></a> `content`          | `string`                    | -                                                                         |
 | <a id="property-embedding"></a> ~~`embedding?`~~ | `number`[]                  | **Deprecated** Use `vector`; the built-in stores do not read `embedding`. |
 | <a id="property-id"></a> `id`                    | `string`                    | -                                                                         |
 | <a id="property-metadata"></a> `metadata?`       | `Record`\<`string`, `any`\> | -                                                                         |

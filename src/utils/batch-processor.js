@@ -111,9 +111,13 @@ class BatchProcessor extends EventEmitter {
   /**
    * Process items in optimized batches
    *
-   * @param {Array<string|Object>} items - Items to process
-   * @param {Function} processFn - Function to process each batch
-   * @param {Object} options - Processing options
+   * @param {Array<string|Object>} items - Items to process; objects are read from `text` or `content`
+   * @param {function(string[], {batchIndex: number, estimatedTokens: number, signal: AbortSignal}): Promise<Array>} processFn - Processes one batch of texts, returning one result per text
+   * @param {Object} [options] - Processing options
+   * @param {function(Object): void} [options.onProgress]
+   * @param {function(Object): void} [options.onBatchComplete]
+   * @param {AbortController} [options.abortController] - Abort to stop between batches
+   * @param {boolean} [options.returnOriginalOrder=true]
    * @returns {Promise<Array>} Processed results
    */
   async processBatches(items, processFn, options = {}) {

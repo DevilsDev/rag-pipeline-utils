@@ -35,41 +35,41 @@ new BatchProcessor(options?): BatchProcessor;
 
 ## Properties
 
-| Property                                                | Type      |
-| ------------------------------------------------------- | --------- |
-| <a id="property-abortcontroller"></a> `abortController` | `any`     |
-| <a id="property-adaptivestate"></a> `adaptiveState`     | `object`  |
-| `adaptiveState.optimalBatchSize`                        | `any`     |
-| `adaptiveState.recentBatchSizes`                        | `any`[]   |
-| `adaptiveState.recentProcessingTimes`                   | `any`[]   |
-| <a id="property-cancelled"></a> `cancelled`             | `boolean` |
-| <a id="property-config"></a> `config`                   | `object`  |
-| `config.adaptiveSizing`                                 | `boolean` |
-| `config.enableMetrics`                                  | `boolean` |
-| `config.maxItemsPerBatch`                               | `number`  |
-| `config.maxMemoryMB`                                    | `number`  |
-| `config.maxRetries`                                     | `number`  |
-| `config.maxTokensPerBatch`                              | `number`  |
-| `config.minItemsPerBatch`                               | `number`  |
-| `config.progressInterval`                               | `number`  |
-| `config.retryBackoff`                                   | `number`  |
-| `config.retryDelay`                                     | `number`  |
-| `config.streamingThreshold`                             | `number`  |
-| `config.targetBatchUtilization`                         | `number`  |
-| <a id="property-metrics"></a> `metrics`                 | `object`  |
-| `metrics.apiCallsSaved`                                 | `number`  |
-| `metrics.avgBatchSize`                                  | `number`  |
-| `metrics.avgTokensPerBatch`                             | `number`  |
-| `metrics.failedBatches`                                 | `number`  |
-| `metrics.memoryUsed`                                    | `number`  |
-| `metrics.peakMemory`                                    | `number`  |
-| `metrics.processedItems`                                | `number`  |
-| `metrics.successfulBatches`                             | `number`  |
-| `metrics.totalBatches`                                  | `number`  |
-| `metrics.totalItems`                                    | `number`  |
-| `metrics.totalTime`                                     | `number`  |
-| `metrics.totalTokens`                                   | `number`  |
-| <a id="property-processing"></a> `processing`           | `boolean` |
+| Property                                                | Type              |
+| ------------------------------------------------------- | ----------------- |
+| <a id="property-abortcontroller"></a> `abortController` | `AbortController` |
+| <a id="property-adaptivestate"></a> `adaptiveState`     | `object`          |
+| `adaptiveState.optimalBatchSize`                        | `any`             |
+| `adaptiveState.recentBatchSizes`                        | `any`[]           |
+| `adaptiveState.recentProcessingTimes`                   | `any`[]           |
+| <a id="property-cancelled"></a> `cancelled`             | `boolean`         |
+| <a id="property-config"></a> `config`                   | `object`          |
+| `config.adaptiveSizing`                                 | `boolean`         |
+| `config.enableMetrics`                                  | `boolean`         |
+| `config.maxItemsPerBatch`                               | `number`          |
+| `config.maxMemoryMB`                                    | `number`          |
+| `config.maxRetries`                                     | `number`          |
+| `config.maxTokensPerBatch`                              | `number`          |
+| `config.minItemsPerBatch`                               | `number`          |
+| `config.progressInterval`                               | `number`          |
+| `config.retryBackoff`                                   | `number`          |
+| `config.retryDelay`                                     | `number`          |
+| `config.streamingThreshold`                             | `number`          |
+| `config.targetBatchUtilization`                         | `number`          |
+| <a id="property-metrics"></a> `metrics`                 | `object`          |
+| `metrics.apiCallsSaved`                                 | `number`          |
+| `metrics.avgBatchSize`                                  | `number`          |
+| `metrics.avgTokensPerBatch`                             | `number`          |
+| `metrics.failedBatches`                                 | `number`          |
+| `metrics.memoryUsed`                                    | `number`          |
+| `metrics.peakMemory`                                    | `number`          |
+| `metrics.processedItems`                                | `number`          |
+| `metrics.successfulBatches`                             | `number`          |
+| `metrics.totalBatches`                                  | `number`          |
+| `metrics.totalItems`                                    | `number`          |
+| `metrics.totalTime`                                     | `number`          |
+| `metrics.totalTokens`                                   | `number`          |
+| <a id="property-processing"></a> `processing`           | `boolean`         |
 
 ## Methods
 
@@ -285,11 +285,15 @@ Process items in optimized batches
 
 #### Parameters
 
-| Parameter   | Type       | Description                    |
-| ----------- | ---------- | ------------------------------ |
-| `items`     | `any`[]    | Items to process               |
-| `processFn` | `Function` | Function to process each batch |
-| `options?`  | `any`      | Processing options             |
+| Parameter                      | Type                                                                                                                                                       | Description                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `items`                        | `any`[]                                                                                                                                                    | Items to process; objects are read from `text` or `content` |
+| `processFn`                    | (`arg0`, `arg1`) => `Promise`\<`any`[]\>                                                                                                                   | Processes one batch of texts, returning one result per text |
+| `options?`                     | \{ `abortController?`: `AbortController`; `onBatchComplete?`: (`arg0`) => `void`; `onProgress?`: (`arg0`) => `void`; `returnOriginalOrder?`: `boolean`; \} | Processing options                                          |
+| `options.abortController?`     | `AbortController`                                                                                                                                          | Abort to stop between batches                               |
+| `options.onBatchComplete?`     | (`arg0`) => `void`                                                                                                                                         | -                                                           |
+| `options.onProgress?`          | (`arg0`) => `void`                                                                                                                                         | -                                                           |
+| `options.returnOriginalOrder?` | `boolean`                                                                                                                                                  | -                                                           |
 
 #### Returns
 
