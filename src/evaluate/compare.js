@@ -53,9 +53,17 @@ function scoreCase(testCase, result) {
     }
   }
   if (testCase.sourceIds) {
-    const retrieved = new Set(
-      (result.results || []).map((doc) => String(doc && doc.id)),
-    );
+    // A source id matches a result's id or its metadata.source, so a case
+    // can name a file ("docs/vacation.md") when the index stores chunks
+    // ("docs/vacation.md#0").
+    const retrieved = new Set();
+    for (const doc of result.results || []) {
+      if (!doc) continue;
+      if (doc.id !== undefined) retrieved.add(String(doc.id));
+      if (doc.metadata && doc.metadata.source !== undefined) {
+        retrieved.add(String(doc.metadata.source));
+      }
+    }
     const found = testCase.sourceIds.filter((id) => retrieved.has(id));
     scores.sourceRecall = found.length / testCase.sourceIds.length;
   }

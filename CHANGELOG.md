@@ -33,6 +33,17 @@ Planned for 2.7.0.
   `regressed`, per-metric deltas, and the cases that now fail or dropped by
   more than `caseTolerance`. `tolerance` (default 0.02) sets the allowed
   drop in a metric's mean.
+- **`rag-pipeline eval <dataset>`** runs a `.json` or `.jsonl` test set
+  through the configured pipeline and exits 1 when a case fails, a metric
+  is below its `--min metric=value`, or the run regressed from a
+  `--baseline` report. `--output` saves the run as a baseline, `--report`
+  writes a standalone HTML page (`.html`) or a Markdown summary for a pull
+  request comment, and `--json` prints the verdict. Also `--tolerance`,
+  `--case-tolerance`, `--concurrency`, `--timeout` and `--top-k`.
+- **`renderEvaluationReport`** (Markdown or HTML) and
+  **`evaluationVerdict`** for the same reports in code.
+- `sourceIds` match a retrieved result's `id` or its `metadata.source`, so
+  a case can name a file when the index stores chunks of it.
 
 ## [2.6.1] - 2026-10-29
 

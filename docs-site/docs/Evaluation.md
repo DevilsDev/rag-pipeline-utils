@@ -286,13 +286,13 @@ A JSON array of cases is enough. The loop above reads `prompt` and `expected`; a
 ]
 ```
 
-| Field       | Required | Meaning                                                                                                        |
-| ----------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `prompt`    | Yes      | The question. `question` is accepted too                                                                       |
-| `expected`  | No       | The reference answer, used for context recall, BLEU/ROUGE and semantic similarity. `referenceAnswer` works too |
-| `sourceIds` | No       | Ids of the documents that should be retrieved for this question, matching the `id` of retrieval results        |
-| `id`        | No       | A stable id for the case; defaults to `case-1`, `case-2` and so on                                             |
-| `tags`      | No       | Strings for grouping results                                                                                   |
+| Field       | Required | Meaning                                                                                                            |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `prompt`    | Yes      | The question. `question` is accepted too                                                                           |
+| `expected`  | No       | The reference answer, used for context recall, BLEU/ROUGE and semantic similarity. `referenceAnswer` works too     |
+| `sourceIds` | No       | Ids of the documents that should be retrieved for this question, matching a result's `id` or its `metadata.source` |
+| `id`        | No       | A stable id for the case; defaults to `case-1`, `case-2` and so on                                                 |
+| `tags`      | No       | Strings for grouping results                                                                                       |
 
 The file can also be an object, `{ "cases": [...] }`, which leaves room for fields of your own such as a version.
 
@@ -426,6 +426,8 @@ The result:
 | `baseline`, `candidate` | The two reports                                                                                     |
 
 Cases are matched by `id`, so give cases stable ids when you compare runs over time. Pass `metrics: ["faithfulness", "sourceRecall"]` to compare only some metrics. Answers from a model vary between runs; run the same configuration a few times to see how much the scores move, and set the tolerances above that.
+
+`renderEvaluationReport({ report, comparison, min }, { format })` renders a run as Markdown (the default, for a pull request comment) or a standalone HTML page, and `evaluationVerdict({ report, comparison, min })` returns the `{ passed, reasons, thresholds }` the page shows. The [`rag-pipeline eval`](./CLI.md#eval) command does all of this from the command line.
 
 ---
 
