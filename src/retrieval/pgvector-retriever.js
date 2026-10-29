@@ -16,6 +16,8 @@ const { throwIfAborted, raceAbort } = require('../connectors/connector-utils');
 
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]{0,62}$/;
 const DEFAULT_TABLE = 'rag_documents';
+// pgvector's default hnsw.ef_search
+const PG_DEFAULT_EF_SEARCH = 40;
 // 4 parameters per row; pg allows 65535 per statement.
 const MAX_BATCH = 1000;
 
@@ -86,6 +88,7 @@ class PgVectorRetriever {
    * @param {number} [options.dimensions] - Vector size for a new table; defaults to the first stored vector's
    * @param {boolean} [options.createTable=true] - Create the extension, table and index on first store
    * @param {'hnsw'|'none'} [options.index='hnsw'] - Index created with the table
+   * @param {number} [options.efSearch] - HNSW candidate list size per query (pgvector's default is 40). Higher finds more of the true nearest neighbours, more slowly; a query always uses at least its topK
    * @param {string} [options.cacheKey] - Cache identity; change it when the table changes (see getCacheKey)
    */
   constructor(options = {}) {
@@ -96,6 +99,7 @@ class PgVectorRetriever {
       dimensions,
       createTable = true,
       index = 'hnsw',
+      efSearch,
       cacheKey,
     } = options;
     if (!pool && !connectionString) {
@@ -119,6 +123,15 @@ class PgVectorRetriever {
         'PgVectorRetriever: `dimensions` must be a positive integer',
       );
     }
+    if (
+      efSearch !== undefined &&
+      !(Number.isInteger(efSearch) && efSearch > 0 && efSearch <= 1000)
+    ) {
+      throw new Error(
+        'PgVectorRetriever: `efSearch` must be an integer from 1 to 1000',
+      );
+    }
+    this.efSearch = efSearch;
     this.table = quoteTable(table);
     this.tableName = table;
     this.dimensions = dimensions;
@@ -157,6 +170,30 @@ class PgVectorRetriever {
       return await raceAbort(this._db().query(text, params), signal);
     } catch (err) {
       throw explain(err, this.table);
+    }
+  }
+
+  /** Runs one query with `SET LOCAL hnsw.ef_search`, in its own transaction. */
+  async _queryWithEfSearch(text, params, ef, signal) {
+    throwIfAborted(signal);
+    const db = this._db();
+    const pooled =
+      typeof db.connect === 'function' &&
+      typeof db.end === 'function' &&
+      db.totalCount !== undefined;
+    const client = pooled ? await db.connect() : db;
+    try {
+      await client.query('BEGIN');
+      // ef is an integer checked above; SET takes no bind parameters
+      await client.query(`SET LOCAL hnsw.ef_search = ${Math.min(ef, 1000)}`);
+      const result = await client.query(text, params);
+      await client.query('COMMIT');
+      return result;
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw explain(err, this.table);
+    } finally {
+      if (pooled) client.release();
     }
   }
 
@@ -285,12 +322,16 @@ class PgVectorRetriever {
       );
     }
     const literal = vectorLiteral(queryVector, 'query');
-    const { rows } = await this._query(
+    const sql =
       `SELECT id, content, metadata, 1 - (embedding <=> $1::vector) AS score FROM ${this.table} ` +
-        'ORDER BY embedding <=> $1::vector LIMIT $2',
-      [literal, topK],
-      signal,
-    );
+      'ORDER BY embedding <=> $1::vector LIMIT $2';
+    // An HNSW scan returns at most ef_search rows, so a topK above it
+    // would come back short.
+    const ef = Math.max(this.efSearch || 0, topK);
+    const { rows } =
+      ef > PG_DEFAULT_EF_SEARCH || this.efSearch
+        ? await this._queryWithEfSearch(sql, [literal, topK], ef, signal)
+        : await this._query(sql, [literal, topK], signal);
     throwIfAborted(signal);
     return rows.map((r) => ({
       id: r.id,

@@ -74,18 +74,21 @@ const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
 
 The first `store()` creates the extension, the table (sized to the first vector, or to `dimensions`) and an HNSW cosine index, unless you pass `createTable: false`. The table has the columns `id` (text, primary key), `content`, `metadata` (jsonb) and `embedding` (vector). Storing a document under an existing id replaces it, and each `store()` runs in one transaction, so a failed batch changes nothing. `score` is 1 minus the cosine distance.
 
-| Option             | Default         | Description                                                     |
-| ------------------ | --------------- | --------------------------------------------------------------- |
-| `pool`             |                 | A `pg` Pool or Client you manage; it stays open after `close()` |
-| `connectionString` |                 | Creates a Pool when there is no `pool`; `close()` ends it       |
-| `table`            | `rag_documents` | Table name, optionally `schema.table`                           |
-| `dimensions`       | first vector's  | Vector size for a new table                                     |
-| `createTable`      | `true`          | Create the extension, table and index on the first `store()`    |
-| `index`            | `hnsw`          | `none` skips the index                                          |
-| `cacheKey`         |                 | Cache identity; see below                                       |
+| Option             | Default         | Description                                                               |
+| ------------------ | --------------- | ------------------------------------------------------------------------- |
+| `pool`             |                 | A `pg` Pool or Client you manage; it stays open after `close()`           |
+| `connectionString` |                 | Creates a Pool when there is no `pool`; `close()` ends it                 |
+| `table`            | `rag_documents` | Table name, optionally `schema.table`                                     |
+| `dimensions`       | first vector's  | Vector size for a new table                                               |
+| `createTable`      | `true`          | Create the extension, table and index on the first `store()`              |
+| `index`            | `hnsw`          | `none` skips the index                                                    |
+| `efSearch`         | 40              | HNSW candidates per query; higher finds more true neighbours, more slowly |
+| `cacheKey`         |                 | Cache identity; see below                                                 |
 
 It also has `removeBySource(source)`, `delete(ids)`, `clear()`, `size()` and `list()`, so the CLI can re-ingest files into it.
 
+- **Recall.** The HNSW index searches approximately. At pgvector's default `efSearch` of 40 it can miss some of the true nearest neighbours; raise `efSearch` (100–200) to find more of them for a little more latency. The [benchmarks](./Benchmarks) measure the trade-off. A query always uses an `efSearch` of at least its `topK`, so it returns `topK` results.
+- **Bulk loads.** Every insert updates the HNSW index, which makes ingest about ten times slower than without one. For a large first load, create the table with `index: "none"`, store everything, then run `CREATE INDEX ON rag_documents USING hnsw (embedding vector_cosine_ops);` once.
 - **Permissions.** `CREATE EXTENSION` needs a database owner on many managed services. If it fails, run `CREATE EXTENSION IF NOT EXISTS vector;` once as the owner.
 - **Caching.** Other processes can write to the table without this one knowing, so the retriever has no cache identity and `createRagPipeline({ cache })` doesn't cache its results. Pass `cacheKey` to cache them, and change the key (or rely on the cache's time to live) when the table changes.
 - **Cancellation.** A run's `AbortSignal` stops the wait for a query, but PostgreSQL finishes the query itself.

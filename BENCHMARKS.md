@@ -2,7 +2,13 @@
 
 This document describes **how we measure** performance in
 `@devilsdev/rag-pipeline-utils` and **how you reproduce the numbers**
-yourself. It deliberately does not publish a headline "N ops/sec" figure.
+yourself.
+
+**Published results:** pipeline overhead and vector store latency and
+recall (`benchmarks/speed.js`, run in CI against pgvector and Qdrant) are
+on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks),
+generated from `benchmarks/results/`. The rest of this document covers the
+engine micro-benchmark suite and benchmarking your own stack.
 
 ## Philosophy
 

@@ -515,7 +515,7 @@ Choose LangChain.js for the widest integration catalogue or work that goes well 
 | `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                     |
 | `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                    |
 
-From 2.7.0, `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)).
+From 2.7.0, `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
 
 Vercel AI SDK models (any provider it supports) work as the embedder and LLM through `createAiSdkAdapter`; see [Use with other frameworks](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations).
 
@@ -556,7 +556,7 @@ They are still exported from the main entry in 2.x with a one-time deprecation w
 - [Generated API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/api): every export, with its methods, options and types
 - [Evaluation guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation)
 - [Examples](examples/): basic pipeline, OpenAI with Pinecone, and a deployable Fastify service ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
-- [Changelog](CHANGELOG.md) and [benchmarks methodology](BENCHMARKS.md)
+- [Changelog](CHANGELOG.md), [benchmark results](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) and [methodology](BENCHMARKS.md)
 
 ## Security
 

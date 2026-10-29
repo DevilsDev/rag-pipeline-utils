@@ -147,6 +147,52 @@ describe("PgVectorRetriever", () => {
     ).rejects.toThrow("topK");
   });
 
+  it("raises hnsw.ef_search for one query when topK or efSearch needs it", async () => {
+    // An HNSW scan returns at most ef_search rows (pgvector default 40)
+    const pool = fakePool();
+    const retriever = new PgVectorRetriever({ pool });
+    await retriever.retrieve({ queryVector: [1, 0], topK: 50 });
+    expect(pool.statements.map((s) => s.text.split(" ")[0])).toEqual([
+      "BEGIN",
+      "SET",
+      "SELECT",
+      "COMMIT",
+    ]);
+    expect(pool.statements[1].text).toBe("SET LOCAL hnsw.ef_search = 50");
+    expect(pool.client.release).toHaveBeenCalledTimes(1);
+
+    const tuned = fakePool();
+    await new PgVectorRetriever({ pool: tuned, efSearch: 200 }).retrieve({
+      queryVector: [1, 0],
+      topK: 5,
+    });
+    expect(tuned.statements[1].text).toBe("SET LOCAL hnsw.ef_search = 200");
+
+    // At or below the default it stays one statement
+    const plain = fakePool();
+    await new PgVectorRetriever({ pool: plain }).retrieve({
+      queryVector: [1, 0],
+      topK: 40,
+    });
+    expect(plain.statements).toHaveLength(1);
+
+    const failing = fakePool({ failOn: /^SELECT/ });
+    await expect(
+      new PgVectorRetriever({ pool: failing }).retrieve({
+        queryVector: [1, 0],
+        topK: 100,
+      }),
+    ).rejects.toThrow();
+    expect(failing.statements.at(-1).text).toBe("ROLLBACK");
+    expect(failing.client.release).toHaveBeenCalledTimes(1);
+
+    for (const efSearch of [0, 1.5, 1001, "100"]) {
+      expect(() => new PgVectorRetriever({ pool, efSearch })).toThrow(
+        "efSearch",
+      );
+    }
+  });
+
   it("explains a missing table and permission errors", async () => {
     const missing = fakePool();
     missing.query = async () => {
