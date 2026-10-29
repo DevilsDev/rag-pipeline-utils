@@ -3,8 +3,6 @@
  * Single source of truth for configuration validation
  */
 
-const Ajv = require("ajv"); // eslint-disable-line global-require
-const addFormats = require("ajv-formats"); // eslint-disable-line global-require
 const { normalizeConfig } = require("./normalize-config");
 
 /**

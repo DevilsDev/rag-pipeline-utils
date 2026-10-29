@@ -9,7 +9,6 @@
  */
 
 const { PluginRegistry } = require("../../src/core/plugin-registry");
-const Ajv = require("ajv");
 const fs = require("fs");
 const path = require("path");
 
@@ -58,7 +57,9 @@ describe("Contract Schema Validation", () => {
         disableContractWarnings: true,
       });
 
-      expect(registry._ajv).toBeInstanceOf(Ajv);
+      // ajv loads with the contracts, after jest.setup.js may have reset the
+      // module registry, so compare with the class required now.
+      expect(registry._ajv).toBeInstanceOf(require("ajv"));
     });
 
     it("should handle missing schema file gracefully", () => {

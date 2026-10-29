@@ -15,7 +15,10 @@ const path = require("path");
 
 // Mock dependencies
 jest.mock("chokidar");
-const chokidar = require("chokidar");
+// HotReloadManager requires chokidar when watching starts, and jest.setup.js
+// resets the module registry after each test, so take the mock fresh in
+// beforeEach: it is then the same instance the manager gets.
+let chokidar;
 
 // Helper function to create HotReloadManager with error listener
 function createTestHotReloadManager(options = {}) {
@@ -38,6 +41,7 @@ describe("HotReloadManager", () => {
       close: jest.fn().mockResolvedValue(undefined),
     };
 
+    chokidar = require("chokidar");
     chokidar.watch = jest.fn().mockReturnValue(mockWatcher);
 
     // Suppress console output during tests

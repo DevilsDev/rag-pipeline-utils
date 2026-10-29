@@ -5,7 +5,8 @@
  * File: /src/_config/validate-schema.js
  */
 
-const Ajv = require("ajv");
+// ajv loads when a schema is validated, not on import.
+const loadAjv = () => require("ajv"); // eslint-disable-line global-require
 // eslint-disable-line global-require
 
 /**
@@ -89,6 +90,7 @@ const pluginSchema = {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validateRagrcSchema(config) {
+  const Ajv = loadAjv();
   const ajv = new Ajv({ allErrors: true, strict: false });
   const validate = ajv.compile(ragrcSchema);
   const valid = validate(config);
@@ -101,6 +103,7 @@ function validateRagrcSchema(config) {
  * @returns {{ valid: boolean, errors?: any[] }}
  */
 function validatePluginSchema(config) {
+  const Ajv = loadAjv();
   const ajv = new Ajv({ allErrors: true, strict: false });
   const validate = ajv.compile(pluginSchema);
   const valid = validate(config);

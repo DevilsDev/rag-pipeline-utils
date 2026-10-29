@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const Ajv = require('ajv');
+// ajv loads with the contracts; see _ensureContracts().
+const loadAjv = () => require('ajv'); // eslint-disable-line global-require
 const {
   createPluginVerifier,
 } = require('../security/plugin-signature-verifier.js');
@@ -42,7 +43,43 @@ class PluginRegistry {
         ? options.validateContractSchema
         : true; // Enable schema validation by default
 
-    // Initialize Ajv for contract schema validation
+    // Environment-aware signature verification defaults
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    this._signatureVerifier = createPluginVerifier({
+      enabled:
+        options.verifySignatures !== undefined
+          ? options.verifySignatures
+          : isProduction, // Enabled by default in production, disabled in development
+      failClosed:
+        options.failClosed !== undefined ? options.failClosed : isProduction, // Fail closed in production, fail open in development
+      trustedKeysPath: options.trustedKeysPath,
+      requireContentDigest: options.requireContentDigest === true,
+    });
+    // Opt-in: when verification is enabled, refuse plugins registered
+    // without a signed manifest (default false for backward compatibility).
+    this._requireSignedPlugins = options.requireSignedPlugins === true;
+
+    // Contracts (and ajv, which validates them) load in the constructor, or
+    // on first use with `lazyContracts: true`. The shared registry exported
+    // by this module is lazy, so importing the package does not pay for
+    // them unless a plugin is registered or validated.
+    this._contractsLoaded = false;
+    if (!options.lazyContracts) {
+      this._ensureContracts();
+    }
+  }
+
+  /**
+   * Load the contract schema and the stage contracts once.
+   * @private
+   */
+  _ensureContracts() {
+    if (this._contractsLoaded) return;
+    this._contractsLoaded = true;
+
+    const Ajv = loadAjv();
     this._ajv = new Ajv({
       allErrors: true,
       verbose: true,
@@ -70,23 +107,6 @@ class PluginRegistry {
       }
     }
 
-    // Environment-aware signature verification defaults
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    this._signatureVerifier = createPluginVerifier({
-      enabled:
-        options.verifySignatures !== undefined
-          ? options.verifySignatures
-          : isProduction, // Enabled by default in production, disabled in development
-      failClosed:
-        options.failClosed !== undefined ? options.failClosed : isProduction, // Fail closed in production, fail open in development
-      trustedKeysPath: options.trustedKeysPath,
-      requireContentDigest: options.requireContentDigest === true,
-    });
-    // Opt-in: when verification is enabled, refuse plugins registered
-    // without a signed manifest (default false for backward compatibility).
-    this._requireSignedPlugins = options.requireSignedPlugins === true;
     this._loadContracts();
   }
 
@@ -205,6 +225,7 @@ class PluginRegistry {
    * @since 2.2.4
    */
   checkContractExists(type) {
+    this._ensureContracts();
     return this._contracts.has(type);
   }
 
@@ -357,6 +378,7 @@ class PluginRegistry {
   }
 
   _validatePluginContract(category, impl) {
+    this._ensureContracts();
     const contract = this._contracts.get(category);
     if (!contract) {
       // Use new warning method when registering a plugin without a contract
@@ -609,6 +631,7 @@ class PluginRegistry {
 const registry = new PluginRegistry({
   verifySignatures: process.env.NODE_ENV === 'production',
   failClosed: process.env.NODE_ENV === 'production',
+  lazyContracts: true,
 });
 
 // CJS+ESM interop pattern

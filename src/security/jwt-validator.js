@@ -30,7 +30,8 @@
  * @since 2.3.0
  */
 
-const jwt = require('jsonwebtoken');
+// jsonwebtoken loads on first use (about 90 ms otherwise, on every import).
+const loadJwt = () => require('jsonwebtoken'); // eslint-disable-line global-require
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
 const { logger } = require('../utils/logger');
@@ -315,7 +316,7 @@ class JWTValidator extends EventEmitter {
       }
 
       // Sign token with explicit algorithm
-      const token = jwt.sign(completePayload, signingKey, {
+      const token = loadJwt().sign(completePayload, signingKey, {
         algorithm: this.config.algorithm,
         // Do not allow algorithm to be overridden
         header: {
@@ -433,7 +434,7 @@ class JWTValidator extends EventEmitter {
         verifyOptions.maxAge = options.maxAge || `${this.config.maxTokenAge}s`;
       }
 
-      const payload = jwt.verify(token, verificationKey, verifyOptions);
+      const payload = loadJwt().verify(token, verificationKey, verifyOptions);
 
       // Additional claim validation
       this._validateRequiredClaims(payload);
@@ -734,7 +735,7 @@ class JWTValidator extends EventEmitter {
    */
   decode(token) {
     try {
-      return jwt.decode(token, { complete: false });
+      return loadJwt().decode(token, { complete: false });
     } catch (error) {
       throw new Error(`Failed to decode token: ${error.message}`);
     }

@@ -26,6 +26,17 @@ Planned for 2.6.0.
   `pluginRegistry.register()` enforces.
 - **`ParallelEmbedder` `mode`** (`'auto'`, `'batch'`, `'single'`).
 
+### Changed
+
+- **Faster import.** `require('@devilsdev/rag-pipeline-utils')` takes about
+  125 ms instead of about 515 ms and loads 31 modules from 9 packages
+  instead of 245 from 54 (published bundle, Node 22). `axios`,
+  `jsonwebtoken`, `ajv` and `chokidar` now load when the feature that needs
+  them is first used (the Anthropic, Cohere and Ollama connectors,
+  `JWTValidator`, plugin registration and config validation, hot reload).
+  The shared `pluginRegistry` loads its contracts on first use; registries
+  created with `new PluginRegistry()` still load them in the constructor.
+
 ### Fixed
 
 - **`ExecutionTracer.exportTraces('json')`** threw "circular structure"

@@ -1,6 +1,8 @@
 'use strict';
 
-const axios = require('axios');
+// axios loads on first use, so importing the package does not pay for it
+// (about 125 ms) unless this connector is constructed.
+const loadAxios = () => require('axios'); // eslint-disable-line global-require
 const { BaseConnector } = require('./base-connector');
 const {
   missingApiKeyError,
@@ -53,7 +55,7 @@ class CohereConnector extends BaseConnector {
       ...options,
       apiKey: resolveApiKey(options, API_KEY_ENV),
     };
-    this.client = axios.create({
+    this.client = loadAxios().create({
       baseURL: this.config.baseURL,
       headers: {
         Authorization: `Bearer ${this.config.apiKey}`,

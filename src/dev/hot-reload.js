@@ -18,7 +18,8 @@
  */
 
 const { EventEmitter } = require('events');
-const chokidar = require('chokidar');
+// chokidar loads when watching starts, not on import.
+const loadChokidar = () => require('chokidar'); // eslint-disable-line global-require
 const path = require('path');
 const fs = require('fs');
 const {
@@ -170,7 +171,7 @@ class HotReloadManager extends EventEmitter {
    * @returns {Promise<void>}
    */
   async _watchPlugins() {
-    const watcher = chokidar.watch(this.options.watchPaths, {
+    const watcher = loadChokidar().watch(this.options.watchPaths, {
       ignored: toIgnoreMatcher(this.options.ignorePatterns),
       persistent: true,
       ignoreInitial: true,
@@ -214,7 +215,7 @@ class HotReloadManager extends EventEmitter {
       return;
     }
 
-    const watcher = chokidar.watch(this.options.configPath, {
+    const watcher = loadChokidar().watch(this.options.configPath, {
       persistent: true,
       ignoreInitial: true,
       awaitWriteFinish: {
