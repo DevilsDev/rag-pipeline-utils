@@ -45,6 +45,13 @@ Planned for 2.7.0.
 - **`rag-pipeline generate-dataset --output <file>`** does the same from the
   index with the configured `llm`, and won't overwrite a file without
   `--force`.
+- **`PgVectorRetriever`** stores and searches documents in PostgreSQL with
+  the pgvector extension: cosine similarity, upserts in one transaction, an
+  HNSW index, and `removeBySource`, `delete`, `clear`, `size` and `list` for
+  the CLI. Pass a `pg` Pool, or a connection string with `pg` installed (an
+  optional peer dependency, loaded only when used). In `.ragrc.json` it is
+  the `pgvector` retriever and reads its connection string from
+  `DATABASE_URL`. It isn't cached unless you give it a `cacheKey`.
 - **`rag-pipeline eval <dataset>`** runs a `.json` or `.jsonl` test set
   through the configured pipeline and exits 1 when a case fails, a metric
   is below its `--min metric=value`, or the run regressed from a

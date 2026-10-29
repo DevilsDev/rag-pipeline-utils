@@ -105,6 +105,52 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  vector-stores:
+    # The retriever contract against real databases. Not a required check.
+    name: Vector stores
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17
+        env:
+          POSTGRES_USER: rag
+          POSTGRES_PASSWORD: rag
+          POSTGRES_DB: rag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rag"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      PGVECTOR_URL: postgres://rag:rag@localhost:5432/rag
+      # Fail, don't skip, when a database URL is missing.
+      REQUIRE_VECTOR_STORES: "1"
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --prefer-offline
+
+      - name: Retriever contract
+        run: npx jest __tests__/integration/vector-stores.test.js --ci
+
   build:
     name: Build
     runs-on: ubuntu-latest

@@ -30,6 +30,26 @@ const BUILT_INS = {
       }),
     memory: (cfg) =>
       new (require("../connectors/memory-retriever").MemoryRetriever)(cfg),
+    // The connection string comes from the environment, never the config
+    // file: `connectionStringEnv` names the variable (default DATABASE_URL).
+    pgvector: (cfg) => {
+      const variable = cfg.connectionStringEnv || "DATABASE_URL";
+      const connectionString = process.env[variable];
+      if (!connectionString) {
+        throw new Error(
+          `The pgvector retriever reads its connection string from ${variable}, which is not set`,
+        );
+      }
+      const { PgVectorRetriever } = require("../retrieval/pgvector-retriever");
+      return new PgVectorRetriever({
+        connectionString,
+        table: cfg.table,
+        dimensions: cfg.dimensions,
+        createTable: cfg.createTable,
+        index: cfg.index,
+        cacheKey: cfg.cacheKey,
+      });
+    },
   },
   llm: {
     openai: (cfg) =>

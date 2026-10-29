@@ -24,7 +24,8 @@ const pkg = JSON.parse(
 const external = [
   ...Object.keys(pkg.dependencies || {}),
   ...Object.keys(pkg.devDependencies || {}).filter((d) =>
-    ["isolated-vm"].includes(d),
+    // Optional peers loaded on first use; never bundled.
+    ["isolated-vm", "pg"].includes(d),
   ),
 ];
 
