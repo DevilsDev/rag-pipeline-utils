@@ -67,6 +67,8 @@ const { ChunkingEngine } = require('./chunking/chunking-engine');
 
 // Citation & Grounding
 const { CitationTracker } = require('./citation/citation-tracker');
+const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
+const { createAiSdkAdapter } = require('./adapters/ai-sdk');
 const {
   mapSentenceToSources,
   buildIDFWeights,
@@ -238,6 +240,9 @@ module.exports = {
 
   // Citation & Grounding
   CitationTracker,
+  checkAnswer,
+  normalizeSources,
+  createAiSdkAdapter,
   mapSentenceToSources,
   buildIDFWeights,
   detectHallucinations,

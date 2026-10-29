@@ -41,6 +41,7 @@ const sidebars = {
         "Usage",
         "CLI",
         "Config-Builder",
+        "Integrations",
         "API-Reference",
         "Examples",
         "Plugins",

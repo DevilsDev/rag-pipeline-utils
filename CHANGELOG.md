@@ -25,6 +25,19 @@ Planned for 2.6.0.
   plugin tests. `registry: true` also applies the rules
   `pluginRegistry.register()` enforces.
 - **`ParallelEmbedder` `mode`** (`'auto'`, `'batch'`, `'single'`).
+- **`checkAnswer({ question, answer, sources })`** checks an answer from any
+  framework (LangChain, LlamaIndex, Mastra, the AI SDK, your own code)
+  against its sources: `grounded`, `groundedness`, the `unsupported`
+  sentences, per-sentence `citations` and `evaluation` scores. Sources may be
+  strings, `{ id, content }`, LangChain Documents or LlamaIndex nodes;
+  `normalizeSources` is exported for the conversion alone.
+- **`createAiSdkAdapter({ ai, embeddingModel, languageModel })`** wraps
+  Vercel AI SDK models as an `embedder` and an `llm` for
+  `createRagPipeline()`, with streaming, `embedMany` batching and the run's
+  `AbortSignal`. You pass the AI SDK functions, so it is not a dependency and
+  works with AI SDK 5, 6 and 7 from ESM or CommonJS. The RAG system prompt
+  is sent as both `instructions` (AI SDK 7) and `system` (5 and 6). Tested
+  against AI SDK 6 and 7 with their mock models.
 
 ### Changed
 
