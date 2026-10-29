@@ -29,6 +29,26 @@ function databaseSuite(name, variable, run) {
   }
 }
 
+databaseSuite("QdrantRetriever", "QDRANT_URL", (url) => {
+  const { QdrantRetriever } = require("../../src/retrieval/qdrant-retriever");
+  describeRetrieverContract(
+    "QdrantRetriever",
+    () =>
+      new QdrantRetriever({
+        url,
+        collection: `contract_${randomBytes(4).toString("hex")}`,
+      }),
+    {
+      extended: true,
+      cleanup: async (retriever) => {
+        await fetch(`${url}/collections/${retriever.collection}`, {
+          method: "DELETE",
+        });
+      },
+    },
+  );
+});
+
 describeRetrieverContract("MemoryRetriever", () => {
   const { MemoryRetriever } = require("../../src/connectors/memory-retriever");
   return new MemoryRetriever();

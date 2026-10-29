@@ -515,7 +515,7 @@ Choose LangChain.js for the widest integration catalogue or work that goes well 
 | `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                     |
 | `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                    |
 
-From 2.7.0, `PgVectorRetriever` stores and searches documents in PostgreSQL with pgvector ([PostgreSQL with pgvector](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)).
+From 2.7.0, `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)).
 
 Vercel AI SDK models (any provider it supports) work as the embedder and LLM through `createAiSdkAdapter`; see [Use with other frameworks](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations).
 
