@@ -47,7 +47,7 @@ Planned for 2.7.0.
   `--force`.
 - **`PgVectorRetriever`** stores and searches documents in PostgreSQL with
   the pgvector extension: cosine similarity, upserts in one transaction, an
-  HNSW index, and `removeBySource`, `delete`, `clear`, `size` and `list` for
+  HNSW index with an `efSearch` option for recall, and `removeBySource`, `delete`, `clear`, `size` and `list` for
   the CLI. Pass a `pg` Pool, or a connection string with `pg` installed (an
   optional peer dependency, loaded only when used). In `.ragrc.json` it is
   the `pgvector` retriever and reads its connection string from
@@ -76,6 +76,11 @@ Planned for 2.7.0.
 - **A generated API reference** on the docs site: a page for every export,
   with its methods, options and types, built from the published type
   declarations by `npm run docs:api`. CI fails when it is out of date.
+- **Published speed benchmarks** on the docs site: pipeline overhead, and
+  ingest throughput, query latency and recall@10 for `MemoryRetriever`,
+  `FileVectorStore`, `PgVectorRetriever` and `QdrantRetriever`, measured in
+  CI against real pgvector and Qdrant (`npm run bench:speed`). The tables
+  are generated from the committed report in `benchmarks/results/`.
 - `logger.info()`, `.warn()`, `.error()` and `.debug()` log through the
   shared logger. The `logger` export is the logger module, so these were
   undefined; `logger.logger.info()` keeps working.
