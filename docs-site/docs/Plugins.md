@@ -216,6 +216,36 @@ rag-pipeline doctor --category plugins
 rag-pipeline info --plugins
 ```
 
+### **Testing a plugin in code**
+
+:::info[Coming in 2.6.0]
+
+`validatePlugin` is exported from the next release.
+
+:::
+
+`validatePlugin(stage, plugin)` checks that an object can be used as a stage, without throwing, so you can assert on it in your plugin's own tests. By default it checks what `createRagPipeline()` calls. With `{ registry: true }` it also applies the rules `pluginRegistry.register()` enforces: `metadata` with a string `name` and `version`, a `type` equal to the stage, and the methods in the stage's contract.
+
+```javascript
+import { validatePlugin } from "@devilsdev/rag-pipeline-utils";
+
+const echoLlm = {
+  metadata: { name: "echo-llm", version: "1.0.0", type: "llm" },
+  async generate(query, docs) {
+    return docs.length ? docs[0].content : "No information found.";
+  },
+};
+
+const result = validatePlugin("llm", echoLlm, { registry: true });
+console.log(result.valid); // true
+console.log(result.errors); // []
+
+// An embedder without embed(): usable for queries, but `ingest` would fail.
+const queryOnly = validatePlugin("embedder", { embedQuery: async () => [0.1] });
+console.log(queryOnly.valid); // true
+console.log(queryOnly.warnings.length); // 1
+```
+
 ### **Installing a plugin**
 
 ```bash

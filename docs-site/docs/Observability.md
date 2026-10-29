@@ -105,7 +105,7 @@ console.log(events.exportEvents()); // JSON string
 
 ## Tracing
 
-`ExecutionTracer.trace(pipeline)` returns a wrapped pipeline. Each `run()` is recorded with its input, output, duration, result count and citation and evaluation data, and the trace is attached as `result.trace`. Traces are kept in memory.
+`ExecutionTracer.trace(pipeline)` returns a wrapped pipeline. Each `run()` is recorded with its input, output, duration, result count and citation and evaluation data, and the trace is attached as `result.trace`. Traces are kept in memory as JSON snapshots, so `exportTraces('json')` serializes them. (In 2.5.0 it throws a "circular structure" error with the default `captureOutputs: true`; fixed in 2.6.0.)
 
 ```javascript no-run
 const {

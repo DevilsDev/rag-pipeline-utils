@@ -9,6 +9,35 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+Planned for 2.6.0.
+
+### Added
+
+- **`OpenAIConnector` `baseURL`** for OpenAI-compatible APIs (Groq,
+  Together, the Hugging Face router, vLLM, LM Studio, Ollama's `/v1`
+  endpoint). With a custom `baseURL` the key is never read from
+  `OPENAI_API_KEY`, so an OpenAI key is not sent to another provider; pass
+  `apiKey`, or omit it for local servers that need none.
+- **`validatePlugin(stage, plugin, { registry })`** returns
+  `{ valid, errors, warnings }` for a plugin without throwing, for use in
+  plugin tests. `registry: true` also applies the rules
+  `pluginRegistry.register()` enforces.
+- **`ParallelEmbedder` `mode`** (`'auto'`, `'batch'`, `'single'`).
+
+### Fixed
+
+- **`ExecutionTracer.exportTraces('json')`** threw "circular structure"
+  with the default `captureOutputs: true`: traces stored the live result,
+  which carries the trace. Traces now store JSON snapshots, which also keeps
+  later changes to a result out of its recorded trace.
+- **`ParallelEmbedder`** failed with the built-in connectors, which embed
+  one string at a time, because it always called `embed(batch)` with an
+  array. In the default `'auto'` mode it now embeds texts one by one for
+  those connectors and uses `embedBatch(texts)` when an embedder has it;
+  other embedders are still called with the array.
+
 ## [2.5.0] - 2026-10-28
 
 ### Added
