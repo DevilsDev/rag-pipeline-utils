@@ -52,6 +52,8 @@ npm install @devilsdev/rag-pipeline-utils
 
 Requires Node.js 18 or later. The package ships CommonJS, ESM and TypeScript declarations.
 
+> **`npm install` failed with `husky: not found`?** Versions 2.2.1 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
+
 ## Quick start
 
 This example runs offline: it uses the built-in TF-IDF embedder and an in-memory vector store.
