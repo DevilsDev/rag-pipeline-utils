@@ -2,6 +2,7 @@
  * Shared CLI utility functions
  */
 
+const { InvalidArgumentError } = require("commander");
 const pkg = require("../../../package.json");
 
 /**
@@ -23,7 +24,7 @@ function createProgressBar(percentage, width = 20) {
 function parsePositiveInteger(value) {
   const parsed = parseInt(value, 10);
   if (isNaN(parsed) || parsed <= 0) {
-    throw new Error(`Invalid value '${value}'. Expected positive integer.`);
+    throw new InvalidArgumentError("Expected a positive integer.");
   }
   return parsed;
 }
@@ -35,20 +36,19 @@ function parsePositiveInteger(value) {
 function collectMin(value, previous = {}) {
   const match = /^([A-Za-z]+)=(\d*\.?\d+)$/.exec(String(value).trim());
   if (!match) {
-    throw new Error(
-      `--min takes metric=value, e.g. faithfulness=0.8 (got "${value}")`,
-    );
+    throw new InvalidArgumentError("Use metric=value, e.g. faithfulness=0.8.");
   }
   const [, metric, number] = match;
   // eslint-disable-next-line global-require
   const { EVALUATION_METRICS } = require("../../evaluate/compare.js");
   if (!EVALUATION_METRICS.includes(metric)) {
-    throw new Error(
-      `Unknown metric "${metric}" for --min; use one of ${EVALUATION_METRICS.join(", ")}`,
+    throw new InvalidArgumentError(
+      `Unknown metric "${metric}"; use one of ${EVALUATION_METRICS.join(", ")}.`,
     );
   }
   const min = Number(number);
-  if (min > 1) throw new Error(`--min ${metric} must be between 0 and 1`);
+  if (min > 1)
+    throw new InvalidArgumentError("The value must be between 0 and 1.");
   return { ...previous, [metric]: min };
 }
 
@@ -58,9 +58,7 @@ function collectMin(value, previous = {}) {
 function parseTolerance(value) {
   const n = Number(value);
   if (value === "" || !Number.isFinite(n) || n < 0) {
-    throw new Error(
-      `Invalid value '${value}'. Expected a number of 0 or more.`,
-    );
+    throw new InvalidArgumentError("Expected a number of 0 or more.");
   }
   return n;
 }

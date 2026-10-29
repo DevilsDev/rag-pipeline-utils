@@ -28,6 +28,9 @@ Planned for 2.7.0.
   groundedness, citation coverage, and `sourceRecall` against the case's
   `sourceIds`) and per-metric means. Failed cases are recorded, not thrown;
   options for `concurrency`, a per-case `timeout`, `signal` and `onCase`.
+  Reports record the `libraryVersion`, and `compareConfigurations` warns
+  when two runs used different versions, since scoring can change between
+  releases.
 - **`compareConfigurations(dataset, { baseline, candidate })`** compares two
   runs, where each side is a pipeline or a saved report, and reports
   `regressed`, per-metric deltas, and the cases that now fail or dropped by
@@ -54,6 +57,9 @@ Planned for 2.7.0.
   runners. The hook now runs from `prepare`, which npm runs only in this
   repository, and the pack smoke test fails if the package has any
   install-time script.
+
+- A bad option value (`--top-k 0`, `--min speed=1`) printed a stack trace;
+  the CLI now prints a one-line error naming the option and exits 1.
 
 ## [2.6.1] - 2026-10-29
 
