@@ -73,6 +73,10 @@ function explain(err, table) {
   return err;
 }
 
+/**
+ * Retriever on PostgreSQL with the pgvector extension. Creates the
+ * extension, table and index on first use; similarity is cosine.
+ */
 class PgVectorRetriever {
   /**
    * @param {Object} options

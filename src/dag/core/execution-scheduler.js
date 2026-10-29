@@ -16,6 +16,8 @@
 const ErrorContext = require('./error-context.js');
 const { logger } = require('../../utils/logger');
 
+/** @typedef {import('../dag-node')} DAGNode */
+
 /**
  * ExecutionScheduler class for managing DAG node execution
  *

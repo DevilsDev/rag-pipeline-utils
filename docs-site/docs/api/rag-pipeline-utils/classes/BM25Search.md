@@ -5,6 +5,9 @@ mdx:
 
 # Class: BM25Search
 
+Keyword search with BM25 ranking. Index documents with index(), then
+search(query) returns them scored by term frequency and rarity.
+
 ## Extends
 
 - `EventEmitter`\<\[`never`\]\>

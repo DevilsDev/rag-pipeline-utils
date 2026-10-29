@@ -84,7 +84,7 @@
     "security:audit:critical": "npm audit --audit-level=critical --production || echo 'Development vulnerabilities found but acceptable'",
     "security:audit:json": "npm audit --json > security-audit-report.json || true",
     "docs:generate": "node scripts/generate-docs.js --verbose",
-    "docs:api": "node scripts/generate-docs.js --formats=html,markdown,json",
+    "docs:api": "npm run build && typedoc && prettier --write docs-site/docs/api --log-level warn",
     "benchmark": "node scripts/benchmark.js --iterations=100 --verbose",
     "benchmark:quick": "node scripts/benchmark.js --iterations=20",
     "benchmark:full": "node scripts/benchmark.js --iterations=500 --verbose",

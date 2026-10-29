@@ -5,6 +5,9 @@ mdx:
 
 # Class: HybridRetriever
 
+Runs several retrievers in parallel (for example vector and BM25) and
+fuses their results with weighted reciprocal rank fusion.
+
 ## Extends
 
 - `EventEmitter`\<\[`never`\]\>

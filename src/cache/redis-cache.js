@@ -67,7 +67,10 @@ class RedisCache {
     }
   }
 
-  /** @param {string} key */
+  /**
+   * Removes a key.
+   * @param {string} key
+   */
   async delete(key) {
     const del = this.client.del || this.client.unlink;
     if (typeof del === 'function')

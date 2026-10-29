@@ -5,6 +5,9 @@ mdx:
 
 # Class: QdrantRetriever
 
+Retriever on Qdrant over its REST API, with no client package. Creates
+the collection on first store; similarity is cosine.
+
 ## Constructors
 
 ### Constructor

@@ -3,17 +3,21 @@ mdx:
   format: md
 ---
 
-# Interface: ErrorFormatter
+# ~~Interface: ErrorFormatter~~
+
+## Deprecated
+
+Does not describe the errorFormatter export; see createError and wrapError. This type will be removed in the next major release.
 
 ## Properties
 
-| Property                                        | Type                           |
-| ----------------------------------------------- | ------------------------------ |
-| <a id="property-error_codes"></a> `ERROR_CODES` | `Record`\<`string`, `string`\> |
+| Property                                            | Type                           |
+| --------------------------------------------------- | ------------------------------ |
+| <a id="property-error_codes"></a> ~~`ERROR_CODES`~~ | `Record`\<`string`, `string`\> |
 
 ## Methods
 
-### createError()
+### ~~createError()~~
 
 ```ts
 createError(
@@ -37,7 +41,7 @@ createError(
 
 ---
 
-### formatError()
+### ~~formatError()~~
 
 ```ts
 formatError(error): string;
@@ -55,7 +59,7 @@ formatError(error): string;
 
 ---
 
-### wrapError()
+### ~~wrapError()~~
 
 ```ts
 wrapError(error, context): Error;

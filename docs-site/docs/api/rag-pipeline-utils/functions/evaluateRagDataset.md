@@ -6,15 +6,18 @@ mdx:
 # Function: evaluateRagDataset()
 
 ```ts
-function evaluateRagDataset(dataset): EvalResult[];
+function evaluateRagDataset(_datasetPath, _config): Promise<object[]>;
 ```
+
+Evaluate a list of prompt/answer pairs using the RAG pipeline and compute scores
 
 ## Parameters
 
-| Parameter | Type       |
-| --------- | ---------- |
-| `dataset` | `object`[] |
+| Parameter      | Type     | Description                           |
+| -------------- | -------- | ------------------------------------- |
+| `_datasetPath` | `any`    | -                                     |
+| `_config`      | `object` | RAG plugin \_config (loader optional) |
 
 ## Returns
 
-[`EvalResult`](../interfaces/EvalResult.md)[]
+`Promise`\<`object`[]\>

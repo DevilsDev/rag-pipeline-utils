@@ -5,6 +5,8 @@ mdx:
 
 # Interface: CacheOptions
 
+Per-layer cache settings: `true` for memory, a CacheBackend, or false/omitted for none.
+
 ## Properties
 
 | Property                                       | Type                                           | Description                                                          |

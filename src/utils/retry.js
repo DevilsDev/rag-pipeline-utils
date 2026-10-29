@@ -75,7 +75,16 @@ async function retry(fn, opts = {}) {
   }
 }
 
-// Legacy wrapper for backward compatibility
+/**
+ * Older wrapper around retry(): retries `fn` with exponential backoff from
+ * `initialDelay` ms and logs each retry and the final failure under `label`.
+ * @param {function(number): *} fn - The operation; called with the attempt index
+ * @param {Object} [options]
+ * @param {number} [options.retries=3] - Retries after the first attempt
+ * @param {number} [options.initialDelay=300] - First backoff delay in ms
+ * @param {string} [options.label='operation'] - Name used in log messages
+ * @returns {Promise<*>} The operation's result
+ */
 async function withRetry(
   _fn,
   { retries = 3, initialDelay = 300, label = 'operation' } = {},

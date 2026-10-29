@@ -15,6 +15,8 @@ A cache store: get / set / delete, optionally stats.
 delete?(key): Promise<void>;
 ```
 
+Removes a key.
+
 #### Parameters
 
 | Parameter | Type     |
@@ -32,6 +34,8 @@ delete?(key): Promise<void>;
 ```ts
 get(key): Promise<unknown>;
 ```
+
+Resolves the stored value, or undefined when the key is missing or expired.
 
 #### Parameters
 
@@ -55,6 +59,8 @@ set(
 ): Promise<void>;
 ```
 
+Stores a value, expiring it after `ttlSeconds` when given.
+
 #### Parameters
 
 | Parameter             | Type                           |
@@ -75,6 +81,8 @@ set(
 ```ts
 stats?(): Promise<Record<string, number>>;
 ```
+
+Backend-specific counters, such as size or hits.
 
 #### Returns
 

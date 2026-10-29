@@ -6,15 +6,35 @@ mdx:
 # Function: validateRagrc()
 
 ```ts
-function validateRagrc(config): boolean;
+function validateRagrc(config): object;
 ```
+
+Validate .ragrc.json configuration (single source of truth)
 
 ## Parameters
 
-| Parameter | Type  |
-| --------- | ----- |
-| `config`  | `any` |
+| Parameter | Type     | Description               |
+| --------- | -------- | ------------------------- |
+| `config`  | `object` | Configuration to validate |
 
 ## Returns
 
-`boolean`
+`object`
+
+### errors?
+
+```ts
+errors?: any[];
+```
+
+### normalized?
+
+```ts
+normalized?: object;
+```
+
+### valid
+
+```ts
+valid: boolean;
+```

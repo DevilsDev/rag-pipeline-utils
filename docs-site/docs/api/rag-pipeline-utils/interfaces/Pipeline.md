@@ -5,6 +5,8 @@ mdx:
 
 # Interface: Pipeline
 
+A pipeline returned by [createRagPipeline](../functions/createRagPipeline.md).
+
 ## Methods
 
 ### cacheStats()
@@ -45,6 +47,8 @@ retrieval?: CacheLayerStats;
 cleanup(): void;
 ```
 
+Does nothing; kept for compatibility.
+
 #### Returns
 
 `void`
@@ -54,15 +58,23 @@ cleanup(): void;
 ### run()
 
 ```ts
-run(options): Promise<PipelineRunResult>;
+run(options?): Promise<
+  | PipelineRunResult
+| AsyncIterable<StreamChunk, any, any>>;
 ```
+
+Answer one query: (embed) → retrieve → (filter) → (rerank) → generate →
+(citations, evaluation). Resolves a [PipelineRunResult](PipelineRunResult.md), or with
+`options.stream` an async iterable of [StreamChunk](StreamChunk.md).
 
 #### Parameters
 
-| Parameter | Type                                          |
-| --------- | --------------------------------------------- |
-| `options` | [`PipelineRunOptions`](PipelineRunOptions.md) |
+| Parameter  | Type                                          |
+| ---------- | --------------------------------------------- |
+| `options?` | [`PipelineRunOptions`](PipelineRunOptions.md) |
 
 #### Returns
 
-`Promise`\<[`PipelineRunResult`](PipelineRunResult.md)\>
+`Promise`\<
+\| [`PipelineRunResult`](PipelineRunResult.md)
+\| `AsyncIterable`\<[`StreamChunk`](StreamChunk.md), `any`, `any`\>\>

@@ -11,6 +11,11 @@
 
 const crypto = require('crypto');
 
+/**
+ * Sliding-window limiter: allows up to `maxAttempts` requests per identifier
+ * in `windowMs`, then blocks that identifier for `blockDurationMs`. Check a
+ * request with allowRequest(identifier).
+ */
 class RateLimiter {
   /**
    * Create a rate limiter instance

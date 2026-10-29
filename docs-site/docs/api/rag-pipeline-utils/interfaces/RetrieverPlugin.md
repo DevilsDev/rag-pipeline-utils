@@ -5,21 +5,47 @@ mdx:
 
 # Interface: RetrieverPlugin
 
+A retriever. To register it with pluginRegistry it needs `store()` and `metadata: { name, version, type: "retriever" }`.
+
 ## Methods
 
 ### retrieve()
 
 ```ts
-retrieve(query, options?): Promise<SearchResult[]>;
+retrieve(options):
+  | SearchResult[]
+| Promise<SearchResult[]>;
 ```
+
+Returns up to `topK` documents for the query, closest first.
 
 #### Parameters
 
-| Parameter  | Type                                          |
-| ---------- | --------------------------------------------- |
-| `query`    | \| `string` \| \{ `embedding`: `number`[]; \} |
-| `options?` | [`RetrieveOptions`](RetrieveOptions.md)       |
+| Parameter | Type                                    |
+| --------- | --------------------------------------- |
+| `options` | [`RetrieveOptions`](RetrieveOptions.md) |
 
 #### Returns
 
-`Promise`\<[`SearchResult`](SearchResult.md)[]\>
+\| [`SearchResult`](SearchResult.md)[]
+\| `Promise`\<[`SearchResult`](SearchResult.md)[]\>
+
+---
+
+### store()?
+
+```ts
+store ? documents : unknown;
+```
+
+Adds documents. Not called by the pipeline; required by pluginRegistry and the CLI.
+
+#### Parameters
+
+| Parameter   | Type                        |
+| ----------- | --------------------------- |
+| `documents` | [`Document`](Document.md)[] |
+
+#### Returns
+
+`unknown`

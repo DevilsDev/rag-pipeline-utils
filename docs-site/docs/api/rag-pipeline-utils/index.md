@@ -7,6 +7,14 @@ mdx:
 
 RAG Pipeline Utils - TypeScript Definitions
 
+## Namespaces
+
+- [errorFormatter](namespaces/errorFormatter/index.md)
+- [eventLogger](namespaces/eventLogger/index.md)
+- [logger](namespaces/logger/index.md)
+- [metrics](namespaces/metrics/index.md)
+- [ParallelProcessor](namespaces/ParallelProcessor/index.md)
+
 ## Classes
 
 - [~~ActiveDirectoryProvider~~](classes/ActiveDirectoryProvider.md)
@@ -53,7 +61,6 @@ RAG Pipeline Utils - TypeScript Definitions
 - [~~OIDCProvider~~](classes/OIDCProvider.md)
 - [OllamaConnector](classes/OllamaConnector.md)
 - [OpenAIConnector](classes/OpenAIConnector.md)
-- [ParallelProcessor](classes/ParallelProcessor.md)
 - [PgVectorRetriever](classes/PgVectorRetriever.md)
 - [PipelineEvaluator](classes/PipelineEvaluator.md)
 - [PluginAnalytics](classes/PluginAnalytics.md)
@@ -89,15 +96,16 @@ RAG Pipeline Utils - TypeScript Definitions
 - [CacheBackend](interfaces/CacheBackend.md)
 - [CacheLayerStats](interfaces/CacheLayerStats.md)
 - [CacheOptions](interfaces/CacheOptions.md)
-- [DAGNode](interfaces/DAGNode.md)
-- [DAGOptions](interfaces/DAGOptions.md)
+- [~~DAGNode~~](interfaces/DAGNode.md)
+- [~~DAGOptions~~](interfaces/DAGOptions.md)
 - [Document](interfaces/Document.md)
 - [EmbedderPlugin](interfaces/EmbedderPlugin.md)
-- [ErrorFormatter](interfaces/ErrorFormatter.md)
-- [EvalResult](interfaces/EvalResult.md)
+- [EnhancedError](interfaces/EnhancedError.md)
+- [~~ErrorFormatter~~](interfaces/ErrorFormatter.md)
+- [~~EvalResult~~](interfaces/EvalResult.md)
 - [LLMPlugin](interfaces/LLMPlugin.md)
-- [LLMResponse](interfaces/LLMResponse.md)
-- [LoadConfigOptions](interfaces/LoadConfigOptions.md)
+- [~~LLMResponse~~](interfaces/LLMResponse.md)
+- [~~LoadConfigOptions~~](interfaces/LoadConfigOptions.md)
 - [LoaderPlugin](interfaces/LoaderPlugin.md)
 - [Logger](interfaces/Logger.md)
 - [Pipeline](interfaces/Pipeline.md)
@@ -109,20 +117,18 @@ RAG Pipeline Utils - TypeScript Definitions
 - [RetrieveOptions](interfaces/RetrieveOptions.md)
 - [RetrieverPlugin](interfaces/RetrieverPlugin.md)
 - [SearchResult](interfaces/SearchResult.md)
+- [StreamChunk](interfaces/StreamChunk.md)
 
 ## Type Aliases
 
 - [CacheOutcome](type-aliases/CacheOutcome.md)
 - [~~DataGovernanceManager~~](type-aliases/DataGovernanceManager.md)
+- [EmbeddingOutput](type-aliases/EmbeddingOutput.md)
 
 ## Variables
 
 - [~~DataGovernanceManager~~](variables/DataGovernanceManager.md)
 - [ERROR_CODES](variables/ERROR_CODES.md)
-- [errorFormatter](variables/errorFormatter.md)
-- [eventLogger](variables/eventLogger.md)
-- [logger](variables/logger.md)
-- [metrics](variables/metrics.md)
 - [pluginRegistry](variables/pluginRegistry.md)
 - [PRICING_METADATA](variables/PRICING_METADATA.md)
 

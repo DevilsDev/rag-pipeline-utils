@@ -31,15 +31,15 @@ new EchoLLM(options?): EchoLLM;
 
 ## Properties
 
-| Property                                  | Type                                       |
-| ----------------------------------------- | ------------------------------------------ |
-| <a id="property-answer"></a> `answer`     | `string` \| ((`arg0`, `arg1`) => `string`) |
-| <a id="property-calls"></a> `calls`       | `object`[]                                 |
-| <a id="property-fallback"></a> `fallback` | `string`                                   |
-| <a id="property-metadata"></a> `metadata` | `object`                                   |
-| `metadata.name`                           | `string`                                   |
-| `metadata.type`                           | `string`                                   |
-| `metadata.version`                        | `string`                                   |
+| Property                                  | Type                                       | Description                                                       |
+| ----------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| <a id="property-answer"></a> `answer`     | `string` \| ((`arg0`, `arg1`) => `string`) | The fixed answer, or a function of (query, docs) that returns it. |
+| <a id="property-calls"></a> `calls`       | `object`[]                                 | -                                                                 |
+| <a id="property-fallback"></a> `fallback` | `string`                                   | Returned when there are no documents and no `answer`.             |
+| <a id="property-metadata"></a> `metadata` | `object`                                   | -                                                                 |
+| `metadata.name`                           | `string`                                   | -                                                                 |
+| `metadata.type`                           | `string`                                   | -                                                                 |
+| `metadata.version`                        | `string`                                   | -                                                                 |
 
 ## Methods
 

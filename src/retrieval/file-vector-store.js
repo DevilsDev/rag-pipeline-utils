@@ -89,7 +89,10 @@ class FileVectorStore {
     return this.load().embedder;
   }
 
-  /** @param {{name: string, dimensions: number, state?: object}} info */
+  /**
+   * Records which embedder wrote the index, saved with it.
+   * @param {{name: string, dimensions: number, state?: object}} info
+   */
   setEmbedderInfo(info) {
     this.load().embedder = info;
     this._revision += 1;

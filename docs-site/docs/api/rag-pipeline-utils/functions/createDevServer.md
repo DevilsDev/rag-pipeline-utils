@@ -9,12 +9,16 @@ mdx:
 function createDevServer(options?): DevServer;
 ```
 
+Create development server
+
 ## Parameters
 
-| Parameter  | Type  |
-| ---------- | ----- |
-| `options?` | `any` |
+| Parameter  | Type     | Description    |
+| ---------- | -------- | -------------- |
+| `options?` | `object` | Server options |
 
 ## Returns
 
 [`DevServer`](../classes/DevServer.md)
+
+Development server instance

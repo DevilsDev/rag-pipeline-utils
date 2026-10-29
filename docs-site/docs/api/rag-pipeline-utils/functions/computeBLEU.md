@@ -6,15 +6,17 @@ mdx:
 # Function: computeBLEU()
 
 ```ts
-function computeBLEU(reference, hypothesis): number;
+function computeBLEU(_candidate, _reference): number;
 ```
+
+Compute BLEU-1 score: unigram precision
 
 ## Parameters
 
-| Parameter    | Type     |
-| ------------ | -------- |
-| `reference`  | `string` |
-| `hypothesis` | `string` |
+| Parameter    | Type  |
+| ------------ | ----- |
+| `_candidate` | `any` |
+| `_reference` | `any` |
 
 ## Returns
 

@@ -6,16 +6,30 @@ mdx:
 # Function: scoreAnswer()
 
 ```ts
-function scoreAnswer(expected, actual): number;
+function scoreAnswer(_actual, _expected): object;
 ```
+
+Score a prompt-answer pair using multiple metrics
 
 ## Parameters
 
-| Parameter  | Type     |
-| ---------- | -------- |
-| `expected` | `string` |
-| `actual`   | `string` |
+| Parameter   | Type  |
+| ----------- | ----- |
+| `_actual`   | `any` |
+| `_expected` | `any` |
 
 ## Returns
 
-`number`
+`object`
+
+### bleu
+
+```ts
+bleu: number;
+```
+
+### rouge
+
+```ts
+rouge: number;
+```

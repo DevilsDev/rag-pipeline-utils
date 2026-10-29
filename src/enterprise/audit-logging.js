@@ -49,6 +49,11 @@ function evpBytesToKey(password, keyLen, ivLen) {
   };
 }
 
+/**
+ * Records authentication, data access, data change and other audit events
+ * in hash-chained logs, with querying, compliance reports and an integrity
+ * check.
+ */
 class AuditLogger extends EventEmitter {
   constructor(_options = {}) {
     super();

@@ -154,18 +154,38 @@ class StructuredLogger {
     this.logger[level](logData, message);
   }
 
+  /**
+   * Logs at info level.
+   * @param {string} message
+   * @param {*} [meta] - An object, Error or value to attach
+   */
   info(message, meta) {
     this._log('info', message, meta);
   }
 
+  /**
+   * Logs at error level.
+   * @param {string} message
+   * @param {*} [meta] - An object, Error or value to attach
+   */
   error(message, meta) {
     this._log('error', message, meta);
   }
 
+  /**
+   * Logs at warn level.
+   * @param {string} message
+   * @param {*} [meta] - An object, Error or value to attach
+   */
   warn(message, meta) {
     this._log('warn', message, meta);
   }
 
+  /**
+   * Logs at debug level.
+   * @param {string} message
+   * @param {*} [meta] - An object, Error or value to attach
+   */
   debug(message, meta) {
     this._log('debug', message, meta);
   }
@@ -207,7 +227,7 @@ class StructuredLogger {
   }
 }
 
-// Create default logger instance
+/** The shared structured logger (pino), exported as `logger.logger`. */
 const logger = new StructuredLogger(baseLogger);
 
 /**
@@ -238,4 +258,14 @@ module.exports = {
   createLogger,
   correlationMiddleware,
   StructuredLogger,
+  // The package exports this module as `logger`, so `logger.info()` and the
+  // rest log through the shared instance as well as `logger.logger.info()`.
+  /** Logs at info level. Same as `logger.logger.info()`. @param {string} message @param {*} [meta] */
+  info: (message, meta) => logger.info(message, meta),
+  /** Logs at warn level. Same as `logger.logger.warn()`. @param {string} message @param {*} [meta] */
+  warn: (message, meta) => logger.warn(message, meta),
+  /** Logs at error level. Same as `logger.logger.error()`. @param {string} message @param {*} [meta] */
+  error: (message, meta) => logger.error(message, meta),
+  /** Logs at debug level. Same as `logger.logger.debug()`. @param {string} message @param {*} [meta] */
+  debug: (message, meta) => logger.debug(message, meta),
 };

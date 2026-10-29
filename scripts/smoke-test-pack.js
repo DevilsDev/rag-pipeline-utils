@@ -277,6 +277,73 @@ const results = [
       );
     }
   }),
+  check("plugins written to the declared contracts work", () => {
+    // Each component is typed only by the published interfaces. If the
+    // declarations drift from what createRagPipeline calls, either this
+    // stops compiling or the assertions below fail.
+    fs.writeFileSync(
+      path.join(consumerDir, "contracts.ts"),
+      `
+import {
+  createRagPipeline, logger,
+  type EmbedderPlugin, type RetrieverPlugin, type RerankerPlugin,
+  type LLMPlugin, type PipelineRunResult, type SearchResult,
+} from "${pkgName}";
+
+const docs: SearchResult[] = [
+  { id: "a", score: 0.9, content: "Employees get 25 paid vacation days." },
+  { id: "b", score: 0.5, content: "The office opens at 9." },
+];
+const calls: string[] = [];
+const embedder: EmbedderPlugin = {
+  embed(text) { calls.push("embed:" + text); return [1, 0]; },
+};
+const retriever: RetrieverPlugin = {
+  retrieve({ query, queryVector, topK }) {
+    calls.push("retrieve:" + query + ":" + (queryVector || []).join(",") + ":" + topK);
+    return docs.slice(0, topK);
+  },
+};
+const reranker: RerankerPlugin = {
+  rerank(query, documents) { calls.push("rerank:" + query); return [...documents].reverse(); },
+};
+const llm: LLMPlugin = {
+  generate(query, documents) { return query + " -> " + documents.map((d) => d.id).join(","); },
+};
+
+async function main(): Promise<void> {
+  const pipeline = createRagPipeline({ embedder, retriever, reranker, llm });
+  const result = (await pipeline.run({ query: "vacation", options: { topK: 2 } })) as PipelineRunResult;
+  const expected = ["embed:vacation", "retrieve:vacation:1,0:2", "rerank:vacation"];
+  if (!result.success) throw new Error("run failed: " + result.error);
+  if (result.answer !== "vacation -> b,a") throw new Error("answer: " + result.answer);
+  if (calls.join("|") !== expected.join("|")) throw new Error("calls: " + calls.join("|"));
+  logger.debug("contracts ok");
+}
+main().catch((error) => { console.error(error); process.exit(1); });
+`,
+    );
+    run(
+      process.execPath,
+      [
+        require.resolve("typescript/bin/tsc", { paths: [root] }),
+        "--strict",
+        "--module",
+        "node16",
+        "--moduleResolution",
+        "node16",
+        "--typeRoots",
+        path.join(root, "node_modules", "@types"),
+        "--types",
+        "node",
+        "--outDir",
+        "out",
+        "contracts.ts",
+      ],
+      consumerDir,
+    );
+    run(process.execPath, [path.join("out", "contracts.js")], consumerDir);
+  }),
 ];
 
 if (keep) {

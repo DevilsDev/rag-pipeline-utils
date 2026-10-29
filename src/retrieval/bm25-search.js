@@ -6,6 +6,10 @@ const scoring = require('../evaluate/scoring');
 
 const DEFAULT_CONFIG = { k1: 1.2, b: 0.75 };
 
+/**
+ * Keyword search with BM25 ranking. Index documents with index(), then
+ * search(query) returns them scored by term frequency and rarity.
+ */
 class BM25Search extends EventEmitter {
   constructor(options = {}) {
     super();

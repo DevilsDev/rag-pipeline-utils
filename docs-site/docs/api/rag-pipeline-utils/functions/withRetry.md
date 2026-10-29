@@ -6,25 +6,24 @@ mdx:
 # Function: withRetry()
 
 ```ts
-function withRetry<T>(fn, options?): Promise<T>;
+function withRetry(_fn, fn?): Promise<any>;
 ```
 
-## Type Parameters
-
-| Type Parameter                    |
-| --------------------------------- |
-| <a id="type-parameter-t"></a> `T` |
+Older wrapper around retry(): retries `fn` with exponential backoff from
+`initialDelay` ms and logs each retry and the final failure under `label`.
 
 ## Parameters
 
-| Parameter              | Type                                                                      |
-| ---------------------- | ------------------------------------------------------------------------- |
-| `fn`                   | () => `Promise`\<`T`\>                                                    |
-| `options?`             | \{ `backoff?`: `number`; `delay?`: `number`; `maxAttempts?`: `number`; \} |
-| `options.backoff?`     | `number`                                                                  |
-| `options.delay?`       | `number`                                                                  |
-| `options.maxAttempts?` | `number`                                                                  |
+| Parameter          | Type                                                                       | Description                                  |
+| ------------------ | -------------------------------------------------------------------------- | -------------------------------------------- |
+| `_fn`              | `any`                                                                      | -                                            |
+| `fn?`              | \{ `initialDelay?`: `number`; `label?`: `string`; `retries?`: `number`; \} | The operation; called with the attempt index |
+| `fn.initialDelay?` | `number`                                                                   | -                                            |
+| `fn.label?`        | `string`                                                                   | -                                            |
+| `fn.retries?`      | `number`                                                                   | -                                            |
 
 ## Returns
 
-`Promise`\<`T`\>
+`Promise`\<`any`\>
+
+The operation's result

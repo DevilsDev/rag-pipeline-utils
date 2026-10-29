@@ -124,7 +124,9 @@ class EchoLLM {
    *   there are no documents and no `answer`
    */
   constructor({ answer, fallback = 'No information found.' } = {}) {
+    /** The fixed answer, or a function of (query, docs) that returns it. */
     this.answer = answer;
+    /** Returned when there are no documents and no `answer`. */
     this.fallback = fallback;
     /** @type {Array<{query: string, docs: Array<Object>, options: Object}>} */
     this.calls = [];

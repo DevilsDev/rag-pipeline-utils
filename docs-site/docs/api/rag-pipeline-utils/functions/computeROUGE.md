@@ -6,15 +6,17 @@ mdx:
 # Function: computeROUGE()
 
 ```ts
-function computeROUGE(reference, hypothesis): number;
+function computeROUGE(_candidate, _reference): number;
 ```
+
+Compute ROUGE-L (Longest Common Subsequence) recall
 
 ## Parameters
 
-| Parameter    | Type     |
-| ------------ | -------- |
-| `reference`  | `string` |
-| `hypothesis` | `string` |
+| Parameter    | Type  |
+| ------------ | ----- |
+| `_candidate` | `any` |
+| `_reference` | `any` |
 
 ## Returns
 

@@ -73,8 +73,35 @@ Planned for 2.7.0.
   **`evaluationVerdict`** for the same reports in code.
 - `sourceIds` match a retrieved result's `id` or its `metadata.source`, so
   a case can name a file when the index stores chunks of it.
+- **A generated API reference** on the docs site: a page for every export,
+  with its methods, options and types, built from the published type
+  declarations by `npm run docs:api`. CI fails when it is out of date.
+- `logger.info()`, `.warn()`, `.error()` and `.debug()` log through the
+  shared logger. The `logger` export is the logger module, so these were
+  undefined; `logger.logger.info()` keeps working.
 
 ### Fixed
+
+- **The TypeScript declarations for the core API didn't match the code.**
+  Plugins written to them failed at runtime. `RetrieverPlugin.retrieve`
+  takes one `{ query, queryVector, topK, signal }` object,
+  `RerankerPlugin.rerank` takes `(query, documents)`, and `LLMPlugin.generate`
+  takes `(query, documents, options)` and must return the answer text: an
+  `LLMResponse` object became the answer `"[object Object]"`.
+  `PipelineRunResult` now has `answer`, `citations` and `evaluation`, and
+  `run()` is typed to resolve a stream with `options.stream`. The
+  declarations of `loadConfig` (synchronous, takes a path), `validateRagrc`,
+  `normalizeConfig`, `pluginRegistry`, `createError` and `wrapError`,
+  `computeBLEU`, `computeROUGE` and `scoreAnswer` (token arrays,
+  `(actual, expected)`), `retry`, `withRetry`, `RateLimiter`,
+  `BatchProcessor`, `ConnectionPoolManager`, `JWTValidator`,
+  `PluginSignatureVerifier`, `validateInput`, `DAG`, `evaluateRagDataset`,
+  `HotReloadManager`, `DevServer`, `AuditLogger`, `PluginHub`, `metrics`,
+  `eventLogger` and `ParallelProcessor` are now generated from the source,
+  so they describe what each one does. TypeScript code written against the
+  old declarations may no longer compile; it would have failed when run.
+  `LLMResponse`, `LoadConfigOptions`, `DAGNode`, `DAGOptions`,
+  `ErrorFormatter` and `EvalResult` are deprecated.
 
 - **The CLI didn't wait for retrievers whose methods are async**, as a
   remote vector store's are: `ingest` didn't wait for `removeBySource`, so

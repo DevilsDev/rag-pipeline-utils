@@ -45,6 +45,10 @@ function checkVector(vector, id) {
 // Matches every point this class wrote, and nothing else in the collection.
 const OURS = { must_not: [{ is_empty: { key: 'rag_id' } }] };
 
+/**
+ * Retriever on Qdrant over its REST API, with no client package. Creates
+ * the collection on first store; similarity is cosine.
+ */
 class QdrantRetriever {
   /**
    * @param {Object} [options]

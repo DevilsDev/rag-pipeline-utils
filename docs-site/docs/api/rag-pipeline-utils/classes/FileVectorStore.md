@@ -199,6 +199,8 @@ Write the index atomically: temp file in the same directory, then rename.
 setEmbedderInfo(info): void;
 ```
 
+Records which embedder wrote the index, saved with it.
+
 #### Parameters
 
 | Parameter         | Type                                                                | Description |

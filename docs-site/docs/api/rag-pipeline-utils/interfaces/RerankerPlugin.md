@@ -5,26 +5,35 @@ mdx:
 
 # Interface: RerankerPlugin
 
+A reranker. To register it with pluginRegistry it needs `metadata: { name, version, type: "reranker" }`.
+
 ## Methods
 
 ### rerank()
 
 ```ts
 rerank(
-   results,
    query,
+   documents,
    options?
-): Promise<SearchResult[]>;
+):
+  | SearchResult[]
+| Promise<SearchResult[]>;
 ```
+
+Reorders (and may trim) the retrieved documents for the query.
 
 #### Parameters
 
-| Parameter  | Type                                |
-| ---------- | ----------------------------------- |
-| `results`  | [`SearchResult`](SearchResult.md)[] |
-| `query`    | `string`                            |
-| `options?` | `any`                               |
+| Parameter         | Type                                               |
+| ----------------- | -------------------------------------------------- |
+| `query`           | `string`                                           |
+| `documents`       | [`SearchResult`](SearchResult.md)[]                |
+| `options?`        | \{ `signal?`: `AbortSignal`; `topK?`: `number`; \} |
+| `options.signal?` | `AbortSignal`                                      |
+| `options.topK?`   | `number`                                           |
 
 #### Returns
 
-`Promise`\<[`SearchResult`](SearchResult.md)[]\>
+\| [`SearchResult`](SearchResult.md)[]
+\| `Promise`\<[`SearchResult`](SearchResult.md)[]\>

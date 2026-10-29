@@ -5,6 +5,8 @@ mdx:
 
 # Interface: CacheLayerStats
 
+Counts for one cache layer since the pipeline was created.
+
 ## Properties
 
 | Property                                | Type     |

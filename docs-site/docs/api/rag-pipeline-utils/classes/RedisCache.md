@@ -48,6 +48,8 @@ new RedisCache(options?): RedisCache;
 delete(key): Promise<void>;
 ```
 
+Removes a key.
+
 #### Parameters
 
 | Parameter | Type     | Description |

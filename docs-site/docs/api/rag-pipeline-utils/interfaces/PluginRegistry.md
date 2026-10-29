@@ -5,6 +5,8 @@ mdx:
 
 # Interface: PluginRegistry
 
+The interface of [pluginRegistry](../variables/pluginRegistry.md).
+
 ## Methods
 
 ### get()
@@ -12,6 +14,8 @@ mdx:
 ```ts
 get(type, name): any;
 ```
+
+Returns a registered plugin; throws when it is not registered.
 
 #### Parameters
 
@@ -26,30 +30,13 @@ get(type, name): any;
 
 ---
 
-### has()
-
-```ts
-has(type, name): boolean;
-```
-
-#### Parameters
-
-| Parameter | Type     |
-| --------- | -------- |
-| `type`    | `string` |
-| `name`    | `string` |
-
-#### Returns
-
-`boolean`
-
----
-
 ### list()
 
 ```ts
-list(type): any[];
+list(type): string[];
 ```
+
+The names registered for a type.
 
 #### Parameters
 
@@ -59,7 +46,7 @@ list(type): any[];
 
 #### Returns
 
-`any`[]
+`string`[]
 
 ---
 
@@ -70,19 +57,26 @@ register(
    type,
    name,
    implementation,
-   contract?
-): void;
+   manifest?,
+   options?
+): Promise<PluginRegistry>;
 ```
+
+Registers a plugin after checking it against its type's contract and,
+when signature verification is enabled, its signed manifest.
+Types: loader, embedder, retriever, reranker, llm, evaluator.
 
 #### Parameters
 
-| Parameter        | Type     |
-| ---------------- | -------- |
-| `type`           | `string` |
-| `name`           | `string` |
-| `implementation` | `any`    |
-| `contract?`      | `any`    |
+| Parameter          | Type                     |
+| ------------------ | ------------------------ |
+| `type`             | `string`                 |
+| `name`             | `string`                 |
+| `implementation`   | `any`                    |
+| `manifest?`        | `any`                    |
+| `options?`         | \{ `content?`: `any`; \} |
+| `options.content?` | `any`                    |
 
 #### Returns
 
-`void`
+`Promise`\<`PluginRegistry`\>

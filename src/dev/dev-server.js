@@ -411,6 +411,12 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
     res.end(JSON.stringify(payload));
   }
 
+  /**
+   * Reloads a plugin or the config now, as if the file had changed.
+   * @param {string} filePath
+   * @param {'plugin'|'config'} [type='plugin']
+   * @returns {Promise<void>}
+   */
   async triggerReload(filePath, type = 'plugin') {
     this._log(`Manually triggering reload: ${filePath}`, 'info');
     await this.hotReload.triggerReload(filePath, type);

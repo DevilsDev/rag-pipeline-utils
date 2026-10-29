@@ -5,6 +5,8 @@ mdx:
 
 # Interface: Logger
 
+The interface of the `logger` export's methods and of `logger.logger`.
+
 ## Methods
 
 ### debug()
@@ -12,6 +14,8 @@ mdx:
 ```ts
 debug(message, meta?): void;
 ```
+
+Logs at debug level.
 
 #### Parameters
 
@@ -32,6 +36,8 @@ debug(message, meta?): void;
 error(message, meta?): void;
 ```
 
+Logs at error level.
+
 #### Parameters
 
 | Parameter | Type     |
@@ -51,6 +57,8 @@ error(message, meta?): void;
 info(message, meta?): void;
 ```
 
+Logs at info level; `meta` may be an object, an Error or a value.
+
 #### Parameters
 
 | Parameter | Type     |
@@ -69,6 +77,8 @@ info(message, meta?): void;
 ```ts
 warn(message, meta?): void;
 ```
+
+Logs at warn level.
 
 #### Parameters
 

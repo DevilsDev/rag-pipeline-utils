@@ -15,6 +15,7 @@ class Semaphore {
     this.waitQueue = [];
   }
 
+  /** Resolves when a slot is free and takes it. */
   async acquire() {
     if (this.currentCount < this.maxConcurrency) {
       this.currentCount++;
@@ -26,6 +27,7 @@ class Semaphore {
     });
   }
 
+  /** Frees a slot, starting the next waiter if there is one. */
   release() {
     this.currentCount--;
     if (this.waitQueue.length > 0) {

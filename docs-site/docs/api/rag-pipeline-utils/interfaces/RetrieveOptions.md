@@ -5,11 +5,13 @@ mdx:
 
 # Interface: RetrieveOptions
 
+What the pipeline passes to [RetrieverPlugin.retrieve](RetrieverPlugin.md#retrieve).
+
 ## Properties
 
-| Property                                                 | Type                        |
-| -------------------------------------------------------- | --------------------------- |
-| <a id="property-filter"></a> `filter?`                   | `Record`\<`string`, `any`\> |
-| <a id="property-includemetadata"></a> `includeMetadata?` | `boolean`                   |
-| <a id="property-minscore"></a> `minScore?`               | `number`                    |
-| <a id="property-topk"></a> `topK?`                       | `number`                    |
+| Property                                         | Type          |
+| ------------------------------------------------ | ------------- |
+| <a id="property-query"></a> `query?`             | `string`      |
+| <a id="property-queryvector"></a> `queryVector?` | `number`[]    |
+| <a id="property-signal"></a> `signal?`           | `AbortSignal` |
+| <a id="property-topk"></a> `topK`                | `number`      |
