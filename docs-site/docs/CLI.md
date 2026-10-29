@@ -89,6 +89,7 @@ API keys come from the environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHE
 | `--verbose`       | Extra output (e.g. the files `ingest` read)                                          |
 | `--no-color`      | Disable colored output                                                               |
 | `--dry-run`       | Show what `init`, `ingest`, `query` or `run` would do without doing it               |
+| `--quiet`         | `query` prints only the answer (or the passages), no status lines. Coming in 2.6.0   |
 | `-v, --version`   | Print the version                                                                    |
 
 Commands exit with status `1` on failure and print the error on stderr.
@@ -160,6 +161,28 @@ rag-pipeline query "remote work" --top-k 5 --json
 | ------------- | ---------------------------------------------- |
 | `--top-k <n>` | Passages to retrieve (default 3)               |
 | `--json`      | Print `{ answer, results, citations }` as JSON |
+
+:::info[Coming in 2.6.0]
+
+The options below are in the next release.
+
+:::
+
+| Option           | Description                                                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                               |
+| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                |
+| `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate                                                                                     |
+| `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                |
+| `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata) |
+
+```bash
+rag-pipeline query "How many vacation days do I get?" --explain --trace
+rag-pipeline query "Summarise the remote work policy" --streaming --timeout 30000
+rag-pipeline --quiet query "What is the expense limit?"
+```
+
+With `--json`, `--trace`, `--stats` and `--explain` add `trace`, `stats` and `explanation` keys. Token counts are estimates (about four characters per token), not the provider's count.
 
 ---
 

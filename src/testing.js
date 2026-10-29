@@ -54,7 +54,18 @@ class HashEmbedder {
         hash ^= ch.codePointAt(0);
         hash = Math.imul(hash, 16777619) >>> 0;
       }
-      vector[hash % this.dimensions] += 1;
+      // FNV-1a's low bits are weak (e.g. "above" and "vacation" agree in
+      // their low 10 bits), so mix them (MurmurHash3 fmix32) before taking
+      // the bucket.
+      hash ^= hash >>> 16;
+      hash = Math.imul(hash, 0x85ebca6b);
+      hash ^= hash >>> 13;
+      hash = Math.imul(hash, 0xc2b2ae35);
+      hash ^= hash >>> 16;
+      hash >>>= 0;
+      // Signed feature hashing: the top bit picks the sign, so colliding
+      // words cancel out on average instead of adding up.
+      vector[hash % this.dimensions] += hash & 0x80000000 ? -1 : 1;
     }
     const norm = Math.hypot(...vector);
     return norm > 0 ? vector.map((v) => v / norm) : vector;

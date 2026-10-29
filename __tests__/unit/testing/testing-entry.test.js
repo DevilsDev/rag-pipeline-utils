@@ -35,6 +35,34 @@ describe("HashEmbedder", () => {
   });
 });
 
+describe("HashEmbedder ranking", () => {
+  // FNV-1a alone gave "above" and "vacation" the same low bits, so the
+  // query "vacation" ranked the expenses document first. Mixed hashing fixes
+  // it at every size.
+  test.each([128, 256, 1024])(
+    "ranks the fixtures correctly at %i dimensions",
+    async (dimensions) => {
+      const { pipeline } = await createTestPipeline({
+        embedder: new HashEmbedder({ dimensions }),
+        llm: null,
+      });
+      const cases = [
+        ["vacation", "vacation"],
+        ["How many vacation days do I get?", "vacation"],
+        ["paid", "vacation"],
+        ["work remotely", "remote-work"],
+        ["manager approval", "remote-work"],
+        ["receipts", "expenses"],
+        ["expense limit for travel", "expenses"],
+      ];
+      for (const [query, expected] of cases) {
+        const result = await pipeline.run({ query });
+        expect([query, result.results[0].id]).toEqual([query, expected]);
+      }
+    },
+  );
+});
+
 describe("EchoLLM", () => {
   test("echoes the top document and records calls", async () => {
     const llm = new EchoLLM();
