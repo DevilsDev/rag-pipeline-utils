@@ -45,6 +45,9 @@ function loadLibrary(specifier) {
   if (specifier === `${PKG}/experimental`) {
     return require(path.join(ROOT, "src/experimental.js"));
   }
+  if (specifier === `${PKG}/testing`) {
+    return require(path.join(ROOT, "src/testing.js"));
+  }
   return {
     ...require(path.join(ROOT, "src/index.js")),
     OpenAIConnector: OfflineConnector,

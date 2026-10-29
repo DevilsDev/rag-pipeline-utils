@@ -9,6 +9,9 @@
     "*": {
       "experimental": [
         "dist/experimental.d.ts"
+      ],
+      "testing": [
+        "dist/testing.d.ts"
       ]
     }
   },
@@ -22,6 +25,11 @@
       "types": "./dist/experimental.d.ts",
       "require": "./dist/experimental.cjs",
       "import": "./dist/experimental.mjs"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "require": "./dist/testing.cjs",
+      "import": "./dist/testing.mjs"
     },
     "./cli": "./bin/cli.js"
   },

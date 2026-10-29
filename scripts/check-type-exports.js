@@ -70,3 +70,34 @@ if (missingExperimental.length > 0) {
 console.log(
   `✅ All ${experimentalExports.length} experimental exports are declared`,
 );
+
+// ./testing: same check against dist/types/testing.d.ts
+const testingExports = Object.keys(require(path.join(dist, "testing.cjs")));
+const testingDts = fs.readFileSync(
+  path.join(dist, "types", "testing.d.ts"),
+  "utf8",
+);
+const testingDeclared = new Set(
+  [...testingDts.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((m) =>
+    m[1].split(",").map((part) =>
+      part
+        .trim()
+        .split(/\s+as\s+/)
+        .pop(),
+    ),
+  ),
+);
+// tsc writes these as `export class X` / `export function X` / `export const X`
+for (const m of testingDts.matchAll(
+  /^export\s+(?:declare\s+)?(?:class|function|const|let|var)\s+(\w+)/gm,
+)) {
+  testingDeclared.add(m[1]);
+}
+const missingTesting = testingExports.filter((n) => !testingDeclared.has(n));
+if (missingTesting.length > 0) {
+  console.error(
+    `❌ testing export(s) missing from dist/testing.d.ts: ${missingTesting.join(", ")}`,
+  );
+  process.exit(1);
+}
+console.log(`✅ All ${testingExports.length} testing exports are declared`);

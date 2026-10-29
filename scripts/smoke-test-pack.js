@@ -127,6 +127,23 @@ const results = [
       }
     },
   ),
+  check("testing entry: require/import, shares the main classes", () => {
+    const script = [
+      `const main = require('${pkgName}');`,
+      `const testing = require('${pkgName}/testing');`,
+      "testing.createTestPipeline().then(async ({ pipeline, retriever, llm }) => {",
+      "  if (!(retriever instanceof main.MemoryRetriever)) throw new Error('two copies of MemoryRetriever');",
+      "  const r = await pipeline.run({ query: 'How many vacation days?' });",
+      "  if (r.results[0].id !== 'vacation' || llm.calls.length !== 1) throw new Error('unexpected result');",
+      `  const esm = await import('${pkgName}/testing');`,
+      "  if (esm.EchoLLM !== testing.EchoLLM) throw new Error('ESM/CJS mismatch');",
+      "}).catch((e) => { console.error(e); process.exit(1); });",
+    ].join("\n");
+    const { stdout, stderr } = runCapture(["-e", script], consumerDir);
+    if (stdout.trim() || stderr.trim()) {
+      throw new Error(`unexpected output:\n${stdout}${stderr}`);
+    }
+  }),
   check("import() loads", () => {
     run(
       process.execPath,
@@ -206,6 +223,9 @@ const results = [
         "const score: number = tracker.track('answer', []).groundednessScore;",
         "new GuardrailsPipeline(pipeline, { strict: true });",
         `import { TenantManager, SSOManager } from "${pkgName}/experimental";`,
+        `import { createTestPipeline, EchoLLM } from "${pkgName}/testing";`,
+        "const echo: InstanceType<typeof EchoLLM> = new EchoLLM({ answer: 'x' });",
+        "void createTestPipeline({ llm: echo });",
         "const tenants: typeof TenantManager = TenantManager;",
         "let sso: InstanceType<typeof SSOManager> | undefined;",
         "export { score, tenants, sso };",
