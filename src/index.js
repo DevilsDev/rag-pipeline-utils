@@ -62,6 +62,7 @@ const {
 const { computeGroundedness } = require('./evaluate/groundedness');
 const { computeSemanticSimilarity } = require('./evaluate/semantic-similarity');
 const { validateDataset } = require('./evaluate/dataset');
+const { runEvaluation, compareConfigurations } = require('./evaluate/compare');
 const { PipelineEvaluator } = require('./evaluate/pipeline-evaluator');
 
 // Chunking
@@ -235,6 +236,8 @@ module.exports = {
   computeFaithfulness,
   computeSemanticSimilarity,
   validateDataset,
+  runEvaluation,
+  compareConfigurations,
   computeAnswerRelevance,
   computeContextPrecision,
   computeContextRecall,

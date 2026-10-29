@@ -329,6 +329,104 @@ It returns:
 
 It never throws. Pass `{ requireExpected: true }` or `{ requireSourceIds: true }` when a run needs reference answers or source ids for every case.
 
+### Run a test set and compare configurations
+
+:::info[Coming in 2.7.0]
+
+`runEvaluation` and `compareConfigurations` are in the next release.
+
+:::
+
+`runEvaluation(dataset, pipeline)` runs every case with citations and evaluation on, using the case's `expected` answer as the reference. It returns a report that is plain JSON, so you can save it:
+
+```javascript
+import { runEvaluation } from "@devilsdev/rag-pipeline-utils";
+import { createTestPipeline } from "@devilsdev/rag-pipeline-utils/testing";
+
+const { pipeline } = await createTestPipeline();
+const report = await runEvaluation(
+  [
+    {
+      id: "vacation",
+      prompt: "How many vacation days do I get?",
+      expected: "Full-time employees receive twenty days of paid vacation.",
+      sourceIds: ["vacation"],
+    },
+  ],
+  pipeline,
+);
+
+console.log(report.summary.failed); // 0
+console.log(report.summary.metrics.faithfulness.mean); // 1
+console.log(report.cases[0].scores.sourceRecall); // 1
+```
+
+Each case records the scores it has:
+
+| Score              | Meaning                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `faithfulness`     | Share of the answer's sentences supported by the retrieved documents                |
+| `relevance`        | How well the answer addresses the question                                          |
+| `contextPrecision` | Share of retrieved documents that support the answer                                |
+| `contextRecall`    | How much of the `expected` answer the retrieved documents support; needs `expected` |
+| `groundedness`     | The weighted combination of the above                                               |
+| `citationCoverage` | Share of the answer's sentences with a supporting citation                          |
+| `sourceRecall`     | Share of the case's `sourceIds` that were retrieved; needs `sourceIds`              |
+
+A retrieval-only pipeline (no `llm`) gets `sourceRecall` only. The report also holds each case's answer, retrieved ids, duration and, for a failed run, its `error`; a failed case is recorded rather than thrown. `summary` has the case counts and each metric's mean. Options: `concurrency` (default 1), a per-case `timeout`, a `signal` to stop the run, `runOptions` for every `run()` call and an `onCase` callback for progress. An invalid dataset throws a `DatasetError` (`code: "RAG_INVALID_DATASET"`) carrying the errors from `validateDataset`.
+
+`compareConfigurations(dataset, { baseline, candidate })` runs the dataset through both and reports what got worse. Here the candidate's LLM gives an answer the documents don't support:
+
+```javascript
+import { compareConfigurations } from "@devilsdev/rag-pipeline-utils";
+import {
+  createTestPipeline,
+  EchoLLM,
+} from "@devilsdev/rag-pipeline-utils/testing";
+
+const dataset = [
+  { id: "vacation", prompt: "How many vacation days do I get?" },
+];
+const { pipeline: baseline } = await createTestPipeline();
+const { pipeline: candidate } = await createTestPipeline({
+  llm: new EchoLLM({ answer: "The office is in Paris." }),
+});
+
+const comparison = await compareConfigurations(dataset, {
+  baseline,
+  candidate,
+});
+
+console.log(comparison.regressed); // true
+console.log(comparison.metrics.faithfulness.delta); // -1
+console.log(comparison.regressions[0].id); // "vacation"
+```
+
+Either side can be a saved report instead of a pipeline. In CI, save the report from your main branch and compare each pull request against it, so the main branch's pipeline doesn't run again:
+
+```javascript no-run
+import fs from "node:fs";
+
+const comparison = await compareConfigurations(dataset, {
+  baseline: JSON.parse(fs.readFileSync("eval-main.json", "utf8")),
+  candidate: pipeline,
+});
+if (comparison.regressed) process.exitCode = 1;
+```
+
+The result:
+
+| Field                   | Meaning                                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `regressed`             | A metric's mean dropped by more than `tolerance` (default 0.02), or a case that passed now fails    |
+| `metrics`               | For each metric in both runs: `baseline`, `candidate`, `delta` and `regressed`                      |
+| `regressions`           | Cases that now fail, or whose score for a metric dropped by more than `caseTolerance` (default 0.1) |
+| `improvements`          | Cases that no longer fail, or whose score rose by more than `caseTolerance`                         |
+| `warnings`              | Cases in only one run, a case whose prompt changed, a requested metric that is missing              |
+| `baseline`, `candidate` | The two reports                                                                                     |
+
+Cases are matched by `id`, so give cases stable ids when you compare runs over time. Pass `metrics: ["faithfulness", "sourceRecall"]` to compare only some metrics. Answers from a model vary between runs; run the same configuration a few times to see how much the scores move, and set the tolerances above that.
+
 ---
 
 ## **Citation & Grounding**
