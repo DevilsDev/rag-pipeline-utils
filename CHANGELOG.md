@@ -35,7 +35,7 @@ for the steps.
   CI tests 7.x). Without it, the connector's methods reject with code
   `MISSING_DEPENDENCY` and an install hint, and `rag-pipeline init` with
   the openai template prints the install step. A clean install drops from
-  58 MB and 174 packages (2.7.1) to 47 MB and 162 packages. Optional peers
+  58 MB and 188 packages (2.7.1) to 47 MB and 172 packages. Optional peers
   are now always left out of the bundle.
 
 ### Removed
