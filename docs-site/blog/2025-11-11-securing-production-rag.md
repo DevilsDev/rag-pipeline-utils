@@ -10,6 +10,8 @@ Production RAG systems handle sensitive data and require comprehensive security 
 
 <!--truncate-->
 
+> **Editor's note:** the code in this post is illustrative and does not match the package's API. The JWT class is `JWTValidator` (exported since 2.4.0) with `verify(token)`; prompt-injection checks are `detectInjection()` and `PreRetrievalGuard`; `createRagPipeline` takes component instances such as `new OpenAIConnector()` and `new MemoryRetriever()`. See [Security](/docs/Security) and the [API Reference](/docs/API-Reference) for working examples.
+
 ## The Security Landscape
 
 RAG systems introduce unique security challenges:

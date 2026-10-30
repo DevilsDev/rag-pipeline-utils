@@ -2,7 +2,7 @@
 
 **@devilsdev/rag-pipeline-utils** ships a set of lexical evaluation metrics for RAG output: answer-level scores (BLEU, ROUGE), grounding metrics (faithfulness, answer relevance, context precision and recall, groundedness), citation tracking and hallucination detection. All of them run locally, synchronously and without calling a model.
 
-Evaluation is a library API; the `rag-pipeline` CLI has no `evaluate` command.
+Evaluation is a library API, and the CLI runs it too: `rag-pipeline eval <dataset>` scores a test set and fails on low scores or regressions, and `rag-pipeline generate-dataset` writes a test set from your index (see [CLI Reference](./CLI.md#eval)).
 
 ---
 
@@ -111,7 +111,7 @@ Signatures:
 | --------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5)                                 |
 | `computeAnswerRelevance(query, answer, options)`                |                                                                   |
-| `computeContextPrecision(query, retrievedDocs, options)`        |                                                                   |
+| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                 |
 | `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5)                                 |
 | `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer` |
 
@@ -412,7 +412,7 @@ Each case records the scores it has:
 | ------------------ | ----------------------------------------------------------------------------------- |
 | `faithfulness`     | Share of the answer's sentences supported by the retrieved documents                |
 | `relevance`        | How well the answer addresses the question                                          |
-| `contextPrecision` | Share of retrieved documents that support the answer                                |
+| `contextPrecision` | Share of retrieved documents relevant to the question                               |
 | `contextRecall`    | How much of the `expected` answer the retrieved documents support; needs `expected` |
 | `groundedness`     | The weighted combination of the above                                               |
 | `citationCoverage` | Share of the answer's sentences with a supporting citation                          |

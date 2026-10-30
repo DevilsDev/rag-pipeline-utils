@@ -36,7 +36,7 @@ Yes. Pass an `AbortSignal` as `options.signal`, or set `options.timeout` in mill
 
 ### How do I evaluate performance?
 
-Evaluation is a library API, not a CLI command. Use `PipelineEvaluator` (or `run({ query, options: { evaluate: true } })`) to score individual pipeline results, and `evaluateRagDataset(datasetPath, pipelineConfig)` for a `{ prompt, expected }[]` dataset with BLEU/ROUGE. Context recall is only computed when you pass a `referenceAnswer`. `DashboardGenerator` renders metrics as a standalone HTML page. For latency, `rag-pipeline ai benchmark` reports p50/p95/mean per stage. See [Evaluation](./Evaluation.md).
+From the command line, `rag-pipeline eval <dataset>` scores a `.json` or `.jsonl` test set (with `--min faithfulness=0.8`, `--baseline` and `--report`), and `rag-pipeline generate-dataset` creates one. In code, use `PipelineEvaluator` (or `run({ query, options: { evaluate: true } })`) to score individual pipeline results, and `evaluateRagDataset(datasetPath, pipelineConfig)` for a `{ prompt, expected }[]` dataset with BLEU/ROUGE. Context recall is only computed when you pass a `referenceAnswer`. `DashboardGenerator` renders metrics as a standalone HTML page. For latency, `rag-pipeline ai benchmark` reports p50/p95/mean per stage. See [Evaluation](./Evaluation.md).
 
 ---
 

@@ -33,7 +33,7 @@ Any version from 4.93 works, so a project that already uses `openai` keeps its o
 + import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
 ```
 
-From the main entry they are now `undefined` in JavaScript and a compile error in TypeScript. To find the imports to change, run your app or tests on 2.7.x with `--trace-deprecation`: each `RAG_DEP_*` warning then shows the line in your code that uses one. 2.5.0 to 2.7.x export the same classes from both entries, so you can change the imports before upgrading.
+From the main entry they are now `undefined` in JavaScript and a compile error in TypeScript. To find the imports to change, search your code for the class names. Running your app or tests on 2.7.x with `--trace-deprecation` helps too: each `RAG_DEP_*` warning shows the first place your code constructs that class, once per class per run, but an import that is never constructed (or only used for `instanceof`) doesn't warn. 2.5.0 to 2.7.x export the same classes from both entries, so you can change the imports before upgrading.
 
 **4. TypeScript: replace the removed types.** 2.7.0 corrected the declarations and deprecated the types below, because they didn't describe what the code reads or returns. 3.0.0 removes them:
 
@@ -84,7 +84,7 @@ See [Experimental modules](./Experimental.md) for what each one actually does.
 - **`RetrievalGuard` with `enforceACL`** now fails closed: when `context.userPermissions` is missing, documents are removed.
 - **`DevServer` now listens**: `start()` binds port 3000 by default (pass `port: 0` for a free port), so existing callers may see `EADDRINUSE`. The default host is `127.0.0.1` (was `localhost`), and the default `watchPaths` is `[]`.
 - **No default plugin registry**: `rag-pipeline hub` / `plugin` registry operations need `--registry <url>` or the `RAG_PLUGIN_REGISTRY` environment variable.
-- **Removed CLI flags**: `--trace`, `--stats`, `--parallel`, `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`, `--abort-timeout`, `--quiet` and `config show --format` had no effect and were removed. Remove them from scripts. See the [CLI reference](./CLI.md).
+- **Removed CLI flags**: `--trace`, `--stats`, `--parallel`, `--streaming`, `--max-memory`, `--preview`, `--validate`, `--explain`, `--abort-timeout`, `--quiet` and `config show --format` had no effect and were removed. Remove them from scripts. (`query --trace`, `--stats`, `--streaming`, `--explain` and the global `--quiet` came back in 2.6.0 with working implementations.) See the [CLI reference](./CLI.md).
 - **Prompts**: built-in connectors now put retrieved context in the user message as delimited, untrusted data. Answers may differ slightly.
 
 **New in 2.5.0**: `options.signal` (an `AbortSignal`) on `run()` for cancellation; `FileVectorStore`; a working CLI workflow (`init`, `ingest`, `query`, `run`, `serve`); and `checkNumericConsistency`, `extractNumbers`, `detectInjection` and `PRICING_METADATA` exports. See the [API Reference](./API-Reference.md).
@@ -138,8 +138,8 @@ await pluginRegistry.register("llm", "my-llm", {
 
 4. **Update Evaluation Scripts**:
 
-The CLI has no `eval` or `evaluate` command. Run dataset evaluation through
-the library instead (see [Evaluation](./Evaluation.md)):
+Since 2.7.0, `rag-pipeline eval tests.json` runs a test set from the CLI (see
+[CLI](./CLI.md#eval)). In code, evaluate through the library (see [Evaluation](./Evaluation.md)):
 
 ```javascript no-run
 const {
@@ -245,13 +245,15 @@ class MyLoader {
 
 ### **Migrating from LangChain**
 
+The `OpenAIConnector` examples in this section need the OpenAI SDK: `npm install openai`.
+
 **Key Differences**:
 
 - Plugin-based vs. chain-based architecture
 - Built-in evaluation framework
 - Streaming support built in
 
-The pipeline itself only exposes `run()`. To load, embed, index or generate outside a run, call the component directly.
+The pipeline exposes `run()` (plus `cleanup()` and `cacheStats()`). To load, embed, index or generate outside a run, call the component directly.
 
 **Migration Steps**:
 
@@ -295,7 +297,7 @@ const results = await retriever.retrieve({
 });
 ```
 
-For a vector index that persists to disk, use `FileVectorStore`. Hosted vector databases need a custom retriever plugin (see [Plugins](./Plugins.md)).
+For a vector index that persists to disk, use `FileVectorStore`. For PostgreSQL or Qdrant, use the built-in `PgVectorRetriever` or `QdrantRetriever` (`pgvector` or `qdrant` in `.ragrc.json`; see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector) and [Qdrant](./Concepts-Connectors.md#qdrant)). Other hosted databases need a custom retriever plugin (see [Plugins](./Plugins.md)).
 
 3. **LLM Integration**:
 
@@ -338,7 +340,7 @@ pipeline.add_node(component=reader, name="Reader", inputs=["Retriever"])
 // @devilsdev/rag-pipeline-utils
 const pipeline = createRagPipeline({
   embedder, // e.g. new OllamaConnector()
-  retriever, // e.g. new MemoryRetriever() or a custom retriever plugin
+  retriever, // e.g. new MemoryRetriever(), FileVectorStore, PgVectorRetriever or QdrantRetriever
   llm, // e.g. new OllamaConnector()
 });
 ```
@@ -481,8 +483,8 @@ rag-pipeline --dry-run query "test query"
 rag-pipeline query "test query" --json
 ```
 
-To score sample data, use `PipelineEvaluator` (see
-[Evaluation](./Evaluation.md)).
+To score sample data, run `rag-pipeline eval tests.json` or use
+`PipelineEvaluator` (see [Evaluation](./Evaluation.md)).
 
 3. **Performance Comparison**:
 
@@ -518,7 +520,7 @@ rm -rf .rag && cp -r .rag.pre-migration .rag
 cp .ragrc.json.pre-migration .ragrc.json
 
 # Downgrade package if needed (pin the version you came from)
-npm install @devilsdev/rag-pipeline-utils@2.4.4
+npm install @devilsdev/rag-pipeline-utils@^2.7.1
 ```
 
 ---

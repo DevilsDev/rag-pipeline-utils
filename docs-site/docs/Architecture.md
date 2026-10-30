@@ -24,7 +24,7 @@ This guide outlines the internal architecture of @devilsdev/rag-pipeline-utils: 
 - **Liskov Substitution Principle (LSP)**: Any plugin can be replaced with another of the same type
 
   - An OpenAI embedder can be swapped for the Cohere or local TF-IDF embedder
-  - Retrievers (`MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, custom stores) are interchangeable as long as they implement `retrieve()`
+  - Retrievers (`MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, `PgVectorRetriever`, `QdrantRetriever`, custom stores) are interchangeable as long as they implement `retrieve()`
 
 - **Interface Segregation Principle (ISP)**: Plugins only implement the methods of their stage
 
@@ -183,13 +183,13 @@ Components that ignore `signal` still work: on abort the run settles anyway and 
 
 ### **Configuration-driven components (CLI)**
 
-The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name resolves to a built-in component (for example `local`, `openai`, `ollama`, `cohere` embedders; `file-store` and `memory` retrievers; `openai`, `anthropic`, `ollama` LLMs; `scoring` reranker), to a custom module listed under `plugins`, or to a plugin registered on `pluginRegistry`. See the [CLI reference](./CLI.md).
+The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name resolves to a built-in component (for example `local`, `openai`, `ollama`, `cohere` embedders; `file-store`, `memory`, `pgvector` and `qdrant` retrievers; `openai`, `anthropic`, `ollama` LLMs; `scoring` reranker), to a custom module listed under `plugins`, or to a plugin registered on `pluginRegistry`. See the [CLI reference](./CLI.md).
 
 ---
 
 ## Pipeline Factory Pattern
 
-`createRagPipeline({ loader, embedder, retriever, llm, reranker, registry })` returns `{ run, cleanup }`. Each component may be an instance or a name resolved from `registry` (default: the exported `pluginRegistry`).
+`createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache })` returns `{ run, cleanup, cacheStats }`; `cache` enables the pipeline cache (see [Caching](./Caching.md)). Each component may be an instance or a name resolved from `registry` (default: the exported `pluginRegistry`).
 
 `run({ query, queryVector, options })` performs, in order:
 
@@ -213,7 +213,7 @@ There is no middleware stack. Cross-cutting behaviour is added by wrapping the p
 - **Retries**: built-in connectors retry transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`. `retry` / `withRetry` are exported for your own components.
 - **Cost**: `CostTracker` wraps a pipeline and records token usage and cost; `CostCalculator` exposes pricing provenance (`PRICING_METADATA`).
 - **Tracing**: `ExecutionTracer` wraps a pipeline and records per-run traces; `TraceInspector` analyses them.
-- **Caching**: `EmbeddingReranker` keeps an LRU cache of document embeddings (`cacheSize`).
+- **Caching**: `createRagPipeline({ cache })` caches query embeddings, retrieval results and answers (see [Caching](./Caching.md)); `EmbeddingReranker` keeps an LRU cache of document embeddings (`cacheSize`).
 
 ---
 
@@ -265,7 +265,7 @@ Some classes are simulations or incomplete: `ModelTrainingOrchestrator`, `Federa
 
 ## Pipeline Flow
 
-The flow below describes 2.5.0. Hybrid retrieval, reranking, citations, evaluation, guardrails and agentic RAG were added in 2.4.0; cancellation, the pre-generation retrieval guard and retrieval-only runs in 2.5.0.
+The flow below describes 3.0.0. Hybrid retrieval, reranking, citations, evaluation, guardrails and agentic RAG were added in 2.4.0; cancellation, the pre-generation retrieval guard and retrieval-only runs in 2.5.0; the pipeline cache in 2.6.0.
 
 ```
 Ingestion:  Documents → Loader (chunks) → Embedder → Retriever.store() (e.g. FileVectorStore)

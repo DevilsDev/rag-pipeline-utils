@@ -19,7 +19,7 @@ time rag-pipeline query "test" --json
 rag-pipeline doctor --category performance
 ```
 
-`ai benchmark` takes `--queries <file>` (JSON array of strings or one per line; by default queries are sampled from the index), `--runs <n>` (default 3), `--top-k <n>` and `--json`. The repository's internal benchmark suite (DAG engine, retry policy, monitoring overhead) runs with `npm run benchmark` from a clone; see [Benchmarks](./Benchmarks.md).
+`ai benchmark` takes `--queries <file>` (JSON array of strings or one per line; by default queries are sampled from the index), `--runs <n>` (default 3), `--top-k <n>` and `--json`. The repository's internal benchmark suite (DAG engine, retry policy, monitoring overhead) runs with `npm run benchmark` from a clone; retrieval speed and quality benchmarks run with `npm run bench:speed` and `npm run bench:quality` (see [Benchmarks](./Benchmarks.md)).
 
 ### **In your application**
 
@@ -165,7 +165,7 @@ for await (const { id, vector, progress } of streamer.embedStream(documents)) {
 
 ### **Parallel batches**
 
-`ParallelProcessor.ParallelEmbedder` splits text chunks into batches and embeds them with a concurrency limit and per-batch retries. It calls `embedder.embed(batch)` with an **array** of strings and expects an array of vectors back, so use it with embedders that accept batches:
+`ParallelProcessor.ParallelEmbedder` splits text chunks into batches and embeds them with a concurrency limit and per-batch retries. By default (`mode: "auto"`) it calls `embedBatch(texts)` when the embedder has one, embeds one text at a time for the built-in connectors, and otherwise calls `embed(batch)` with an array of strings. Force a strategy with `mode: "batch"` or `mode: "single"`:
 
 ```javascript no-run
 const { ParallelProcessor } = require("@devilsdev/rag-pipeline-utils");
@@ -174,6 +174,7 @@ const parallel = new ParallelProcessor.ParallelEmbedder(batchEmbedder, {
   batchSize: 10, // default
   maxConcurrency: 3, // default
   retryAttempts: 2, // default
+  mode: "auto", // default
 });
 
 const vectors = await parallel.embedBatch(chunks); // chunks: string[]
@@ -183,7 +184,7 @@ const vectors = await parallel.embedBatch(chunks); // chunks: string[]
 
 ## **Retrieval and Reranking**
 
-- **Index choice.** `MemoryRetriever` holds all vectors in memory and compares every one per query; it enforces `maxDocuments` (default 100000) and, with `eviction: "fifo"`, drops the oldest documents instead of throwing when full. `FileVectorStore` (the CLI's `file-store` retriever) persists the index to JSON, stores mostly-zero vectors sparsely and rounds values to 7 significant digits (about 10x smaller files for the `local` embedder). Both do an exhaustive cosine scan; for large corpora, plug in a dedicated vector database as a custom retriever.
+- **Index choice.** `MemoryRetriever` holds all vectors in memory and compares every one per query; it enforces `maxDocuments` (default 100000) and, with `eviction: "fifo"`, drops the oldest documents instead of throwing when full. `FileVectorStore` (the CLI's `file-store` retriever) persists the index to JSON, stores mostly-zero vectors sparsely and rounds values to 7 significant digits (about 10x smaller files for the `local` embedder). Both do an exhaustive cosine scan; for large corpora use `PgVectorRetriever` (PostgreSQL with pgvector, HNSW) or `QdrantRetriever`, or plug in another store as a custom retriever.
 - **`topK`.** Retrieve only what the next stage needs. With a reranker, retrieve more candidates and let the reranker cut them down.
 - **`EmbeddingReranker`** caches document embeddings in an LRU (`cacheSize`, default 1000; `0` disables) and limits concurrent embedding calls (`concurrency`, default 4). Call `clearCache()` after retraining the embedder.
 - **`CascadeReranker`** lets a cheap reranker (for example `ScoringReranker`) prune candidates before an expensive one runs.
@@ -257,7 +258,7 @@ The pipeline object holds no per-request state, so you can scale horizontally be
 - [ ] Bound memory: `maxDocuments` / `eviction` on `MemoryRetriever`, `cacheSize` on `EmbeddingReranker`
 - [ ] Track token cost with `CostTracker` and set a budget
 
-There are no published reference throughput or latency figures for this package; numbers depend on your providers, models, corpus and hardware. Measure your own.
+Reference figures for the built-in stores and retrievers, measured in CI, are on the [Benchmarks](./Benchmarks.md) page. Your numbers depend on your providers, models, corpus and hardware, so measure your own.
 
 ---
 

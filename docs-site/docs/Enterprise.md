@@ -2,7 +2,7 @@
 
 > **Experimental:** SSO (SAML/OAuth2/OIDC/Active Directory), multi-tenancy, data governance, model training, federated learning, multimodal processing, adaptive retrieval, the plugin sandbox and `PluginCertification` are simulated or incomplete. They are exported from `@devilsdev/rag-pipeline-utils/experimental` and must not be used for authentication, tenant isolation, compliance or plugin isolation. See [Experimental modules](./Experimental.md) for what each one really does.
 
-This page covers the supported building blocks in **@devilsdev/rag-pipeline-utils** for running RAG in regulated or multi-user environments: audit logging, token validation, access-controlled retrieval, plugin signatures, cost limits and observability. They are all exported from the main entry. There are no `/enterprise`, `/observability` or `/testing` subpaths. The package exposes only `.`, `./experimental` and `./cli`.
+This page covers the supported building blocks in **@devilsdev/rag-pipeline-utils** for running RAG in regulated or multi-user environments: audit logging, token validation, access-controlled retrieval, plugin signatures, cost limits and observability. They are all exported from the main entry. There are no `/enterprise` or `/observability` subpaths. The package exposes `.`, `./experimental`, `./testing` (test helpers such as `createTestPipeline`) and `./cli`.
 
 ---
 

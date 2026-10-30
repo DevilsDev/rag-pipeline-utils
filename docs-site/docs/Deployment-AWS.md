@@ -8,7 +8,7 @@ Deploy RAG Pipeline Utils on AWS using ECS, EKS, or Lambda with production-grade
 
 :::note What you deploy
 
-`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:3.0.0` refer to your application image built against version 3.0.0 of the package, which needs Node.js 22 or later. If your service uses `OpenAIConnector`, add `openai` to its dependencies (`npm install openai`): since 3.0.0 it is an optional peer dependency, and without it the connector rejects with `MISSING_DEPENDENCY`. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
 
 :::
 
@@ -47,10 +47,10 @@ aws ecr get-login-password --region us-east-1 | \
   123456789012.dkr.ecr.us-east-1.amazonaws.com
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.5.0 \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0
+docker tag rag-pipeline-utils:3.0.0 \
+  123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:3.0.0
 
-docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:3.0.0
 ```
 
 ### ECS Task Definition
@@ -67,7 +67,7 @@ docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.
   "containerDefinitions": [
     {
       "name": "rag-app",
-      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.0",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:3.0.0",
       "essential": true,
       "portMappings": [
         {
@@ -106,19 +106,13 @@ docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/rag-pipeline-utils:2.5.
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "node -e \"require('http').get('http://localhost:3000/health')\""
+          "node -e \"require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""
         ],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
         "startPeriod": 60
-      },
-      "resourceRequirements": [
-        {
-          "type": "InferenceAccelerator",
-          "value": "device_1"
-        }
-      ]
+      }
     }
   ]
 }
@@ -423,6 +417,8 @@ spec:
 
 ### Lambda Function Code
 
+Install the dependencies the function ships with, into the layer: `npm install --prefix layer/nodejs @devilsdev/rag-pipeline-utils openai`. `openai` is an optional peer dependency that `OpenAIConnector` needs.
+
 ```javascript no-run
 // lambda/index.js
 const {
@@ -615,7 +611,9 @@ aws logs filter-log-events \
 ```javascript
 // Enable X-Ray
 const AWSXRay = require("aws-xray-sdk-core");
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+// AWS SDK v3 clients (the nodejs22.x runtime does not include SDK v2)
+const { S3Client } = require("@aws-sdk/client-s3");
+const s3 = AWSXRay.captureAWSv3Client(new S3Client({}));
 
 // Instrument HTTP requests
 AWSXRay.captureHTTPsGlobal(require("http"));
@@ -650,7 +648,7 @@ AWSXRay.captureHTTPsGlobal(require("https"));
 aws lambda put-provisioned-concurrency-config \
   --function-name rag-pipeline-query \
   --provisioned-concurrent-executions 10 \
-  --qualifier LATEST
+  --qualifier live  # a published version or alias; $LATEST is not allowed
 ```
 
 ## Troubleshooting

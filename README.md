@@ -60,7 +60,7 @@ npm install @devilsdev/rag-pipeline-utils openai
 
 Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300) lists the changes to make.
 
-> **`npm install` failed with `husky: not found`?** Versions 2.2.1 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
+> **`npm install` failed with `husky: not found`?** Versions 2.0.0 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
 
 ## Quick start
 

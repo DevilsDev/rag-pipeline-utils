@@ -107,7 +107,7 @@ Dataset: BEIR SciFact (test split), 5,183 documents, 300 queries, 339 relevance 
 - **`HashEmbedder` is the testing stand-in**, shown as a floor.
 - **TF-IDF vectors are long.** `LocalEmbedder` vectors have one dimension
   per vocabulary token (10,000 here), so an exact search over them in
-  `MemoryRetriever` takes about 60 ms per query on this corpus.
+  `MemoryRetriever` takes about 70 ms per query on this corpus.
 - The metrics are those of BEIR and trec_eval. Recall@100 shows how many
   relevant documents a reranker could still recover from the top 100.
 

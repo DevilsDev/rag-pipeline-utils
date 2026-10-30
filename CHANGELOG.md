@@ -217,7 +217,7 @@ for the steps.
 ### Fixed
 
 - **`npm install` failed on machines without husky installed globally.**
-  Every release from 2.2.1 to 2.6.1 declared
+  Every release from 2.0.0 to 2.6.1 declared
   `"postinstall": "husky install"`. husky is a development tool that isn't
   installed in users' projects, so installing the package failed with
   `husky: not found` (or `'husky' is not recognized` on Windows) on clean
@@ -792,5 +792,5 @@ For release notes prior to v2.4.0, see
 [2.4.4]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.4
 [2.4.3]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.3
 [2.4.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.2
-[2.4.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.1
-[2.4.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.4.0
+[2.4.1]: https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils/v/2.4.1
+[2.4.0]: https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils/v/2.4.0

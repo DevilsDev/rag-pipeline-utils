@@ -3,10 +3,14 @@ slug: security-enhancements-v2.3.1
 title: "RAG Pipeline Utils v2.3.1: Advanced Security Enhancements"
 authors: [ali]
 tags: [release, security, jwt, path-traversal, defense-in-depth]
-date: "2025-11-08"
+date: "2025-11-08T12:00"
 ---
 
 RAG Pipeline Utils v2.3.1 delivers advanced security enhancements and production hardening improvements. This patch release includes critical updates to JWT validation, path traversal defense mechanisms, and race condition mitigation.
+
+<!-- truncate -->
+
+> **Editor's note:** in 2.3.1, `sanitizePath`, `InputSanitizer` and `JWTValidator` were internal and not exported from the package. `JWTValidator` is exported since 2.4.0; the path sanitizer is not public. See [Security](/docs/Security) for the current API.
 
 ## Security Enhancements
 

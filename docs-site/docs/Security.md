@@ -275,10 +275,10 @@ try {
 
 **Key Features:**
 
-- **Race Condition Mitigation**: Optimized check-then-set pattern prevents concurrent replay attacks
+- **Race Condition Mitigation**: a check-then-set pattern limits concurrent replays within one process
 - **Separate Tracking**: Self-signed and external tokens tracked independently
 - **Consistent Validation**: `strictValidation` flag now properly controls iss/aud checks
-- **Audit Logging**: All replay attempts logged for security monitoring
+- **Replay events**: each replay attempt increments `stats.replayAttempts` and emits a `replay_detected` event; nothing is logged unless you listen for it. The JTI store is in memory per `JWTValidator` instance, so replays across processes or after a restart are not detected
 
 ---
 
@@ -338,7 +338,7 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 
 **Data in Transit**:
 
-`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, registry }`. The built-in OpenAI, Anthropic and Cohere connectors call HTTPS endpoints through their SDKs. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
+`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, cache, registry }`. The built-in connectors default to HTTPS endpoints (OpenAI through the optional `openai` SDK, Anthropic and Cohere through axios); a custom `baseURL` is your responsibility. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
 
 ### **Data Sanitization**
 
@@ -844,7 +844,8 @@ class IncidentResponse {
 - [ ] Input validation and sanitization implemented
 - [ ] Output filtering for sensitive data
 - [ ] Plugins reviewed before install; signature verification enabled (`NODE_ENV=production`) with trusted signers configured
-- [ ] `GuardrailsPipeline` with `enforceACL` and `context.userPermissions` where documents are access-controlled- [ ] Authentication and authorization configured
+- [ ] `GuardrailsPipeline` with `enforceACL` and `context.userPermissions` where documents are access-controlled
+- [ ] Authentication and authorization configured
 - [ ] Audit logging enabled
 - [ ] Anomaly detection active
 - [ ] Incident response plan in place

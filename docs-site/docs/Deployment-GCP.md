@@ -8,7 +8,7 @@ Deploy RAG Pipeline Utils on Google Cloud Platform using Cloud Run, GKE, or Clou
 
 :::note What you deploy
 
-`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:3.0.0` refer to your application image built against version 3.0.0 of the package, which needs Node.js 22 or later. If your service uses `OpenAIConnector`, add `openai` to its dependencies (`npm install openai`): since 3.0.0 it is an optional peer dependency, and without it the connector rejects with `MISSING_DEPENDENCY`. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
 
 :::
 
@@ -46,10 +46,10 @@ gcloud artifacts repositories create rag-pipeline \
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.5.0 \
-  us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
+docker tag rag-pipeline-utils:3.0.0 \
+  us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:3.0.0
 
-docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
+docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:3.0.0
 ```
 
 ## Google Cloud Run
@@ -59,7 +59,7 @@ docker push us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
 ```bash
 # Deploy to Cloud Run
 gcloud run deploy rag-pipeline \
-  --image us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0 \
+  --image us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:3.0.0 \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -99,7 +99,7 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-        - image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
+        - image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:3.0.0
           resources:
             limits:
               cpu: "2000m"
@@ -170,7 +170,7 @@ spec:
       serviceAccountName: rag-pipeline-sa
       containers:
         - name: rag-app
-          image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:2.5.0
+          image: us-central1-docker.pkg.dev/PROJECT_ID/rag-pipeline/app:3.0.0
           ports:
             - containerPort: 3000
           env:
@@ -232,6 +232,8 @@ kubectl annotate serviceaccount rag-pipeline-sa \
 ## Cloud Functions (2nd Gen)
 
 ### Function Code
+
+Add the dependencies the function ships with: `npm install @devilsdev/rag-pipeline-utils openai @google-cloud/functions-framework`. `openai` is an optional peer dependency that `OpenAIConnector` needs.
 
 ```javascript no-run
 // index.js

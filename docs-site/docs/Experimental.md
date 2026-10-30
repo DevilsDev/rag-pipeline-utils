@@ -26,7 +26,7 @@ Experimental modules are **not** covered by the guarantees in [SEMVER.md](https:
 | `TenantManager`, `ResourceMonitor`                                        | Tenant and workspace usage figures are random, so quota enforcement passes or fails at random.                                                                                                                                                                                                                                                                                                                                                    |
 | `DataGovernanceManager` (`DataGovernance`)                                | Data classification is random; the compliance report always says "compliant"; GDPR erasure reports deleted records without deleting anything.                                                                                                                                                                                                                                                                                                     |
 | `PluginSandbox`                                                           | `execute()` calls methods that do not exist and fails. Plugins are not isolated; they run in-process with your permissions. Requires the optional `isolated-vm` peer dependency.                                                                                                                                                                                                                                                                  |
-| `PluginCertification`                                                     | `submitForCertification()` uses fixed placeholder scores. For scores computed from a plugin's files use `rag-pipeline hub certify check <path>`.                                                                                                                                                                                                                                                                                                  |
+| `PluginCertification`                                                     | `submitForCertification()` uses fixed placeholder scores, then POSTs the result to a hard-coded registry (`https://registry.rag-pipeline.dev`; override with `registryUrl`), so without a reachable registry it rejects with `fetch failed`. For scores computed from a plugin's files use `rag-pipeline hub certify check <path>`.                                                                                                               |
 
 ## Migrating from the main entry
 
@@ -41,7 +41,7 @@ To migrate, change the import path. In 2.x the classes are the same objects in b
 + import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
 ```
 
-Warnings can be silenced with Node's `--no-deprecation` flag, but changing the import is the better fix.
+In 2.x the warnings could be silenced with Node's `--no-deprecation` flag; 3.0 prints none, because the main-entry exports are gone.
 
 ## Supported alternatives
 

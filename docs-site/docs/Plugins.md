@@ -282,7 +282,7 @@ await pluginRegistry.register("llm", "echo", echoLlm, manifest, {
 
 - The manifest must carry `signature` (Ed25519, base64) and `signerId`. Signers come from a trusted-keys file; the trust store is empty by default.
 - A signed `contentDigest` in the manifest binds the plugin code. When it is present, it is always checked against `options.content` (`{ files, baseDir, contents }`).
-- The exported `pluginRegistry` verifies signatures only when `NODE_ENV` is `production`. Registries constructed with `requireSignedPlugins: true` refuse plugins that have no signed manifest. With `requireContentDigest: true` they also refuse manifests that have no `contentDigest`.
+- The exported `pluginRegistry` verifies signatures only when `NODE_ENV` is `production`. Registries constructed with `requireSignedPlugins: true` (`new pluginRegistry.PluginRegistry({ verifySignatures: true, requireSignedPlugins: true })`) refuse plugins that have no signed manifest. With `requireContentDigest: true` they also refuse manifests that have no `contentDigest`.
 - `PluginSignatureVerifier` is exported for verifying manifests yourself (`verifyPluginSignature(manifest, signature, signerId, content?)`).
 
 ---
@@ -322,15 +322,15 @@ const anthropic = new AnthropicConnector({
 const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
 ```
 
-| Connector            | Stages             | Notes                                                                |
-| -------------------- | ------------------ | -------------------------------------------------------------------- |
-| `OpenAIConnector`    | llm, embedder      | Default models `gpt-4o-mini` and `text-embedding-3-small`; streaming |
-| `AnthropicConnector` | llm                | Default model `claude-3-5-sonnet-20241022`; streaming                |
-| `CohereConnector`    | embedder, reranker | `embed-english-v3.0`, `rerank-english-v3.0`                          |
-| `OllamaConnector`    | llm, embedder      | Local server; defaults `llama3` and `nomic-embed-text`; streaming    |
-| `LocalEmbedder`      | embedder           | Offline TF-IDF; call `train(documents)` first                        |
-| `MemoryRetriever`    | retriever          | In-memory cosine similarity; `maxDocuments`, `eviction: 'fifo'`      |
-| `FileVectorStore`    | retriever          | JSON-file index used by the CLI (`file-store`)                       |
+| Connector            | Stages             | Notes                                                                                            |
+| -------------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
+| `OpenAIConnector`    | llm, embedder      | Needs `npm install openai`; default models `gpt-4o-mini` and `text-embedding-3-small`; streaming |
+| `AnthropicConnector` | llm                | Default model `claude-3-5-sonnet-20241022`; streaming                                            |
+| `CohereConnector`    | embedder, reranker | `embed-english-v3.0`, `rerank-english-v3.0`                                                      |
+| `OllamaConnector`    | llm, embedder      | Local server; defaults `llama3` and `nomic-embed-text`; streaming                                |
+| `LocalEmbedder`      | embedder           | Offline TF-IDF; call `train(documents)` first                                                    |
+| `MemoryRetriever`    | retriever          | In-memory cosine similarity; `maxDocuments`, `eviction: 'fifo'`                                  |
+| `FileVectorStore`    | retriever          | JSON-file index used by the CLI (`file-store`)                                                   |
 
 API keys are read when the connector is constructed (from `apiKey` or `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY`). Transient failures (network errors, 408/409/425/429/5xx) are retried with exponential backoff and jitter, and `Retry-After` is honoured.
 

@@ -2,7 +2,6 @@
 
 /**
  * Sidebar configuration for RAG Pipeline Utils documentation site
- * Version: 2.0.0
  * Author: Ali Kahwaji
  * Updated: Structured for modular clarity and DX
  * @type {import('@docusaurus/plugin-content-docs').SidebarsConfig}
