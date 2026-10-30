@@ -29,7 +29,8 @@ const { VersionUtils } = require('./version-resolver.js');
 class PluginPublisher {
   constructor(_options = {}) {
     this._options = {
-      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      registryUrl:
+        _options.registryUrl || process.env.RAG_PLUGIN_REGISTRY || null,
       authToken: _options.authToken,
       timeout: _options.timeout || 30000,
       dryRun: _options.dryRun || false,
@@ -515,7 +516,7 @@ jobs:
     - name: Publish plugin
       run: |
         npx rag-pipeline publish \\
-          --registry-url \${{ secrets.REGISTRY_URL || 'https://registry.rag-pipeline.dev' }} \\
+          --registry-url \${{ secrets.REGISTRY_URL }} \\
           --auth-token \${{ secrets.REGISTRY_TOKEN }} \\
           --version \${{ github.event.inputs.version || github.event.release.tag_name }}
       env:

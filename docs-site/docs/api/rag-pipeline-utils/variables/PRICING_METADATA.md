@@ -22,6 +22,6 @@ const PRICING_METADATA: Readonly<{
 Where the built-in prices come from and when they were recorded.
 
 The values are the providers' published list prices as copied into this
-library on `asOf`; they have not been re-verified since and providers
+library on `asOf` (entries added later carry their own `asOf`); they have not been re-verified since and providers
 change prices often. Pass `pricing` or `customPricing` to CostCalculator
 to use current or negotiated prices.

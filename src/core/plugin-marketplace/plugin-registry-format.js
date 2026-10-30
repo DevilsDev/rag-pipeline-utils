@@ -240,7 +240,6 @@ const PLUGIN_REGISTRY_SCHEMA = {
  * Default plugin registry URLs
  */
 const DEFAULT_REGISTRY_URLS = [
-  'https://registry.rag-pipeline.dev/plugins.json',
   'https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-registry@main/plugins.json',
 ];
 

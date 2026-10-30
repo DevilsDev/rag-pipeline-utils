@@ -313,6 +313,31 @@ describe("Error Formatter", () => {
 
       expect(wrapped.originalError.stack).toBe(original.stack);
     });
+
+    test("fills {reason} from the wrapped error unless context gives one", () => {
+      const original = new Error("connection refused");
+      const wrapped = wrapError(
+        original,
+        ERROR_CODES.PIPELINE_EXECUTION_FAILED,
+        {
+          stage: "retrieval",
+        },
+      );
+      expect(wrapped.message).toBe(
+        "Pipeline execution failed at stage 'retrieval': connection refused",
+      );
+      const explicit = wrapError(
+        original,
+        ERROR_CODES.PIPELINE_EXECUTION_FAILED,
+        {
+          stage: "retrieval",
+          reason: "index unavailable",
+        },
+      );
+      expect(explicit.message).toBe(
+        "Pipeline execution failed at stage 'retrieval': index unavailable",
+      );
+    });
   });
 
   describe("isEnhancedError", () => {

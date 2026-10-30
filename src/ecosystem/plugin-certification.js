@@ -18,7 +18,10 @@ class PluginCertification extends EventEmitter {
     super();
 
     this._config = {
-      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      // No default: there is no public registry, and the old default
+      // (registry.rag-pipeline.dev) is a domain the project doesn't control.
+      registryUrl:
+        _options.registryUrl || process.env.RAG_PLUGIN_REGISTRY || null,
       apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
       fetch: _options.fetch, // optional injected fetch for tests
       certificationLevels: {
@@ -459,8 +462,22 @@ class PluginCertification extends EventEmitter {
       ...badge,
       score,
       svg: this._generateBadgeSVG(badge, score),
-      markdown: `![${badge.name}](https://registry.rag-pipeline.dev/badges/${level.toLowerCase()}.svg)`,
+      markdown: this._registryLink(
+        `badges/${level.toLowerCase()}.svg`,
+        (url) => `![${badge.name}](${url})`,
+      ),
     };
+  }
+
+  /**
+   * A link under the configured registry, or null without one.
+   * @private
+   */
+  _registryLink(pathname, format = (url) => url) {
+    if (!this._config.registryUrl) return null;
+    return format(
+      `${this._config.registryUrl.replace(/\/+$/, '')}/${pathname}`,
+    );
   }
 
   _generateBadgeSVG(badge, score) {
@@ -485,7 +502,9 @@ class PluginCertification extends EventEmitter {
         level,
         issuedAt,
       ),
-      verificationUrl: `https://registry.rag-pipeline.dev/certifications/${certificationId}/verify`,
+      verificationUrl: this._registryLink(
+        `certifications/${certificationId}/verify`,
+      ),
     };
   }
 
@@ -549,6 +568,13 @@ class PluginCertification extends EventEmitter {
   }
 
   async _makeRequest(method, endpoint, data = {}) {
+    if (!this._config.registryUrl) {
+      const err = new Error(
+        'No plugin registry configured. Pass registryUrl or set RAG_PLUGIN_REGISTRY.',
+      );
+      err.code = 'NO_PLUGIN_REGISTRY';
+      throw err;
+    }
     const doFetch = pickFetch(this._config.fetch);
     if (!doFetch) throw new Error('fetch is not available in this environment');
 

@@ -11,6 +11,54 @@ page.
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-10-30
+
+A patch for problems found while auditing the documentation against
+3.0.0. No API changes.
+
+### Security
+
+- **`PluginHub` and `PluginCertification` sent requests to an unregistered
+  domain by default.** Without a `registryUrl` they used
+  `https://registry.rag-pipeline.dev`, a domain the project doesn't control
+  (`rag-pipeline.dev` was not registered when checked on 2026-10-30), so
+  whoever registered it would receive their requests: `PluginHub` attached
+  `RAG_PLUGIN_HUB_API_KEY` as a Bearer token and posted usage analytics
+  (search queries, plugin ids) once a minute whenever there were any, and `PluginCertification`
+  posted certification submissions. There is no default registry now: pass
+  `registryUrl` or set `RAG_PLUGIN_REGISTRY`, as the `rag-pipeline hub` CLI
+  already required. Without one, requests reject with
+  `NO_PLUGIN_REGISTRY` and nothing is sent. Certificate and badge links are
+  built from the configured registry.
+
+### Fixed
+
+- **`AuditLogger.verifyIntegrity()` could check no logs and still report
+  `verified: true`.** Daily files are named by their UTC date, but the
+  files in a date range were found by stepping one local day at a time
+  from 1970. In timezones ahead of UTC with daylight saving the steps
+  drifted onto the previous UTC day, so today's file was never opened.
+  `queryLogs()` used the same code and could miss records. Files are now
+  matched by their UTC date from a directory listing, which also replaces
+  about 20,000 file checks per call.
+- **`AnthropicConnector` failed with its default settings.** Its default
+  model, `claude-3-5-sonnet-20241022`, was retired by Anthropic on
+  2025-10-28. The default is now `claude-sonnet-5-5`, Anthropic's listed
+  replacement. Claude 4.7 and later models accept only the API's default
+  temperature, so the connector's default `temperature` is now that value
+  (1) and is left out of the request; an explicit `temperature` is still
+  sent. Answers were sampled at 0.7 before; pass `temperature: 0.7` to keep
+  that on models that accept it. `CostCalculator` prices
+  `claude-sonnet-5-5`.
+- **`new PluginSandbox()` threw `PluginSignatureVerifier is not a
+constructor`** (experimental). It constructs again; `execute()` is still
+  not functional.
+- **`wrapError` left `{reason}` in messages.** Templates such as
+  `PIPELINE_EXECUTION_FAILED` end in `{reason}`; it is now filled from the
+  wrapped error's message unless the context gives one.
+- `PluginHub`'s `User-Agent` reported version 2.1.8; it now reports the
+  installed version.
+
 ## [3.0.0] - 2026-10-30
 
 A major release that removes what 2.x deprecated and changes the runtime
@@ -781,6 +829,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.0.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.1
 [3.0.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.0
 [2.7.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.1
 [2.7.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.0

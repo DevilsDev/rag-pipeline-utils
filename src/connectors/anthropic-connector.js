@@ -22,12 +22,19 @@ const API_KEY_ENV = 'ANTHROPIC_API_KEY';
  * constructed, not when this module is first required.
  * @type {Object}
  */
+/**
+ * The Messages API's own default temperature. Claude 4.7 and later models
+ * accept only this value, so the connector leaves `temperature` out of the
+ * request when it equals it.
+ */
+const API_DEFAULT_TEMPERATURE = 1;
+
 const DEFAULT_CONFIG = {
-  model: 'claude-3-5-sonnet-20241022',
+  model: 'claude-sonnet-5-5',
   baseURL: 'https://api.anthropic.com',
   apiVersion: '2023-06-01',
   maxTokens: 4096,
-  temperature: 0.7,
+  temperature: API_DEFAULT_TEMPERATURE,
   maxRetries: 3,
   retryDelay: 1000,
   get apiKey() {
@@ -61,12 +68,13 @@ class AnthropicConnector extends BaseConnector {
 
   /**
    * @param {Object} [options]
-   * @param {string} [options.model='claude-3-5-sonnet-20241022'] - Claude model to use
+   * @param {string} [options.model='claude-sonnet-5-5'] - Claude model to use
    * @param {string} [options.apiKey] - Anthropic API key (defaults to ANTHROPIC_API_KEY at construction)
    * @param {string} [options.baseURL='https://api.anthropic.com'] - API base URL
    * @param {string} [options.apiVersion='2023-06-01'] - API version header
    * @param {number} [options.maxTokens=4096] - Max tokens in response
-   * @param {number} [options.temperature=0.7] - Sampling temperature
+   * @param {number} [options.temperature=1] - Sampling temperature. 1 is the API default and is not sent;
+   *   Claude 4.7 and later models reject any other value
    * @param {number} [options.maxRetries=3] - Retries for transient failures
    * @param {number} [options.retryDelay=1000] - Base backoff delay in ms
    * @param {string} [options.systemPrompt] - System prompt used when RAG context is supplied
@@ -121,9 +129,12 @@ class AnthropicConnector extends BaseConnector {
     const body = {
       model: options.model || this.config.model,
       max_tokens: options.maxTokens ?? this.config.maxTokens,
-      temperature: options.temperature ?? this.config.temperature,
       messages: [{ role: 'user', content: prompt.user }],
     };
+    const temperature = options.temperature ?? this.config.temperature;
+    if (temperature !== undefined && temperature !== API_DEFAULT_TEMPERATURE) {
+      body.temperature = temperature;
+    }
     if (prompt.system) body.system = prompt.system;
     return body;
   }
