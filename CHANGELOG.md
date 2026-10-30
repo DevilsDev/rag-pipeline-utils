@@ -24,15 +24,13 @@ Planned for 3.0.0.
   options and results are unchanged. openai 7 uses Node's built-in `fetch`
   and has no dependencies of its own, so 11 packages leave the install
   tree.
-
-### Fixed
-
-- **Connector retries missed network failures.** The openai SDK's
-  connection errors keep `name: "Error"`, so `APIConnectionError` and
-  `APIConnectionTimeoutError` were never retried; with openai 7 a refused
-  connection wasn't retried either, because the socket error code sits one
-  level deeper in `error.cause`. `isRetryableError` now matches the error
-  class and walks the cause chain.
+- **Breaking: `openai` is an optional peer dependency.** Install it
+  yourself to use `OpenAIConnector`: `npm install openai` (4.93 or later;
+  CI tests 7.x). Without it, the connector's methods reject with code
+  `MISSING_DEPENDENCY` and an install hint, and `rag-pipeline init` with
+  the openai template prints the install step. A clean install drops from
+  58 MB and 174 packages (2.7.1) to 47 MB and 162 packages. Optional peers
+  are now always left out of the bundle.
 
 ### Removed
 
@@ -55,6 +53,15 @@ Planned for 3.0.0.
   answer text from `generate()`, store embeddings as `Document.vector`, and
   see the `DAG`, `createError` / `wrapError` and `evaluateRagDataset`
   declarations.
+
+### Fixed
+
+- **Connector retries missed network failures.** The openai SDK's
+  connection errors keep `name: "Error"`, so `APIConnectionError` and
+  `APIConnectionTimeoutError` were never retried; with openai 7 a refused
+  connection wasn't retried either, because the socket error code sits one
+  level deeper in `error.cause`. `isRetryableError` now matches the error
+  class and walks the cause chain.
 
 ## [2.7.1] - 2026-10-30
 

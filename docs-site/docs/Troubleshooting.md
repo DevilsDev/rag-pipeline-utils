@@ -27,7 +27,7 @@ npm install @devilsdev/rag-pipeline-utils
 - **Node.js version**: Node.js 22 or newer is required (`engines.node >= 22`) from 3.0.0; 2.x needs Node.js 18 or newer.
 - **`Cannot find module 'isolated-vm'`**: importing 2.4.5 failed in clean installs with this error. Upgrade to 2.5.0, where `isolated-vm` is an optional peer dependency loaded only when the experimental `PluginSandbox` runs. Install it yourself only if you use `PluginSandbox`.
 - **`pino-pretty`** is an optional peer dependency as well; install it only for pretty-printed logs.
-- **OpenAI SDK**: the package uses the `openai` 7.x SDK from 3.0.0 (4.x in 2.x). `OpenAIConnector` creates its own client, so the `openai` version your own code uses doesn't need to match.
+- **OpenAI SDK**: from 3.0.0, `openai` is an optional peer dependency. `OpenAIConnector` uses the copy your project installs (`npm install openai`; 4.93 or later works) and fails with `MISSING_DEPENDENCY` when there is none. 2.x installs `openai` 4.x itself.
 
 ### **2. Configuration File Issues**
 

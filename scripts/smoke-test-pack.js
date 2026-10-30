@@ -90,7 +90,8 @@ run(
   consumerDir,
 );
 
-const pkgName = require(path.join(root, "package.json")).name;
+const pkg = require(path.join(root, "package.json"));
+const pkgName = pkg.name;
 const results = [
   // --ignore-scripts above hides install-time scripts, so check for them:
   // a postinstall that calls a dev tool (husky) makes `npm install` fail
@@ -107,6 +108,25 @@ const results = [
         `the package runs ${found.map((n) => `"${n}": "${installed.scripts[n]}"`).join(", ")} on install`,
       );
     }
+  }),
+  check("optional peers are not installed; OpenAIConnector says so", () => {
+    for (const peer of Object.keys(pkg.peerDependencies || {})) {
+      if (fs.existsSync(path.join(consumerDir, "node_modules", peer))) {
+        throw new Error(`optional peer "${peer}" was installed`);
+      }
+    }
+    const script = [
+      `const { OpenAIConnector } = require('${pkgName}');`,
+      "new OpenAIConnector({ apiKey: 'k' }).generate('q').then(",
+      "  () => { console.error('generate resolved'); process.exit(1); },",
+      "  (e) => {",
+      "    if (e.code !== 'MISSING_DEPENDENCY' || !/npm install openai/.test(e.message)) {",
+      "      console.error(e); process.exit(1);",
+      "    }",
+      "  },",
+      ");",
+    ].join("\n");
+    runCapture(["-e", script], consumerDir);
   }),
   check("require() loads with no console output or warnings", () => {
     const { stdout, stderr } = runCapture(

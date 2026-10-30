@@ -18,7 +18,8 @@
     "@devilsdev/rag-pipeline-utils": "^2.5.0",
     "@fastify/cors": "^10.0.0",
     "@fastify/rate-limit": "^10.0.0",
-    "fastify": "^5.0.0"
+    "fastify": "^5.0.0",
+    "openai": "^7.45.1"
   },
   "license": "MIT"
 }
