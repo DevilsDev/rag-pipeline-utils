@@ -325,7 +325,7 @@ const cohere = new CohereConnector({ apiKey: process.env.COHERE_API_KEY });
 | Connector            | Stages             | Notes                                                                                            |
 | -------------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
 | `OpenAIConnector`    | llm, embedder      | Needs `npm install openai`; default models `gpt-4o-mini` and `text-embedding-3-small`; streaming |
-| `AnthropicConnector` | llm                | Default model `claude-3-5-sonnet-20241022`; streaming                                            |
+| `AnthropicConnector` | llm                | Default model `claude-sonnet-5-5` (since 3.0.1); streaming                                       |
 | `CohereConnector`    | embedder, reranker | `embed-english-v3.0`, `rerank-english-v3.0`                                                      |
 | `OllamaConnector`    | llm, embedder      | Local server; defaults `llama3` and `nomic-embed-text`; streaming                                |
 | `LocalEmbedder`      | embedder           | Offline TF-IDF; call `train(documents)` first                                                    |

@@ -15,7 +15,9 @@ describe("CostCalculator pricing provenance", () => {
         model,
         source: expect.stringMatching(/^https:\/\//),
       });
-      expect(entry.asOf).toBe(PRICING_METADATA.asOf);
+      // Prices added later carry their own, newer date.
+      expect(entry.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(entry.asOf >= PRICING_METADATA.asOf).toBe(true);
     }
     expect(CostCalculator.getPricingMetadata()).toBe(PRICING_METADATA);
   });
@@ -109,6 +111,7 @@ describe("CostCalculator model resolution", () => {
     ["gpt-4-turbo-preview", "gpt-4-turbo"],
     ["claude-3-5-sonnet-20241022", "claude-3.5-sonnet"],
     ["claude-3-haiku-20240307", "claude-3-haiku"],
+    ["claude-sonnet-5-5", "claude-sonnet-5.5"],
     ["GPT-4O", "gpt-4o"],
     ["gpt-4", "gpt-4"],
   ])("%s resolves to %s (longest match)", (model, key) => {

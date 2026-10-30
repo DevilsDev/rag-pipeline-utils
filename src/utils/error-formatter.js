@@ -662,6 +662,9 @@ function wrapError(error, code, context = {}) {
   return new EnhancedError(
     code,
     {
+      // Templates such as PIPELINE_EXECUTION_FAILED end in {reason}; the
+      // wrapped error's message fills it unless the caller gives one.
+      reason: error.message,
       ...context,
       originalMessage: error.message,
     },

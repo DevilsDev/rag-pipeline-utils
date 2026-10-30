@@ -53,7 +53,7 @@ const OPTIONS = {
   },
   llm: {
     openai: { model: "gpt-4o-mini" },
-    anthropic: { model: "claude-3-5-sonnet-20241022" },
+    anthropic: { model: "claude-sonnet-5-5" },
     ollama: { baseURL: "http://localhost:11434", model: "llama3" },
   },
 };

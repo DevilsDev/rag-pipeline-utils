@@ -973,26 +973,30 @@ class AuditLogger extends EventEmitter {
     return crypto.timingSafeEqual(actual, expected);
   }
 
+  /**
+   * Daily log files whose date falls in [startDate, endDate]. Files are named
+   * by their UTC date (see _flushLogs), so the range is compared on UTC dates
+   * too; walking day by day in local time skipped days in timezones ahead of
+   * UTC, so verifyIntegrity() and queryLogs() missed whole files.
+   * @private
+   */
   async _getLogFilesInRange(startDate, endDate) {
-    const files = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const filename = `audit-${dateStr}.jsonl`;
-      const filepath = path.join(this._config.logDir, 'daily', filename);
-
-      try {
-        await fs.access(filepath);
-        files.push(filepath);
-      } catch {
-        // File doesn't exist, skip
-      }
-
-      currentDate.setDate(currentDate.getDate() + 1);
+    const dailyDir = path.join(this._config.logDir, 'daily');
+    let names;
+    try {
+      names = await fs.readdir(dailyDir);
+    } catch (error) {
+      if (error.code === 'ENOENT') return [];
+      throw error;
     }
-
-    return files;
+    const first = new Date(startDate).toISOString().slice(0, 10);
+    const last = new Date(endDate).toISOString().slice(0, 10);
+    return names
+      .map((name) => /^audit-(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(name))
+      .filter((match) => match && match[1] >= first && match[1] <= last)
+      .map((match) => match[0])
+      .sort()
+      .map((name) => path.join(dailyDir, name));
   }
 
   async _readLogFile(filepath) {

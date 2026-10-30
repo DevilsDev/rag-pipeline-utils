@@ -42,6 +42,17 @@ async function parseJsonSafe(res) {
   return {};
 }
 
+const { version: LIBRARY_VERSION } = require('../../package.json');
+
+/** @returns {Error} code NO_PLUGIN_REGISTRY */
+function noRegistryError() {
+  const err = new Error(
+    'No plugin registry configured. Pass registryUrl or set RAG_PLUGIN_REGISTRY.',
+  );
+  err.code = 'NO_PLUGIN_REGISTRY';
+  return err;
+}
+
 /**
  * Client for a plugin hub registry: search, inspect, install, publish and
  * rate plugins.
@@ -51,11 +62,14 @@ class PluginHub extends EventEmitter {
     super();
 
     this._config = {
-      registryUrl: _options.registryUrl || 'https://registry.rag-pipeline.dev',
+      // No default: there is no public registry, and the old default
+      // (registry.rag-pipeline.dev) is not a registered domain.
+      registryUrl:
+        _options.registryUrl || process.env.RAG_PLUGIN_REGISTRY || null,
       localCacheDir:
         _options.localCacheDir || path.join(process.cwd(), '.rag-cache'),
       apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,
-      userAgent: _options.userAgent || 'rag-pipeline-utils/2.1.8',
+      userAgent: _options.userAgent || `rag-pipeline-utils/${LIBRARY_VERSION}`,
       timeout: _options.timeout || 30000,
       maxRetries: _options.maxRetries || 3,
       fetch: _options.fetch, // optional injected fetch for tests
@@ -350,6 +364,7 @@ class PluginHub extends EventEmitter {
   }
 
   async _makeRequest(method, endpoint, params = {}) {
+    if (!this._config.registryUrl) throw noRegistryError();
     const doFetch = pickFetch(this._config.fetch);
     if (!doFetch) throw new Error('fetch is not available in this environment');
 
@@ -615,6 +630,8 @@ class PluginAnalytics {
 
   async _flush() {
     if (this.events.length === 0) return;
+    // Without a configured registry nothing is sent anywhere.
+    if (!this._config.registryUrl) return;
 
     // capture and clear
     const eventsToFlush = [...this.events];

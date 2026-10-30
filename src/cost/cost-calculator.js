@@ -6,7 +6,7 @@ const { EventEmitter } = require('events');
  * Where the built-in prices come from and when they were recorded.
  *
  * The values are the providers' published list prices as copied into this
- * library on `asOf`; they have not been re-verified since and providers
+ * library on `asOf` (entries added later carry their own `asOf`); they have not been re-verified since and providers
  * change prices often. Pass `pricing` or `customPricing` to CostCalculator
  * to use current or negotiated prices.
  */
@@ -96,6 +96,15 @@ const PRICING = {
     unit: 1000,
     source: ANTHROPIC,
     asOf: AS_OF,
+  },
+  // Claude Sonnet 5.5, AnthropicConnector's default since 3.0.1:
+  // $2 / $10 per million input / output tokens.
+  'claude-sonnet-5.5': {
+    input: 0.002,
+    output: 0.01,
+    unit: 1000,
+    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    asOf: '2026-10-30',
   },
   'cohere-command': {
     input: 0.001,

@@ -29,7 +29,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
 const logger = require('../utils/structured-logger');
-const PluginSignatureVerifier = require('./plugin-signature-verifier');
+const { PluginSignatureVerifier } = require('./plugin-signature-verifier');
 
 /**
  * Input sanitizer for security validation

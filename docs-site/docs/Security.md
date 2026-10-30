@@ -505,7 +505,7 @@ Decode URL-encoded input once before this check, and reject input that still con
 
 ### **Plugins run in-process**
 
-Plugins (loaders, embedders, retrievers, LLMs, rerankers) run in the same Node.js process as your application, with its permissions. There is no working sandbox: `PluginSandbox` is an experimental module that cannot currently be constructed (its constructor throws), and it does not isolate plugins (see [Experimental](./Experimental.md)). Only install plugins you have reviewed or whose publisher you trust, and run the pipeline under an operating-system account or container with the least privileges it needs.
+Plugins (loaders, embedders, retrievers, LLMs, rerankers) run in the same Node.js process as your application, with its permissions. There is no working sandbox: `PluginSandbox` is an experimental module whose `execute()` fails, and it does not isolate plugins (see [Experimental](./Experimental.md)). Only install plugins you have reviewed or whose publisher you trust, and run the pipeline under an operating-system account or container with the least privileges it needs.
 
 ### **Installing plugins with the CLI**
 

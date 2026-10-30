@@ -89,7 +89,7 @@ Caching never returns results for a different model, index or configuration:
 - **Your index changes.** `MemoryRetriever` and `FileVectorStore` report their state, so storing, removing or clearing documents means the next query misses. A `FileVectorStore` read by several processes shares cached results while the file is unchanged.
 - **Your embedder changes.** Retrieval is keyed by the query vector, not just the text, and a retrained `LocalEmbedder` has a new identity.
 - **The model or its settings change.** Built-in connectors' identities include the model, endpoint, temperature, token limit and system prompt.
-- **The temperature is above 0.** The answer would vary, so `generation` is skipped (`"skip"`). The built-in connectors default to 0.7: set `temperature: 0`, on the connector or per run, to cache answers. AI SDK models need `settings: { temperature: 0 }`.
+- **The temperature is above 0.** The answer would vary, so `generation` is skipped (`"skip"`). `OpenAIConnector` and `OllamaConnector` default to 0.7: set `temperature: 0`, on the connector or per run, to cache answers. `AnthropicConnector` defaults to the API's own 1, and Claude 4.7 and later models accept no other value, so their answers are not cached. AI SDK models need `settings: { temperature: 0 }`.
 - **A run fails, is aborted or times out.** Nothing from it is stored. A streamed answer is stored only when the stream finished.
 - **A component has no identity.** A layer caches only when its component has a `getCacheKey(role)` method or a `cacheKey` string. All built-ins, the AI SDK adapter and the `/testing` helpers have one. A custom component without one is not cached, and a warning (`RAG_CACHE_NO_KEY_*`) says so once:
 

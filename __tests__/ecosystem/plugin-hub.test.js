@@ -683,7 +683,7 @@ describe("Plugin Certification", () => {
 
 describe("Integration Tests", () => {
   test("should integrate hub and certification systems", async () => {
-    const hub = new PluginHub();
+    const hub = new PluginHub({ registryUrl: "https://registry.test" });
 
     // Mock plugin info with certification
     const mockPluginInfo = {
@@ -706,7 +706,7 @@ describe("Integration Tests", () => {
   });
 
   test("should handle end-to-end plugin lifecycle", async () => {
-    const hub = new PluginHub();
+    const hub = new PluginHub({ registryUrl: "https://registry.test" });
 
     // Calculate correct checksum for mock plugin data
     jest.useRealTimers(); // the installer checks the plugin in a child process
@@ -773,4 +773,59 @@ describe("Integration Tests", () => {
 
     expect(fetch).toHaveBeenCalledTimes(5); // Search, getInfo, download manifest, download plugin, rate
   }, 15000);
+});
+
+describe("No default plugin registry", () => {
+  // registry.rag-pipeline.dev, the old default, is not a registered domain:
+  // requests, API keys and analytics must not go anywhere unless configured.
+  const saved = process.env.RAG_PLUGIN_REGISTRY;
+  beforeEach(() => {
+    delete process.env.RAG_PLUGIN_REGISTRY;
+  });
+  afterAll(() => {
+    if (saved === undefined) delete process.env.RAG_PLUGIN_REGISTRY;
+    else process.env.RAG_PLUGIN_REGISTRY = saved;
+  });
+
+  test("PluginHub without a registry rejects before any network call", async () => {
+    const fetchMock = jest.fn();
+    const hub = new PluginHub({ fetch: fetchMock, apiKey: "secret" });
+    hub.on("error", () => {});
+    await expect(hub._makeRequest("GET", "/plugins")).rejects.toMatchObject({
+      code: "NO_PLUGIN_REGISTRY",
+    });
+    hub.analytics.trackSearch("q", 0);
+    await hub.analytics._flush();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test("PluginHub reads RAG_PLUGIN_REGISTRY", () => {
+    process.env.RAG_PLUGIN_REGISTRY = "https://plugins.example.org";
+    expect(new PluginHub()._config.registryUrl).toBe(
+      "https://plugins.example.org",
+    );
+  });
+
+  test("PluginCertification without a registry rejects before any network call", async () => {
+    const fetchMock = jest.fn();
+    const certification = new PluginCertification({ fetch: fetchMock });
+    certification.on("error", () => {});
+    await expect(
+      certification.submitForCertification(
+        { name: "p", version: "1.0.0" },
+        "BASIC",
+      ),
+    ).rejects.toMatchObject({ code: "NO_PLUGIN_REGISTRY" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test("certificate and badge links use the configured registry", () => {
+    const certification = new PluginCertification({
+      registryUrl: "https://plugins.example.org/",
+    });
+    expect(
+      certification._generateCertificate("p", "BASIC", "c1", "2026-10-30")
+        .verificationUrl,
+    ).toBe("https://plugins.example.org/certifications/c1/verify");
+  });
 });

@@ -780,7 +780,7 @@ createError(code: string, context?: object, originalError?: Error): EnhancedErro
 wrapError(error: Error, code: string, context?: object): EnhancedError
 ```
 
-`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED`, `VALIDATION_FAILED`, `NETWORK_TIMEOUT` and `FS_READ_ERROR`. Every code has its own message and suggestions, whose `{placeholders}` are filled from `context`. A suggestion whose placeholder has no value is left out, but a placeholder in the message stays literal, so pass every value the message uses. See the [generated reference](./api/rag-pipeline-utils/namespaces/errorFormatter/) for the full list.
+`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED`, `VALIDATION_FAILED`, `NETWORK_TIMEOUT` and `FS_READ_ERROR`. Every code has its own message and suggestions, whose `{placeholders}` are filled from `context`. A suggestion whose placeholder has no value is left out. `wrapError` fills `{reason}` from the wrapped error's message unless `context` gives one (since 3.0.1). See the [generated reference](./api/rag-pipeline-utils/namespaces/errorFormatter/) for the full list.
 
 **Example:**
 
@@ -801,7 +801,6 @@ try {
   // "Pipeline execution failed at stage 'retrieval': <err.message>"
   throw wrapError(err, ERROR_CODES.PIPELINE_EXECUTION_FAILED, {
     stage: "retrieval",
-    reason: err.message,
   });
 }
 ```

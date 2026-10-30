@@ -358,9 +358,74 @@ describe("AnthropicConnector", () => {
     await expect(connector.connect()).rejects.toThrow(/API key required/);
   });
 
-  test("defaults to claude-3-5-sonnet model", () => {
+  test("defaults to claude-sonnet-5-5 (claude-3-5-sonnet was retired)", () => {
     const connector = new AnthropicConnector({ apiKey: "" });
-    expect(connector.config.model).toBe("claude-3-5-sonnet-20241022");
+    expect(connector.config.model).toBe("claude-sonnet-5-5");
+  });
+
+  // Claude 4.7 and later reject a non-default temperature, so the default
+  // request must not send one.
+  function mockPost(connector) {
+    const bodies = [];
+    jest
+      .spyOn(connector.client, "post")
+      .mockImplementation(async (url, body) => {
+        bodies.push(body);
+        if (body.stream) {
+          const events = [
+            {
+              type: "content_block_delta",
+              delta: { type: "text_delta", text: "Hi" },
+            },
+            { type: "message_stop" },
+          ];
+          return {
+            data: (async function* stream() {
+              for (const e of events)
+                yield Buffer.from(`data: ${JSON.stringify(e)}
+`);
+            })(),
+          };
+        }
+        return { data: { content: [{ type: "text", text: "Hi" }] } };
+      });
+    return bodies;
+  }
+
+  test("the default request leaves temperature out (generate and stream)", async () => {
+    const connector = new AnthropicConnector({ apiKey: "k" });
+    const bodies = mockPost(connector);
+    await expect(connector.generate("q")).resolves.toBe("Hi");
+    for await (const chunk of connector.generateStream("q")) void chunk;
+    expect(bodies).toHaveLength(2);
+    for (const body of bodies) {
+      expect(body.model).toBe("claude-sonnet-5-5");
+      expect(body).not.toHaveProperty("temperature");
+    }
+  });
+
+  test("an explicit temperature is sent", async () => {
+    const connector = new AnthropicConnector({ apiKey: "k", temperature: 0.3 });
+    const bodies = mockPost(connector);
+    await connector.generate("q");
+    await connector.generate("q", [], { temperature: 0 });
+    expect(bodies.map((b) => b.temperature)).toEqual([0.3, 0]);
+  });
+
+  test("answers from the default connector are still not cached", async () => {
+    const { createRagPipeline } = require("../../../src/core/create-pipeline");
+    const llm = new AnthropicConnector({ apiKey: "k" });
+    mockPost(llm);
+    const pipeline = createRagPipeline({
+      retriever: {
+        retrieve: async () => [{ id: "1", content: "doc", score: 1 }],
+      },
+      llm,
+      cache: true,
+    });
+    await pipeline.run({ query: "q" });
+    const second = await pipeline.run({ query: "q" });
+    expect(second.cache.generation).toBe("skip");
   });
 
   test("getInfo returns correct type", () => {

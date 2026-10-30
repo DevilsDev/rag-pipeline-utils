@@ -149,6 +149,7 @@ const results = [
         `const exp = require('${pkgName}/experimental');`,
         "if (typeof exp.TenantManager !== 'function') throw new Error('missing TenantManager');",
         "new exp.TenantManager();",
+        "new exp.PluginSandbox(); // constructs without the optional isolated-vm",
         "const leaked = Object.keys(exp).filter((name) => name in main);",
         "if (leaked.length) throw new Error('main entry exports ' + leaked.join(', '));",
         `import('${pkgName}').then(async (esmMain) => {`,
