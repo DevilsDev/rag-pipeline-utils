@@ -61,5 +61,13 @@
   },
   "engines": {
     "node": ">=18 <23"
+  },
+  "overrides": {
+    "docusaurus-plugin-llms": {
+      "minimatch": "^9.0.9",
+      "yaml": "^2.8.3"
+    },
+    "qs": "^6.16.1",
+    "tinypool": "^2.2.0"
   }
 }

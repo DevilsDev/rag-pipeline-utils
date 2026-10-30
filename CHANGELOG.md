@@ -11,6 +11,36 @@ page.
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-10-31
+
+### Security
+
+- **`csv-parse` ^7.0.3** (was `^5.6.0`), for
+  [GHSA-8cw4-87c7-c6xx](https://github.com/advisories/GHSA-8cw4-87c7-c6xx),
+  prototype replacement through the `columns` option, which the CSV
+  loader uses. With the loader's options CSV values are strings, so a
+  `__proto__` column header could not replace a prototype; it only dropped
+  that column from the indexed text, which 3.0.2 keeps. The loader's
+  output is otherwise unchanged, and `npm audit --omit=dev` reports no
+  vulnerabilities.
+
+### Changed
+
+- **The README shows `rag-pipeline eval` in a recorded demo**: a test set
+  passes, then a change that makes answers stop using the documents fails
+  against the saved baseline and exits 1.
+- Repository files (not part of the npm package):
+  - The root `Dockerfile`'s default stage is now an image of the
+    `rag-pipeline` CLI. It used to run `--help` behind a health check on a port nothing
+    served, and its label said Apache-2.0; the project is MIT.
+  - `deployment/kubernetes` and `deployment/helm` deploy your image of
+    `examples/fastify-rag-demo` instead of an image that was never
+    published, and the Helm chart has templates. See
+    `deployment/README.md`.
+  - The unused 2025 React dashboard in `public/` and its `server.js` are
+    removed, and build-time dependencies of the docs site are updated
+    (tinypool, minimatch, yaml, qs).
+
 ## [3.0.1] - 2026-10-30
 
 A patch for problems found while auditing the documentation against
@@ -829,6 +859,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.0.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.2
 [3.0.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.1
 [3.0.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.0
 [2.7.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.1

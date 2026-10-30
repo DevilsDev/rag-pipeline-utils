@@ -1,0 +1,15 @@
+{
+  "namespace": "default",
+  "metadata": { "name": "eval-demo" },
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "local" },
+    {
+      "stage": "retriever",
+      "name": "file-store",
+      "config": { "path": ".rag/index.json" }
+    },
+    { "stage": "llm", "name": "demo-llm" }
+  ],
+  "plugins": { "llm": { "demo-llm": "./answer-llm.js" } }
+}

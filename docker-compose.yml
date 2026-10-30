@@ -18,15 +18,14 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: rag-pipeline-dev
+    # A shell for contributors: `docker compose exec rag-pipeline sh`, then
+    # run tests or `node bin/cli.js serve --host 0.0.0.0` (published on 3000).
+    command: ["sh", "-c", "tail -f /dev/null"]
     ports:
-      - "127.0.0.1:3000:3000" # Main application port
-      - "127.0.0.1:3001:3001" # Health check port
+      - "127.0.0.1:3000:3000"
     environment:
       - NODE_ENV=development
-      - RAG_PIPELINE_ENV=development
-      - RAG_LOG_LEVEL=debug
-      - RAG_ENABLE_METRICS=true
-      - RAG_HEALTH_CHECK_PORT=3001
+      - LOG_LEVEL=debug
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - PINECONE_API_KEY=${PINECONE_API_KEY:-}
       - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set (see .env.example)}@redis:6379
@@ -43,12 +42,6 @@ services:
     networks:
       - rag-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   # Redis for caching and session storage
   redis:

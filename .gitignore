@@ -261,8 +261,9 @@ dist/
 # The example env file documents required variables and must be committed
 !.env.example
 
-# vhs demo scratch directory (assets/demo.tape)
+# vhs demo scratch directories (assets/demo.tape, assets/eval-demo.tape)
 .demo/
+.demo-eval/
 
 # Downloaded benchmark datasets (not redistributable)
 benchmarks/.data/
