@@ -16,7 +16,7 @@ npm install --save-dev @devilsdev/rag-pipeline-utils
 npx rag-pipeline --help
 ```
 
-Requires Node.js 18 or newer.
+Requires Node.js 22 or newer (from 3.0.0; 2.x runs on Node.js 18 and later).
 
 ---
 

@@ -482,7 +482,7 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 3008
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     Architectures:
       - arm64
     Environment:
@@ -525,7 +525,7 @@ Resources:
       Description: Node modules for RAG Pipeline
       ContentUri: layer/
       CompatibleRuntimes:
-        - nodejs20.x
+        - nodejs22.x
 
   RagApi:
     Type: AWS::Serverless::Api

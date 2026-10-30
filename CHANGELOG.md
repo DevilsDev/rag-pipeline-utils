@@ -11,6 +11,16 @@ page.
 
 ## [Unreleased]
 
+Planned for 3.0.0.
+
+### Changed
+
+- **Breaking: Node.js 22 or later is required** (`engines.node >= 22`).
+  Node 18 and 20 have reached end of life; CI tests Node 22 and 24. Stay
+  on 2.x to run on Node 18 or 20.
+- **`PluginSandbox` needs `isolated-vm` 6 or later** (the optional peer
+  dependency was `>=5.0.0`). isolated-vm 5 doesn't build on Node 24.
+
 ## [2.7.1] - 2026-10-30
 
 ### Fixed

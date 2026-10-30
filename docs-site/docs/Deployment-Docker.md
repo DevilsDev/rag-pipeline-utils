@@ -38,7 +38,7 @@ Create a production Dockerfile:
 
 ```dockerfile
 # Production Dockerfile for RAG Pipeline Utils
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 # Install security updates
 RUN apk update && apk upgrade && \
@@ -95,7 +95,7 @@ Reduce image size and improve security with multi-stage builds:
 
 ```dockerfile
 # Multi-stage Dockerfile for production optimization
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -109,7 +109,7 @@ RUN npm run build && \
     npm prune --production
 
 # Production stage
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 
 # Security: Install latest patches
 RUN apk update && apk upgrade && \

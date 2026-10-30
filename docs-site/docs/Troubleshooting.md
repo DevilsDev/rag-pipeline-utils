@@ -24,7 +24,7 @@ npm install @devilsdev/rag-pipeline-utils
 **Common Dependency Problems**:
 
 - **`husky: not found`** (on Windows, `'husky' is not recognized as an internal or external command`): versions 2.2.1 to 2.6.1 ran `husky install`, a development hook, when the package was installed, so `npm install` failed wherever husky wasn't installed globally, including CI runners. Upgrade to 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`. If you can't upgrade yet, `npm install --ignore-scripts @devilsdev/rag-pipeline-utils@2.6.1` skips the hook; the package needs no install scripts.
-- **Node.js version**: Node.js 18 or newer is required (`engines.node >= 18`).
+- **Node.js version**: Node.js 22 or newer is required (`engines.node >= 22`) from 3.0.0; 2.x needs Node.js 18 or newer.
 - **`Cannot find module 'isolated-vm'`**: importing 2.4.5 failed in clean installs with this error. Upgrade to 2.5.0, where `isolated-vm` is an optional peer dependency loaded only when the experimental `PluginSandbox` runs. Install it yourself only if you use `PluginSandbox`.
 - **`pino-pretty`** is an optional peer dependency as well; install it only for pretty-printed logs.
 - **OpenAI SDK**: the package uses the `openai` 4.x SDK.

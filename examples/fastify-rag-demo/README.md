@@ -14,7 +14,7 @@ What you get in one short `server.js`:
 - CORS + per-IP rate limiting
 - Docker image, Fly.io config, Railway config
 
-Requires Node.js 20 or higher.
+Requires Node.js 22 or higher.
 
 ## Run locally
 

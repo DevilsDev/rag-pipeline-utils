@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1.7
 # Multi-stage build for a minimal production image.
 
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 # No lockfile is committed for this example, so `npm ci` would fail. If you
 # commit a package-lock.json, copy it too and switch to `npm ci --omit=dev`.
 COPY package.json ./
 RUN npm install --omit=dev --no-audit --no-fund
 
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \

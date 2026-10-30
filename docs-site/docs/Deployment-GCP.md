@@ -275,7 +275,7 @@ functions.http("query", async (req, res) => {
 # Deploy Cloud Function (2nd gen)
 gcloud functions deploy rag-pipeline-query \
   --gen2 \
-  --runtime nodejs20 \
+  --runtime nodejs22 \
   --region us-central1 \
   --source . \
   --entry-point query \

@@ -17,13 +17,13 @@ async function checkDependencies(_options) {
   // Check Node.js version
   const nodeVersion = process.version;
   const majorVersion = parseInt(nodeVersion.slice(1).split(".")[0]);
-  if (majorVersion < 18) {
+  if (majorVersion < 22) {
     issues.push({
       category: "dependencies",
       severity: "error",
       code: "NODE_VERSION_INCOMPATIBLE",
-      message: `Node.js version ${nodeVersion} is not supported (required: >=18.0.0)`,
-      fix: "Upgrade Node.js to version 18.0.0 or higher",
+      message: `Node.js version ${nodeVersion} is not supported (required: >=22.0.0)`,
+      fix: "Upgrade Node.js to version 22.0.0 or higher",
       autoFixable: false,
     });
   }

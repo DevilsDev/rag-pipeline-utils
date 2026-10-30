@@ -230,7 +230,7 @@ Built-in prices are list prices marked unverified (see `PRICING_METADATA` for th
 ## **Production Deployment**
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production

@@ -3,8 +3,8 @@ name: CI
 # Single CI workflow (replaces the former ci.yml + ci-enhanced.yml pair that
 # ran the full suite twice on every push).
 #
-# The main branch ruleset requires the checks "Test & Lint (18)",
-# "Test & Lint (20)" and "Test & Lint (22)". GitHub derives those names from
+# The main branch ruleset requires the checks "Test & Lint (22)" and
+# "Test & Lint (24)". GitHub derives those names from
 # the job name plus the single `node` matrix value, so keep the job name and
 # do not add matrix keys or `include` entries to that job.
 
@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 20, 18]
+        node: [24, 22]
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
@@ -63,7 +63,7 @@ jobs:
       # Runs inside the required job so a formatting failure blocks merges.
       # src/ is formatted by ESLint (Lint step); format:check covers the rest.
       - name: Check formatting
-        if: matrix.node == 20
+        if: matrix.node == 22
         run: npm run format:check
 
       # jest-junit writes ./junit.xml (gitignored) for the artifact below.
@@ -84,7 +84,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload coverage
-        if: always() && matrix.node == 20
+        if: always() && matrix.node == 22
         uses: codecov/codecov-action@3f20e214133d0983f9a10f3d63b0faf9241a3daa # v6.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -183,7 +183,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install

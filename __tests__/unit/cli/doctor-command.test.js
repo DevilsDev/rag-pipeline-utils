@@ -107,8 +107,8 @@ describe("PipelineDoctor", () => {
         severity: "error",
         code: "NODE_VERSION_INCOMPATIBLE",
         message:
-          "Node.js version v16.0.0 is not supported (required: >=18.0.0)",
-        fix: "Upgrade Node.js to version 18.0.0 or higher",
+          "Node.js version v16.0.0 is not supported (required: >=22.0.0)",
+        fix: "Upgrade Node.js to version 22.0.0 or higher",
         autoFixable: false,
       });
 
