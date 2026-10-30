@@ -84,6 +84,18 @@ describe("retry classification", () => {
     [networkError("UND_ERR_SOCKET"), true],
     [Object.assign(new Error("conn"), { name: "APIConnectionError" }), true],
     [new TypeError("fetch failed"), true],
+    // openai 5+: the class name is set, err.name stays "Error"
+    [new (class APIConnectionTimeoutError extends Error {})("timeout"), true],
+    // openai 5+: APIConnectionError -> TypeError("fetch failed") -> socket code
+    [
+      new (class APIConnectionError extends Error {})("Connection error.", {
+        cause: new TypeError("fetch failed", {
+          cause: networkError("ECONNREFUSED"),
+        }),
+      }),
+      true,
+    ],
+    [new Error("wrapped bug", { cause: new Error("plain bug") }), false],
     [new Error("plain bug"), false],
     [Object.assign(new Error("aborted"), { name: "AbortError" }), false],
     [Object.assign(new Error("cancel"), { code: "ERR_CANCELED" }), false],
