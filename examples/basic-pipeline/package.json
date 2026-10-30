@@ -12,6 +12,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@devilsdev/rag-pipeline-utils": "^2.5.0"
+    "@devilsdev/rag-pipeline-utils": "^2.5.0",
+    "openai": "^7.45.1"
   }
 }

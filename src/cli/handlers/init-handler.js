@@ -80,6 +80,24 @@ function exitAfterConnectionTest(result, options = {}) {
  * @returns {Promise<{written: boolean, connectionTested: boolean}>}
  *   connectionTested is true when the connection test built a provider
  */
+/**
+ * True when the config uses the openai connector and the `openai` package
+ * (an optional peer dependency) cannot be resolved.
+ * @param {object} config - Written .ragrc config
+ * @param {Function} [resolve] - Module resolver (for tests)
+ * @returns {boolean}
+ */
+function needsMissingOpenAI(config, resolve = require.resolve) {
+  const usesOpenAI = (config.pipeline || []).some((s) => s.name === "openai");
+  if (!usesOpenAI) return false;
+  try {
+    resolve("openai");
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 async function handleInit(globalOptions, options, deps = {}) {
   const outcome = { written: false, connectionTested: false };
   try {
@@ -157,6 +175,10 @@ async function handleInit(globalOptions, options, deps = {}) {
 
     await fs.writeFile(options.output, JSON.stringify(config, null, 2) + "\n");
     console.log(`✅ Configuration written: ${options.output}`);
+    if (needsMissingOpenAI(config)) {
+      // openai is an optional peer dependency since 3.0.0
+      console.log("Install the OpenAI SDK first: npm install openai");
+    }
     console.log("Next: rag-pipeline ingest <file-or-directory>");
     outcome.written = true;
   } catch (error) {
@@ -169,6 +191,7 @@ async function handleInit(globalOptions, options, deps = {}) {
 module.exports = {
   handleInit,
   exitAfterConnectionTest,
+  needsMissingOpenAI,
   buildInitConfig,
   TEMPLATES,
 };

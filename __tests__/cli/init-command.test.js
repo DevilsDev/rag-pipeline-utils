@@ -12,6 +12,7 @@ const {
   buildInitConfig,
   handleInit,
   exitAfterConnectionTest,
+  needsMissingOpenAI,
   TEMPLATES,
 } = require("../../src/cli/handlers/init-handler.js");
 
@@ -240,5 +241,26 @@ describe("exitAfterConnectionTest", () => {
     expect(timer.hasRef()).toBe(false);
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(exit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("init: openai is an optional peer dependency", () => {
+  const missing = () => {
+    throw Object.assign(new Error("Cannot find module 'openai'"), {
+      code: "MODULE_NOT_FOUND",
+    });
+  };
+  const found = () => "/node_modules/openai/index.js";
+
+  test("the openai template asks for the SDK only when it is missing", () => {
+    const config = buildInitConfig(TEMPLATES.openai);
+    expect(needsMissingOpenAI(config, missing)).toBe(true);
+    expect(needsMissingOpenAI(config, found)).toBe(false);
+  });
+
+  test("templates without openai never ask for it", () => {
+    expect(needsMissingOpenAI(buildInitConfig(TEMPLATES.local), missing)).toBe(
+      false,
+    );
   });
 });

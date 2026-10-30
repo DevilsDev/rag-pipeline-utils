@@ -31,6 +31,27 @@ const DEFAULT_CONFIG = {
 };
 
 /**
+ * Load the `openai` SDK, an optional peer dependency since 3.0.0.
+ * Only a missing `openai` itself gets the install hint; any other load
+ * failure (including a module missing inside the SDK) is rethrown as is.
+ * @returns {Object} The openai module
+ * @private
+ */
+function loadOpenAI() {
+  try {
+    require.resolve('openai');
+  } catch {
+    const err = new Error(
+      'OpenAIConnector needs the "openai" package, an optional peer ' +
+        'dependency since 3.0.0: npm install openai',
+    );
+    err.code = 'MISSING_DEPENDENCY';
+    throw err;
+  }
+  return require('openai'); // eslint-disable-line global-require
+}
+
+/**
  * Full LLM + embedder connector for the OpenAI API.
  * Supports chat completions (with streaming) and text embeddings.
  *
@@ -100,11 +121,13 @@ class OpenAIConnector extends BaseConnector {
    * Lazily initialise and return the OpenAI client.
    * SDK retries are disabled (maxRetries: 0); withRetry() owns the policy.
    * @returns {Object} OpenAI client instance
+   * @throws {Error} code MISSING_DEPENDENCY when the optional `openai`
+   *   peer dependency is not installed
    * @private
    */
   _getClient() {
     if (!this._client) {
-      const mod = require('openai');
+      const mod = loadOpenAI();
       const OpenAI = mod.OpenAI || mod.default || mod;
       this._client = new OpenAI({
         // Local OpenAI-compatible servers accept any key; the SDK needs one.
@@ -160,8 +183,8 @@ class OpenAIConnector extends BaseConnector {
     const { signal } = options;
     throwIfAborted(signal);
     this._requireApiKey();
+    const client = this._getClient(); // outside the retry loop
     return this._request(signal, async () => {
-      const client = this._getClient();
       const messages = this._buildMessages(query, context);
 
       const response = await client.chat.completions.create(
@@ -229,9 +252,8 @@ class OpenAIConnector extends BaseConnector {
     const { signal } = options;
     throwIfAborted(signal);
     this._requireApiKey();
+    const client = this._getClient(); // outside the retry loop
     return this._request(signal, async () => {
-      const client = this._getClient();
-
       const response = await client.embeddings.create(
         {
           model: this.config.embeddingModel,

@@ -52,6 +52,12 @@ npm install @devilsdev/rag-pipeline-utils
 
 Requires Node.js 22 or later (from 3.0.0; 2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
 
+To use `OpenAIConnector`, install the OpenAI SDK as well. From 3.0.0 it is an optional peer dependency, so installs that don't use OpenAI skip it:
+
+```bash
+npm install @devilsdev/rag-pipeline-utils openai
+```
+
 > **`npm install` failed with `husky: not found`?** Versions 2.2.1 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
 
 ## Quick start
@@ -509,13 +515,13 @@ Choose LangChain.js for the widest integration catalogue or work that goes well 
 
 ## Connectors and plugins
 
-| Connector            | Embeddings | Generation | Notes                                                                                    |
-| -------------------- | :--------: | :--------: | ---------------------------------------------------------------------------------------- |
-| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`; `baseURL` for OpenAI-compatible APIs (Groq, Together, vLLM, LM Studio) |
-| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                                                                      |
-| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY`                                               |
-| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                     |
-| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                    |
+| Connector            | Embeddings | Generation | Notes                                                                                                                           |
+| -------------------- | :--------: | :--------: | ------------------------------------------------------------------------------------------------------------------------------- |
+| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`; `baseURL` for OpenAI-compatible APIs (Groq, Together, vLLM, LM Studio); needs `npm install openai` from 3.0.0 |
+| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                                                                                                             |
+| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY`                                                                                      |
+| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                                                            |
+| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                                                           |
 
 `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
 

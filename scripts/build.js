@@ -23,10 +23,9 @@ const pkg = JSON.parse(
 );
 const external = [
   ...Object.keys(pkg.dependencies || {}),
-  ...Object.keys(pkg.devDependencies || {}).filter((d) =>
-    // Optional peers loaded on first use; never bundled.
-    ["isolated-vm", "pg"].includes(d),
-  ),
+  // Optional peers (openai, pg, isolated-vm, pino-pretty) load on first use
+  // from the user's install; never bundled.
+  ...Object.keys(pkg.peerDependencies || {}),
 ];
 
 // CommonJS build — self-contained bundle
