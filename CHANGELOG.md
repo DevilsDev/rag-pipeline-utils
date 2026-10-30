@@ -35,6 +35,13 @@ Planned for 3.0.0.
   these modules. Their pages in the generated API reference are removed;
   [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental)
   describes them.
+- **Breaking (TypeScript only): the type declarations deprecated in 2.7.0
+  are removed.** `LoadConfigOptions`, `LLMResponse`, `DAGNode`, `DAGOptions`,
+  `ErrorFormatter`, `EvalResult` and `Document.embedding` didn't describe
+  what the code reads or returns. Use a path for `loadConfig`, return the
+  answer text from `generate()`, store embeddings as `Document.vector`, and
+  see the `DAG`, `createError` / `wrapError` and `evaluateRagDataset`
+  declarations.
 
 ## [2.7.1] - 2026-10-30
 

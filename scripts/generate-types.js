@@ -161,15 +161,6 @@ export interface Pipeline {
   } | null;
 }
 
-/**
- * @deprecated loadConfig takes a path, not an options object. This type is
- * unused and will be removed in the next major release.
- */
-export interface LoadConfigOptions {
-  configPath?: string;
-  validate?: boolean;
-}
-
 // =============================================================================
 // Documents and results
 // =============================================================================
@@ -181,8 +172,6 @@ export interface Document {
   metadata?: Record<string, any>;
   /** The document's embedding (the built-in stores call it \`vector\`). */
   vector?: number[];
-  /** @deprecated Use \`vector\`; the built-in stores do not read \`embedding\`. */
-  embedding?: number[];
 }
 
 /** A retrieved document, as the built-in retrievers return it. */
@@ -201,21 +190,6 @@ export interface RetrieveOptions {
   queryVector?: number[];
   topK: number;
   signal?: AbortSignal;
-}
-
-/**
- * @deprecated The pipeline reads \`llm.generate()\` as a string; an object
- * like this becomes "[object Object]". Return the answer text instead. This
- * type will be removed in the next major release.
- */
-export interface LLMResponse {
-  text: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  metadata?: Record<string, any>;
 }
 
 // =============================================================================
@@ -341,50 +315,6 @@ export { DAG as DAGEngine } from "./types/dag/dag-engine";
 
 /** The same function as loadRagConfig. */
 export { loadRagConfig as loadConfig } from "./types/config/load-config";
-
-// =============================================================================
-// Deprecated types (kept so code that imports them still compiles)
-// =============================================================================
-
-/** @deprecated Not what DAG.addNode reads; see the DAG class. This type will be removed in the next major release. */
-export interface DAGNode {
-  id: string;
-  run: (input: any) => Promise<any>;
-  inputs?: string[];
-  outputs?: string[];
-  optional?: boolean;
-  maxRetries?: number;
-  retryDelay?: number;
-}
-
-/** @deprecated See DAG.execute for the options it reads. This type will be removed in the next major release. */
-export interface DAGOptions {
-  timeout?: number;
-  concurrency?: number;
-  continueOnError?: boolean;
-  gracefulDegradation?: boolean;
-  requiredNodes?: string[];
-  retryFailedNodes?: boolean;
-  maxRetries?: number;
-}
-
-/** @deprecated Does not describe the errorFormatter export; see createError and wrapError. This type will be removed in the next major release. */
-export interface ErrorFormatter {
-  formatError(error: Error): string;
-  createError(code: string, message: string, details?: any): Error;
-  wrapError(error: Error, context: string): Error;
-  ERROR_CODES: Record<string, string>;
-}
-
-/** @deprecated evaluateRagDataset returns \`{ prompt, expected, actual, success, scores: { bleu, rouge } }\`. This type will be removed in the next major release. */
-export interface EvalResult {
-  question: string;
-  expected: string;
-  actual: string;
-  score: number;
-  bleu?: number;
-  rouge?: number;
-}
 
 `;
 
