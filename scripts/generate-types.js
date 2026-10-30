@@ -386,101 +386,6 @@ export interface EvalResult {
   rouge?: number;
 }
 
-// =============================================================================
-// Experimental (also exported from ./experimental)
-// =============================================================================
-
-export class MultiModalProcessor {
-  constructor(options?: any);
-  processContent(tenantId: string, content: any): Promise<any>;
-  generateEmbeddings(tenantId: string, content: any): Promise<any>;
-  crossModalSearch(tenantId: string, query: any): Promise<any>;
-}
-
-export class AdaptiveRetrievalEngine {
-  constructor(options?: any);
-  retrieveDocuments(tenantId: string, query: string, options?: any): Promise<any>;
-  optimizeRetrieval(tenantId: string, performanceData: any): Promise<any>;
-}
-
-export class FederatedLearningCoordinator {
-  constructor(options?: any);
-  createSession(config: any): Promise<any>;
-  submitUpdate(sessionId: string, update: any): Promise<any>;
-  aggregate(sessionId: string): Promise<any>;
-}
-
-export class ModelTrainingOrchestrator {
-  constructor(options?: any);
-  createTrainingJob(tenantId: string, config: any): Promise<any>;
-  getJobStatus(jobId: string): Promise<any>;
-  optimizeModel(config: any): Promise<any>;
-  deployModel(jobId: string, deployConfig: any): Promise<any>;
-}
-
-export class DataGovernance {
-  constructor(options?: any);
-  classifyData(data: any): any;
-  enforceRetention(policy: any): Promise<void>;
-}
-
-export { DataGovernance as DataGovernanceManager };
-
-export class TenantManager {
-  constructor(options?: any);
-  createTenant(config: any): Promise<any>;
-  getTenant(tenantId: string): any;
-  deleteTenant(tenantId: string): Promise<void>;
-}
-
-export class ResourceMonitor {
-  constructor(options?: any);
-  getUsage(tenantId: string): any;
-  checkQuota(tenantId: string): boolean;
-}
-
-export class SSOManager {
-  constructor(options?: any);
-  authenticate(provider: string, credentials: any): Promise<any>;
-  getSession(sessionId: string): any;
-}
-
-export class SAMLProvider {
-  constructor(options?: any);
-  authenticate(request: any): Promise<any>;
-}
-
-export class OAuth2Provider {
-  constructor(options?: any);
-  authenticate(request: any): Promise<any>;
-}
-
-export class ActiveDirectoryProvider {
-  constructor(options?: any);
-  authenticate(request: any): Promise<any>;
-}
-
-export class OIDCProvider {
-  constructor(options?: any);
-  authenticate(request: any): Promise<any>;
-}
-
-export class PluginSandbox {
-  constructor(options?: {
-    memoryLimit?: number;
-    timeout?: number;
-    permissions?: string[];
-    [key: string]: any;
-  });
-  execute(code: string, context?: any): Promise<any>;
-}
-
-export class PluginCertification {
-  constructor(options?: any);
-  certify(pluginName: string): Promise<any>;
-  verify(pluginName: string): Promise<boolean>;
-}
-
 `;
 
 const distDir = path.join(__dirname, "..", "dist");
@@ -493,7 +398,6 @@ if (!fs.existsSync(distDir)) {
 
 fs.writeFileSync(outputPath, typeDefinitions.trim() + "\n");
 appendGeneratedDeclarations();
-markExperimentalDeprecated();
 fs.writeFileSync(
   path.join(distDir, "experimental.d.ts"),
   'export * from "./types/experimental";\n',
@@ -502,37 +406,6 @@ fs.writeFileSync(
   path.join(distDir, "testing.d.ts"),
   'export * from "./types/testing";\n',
 );
-
-/**
- * Experimental classes stay in the main entry as deprecated aliases until the
- * next major (SEMVER.md): tag their main-entry declarations @deprecated so
- * IDEs strike them through. The ./experimental declarations are untouched.
- */
-function markExperimentalDeprecated() {
-  const names = Object.keys(
-    require(path.join(__dirname, "..", "src", "experimental.js")),
-  );
-  const note = (name) =>
-    `/** @deprecated Experimental (simulated or incomplete). Import ${name} from "@devilsdev/rag-pipeline-utils/experimental"; it will be removed from the main entry in the next major release. */`;
-  let dts = fs.readFileSync(outputPath, "utf8");
-  for (const name of names) {
-    const declaration = new RegExp(`^export class ${name}\\b`, "m");
-    if (declaration.test(dts)) {
-      dts = dts.replace(declaration, (line) => `${note(name)}\n${line}`);
-    }
-  }
-  // An `export { A as B }` alias cannot carry @deprecated; declare it instead.
-  dts = dts.replace(
-    "export { DataGovernance as DataGovernanceManager };",
-    [
-      note("DataGovernanceManager"),
-      "export declare const DataGovernanceManager: typeof DataGovernance;",
-      note("DataGovernanceManager"),
-      "export type DataGovernanceManager = DataGovernance;",
-    ].join("\n"),
-  );
-  fs.writeFileSync(outputPath, dts);
-}
 console.log("TypeScript definitions generated: dist/index.d.ts");
 
 /**

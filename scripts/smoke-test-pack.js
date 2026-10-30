@@ -122,24 +122,25 @@ const results = [
     }
   }),
   check(
-    "experimental entry: require/import, one class copy, one warning",
+    "experimental entry: require/import, one class copy, not in the main entry",
     () => {
       const script = [
         `const main = require('${pkgName}');`,
         `const exp = require('${pkgName}/experimental');`,
         "if (typeof exp.TenantManager !== 'function') throw new Error('missing TenantManager');",
-        "new exp.TenantManager();", // no warning from the experimental entry
-        "const a = new main.TenantManager();",
-        "new main.TenantManager();",
-        "if (!(a instanceof exp.TenantManager)) throw new Error('two copies of the class');",
-        `import('${pkgName}/experimental').then((esm) => {`,
+        "new exp.TenantManager();",
+        "const leaked = Object.keys(exp).filter((name) => name in main);",
+        "if (leaked.length) throw new Error('main entry exports ' + leaked.join(', '));",
+        `import('${pkgName}').then(async (esmMain) => {`,
+        "  const leakedEsm = Object.keys(exp).filter((name) => name in esmMain);",
+        "  if (leakedEsm.length) throw new Error('ESM main entry exports ' + leakedEsm.join(', '));",
+        `  const esm = await import('${pkgName}/experimental');`,
         "  if (esm.TenantManager !== exp.TenantManager) throw new Error('ESM/CJS mismatch');",
-        "});",
+        "}).catch((e) => { console.error(e); process.exit(1); });",
       ].join("\n");
-      const { stderr } = runCapture(["-e", script], consumerDir);
-      const warnings = stderr.match(/RAG_DEP_TENANT_MANAGER/g) || [];
-      if (warnings.length !== 1) {
-        throw new Error(`expected exactly one deprecation warning:\n${stderr}`);
+      const { stdout, stderr } = runCapture(["-e", script], consumerDir);
+      if (stdout.trim() || stderr.trim()) {
+        throw new Error(`unexpected output:\n${stdout}${stderr}`);
       }
     },
   ),
@@ -228,6 +229,9 @@ const results = [
     }
   }),
   check("type declarations compile", () => {
+    const experimentalNames = Object.keys(
+      require(path.join(root, "src", "experimental.js")),
+    );
     // Uses the repo's TypeScript and @types/node; the consumer only has
     // production dependencies installed.
     fs.writeFileSync(
@@ -249,6 +253,13 @@ const results = [
         "const tenants: typeof TenantManager = TenantManager;",
         "let sso: InstanceType<typeof SSOManager> | undefined;",
         "export { score, tenants, sso };",
+        // the experimental classes are declared only by ./experimental
+        `import * as main from "${pkgName}";`,
+        `type Leaked = Extract<keyof typeof main, ${experimentalNames
+          .map((name) => JSON.stringify(name))
+          .join(" | ")}>;`,
+        "const noLeaks: [Leaked] extends [never] ? true : false = true;",
+        "void noLeaks;",
       ].join("\n"),
     );
     // "node" resolution reads typesVersions; "node16" reads the exports map

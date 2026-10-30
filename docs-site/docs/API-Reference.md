@@ -540,7 +540,7 @@ Built-in prices are unverified. Pass the `pricing` or `customPricing` option to 
 
 :::warning Experimental
 
-`MultiModalProcessor`, `AdaptiveRetrievalEngine`, `ModelTrainingOrchestrator` and `FederatedLearningCoordinator` are simulations. They are exported from `@devilsdev/rag-pipeline-utils/experimental`; importing them from the main entry still works but emits a one-time `DeprecationWarning` and will be removed in the next major release. See [Experimental modules](./Experimental) for what each one really does.
+`MultiModalProcessor`, `AdaptiveRetrievalEngine`, `ModelTrainingOrchestrator` and `FederatedLearningCoordinator` are simulations. They are exported from `@devilsdev/rag-pipeline-utils/experimental`, and from 3.0.0 only from there (2.x also exports them from the main entry, with a one-time `DeprecationWarning`). See [Experimental modules](./Experimental) for what each one really does.
 
 :::
 

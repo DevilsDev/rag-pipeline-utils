@@ -65,8 +65,8 @@ const esmWrapper = [
 
 fs.writeFileSync(path.join(distDir, "index.mjs"), esmWrapper);
 
-// ./experimental entry: reads the unwrapped classes that index.cjs attaches
-// under a symbol, so both entries share one copy of each class.
+// ./experimental entry: reads the module that index.cjs attaches under a
+// symbol, so it is bundled once with the main entry.
 const EXPERIMENTAL_KEY = "@devilsdev/rag-pipeline-utils/experimental";
 fs.writeFileSync(
   path.join(distDir, "experimental.cjs"),
