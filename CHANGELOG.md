@@ -20,7 +20,8 @@ A patch for problems found while auditing the documentation against
 
 - **`PluginHub` and `PluginCertification` sent requests to an unregistered
   domain by default.** Without a `registryUrl` they used
-  `https://registry.rag-pipeline.dev`, which is not a registered domain, so
+  `https://registry.rag-pipeline.dev`, a domain the project doesn't control
+  (`rag-pipeline.dev` was not registered when checked on 2026-10-30), so
   whoever registered it would receive their requests: `PluginHub` attached
   `RAG_PLUGIN_HUB_API_KEY` as a Bearer token and posted usage analytics
   (search queries, plugin ids) once a minute whenever there were any, and `PluginCertification`

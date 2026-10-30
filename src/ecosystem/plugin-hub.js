@@ -63,7 +63,7 @@ class PluginHub extends EventEmitter {
 
     this._config = {
       // No default: there is no public registry, and the old default
-      // (registry.rag-pipeline.dev) is not a registered domain.
+      // (registry.rag-pipeline.dev) is a domain the project doesn't control.
       registryUrl:
         _options.registryUrl || process.env.RAG_PLUGIN_REGISTRY || null,
       localCacheDir:
@@ -86,6 +86,8 @@ class PluginHub extends EventEmitter {
    * Search plugins in the community hub
    */
   async searchPlugins(query, _options = {}) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     const searchParams = {
       q: query,
       category: _options.category,
@@ -129,6 +131,8 @@ class PluginHub extends EventEmitter {
    * Get detailed plugin information
    */
   async getPluginInfo(pluginId) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     const cacheKey = `plugin:${pluginId}`;
 
     // Check cache first
@@ -240,6 +244,8 @@ class PluginHub extends EventEmitter {
    * Publish plugin to the hub
    */
   async publishPlugin(pluginPath, _options = {}) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     const publishId = crypto.randomUUID();
 
     try {
@@ -287,6 +293,8 @@ class PluginHub extends EventEmitter {
    * Rate and review a plugin
    */
   async ratePlugin(pluginId, rating, review = null) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     if (rating < 1 || rating > 5) {
       throw new Error('Rating must be between 1 and 5');
     }
@@ -314,6 +322,8 @@ class PluginHub extends EventEmitter {
    * Get plugin reviews and ratings
    */
   async getPluginReviews(pluginId, _options = {}) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     try {
       const response = await this._makeRequest(
         'GET',
@@ -335,6 +345,8 @@ class PluginHub extends EventEmitter {
    * Get trending plugins
    */
   async getTrendingPlugins(_options = {}) {
+    // Reject before the try below, which reports failures as 'error' events.
+    this._requireRegistry();
     try {
       const response = await this._makeRequest('GET', '/plugins/trending', {
         period: _options.period || 'week', // day, week, month
@@ -363,8 +375,16 @@ class PluginHub extends EventEmitter {
     return listInstalledPlugins(configPath);
   }
 
-  async _makeRequest(method, endpoint, params = {}) {
+  /**
+   * @throws {Error} code NO_PLUGIN_REGISTRY when no registry is configured
+   * @private
+   */
+  _requireRegistry() {
     if (!this._config.registryUrl) throw noRegistryError();
+  }
+
+  async _makeRequest(method, endpoint, params = {}) {
+    this._requireRegistry();
     const doFetch = pickFetch(this._config.fetch);
     if (!doFetch) throw new Error('fetch is not available in this environment');
 

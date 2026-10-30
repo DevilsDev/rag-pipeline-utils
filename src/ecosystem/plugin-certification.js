@@ -19,7 +19,7 @@ class PluginCertification extends EventEmitter {
 
     this._config = {
       // No default: there is no public registry, and the old default
-      // (registry.rag-pipeline.dev) is not a registered domain.
+      // (registry.rag-pipeline.dev) is a domain the project doesn't control.
       registryUrl:
         _options.registryUrl || process.env.RAG_PLUGIN_REGISTRY || null,
       apiKey: _options.apiKey || process.env.RAG_PLUGIN_HUB_API_KEY,

@@ -789,11 +789,19 @@ describe("No default plugin registry", () => {
 
   test("PluginHub without a registry rejects before any network call", async () => {
     const fetchMock = jest.fn();
+    // No "error" listener: callers must get the error, not ERR_UNHANDLED_ERROR.
     const hub = new PluginHub({ fetch: fetchMock, apiKey: "secret" });
-    hub.on("error", () => {});
-    await expect(hub._makeRequest("GET", "/plugins")).rejects.toMatchObject({
-      code: "NO_PLUGIN_REGISTRY",
-    });
+    for (const call of [
+      () => hub.searchPlugins("q"),
+      () => hub.getPluginInfo("p"),
+      () => hub.ratePlugin("p", 5),
+      () => hub.getPluginReviews("p"),
+      () => hub.getTrendingPlugins(),
+    ]) {
+      await expect(call()).rejects.toMatchObject({
+        code: "NO_PLUGIN_REGISTRY",
+      });
+    }
     hub.analytics.trackSearch("q", 0);
     await hub.analytics._flush();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -809,7 +817,6 @@ describe("No default plugin registry", () => {
   test("PluginCertification without a registry rejects before any network call", async () => {
     const fetchMock = jest.fn();
     const certification = new PluginCertification({ fetch: fetchMock });
-    certification.on("error", () => {});
     await expect(
       certification.submitForCertification(
         { name: "p", version: "1.0.0" },
