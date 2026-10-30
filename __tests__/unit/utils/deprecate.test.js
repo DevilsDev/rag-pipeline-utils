@@ -112,23 +112,20 @@ describe("deprecateClass", () => {
 });
 
 describe("experimental entry", () => {
-  const experimental = require("../../../src/experimental");
-  const main = require("../../../src/index");
-
-  test("main-entry experimental exports are deprecated wrappers of the same classes", () => {
+  // required in each test: the jest config resets the module registry per test
+  test("the main entry no longer exports the experimental classes (3.0.0)", () => {
+    const experimental = require("../../../src/experimental");
+    const main = require("../../../src/index");
     const names = Object.keys(experimental);
     expect(names).toEqual(
       expect.arrayContaining(["SSOManager", "TenantManager", "PluginSandbox"]),
     );
     for (const name of names) {
-      expect(main[name]).not.toBe(experimental[name]);
-      expect(main[name].prototype).toBe(experimental[name].prototype);
+      expect(main).not.toHaveProperty(name);
     }
-    expect(main.DataGovernance).toBe(main.DataGovernanceManager);
   });
 
   test("stable exports are not wrapped", () => {
-    // required here: the jest config resets the module registry per test
     const main = require("../../../src/index");
     const { AuditLogger } = require("../../../src/enterprise/audit-logging");
     const { PluginHub } = require("../../../src/ecosystem/plugin-hub");
@@ -137,6 +134,8 @@ describe("experimental entry", () => {
   });
 
   test("the experimental entry is reachable from the main module for the build", () => {
+    const main = require("../../../src/index");
+    const experimental = require("../../../src/experimental");
     expect(main[Symbol.for("@devilsdev/rag-pipeline-utils/experimental")]).toBe(
       experimental,
     );

@@ -21,6 +21,28 @@ Planned for 3.0.0.
 - **`PluginSandbox` needs `isolated-vm` 6 or later** (the optional peer
   dependency was `>=5.0.0`). isolated-vm 5 doesn't build on Node 24.
 
+### Removed
+
+- **Breaking: the experimental classes are no longer exported from the
+  main entry.** Import them from `@devilsdev/rag-pipeline-utils/experimental`
+  instead, as 2.5.0 to 2.7.x already allowed: `ModelTrainingOrchestrator`,
+  `FederatedLearningCoordinator`, `MultiModalProcessor`,
+  `AdaptiveRetrievalEngine`, `SSOManager`, `SAMLProvider`, `OAuth2Provider`,
+  `ActiveDirectoryProvider`, `OIDCProvider`, `TenantManager`,
+  `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`,
+  `PluginSandbox` and `PluginCertification`. Their `RAG_DEP_*` deprecation
+  warnings are gone with them, and importing the package no longer loads
+  these modules. Their pages in the generated API reference are removed;
+  [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental)
+  describes them.
+- **Breaking (TypeScript only): the type declarations deprecated in 2.7.0
+  are removed.** `LoadConfigOptions`, `LLMResponse`, `DAGNode`, `DAGOptions`,
+  `ErrorFormatter`, `EvalResult` and `Document.embedding` didn't describe
+  what the code reads or returns. Use a path for `loadConfig`, return the
+  answer text from `generate()`, store embeddings as `Document.vector`, and
+  see the `DAG`, `createError` / `wrapError` and `evaluateRagDataset`
+  declarations.
+
 ## [2.7.1] - 2026-10-30
 
 ### Fixed

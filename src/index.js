@@ -25,21 +25,10 @@ const { ConnectionPoolManager } = require('./utils/connection-pool');
 
 // Security
 const { JWTValidator } = require('./security/jwt-validator');
-const { PluginSandbox } = require('./security/plugin-sandbox');
 const {
   PluginSignatureVerifier,
 } = require('./security/plugin-signature-verifier');
 const { validateInput } = require('./security/validator');
-
-// AI/ML capabilities
-const { MultiModalProcessor } = require('./ai/multimodal');
-const { AdaptiveRetrievalEngine } = require('./ai/retrieval-engine');
-const {
-  FederatedLearningCoordinator,
-} = require('./ai/federation/federated-learning-coordinator');
-const {
-  ModelTrainingOrchestrator,
-} = require('./ai/training/model-training-orchestrator');
 
 // DAG engine for complex workflows
 const { DAG } = require('./dag/dag-engine');
@@ -163,22 +152,9 @@ const metrics = require('./core/observability/metrics');
 
 // Enterprise features
 const { AuditLogger } = require('./enterprise/audit-logging');
-const { DataGovernanceManager } = require('./enterprise/data-governance');
-const {
-  TenantManager,
-  ResourceMonitor,
-} = require('./enterprise/multi-tenancy');
-const {
-  SSOManager,
-  SAMLProvider,
-  OAuth2Provider,
-  ActiveDirectoryProvider,
-  OIDCProvider,
-} = require('./enterprise/sso-integration');
 
 // Ecosystem
 const { PluginHub, PluginAnalytics } = require('./ecosystem/plugin-hub');
-const { PluginCertification } = require('./ecosystem/plugin-certification');
 const {
   PluginAnalyticsDashboard,
 } = require('./ecosystem/plugin-analytics-dashboard');
@@ -219,15 +195,8 @@ module.exports = {
 
   // Security
   JWTValidator,
-  PluginSandbox,
   PluginSignatureVerifier,
   validateInput,
-
-  // AI/ML
-  MultiModalProcessor,
-  AdaptiveRetrievalEngine,
-  FederatedLearningCoordinator,
-  ModelTrainingOrchestrator,
 
   // Workflow engine
   DAGEngine: DAG,
@@ -347,20 +316,10 @@ module.exports = {
 
   // Enterprise
   AuditLogger,
-  DataGovernance: DataGovernanceManager,
-  DataGovernanceManager,
-  TenantManager,
-  ResourceMonitor,
-  SSOManager,
-  SAMLProvider,
-  OAuth2Provider,
-  ActiveDirectoryProvider,
-  OIDCProvider,
 
   // Ecosystem
   PluginHub,
   PluginAnalytics,
-  PluginCertification,
   PluginAnalyticsDashboard,
 
   // Development tools
@@ -369,24 +328,6 @@ module.exports = {
   DevServer,
   createDevServer,
 };
-
-// Simulated or incomplete modules now live in the ./experimental entry
-// (src/experimental.js). Their main-entry exports keep working but emit a
-// one-time DeprecationWarning when used, and will be removed from the main
-// entry in the next major release (SEMVER.md, "Deprecation process").
-const experimental = require('./experimental');
-const { deprecateClass } = require('./utils/deprecate');
-
-for (const name of Object.keys(experimental)) {
-  if (!(name in module.exports)) continue;
-  module.exports[name] = deprecateClass(experimental[name], {
-    name,
-    message:
-      `${name} is experimental (simulated or incomplete) and is deprecated in ` +
-      `the main entry. Import it from "@devilsdev/rag-pipeline-utils/experimental"; ` +
-      'it will be removed from the main entry in the next major release.',
-  });
-}
 
 // The ./testing build entry reads its module from here, so it shares the
 // main bundle's classes (MemoryRetriever, createRagPipeline). A getter, so
@@ -397,10 +338,11 @@ Object.defineProperty(
   { get: () => require('./testing'), enumerable: false }, // eslint-disable-line global-require
 );
 
-// The ./experimental build entry reads the unwrapped classes from here, so
-// both entries share one copy of each class (non-enumerable: not a named export).
+// The ./experimental build entry reads its module from here (simulated or
+// incomplete classes, removed from the main entry in 3.0.0). A getter, so
+// importing the package does not load them.
 Object.defineProperty(
   module.exports,
   Symbol.for('@devilsdev/rag-pipeline-utils/experimental'),
-  { value: experimental, enumerable: false },
+  { get: () => require('./experimental'), enumerable: false }, // eslint-disable-line global-require
 );

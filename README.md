@@ -538,7 +538,7 @@ Simulated or incomplete modules live under a separate entry point and are not co
 import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
 ```
 
-They are still exported from the main entry in 2.x with a one-time deprecation warning, and will be removed from it in 3.0. Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
+From 3.0.0 they are exported only from `/experimental`; 2.x also exports them from the main entry, with a one-time deprecation warning. Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
 
 ## Compatibility
 
