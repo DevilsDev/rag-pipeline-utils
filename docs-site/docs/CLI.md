@@ -28,7 +28,7 @@ rag-pipeline ingest ./docs             # index .md, .html, .csv and .txt files
 rag-pipeline query "How many vacation days do employees get?"
 ```
 
-With the default `local` template there is no language model, so `query` prints the best-matching passages. Use `--template openai`, `ollama` or `anthropic` (or edit the config) to generate answers.
+With the default `local` template there is no language model, so `query` prints the best-matching passages. Use `--template openai`, `ollama` or `anthropic` (or edit the config) to generate answers. The `openai` embedder and LLM need the OpenAI SDK: `npm install openai` (an optional peer dependency since 3.0.0).
 
 ---
 
@@ -36,11 +36,15 @@ With the default `local` template there is no language model, so `query` prints 
 
 > **Tip:** the [configuration builder](./Config-Builder.mdx) writes this file for you in the browser.
 
-`init` writes a file like this:
+`init` (the default `local` template) writes:
 
 ```json
 {
   "namespace": "default",
+  "metadata": {
+    "name": "rag-pipeline",
+    "createdAt": "2026-10-30T12:00:00.000Z"
+  },
   "pipeline": [
     { "stage": "loader", "name": "auto" },
     { "stage": "embedder", "name": "local" },
@@ -48,11 +52,12 @@ With the default `local` template there is no language model, so `query` prints 
       "stage": "retriever",
       "name": "file-store",
       "config": { "path": ".rag/index.json" }
-    },
-    { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
+    }
   ]
 }
 ```
+
+`--template openai` uses `openai` for the embedder and adds `{ "stage": "llm", "name": "openai" }`; `ollama` does the same with `ollama`; `anthropic` keeps the `local` embedder and adds an `anthropic` LLM. Add `"config": { "model": "gpt-4o-mini" }` to an entry to override its defaults.
 
 Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to the component's constructor. Names resolve in this order:
 
@@ -160,7 +165,7 @@ rag-pipeline query "remote work" --top-k 5 --json
 | Option           | Description                                                                                                                                     |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                |
-| `--json`         | Print `{ answer, results, citations }` as JSON                                                                                                  |
+| `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                     |
 | `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                               |
 | `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                |
 | `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate                                                                                     |
@@ -179,7 +184,7 @@ With `--json`, `--trace`, `--stats` and `--explain` add `trace`, `stats` and `ex
 
 ## `eval`
 
-Runs a test set through the configured pipeline and index, prints the scores, and exits `1` when the run fails, so it can gate a CI job. A run fails when a case errors, a metric is below its `--min`, or the run regressed from a `--baseline` report.
+Runs a test set through the configured pipeline and index, prints the scores, and exits `1` when the run fails, so it can gate a CI job. A run fails when a case errors, a metric is below its `--min` or was not measured, or the run regressed from a `--baseline` report.
 
 ```bash
 # On your main branch: save a baseline

@@ -8,7 +8,7 @@ Deploy RAG Pipeline Utils on Microsoft Azure using Container Instances, AKS, or 
 
 :::note What you deploy
 
-`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:3.0.0` refer to your application image built against version 3.0.0 of the package, which needs Node.js 22 or later. If your service uses `OpenAIConnector`, add `openai` to its dependencies (`npm install openai`): since 3.0.0 it is an optional peer dependency, and without it the connector rejects with `MISSING_DEPENDENCY`. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
 
 :::
 
@@ -44,8 +44,8 @@ az acr create \
 az acr login --name ragpipelineacr
 
 # Tag and push image
-docker tag rag-pipeline-utils:2.5.0 ragpipelineacr.azurecr.io/rag-pipeline:2.5.0
-docker push ragpipelineacr.azurecr.io/rag-pipeline:2.5.0
+docker tag rag-pipeline-utils:3.0.0 ragpipelineacr.azurecr.io/rag-pipeline:3.0.0
+docker push ragpipelineacr.azurecr.io/rag-pipeline:3.0.0
 ```
 
 ## Azure Container Instances
@@ -57,7 +57,7 @@ docker push ragpipelineacr.azurecr.io/rag-pipeline:2.5.0
 az container create \
   --resource-group rag-pipeline-rg \
   --name rag-pipeline-aci \
-  --image ragpipelineacr.azurecr.io/rag-pipeline:2.5.0 \
+  --image ragpipelineacr.azurecr.io/rag-pipeline:3.0.0 \
   --cpu 2 \
   --memory 4 \
   --registry-login-server ragpipelineacr.azurecr.io \
@@ -88,7 +88,7 @@ az container create \
     },
     "imageName": {
       "type": "string",
-      "defaultValue": "ragpipelineacr.azurecr.io/rag-pipeline:2.5.0"
+      "defaultValue": "ragpipelineacr.azurecr.io/rag-pipeline:3.0.0"
     }
   },
   "resources": [
@@ -210,6 +210,8 @@ spec:
 
 ### Function Code
 
+Add the dependencies the function ships with: `npm install @devilsdev/rag-pipeline-utils openai`. `openai` is an optional peer dependency that `OpenAIConnector` needs.
+
 ```javascript no-run
 // function-app/index.js
 const {
@@ -280,7 +282,7 @@ az functionapp create \
   --resource-group rag-pipeline-rg \
   --consumption-plan-location eastus \
   --runtime node \
-  --runtime-version 20 \
+  --runtime-version 22 \
   --functions-version 4 \
   --name rag-pipeline-func \
   --storage-account ragpipelinestorage
@@ -311,7 +313,7 @@ az containerapp create \
   --name rag-pipeline-app \
   --resource-group rag-pipeline-rg \
   --environment rag-pipeline-env \
-  --image ragpipelineacr.azurecr.io/rag-pipeline:2.5.0 \
+  --image ragpipelineacr.azurecr.io/rag-pipeline:3.0.0 \
   --target-port 3000 \
   --ingress external \
   --registry-server ragpipelineacr.azurecr.io \

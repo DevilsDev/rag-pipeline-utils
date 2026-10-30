@@ -14,30 +14,30 @@ right choice for **your** workload — not whether it's "the best" in
 the abstract.
 
 > **Currency**: this comparison reflects the state of each project
-> as of **April 2026**. The JS RAG ecosystem moves fast. If you read
+> as of **October 2026** (3.0.0). The JS RAG ecosystem moves fast. If you read
 > this six months later, double-check the points where each project
 > has likely improved.
 
 ## At a glance
 
-| Dimension                  | `@devilsdev/rag-pipeline-utils`                                                                    | LangChain.js                                                    | LlamaIndex.TS                                |
-| -------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
-| **Primary focus**          | Production RAG pipelines for Node.js services                                                      | General-purpose LLM orchestration                               | Indexing-first RAG with rich data structures |
-| **License**                | MIT                                                                                                | MIT                                                             | MIT                                          |
-| **Bundle**                 | Single package (plus an `/experimental` entry for simulated modules)                               | Many packages (`@langchain/core`, `@langchain/community`, etc.) | Single package, larger surface               |
-| **Built-in evaluation**    | ✅ Faithfulness, relevance, context P/R, groundedness                                              | 🟡 Via separate `langsmith` (paid SaaS option)                  | 🟡 Some metrics, evolving                    |
-| **Built-in citations**     | ✅ Per-sentence attribution + groundedness score                                                   | 🟡 Doable manually                                              | 🟡 Doable manually                           |
-| **Built-in guardrails**    | ✅ 3-layer (pre / retrieval / post)                                                                | 🟡 Via integrations (Guardrails AI, etc.)                       | 🟡 Via integrations                          |
-| **Vector store ecosystem** | In-memory and JSON-file stores + plugin contract for any                                           | ✅ 50+ integrations                                             | ✅ Many integrations + native indexes        |
-| **LLM provider ecosystem** | OpenAI, Anthropic, Cohere, Ollama + plugin contract                                                | ✅ Largest ecosystem                                            | ✅ Large ecosystem                           |
-| **Agentic / tools**        | 🟡 Query planning (heuristic or LLM-proposed) + iterative retrieval via DAG                        | ✅ Mature agent framework, tool use                             | ✅ Agent framework                           |
-| **GraphRAG**               | ✅ Knowledge-graph construction + traversal                                                        | 🟡 Via integrations                                             | 🟡 Via property graphs                       |
-| **MCP support**            | ✅ First-class                                                                                     | 🟡 Community add-ons                                            | 🟡 Community add-ons                         |
-| **TypeScript types**       | ✅ `.d.ts` generated from JSDoc; build fails on undeclared exports                                 | ✅ Native TS                                                    | ✅ Native TS                                 |
-| **Module format**          | Dual ESM + CJS                                                                                     | Mostly ESM, some CJS                                            | Mostly ESM                                   |
-| **Stability policy**       | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) | Versioned per package                                           | Versioned                                    |
-| **Security policy**        | ✅ Documented disclosure + capability matrix                                                       | Via GitHub Security                                             | Via GitHub Security                          |
-| **Production complexity**  | Low — pipeline + components                                                                        | Medium — many abstractions                                      | Medium — index types vocabulary              |
+| Dimension                  | `@devilsdev/rag-pipeline-utils`                                                                                                                                                     | LangChain.js                                                    | LlamaIndex.TS                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
+| **Primary focus**          | Production RAG pipelines for Node.js services                                                                                                                                       | General-purpose LLM orchestration                               | Indexing-first RAG with rich data structures |
+| **License**                | MIT                                                                                                                                                                                 | MIT                                                             | MIT                                          |
+| **Bundle**                 | Single package (plus `/testing` helpers and an `/experimental` entry for simulated modules)                                                                                         | Many packages (`@langchain/core`, `@langchain/community`, etc.) | Single package, larger surface               |
+| **Built-in evaluation**    | ✅ Faithfulness, relevance, context P/R, groundedness                                                                                                                               | 🟡 Via separate `langsmith` (paid SaaS option)                  | 🟡 Some metrics, evolving                    |
+| **Built-in citations**     | ✅ Per-sentence attribution + groundedness score                                                                                                                                    | 🟡 Doable manually                                              | 🟡 Doable manually                           |
+| **Built-in guardrails**    | ✅ 3-layer (pre / retrieval / post)                                                                                                                                                 | 🟡 Via integrations (Guardrails AI, etc.)                       | 🟡 Via integrations                          |
+| **Vector store ecosystem** | In-memory and JSON-file stores, PostgreSQL/pgvector and Qdrant, BM25 and hybrid search, plus a plugin contract for any other                                                        | ✅ 50+ integrations                                             | ✅ Many integrations + native indexes        |
+| **LLM provider ecosystem** | OpenAI (and OpenAI-compatible APIs via `baseURL`), Anthropic, Ollama, any Vercel AI SDK model via `createAiSdkAdapter`; Cohere for embeddings and reranking; plus a plugin contract | ✅ Largest ecosystem                                            | ✅ Large ecosystem                           |
+| **Agentic / tools**        | 🟡 Query planning (heuristic or LLM-proposed) + iterative retrieval via DAG                                                                                                         | ✅ Mature agent framework, tool use                             | ✅ Agent framework                           |
+| **GraphRAG**               | ✅ Knowledge-graph construction + traversal                                                                                                                                         | 🟡 Via integrations                                             | 🟡 Via property graphs                       |
+| **MCP support**            | ✅ First-class                                                                                                                                                                      | 🟡 Community add-ons                                            | 🟡 Community add-ons                         |
+| **TypeScript types**       | ✅ `.d.ts` generated from JSDoc; build fails on undeclared exports                                                                                                                  | ✅ Native TS                                                    | ✅ Native TS                                 |
+| **Module format**          | Dual ESM + CJS                                                                                                                                                                      | Mostly ESM, some CJS                                            | Mostly ESM                                   |
+| **Stability policy**       | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)                                                                                  | Versioned per package                                           | Versioned                                    |
+| **Security policy**        | ✅ Documented disclosure + capability matrix                                                                                                                                        | Via GitHub Security                                             | Via GitHub Security                          |
+| **Production complexity**  | Low — pipeline + components                                                                                                                                                         | Medium — many abstractions                                      | Medium — index types vocabulary              |
 
 ## Where each one wins
 
@@ -78,7 +78,7 @@ the abstract.
   add no API spend; they are also less nuanced than LLM-judged metrics.
 - You need a **predictable, narrow surface area for security review**.
   One package, MIT-licensed, no required SaaS.
-- You want **ESM-first dual-build** and a documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)
+- You want a **dual ESM + CommonJS build** and a documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)
   with explicit deprecation windows.
 - You want **MCP** (Model Context Protocol) support as a first-class
   feature, so your pipeline can plug into Claude Desktop and other
@@ -119,13 +119,13 @@ This framework explicitly does not try to be:
   Node.js library. There's no UI to drag-and-drop pipelines together.
 - **A managed vector store.** Bring your own (or use the in-memory
   retriever for development).
-- **A Python framework.** Node.js only.
+- **A Python framework.** Node.js 22 or later only.
 
 ## How to decide
 
 Pick `@devilsdev/rag-pipeline-utils` if you can answer **yes** to:
 
-- Are you building in **Node.js**?
+- Are you building on **Node.js 22+**?
 - Is your primary workload **RAG** (not general agents)?
 - Do you need **citations or evaluation** to be a first-class concern?
 - Do you value **a small, narrow API** over breadth of integrations?

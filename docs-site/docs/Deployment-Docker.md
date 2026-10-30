@@ -8,7 +8,7 @@ Deploy RAG Pipeline Utils in production using Docker containers with optimized c
 
 :::note What you deploy
 
-`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:3.0.0` refer to your application image built against version 3.0.0 of the package, which needs Node.js 22 or later. If your service uses `OpenAIConnector`, add `openai` to its dependencies (`npm install openai`): since 3.0.0 it is an optional peer dependency, and without it the connector rejects with `MISSING_DEPENDENCY`. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
 
 :::
 
@@ -54,7 +54,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && \
+RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy application code
@@ -106,7 +106,7 @@ RUN npm ci
 # Copy source and build
 COPY . .
 RUN npm run build && \
-    npm prune --production
+    npm prune --omit=dev
 
 # Production stage
 FROM node:22-alpine AS production
@@ -147,7 +147,7 @@ CMD ["node", "dist/index.js"]
 **Build optimized image:**
 
 ```bash
-docker build -t rag-pipeline-utils:2.5.0 -f Dockerfile.production .
+docker build -t rag-pipeline-utils:3.0.0 -f Dockerfile.production .
 ```
 
 ## Docker Compose Setup
@@ -163,7 +163,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    image: rag-pipeline-utils:2.5.0
+    image: rag-pipeline-utils:3.0.0
     container_name: rag-pipeline-app
     restart: unless-stopped
     ports:
@@ -184,7 +184,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://localhost:3000/health')",
+          "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
         ]
       interval: 30s
       timeout: 10s
@@ -222,7 +222,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    image: rag-pipeline-utils:2.5.0
+    image: rag-pipeline-utils:3.0.0
     container_name: rag-app
     restart: unless-stopped
     ports:
@@ -376,7 +376,7 @@ version: "3.8"
 
 services:
   rag-app:
-    image: rag-pipeline-utils:2.5.0
+    image: rag-pipeline-utils:3.0.0
     secrets:
       - openai_api_key
       - jwt_secret
@@ -421,7 +421,7 @@ ENV NODE_ENV=production \
 ```dockerfile
 # Optimize build time with layer caching
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy source last (changes frequently)
 COPY . .
@@ -463,10 +463,10 @@ services:
 
 ```bash
 # Scan image for vulnerabilities
-docker scan rag-pipeline-utils:2.5.0
+docker scout cves rag-pipeline-utils:3.0.0
 
 # Use Trivy for comprehensive scanning
-trivy image rag-pipeline-utils:2.5.0
+trivy image rag-pipeline-utils:3.0.0
 ```
 
 ## Monitoring and Logging
@@ -512,24 +512,24 @@ scrape_configs:
 ```bash
 # Build production image
 docker build \
-  -t rag-pipeline-utils:2.5.0 \
+  -t rag-pipeline-utils:3.0.0 \
   -f Dockerfile.production \
   --build-arg NODE_ENV=production \
   .
 
 # Tag for registry
-docker tag rag-pipeline-utils:2.5.0 your-registry.com/rag-pipeline-utils:2.5.0
+docker tag rag-pipeline-utils:3.0.0 your-registry.com/rag-pipeline-utils:3.0.0
 ```
 
 ### 2. Push to Registry
 
 ```bash
 # Push to Docker Hub
-docker push your-registry.com/rag-pipeline-utils:2.5.0
+docker push your-registry.com/rag-pipeline-utils:3.0.0
 
 # Or use private registry
 docker login your-registry.com
-docker push your-registry.com/rag-pipeline-utils:2.5.0
+docker push your-registry.com/rag-pipeline-utils:3.0.0
 ```
 
 ### 3. Deploy to Production
@@ -630,6 +630,6 @@ docker network inspect rag-network
 ## Additional Resources
 
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
-- [Node.js Docker Guide](https://nodejs.org/en/docs/guides/nodejs-docker-webapp/)
+- [Node.js Docker best practices](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md)
 - [Docker Security](https://docs.docker.com/engine/security/)
 - [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)

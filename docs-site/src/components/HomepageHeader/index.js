@@ -39,7 +39,7 @@ export default function HomepageHeader() {
                 </Link>
               )}
               <span className={styles.chip}>MIT</span>
-              <span className={styles.chip}>Node.js ≥ 18</span>
+              <span className={styles.chip}>Node.js ≥ 22</span>
             </div>
 
             <h1 className={styles.title}>

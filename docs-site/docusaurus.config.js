@@ -97,9 +97,9 @@ const config = {
         ],
         includeUnmatchedLast: true,
         rootContent:
-          "Composable RAG for Node.js. Install with `npm install @devilsdev/rag-pipeline-utils`. The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
+          "Composable RAG for Node.js 22 and later. Install with `npm install @devilsdev/rag-pipeline-utils`; add `openai` to use `OpenAIConnector` and `pg` for `PgVectorRetriever` (optional peer dependencies). The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
         fullRootContent:
-          "Composable RAG for Node.js. Install with `npm install @devilsdev/rag-pipeline-utils`. The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
+          "Composable RAG for Node.js 22 and later. Install with `npm install @devilsdev/rag-pipeline-utils`; add `openai` to use `OpenAIConnector` and `pg` for `PgVectorRetriever` (optional peer dependencies). The package is CommonJS and ESM with TypeScript types; classes under `@devilsdev/rag-pipeline-utils/experimental` are simulated or incomplete and not for production.",
       },
     ],
   ],
@@ -276,9 +276,6 @@ const config = {
         docs: {
           sidebarPath: "./sidebars.js",
           lastVersion: "current",
-          // versioned_docs/version-2.3.1 is kept on disk until 3.0 but no
-          // longer built or listed.
-          onlyIncludeVersions: ["current"],
           versions: {
             current: {
               label: PKG_VERSION,

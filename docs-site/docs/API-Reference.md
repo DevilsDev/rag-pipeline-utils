@@ -6,13 +6,14 @@ sidebar_position: 15
 
 Reference documentation for the public API of `@devilsdev/rag-pipeline-utils`. The version selector in the navigation bar shows which release this page describes.
 
-The package has three entry points:
+The package has four entry points:
 
-| Entry                                        | Contents                                                                    |
-| -------------------------------------------- | --------------------------------------------------------------------------- |
-| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                   |
-| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental) |
-| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                           |
+| Entry                                        | Contents                                                                                                       |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                      |
+| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                    |
+| `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`); see [Testing](./Testing) |
+| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                              |
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
@@ -34,26 +35,29 @@ function createRagPipeline(config?: {
   llm?: LLM | string;
   reranker?: Reranker | string;
   registry?: PluginRegistry;
+  cache?: boolean | CacheBackend | CacheOptions;
 }): {
   run(input: RunInput): Promise<RunResult | AsyncIterable<StreamChunk>>;
   cleanup(): void;
+  cacheStats(): object | null;
 };
 ```
 
 **Parameters:**
 
-| Parameter          | Type                  | Required | Description                                                       |
-| ------------------ | --------------------- | -------- | ----------------------------------------------------------------- |
-| `config.loader`    | `Loader \| string`    | No       | Loader instance or registered plugin name                         |
-| `config.embedder`  | `Embedder \| string`  | No       | Embedder; used to embed the query when no `queryVector` is passed |
-| `config.retriever` | `Retriever \| string` | No       | Retriever; without one, retrieval returns no documents            |
-| `config.llm`       | `LLM \| string`       | No       | Language model; without one the pipeline is retrieval-only        |
-| `config.reranker`  | `Reranker \| string`  | No       | Reranker applied to the retrieved documents                       |
-| `config.registry`  | `PluginRegistry`      | No       | Registry used to resolve string names (default: `pluginRegistry`) |
+| Parameter          | Type                                | Required | Description                                                                     |
+| ------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------- |
+| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                       |
+| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed               |
+| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                          |
+| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                      |
+| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                     |
+| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)               |
+| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching) |
 
 String names are resolved from `registry`, or from the exported `pluginRegistry` when no registry is given.
 
-**Returns:** an object with `run()` and `cleanup()`.
+**Returns:** an object with `run()`, `cleanup()` and `cacheStats()` (hits, misses and skips per cache layer; `null` without a cache).
 
 **Example:**
 
@@ -85,6 +89,8 @@ const pipeline = createRagPipeline({
 });
 ```
 
+`OpenAIConnector` needs the OpenAI SDK, an optional peer dependency: `npm install openai` (4.93 or later).
+
 `MemoryRetriever` and `FileVectorStore` search by vector, so pass an `embedder` (or a `queryVector` to `run()`); otherwise they have nothing to compare against.
 
 **Aliases:**
@@ -97,13 +103,13 @@ const pipeline = createRagPipeline({
 
 #### pipeline.run()
 
-Runs one query: embed (if an embedder is configured) → retrieve → `filterResults` → rerank → generate → citations and evaluation (if requested). Documents are loaded through the loader configured in `createRagPipeline()`; there is no separate ingest method.
+Runs one query: embed (if an embedder is configured) → retrieve → `filterResults` → rerank → generate → citations and evaluation (if requested). A configured loader's `load()` is called with no arguments at the start of every run and its result is ignored; add documents to the retriever yourself with `retriever.store()` (or `rag-pipeline ingest`).
 
 **Signature:**
 
 ```typescript
 async run(params: {
-  query: string;
+  query?: string;
   queryVector?: number[];
   options?: RunOptions;
 }): Promise<RunResult | AsyncIterable<StreamChunk>>
@@ -113,7 +119,7 @@ async run(params: {
 
 | Parameter                 | Type                        | Required | Description                                                                           |
 | ------------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------- |
-| `query`                   | `string`                    | Yes      | Natural language query                                                                |
+| `query`                   | `string`                    | No       | Natural language query; give `query`, `queryVector` or both                           |
 | `queryVector`             | `number[]`                  | No       | Pre-computed query embedding (skips the embedder)                                     |
 | `options.topK`            | `number`                    | No       | Number of documents to retrieve (default: 3)                                          |
 | `options.timeout`         | `number`                    | No       | Timeout in milliseconds; cancels in-flight work                                       |
@@ -136,6 +142,7 @@ interface RunResult {
   answer: string | null; // null when no llm is configured
   citations?: object; // when options.citations is set and an llm is configured
   evaluation?: object; // when options.evaluate is set
+  cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
 }
 
 // Failures resolve instead of throwing:
@@ -573,10 +580,10 @@ Executes async functions as a directed acyclic graph. `DAGEngine` is an alias of
 **Methods:**
 
 ```typescript
-addNode(id: string, fn: (input: any) => Promise<any>, options?: object): DAGNode
+addNode(id: string, fn: (input: any) => Promise<any>, options?: object): object // the node
 connect(fromId: string, toId: string): void
 execute(seed?: any, options?: object): Promise<any>
-validate(): void
+validate(): boolean // true, or throws
 ```
 
 **Example:**
@@ -747,7 +754,7 @@ await server.start();
 console.log(server.getStatus().url);
 ```
 
-`start()` binds a real port since 2.5.0, so code that constructed a `DevServer` without expecting it to listen may now see `EADDRINUSE`.
+`start()` binds the port; pass `port: 0` in tests to avoid `EADDRINUSE`.
 
 ---
 
@@ -773,7 +780,7 @@ createError(code: string, context?: object, originalError?: Error): EnhancedErro
 wrapError(error: Error, code: string, context?: object): EnhancedError
 ```
 
-`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED`, `VALIDATION_FAILED`, `NETWORK_TIMEOUT` and `FS_READ_ERROR`. Every code has its own message and suggestions, whose `{placeholders}` are filled from `context`; a suggestion whose placeholder has no value is left out. See the [generated reference](./api/rag-pipeline-utils/namespaces/errorFormatter/) for the full list.
+`ERROR_CODES` contains codes such as `CONFIG_NOT_FOUND`, `CONFIG_INVALID_JSON`, `CONFIG_VALIDATION_FAILED`, `PLUGIN_NOT_FOUND`, `PLUGIN_LOAD_FAILED`, `PLUGIN_CONTRACT_VIOLATION`, `PIPELINE_EXECUTION_FAILED`, `PIPELINE_STAGE_FAILED`, `VALIDATION_FAILED`, `NETWORK_TIMEOUT` and `FS_READ_ERROR`. Every code has its own message and suggestions, whose `{placeholders}` are filled from `context`. A suggestion whose placeholder has no value is left out, but a placeholder in the message stays literal, so pass every value the message uses. See the [generated reference](./api/rag-pipeline-utils/namespaces/errorFormatter/) for the full list.
 
 **Example:**
 
@@ -791,8 +798,10 @@ throw createError(ERROR_CODES.PLUGIN_NOT_FOUND, { plugin: "custom-embedder" });
 try {
   await riskyOperation();
 } catch (err) {
+  // "Pipeline execution failed at stage 'retrieval': <err.message>"
   throw wrapError(err, ERROR_CODES.PIPELINE_EXECUTION_FAILED, {
     stage: "retrieval",
+    reason: err.message,
   });
 }
 ```
@@ -806,15 +815,6 @@ try {
 The shared plugin registry. Plugins registered here are resolvable by name in `createRagPipeline()` and in `.ragrc.json`.
 
 **Methods:**
-
-#### validatePlugin()
-
-```typescript
-validatePlugin(stage: PluginType, plugin: object, options?: { registry?: boolean }):
-  { valid: boolean; errors: string[]; warnings: string[] }
-```
-
-Checks a plugin without throwing; `{ registry: true }` adds the rules `register()` enforces. See [Testing a plugin in code](./Plugins.md#testing-a-plugin-in-code).
 
 #### register()
 
@@ -849,6 +849,7 @@ list(category: PluginType): string[]
 - `'retriever'` - Document retrievers
 - `'llm'` - Language models
 - `'reranker'` - Result rerankers
+- `'evaluator'` - Evaluators (accepted by the registry; not called by `createRagPipeline`)
 
 **Example:**
 
@@ -872,6 +873,17 @@ console.log(pluginRegistry.list("embedder"));
 ```
 
 To install third-party plugins into a project, use `rag-pipeline hub install <source>` (see [CLI](./CLI)).
+
+### validatePlugin
+
+Exported from the package root (`import { validatePlugin } from "@devilsdev/rag-pipeline-utils"`); it is not a registry method.
+
+```typescript
+validatePlugin(stage: PluginType, plugin: object, options?: { registry?: boolean }):
+  { valid: boolean; errors: string[]; warnings: string[] }
+```
+
+Checks a plugin without throwing; `{ registry: true }` adds the rules `register()` enforces. See [Testing a plugin in code](./Plugins.md#testing-a-plugin-in-code).
 
 ---
 
@@ -926,7 +938,7 @@ Every method receives an optional `signal` (an `AbortSignal`) that it should pas
 
 ```typescript
 interface Loader {
-  load(source?: string): Promise<Document[]>;
+  load(): unknown; // called with no arguments at the start of each run; the result is ignored
 }
 ```
 
@@ -998,7 +1010,18 @@ interface Document {
   id: string;
   content: string;
   metadata?: Record<string, any>;
-  score?: number;
+  vector?: number[]; // the embedding the built-in retrievers read
+}
+```
+
+**SearchResult** (what retrievers return and rerankers and `llm.generate()` receive):
+
+```typescript
+interface SearchResult {
+  id: string;
+  score: number; // similarity; higher is closer
+  content?: string;
+  metadata?: Record<string, any>;
 }
 ```
 
@@ -1008,6 +1031,7 @@ interface Document {
 interface StreamChunk {
   token: string;
   done: boolean;
+  results?: SearchResult[]; // final chunk of a retrieval-only (no llm) stream
   citations?: object; // final chunk only, when options.citations is set
   evaluation?: object; // final chunk only, when options.evaluate is set
 }
@@ -1015,9 +1039,9 @@ interface StreamChunk {
 
 ---
 
-## Deprecations
+## Removed in 3.0
 
-Experimental modules are deprecated on the main entry: `ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, `SSOManager`, `SAMLProvider`, `OAuth2Provider`, `ActiveDirectoryProvider`, `OIDCProvider`, `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`. Using one from `@devilsdev/rag-pipeline-utils` emits a one-time `DeprecationWarning` (`RAG_DEP_*` codes); import it from `@devilsdev/rag-pipeline-utils/experimental` instead. The classes are shared by both entries, so `instanceof` checks keep working. See [Experimental modules](./Experimental).
+`ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, `SSOManager`, `SAMLProvider`, `OAuth2Provider`, `ActiveDirectoryProvider`, `OIDCProvider`, `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification` are no longer exported from `@devilsdev/rag-pipeline-utils`; import them from `@devilsdev/rag-pipeline-utils/experimental` (see [Experimental modules](./Experimental)). 3.0 also removed the TypeScript types `LoadConfigOptions`, `LLMResponse`, `DAGNode`, `DAGOptions`, `ErrorFormatter`, `EvalResult` and `Document.embedding`; the [migration guide](./Migration#upgrading-to-v300) lists replacements.
 
 ## Version Information
 

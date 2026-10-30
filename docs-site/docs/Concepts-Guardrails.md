@@ -69,6 +69,8 @@ layer to disable it; the others still run.
 
 ## Wiring it up
 
+The example uses `OpenAIConnector`, which needs the OpenAI SDK: `npm install openai`.
+
 ```js no-run
 import {
   createRagPipeline,

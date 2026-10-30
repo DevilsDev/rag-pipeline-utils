@@ -16,14 +16,14 @@ This comprehensive troubleshooting guide helps you diagnose and resolve common i
 # Clear npm cache
 npm cache clean --force
 
-# Use a supported Node.js version (18+ required)
-nvm use 18
+# Use a supported Node.js version (22+ required; 2.x runs on 18+)
+nvm use 22
 npm install @devilsdev/rag-pipeline-utils
 ```
 
 **Common Dependency Problems**:
 
-- **`husky: not found`** (on Windows, `'husky' is not recognized as an internal or external command`): versions 2.2.1 to 2.6.1 ran `husky install`, a development hook, when the package was installed, so `npm install` failed wherever husky wasn't installed globally, including CI runners. Upgrade to 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`. If you can't upgrade yet, `npm install --ignore-scripts @devilsdev/rag-pipeline-utils@2.6.1` skips the hook; the package needs no install scripts.
+- **`husky: not found`** (on Windows, `'husky' is not recognized as an internal or external command`): versions 2.0.0 to 2.6.1 ran `husky install`, a development hook, when the package was installed, so `npm install` failed wherever husky wasn't installed globally, including CI runners. Upgrade to 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`. If you can't upgrade yet, `npm install --ignore-scripts @devilsdev/rag-pipeline-utils@2.6.1` skips the hook; the package needs no install scripts.
 - **Node.js version**: Node.js 22 or newer is required (`engines.node >= 22`); 2.x needs Node.js 18 or newer.
 - **`Cannot find module 'isolated-vm'`**: importing 2.4.5 failed in clean installs with this error. Upgrade to 2.5.0, where `isolated-vm` is an optional peer dependency loaded only when the experimental `PluginSandbox` runs. Install it yourself only if you use `PluginSandbox`.
 - **`pino-pretty`** is an optional peer dependency as well; install it only for pretty-printed logs.
@@ -348,8 +348,9 @@ missing from `scores` and listed in `metadata.metricsSkipped`. See
 
 **Metric Debugging**:
 
-Evaluation runs through the library, not the CLI. Score a single pair to
-isolate a metric:
+Run a whole test set with `rag-pipeline eval <dataset>` (see
+[CLI](./CLI.md#eval)), or score a single pair in the library to isolate a
+metric:
 
 ```javascript
 const { scoreAnswer } = require("@devilsdev/rag-pipeline-utils");
@@ -362,10 +363,12 @@ console.log(
 
 **Data Format Validation**:
 
-The package has no dataset validator. Check the fields your evaluation loop
-reads before running it:
+`rag-pipeline eval` validates the dataset before running it. From code,
+`validateDataset(cases)` returns `{ valid, errors, warnings, cases }`:
 
 ```javascript
+const { validateDataset } = require("@devilsdev/rag-pipeline-utils");
+
 const testData = [
   {
     id: "test-001",
@@ -374,14 +377,9 @@ const testData = [
   },
 ];
 
-const invalid = testData.filter(
-  (c) => typeof c.prompt !== "string" || typeof c.expected !== "string",
-);
-if (invalid.length) {
-  console.error(
-    "Invalid test cases:",
-    invalid.map((c) => c.id),
-  );
+const { valid, errors } = validateDataset(testData);
+if (!valid) {
+  console.error("Invalid test cases:", errors);
 }
 ```
 

@@ -241,6 +241,12 @@ export default function ConfigBuilder() {
               with <code>rag-pipeline init</code>.
             </p>
           )}
+          {(embedder === "openai" || llm === "openai") && (
+            <p>
+              Install the OpenAI SDK first: <code>npm install openai</code> (an
+              optional peer dependency since 3.0.0).
+            </p>
+          )}
           {env.length > 0 && (
             <p>
               Set{" "}

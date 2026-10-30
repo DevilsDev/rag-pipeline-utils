@@ -4,7 +4,7 @@ sidebar_position: 16
 
 # Code Examples
 
-Examples of common RAG Pipeline Utils use cases. They use the package's real exports; replace the provider connectors with the ones you use.
+Examples of common RAG Pipeline Utils use cases. They use the package's real exports; replace the provider connectors with the ones you use. Examples that use `OpenAIConnector` also need `npm install openai` (an optional peer dependency since 3.0.0).
 
 :::tip[Run the examples in your browser]
 

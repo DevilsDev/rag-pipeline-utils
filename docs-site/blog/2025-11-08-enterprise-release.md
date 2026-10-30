@@ -8,6 +8,10 @@ date: "2025-11-08"
 
 RAG Pipeline Utils v2.2.0 Enterprise Edition delivers production-ready infrastructure with advanced AI capabilities, comprehensive observability, and enterprise-grade security features. This release establishes the platform as a complete solution for mission-critical RAG deployments.
 
+<!-- truncate -->
+
+> **Editor's note (2.5.0):** several features described here were simulated or incomplete: multimodal processing, federated learning, adaptive retrieval, model training, plugin certification, SSO, multi-tenancy and data governance. Since 3.0.0 they are exported only from `@devilsdev/rag-pipeline-utils/experimental`. See [Experimental modules](/docs/Experimental) for what each one really does.
+
 ## Enterprise Features
 
 ### Advanced AI Capabilities

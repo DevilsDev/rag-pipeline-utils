@@ -22,9 +22,11 @@ yarn add @devilsdev/rag-pipeline-utils
 pnpm add @devilsdev/rag-pipeline-utils
 ```
 
+To use `OpenAIConnector`, also install the OpenAI SDK: `npm install openai`. It is an optional peer dependency (since 3.0.0), like `pg` for `PgVectorRetriever`.
+
 ### **System Requirements**
 
-- **Node.js**: >= 18.0.0
+- **Node.js**: >= 22 (2.x runs on Node.js 18 and later)
 - **Memory**: depends on corpus size; the in-memory and file-based retrievers keep the index in memory while running
 - **Storage**: varies with the vector store and document size
 

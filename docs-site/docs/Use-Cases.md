@@ -26,7 +26,7 @@ rag-pipeline --config configs/anthropic.json run --ingest ./docs --query "How do
 
 ### 2. Plugin-Based Evaluation Benchmarks
 
-**Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents. Evaluation is a library API (there is no CLI command for it):
+**Use Case:** You want to run BLEU/ROUGE scoring across prompt templates or documents. In code (to run a whole test set from the command line, use `rag-pipeline eval <dataset>`):
 
 ```js no-run
 const { scoreAnswer } = require("@devilsdev/rag-pipeline-utils");
@@ -52,7 +52,7 @@ const {
 } = require("@devilsdev/rag-pipeline-utils");
 
 // Index built earlier with `rag-pipeline ingest` from a config created by
-// `rag-pipeline init --template openai`; query vectors must come from the
+// `rag-pipeline init --template openai` (install `openai` too); query vectors must come from the
 // same embedder that built the index
 const store = new FileVectorStore({ path: ".rag/index.json" });
 

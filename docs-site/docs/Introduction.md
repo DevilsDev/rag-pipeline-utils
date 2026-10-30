@@ -46,11 +46,11 @@ Retrieval-Augmented Generation (RAG) is a powerful AI architecture that combines
 - **Evaluation**: faithfulness, answer relevance, context precision, context recall (with a reference answer) and groundedness via `PipelineEvaluator`
 - **Citations**: per-sentence source attribution and hallucination detection, including a numeric-consistency check
 - **Guardrails**: pre-retrieval injection detection, retrieval filtering (ACL, relevance, freshness, optional injection scan) and post-generation checks
-- **Reranking**: scoring, embedding, LLM and cascade rerankers
+- **Reranking**: scoring, embedding and cascade rerankers, plus Cohere's rerank API via `CohereConnector`
 
 ### **Developer Experience**
 
-- **CLI**: `init`, `ingest`, `query`, `run`, `serve`, `validate`, `doctor`, `hub` and `ai` against a local file-backed index
+- **CLI**: `init`, `ingest`, `query`, `run`, `eval`, `generate-dataset`, `serve`, `validate`, `doctor`, `info`, `config`, `hub` and `ai`
 - **Configuration Schema**: validated `.ragrc.json`
 - **Hot Reload**: `HotReloadManager` and `DevServer` for local development
 - **TypeScript**: declarations for every runtime export
@@ -95,15 +95,15 @@ graph TD
 
 Each stage is a plugin that implements one contract method: loader `load()`, embedder `embed()` (optionally `embedQuery()`), retriever `store()` and `retrieve()`, llm `generate()` (optionally `generateStream()`), reranker `rerank()`. Built-in implementations:
 
-| Stage     | Library classes                                                              | `.ragrc.json` names (CLI)             |
-| --------- | ---------------------------------------------------------------------------- | ------------------------------------- |
-| Loader    | (bring your own)                                                             | `auto` (.md, .html, .csv, .txt)       |
-| Embedder  | `LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`     | `local`, `openai`, `ollama`, `cohere` |
-| Retriever | `MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`    | `memory`, `file-store`                |
-| LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                   | `openai`, `anthropic`, `ollama`       |
-| Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector` | `scoring`                             |
+| Stage     | Library classes                                                                                                   | `.ragrc.json` names (CLI)                    |
+| --------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Loader    | (bring your own)                                                                                                  | `auto` (.md, .html, .csv, .txt)              |
+| Embedder  | `LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`                                          | `local`, `openai`, `ollama`, `cohere`        |
+| Retriever | `MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, `PgVectorRetriever`, `QdrantRetriever` | `memory`, `file-store`, `pgvector`, `qdrant` |
+| LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                                                        | `openai`, `anthropic`, `ollama`              |
+| Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector`                                      | `scoring`                                    |
 
-Hosted vector databases (Pinecone, Chroma, Weaviate, Qdrant and others) are not built in; connect them with a custom retriever plugin (see [Plugins](./Plugins.md)).
+Qdrant (`QdrantRetriever`) and PostgreSQL with pgvector (`PgVectorRetriever`, needs `npm install pg`) are built in. Connect other vector databases (Pinecone, Chroma, Weaviate and others) with a custom retriever plugin (see [Plugins](./Plugins.md)).
 
 ---
 
@@ -149,8 +149,8 @@ console.log("Answer:", response.answer); // null without an llm
 ### CLI Usage
 
 ```bash
-# Install globally
-npm install -g @devilsdev/rag-pipeline-utils
+# Install globally, with the OpenAI SDK the openai template uses
+npm install -g @devilsdev/rag-pipeline-utils openai
 
 # Write .ragrc.json in the current directory (OpenAI embeddings and LLM)
 rag-pipeline init --no-interactive --template openai
@@ -165,8 +165,9 @@ rag-pipeline query "What is the plugin architecture?"
 rag-pipeline serve --port 3000
 ```
 
-Evaluation and dashboards are library APIs (`PipelineEvaluator`,
-`DashboardGenerator`) rather than CLI commands; see
+Evaluate a test set from the command line with `rag-pipeline eval <dataset>`
+(it exits 1 on failures, low scores or regressions) and create one with
+`rag-pipeline generate-dataset`; in code, use `PipelineEvaluator`. See
 [Evaluation](./Evaluation.md). The full command list is in the
 [CLI Reference](./CLI.md).
 
@@ -207,7 +208,7 @@ SSO, multi-tenancy, data governance, model training, federated learning, multi-m
 
 ### Contributing
 
-We welcome contributions! See our [Contributing Guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CONTRIBUTING.md) for details on:
+We welcome contributions! See our [Contributing Guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md) for details on:
 
 - Setting up the development environment
 - Running tests and linting

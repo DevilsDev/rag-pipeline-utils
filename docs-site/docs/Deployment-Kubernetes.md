@@ -8,7 +8,7 @@ Deploy RAG Pipeline Utils on Kubernetes with production-grade configurations, He
 
 :::note What you deploy
 
-`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:2.5.0` refer to your application image built against version 2.5.0 of the package. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
+`@devilsdev/rag-pipeline-utils` is a library plus a CLI; it does not ship a production HTTP server. These guides deploy **your own** Node.js service or function that calls `createRagPipeline`. Dockerfiles, `/health` endpoints and image names such as `rag-pipeline-utils:3.0.0` refer to your application image built against version 3.0.0 of the package, which needs Node.js 22 or later. If your service uses `OpenAIConnector`, add `openai` to its dependencies (`npm install openai`): since 3.0.0 it is an optional peer dependency, and without it the connector rejects with `MISSING_DEPENDENCY`. `rag-pipeline serve` / `DevServer` is meant for local use: it binds to `127.0.0.1` by default and has no authentication, so do not expose it directly.
 
 :::
 
@@ -47,7 +47,7 @@ metadata:
   namespace: production
   labels:
     app: rag-pipeline
-    version: v2.5.0
+    version: v3.0.0
 spec:
   replicas: 3
   selector:
@@ -57,7 +57,7 @@ spec:
     metadata:
       labels:
         app: rag-pipeline
-        version: v2.5.0
+        version: v3.0.0
     spec:
       serviceAccountName: rag-pipeline
       securityContext:
@@ -66,7 +66,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: rag-app
-          image: your-registry.com/rag-pipeline-utils:2.5.0
+          image: your-registry.com/rag-pipeline-utils:3.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -201,7 +201,7 @@ data:
         {
           "stage": "retriever",
           "name": "file-store",
-          "config": { "path": "/data/index.json" }
+          "config": { "path": "/app/data/index.json" }
         },
         { "stage": "llm", "name": "openai", "config": { "model": "gpt-4o-mini" } }
       ]
@@ -266,8 +266,8 @@ helm/rag-pipeline/
 apiVersion: v2
 name: rag-pipeline
 description: RAG Pipeline Utils Helm Chart
-version: 2.5.0
-appVersion: "2.5.0"
+version: 3.0.0
+appVersion: "3.0.0"
 keywords:
   - rag
   - ai
@@ -286,7 +286,7 @@ replicaCount: 3
 
 image:
   repository: your-registry.com/rag-pipeline-utils
-  tag: "2.5.0"
+  tag: "3.0.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -628,7 +628,7 @@ spec:
     spec:
       containers:
         - name: rag-app
-          image: rag-pipeline:2.4.5
+          image: rag-pipeline:2.7.1
 ---
 # Green deployment
 apiVersion: apps/v1
@@ -649,7 +649,7 @@ spec:
     spec:
       containers:
         - name: rag-app
-          image: rag-pipeline:2.5.0
+          image: rag-pipeline:3.0.0
 ---
 # Service switches between blue and green
 apiVersion: v1
@@ -672,7 +672,7 @@ helm install rag-pipeline ./helm/rag-pipeline \
   --namespace production \
   --create-namespace \
   --values values-production.yaml \
-  --set image.tag=2.5.0 \
+  --set image.tag=3.0.0 \
   --set secrets.openaiApiKey=$OPENAI_API_KEY
 
 # Dry run first
@@ -688,7 +688,7 @@ helm install rag-pipeline ./helm/rag-pipeline \
 helm upgrade rag-pipeline ./helm/rag-pipeline \
   --namespace production \
   --values values-production.yaml \
-  --set image.tag=2.5.0 \
+  --set image.tag=3.0.0 \
   --wait --timeout 5m
 
 # Check rollout status

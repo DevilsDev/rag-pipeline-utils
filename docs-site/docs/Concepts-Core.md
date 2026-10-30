@@ -16,20 +16,20 @@ guardrails you bolt on top.
 > Today everything ships as one npm package. The conceptual modules
 > describe **what code is responsible for what** so you can reason
 > about blast radius, security review scope, and dependency footprint
-> without us splitting the codebase. A real monorepo split is on the
-> [roadmap](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/README.md#roadmap).
+> without us splitting the codebase. Splitting into scoped packages is on the
+> [roadmap](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.github/PROJECT_ROADMAP.md) for 3.x.
 
 ## What's in rag-core
 
-| Surface                                                                       | Purpose                                                                                                                                                                     |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createRagPipeline({ loader, embedder, retriever, llm, reranker, registry })` | The factory. Wires the components into a runnable pipeline and returns `{ run, cleanup }`.                                                                                  |
-| `run({ query, queryVector, options })`                                        | The main execution entry point. Resolves `{ success, query, results, answer, citations?, evaluation? }`; failures, timeouts and aborts resolve `{ success: false, error }`. |
-| `pluginRegistry`                                                              | Holds registered loader, embedder, retriever, reranker and LLM plugins by name. Validates them against the contract schemas in `contracts/`.                                |
-| Plugin contracts                                                              | JSON files in `contracts/` that define the required methods for each plugin type.                                                                                           |
-| Cancellation                                                                  | Each run creates an `AbortController`; its signal reaches every component call. `options.signal` lets callers cancel and `options.timeout` aborts the run.                  |
-| `retry` / `withRetry`                                                         | Retry helpers with backoff for your own components (the built-in connectors already retry transient failures).                                                              |
-| `logger`                                                                      | `pino`-based structured logger.                                                                                                                                             |
+| Surface                                                                              | Purpose                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache })` | The factory. Wires the components into a runnable pipeline and returns `{ run, cleanup, cacheStats }`; `cache` is described in [Caching](./Caching).                        |
+| `run({ query, queryVector, options })`                                               | The main execution entry point. Resolves `{ success, query, results, answer, citations?, evaluation? }`; failures, timeouts and aborts resolve `{ success: false, error }`. |
+| `pluginRegistry`                                                                     | Holds registered loader, embedder, retriever, reranker, LLM and evaluator plugins by name. Validates them against the contract schemas in `contracts/`.                     |
+| Plugin contracts                                                                     | JSON files in `contracts/` that define the required methods for each plugin type.                                                                                           |
+| Cancellation                                                                         | Each run creates an `AbortController`; its signal reaches every component call. `options.signal` lets callers cancel and `options.timeout` aborts the run.                  |
+| `retry` / `withRetry`                                                                | Retry helpers with backoff for your own components (the built-in connectors already retry transient failures).                                                              |
+| `logger`                                                                             | `pino`-based structured logger.                                                                                                                                             |
 
 ## Minimum viable pipeline
 
@@ -47,6 +47,7 @@ const pipeline = createRagPipeline({
   retriever: new MemoryRetriever(), // populate with retriever.store([...])
   llm: openai,
 });
+// OpenAIConnector needs the OpenAI SDK: npm install openai
 
 const result = await pipeline.run({ query: "What does X do?" });
 ```

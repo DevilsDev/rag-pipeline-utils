@@ -34,11 +34,11 @@ defined as a JSON schema in `contracts/`.
 | `GraphRetriever`           | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
 | `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector).                                                                    |
 | `QdrantRetriever`          | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant).                                                                                                                                              |
-| Pinecone, Weaviate, Qdrant | Build your own retriever using the documented contract — examples in [Examples](./Examples).                                                                                                                          |
+| Pinecone, Weaviate, others | Build your own retriever with the [retriever contract](./Plugins); [examples/openai-pinecone](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) adapts a Pinecone index.            |
 
 ### PostgreSQL with pgvector
 
-`PgVectorRetriever` keeps documents in a PostgreSQL table with the [pgvector](https://github.com/pgvector/pgvector) extension. Pass a [`pg`](https://www.npmjs.com/package/pg) Pool you manage, or a connection string and install `pg` (an optional dependency, loaded only when used):
+`PgVectorRetriever` keeps documents in a PostgreSQL table with the [pgvector](https://github.com/pgvector/pgvector) extension. Pass a [`pg`](https://www.npmjs.com/package/pg) Pool you manage, or a connection string and install `pg` yourself (`npm install pg`; an optional peer dependency, loaded only when used):
 
 ```javascript no-run
 import pg from "pg";
@@ -150,12 +150,12 @@ As with pgvector, the CLI's `local` embedder can't be used with it; use `openai`
 
 | Connector            | Notes                                                                                                                                   |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `OpenAIConnector`    | OpenAI Chat Completions (default model `gpt-4o-mini`) + streaming via `generateStream()`.                                               |
+| `OpenAIConnector`    | OpenAI Chat Completions (default model `gpt-4o-mini`) + streaming via `generateStream()`. Needs `npm install openai`.                   |
 | `AnthropicConnector` | Anthropic Messages API + streaming. Reads `ANTHROPIC_API_KEY`.                                                                          |
 | `OllamaConnector`    | Local Ollama server for offline development and self-hosted production.                                                                 |
 | Custom               | Implement the `llm` contract: `generate(query, docs, { signal, ...options })` returning a string, and optionally `generateStream(...)`. |
 
-All built-in connectors retry only transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`, fail fast with `MISSING_API_KEY` when no key is configured, honour the run's `AbortSignal`, and pass retrieved context to the model as delimited, untrusted reference data in the user message.
+All built-in connectors retry only transient failures (network errors, 408/409/425/429/5xx) with exponential backoff, jitter and `Retry-After`, fail fast with `MISSING_API_KEY` when a hosted API has no key configured (`OpenAIConnector` also rejects with `MISSING_DEPENDENCY` when the optional `openai` package isn't installed), honour the run's `AbortSignal`, and pass retrieved context to the model as delimited, untrusted reference data in the user message.
 
 ### OpenAI-compatible providers (`baseURL`)
 
@@ -253,4 +253,4 @@ is breaking and ships only in major versions.
 
 - [Plugins](./Plugins) — full plugin development guide
 - [Architecture](./Architecture.md#plugin-system) — internal plugin registry design
-- [Examples](./Examples) — recipe for a custom Pinecone retriever, custom embedder, etc.
+- [Plugins](./Plugins) — writing a custom retriever or embedder; [examples/openai-pinecone](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) adapts a Pinecone index
