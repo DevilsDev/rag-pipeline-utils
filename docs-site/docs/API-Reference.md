@@ -540,7 +540,7 @@ Built-in prices are unverified. Pass the `pricing` or `customPricing` option to 
 
 :::warning Experimental
 
-`MultiModalProcessor`, `AdaptiveRetrievalEngine`, `ModelTrainingOrchestrator` and `FederatedLearningCoordinator` are simulations. They are exported from `@devilsdev/rag-pipeline-utils/experimental`, and from 3.0.0 only from there (2.x also exports them from the main entry, with a one-time `DeprecationWarning`). See [Experimental modules](./Experimental) for what each one really does.
+`MultiModalProcessor`, `AdaptiveRetrievalEngine`, `ModelTrainingOrchestrator` and `FederatedLearningCoordinator` are simulations. They are exported only from `@devilsdev/rag-pipeline-utils/experimental` (2.x also exported them from the main entry, with a one-time `DeprecationWarning`). See [Experimental modules](./Experimental) for what each one really does.
 
 :::
 
@@ -1021,7 +1021,7 @@ Experimental modules are deprecated on the main entry: `ModelTrainingOrchestrato
 
 ## Version Information
 
-Supported Node.js versions: 22 and later from 3.0.0 (CI runs on Node.js 22 and 24); 2.x supports 18 and later. The release history is in the [CHANGELOG](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md).
+Supported Node.js versions: 22 and later (CI runs on Node.js 22 and 24); 2.x supports 18 and later. The release history is in the [CHANGELOG](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md).
 
 ## Further Reading
 

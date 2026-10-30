@@ -117,7 +117,7 @@ release.
 Dropping support for a Node version is a **breaking change** and
 lands only in major releases.
 
-Current: **Node.js ≥ 22**, from 3.0.0. Node 18 and 20 have reached end
+Current: **Node.js ≥ 22** (since 3.0.0). Node 18 and 20 have reached end
 of life; 22 is in maintenance until April 2027 and 24 is the active LTS.
 
 ## Supported release lines

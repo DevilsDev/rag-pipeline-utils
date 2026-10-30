@@ -219,7 +219,7 @@ We welcome contributions! See our [Contributing Guide](https://github.com/Devils
 
 _Ready to build powerful RAG applications? Continue to the [Architecture](./Architecture.md) guide to understand the system design, or jump to [Usage](./Usage.md) for hands-on examples._
 
-- Compatible with Node.js `>=22` (from 3.0.0; 2.x runs on Node.js 18 and later)
+- Compatible with Node.js `>=22` (2.x runs on Node.js 18 and later)
 - Published to npm as `@devilsdev/rag-pipeline-utils`
 
 ---

@@ -30,11 +30,11 @@ Experimental modules are **not** covered by the guarantees in [SEMVER.md](https:
 
 ## Migrating from the main entry
 
-From 3.0.0 these classes are exported only from `@devilsdev/rag-pipeline-utils/experimental`. Importing one from the main entry gives `undefined` in JavaScript and a compile error in TypeScript.
+Since 3.0.0 these classes are exported only from `@devilsdev/rag-pipeline-utils/experimental`. Importing one from the main entry gives `undefined` in JavaScript and a compile error in TypeScript.
 
-In 2.x they are also exported from the main entry, but deprecated there: using one (constructing it or calling a static method) prints a one-time `DeprecationWarning` with a code such as `RAG_DEP_TENANT_MANAGER`, and their type declarations are marked `@deprecated`.
+In 2.x they were also exported from the main entry, but deprecated there: using one (constructing it or calling a static method) prints a one-time `DeprecationWarning` with a code such as `RAG_DEP_TENANT_MANAGER`, and their type declarations are marked `@deprecated`.
 
-To migrate, change the import path. In 2.x the classes are the same objects in both entries, so `instanceof` checks keep working while you move imports one at a time:
+To migrate, change the import path. In 2.x the classes are the same objects in both entries, so you can move imports one at a time before upgrading to 3.0:
 
 ```diff
 - import { TenantManager } from "@devilsdev/rag-pipeline-utils";

@@ -16,13 +16,13 @@ defined as a JSON schema in `contracts/`.
 
 ### Embedders
 
-| Connector          | Notes                                                                                                                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OpenAIConnector`  | `embed()` / `embedQuery()` via OpenAI embeddings (`embeddingModel`, default `text-embedding-3-small`). Reads `OPENAI_API_KEY`. From 3.0.0 it needs the `openai` package: `npm install openai`. |
-| `CohereConnector`  | `embed()` / `embedQuery()` via Cohere embed; also `rerank()`. Reads `COHERE_API_KEY`.                                                                                                          |
-| `OllamaConnector`  | `embed()` / `embedQuery()` against a local Ollama server.                                                                                                                                      |
-| `LocalEmbedder`    | Pure-JS TF-IDF for development, tests and small corpora. No network. Fit it with `train(documents)`; `getState()` / `setState()` persist the vocabulary.                                       |
-| Custom (your code) | Implement the `embedder` contract: `embed(text, { signal })` returning `number[]` (optionally `embedQuery()` for queries).                                                                     |
+| Connector          | Notes                                                                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OpenAIConnector`  | `embed()` / `embedQuery()` via OpenAI embeddings (`embeddingModel`, default `text-embedding-3-small`). Reads `OPENAI_API_KEY`. Needs the `openai` package: `npm install openai`. |
+| `CohereConnector`  | `embed()` / `embedQuery()` via Cohere embed; also `rerank()`. Reads `COHERE_API_KEY`.                                                                                            |
+| `OllamaConnector`  | `embed()` / `embedQuery()` against a local Ollama server.                                                                                                                        |
+| `LocalEmbedder`    | Pure-JS TF-IDF for development, tests and small corpora. No network. Fit it with `train(documents)`; `getState()` / `setState()` persist the vocabulary.                         |
+| Custom (your code) | Implement the `embedder` contract: `embed(text, { signal })` returning `number[]` (optionally `embedQuery()` for queries).                                                       |
 
 ### Retrievers / Vector stores
 
