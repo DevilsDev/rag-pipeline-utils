@@ -10,8 +10,8 @@ files deploy **your** image of the example service in
 
 ```bash
 cd examples/fastify-rag-demo
-docker build -t your-registry.example.com/rag-fastify-demo:3.0.1 .
-docker push your-registry.example.com/rag-fastify-demo:3.0.1
+docker build -t your-registry.example.com/rag-fastify-demo:3.0.2 .
+docker push your-registry.example.com/rag-fastify-demo:3.0.2
 ```
 
 Its `README.md` explains the settings (`OPENAI_API_KEY`, `RAG_OFFLINE=1` for a

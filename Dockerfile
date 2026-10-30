@@ -8,7 +8,7 @@
 # - `development` is used by docker-compose.yml.
 #
 # No image is published; build it yourself:
-#   docker build -t rag-pipeline-cli --build-arg VERSION=3.0.1 .
+#   docker build -t rag-pipeline-cli --build-arg VERSION=3.0.2 .
 
 # ================================
 # Stage 1: Base Dependencies
@@ -66,11 +66,38 @@ RUN npm prune --omit=dev && \
     npm cache clean --force
 
 # ================================
-# Stage 4: Production Runtime
+# Stage 4: Development (docker-compose.yml)
+# ================================
+FROM deps AS development
+
+# Copy source code
+COPY . .
+
+# Install development tools
+RUN npm install -g nodemon
+
+# Set development environment
+ENV NODE_ENV=development
+ENV RAG_PIPELINE_ENV=development
+ENV RAG_LOG_LEVEL=debug
+
+# Switch to non-root user
+USER ragpipeline
+
+# Port for `rag-pipeline serve --host 0.0.0.0` while developing.
+# The debugger port (9229) is not exposed; see docker-compose.yml.
+EXPOSE 3000
+
+# Development entrypoint
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["npm", "run", "dev"]
+
+# ================================
+# Stage 5: Runtime, the CLI image (last stage, so the default target)
 # ================================
 FROM base AS runtime
 
-ARG VERSION=3.0.1
+ARG VERSION=3.0.2
 
 ENV NODE_ENV=production
 
@@ -99,30 +126,3 @@ LABEL org.opencontainers.image.title="rag-pipeline CLI" \
 # dumb-init forwards signals; arguments after the image name go to the CLI.
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "node", "/app/bin/cli.js"]
 CMD ["--help"]
-
-# ================================
-# Stage 5: Development
-# ================================
-FROM deps AS development
-
-# Copy source code
-COPY . .
-
-# Install development tools
-RUN npm install -g nodemon
-
-# Set development environment
-ENV NODE_ENV=development
-ENV RAG_PIPELINE_ENV=development
-ENV RAG_LOG_LEVEL=debug
-
-# Switch to non-root user
-USER ragpipeline
-
-# Port for `rag-pipeline serve --host 0.0.0.0` while developing.
-# The debugger port (9229) is not exposed; see docker-compose.yml.
-EXPOSE 3000
-
-# Development entrypoint
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["npm", "run", "dev"]

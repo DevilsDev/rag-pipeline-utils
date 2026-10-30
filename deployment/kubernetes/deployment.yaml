@@ -32,7 +32,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: app
-          image: your-registry.example.com/rag-fastify-demo:3.0.1
+          image: your-registry.example.com/rag-fastify-demo:3.0.2
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

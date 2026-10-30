@@ -5,8 +5,8 @@ apiVersion: v2
 name: rag-pipeline
 description: Example RAG HTTP service built with @devilsdev/rag-pipeline-utils
 type: application
-version: 3.0.1
-appVersion: "3.0.1"
+version: 3.0.2
+appVersion: "3.0.2"
 home: https://github.com/DevilsDev/rag-pipeline-utils
 sources:
   - https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo
