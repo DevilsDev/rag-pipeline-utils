@@ -11,6 +11,14 @@ page.
 
 ## [Unreleased]
 
+Planned for 3.0.0.
+
+### Changed
+
+- **Breaking: Node.js 22 or later is required** (`engines.node >= 22`).
+  Node 18 and 20 have reached end of life; CI tests Node 22 and 24. Stay
+  on 2.x to run on Node 18 or 20.
+
 ## [2.7.1] - 2026-10-30
 
 ### Fixed

@@ -1021,7 +1021,7 @@ Experimental modules are deprecated on the main entry: `ModelTrainingOrchestrato
 
 ## Version Information
 
-Supported Node.js versions: 18 and later (CI runs on Node.js 18, 20 and 22). The release history is in the [CHANGELOG](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md).
+Supported Node.js versions: 22 and later from 3.0.0 (CI runs on Node.js 22 and 24); 2.x supports 18 and later. The release history is in the [CHANGELOG](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md).
 
 ## Further Reading
 

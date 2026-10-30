@@ -37,7 +37,7 @@
     "rag-pipeline": "./bin/cli.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "build": "node scripts/build.js && node scripts/generate-types.js && node scripts/check-type-exports.js",

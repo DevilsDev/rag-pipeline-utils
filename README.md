@@ -50,7 +50,7 @@
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-Requires Node.js 18 or later. The package ships CommonJS, ESM and TypeScript declarations.
+Requires Node.js 22 or later (from 3.0.0; 2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
 
 > **`npm install` failed with `husky: not found`?** Versions 2.2.1 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
 
@@ -544,7 +544,7 @@ They are still exported from the main entry in 2.x with a one-time deprecation w
 
 |                |                                                                                                      |
 | -------------- | ---------------------------------------------------------------------------------------------------- |
-| Node.js        | 18, 20, 22 (Node 18 support ends with 3.0)                                                           |
+| Node.js        | 22 and 24                                                                                            |
 | Module formats | CommonJS (`require`) and ESM (`import`)                                                              |
 | TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI |
 | Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md)                            |

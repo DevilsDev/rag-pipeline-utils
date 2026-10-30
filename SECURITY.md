@@ -10,9 +10,9 @@ minor version ships, the previous line receives one more patch window of
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 2.5.x   | :white_check_mark:                                           |
-| 2.4.x   | Security fixes for 30 days after the 2.5.0 release, then :x: |
-| < 2.4   | :x:                                                          |
+| 2.7.x   | :white_check_mark:                                           |
+| 2.6.x   | Security fixes for 30 days after the 2.7.0 release, then :x: |
+| < 2.6   | :x:                                                          |
 
 ## Reporting a Vulnerability
 
