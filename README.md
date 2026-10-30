@@ -50,9 +50,9 @@
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-Requires Node.js 22 or later (from 3.0.0; 2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
+Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
 
-To use `OpenAIConnector`, install the OpenAI SDK as well. From 3.0.0 it is an optional peer dependency, so installs that don't use OpenAI skip it:
+To use `OpenAIConnector`, install the OpenAI SDK as well. It is an optional peer dependency, so installs that don't use OpenAI skip it:
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils openai
@@ -517,13 +517,13 @@ Choose LangChain.js for the widest integration catalogue or work that goes well 
 
 ## Connectors and plugins
 
-| Connector            | Embeddings | Generation | Notes                                                                                                                           |
-| -------------------- | :--------: | :--------: | ------------------------------------------------------------------------------------------------------------------------------- |
-| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`; `baseURL` for OpenAI-compatible APIs (Groq, Together, vLLM, LM Studio); needs `npm install openai` from 3.0.0 |
-| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                                                                                                             |
-| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY`                                                                                      |
-| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                                                            |
-| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                                                           |
+| Connector            | Embeddings | Generation | Notes                                                                                                                |
+| -------------------- | :--------: | :--------: | -------------------------------------------------------------------------------------------------------------------- |
+| `OpenAIConnector`    |     ✓      |     ✓      | `OPENAI_API_KEY`; `baseURL` for OpenAI-compatible APIs (Groq, Together, vLLM, LM Studio); needs `npm install openai` |
+| `AnthropicConnector` |            |     ✓      | `ANTHROPIC_API_KEY`                                                                                                  |
+| `CohereConnector`    |     ✓      |            | Embeddings and reranking, `COHERE_API_KEY`                                                                           |
+| `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                                                 |
+| `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                                                |
 
 `PgVectorRetriever` and `QdrantRetriever` store and search documents in PostgreSQL with pgvector and in Qdrant ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
 
@@ -546,17 +546,18 @@ Simulated or incomplete modules live under a separate entry point and are not co
 import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
 ```
 
-From 3.0.0 they are exported only from `/experimental`; 2.x also exports them from the main entry, with a one-time deprecation warning. Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
+They are exported only from `/experimental`, not from the main entry (2.x also exported them there, with a deprecation warning). Do not use them for authentication, tenant isolation or compliance. The [Experimental modules](https://devilsdev.github.io/rag-pipeline-utils/docs/Experimental) page describes what each one really does.
 
 ## Compatibility
 
-|                |                                                                                                      |
-| -------------- | ---------------------------------------------------------------------------------------------------- |
-| Node.js        | 22 and 24                                                                                            |
-| Module formats | CommonJS (`require`) and ESM (`import`)                                                              |
-| TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI |
-| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md)                            |
-| Supply chain   | Published from GitHub Actions with npm provenance                                                    |
+|                |                                                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js        | 22 and 24                                                                                                                                          |
+| Module formats | CommonJS (`require`) and ESM (`import`)                                                                                                            |
+| Optional peers | `openai` for `OpenAIConnector`, `pg` for `PgVectorRetriever`, `isolated-vm` 6+ for the experimental `PluginSandbox`, `pino-pretty` for pretty logs |
+| TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI                                               |
+| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md)                                                                          |
+| Supply chain   | Published from GitHub Actions with npm provenance                                                                                                  |
 
 ## Documentation
 

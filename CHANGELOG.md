@@ -11,7 +11,13 @@ page.
 
 ## [Unreleased]
 
-Planned for 3.0.0.
+## [3.0.0] - 2026-10-30
+
+A major release that removes what 2.x deprecated and changes the runtime
+requirements. The pipeline API, plugin contracts, configuration files and
+CLI commands are unchanged. See
+[Upgrading to v3.0.0](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300)
+for the steps.
 
 ### Changed
 
@@ -775,6 +781,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.0.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.0
 [2.7.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.1
 [2.7.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.7.0
 [2.6.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v2.6.2

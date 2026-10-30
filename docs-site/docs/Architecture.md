@@ -247,7 +247,7 @@ Built-in LLM connectors put retrieved context in the user message as delimited, 
 
 ## Experimental Modules
 
-Some classes are simulations or incomplete: `ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, the SSO providers (`SSOManager`, `SAMLProvider`, `OAuth2Provider`, `OIDCProvider`, `ActiveDirectoryProvider`), `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`. Since 2.5.0 they are exported from `@devilsdev/rag-pipeline-utils/experimental`. From 3.0.0 the main entry no longer exports them (2.x does, with a one-time `DeprecationWarning`). They are not part of the architecture described on this page; see [Experimental](./Experimental.md) for what each one really does.
+Some classes are simulations or incomplete: `ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, the SSO providers (`SSOManager`, `SAMLProvider`, `OAuth2Provider`, `OIDCProvider`, `ActiveDirectoryProvider`), `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`. Since 2.5.0 they are exported from `@devilsdev/rag-pipeline-utils/experimental`. Since 3.0.0 the main entry no longer exports them. They are not part of the architecture described on this page; see [Experimental](./Experimental.md) for what each one really does.
 
 ---
 
