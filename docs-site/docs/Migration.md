@@ -6,6 +6,55 @@ This guide helps you upgrade between versions of **@devilsdev/rag-pipeline-utils
 
 ## **Version Migration**
 
+### **Upgrading to v3.0.0**
+
+```bash
+npm install @devilsdev/rag-pipeline-utils@^3.0.0
+```
+
+3.0.0 removes what 2.x deprecated and changes the runtime requirements. The pipeline API, plugin contracts, configuration files and CLI commands don't change. Work through these in order; most projects need only the first two.
+
+**1. Node.js 22 or later.** Node 18 and 20 have reached end of life, and CI tests Node 22 and 24. Check with `node --version`. If you can't upgrade Node yet, stay on 2.7.x, which runs on Node 18 and later.
+
+**2. Install `openai` if you use `OpenAIConnector`.** The OpenAI SDK is now an optional peer dependency, so installs that don't use OpenAI skip it (a clean install is 47 MB instead of 58 MB):
+
+```bash
+npm install openai
+```
+
+Any version from 4.93 works, so a project that already uses `openai` keeps its own copy. You need it when your code creates an `OpenAIConnector`, or when your `.ragrc.json` uses `"name": "openai"` for the embedder or LLM. Without it, `generate()`, `embed()` and `generateStream()` reject with code `MISSING_DEPENDENCY`. The other connectors (Anthropic, Cohere, Ollama, `LocalEmbedder`) need nothing extra.
+
+**3. Import experimental classes from `/experimental`.** These classes are no longer exported from the main entry:
+
+`ModelTrainingOrchestrator`, `FederatedLearningCoordinator`, `MultiModalProcessor`, `AdaptiveRetrievalEngine`, `SSOManager`, `SAMLProvider`, `OAuth2Provider`, `ActiveDirectoryProvider`, `OIDCProvider`, `TenantManager`, `ResourceMonitor`, `DataGovernanceManager` / `DataGovernance`, `PluginSandbox` and `PluginCertification`.
+
+```diff
+- import { TenantManager } from "@devilsdev/rag-pipeline-utils";
++ import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
+```
+
+From the main entry they are now `undefined` in JavaScript and a compile error in TypeScript. To find the imports to change, run your app or tests on 2.7.x with `--trace-deprecation`: each `RAG_DEP_*` warning then shows the line in your code that uses one. 2.5.0 to 2.7.x export the same classes from both entries, so you can change the imports before upgrading.
+
+**4. TypeScript: replace the removed types.** 2.7.0 corrected the declarations and deprecated the types below, because they didn't describe what the code reads or returns. 3.0.0 removes them:
+
+| Removed                 | Use instead                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| `LoadConfigOptions`     | `loadConfig(path)` takes the file path as a string            |
+| `LLMResponse`           | `LLMPlugin`; `generate()` returns the answer text             |
+| `DAGNode`, `DAGOptions` | `Parameters<DAG["addNode"]>`, `Parameters<DAG["execute"]>[1]` |
+| `ErrorFormatter`        | `typeof errorFormatter`                                       |
+| `EvalResult`            | `Awaited<ReturnType<typeof evaluateRagDataset>>`              |
+| `Document.embedding`    | `Document.vector`, the field the built-in retrievers read     |
+
+**5. `PluginSandbox` needs `isolated-vm` 6.** If you installed the optional `isolated-vm` peer for the experimental `PluginSandbox`, upgrade it: `npm install isolated-vm@6`. Version 5 doesn't build on Node 24.
+
+**Behaviour changes to check**:
+
+- **`OpenAIConnector` retries timeouts.** A request the OpenAI SDK reports as a connection timeout is now retried up to the connector's `maxRetries` (default 3); 2.x failed it on the first attempt. Refused connections are retried as before. A request against an unresponsive server therefore takes longer to fail; lower `maxRetries` if you want it to fail fast.
+- **No deprecation warnings.** The one-time `RAG_DEP_*` warnings are gone along with the deprecated exports, and importing the package no longer loads the experimental modules.
+
+**To roll back**, install the last 2.x release: `npm install @devilsdev/rag-pipeline-utils@^2.7.1`.
+
 ### **Upgrading to v2.5.0**
 
 ```bash
