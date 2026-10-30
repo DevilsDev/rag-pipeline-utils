@@ -29,3 +29,5 @@ __tests__/fixtures/**
 **/.ico
 # git worktrees of this repo (full copies)
 .claude/
+# Helm templates are Go templates, not plain YAML
+deployment/helm/*/templates/
