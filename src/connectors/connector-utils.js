@@ -210,14 +210,23 @@ function isRetryableError(err) {
   if (status !== undefined) {
     return RETRYABLE_STATUS.has(status) || (status >= 500 && status <= 599);
   }
-  const code = err.code || (err.cause && err.cause.code);
-  if (typeof code === 'string') {
-    if (RETRYABLE_CODES.has(code) || code.startsWith('UND_ERR_')) return true;
-  }
-  if (RETRYABLE_NAMES.has(err.name)) return true;
-  // fetch() network failures surface as TypeError('fetch failed').
-  if (err.name === 'TypeError' && /fetch failed/i.test(err.message || '')) {
-    return true;
+  // Network failures arrive wrapped: openai 5+ throws an APIConnectionError
+  // whose cause is fetch's TypeError('fetch failed'), whose cause carries
+  // the socket error code. Look a few levels down the cause chain.
+  for (let e = err, depth = 0; e && depth < 4; e = e.cause, depth++) {
+    if (typeof e.code === 'string') {
+      if (RETRYABLE_CODES.has(e.code) || e.code.startsWith('UND_ERR_')) {
+        return true;
+      }
+    }
+    // The SDK's error classes keep name 'Error'; match the class name too.
+    const className = e.constructor && e.constructor.name;
+    if (RETRYABLE_NAMES.has(e.name) || RETRYABLE_NAMES.has(className)) {
+      return true;
+    }
+    if (e.name === 'TypeError' && /fetch failed/i.test(e.message || '')) {
+      return true;
+    }
   }
   return false;
 }

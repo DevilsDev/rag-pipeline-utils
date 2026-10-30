@@ -20,6 +20,19 @@ Planned for 3.0.0.
   on 2.x to run on Node 18 or 20.
 - **`PluginSandbox` needs `isolated-vm` 6 or later** (the optional peer
   dependency was `>=5.0.0`). isolated-vm 5 doesn't build on Node 24.
+- **The `openai` SDK is now 7.x** (was `^4.93`). `OpenAIConnector`'s
+  options and results are unchanged. openai 7 uses Node's built-in `fetch`
+  and has no dependencies of its own, so 11 packages leave the install
+  tree.
+
+### Fixed
+
+- **Connector retries missed network failures.** The openai SDK's
+  connection errors keep `name: "Error"`, so `APIConnectionError` and
+  `APIConnectionTimeoutError` were never retried; with openai 7 a refused
+  connection wasn't retried either, because the socket error code sits one
+  level deeper in `error.cause`. `isRetryableError` now matches the error
+  class and walks the cause chain.
 
 ### Removed
 
