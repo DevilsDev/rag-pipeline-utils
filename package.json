@@ -112,6 +112,7 @@
     "verify:pack": "node scripts/verify-npm-pack.js",
     "smoke:pack": "node scripts/smoke-test-pack.js",
     "demo:record": "vhs assets/demo.tape",
+    "demo:record:eval": "vhs assets/eval-demo.tape",
     "verify": "npm run lint && npm run typecheck --if-present && npm test",
     "sbom": "node scripts/generate-sbom.js",
     "observability:setup": "node scripts/setup-observability.js",

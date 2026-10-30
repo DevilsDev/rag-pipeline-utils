@@ -218,6 +218,19 @@ console.log(report.scores); // includes contextRecall because a reference was gi
 if (report.scores.faithfulness < 0.8) process.exitCode = 1;
 ```
 
+From the command line, `rag-pipeline eval` runs the whole set, saves a report and fails the job when scores fall below a minimum or drop from a saved baseline:
+
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/eval-demo.gif" alt="Terminal recording: rag-pipeline eval passes three test cases with faithfulness 1.0 and saves main.json; after a change makes answers stop using the documents, the same eval with --baseline main.json lists the regressed metrics and cases, prints Evaluation failed and exits 1" width="720">
+</p>
+
+```bash
+npx rag-pipeline eval tests.json --min faithfulness=0.8 --output main.json   # on main
+npx rag-pipeline eval tests.json --baseline main.json                        # on a pull request
+```
+
+The recording runs offline with the local embedder and a stand-in LLM; its files are in [`assets/eval-demo`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/assets/eval-demo).
+
 Keep the question set in a JSON file of `{ prompt, expected, sourceIds }` cases; `generateSyntheticDataset` (or `rag-pipeline generate-dataset`) drafts one from your documents for you to review. `validateDataset` checks it before a run and reports every malformed case, with its index and field; `runEvaluation` runs it and saves a JSON report, which `renderEvaluationReport` turns into Markdown or HTML; and `compareConfigurations` compares two pipelines, or a pipeline against the report saved from your main branch, and lists the cases that got worse. See the [dataset format](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#dataset-format).
 
 On GitHub, [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs this on every pull request, compares it with your main branch and posts the summary as a comment.
