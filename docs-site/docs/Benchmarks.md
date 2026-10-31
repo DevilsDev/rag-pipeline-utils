@@ -182,7 +182,8 @@ run `node benchmarks/render.js` to update this page. CI fails when the page and 
 
 For the pipeline in your `.ragrc.json` and its ingested index,
 `rag-pipeline ai benchmark` reports measured p50, p95 and mean latency per
-stage (`--queries <file>`, `--runs <n>`, `--top-k <n>`, `--json`). See the
+stage (`--queries <file>`, `--runs <n>`, `--top-k <n>`, `--json`), and from
+3.2.0 the time to first token of streamed answers (`--streaming`). See the
 [CLI reference](./CLI.md). For a full end-to-end harness, see the
 [methodology in BENCHMARKS.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/BENCHMARKS.md#end-to-end-benchmarking-your-pipeline).
 

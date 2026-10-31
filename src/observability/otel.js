@@ -109,12 +109,23 @@ function markError(tel, span, error) {
 
 /**
  * A stream whose span ends when the stream finishes, fails or is stopped
- * early (return()).
+ * early (return()). The first chunk sets `gen_ai.response.time_to_first_chunk`
+ * (seconds since the call was made).
  */
-function streamInSpan(tel, span, source) {
+function streamInSpan(tel, span, source, startedAt) {
   return (async function* traced() {
+    let first = true;
     try {
-      yield* await source;
+      for await (const chunk of await source) {
+        if (first) {
+          first = false;
+          span.setAttribute(
+            'gen_ai.response.time_to_first_chunk',
+            (performance.now() - startedAt) / 1000,
+          );
+        }
+        yield chunk;
+      }
     } catch (error) {
       markError(tel, span, error);
       throw error;
@@ -237,6 +248,7 @@ function instrument(tel, kind, component) {
         if (prop === 'generateStream') {
           // The span outlives this call: it ends with the stream.
           return tel.tracer.startActiveSpan(spec.name, options, (span) => {
+            const startedAt = performance.now();
             let source;
             try {
               source = value.apply(target, args);
@@ -245,7 +257,7 @@ function instrument(tel, kind, component) {
               span.end();
               throw error;
             }
-            return streamInSpan(tel, span, source);
+            return streamInSpan(tel, span, source, startedAt);
           });
         }
         return inSpan(tel, spec.name, options, async (span) => {
@@ -276,6 +288,9 @@ function runAttributes(tel, result) {
     for (const [layer, outcome] of Object.entries(result.cache)) {
       attributes[`rag.cache.${layer}`] = outcome;
     }
+  }
+  if (result.timing) {
+    attributes['rag.time_to_first_token_ms'] = result.timing.firstTokenMs;
   }
   if (result.packing) {
     attributes['rag.packing.tokens'] = result.packing.tokens;

@@ -154,6 +154,15 @@ export interface PipelineRunResult {
   };
   /** What \`maxContextTokens\` kept and cut; present when it was set. */
   packing?: ContextPacking;
+  /** How long the run took, from the start of run(); on successful results. */
+  timing?: { totalMs: number };
+}
+
+/** When a streamed answer started and finished, from the start of run(). */
+export interface StreamTiming {
+  /** When the first non-empty token arrived; null when none did. */
+  firstTokenMs: number | null;
+  totalMs: number;
 }
 
 /** How the documents were fitted into \`maxContextTokens\`. */
@@ -182,6 +191,8 @@ export interface StreamChunk {
   evaluation?: any;
   /** On the last chunk, when \`maxContextTokens\` was set. */
   packing?: ContextPacking;
+  /** On the last chunk: time to first token and total time. */
+  timing?: StreamTiming;
 }
 
 /** A pipeline returned by {@link createRagPipeline}. */

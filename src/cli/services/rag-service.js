@@ -318,7 +318,9 @@ async function retrieve({ components, config, configDir, question, topK = 3 }) {
  * @param {function(string): void} [params.onToken] - Stream the answer: called
  *   with each token (only with an llm stage)
  * @returns {Promise<{answer: string|null, results: Array, citations?: object,
- *   timings: Array<{stage: string, ms: number}>, durationMs: number}>}
+ *   timings: Array<{stage: string, ms: number}>, durationMs: number,
+ *   firstTokenMs?: number|null}>} `firstTokenMs` (streamed answers only) is
+ *   when the first token arrived, from the start of the run
  */
 async function query({
   config,
@@ -354,12 +356,16 @@ async function query({
   if (stream) {
     let answer = "";
     let citations;
+    let firstTokenMs = null;
     for await (const chunk of result) {
       if (chunk.token) {
         answer += chunk.token;
         onToken(chunk.token);
       }
-      if (chunk.done) citations = chunk.citations;
+      if (chunk.done) {
+        citations = chunk.citations;
+        firstTokenMs = chunk.timing ? chunk.timing.firstTokenMs : null;
+      }
     }
     return {
       answer,
@@ -367,6 +373,7 @@ async function query({
       citations,
       timings,
       durationMs: performance.now() - started,
+      firstTokenMs,
     };
   }
 

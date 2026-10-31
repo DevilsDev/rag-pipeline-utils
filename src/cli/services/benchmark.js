@@ -72,6 +72,8 @@ async function timed(fn) {
  * @param {string} [params.queriesFile]
  * @param {number} [params.runs=3] - Passes over the query set
  * @param {number} [params.topK=3]
+ * @param {boolean} [params.streaming=false] - Stream the end-to-end answers
+ *   and measure time to first token (needs an llm stage)
  * @returns {Promise<object>} Measured report
  */
 async function runBenchmark({
@@ -80,6 +82,7 @@ async function runBenchmark({
   queriesFile,
   runs = 3,
   topK = 3,
+  streaming = false,
 }) {
   const setup = await timed(() => loadComponents({ config, configDir }));
   const components = setup.value;
@@ -94,12 +97,26 @@ async function runBenchmark({
     );
   }
 
-  // First query pays one-time costs (lazy init, JIT); reported, not counted.
-  const warmup = await timed(() =>
-    query({ components, question: queries[0], topK }),
-  );
+  // Streaming only changes anything with an llm: it measures first tokens.
+  const streamed = Boolean(streaming && llm);
+  const ask = (question) =>
+    query({
+      components,
+      question,
+      topK,
+      ...(streamed && { onToken: () => {} }),
+    });
 
-  const samples = { embed: [], retrieve: [], rerank: [], endToEnd: [] };
+  // First query pays one-time costs (lazy init, JIT); reported, not counted.
+  const warmup = await timed(() => ask(queries[0]));
+
+  const samples = {
+    embed: [],
+    retrieve: [],
+    rerank: [],
+    firstToken: [],
+    endToEnd: [],
+  };
   const resultCounts = [];
   for (let run = 0; run < runs; run++) {
     for (const question of queries) {
@@ -119,7 +136,10 @@ async function runBenchmark({
         );
         samples.rerank.push(reranked.ms);
       }
-      const e2e = await timed(() => query({ components, question, topK }));
+      const e2e = await timed(() => ask(question));
+      if (streamed && e2e.value.firstTokenMs != null) {
+        samples.firstToken.push(e2e.value.firstTokenMs);
+      }
       samples.endToEnd.push(e2e.ms);
       resultCounts.push(e2e.value.results.length);
     }
@@ -129,6 +149,9 @@ async function runBenchmark({
     embed: summarize(samples.embed),
     retrieve: summarize(samples.retrieve),
     ...(reranker && { rerank: summarize(samples.rerank) }),
+    ...(samples.firstToken.length && {
+      firstToken: summarize(samples.firstToken),
+    }),
     endToEnd: summarize(samples.endToEnd),
   };
 
@@ -141,6 +164,7 @@ async function runBenchmark({
     warmupMs: warmup.ms,
     stages,
     includesGeneration: Boolean(llm),
+    streaming: streamed,
     results: {
       min: Math.min(...resultCounts),
       max: Math.max(...resultCounts),

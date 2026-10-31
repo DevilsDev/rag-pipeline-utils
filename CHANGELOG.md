@@ -37,6 +37,17 @@ ingest` builds and returns passages with their sources, offline and
   own: it builds tool definitions and handles calls, and needs a transport
   such as this example's.
 
+- **Time to first token.** A streamed answer's done chunk carries
+  `timing: { firstTokenMs, totalMs }`, measured from the call to `run()`,
+  so the first-token time includes retrieval and reranking: the wait the
+  user sees. Non-streamed results carry `timing: { totalMs }`. With
+  `telemetry`, the `chat` span records `gen_ai.response.time_to_first_chunk`
+  (seconds, the OpenTelemetry GenAI attribute) and the run span
+  `rag.time_to_first_token_ms`. In the CLI, `query --streaming --trace`
+  prints the first-token time and `ai benchmark --streaming` reports its
+  p50 and p95 (`stages.firstToken` in `--json`). Code that compares whole
+  chunks or results with deep equality will see the new `timing` field.
+
 ### Changed
 
 - **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The

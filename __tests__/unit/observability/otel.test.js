@@ -197,6 +197,36 @@ describe("createRagPipeline({ telemetry })", () => {
     expect(byName("rag.pipeline.run")).toBeDefined();
   });
 
+  test("a stream records time to first chunk on the chat span and first token on the run span", async () => {
+    const llm = {
+      async *generateStream() {
+        await new Promise((r) => setTimeout(r, 40));
+        yield { token: "Twenty days.", done: false };
+        yield { token: "", done: true };
+      },
+    };
+    const p = await pipeline({ llm });
+    const stream = await p.run({ query: QUERY, options: { stream: true } });
+    let done;
+    for await (const chunk of stream) if (chunk.done) done = chunk;
+
+    const first =
+      byName("chat").attributes["gen_ai.response.time_to_first_chunk"];
+    expect(first).toBeGreaterThanOrEqual(0.035); // seconds
+    expect(first).toBeLessThan(5);
+    const run = byName("rag.pipeline.run").attributes;
+    expect(run["rag.time_to_first_token_ms"]).toBe(done.timing.firstTokenMs);
+    expect(run["rag.time_to_first_token_ms"]).toBeGreaterThanOrEqual(35);
+  });
+
+  test("a non-streamed run has no first-token attributes", async () => {
+    const p = await pipeline();
+    await p.run({ query: QUERY });
+    expect(byName("rag.pipeline.run").attributes).not.toHaveProperty(
+      "rag.time_to_first_token_ms",
+    );
+  });
+
   test("names spans after the connector's provider and model", async () => {
     const llm = new AnthropicConnector({ apiKey: "k" });
     jest

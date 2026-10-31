@@ -146,6 +146,7 @@ interface RunResult {
   evaluation?: object; // when options.evaluate is set
   cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
   packing?: object; // with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
+  timing?: { totalMs: number }; // from 3.2.0: ms since run() was called
 }
 
 // Failures resolve instead of throwing:
@@ -1078,8 +1079,12 @@ interface StreamChunk {
   results?: SearchResult[]; // final chunk of a retrieval-only (no llm) stream
   citations?: object; // final chunk only, when options.citations is set
   evaluation?: object; // final chunk only, when options.evaluate is set
+  packing?: object; // final chunk only, with maxContextTokens
+  timing?: { firstTokenMs: number | null; totalMs: number }; // final chunk, from 3.2.0
 }
 ```
+
+`timing` is measured from the call to `run()`. `firstTokenMs` is when the first non-empty token arrived (time to first token, retrieval included); `null` when there was none.
 
 ---
 

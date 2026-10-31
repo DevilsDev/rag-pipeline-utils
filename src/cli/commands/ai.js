@@ -46,6 +46,10 @@ function createAiCommand(getGlobalOptions) {
     )
     .option("--runs <n>", "Passes over the query set", parsePositiveInteger, 3)
     .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+    .option(
+      "--streaming",
+      "Stream the answers and measure time to first token (needs an llm stage)",
+    )
     .option("--json", "Print the measurements as JSON")
     .action(async (options) => {
       await aiHandler().handleBenchmark(getGlobalOptions(), options);

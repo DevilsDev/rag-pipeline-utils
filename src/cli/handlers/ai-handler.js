@@ -89,6 +89,7 @@ async function handleBenchmark(globalOptions, options = {}) {
       queriesFile: options.queries,
       runs: options.runs || 3,
       topK: options.topK || 3,
+      streaming: Boolean(options.streaming),
     });
 
     if (options.json) {
@@ -111,14 +112,20 @@ async function handleBenchmark(globalOptions, options = {}) {
     );
     console.log(`Setup (load config and index): ${fmt(report.setupMs)}`);
     console.log(`Warm-up query (excluded): ${fmt(report.warmupMs)}`);
+    if (options.streaming && !report.streaming) {
+      console.log("--streaming needs an llm stage; no first-token times.");
+    }
     console.log("");
     const labels = {
       embed: "embed query",
       retrieve: "retrieve",
       rerank: "rerank",
-      endToEnd: report.includesGeneration
-        ? "end-to-end (incl. llm)"
-        : "end-to-end",
+      firstToken: "first token (streamed)",
+      endToEnd: report.streaming
+        ? "end-to-end (streamed)"
+        : report.includesGeneration
+          ? "end-to-end (incl. llm)"
+          : "end-to-end",
     };
     const header = ["stage", "samples", "p50", "p95", "mean", "max"];
     const rows = Object.entries(report.stages).map(([stage, s]) => [

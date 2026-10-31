@@ -286,6 +286,56 @@ describe("rag-pipeline ai", () => {
       expect(bench.out).toContain(`Node ${process.version}`);
     });
 
+    test("--streaming measures time to first token with an llm stage", () => {
+      setup(dir);
+      write(
+        dir,
+        "stream-llm.js",
+        "module.exports = class StreamLLM {\n" +
+          "  async generate() { return 'Twenty days.'; }\n" +
+          "  async *generateStream() {\n" +
+          "    yield { token: 'Twenty ', done: false };\n" +
+          "    yield { token: 'days.', done: false };\n" +
+          "    yield { token: '', done: true };\n" +
+          "  }\n" +
+          "};\n",
+      );
+      const config = readJson(dir, ".ragrc.json");
+      config.pipeline.push({ stage: "llm", name: "test" });
+      config.plugins = { llm: { test: "./stream-llm.js" } };
+      write(dir, ".ragrc.json", JSON.stringify(config));
+
+      const json = cli(
+        dir,
+        "ai",
+        "benchmark",
+        "--runs",
+        "1",
+        "--streaming",
+        "--json",
+      );
+      expect(json.code).toBe(0);
+      const report = JSON.parse(json.out);
+      expect(report.streaming).toBe(true);
+      expect(report.stages.firstToken.count).toBe(3);
+      expect(report.stages.firstToken.min).toBeGreaterThan(0);
+      expect(report.stages.firstToken.max).toBeLessThanOrEqual(
+        report.stages.endToEnd.max,
+      );
+
+      const table = cli(dir, "ai", "benchmark", "--runs", "1", "--streaming");
+      expect(table.out).toMatch(/first token \(streamed\)\s+3\s+\d+\.\d\d ms/);
+      expect(table.out).toMatch(/end-to-end \(streamed\)\s+3/);
+    });
+
+    test("--streaming without an llm stage says there is nothing to time", () => {
+      setup(dir);
+      const bench = cli(dir, "ai", "benchmark", "--runs", "1", "--streaming");
+      expect(bench.code).toBe(0);
+      expect(bench.out).toContain("--streaming needs an llm stage");
+      expect(bench.out).not.toMatch(/first token/);
+    });
+
     test("fails with exit 1 for a missing queries file", () => {
       setup(dir);
       const bench = cli(dir, "ai", "benchmark", "--queries", "missing.txt");
