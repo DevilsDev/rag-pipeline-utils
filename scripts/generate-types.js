@@ -36,8 +36,29 @@ export interface RagPipelineConfig {
    * caches all three in it; or configure each layer.
    */
   cache?: boolean | CacheBackend | CacheOptions;
+  /**
+   * OpenTelemetry spans for every run and stage. \`true\` uses the global
+   * tracer provider. Needs the optional peer dependency \`@opentelemetry/api\`.
+   */
+  telemetry?: boolean | TelemetryOptions;
   /** Other keys are ignored. */
   [key: string]: any;
+}
+
+/**
+ * A tracer that can start active spans, such as an OpenTelemetry \`Tracer\`.
+ * Declared here so the types don't depend on the optional peer dependency.
+ */
+export interface TelemetryTracer {
+  startActiveSpan(...args: any[]): any;
+}
+
+/** The \`telemetry\` option of createRagPipeline. */
+export interface TelemetryOptions {
+  /** Default: \`trace.getTracer("@devilsdev/rag-pipeline-utils", version)\`. */
+  tracer?: TelemetryTracer;
+  /** Also record the query text and the retrieved document ids and scores. Default false. */
+  recordContent?: boolean;
 }
 
 /** A cache store: get / set / delete, optionally stats. */

@@ -99,6 +99,8 @@ RAG Pipeline Utils - TypeScript Definitions
 - [RetrieverPlugin](interfaces/RetrieverPlugin.md)
 - [SearchResult](interfaces/SearchResult.md)
 - [StreamChunk](interfaces/StreamChunk.md)
+- [TelemetryOptions](interfaces/TelemetryOptions.md)
+- [TelemetryTracer](interfaces/TelemetryTracer.md)
 
 ## Type Aliases
 

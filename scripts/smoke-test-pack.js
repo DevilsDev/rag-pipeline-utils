@@ -109,25 +109,30 @@ const results = [
       );
     }
   }),
-  check("optional peers are not installed; OpenAIConnector says so", () => {
-    for (const peer of Object.keys(pkg.peerDependencies || {})) {
-      if (fs.existsSync(path.join(consumerDir, "node_modules", peer))) {
-        throw new Error(`optional peer "${peer}" was installed`);
+  check(
+    "optional peers are not installed; OpenAIConnector and telemetry say so",
+    () => {
+      for (const peer of Object.keys(pkg.peerDependencies || {})) {
+        if (fs.existsSync(path.join(consumerDir, "node_modules", peer))) {
+          throw new Error(`optional peer "${peer}" was installed`);
+        }
       }
-    }
-    const script = [
-      `const { OpenAIConnector } = require('${pkgName}');`,
-      "new OpenAIConnector({ apiKey: 'k' }).generate('q').then(",
-      "  () => { console.error('generate resolved'); process.exit(1); },",
-      "  (e) => {",
-      "    if (e.code !== 'MISSING_DEPENDENCY' || !/npm install openai/.test(e.message)) {",
-      "      console.error(e); process.exit(1);",
-      "    }",
-      "  },",
-      ");",
-    ].join("\n");
-    runCapture(["-e", script], consumerDir);
-  }),
+      const script = [
+        `const { OpenAIConnector, createRagPipeline } = require('${pkgName}');`,
+        "try { createRagPipeline({ telemetry: true }); console.error('telemetry without @opentelemetry/api did not throw'); process.exit(1); }",
+        "catch (e) { if (e.code !== 'MISSING_DEPENDENCY') { console.error(e); process.exit(1); } }",
+        "new OpenAIConnector({ apiKey: 'k' }).generate('q').then(",
+        "  () => { console.error('generate resolved'); process.exit(1); },",
+        "  (e) => {",
+        "    if (e.code !== 'MISSING_DEPENDENCY' || !/npm install openai/.test(e.message)) {",
+        "      console.error(e); process.exit(1);",
+        "    }",
+        "  },",
+        ");",
+      ].join("\n");
+      runCapture(["-e", script], consumerDir);
+    },
+  ),
   check("require() loads with no console output or warnings", () => {
     const { stdout, stderr } = runCapture(
       [
@@ -272,6 +277,7 @@ const results = [
         `import { packContext } from "${pkgName}";`,
         "const packed = packContext([{ id: 'a', content: 'twenty days' }], { maxTokens: 50 });",
         "const kept: Array<string | number> = packed.kept;",
+        "const traced = createRagPipeline({ telemetry: { recordContent: false } }); void traced;",
         "void kept; void createRagPipeline({}).run({ query: 'q', options: { maxContextTokens: 100, countTokens: (t: string) => t.length } });",
         `import { TenantManager, SSOManager } from "${pkgName}/experimental";`,
         `import { createTestPipeline, EchoLLM } from "${pkgName}/testing";`,
