@@ -76,6 +76,19 @@ jobs:
       - name: Smoke test packed tarball
         run: npm run smoke:pack
 
+      # The README npm shows comes from this checkout. Point its images at
+      # the release tag (prepack does this for local packs, but
+      # --ignore-scripts below skips it), and fail if any still load from
+      # @main.
+      - name: Pin README images to the release
+        run: |
+          node scripts/pin-readme-assets.js
+          if grep -q "rag-pipeline-utils@main/assets/" README.md; then
+            echo "::error::README still loads images from @main"
+            exit 1
+          fi
+          grep -o "rag-pipeline-utils@v[^/]*/assets/[a-z.-]*" README.md
+
       # --provenance attaches a SLSA build provenance attestation to the
       # tarball, signed via Sigstore. Visible on the npm package page as
       # a "provenance" badge. Requires id-token: write.
