@@ -103,12 +103,13 @@ Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package shi
 
 Optional peer dependencies, installed only by projects that use them:
 
-| Package       | Needed for                                    |
-| ------------- | --------------------------------------------- |
-| `openai`      | `OpenAIConnector`                             |
-| `pg`          | `PgVectorRetriever`                           |
-| `isolated-vm` | the experimental `PluginSandbox` (version 6+) |
-| `pino-pretty` | pretty-printed logs                           |
+| Package              | Needed for                                    |
+| -------------------- | --------------------------------------------- |
+| `openai`             | `OpenAIConnector`                             |
+| `pg`                 | `PgVectorRetriever`                           |
+| `isolated-vm`        | the experimental `PluginSandbox` (version 6+) |
+| `pino-pretty`        | pretty-printed logs                           |
+| `@opentelemetry/api` | OpenTelemetry spans (`telemetry`, from 3.2.0) |
 
 Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300) lists the changes to make.
 
@@ -539,7 +540,7 @@ The result of `run()` is:
 | **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                                                                                                                                                          |
 | **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                                                                                                                                                         |
 | **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing; `packContext()` and `maxContextTokens` fit retrieved documents into a token budget                                                                                                           |
-| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `metrics` (counters, gauges, histograms), `eventLogger`, coded errors with suggestions (`createError`), `AuditLogger`, MCP tool server (`MCPServer`)                                                                                  |
+| **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `metrics` (counters, gauges, histograms), `eventLogger`, coded errors with suggestions (`createError`), `AuditLogger`, MCP tool server (`MCPServer`); from 3.2.0, OpenTelemetry spans with `telemetry: true`                          |
 
 ## How it compares
 

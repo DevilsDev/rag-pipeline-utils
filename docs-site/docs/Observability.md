@@ -1,6 +1,6 @@
 # Observability & Monitoring
 
-**@devilsdev/rag-pipeline-utils** ships small, dependency-free observability helpers: a structured logger, in-process metrics primitives, an execution tracer, a metrics aggregator with an HTML dashboard, and cost tracking. They are all exported from the main entry. There are no `/observability` subpaths, no built-in Prometheus endpoint, no OpenTelemetry exporter and no alerting engine. Feed the data these helpers produce into the monitoring stack you already run.
+**@devilsdev/rag-pipeline-utils** ships small, dependency-free observability helpers: a structured logger, in-process metrics primitives, an execution tracer, a metrics aggregator with an HTML dashboard, and cost tracking. They are all exported from the main entry. There are no `/observability` subpaths, no built-in Prometheus endpoint and no alerting engine. From 3.2.0, `createRagPipeline({ telemetry: true })` emits [OpenTelemetry spans](#opentelemetry). Feed the data these helpers produce into the monitoring stack you already run.
 
 `createRagPipeline()` does not record metrics or events on its own. You wrap the pipeline (`ExecutionTracer`, `CostTracker`) or record what you need around `run()`.
 
@@ -14,6 +14,7 @@
 | Counters, gauges, histograms  | `metrics`                                 | In-memory metric objects, JSON export                               |
 | Pipeline event history        | `eventLogger`                             | In-memory event list, JSON export                                   |
 | Per-run traces                | `ExecutionTracer`, `TraceInspector`       | Trace records, bottleneck and anomaly analysis                      |
+| Distributed tracing           | `createRagPipeline({ telemetry })`        | From 3.2.0: OpenTelemetry spans for each run and stage              |
 | Rolling metrics and dashboard | `MetricsAggregator`, `DashboardGenerator` | Snapshot object, standalone HTML, text report                       |
 | Cost per run                  | `CostTracker`, `TokenBudget`              | `result.cost`, session summaries                                    |
 | Quality per run               | `run({ options: { evaluate: true } })`    | `result.evaluation` scores                                          |
@@ -139,7 +140,62 @@ console.log(inspector.findAnomalies(tracer.getTraces()));
 
 The tracer records the run as a whole, not each stage separately. For per-stage latency of the configured pipeline, use `rag-pipeline ai benchmark`. It reports p50, p95 and mean latency for query embedding, retrieval, reranking and end-to-end queries.
 
-There is no distributed-tracing exporter. To correlate with OpenTelemetry, start a span around `run()` in your service and log `result.trace.id`.
+For distributed tracing, see [OpenTelemetry](#opentelemetry) below.
+
+## OpenTelemetry
+
+:::info[Coming in 3.2.0]
+
+The `telemetry` option ships in the next release.
+
+:::
+
+`createRagPipeline({ telemetry: true })` records each run as an OpenTelemetry span, with a child span for every stage call it makes. Install the API, an optional peer dependency, alongside the OpenTelemetry SDK your service already uses:
+
+```bash
+npm install @opentelemetry/api
+```
+
+```js no-run
+import { createRagPipeline } from "@devilsdev/rag-pipeline-utils";
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever,
+  llm,
+  telemetry: true, // uses the global tracer provider your SDK registered
+});
+```
+
+Without a registered tracer provider the spans are no-ops, so leaving `telemetry: true` on costs nothing. To use a specific tracer, pass `telemetry: { tracer }`.
+
+A run produces spans like these, nested under whatever span is active when you call `run()` (an HTTP request, for example):
+
+```
+rag.pipeline.run
+├── embeddings text-embedding-3-small
+├── retrieval rag_documents
+├── rerank
+└── chat gpt-4o-mini
+```
+
+The stage spans follow the OpenTelemetry [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai), which are still at Development status and may change:
+
+| Span                      | Kind     | Attributes                                                                                                                                                                                                                        |
+| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rag.pipeline.run`        | internal | `rag.top_k`, `rag.stream`, `rag.success`, `rag.result_count`, `rag.answered`, `rag.groundedness` (with citations), `rag.cache.<layer>`, `rag.packing.*` (with `maxContextTokens`), `error.type` (`timeout`, `aborted` or `error`) |
+| `embeddings <model>`      | client   | `gen_ai.operation.name: "embeddings"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.embeddings.dimension.count`                                                                                                        |
+| `retrieval <data source>` | client   | `gen_ai.operation.name: "retrieval"`, `gen_ai.data_source.id` (the Qdrant collection or pgvector table), `gen_ai.retrieval.top_k`, `rag.retrieval.result_count`                                                                   |
+| `rerank`                  | internal | `rag.rerank.input_count`, `rag.rerank.output_count`, `rag.rerank.top_k`                                                                                                                                                           |
+| `chat <model>`            | client   | `gen_ai.operation.name: "chat"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.request.temperature`, `gen_ai.request.max_tokens`, `gen_ai.request.stream`                                                               |
+
+- **Nothing you or your users typed is recorded by default.** Spans carry counts, durations, models, cache outcomes and packing, never query text, documents or answers. `telemetry: { recordContent: true }` adds the query (`rag.query.text`, `gen_ai.retrieval.query.text`) and the retrieved document ids and scores (`gen_ai.retrieval.documents`); traces are often sent to third parties, so turn it on deliberately.
+- A failed stage sets its span's status to ERROR with an exception event. `run()` resolves `{ success: false }` rather than throwing, and its span carries the error too. A run that times out or is aborted ends with `error.type: "timeout"` or `"aborted"`.
+- A streamed answer's `chat` span and the run span end when the stream finishes, fails or the reader stops early.
+- A stage served from the [cache](./Caching.md) has no span; the run span's `rag.cache.<layer>` attribute says it was a hit.
+- `gen_ai.provider.name` and the model come from the built-in connectors. Your own plugins get spans too, without them.
+- Stage calls run inside their span, so HTTP spans from auto-instrumentation (`@opentelemetry/instrumentation-undici`, for example) nest under the stage that made them.
+- `AgenticPipeline`, guardrail filtering (`filterResults`) and the loader don't get their own spans; their time shows in the run span.
 
 ---
 

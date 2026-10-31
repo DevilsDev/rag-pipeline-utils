@@ -11,6 +11,23 @@ page.
 
 ## [Unreleased]
 
+Planned for 3.2.0.
+
+### Added
+
+- **OpenTelemetry spans.** `createRagPipeline({ telemetry: true })`
+  records each run as a `rag.pipeline.run` span with a child span per
+  stage call (`embeddings <model>`, `retrieval <data source>`, `rerank`,
+  `chat <model>`), nested under the caller's active span and named after
+  the OpenTelemetry GenAI semantic conventions. Spans carry counts,
+  durations, models, cache outcomes and packing; query text and documents
+  only with `recordContent: true`. Failed stages, `{ success: false }`
+  runs, timeouts and aborts set ERROR status, and streamed answers end
+  their spans when the stream does. `@opentelemetry/api` is a new
+  optional peer dependency (`>=1.0.0 <2`), loaded only when telemetry is
+  configured; without it, `telemetry` fails at `createRagPipeline` with
+  `MISSING_DEPENDENCY`.
+
 ## [3.1.1] - 2026-10-31
 
 A patch for the npm package page. No code changes.

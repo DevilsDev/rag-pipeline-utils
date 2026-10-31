@@ -5,6 +5,11 @@ const defaultRegistry = require('./plugin-registry.js');
 const { embedQuery, canEmbed } = require('../utils/embed-query');
 const { packContext } = require('./context-packing');
 const {
+  createTelemetry,
+  instrument,
+  traceRun,
+} = require('../observability/otel');
+const {
   normalizeCacheOption,
   PipelineCache,
 } = require('../cache/pipeline-cache');
@@ -165,19 +170,22 @@ module.exports.createRagPipeline = function createRagPipeline({
   llm,
   reranker,
   cache,
+  telemetry,
 } = {}) {
   const reg = registry || defaultRegistry;
+  // Fails here, not on the first run, when @opentelemetry/api is missing.
+  const tel = createTelemetry(telemetry);
   const loaderI = loader ? resolve(reg, 'loader', loader) : null;
-  const embedderI = embedder ? resolve(reg, 'embedder', embedder) : null;
-  const retrieverI = retriever
+  let embedderI = embedder ? resolve(reg, 'embedder', embedder) : null;
+  let retrieverI = retriever
     ? resolve(reg, 'retriever', retriever)
     : {
         async retrieve() {
           return [];
         },
       };
-  const llmI = llm ? resolve(reg, 'llm', llm) : null;
-  const rerankerI = reranker ? resolve(reg, 'reranker', reranker) : null;
+  let llmI = llm ? resolve(reg, 'llm', llm) : null;
+  let rerankerI = reranker ? resolve(reg, 'reranker', reranker) : null;
 
   const cacheLayers = normalizeCacheOption(cache);
   const pc = cacheLayers
@@ -188,6 +196,15 @@ module.exports.createRagPipeline = function createRagPipeline({
         llm: llmI,
       })
     : null;
+
+  // With telemetry, stage calls run in spans. The cache above keeps the
+  // unwrapped components for its keys.
+  if (tel) {
+    embedderI = instrument(tel, 'embedder', embedderI);
+    if (retriever) retrieverI = instrument(tel, 'retriever', retrieverI);
+    rerankerI = instrument(tel, 'reranker', rerankerI);
+    llmI = instrument(tel, 'llm', llmI);
+  }
 
   async function runOnce({ query, queryVector, options = {} } = {}) {
     const opts = options || {};
@@ -379,7 +396,7 @@ module.exports.createRagPipeline = function createRagPipeline({
   }
 
   return {
-    run: runOnce,
+    run: tel ? traceRun(tel, runOnce) : runOnce,
     cleanup() {},
     /** Cache hits, misses and skips per layer; null when caching is off. */
     cacheStats() {
