@@ -4,7 +4,7 @@
  * the retrieved passages instead of an answer.
  *
  * Options: --top-k, --json, --streaming, --timeout, --trace (per-stage
- * timings), --explain (passage scores and the passages supporting each
+ * timings, and time to first token when streaming), --explain (passage scores and the passages supporting each
  * answer sentence), --stats (latency, estimated tokens and cost). The global
  * --quiet prints only the answer or the passages.
  */
@@ -47,10 +47,15 @@ function printTrace(result) {
   for (const stage of STAGES) {
     const ms = totals[stage];
     console.log(
-      `  ${stage.padEnd(9)} ${ms === undefined ? "-" : `${ms.toFixed(1)} ms`}`,
+      `  ${stage.padEnd(11)} ${ms === undefined ? "-" : `${ms.toFixed(1)} ms`}`,
     );
   }
-  console.log(`  ${"total".padEnd(9)} ${result.durationMs.toFixed(1)} ms`);
+  if (result.firstTokenMs != null) {
+    console.log(
+      `  ${"first token".padEnd(11)} ${result.firstTokenMs.toFixed(1)} ms`,
+    );
+  }
+  console.log(`  ${"total".padEnd(11)} ${result.durationMs.toFixed(1)} ms`);
 }
 
 /** Rough token count: about 4 characters per token for English text. */

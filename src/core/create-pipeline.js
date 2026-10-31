@@ -81,23 +81,36 @@ function computeQuality({ query, answer, results, options }) {
  * `{ token: '', done: true, citations?, evaluation? }` (the source's own done
  * chunk is replaced by it; a token it carried is emitted first).
  *
+ * The done chunk carries `timing: { firstTokenMs, totalMs }`, both measured
+ * from the start of run(): `firstTokenMs` is when the first non-empty token
+ * arrived (null when none did).
+ *
  * @param {AsyncIterable<object|string>} source
  * @param {object} params
  * @param {AbortSignal} params.signal
  * @param {((text: string) => object)|null} params.finalize
+ * @param {number} params.startedAt - performance.now() at the start of run()
  * @param {() => void} params.onEnd
  */
-async function* guardStream(source, { signal, finalize, onEnd }) {
+async function* guardStream(source, { signal, finalize, startedAt, onEnd }) {
+  let firstTokenMs = null;
+  const timing = () => ({
+    firstTokenMs,
+    totalMs: performance.now() - startedAt,
+  });
   try {
     let text = '';
     for await (const chunk of source) {
       if (signal.aborted) throw signal.reason;
-      if (!finalize) {
-        yield chunk;
-        continue;
-      }
       const token =
         typeof chunk === 'string' ? chunk : String(chunk?.token ?? '');
+      if (token && firstTokenMs === null) {
+        firstTokenMs = performance.now() - startedAt;
+      }
+      if (!finalize) {
+        yield chunk && chunk.done ? { ...chunk, timing: timing() } : chunk;
+        continue;
+      }
       text += token;
       if (chunk && chunk.done) {
         if (token) yield { ...chunk, token, done: false };
@@ -106,7 +119,9 @@ async function* guardStream(source, { signal, finalize, onEnd }) {
       yield chunk;
     }
     if (signal.aborted) throw signal.reason;
-    if (finalize) yield { token: '', done: true, ...finalize(text) };
+    if (finalize) {
+      yield { token: '', done: true, ...finalize(text), timing: timing() };
+    }
   } finally {
     onEnd();
   }
@@ -141,10 +156,14 @@ async function* reportWhenComplete(source, signal, onComplete) {
  * - `timeout` (ms): aborts the run; resolves `{ success: false, error: 'Execution timeout' }`
  * - `signal` (AbortSignal): caller cancellation; resolves
  *   `{ success: false, error: 'Execution aborted' }` when it aborts
- * - `stream`: return an async iterable of `{ token, done }` chunks
+ * - `stream`: return an async iterable of `{ token, done }` chunks; the
+ *   done chunk carries `timing: { firstTokenMs, totalMs }`
  * - `citations`, `citationOptions`, `evaluate`, `evaluateOptions`,
  *   `referenceAnswer` (ground truth for context recall)
  * - `filterResults(docs)`: hook applied after retrieval
+ *
+ * A successful result carries `timing: { totalMs }`, measured from the start
+ * of run().
  *
  * `cache` (factory option): `true`, a CacheBackend, or
  * `{ embeddings, retrieval, generation, ttlSeconds }` - see
@@ -209,6 +228,7 @@ module.exports.createRagPipeline = function createRagPipeline({
   async function runOnce({ query, queryVector, options = {} } = {}) {
     const opts = options || {};
     const { timeout, stream } = opts;
+    const startedAt = performance.now();
     const run = createRunAbort({ timeout, signal: opts.signal });
     const { signal } = run;
     let streaming = false;
@@ -218,7 +238,8 @@ module.exports.createRagPipeline = function createRagPipeline({
     let packing;
     const withCache = (result) => {
       const out = pc ? { ...result, cache: { ...cacheStatus } } : result;
-      return packing ? { ...out, packing } : out;
+      const timing = { totalMs: performance.now() - startedAt };
+      return packing ? { ...out, packing, timing } : { ...out, timing };
     };
 
     const doWork = (async () => {
@@ -348,6 +369,7 @@ module.exports.createRagPipeline = function createRagPipeline({
           return guardStream(source, {
             signal,
             finalize,
+            startedAt,
             onEnd: run.detach,
           });
         }

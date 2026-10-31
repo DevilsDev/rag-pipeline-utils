@@ -183,6 +183,7 @@ describe("createRagPipeline without an llm", () => {
       query: "vacation",
       results: DOCS,
       answer: null,
+      timing: { totalMs: expect.any(Number) },
     });
   });
 
@@ -363,6 +364,110 @@ describe("createRagPipeline stream mode", () => {
       await pipeline.run({ query: "q", options: { stream: true } }),
     );
 
-    expect(chunks).toEqual([{ token: "", done: true, results: DOCS }]);
+    expect(chunks).toEqual([
+      {
+        token: "",
+        done: true,
+        results: DOCS,
+        timing: { firstTokenMs: null, totalMs: expect.any(Number) },
+      },
+    ]);
+  });
+});
+
+describe("createRagPipeline timing", () => {
+  beforeEach(() => jest.useRealTimers());
+
+  const retriever = { retrieve: async () => DOCS };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function collect(stream) {
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return chunks;
+  }
+  // Waits before its first token, then streams the rest at once.
+  const slowStartLlm = {
+    async *generateStream() {
+      await sleep(60);
+      yield { token: "Twenty ", done: false };
+      yield { token: "days.", done: false };
+      await sleep(40);
+      yield { token: "", done: true };
+    },
+  };
+
+  test("a streamed answer's done chunk carries time to first token and total", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: slowStartLlm });
+
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+
+    const done = chunks[chunks.length - 1];
+    expect(done.done).toBe(true);
+    expect(chunks.slice(0, -1).every((c) => c.timing === undefined)).toBe(true);
+    const { firstTokenMs, totalMs } = done.timing;
+    expect(firstTokenMs).toBeGreaterThanOrEqual(55);
+    expect(totalMs).toBeGreaterThanOrEqual(firstTokenMs + 35);
+  });
+
+  test("with citations the final chunk carries the timing too", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: slowStartLlm });
+
+    const chunks = await collect(
+      await pipeline.run({
+        query: "q",
+        options: { stream: true, citations: true },
+      }),
+    );
+
+    const done = chunks[chunks.length - 1];
+    expect(done.citations).toBeDefined();
+    expect(done.timing.firstTokenMs).toBeGreaterThanOrEqual(55);
+    expect(done.timing.totalMs).toBeGreaterThanOrEqual(
+      done.timing.firstTokenMs,
+    );
+  });
+
+  test("time to first token counts retrieval, and skips empty tokens", async () => {
+    const pipeline = createRagPipeline({
+      retriever: {
+        retrieve: async () => {
+          await sleep(50);
+          return DOCS;
+        },
+      },
+      llm: {
+        async *generateStream() {
+          yield { token: "", done: false };
+          await sleep(30);
+          yield { token: "Hi", done: false };
+          yield { token: "", done: true };
+        },
+      },
+    });
+
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+
+    expect(chunks.at(-1).timing.firstTokenMs).toBeGreaterThanOrEqual(75);
+  });
+
+  test("a result carries the run's total time", async () => {
+    const pipeline = createRagPipeline({
+      retriever,
+      llm: {
+        generate: async () => {
+          await sleep(30);
+          return "Twenty days.";
+        },
+      },
+    });
+
+    const result = await pipeline.run({ query: "q" });
+
+    expect(result.timing.totalMs).toBeGreaterThanOrEqual(25);
+    expect(result.timing).not.toHaveProperty("firstTokenMs");
   });
 });

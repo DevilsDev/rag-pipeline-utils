@@ -337,6 +337,19 @@ describe("rag-pipeline query options", () => {
     expect(q.out).toMatch(/Sources:\n\n\[1\] docs\/vacation\.md/);
   });
 
+  test("--streaming --trace shows time to first token", () => {
+    useLlm("stream-llm.js");
+    const q = cli(dir, "query", "paid vacation days", "--streaming", "--trace");
+    expect(q.code).toBe(0);
+    const first = Number(q.out.match(/first token\s+([\d.]+) ms/)[1]);
+    const total = Number(q.out.match(/total\s+([\d.]+) ms/)[1]);
+    expect(first).toBeGreaterThan(0);
+    expect(first).toBeLessThanOrEqual(total);
+
+    const plain = cli(dir, "query", "paid vacation days", "--trace");
+    expect(plain.out).not.toMatch(/first token/);
+  });
+
   test("--timeout aborts a slow llm and exits 1", () => {
     useLlm("slow-llm.js");
     const started = Date.now();
