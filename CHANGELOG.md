@@ -28,6 +28,14 @@ Planned for 3.2.0.
   configured; without it, `telemetry` fails at `createRagPipeline` with
   `MISSING_DEPENDENCY`.
 
+### Changed
+
+- **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The
+  `rag-pipeline` CLI now runs from a bundle (`dist/cli.cjs`), like the
+  library, so the package no longer ships `src/` (1.7 MB) next to `dist/`.
+  Nothing changes for users: the package's `exports` map never allowed
+  imports from `src/`, and every CLI command behaves the same.
+
 ## [3.1.1] - 2026-10-31
 
 A patch for the npm package page. No code changes.

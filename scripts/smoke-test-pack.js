@@ -96,6 +96,21 @@ const results = [
   // --ignore-scripts above hides install-time scripts, so check for them:
   // a postinstall that calls a dev tool (husky) makes `npm install` fail
   // for everyone who doesn't have that tool installed globally.
+  check("the package ships the bundles, not src/", () => {
+    const installed = path.join(
+      consumerDir,
+      "node_modules",
+      ...pkgName.split("/"),
+    );
+    if (fs.existsSync(path.join(installed, "src"))) {
+      throw new Error("src/ was published; the CLI and library run from dist/");
+    }
+    for (const file of ["dist/index.cjs", "dist/cli.cjs", "bin/cli.js"]) {
+      if (!fs.existsSync(path.join(installed, file))) {
+        throw new Error(`${file} is missing from the package`);
+      }
+    }
+  }),
   check("no install-time scripts run in users' projects", () => {
     const installed = require(
       path.join(consumerDir, "node_modules", pkgName, "package.json"),
