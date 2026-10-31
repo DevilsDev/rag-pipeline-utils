@@ -1,12 +1,13 @@
 # Examples
 
-Runnable examples for `@devilsdev/rag-pipeline-utils` 2.5.
+Runnable examples for `@devilsdev/rag-pipeline-utils` 3.x. Each needs Node.js 22 or later.
 
 | Example                                   | Stack                                    | What it shows                                                                                                                                       | Offline mode            |
 | ----------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| [`basic-pipeline/`](./basic-pipeline)     | Node 18+, built-ins only                 | `createRagPipeline` with `LocalEmbedder` + `MemoryRetriever`, a custom LLM plugin, citations/evaluation, retrieval-only runs, `AbortSignal` cancel. | Always offline          |
+| [`basic-pipeline/`](./basic-pipeline)     | Built-ins only                           | `createRagPipeline` with `LocalEmbedder` + `MemoryRetriever`, a custom LLM plugin, citations/evaluation, retrieval-only runs, `AbortSignal` cancel. | Always offline          |
 | [`openai-pinecone/`](./openai-pinecone)   | OpenAI + Pinecone                        | `OpenAIConnector` as embedder and llm, a Pinecone retriever adapter, citations and evaluation.                                                      | `npm run mock`          |
 | [`fastify-rag-demo/`](./fastify-rag-demo) | Fastify 5 + OpenAI + in-memory retriever | HTTP RAG service with citations, evaluation, strict guardrails and request cancellation. Ships with Dockerfile + Fly.io + Railway configs.          | `npm run start:offline` |
+| [`mcp-server/`](./mcp-server)             | MCP SDK + built-ins                      | An MCP server whose `search_documents` tool lets Claude and other MCP clients search your indexed documents and cite them.                          | Always offline          |
 
 Each example is **self-contained**: its own `package.json`, its own
 `README.md` with run instructions. Pick the one closest to your stack and
@@ -37,6 +38,8 @@ Then follow the example's README for API keys and extras:
   and `PINECONE_API_KEY`, or run `npm run mock` without keys.
 - `fastify-rag-demo`: set `OPENAI_API_KEY` in the environment (or use
   `npm run start:offline`), then run `npm run smoke` in another terminal.
+- `mcp-server`: run `npm run ingest` and `npm test`, then connect it to
+  Claude Code or Claude Desktop as its README shows.
 
 ## The 2.5 API in brief
 

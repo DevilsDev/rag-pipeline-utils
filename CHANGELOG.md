@@ -28,6 +28,15 @@ Planned for 3.2.0.
   configured; without it, `telemetry` fails at `createRagPipeline` with
   `MISSING_DEPENDENCY`.
 
+- **An MCP server example** (`examples/mcp-server`): a `search_documents`
+  tool for Claude Desktop, Claude Code and other MCP clients, served over
+  stdio with the official MCP SDK. It searches the index `rag-pipeline
+ingest` builds and returns passages with their sources, offline and
+  without an API key; its test drives it through a real MCP client. The
+  docs no longer describe `MCPServer` as plugging into MCP clients on its
+  own: it builds tool definitions and handles calls, and needs a transport
+  such as this example's.
+
 ### Changed
 
 - **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The

@@ -1,0 +1,24 @@
+{
+  "name": "rag-mcp-server",
+  "version": "1.0.0",
+  "description": "An MCP server that lets Claude and other MCP clients search your documents through @devilsdev/rag-pipeline-utils.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "rag-mcp-server": "./server.js"
+  },
+  "scripts": {
+    "ingest": "rag-pipeline init --no-interactive && rag-pipeline ingest ./docs",
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "^3.1.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.6"
+  },
+  "license": "MIT"
+}
