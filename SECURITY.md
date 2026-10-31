@@ -10,7 +10,8 @@ minor version ships, the previous line receives one more patch window of
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 3.0.x   | :white_check_mark:                                           |
+| 3.1.x   | :white_check_mark:                                           |
+| 3.0.x   | Security fixes for 30 days after the 3.1.0 release, then :x: |
 | 2.7.x   | Security fixes for 30 days after the 3.0.0 release, then :x: |
 | < 2.7   | :x:                                                          |
 

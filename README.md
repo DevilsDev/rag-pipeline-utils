@@ -274,7 +274,7 @@ console.log(result.results[0].id); // "vacation"
 console.log(llm.calls.length); // 1
 ```
 
-Writing your own plugin? From 3.1.0, `runContractTests("retriever", () => new MyRetriever())` from the same entry registers tests for the behaviour the pipeline relies on, in Jest, Vitest, Mocha or `node:test` ([contract tests](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#contract-tests-for-your-plugins)).
+Writing your own plugin? `runContractTests("retriever", () => new MyRetriever())` from the same entry registers tests for the behaviour the pipeline relies on, in Jest, Vitest, Mocha or `node:test` ([contract tests](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#contract-tests-for-your-plugins)).
 
 ### Protect an internal assistant
 
@@ -410,7 +410,7 @@ console.log(result.answer);
 
 ### Fit retrieved context into a token budget
 
-From 3.1.0, `maxContextTokens` keeps the documents sent to the LLM within a budget: it keeps the best-ranked ones that fit, cuts the top one at a word boundary when it alone is too long, and reports what it left out.
+`maxContextTokens` keeps the documents sent to the LLM within a budget: it keeps the best-ranked ones that fit, cuts the top one at a word boundary when it alone is too long, and reports what it left out.
 
 ```js
 const result = await pipeline.run({
