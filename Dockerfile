@@ -57,9 +57,9 @@ COPY . .
 # security:audit:critical swallows failures, so it is not used here.)
 RUN npm audit --omit=dev --audit-level=critical
 
-# Run lint and tests
-RUN npm run lint
-RUN npm test -- --passWithNoTests
+# Lint and tests run in CI on every commit. They can't run here:
+# .dockerignore leaves out __tests__/ and the .gitignore that `npm run lint`
+# reads.
 
 # Remove dev dependencies and clean up
 RUN npm prune --omit=dev && \
