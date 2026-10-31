@@ -34,8 +34,21 @@ esbuild.buildSync({
   bundle: true,
   format: "cjs",
   platform: "node",
-  target: "node18",
+  target: "node22",
   outfile: path.join(distDir, "index.cjs"),
+  external,
+  logLevel: "warning",
+});
+
+// The rag-pipeline CLI, bundled so the package doesn't ship src/. bin/cli.js
+// loads it (and falls back to src/ in a development checkout).
+esbuild.buildSync({
+  entryPoints: [path.resolve(__dirname, "../src/cli.js")],
+  bundle: true,
+  format: "cjs",
+  platform: "node",
+  target: "node22",
+  outfile: path.join(distDir, "cli.cjs"),
   external,
   logLevel: "warning",
 });

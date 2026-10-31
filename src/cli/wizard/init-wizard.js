@@ -33,12 +33,16 @@ const API_KEY_ENV = {
   cohere: "COHERE_API_KEY",
 };
 
+// Static requires, loaded on first use, so the CLI bundle (dist/cli.cjs)
+// includes them; a require() of a computed path can't be bundled.
+/* eslint-disable global-require */
 const CONNECTOR_MODULES = {
-  openai: "../../connectors/openai-connector",
-  anthropic: "../../connectors/anthropic-connector",
-  ollama: "../../connectors/ollama-connector",
-  cohere: "../../connectors/cohere-connector",
+  openai: () => require("../../connectors/openai-connector"),
+  anthropic: () => require("../../connectors/anthropic-connector"),
+  ollama: () => require("../../connectors/ollama-connector"),
+  cohere: () => require("../../connectors/cohere-connector"),
 };
+/* eslint-enable global-require */
 
 /** Connector options the wizard asks for, per stage and provider. */
 const PROVIDER_OPTIONS = {
@@ -113,7 +117,7 @@ async function ask(prompt, question) {
 
 /** Defaults for the options the wizard asks for (never the API key). */
 function connectorDefaults(provider) {
-  const { DEFAULT_CONFIG } = require(CONNECTOR_MODULES[provider]);
+  const { DEFAULT_CONFIG } = CONNECTOR_MODULES[provider]();
   return {
     model: DEFAULT_CONFIG.model,
     embeddingModel: DEFAULT_CONFIG.embeddingModel,
