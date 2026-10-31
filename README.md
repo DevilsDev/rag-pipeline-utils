@@ -274,6 +274,8 @@ console.log(result.results[0].id); // "vacation"
 console.log(llm.calls.length); // 1
 ```
 
+Writing your own plugin? From 3.1.0, `runContractTests("retriever", () => new MyRetriever())` from the same entry registers tests for the behaviour the pipeline relies on, in Jest, Vitest, Mocha or `node:test` ([contract tests](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#contract-tests-for-your-plugins)).
+
 ### Protect an internal assistant
 
 `GuardrailsPipeline` wraps any pipeline. Access control runs before the LLM sees a document, prompt-injection detection runs on the query, and PII is redacted from the answer, its citations and its evaluation details.

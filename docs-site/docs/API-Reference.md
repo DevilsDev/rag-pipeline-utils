@@ -8,12 +8,12 @@ Reference documentation for the public API of `@devilsdev/rag-pipeline-utils`. T
 
 The package has four entry points:
 
-| Entry                                        | Contents                                                                                                       |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                      |
-| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                    |
-| `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`); see [Testing](./Testing) |
-| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                              |
+| Entry                                        | Contents                                                                                                                                                                                    |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                                                                                                   |
+| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                                 |
+| `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and, from 3.1.0, plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
+| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                                           |
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
