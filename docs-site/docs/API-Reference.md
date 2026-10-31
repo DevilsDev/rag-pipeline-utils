@@ -117,20 +117,22 @@ async run(params: {
 
 **Parameters:**
 
-| Parameter                 | Type                        | Required | Description                                                                           |
-| ------------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------- |
-| `query`                   | `string`                    | No       | Natural language query; give `query`, `queryVector` or both                           |
-| `queryVector`             | `number[]`                  | No       | Pre-computed query embedding (skips the embedder)                                     |
-| `options.topK`            | `number`                    | No       | Number of documents to retrieve (default: 3)                                          |
-| `options.timeout`         | `number`                    | No       | Timeout in milliseconds; cancels in-flight work                                       |
-| `options.signal`          | `AbortSignal`               | No       | Cancels the run when aborted                                                          |
-| `options.stream`          | `boolean`                   | No       | Return an async iterable of `{ token, done }` chunks (default: false)                 |
-| `options.citations`       | `boolean`                   | No       | Attach `citations` (requires an llm)                                                  |
-| `options.citationOptions` | `object`                    | No       | Options for `CitationTracker`                                                         |
-| `options.evaluate`        | `boolean`                   | No       | Attach `evaluation` from `PipelineEvaluator`                                          |
-| `options.evaluateOptions` | `object`                    | No       | Options for `PipelineEvaluator`                                                       |
-| `options.referenceAnswer` | `string`                    | No       | Ground-truth answer; required for the context recall metric                           |
-| `options.filterResults`   | `(docs) => docs \| Promise` | No       | Hook applied after retrieval and before reranking and generation (used by guardrails) |
+| Parameter                  | Type                        | Required | Description                                                                                       |
+| -------------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `query`                    | `string`                    | No       | Natural language query; give `query`, `queryVector` or both                                       |
+| `queryVector`              | `number[]`                  | No       | Pre-computed query embedding (skips the embedder)                                                 |
+| `options.topK`             | `number`                    | No       | Number of documents to retrieve (default: 3)                                                      |
+| `options.timeout`          | `number`                    | No       | Timeout in milliseconds; cancels in-flight work                                                   |
+| `options.signal`           | `AbortSignal`               | No       | Cancels the run when aborted                                                                      |
+| `options.stream`           | `boolean`                   | No       | Return an async iterable of `{ token, done }` chunks (default: false)                             |
+| `options.citations`        | `boolean`                   | No       | Attach `citations` (requires an llm)                                                              |
+| `options.citationOptions`  | `object`                    | No       | Options for `CitationTracker`                                                                     |
+| `options.evaluate`         | `boolean`                   | No       | Attach `evaluation` from `PipelineEvaluator`                                                      |
+| `options.evaluateOptions`  | `object`                    | No       | Options for `PipelineEvaluator`                                                                   |
+| `options.referenceAnswer`  | `string`                    | No       | Ground-truth answer; required for the context recall metric                                       |
+| `options.filterResults`    | `(docs) => docs \| Promise` | No       | Hook applied after retrieval and before reranking and generation (used by guardrails)             |
+| `options.maxContextTokens` | `number`                    | No       | From 3.1.0: fit the documents the LLM sees into this many tokens; see [packContext](#packcontext) |
+| `options.countTokens`      | `(text) => number`          | No       | From 3.1.0: token counter for `maxContextTokens` (default: about four characters per token)       |
 
 **Returns:** `Promise<RunResult>` (or an async iterable when `stream` is true)
 
@@ -143,6 +145,7 @@ interface RunResult {
   citations?: object; // when options.citations is set and an llm is configured
   evaluation?: object; // when options.evaluate is set
   cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
+  packing?: object; // from 3.1.0, with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
 }
 
 // Failures resolve instead of throwing:
@@ -210,6 +213,54 @@ Components receive the signal as follows (see [Plugin Contracts](#plugin-contrac
 | LLM       | `llm.generate(query, docs, { ...options, signal })`                           |
 
 Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. For a stream, the timeout covers the run up to the returned stream; a caller signal keeps cancelling the stream until it finishes.
+
+---
+
+### packContext
+
+:::info[Coming in 3.1.0]
+
+`packContext` and the `maxContextTokens` run option ship in the next release.
+
+:::
+
+Fits ranked documents into a token budget, so long passages don't overflow the model's context window or the bill. `run({ options: { maxContextTokens } })` applies it after filtering and reranking, before generation; you can also call it yourself.
+
+```typescript
+function packContext(
+  documents: Array<object | string>,
+  options: {
+    maxTokens: number;
+    countTokens?: (text: string) => number; // default: about four characters per token
+    truncate?: boolean; // default true
+  },
+): {
+  documents: Array<object | string>;
+  tokens: number;
+  maxTokens: number;
+  kept: Array<string | number>; // ids, or positions for documents without one
+  dropped: Array<string | number>;
+  truncated: Array<string | number>;
+};
+```
+
+- Documents keep their order. Each one that fits is kept; one that doesn't is skipped, and later, shorter documents may still fit.
+- The top document is always included. When it alone exceeds the budget it is cut at a word boundary (with `truncate: false` it is dropped instead), so a small budget never leaves the model with no context.
+- A cut document is a copy marked `metadata.truncated: true`; the documents you pass in are never modified, so cached retrieval results stay whole.
+- The budget covers the documents and the `<document index="n">` wrapper the built-in connectors put around each one. The system prompt, the instructions around the documents and the question come on top.
+- For exact counts, pass your model's tokenizer as `countTokens`.
+
+```javascript
+const result = await pipeline.run({
+  query: "How many vacation days do employees get?",
+  options: { topK: 10, maxContextTokens: 2000 },
+});
+
+console.log(result.results.length); // the documents the LLM saw
+console.log(result.packing); // { tokens, maxTokens: 2000, kept, dropped, truncated }
+```
+
+With `maxContextTokens`, `result.results` is the packed list, so citations and evaluation score the documents the model was given. A stream's last chunk carries `packing`. `AgenticPipeline` has its own generation path and doesn't apply the option; call `packContext` on its documents yourself.
 
 ---
 

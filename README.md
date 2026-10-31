@@ -408,6 +408,21 @@ console.log(result.subQueries.map((q) => q.subQuery));
 console.log(result.answer);
 ```
 
+### Fit retrieved context into a token budget
+
+From 3.1.0, `maxContextTokens` keeps the documents sent to the LLM within a budget: it keeps the best-ranked ones that fit, cuts the top one at a word boundary when it alone is too long, and reports what it left out.
+
+```js
+const result = await pipeline.run({
+  query: "How many vacation days do employees get?",
+  options: { topK: 10, maxContextTokens: 2000 },
+});
+
+console.log(result.packing); // { tokens, maxTokens: 2000, kept, dropped, truncated }
+```
+
+`packContext(documents, { maxTokens, countTokens })` does the same outside a run; pass your model's tokenizer as `countTokens` for exact counts.
+
 ### Keep request latency bounded
 
 Every run accepts a timeout and an `AbortSignal`. The signal is passed to the embedder, retriever, reranker and LLM, so cancelled work stops instead of running in the background.

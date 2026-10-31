@@ -3,6 +3,7 @@
 // `pluginRegistry.register()` are resolvable by name here.
 const defaultRegistry = require('./plugin-registry.js');
 const { embedQuery, canEmbed } = require('../utils/embed-query');
+const { packContext } = require('./context-packing');
 const {
   normalizeCacheOption,
   PipelineCache,
@@ -197,8 +198,11 @@ module.exports.createRagPipeline = function createRagPipeline({
 
     // Per-run cache outcome per layer: 'hit', 'miss' or 'skip'.
     const cacheStatus = {};
-    const withCache = (result) =>
-      pc ? { ...result, cache: { ...cacheStatus } } : result;
+    let packing;
+    const withCache = (result) => {
+      const out = pc ? { ...result, cache: { ...cacheStatus } } : result;
+      return packing ? { ...out, packing } : out;
+    };
 
     const doWork = (async () => {
       run.throwIfAborted();
@@ -251,6 +255,22 @@ module.exports.createRagPipeline = function createRagPipeline({
         });
         run.throwIfAborted();
       }
+      // Fit the documents the LLM will see into the token budget. Packing
+      // copies what it cuts, so cached retrieval results stay whole.
+      if (opts.maxContextTokens != null && Array.isArray(results)) {
+        const packed = packContext(results, {
+          maxTokens: opts.maxContextTokens,
+          countTokens: opts.countTokens,
+        });
+        results = packed.documents;
+        packing = {
+          tokens: packed.tokens,
+          maxTokens: packed.maxTokens,
+          kept: packed.kept,
+          dropped: packed.dropped,
+          truncated: packed.truncated,
+        };
+      }
 
       const genOptions = { ...opts, signal };
       const wantsQuality = Boolean(opts.citations || opts.evaluate);
@@ -295,6 +315,10 @@ module.exports.createRagPipeline = function createRagPipeline({
             yield { token: String(answer || ''), done: false };
             yield { token: '', done: true };
           })();
+        }
+        if (source && packing) {
+          const quality = finalize;
+          finalize = (text) => ({ ...(quality ? quality(text) : {}), packing });
         }
         if (source) {
           run.throwIfAborted();
