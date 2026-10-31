@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Composable retrieval-augmented generation (RAG) for Node.js: grounded citations, evaluation, guardrails, hybrid retrieval and a CLI.",
   "main": "dist/index.cjs",
   "type": "commonjs",
