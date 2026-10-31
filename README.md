@@ -12,7 +12,8 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> ·
+  <a href="#rag-pipeline-utils">Quick start</a> ·
+  <a href="#why-this-library">Why this library</a> ·
   <a href="#use-cases">Use cases</a> ·
   <a href="#how-it-compares">How it compares</a> ·
   <a href="https://devilsdev.github.io/rag-pipeline-utils/">Documentation</a> ·
@@ -21,50 +22,13 @@
 
 # rag-pipeline-utils
 
-`rag-pipeline-utils` gives you the building blocks of a RAG system as small, replaceable parts: an embedder, a retriever, an optional reranker and an LLM, wired together by one `createRagPipeline()` call. Evaluation, per-sentence citations, guardrails and agentic retrieval are opt-in layers on top. Every part follows a plain JavaScript contract, so you can swap a built-in connector for your own code without touching the rest.
-
-- **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including a check that numbers in the answer appear in the sources.
-- **Provider-neutral.** OpenAI, Anthropic, Cohere and Ollama connectors are built in, plus an offline TF-IDF embedder. Anything with an `embed()` or `generate()` method works too.
-- **Production behaviour.** AbortSignal cancellation and timeouts, retries only on transient errors, ACL filtering before generation, PII redaction, typed exports for ESM, CommonJS and TypeScript.
-- **A CLI that does real work.** `init`, `ingest`, `query` and `serve` run against a persistent local index, fully offline if you want.
-
-## Contents
-
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Command line](#command-line)
-- [Use cases](#use-cases)
-- [How it works](#how-it-works)
-- [Capabilities](#capabilities)
-- [How it compares](#how-it-compares)
-- [Connectors and plugins](#connectors-and-plugins)
-- [Experimental modules](#experimental-modules)
-- [Compatibility](#compatibility)
-- [Documentation](#documentation)
-- [Security](#security)
-- [Contributing](#contributing)
-
-## Installation
+**Retrieval-augmented generation for Node.js, with answers you can check.** One `createRagPipeline()` call wires an embedder, a retriever, an optional reranker and an LLM. Citations, evaluation, guardrails and token budgets are opt-in layers on top, and every part is a plain JavaScript contract you can replace with your own code.
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
-
-To use `OpenAIConnector`, install the OpenAI SDK as well. It is an optional peer dependency, so installs that don't use OpenAI skip it:
-
-```bash
-npm install @devilsdev/rag-pipeline-utils openai
-```
-
-Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300) lists the changes to make.
-
-> **`npm install` failed with `husky: not found`?** Versions 2.0.0 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
-
-## Quick start
-
-This example runs offline: it uses the built-in TF-IDF embedder and an in-memory vector store.
+This runs offline, with the built-in TF-IDF embedder and an in-memory vector store:
 
 ```js
 import {
@@ -104,7 +68,55 @@ console.log(result.results[0].id); // "vacation"
 console.log(result.answer); // null: no LLM configured, so retrieval only
 ```
 
-To generate answers, add an LLM. The same connector can also embed:
+## Why this library
+
+- **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including a check that numbers in the answer appear in the sources.
+- **Measured, not guessed.** `rag-pipeline eval` scores a test set and fails CI when answers regress; [`rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) posts the result on every pull request. Retrieval is [benchmarked](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) on BEIR SciFact.
+- **Provider-neutral.** OpenAI, Anthropic, Cohere and Ollama connectors; PostgreSQL with pgvector and Qdrant stores; an offline TF-IDF embedder. Anything with an `embed()` or `generate()` method works too, including Vercel AI SDK models.
+- **Production behaviour.** Cancellation and timeouts on every stage, retries only on transient errors, ACL filtering before generation, PII redaction, caching, and a token budget for the context sent to the model.
+- **Built to extend.** Each stage is a small contract, and `runContractTests()` tests your own plugin against what the pipeline relies on.
+- **A CLI that does real work.** `init`, `ingest`, `query`, `eval` and `serve` run against a persistent local index, fully offline if you want.
+
+## Contents
+
+- [Installation](#installation)
+- [Quick start with an LLM](#quick-start-with-an-llm)
+- [Command line](#command-line)
+- [Use cases](#use-cases)
+- [How it works](#how-it-works)
+- [Capabilities](#capabilities)
+- [How it compares](#how-it-compares)
+- [Connectors and plugins](#connectors-and-plugins)
+- [Experimental modules](#experimental-modules)
+- [Compatibility](#compatibility)
+- [Documentation](#documentation)
+- [Security](#security)
+- [Contributing](#contributing)
+
+## Installation
+
+```bash
+npm install @devilsdev/rag-pipeline-utils
+```
+
+Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
+
+Optional peer dependencies, installed only by projects that use them:
+
+| Package       | Needed for                                    |
+| ------------- | --------------------------------------------- |
+| `openai`      | `OpenAIConnector`                             |
+| `pg`          | `PgVectorRetriever`                           |
+| `isolated-vm` | the experimental `PluginSandbox` (version 6+) |
+| `pino-pretty` | pretty-printed logs                           |
+
+Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300) lists the changes to make.
+
+> **`npm install` failed with `husky: not found`?** Versions 2.0.0 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
+
+## Quick start with an LLM
+
+To generate answers, add an LLM (`npm install openai` for `OpenAIConnector`). The same connector can also embed:
 
 ```js
 import {
@@ -504,6 +516,8 @@ The result of `run()` is:
   answer: string | null;            // null when no LLM is configured
   citations?: { citations; groundednessScore; hallucinationReport };
   evaluation?: { scores; details; metadata };
+  packing?: { tokens; maxTokens; kept; dropped; truncated }; // with maxContextTokens
+  cache?: { embeddings; retrieval; generation };             // with a cache
   error?: string;                   // set when success is false
 }
 ```
@@ -519,29 +533,29 @@ The result of `run()` is:
 | **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder; test sets with `validateDataset`, `runEvaluation`, `compareConfigurations`, `generateSyntheticDataset` and `rag-pipeline eval` |
 | **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                               |
 | **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                                                                                                                                                   |
-| **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; `validatePlugin` for plugin tests                                                                                                                                                       |
+| **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; contract tests for your plugins with `runContractTests()` and `checkContract()`                                                                                                         |
 | **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                                                                                                                                                     |
 | **Agentic**      | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                                                                                                                                                                                                 |
 | **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                                                                                                                                                          |
 | **Streaming**    | Token streaming with a final chunk carrying citations and evaluation; `SSEAdapter`, `WebSocketAdapter`                                                                                                                                                                         |
-| **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing                                                                                                                                                                                               |
+| **Cost**         | `CostTracker`, `TokenBudget`, `CostCalculator` with sourced, overridable pricing; `packContext()` and `maxContextTokens` fit retrieved documents into a token budget                                                                                                           |
 | **Operations**   | `DevServer` HTTP API, `ExecutionTracer`, `metrics` (counters, gauges, histograms), `eventLogger`, coded errors with suggestions (`createError`), `AuditLogger`, MCP tool server (`MCPServer`)                                                                                  |
 
 ## How it compares
 
-A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (competitor details as of April 2026). The other libraries are broader frameworks; this one is narrower on purpose.
+A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (competitor details as of October 2026). The other libraries are broader frameworks; this one is narrower on purpose.
 
-|                  | rag-pipeline-utils                                      | LangChain.js                          | LlamaIndex.TS                        |
-| ---------------- | ------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
-| Focus            | RAG pipelines for Node.js services                      | General-purpose LLM orchestration     | Indexing-first RAG                   |
-| Evaluation       | Built in: faithfulness, relevance, context P/R          | Via LangSmith (separate, paid option) | Some metrics, evolving               |
-| Citations        | Built in: per-sentence, with groundedness score         | Possible, wired up by hand            | Possible, wired up by hand           |
-| Guardrails       | Built in: pre-retrieval, retrieval, post-generation     | Via integrations (Guardrails AI etc.) | Via integrations                     |
-| Vector stores    | Memory and file-backed, plus a plugin contract          | 50+ integrations                      | Many integrations and native indexes |
-| LLM providers    | OpenAI, Anthropic, Cohere, Ollama, plus plugins         | Largest ecosystem                     | Large ecosystem                      |
-| Agents and tools | Query planning and iterative retrieval                  | Mature agent framework                | Agent framework                      |
-| Packaging        | One package, dual ESM and CommonJS                      | Many packages, mostly ESM             | One package, mostly ESM              |
-| Stability        | Documented [SEMVER policy](SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
+|                  | rag-pipeline-utils                                                                                                | LangChain.js                          | LlamaIndex.TS                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
+| Focus            | RAG pipelines for Node.js services                                                                                | General-purpose LLM orchestration     | Indexing-first RAG                   |
+| Evaluation       | Built in: faithfulness, relevance, context P/R                                                                    | Via LangSmith (separate, paid option) | Some metrics, evolving               |
+| Citations        | Built in: per-sentence, with groundedness score                                                                   | Possible, wired up by hand            | Possible, wired up by hand           |
+| Guardrails       | Built in: pre-retrieval, retrieval, post-generation                                                               | Via integrations (Guardrails AI etc.) | Via integrations                     |
+| Vector stores    | Memory, file, PostgreSQL with pgvector and Qdrant, plus a plugin contract                                         | 50+ integrations                      | Many integrations and native indexes |
+| LLM providers    | OpenAI (and compatible APIs), Anthropic, Ollama, AI SDK models, plus plugins                                      | Largest ecosystem                     | Large ecosystem                      |
+| Agents and tools | Query planning and iterative retrieval                                                                            | Mature agent framework                | Agent framework                      |
+| Packaging        | One package, dual ESM and CommonJS                                                                                | Many packages, mostly ESM             | One package, mostly ESM              |
+| Stability        | Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
 
 Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
 
@@ -570,7 +584,7 @@ npx rag-pipeline hub certify check ./my-llm-plugin   # scores contract, security
 
 ## Experimental modules
 
-Simulated or incomplete modules live under a separate entry point and are not covered by the stability guarantees in [SEMVER.md](SEMVER.md): model training, federated learning, multimodal processing, adaptive retrieval, SSO providers, multi-tenancy, data governance, the plugin sandbox and the plugin certification class.
+Simulated or incomplete modules live under a separate entry point and are not covered by the stability guarantees in [SEMVER.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md): model training, federated learning, multimodal processing, adaptive retrieval, SSO providers, multi-tenancy, data governance, the plugin sandbox and the plugin certification class.
 
 ```js
 import { TenantManager } from "@devilsdev/rag-pipeline-utils/experimental";
@@ -580,14 +594,13 @@ They are exported only from `/experimental`, not from the main entry (2.x also e
 
 ## Compatibility
 
-|                |                                                                                                                                                    |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Node.js        | 22 and 24                                                                                                                                          |
-| Module formats | CommonJS (`require`) and ESM (`import`)                                                                                                            |
-| Optional peers | `openai` for `OpenAIConnector`, `pg` for `PgVectorRetriever`, `isolated-vm` 6+ for the experimental `PluginSandbox`, `pino-pretty` for pretty logs |
-| TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI                                               |
-| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](SEMVER.md)                                                                          |
-| Supply chain   | Published from GitHub Actions with npm provenance                                                                                                  |
+|                |                                                                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js        | 22 and 24                                                                                                                           |
+| Module formats | CommonJS (`require`) and ESM (`import`)                                                                                             |
+| TypeScript     | Declarations for every export, including `/experimental`, compiled and run against the package in CI                                |
+| Versioning     | Semantic versioning with a deprecation window, see [SEMVER.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) |
+| Supply chain   | Published from GitHub Actions with npm provenance                                                                                   |
 
 ## Documentation
 
@@ -596,17 +609,17 @@ They are exported only from `/experimental`, not from the main entry (2.x also e
 - [API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/API-Reference)
 - [Generated API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/api): every export, with its methods, options and types
 - [Evaluation guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation)
-- [Examples](examples/): basic pipeline, OpenAI with Pinecone, and a deployable Fastify service ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
-- [Changelog](CHANGELOG.md), [benchmark results](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) and [methodology](BENCHMARKS.md)
+- [Examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples): basic pipeline, OpenAI with Pinecone, and a deployable Fastify service ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
+- [Changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md), [benchmark results](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) and [methodology](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/BENCHMARKS.md)
 
 ## Security
 
-Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md). The [security capability matrix](https://devilsdev.github.io/rag-pipeline-utils/docs/Security-Capabilities) lists what is hardened, what is recommended configuration, and what is an example only.
+Report vulnerabilities privately as described in [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md). The [security capability matrix](https://devilsdev.github.io/rag-pipeline-utils/docs/Security-Capabilities) lists what is hardened, what is recommended configuration, and what is an example only.
 
 ## Contributing
 
-Issues and pull requests are welcome. Start with the [contributing guide](docs/CONTRIBUTING.md), and use [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) for questions and ideas. Run `npm test` and `npm run lint` before opening a pull request.
+Issues and pull requests are welcome. Start with the [contributing guide](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/docs/CONTRIBUTING.md), and use [GitHub Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) for questions and ideas. Run `npm test` and `npm run lint` before opening a pull request.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE)
