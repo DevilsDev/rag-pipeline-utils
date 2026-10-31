@@ -24,3 +24,5 @@ or aborted run resolves `{ success: false, error }`; `run` never rejects.
 | <a id="property-query"></a> `query?`           | `string`                                          | -                                                                                                   |
 | <a id="property-results"></a> `results?`       | [`SearchResult`](SearchResult.md)[]               | The retrieved (filtered, reranked) documents; with `maxContextTokens`, the packed ones the LLM saw. |
 | <a id="property-success"></a> `success`        | `boolean`                                         | -                                                                                                   |
+| <a id="property-timing"></a> `timing?`         | `object`                                          | How long the run took, from the start of run(); on successful results.                              |
+| `timing.totalMs`                               | `number`                                          | -                                                                                                   |
