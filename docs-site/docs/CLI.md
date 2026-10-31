@@ -221,7 +221,7 @@ Model answers vary from run to run. Run the same configuration a few times to se
 [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) runs `rag-pipeline eval` on pull requests. It compares each pull request with the report from your default branch (kept in the Actions cache), posts the summary as a pull request comment that later runs update in place, and fails the check when scores drop:
 
 ```yaml no-run
-- uses: DevilsDev/rag-eval-action@v1
+- uses: DevilsDev/rag-eval-action@v2
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   with:
@@ -231,7 +231,7 @@ Model answers vary from run to run. Run the same configuration a few times to se
     min: faithfulness=0.8
 ```
 
-It needs 2.7.0 or later; see its README for the inputs, permissions and fork pull requests.
+`v2` installs the library's 3.x when your project doesn't have it, plus `openai` or `pg` when the config uses them (`v1` installs 2.x). The library needs 2.7.0 or later; see the Action's README for the inputs, permissions and fork pull requests.
 
 ---
 
