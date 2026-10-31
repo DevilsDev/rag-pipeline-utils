@@ -25,17 +25,23 @@ const { version } = require(path.join(root, "package.json"));
 
 const CDN = "https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@";
 const MAIN = `${CDN}main/`;
-const PINNED = new RegExp(
-  `${CDN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}v\\d+\\.\\d+\\.\\d+[^/]*/`,
-  "g",
-);
-
 function pin(text) {
   return text.split(MAIN).join(`${CDN}v${version}/`);
 }
 
+/** Every `${CDN}v<tag>/` back to `${CDN}main/`, without a regular expression. */
 function restore(text) {
-  return text.replace(PINNED, MAIN);
+  const parts = text.split(`${CDN}v`);
+  return parts
+    .map((part, i) => {
+      if (i === 0) return part;
+      const slash = part.indexOf("/");
+      const tag = slash === -1 ? "" : part.slice(0, slash);
+      // Only version tags (3.1.1, 3.2.0-rc.1); leave anything else as it was.
+      if (!tag || !/^\d/.test(tag) || /\s/.test(tag)) return `${CDN}v${part}`;
+      return MAIN + part.slice(slash + 1);
+    })
+    .join("");
 }
 
 if (require.main === module) {
