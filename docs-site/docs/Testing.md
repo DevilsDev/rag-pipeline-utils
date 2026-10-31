@@ -72,6 +72,67 @@ console.log(call.docs[0].id); // "vacation"
 
 `answer` can also be a function of the query and documents, `(query, docs) => string`. `EchoLLM` streams too (`generateStream`), word by word.
 
+## Contract tests for your plugins
+
+:::info[Coming in 3.1.0]
+
+`runContractTests` and `checkContract` ship in the next release; 3.0.x doesn't export them.
+
+:::
+
+`runContractTests(type, factory)` registers tests for the behaviour `createRagPipeline` relies on from a plugin of that type, so a plugin author doesn't have to work it out from the source. Pass a factory that returns a new plugin; each check gets its own.
+
+```js no-run
+// my-retriever.test.js
+const { runContractTests } = require("@devilsdev/rag-pipeline-utils/testing");
+const { MyRetriever } = require("./my-retriever");
+
+runContractTests("retriever", () => new MyRetriever());
+```
+
+That works as is in Jest, Mocha and Vitest with `globals: true`. Elsewhere, pass your framework's `describe` and `it`:
+
+```js no-run
+import { describe, it } from "vitest"; // or "node:test"
+import { runContractTests } from "@devilsdev/rag-pipeline-utils/testing";
+
+runContractTests("llm", () => new MyLLM(), { describe, it });
+```
+
+The checks use `node:assert`, so they need nothing from the framework beyond `describe` and `it`. Each type checks what the pipeline calls:
+
+| Type        | Checks                                                                                                                                                                                                      |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loader`    | `load()` can be called with no arguments                                                                                                                                                                    |
+| `embedder`  | `embed(text)` returns a non-empty array of finite numbers; every vector, `embedQuery()`'s included, has the same length; it accepts `{ signal }`                                                            |
+| `retriever` | an empty store returns an array; after `store(documents)`, `retrieve({ query, queryVector, topK, signal })` returns the closest first, sorted by numeric `score`, at most `topK`, with content and metadata |
+| `reranker`  | `rerank(query, documents, { topK })` returns only documents it was given, at most `topK`, with the one that answers the query first                                                                         |
+| `llm`       | `generate(query, documents, options)` resolves to a string; `generateStream()`, when present, yields `{ token, done }` and ends with `done: true`                                                           |
+
+Every type also runs `validatePlugin` and one query through `createRagPipeline` with stand-ins for the other stages. The options:
+
+- `registry: true` also requires the `metadata` that `pluginRegistry.register()` needs.
+- `setup(retriever, documents)` loads the test documents into a retriever that has no `store()`, such as one that reads an existing index.
+- `name` names the test group (default `"<type> contract"`).
+
+To run the same checks without a test framework, for example in a script, use `checkContract`:
+
+```js
+import { checkContract, EchoLLM } from "@devilsdev/rag-pipeline-utils/testing";
+
+const report = await checkContract("llm", () => new EchoLLM());
+console.log(report.passed); // true
+console.log(report.results.length); // 4
+
+const broken = await checkContract("llm", () => ({
+  async generate() {
+    return { text: "Twenty days." }; // an object, not the answer text
+  },
+}));
+console.log(broken.results.find((r) => !r.passed).error);
+// "generate() resolved to object; the pipeline needs the answer text"
+```
+
 ## In your own plugins' tests
 
 `HashEmbedder` and `EchoLLM` pass `validatePlugin(stage, plugin, { registry: true })`, so they can stand in for real components anywhere a pipeline stage is expected, including `checkAnswer`, `computeSemanticSimilarity` and your own plugins' tests.

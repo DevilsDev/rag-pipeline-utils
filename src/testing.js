@@ -11,6 +11,8 @@
  *   and records every call.
  * - fixtures: a few short policy documents.
  * - createTestPipeline(): a ready, indexed pipeline built from the above.
+ * - runContractTests() / checkContract(): the behaviour createRagPipeline
+ *   relies on from each plugin type, as tests for your own plugins.
  */
 
 const { createRagPipeline } = require('./core/create-pipeline');
@@ -253,4 +255,13 @@ async function createTestPipeline({
   return { pipeline, embedder, retriever, llm: llm || null };
 }
 
-module.exports = { HashEmbedder, EchoLLM, fixtures, createTestPipeline };
+const { runContractTests, checkContract } = require('./testing/contract-tests');
+
+module.exports = {
+  HashEmbedder,
+  EchoLLM,
+  fixtures,
+  createTestPipeline,
+  runContractTests,
+  checkContract,
+};

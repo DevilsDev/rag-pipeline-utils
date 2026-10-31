@@ -16,4 +16,6 @@ mdx:
 
 ## Functions
 
+- [checkContract](functions/checkContract.md)
 - [createTestPipeline](functions/createTestPipeline.md)
+- [runContractTests](functions/runContractTests.md)

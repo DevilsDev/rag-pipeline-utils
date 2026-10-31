@@ -11,6 +11,22 @@ page.
 
 ## [Unreleased]
 
+Planned for 3.1.0.
+
+### Added
+
+- **Contract tests for plugins.** `runContractTests(type, factory)` from
+  `@devilsdev/rag-pipeline-utils/testing` registers tests for the
+  behaviour `createRagPipeline` relies on from a loader, embedder,
+  retriever, reranker or LLM: return types and shapes, vector lengths,
+  ranking and `topK`, streaming chunks, and one query through a real
+  pipeline. The checks use `node:assert`, so they run in Jest, Vitest,
+  Mocha or `node:test` (pass `{ describe, it }` where they aren't
+  globals). `checkContract` runs the same checks without a test framework
+  and returns a report. Options: `registry` (also require register()'s
+  metadata), `setup` (load test documents into a retriever without
+  `store()`) and `name`.
+
 ## [3.0.2] - 2026-10-31
 
 ### Security
