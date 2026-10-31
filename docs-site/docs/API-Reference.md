@@ -8,12 +8,12 @@ Reference documentation for the public API of `@devilsdev/rag-pipeline-utils`. T
 
 The package has four entry points:
 
-| Entry                                        | Contents                                                                                                                                                                                    |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                                                                                                   |
-| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                                 |
-| `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and, from 3.1.0, plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
-| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                                           |
+| Entry                                        | Contents                                                                                                                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                                                                                      |
+| `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                    |
+| `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
+| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                              |
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
@@ -117,22 +117,22 @@ async run(params: {
 
 **Parameters:**
 
-| Parameter                  | Type                        | Required | Description                                                                                       |
-| -------------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
-| `query`                    | `string`                    | No       | Natural language query; give `query`, `queryVector` or both                                       |
-| `queryVector`              | `number[]`                  | No       | Pre-computed query embedding (skips the embedder)                                                 |
-| `options.topK`             | `number`                    | No       | Number of documents to retrieve (default: 3)                                                      |
-| `options.timeout`          | `number`                    | No       | Timeout in milliseconds; cancels in-flight work                                                   |
-| `options.signal`           | `AbortSignal`               | No       | Cancels the run when aborted                                                                      |
-| `options.stream`           | `boolean`                   | No       | Return an async iterable of `{ token, done }` chunks (default: false)                             |
-| `options.citations`        | `boolean`                   | No       | Attach `citations` (requires an llm)                                                              |
-| `options.citationOptions`  | `object`                    | No       | Options for `CitationTracker`                                                                     |
-| `options.evaluate`         | `boolean`                   | No       | Attach `evaluation` from `PipelineEvaluator`                                                      |
-| `options.evaluateOptions`  | `object`                    | No       | Options for `PipelineEvaluator`                                                                   |
-| `options.referenceAnswer`  | `string`                    | No       | Ground-truth answer; required for the context recall metric                                       |
-| `options.filterResults`    | `(docs) => docs \| Promise` | No       | Hook applied after retrieval and before reranking and generation (used by guardrails)             |
-| `options.maxContextTokens` | `number`                    | No       | From 3.1.0: fit the documents the LLM sees into this many tokens; see [packContext](#packcontext) |
-| `options.countTokens`      | `(text) => number`          | No       | From 3.1.0: token counter for `maxContextTokens` (default: about four characters per token)       |
+| Parameter                  | Type                        | Required | Description                                                                           |
+| -------------------------- | --------------------------- | -------- | ------------------------------------------------------------------------------------- |
+| `query`                    | `string`                    | No       | Natural language query; give `query`, `queryVector` or both                           |
+| `queryVector`              | `number[]`                  | No       | Pre-computed query embedding (skips the embedder)                                     |
+| `options.topK`             | `number`                    | No       | Number of documents to retrieve (default: 3)                                          |
+| `options.timeout`          | `number`                    | No       | Timeout in milliseconds; cancels in-flight work                                       |
+| `options.signal`           | `AbortSignal`               | No       | Cancels the run when aborted                                                          |
+| `options.stream`           | `boolean`                   | No       | Return an async iterable of `{ token, done }` chunks (default: false)                 |
+| `options.citations`        | `boolean`                   | No       | Attach `citations` (requires an llm)                                                  |
+| `options.citationOptions`  | `object`                    | No       | Options for `CitationTracker`                                                         |
+| `options.evaluate`         | `boolean`                   | No       | Attach `evaluation` from `PipelineEvaluator`                                          |
+| `options.evaluateOptions`  | `object`                    | No       | Options for `PipelineEvaluator`                                                       |
+| `options.referenceAnswer`  | `string`                    | No       | Ground-truth answer; required for the context recall metric                           |
+| `options.filterResults`    | `(docs) => docs \| Promise` | No       | Hook applied after retrieval and before reranking and generation (used by guardrails) |
+| `options.maxContextTokens` | `number`                    | No       | Fit the documents the LLM sees into this many tokens; see [packContext](#packcontext) |
+| `options.countTokens`      | `(text) => number`          | No       | Token counter for `maxContextTokens` (default: about four characters per token)       |
 
 **Returns:** `Promise<RunResult>` (or an async iterable when `stream` is true)
 
@@ -145,7 +145,7 @@ interface RunResult {
   citations?: object; // when options.citations is set and an llm is configured
   evaluation?: object; // when options.evaluate is set
   cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
-  packing?: object; // from 3.1.0, with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
+  packing?: object; // with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
 }
 
 // Failures resolve instead of throwing:
@@ -217,12 +217,6 @@ Components that ignore the signal still work: the run settles on abort anyway. A
 ---
 
 ### packContext
-
-:::info[Coming in 3.1.0]
-
-`packContext` and the `maxContextTokens` run option ship in the next release.
-
-:::
 
 Fits ranked documents into a token budget, so long passages don't overflow the model's context window or the bill. `run({ options: { maxContextTokens } })` applies it after filtering and reranking, before generation; you can also call it yourself.
 

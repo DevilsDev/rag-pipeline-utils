@@ -242,7 +242,7 @@ console.log(queryOnly.valid); // true
 console.log(queryOnly.warnings.length); // 1
 ```
 
-From 3.1.0, to test a plugin's behaviour and not only its shape, run the contract tests from `@devilsdev/rag-pipeline-utils/testing`: `runContractTests("retriever", () => new MyRetriever())` registers tests for what the pipeline relies on (see [Contract tests for your plugins](./Testing.md#contract-tests-for-your-plugins)).
+To test a plugin's behaviour and not only its shape, run the contract tests from `@devilsdev/rag-pipeline-utils/testing`: `runContractTests("retriever", () => new MyRetriever())` registers tests for what the pipeline relies on (see [Contract tests for your plugins](./Testing.md#contract-tests-for-your-plugins)).
 
 ### **Installing a plugin**
 

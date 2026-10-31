@@ -74,12 +74,6 @@ console.log(call.docs[0].id); // "vacation"
 
 ## Contract tests for your plugins
 
-:::info[Coming in 3.1.0]
-
-`runContractTests` and `checkContract` ship in the next release; 3.0.x doesn't export them.
-
-:::
-
 `runContractTests(type, factory)` registers tests for the behaviour `createRagPipeline` relies on from a plugin of that type, so a plugin author doesn't have to work it out from the source. Pass a factory that returns a new plugin; each check gets its own.
 
 ```js no-run
