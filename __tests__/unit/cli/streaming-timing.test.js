@@ -87,6 +87,8 @@ beforeAll(() => {
   configPath = path.join(dir, ".ragrc.json");
 });
 
+// Timings need the real clock (jest.setup.js fakes timers).
+beforeEach(() => jest.useRealTimers());
 afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));
 afterEach(() => {
   process.exitCode = undefined;
