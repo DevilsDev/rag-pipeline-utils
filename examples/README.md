@@ -1,13 +1,14 @@
 # Examples
 
-Runnable examples for `@devilsdev/rag-pipeline-utils` 3.x. Each needs Node.js 22 or later.
+Runnable examples for `@devilsdev/rag-pipeline-utils` 3.x. Each needs Node.js 22 or later (the Cloudflare Worker runs in Workers, built with Node.js).
 
-| Example                                   | Stack                                    | What it shows                                                                                                                                       | Offline mode            |
-| ----------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| [`basic-pipeline/`](./basic-pipeline)     | Built-ins only                           | `createRagPipeline` with `LocalEmbedder` + `MemoryRetriever`, a custom LLM plugin, citations/evaluation, retrieval-only runs, `AbortSignal` cancel. | Always offline          |
-| [`openai-pinecone/`](./openai-pinecone)   | OpenAI + Pinecone                        | `OpenAIConnector` as embedder and llm, a Pinecone retriever adapter, citations and evaluation.                                                      | `npm run mock`          |
-| [`fastify-rag-demo/`](./fastify-rag-demo) | Fastify 5 + OpenAI + in-memory retriever | HTTP RAG service with citations, evaluation, strict guardrails and request cancellation. Ships with Dockerfile + Fly.io + Railway configs.          | `npm run start:offline` |
-| [`mcp-server/`](./mcp-server)             | MCP SDK + built-ins                      | An MCP server whose `search_documents` tool lets Claude and other MCP clients search your indexed documents and cite them.                          | Always offline          |
+| Example                                     | Stack                                    | What it shows                                                                                                                                       | Offline mode                |
+| ------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| [`basic-pipeline/`](./basic-pipeline)       | Built-ins only                           | `createRagPipeline` with `LocalEmbedder` + `MemoryRetriever`, a custom LLM plugin, citations/evaluation, retrieval-only runs, `AbortSignal` cancel. | Always offline              |
+| [`openai-pinecone/`](./openai-pinecone)     | OpenAI + Pinecone                        | `OpenAIConnector` as embedder and llm, a Pinecone retriever adapter, citations and evaluation.                                                      | `npm run mock`              |
+| [`fastify-rag-demo/`](./fastify-rag-demo)   | Fastify 5 + OpenAI + in-memory retriever | HTTP RAG service with citations, evaluation, strict guardrails and request cancellation. Ships with Dockerfile + Fly.io + Railway configs.          | `npm run start:offline`     |
+| [`mcp-server/`](./mcp-server)               | MCP SDK + built-ins                      | An MCP server whose `search_documents` tool lets Claude and other MCP clients search your indexed documents and cite them.                          | Always offline              |
+| [`cloudflare-worker/`](./cloudflare-worker) | Cloudflare Workers + Claude              | A Worker that answers from bundled documents as JSON or server-sent events, with citations and time to first token. Needs 3.2.0.                    | Passages only without a key |
 
 Each example is **self-contained**: its own `package.json`, its own
 `README.md` with run instructions. Pick the one closest to your stack and

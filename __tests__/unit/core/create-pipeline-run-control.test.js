@@ -471,3 +471,44 @@ describe("createRagPipeline timing", () => {
     expect(result.timing).not.toHaveProperty("firstTokenMs");
   });
 });
+
+describe("createRagPipeline with an empty answer", () => {
+  beforeEach(() => jest.useRealTimers());
+
+  const retriever = { retrieve: async () => DOCS };
+  const emptyLlm = {
+    generate: async () => "",
+    async *generateStream() {
+      yield { token: "", done: true };
+    },
+  };
+
+  test("citations are skipped instead of failing the run", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: emptyLlm });
+
+    const result = await pipeline.run({
+      query: "q",
+      options: { citations: true, evaluate: true },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.answer).toBe("");
+    expect(result.citations).toBeUndefined();
+    expect(result.evaluation).toBeDefined();
+  });
+
+  test("a stream ends normally", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: emptyLlm });
+    const chunks = [];
+    for await (const chunk of await pipeline.run({
+      query: "q",
+      options: { stream: true, citations: true },
+    })) {
+      chunks.push(chunk);
+    }
+
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0].done).toBe(true);
+    expect(chunks[0].citations).toBeUndefined();
+  });
+});

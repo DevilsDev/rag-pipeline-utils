@@ -40,7 +40,9 @@ function computeQuality({ query, answer, results, options }) {
   const out = {};
   const docs = Array.isArray(results) ? results : [];
 
-  if (options.citations && answer !== null) {
+  // An empty answer has no sentences to cite (and CitationTracker rejects
+  // one), so it is treated like no answer here.
+  if (options.citations && typeof answer === 'string' && answer.trim()) {
     const { CitationTracker } = require('../citation/citation-tracker');
     const tracker = new CitationTracker(options.citationOptions || {});
     out.citations = tracker.track(answer, docs);

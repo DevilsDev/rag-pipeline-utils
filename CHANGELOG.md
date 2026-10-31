@@ -48,6 +48,15 @@ ingest` builds and returns passages with their sources, offline and
   p50 and p95 (`stages.firstToken` in `--json`). Code that compares whole
   chunks or results with deep equality will see the new `timing` field.
 
+- **Cloudflare Workers.** The pipeline runs on Workers with the
+  `nodejs_compat` flag: retrieval, generation and streaming, citations,
+  evaluation, caching, `QdrantRetriever` and the Anthropic, Ollama and
+  OpenAI connectors. A new `examples/cloudflare-worker` answers from
+  bundled documents as JSON or server-sent events. CI runs it and a probe
+  of the library in workerd, the Workers runtime, on every change
+  (`test/edge`). See the new Cloudflare Workers deployment page for what
+  doesn't work there (files, the CLI, the plugin sandbox) and for Vercel.
+
 ### Changed
 
 - **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The
@@ -55,6 +64,22 @@ ingest` builds and returns passages with their sources, offline and
   library, so the package no longer ships `src/` (1.7 MB) next to `dist/`.
   Nothing changes for users: the package's `exports` map never allowed
   imports from `src/`, and every CLI command behaves the same.
+
+### Fixed
+
+- `AnthropicConnector.generateStream` and `OllamaConnector.generateStream`
+  decode streamed bytes as UTF-8 across chunk boundaries, so a character
+  split between two network chunks is no longer garbled; they also read
+  web `ReadableStream` bodies, which on Workers previously streamed
+  nothing.
+- `QdrantRetriever` calls the global `fetch` correctly on Workers, which
+  rejected it with "Illegal invocation".
+- The optional `openai` and `@opentelemetry/api` packages load inside
+  bundles (Wrangler, esbuild, webpack). The `require.resolve` check used
+  before reported them missing there even when they were bundled. A module
+  missing inside them is still reported as is.
+- A run with `citations` no longer fails when the model returns an empty
+  answer: citations are skipped, as for a retrieval-only run.
 
 ## [3.1.1] - 2026-10-31
 

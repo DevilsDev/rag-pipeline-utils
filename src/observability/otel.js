@@ -19,6 +19,7 @@
  */
 
 const { version: LIBRARY_VERSION } = require('../../package.json');
+const { loadOptionalPeer } = require('../utils/optional-peer');
 
 const TRACER_NAME = '@devilsdev/rag-pipeline-utils';
 
@@ -26,16 +27,11 @@ const TRACER_NAME = '@devilsdev/rag-pipeline-utils';
 const PROVIDERS = new Set(['openai', 'anthropic', 'cohere', 'ollama']);
 
 function loadOtelApi() {
-  try {
-    require.resolve('@opentelemetry/api');
-  } catch {
-    const err = new Error(
-      'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api',
-    );
-    err.code = 'MISSING_DEPENDENCY';
-    throw err;
-  }
-  return require('@opentelemetry/api'); // eslint-disable-line global-require
+  return loadOptionalPeer(
+    '@opentelemetry/api',
+    () => require('@opentelemetry/api'), // eslint-disable-line global-require
+    'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api',
+  );
 }
 
 /**

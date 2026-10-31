@@ -1,0 +1,13 @@
+{
+  "name": "rag-pipeline-utils-edge-check",
+  "private": true,
+  "type": "module",
+  "description": "Runs the library in workerd (Cloudflare Workers) through Wrangler and Miniflare. See run.mjs.",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "miniflare": "^4.20260730.0",
+    "wrangler": "^4.156.0"
+  }
+}
