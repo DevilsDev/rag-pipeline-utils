@@ -11,6 +11,31 @@ page.
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-10-31
+
+A patch for the npm package page. No code changes.
+
+### Changed
+
+- **The README opens with the install command and a runnable example**,
+  followed by "Why this library", whose points now include the evaluation
+  CLI and Action, the PostgreSQL/pgvector and Qdrant stores, contract
+  tests and context packing. The optional peer dependencies are listed
+  under Installation, and the capabilities and comparison tables cover
+  3.1.
+- **Every README link is absolute**, so links to SEMVER.md, CHANGELOG.md,
+  SECURITY.md, LICENSE, the examples and the contributing guide work on
+  npmjs.com. A test keeps links absolute, images on https and in-page
+  anchors pointing at headings.
+- **The README's images are pinned to the release in the published
+  package.** On GitHub they still load from `main`; `npm pack` rewrites
+  them to the version's tag and restores them afterwards, so each
+  version's npm page shows its own images.
+- **The banner says Node.js ≥ 22** (it said 18).
+- `package.json`: `homepage` is the documentation site (it was the GitHub
+  README), and the keywords add pgvector, qdrant, vector-database,
+  rag-evaluation, llm-evaluation and context-window.
+
 ## [3.1.0] - 2026-10-31
 
 Two additions for building on the library; no breaking changes.
@@ -888,6 +913,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.1.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.1
 [3.1.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.0
 [3.0.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.2
 [3.0.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.1

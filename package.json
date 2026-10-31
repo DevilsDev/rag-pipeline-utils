@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Composable retrieval-augmented generation (RAG) for Node.js: grounded citations, evaluation, guardrails, hybrid retrieval and a CLI.",
   "main": "dist/index.cjs",
   "type": "commonjs",
@@ -41,7 +41,8 @@
   },
   "scripts": {
     "build": "node scripts/build.js && node scripts/generate-types.js && node scripts/check-type-exports.js",
-    "prepack": "npm run build",
+    "prepack": "npm run build && node scripts/pin-readme-assets.js",
+    "postpack": "node scripts/pin-readme-assets.js --restore",
     "docs:validate": "node scripts/validate-docs-examples.js",
     "verify:esm": "node scripts/verify-esm.mjs",
     "prepublishOnly": "npm run lint && npm test && npm run docs:validate && npm run verify:esm",
@@ -147,14 +148,20 @@
     "ai",
     "nodejs",
     "typescript",
-    "cli"
+    "cli",
+    "pgvector",
+    "qdrant",
+    "vector-database",
+    "rag-evaluation",
+    "llm-evaluation",
+    "context-window"
   ],
   "author": "Ali Kahwaji",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/DevilsDev/rag-pipeline-utils/issues"
   },
-  "homepage": "https://github.com/DevilsDev/rag-pipeline-utils#readme",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
   "files": [
     "dist/",
     "src/",
