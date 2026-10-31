@@ -97,6 +97,13 @@ export interface PipelineRunOptions {
     referenceAnswer?: string;
     /** Filter or transform the retrieved documents before reranking. */
     filterResults?: (docs: SearchResult[]) => SearchResult[] | Promise<SearchResult[]>;
+    /**
+     * Fit the documents the LLM sees into this many tokens (see packContext).
+     * \`results\` is then the packed list, and \`packing\` says what was cut.
+     */
+    maxContextTokens?: number;
+    /** Token counter for \`maxContextTokens\` (default: about four characters per token). */
+    countTokens?: (text: string) => number;
     [key: string]: any;
   };
 }
@@ -108,7 +115,7 @@ export interface PipelineRunOptions {
 export interface PipelineRunResult {
   success: boolean;
   query?: string;
-  /** The retrieved (filtered, reranked) documents. */
+  /** The retrieved (filtered, reranked) documents; with \`maxContextTokens\`, the packed ones the LLM saw. */
   results?: SearchResult[];
   /** The LLM's answer; null when the pipeline has no llm. */
   answer?: string | null;
@@ -124,6 +131,21 @@ export interface PipelineRunResult {
     retrieval?: CacheOutcome;
     generation?: CacheOutcome;
   };
+  /** What \`maxContextTokens\` kept and cut; present when it was set. */
+  packing?: ContextPacking;
+}
+
+/** How the documents were fitted into \`maxContextTokens\`. */
+export interface ContextPacking {
+  /** Tokens used by the kept documents, wrappers included. */
+  tokens: number;
+  maxTokens: number;
+  /** Ids (or positions) of the documents passed to the LLM, in order. */
+  kept: Array<string | number>;
+  /** Ids of the documents left out because they didn't fit. */
+  dropped: Array<string | number>;
+  /** Ids of documents cut to fit (marked \`metadata.truncated\`). */
+  truncated: Array<string | number>;
 }
 
 /**
@@ -137,6 +159,8 @@ export interface StreamChunk {
   results?: SearchResult[];
   citations?: any;
   evaluation?: any;
+  /** On the last chunk, when \`maxContextTokens\` was set. */
+  packing?: ContextPacking;
 }
 
 /** A pipeline returned by {@link createRagPipeline}. */

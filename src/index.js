@@ -5,6 +5,7 @@
 
 // Core pipeline functionality
 const { createRagPipeline } = require('./core/create-pipeline');
+const { packContext } = require('./core/context-packing');
 
 // Configuration utilities
 const { loadRagConfig } = require('./config/load-config');
@@ -170,6 +171,7 @@ module.exports = {
   // Core API
   createRagPipeline,
   createPipeline: createRagPipeline, // Alias for backward compatibility
+  packContext,
 
   // Configuration
   loadConfig: loadRagConfig,

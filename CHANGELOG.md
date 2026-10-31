@@ -26,6 +26,17 @@ Planned for 3.1.0.
   and returns a report. Options: `registry` (also require register()'s
   metadata), `setup` (load test documents into a retriever without
   `store()`) and `name`.
+- **Context packing to a token budget.** `run({ options: {
+maxContextTokens } })` fits the documents the LLM sees into a token
+  budget, after filtering and reranking: it keeps the best-ranked
+  documents that fit, skipping ones that don't, and cuts the top document
+  at a word boundary when it alone is too long. `result.results` is then
+  the packed list (so citations and evaluation score what the model saw)
+  and `result.packing` lists what was kept, dropped and cut; a stream's
+  last chunk carries it too. `countTokens` plugs in a real tokenizer
+  (default: about four characters per token). The same logic is exported
+  as `packContext(documents, { maxTokens, countTokens, truncate })`. Cut
+  documents are copies, so cached retrieval results stay whole.
 
 ## [3.0.2] - 2026-10-31
 

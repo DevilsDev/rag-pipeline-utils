@@ -205,7 +205,7 @@ const pipeline = createRagPipeline({ embedder, retriever, reranker, llm });
 
 ## **Generation Cost and Tokens**
 
-Use smaller models and lower `maxTokens` on the LLM connector where quality allows (`OpenAIConnector` defaults: `model: "gpt-4o-mini"`, `maxTokens: 4096`, `temperature: 0.7`).
+Cap the context sent to the LLM with `run({ options: { maxContextTokens } })` (from 3.1.0; see [packContext](./API-Reference.md#packcontext)), which keeps the best-ranked documents that fit. Use smaller models and lower `maxTokens` on the LLM connector where quality allows (`OpenAIConnector` defaults: `model: "gpt-4o-mini"`, `maxTokens: 4096`, `temperature: 0.7`).
 
 `CostTracker` wraps a pipeline and attaches a cost estimate to every result; with `enableBudget` it enforces a `TokenBudget`:
 
