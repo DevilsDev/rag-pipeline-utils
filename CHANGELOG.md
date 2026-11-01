@@ -76,6 +76,17 @@ estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
   prints the chosen model, class and estimated cost, `--json` adds `route`,
   and `--stats` prices the run at the chosen model.
 
+- **`@devilsdev/rag-pipeline-utils/edge`.** The library without Node.js
+  APIs, as one ES module, for Vercel Edge Functions, Cloudflare Workers
+  without `nodejs_compat`, Deno and Netlify Edge Functions. It has the
+  pipeline, connectors (Anthropic, Cohere, Ollama, the AI SDK adapter),
+  `MemoryRetriever`, `QdrantRetriever`, routing, grounding, guardrails and
+  evaluation; it leaves out files, `.ragrc.json`, `PgVectorRetriever`,
+  `OpenAIConnector` and the CLI. Cache keys and Qdrant point ids are the
+  same as on Node.js. CI runs it in workerd with no Node.js compatibility.
+- **`telemetry: { api }`** passes the `@opentelemetry/api` module to
+  `createRagPipeline`, for `/edge`, which cannot load it itself.
+
 ### Changed
 
 - **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The

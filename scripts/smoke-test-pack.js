@@ -204,6 +204,30 @@ const results = [
       throw new Error(`unexpected output:\n${stdout}${stderr}`);
     }
   }),
+  check("edge entry: import() runs a pipeline, quietly", () => {
+    const script = [
+      `const edge = await import('${pkgName}/edge');`,
+      "const embedder = new edge.LocalEmbedder();",
+      "const docs = [{ id: 'vacation', content: 'Employees get twenty vacation days.' }];",
+      "embedder.train(docs);",
+      "const retriever = new edge.MemoryRetriever();",
+      "await retriever.store([{ ...docs[0], vector: await embedder.embed(docs[0].content) }]);",
+      "const r = await edge.createRagPipeline({ embedder, retriever }).run({ query: 'vacation days' });",
+      "if (!r.success || r.results[0].id !== 'vacation') throw new Error(JSON.stringify(r));",
+      "if ('OpenAIConnector' in edge) throw new Error('edge exports OpenAIConnector');",
+      "const notices = new URL('./edge.mjs.LICENSES.txt', import.meta.resolve('" +
+        pkgName +
+        "/edge'));",
+      "if (!(await import('node:fs')).readFileSync(notices, 'utf8').includes('- axios@')) throw new Error('edge.mjs.LICENSES.txt');",
+    ].join("\n");
+    const { stdout, stderr } = runCapture(
+      ["--input-type=module", "-e", script],
+      consumerDir,
+    );
+    if (stdout.trim() || stderr.trim()) {
+      throw new Error(`unexpected output:\n${stdout}${stderr}`);
+    }
+  }),
   check("import() loads", () => {
     run(
       process.execPath,

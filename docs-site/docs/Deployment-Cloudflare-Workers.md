@@ -30,7 +30,7 @@ compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 ```
 
-The library uses Node.js APIs such as `events`, `crypto`, `buffer` and `stream`, which Workers provide under `nodejs_compat`. Without the flag, Wrangler fails to bundle it.
+The library uses Node.js APIs such as `events`, `crypto`, `buffer` and `stream`, which Workers provide under `nodejs_compat`. Without the flag, Wrangler fails to bundle it; use the [`/edge` entry](#without-nodejs_compat) there.
 
 ```js no-run
 import {
@@ -83,6 +83,6 @@ These run in workerd in CI:
 
 The bundle is about 1.5 MB compressed.
 
-## Vercel and other edge runtimes
+## Without nodejs_compat
 
-Vercel's Edge runtime, and Workers without `nodejs_compat`, provide only a subset of Node.js APIs, and the library loads Node.js modules (`fs`, `path`, `crypto`, `stream`) when it is imported, so it does not run there. On Vercel, use the Node.js runtime for the function that calls the pipeline.
+The main entry needs `nodejs_compat`. Without the flag, import `@devilsdev/rag-pipeline-utils/edge` instead (from 3.2.0): the library without Node.js APIs, which CI also runs in workerd. It leaves out what needs files or Node-only packages, `OpenAIConnector` among them. See [Edge runtimes](./Deployment-Edge.md), which also covers Vercel Edge Functions.

@@ -35,6 +35,7 @@ const ENTRY_EXPORTS = {
     require(path.join(ROOT, "src/experimental.js")),
   ),
   [`${PKG}/testing`]: Object.keys(require(path.join(ROOT, "src/testing.js"))),
+  [`${PKG}/edge`]: Object.keys(require(path.join(ROOT, "src/edge.js"))),
 };
 
 const pages = fs

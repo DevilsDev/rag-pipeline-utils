@@ -167,7 +167,7 @@ const pipeline = createRagPipeline({
 });
 ```
 
-Without a registered tracer provider the spans are no-ops, so leaving `telemetry: true` on costs nothing. To use a specific tracer, pass `telemetry: { tracer }`.
+Without a registered tracer provider the spans are no-ops, so leaving `telemetry: true` on costs nothing. To use a specific tracer, pass `telemetry: { tracer }`. With [`@devilsdev/rag-pipeline-utils/edge`](./Deployment-Edge.md#telemetry), which can't load the API itself, pass the module too: `telemetry: { api, tracer }`.
 
 A run produces spans like these, nested under whatever span is active when you call `run()` (an HTTP request, for example):
 
