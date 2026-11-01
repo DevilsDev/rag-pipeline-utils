@@ -319,8 +319,9 @@ async function retrieve({ components, config, configDir, question, topK = 3 }) {
  *   with each token (only with an llm stage)
  * @returns {Promise<{answer: string|null, results: Array, citations?: object,
  *   timings: Array<{stage: string, ms: number}>, durationMs: number,
- *   firstTokenMs?: number|null}>} `firstTokenMs` (streamed answers only) is
- *   when the first token arrived, from the start of the run
+ *   firstTokenMs?: number|null, route?: object}>} `firstTokenMs` (streamed
+ *   answers only) is when the first token arrived, from the start of the
+ *   run; `route` is the model the "router" llm chose
  */
 async function query({
   config,
@@ -357,6 +358,7 @@ async function query({
     let answer = "";
     let citations;
     let firstTokenMs = null;
+    let route;
     for await (const chunk of result) {
       if (chunk.token) {
         answer += chunk.token;
@@ -365,6 +367,7 @@ async function query({
       if (chunk.done) {
         citations = chunk.citations;
         firstTokenMs = chunk.timing ? chunk.timing.firstTokenMs : null;
+        route = chunk.route;
       }
     }
     return {
@@ -374,6 +377,7 @@ async function query({
       timings,
       durationMs: performance.now() - started,
       firstTokenMs,
+      ...(route && { route }),
     };
   }
 
@@ -381,6 +385,7 @@ async function query({
     answer: c.llm ? result.answer : null,
     results: result.results,
     ...(result.citations && { citations: result.citations }),
+    ...(result.route && { route: result.route }),
     timings,
     durationMs: performance.now() - started,
   };

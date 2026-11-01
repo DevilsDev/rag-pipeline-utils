@@ -66,7 +66,7 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "description": "Built-in names: loader \"auto\"; embedder \"local\", \"openai\", \"ollama\", \"cohere\"; retriever \"file-store\", \"memory\"; llm \"openai\", \"anthropic\", \"ollama\"; reranker \"scoring\". Any other name must be declared under \"plugins\" or registered on pluginRegistry.",
+          "description": "Built-in names: loader \"auto\"; embedder \"local\", \"openai\", \"ollama\", \"cohere\"; retriever \"file-store\", \"memory\"; llm \"openai\", \"anthropic\", \"ollama\", \"router\" (cost-aware routing over other llms); reranker \"scoring\". Any other name must be declared under \"plugins\" or registered on pluginRegistry.",
           "examples": [
             "auto",
             "local",
@@ -76,6 +76,7 @@
             "file-store",
             "memory",
             "anthropic",
+            "router",
             "scoring"
           ]
         },
@@ -83,6 +84,76 @@
         "config": {
           "type": "object",
           "description": "Options passed to the component's constructor, e.g. { \"model\": \"gpt-4o-mini\" } or { \"path\": \".rag/index.json\" } for file-store. Do not put API keys here; use environment variables."
+        }
+      },
+      "if": {
+        "properties": {
+          "stage": { "const": "llm" },
+          "name": { "const": "router" }
+        },
+        "required": ["stage", "name"]
+      },
+      "then": {
+        "required": ["config"],
+        "properties": { "config": { "$ref": "#/definitions/routerConfig" } }
+      }
+    },
+    "routerConfig": {
+      "type": "object",
+      "description": "Options of the \"router\" llm: each query goes to the cheapest route that handles its class (\"simple\" or \"complex\").",
+      "required": ["routes"],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/route" }
+        },
+        "fallback": {
+          "type": "boolean",
+          "default": false,
+          "description": "When the chosen model fails, try the next cheapest route for the class."
+        },
+        "expectedOutputTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 300,
+          "description": "Answer length used in the cost estimate."
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "not": { "const": "router" },
+          "description": "An llm: a built-in name, a plugin under \"plugins\" or a registered plugin."
+        },
+        "config": {
+          "type": "object",
+          "description": "Options for that llm, e.g. { \"model\": \"claude-haiku-4-5\" }."
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Model the route is priced by. Defaults to config.model, then the connector's default model."
+        },
+        "handles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Query classes the route serves (\"simple\", \"complex\"). All classes when omitted."
+        },
+        "pricing": {
+          "type": "object",
+          "required": ["input", "output"],
+          "properties": {
+            "input": { "type": "number", "minimum": 0 },
+            "output": { "type": "number", "minimum": 0 },
+            "unit": { "type": "number", "exclusiveMinimum": 0, "default": 1000 }
+          },
+          "description": "USD per unit tokens, for a model not in the built-in price table."
         }
       }
     }
