@@ -111,6 +111,32 @@ const results = [
       }
     }
   }),
+  check("the CLI's prompts and colours are bundled, not installed", () => {
+    const installed = path.join(
+      consumerDir,
+      "node_modules",
+      ...pkgName.split("/"),
+    );
+    const notices = path.join(installed, "dist", "cli.cjs.LICENSES.txt");
+    if (!fs.existsSync(notices)) {
+      throw new Error("dist/cli.cjs.LICENSES.txt is missing");
+    }
+    const text = fs.readFileSync(notices, "utf8");
+    for (const name of [
+      "inquirer",
+      "chalk",
+      "commander",
+      "ora",
+      "cli-table3",
+    ]) {
+      if (fs.existsSync(path.join(consumerDir, "node_modules", name))) {
+        throw new Error(`${name} was installed; dist/cli.cjs bundles it`);
+      }
+      if (!text.includes(`- ${name}@`)) {
+        throw new Error(`${name} is missing from cli.cjs.LICENSES.txt`);
+      }
+    }
+  }),
   check("no install-time scripts run in users' projects", () => {
     const installed = require(
       path.join(consumerDir, "node_modules", pkgName, "package.json"),

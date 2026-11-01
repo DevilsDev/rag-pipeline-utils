@@ -5,13 +5,50 @@
  * isTTY = true) instead of an injected prompt function, so the production
  * wiring (inquirer.createPromptModule bound to those streams) renders each
  * question and reads keystrokes exactly as it would from a terminal.
+ *
+ * Each test runs twice: on the source, and on the handler bundled the way
+ * scripts/build.js bundles dist/cli.cjs, with inquirer (a devDependency)
+ * inside the bundle, as users run it.
  */
 
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { PassThrough, Writable } = require("stream");
-const { handleInit } = require("../../src/cli/handlers/init-handler.js");
+const esbuild = require("esbuild");
+
+const ROOT = path.resolve(__dirname, "../..");
+
+/** init-handler.js bundled like dist/cli.cjs: dependencies stay external. */
+function bundledHandler() {
+  const pkg = require(path.join(ROOT, "package.json"));
+  // Inside the repository, so the external dependencies resolve.
+  const cache = path.join(ROOT, "node_modules", ".cache");
+  fs.mkdirSync(cache, { recursive: true });
+  const outfile = path.join(
+    fs.mkdtempSync(path.join(cache, "init-bundle-")),
+    "init-handler.cjs",
+  );
+  esbuild.buildSync({
+    entryPoints: [path.join(ROOT, "src/cli/handlers/init-handler.js")],
+    bundle: true,
+    format: "cjs",
+    platform: "node",
+    target: "node22",
+    outfile,
+    external: [
+      ...Object.keys(pkg.dependencies || {}),
+      ...Object.keys(pkg.peerDependencies || {}),
+    ],
+    logLevel: "error",
+  });
+  const source = fs.readFileSync(outfile, "utf8");
+  // The point of the bundle: inquirer is inside it, not required.
+  if (/require\(["']inquirer["']\)/.test(source)) {
+    throw new Error("inquirer was not bundled");
+  }
+  return require(outfile).handleInit;
+}
 
 const KEY = { enter: "\r", down: "\u001b[B" };
 // eslint-disable-next-line no-control-regex
@@ -82,7 +119,17 @@ function createTerminal() {
 const type = (text) => [text, KEY.enter];
 const TIMEOUT_MS = 20000;
 
-describe("init wizard with real inquirer prompts", () => {
+describe.each([
+  [
+    "source",
+    () => require("../../src/cli/handlers/init-handler.js").handleInit,
+  ],
+  ["bundled like dist/cli.cjs", bundledHandler],
+])("init wizard with real inquirer prompts (%s)", (_label, load) => {
+  let handleInit;
+  beforeAll(() => {
+    handleInit = load();
+  });
   let dir;
   let output;
   let lines;
