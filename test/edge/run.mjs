@@ -1,9 +1,12 @@
 /**
  * Edge runtime check: bundles Workers with Wrangler, the way users deploy
  * them, with @devilsdev/rag-pipeline-utils aliased to this repository's
- * build (dist/index.cjs; run `npm run build` first), and runs them in
- * workerd, the Cloudflare Workers runtime, through Miniflare. Outbound
- * requests are answered by fake Anthropic, Ollama, OpenAI and Qdrant APIs.
+ * build (dist/index.cjs and dist/edge.mjs; run `npm run build` first), and
+ * runs them in workerd, the Cloudflare Workers runtime, through Miniflare.
+ * The main entry runs with nodejs_compat; /edge runs without it, where no
+ * Node.js API exists (stricter than Vercel Edge, which has process.env,
+ * Buffer and events). Outbound requests are answered by fake Anthropic,
+ * Ollama, OpenAI and Qdrant APIs.
  *
  *   npm install && npm test      (in test/edge)
  *
@@ -14,11 +17,13 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { Miniflare, Response } from "miniflare";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const library = path.join(root, "dist", "index.cjs");
+const edgeLibrary = path.join(root, "dist", "edge.mjs");
 const wrangler = path.join(
   here,
   "node_modules",
@@ -28,15 +33,20 @@ const wrangler = path.join(
 );
 const COMPAT_DATE = "2025-09-01";
 
-if (!fs.existsSync(library)) {
-  console.error(
-    `No build at ${library}. Run \`npm run build\` in the repository first.`,
-  );
-  process.exit(1);
+for (const file of [library, edgeLibrary]) {
+  if (!fs.existsSync(file)) {
+    console.error(
+      `No build at ${file}. Run \`npm run build\` in the repository first.`,
+    );
+    process.exit(1);
+  }
 }
 
-/** Bundle `entry` with Wrangler and return the bundled module's source. */
-function bundle(entry) {
+/**
+ * Bundle `entry` with Wrangler and return the bundled module's source.
+ * Without `nodejs_compat`, Wrangler fails on any Node.js import.
+ */
+function bundle(entry, { nodejsCompat = true } = {}) {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "rag-edge-"));
   const config = path.join(out, "wrangler.toml");
   fs.writeFileSync(
@@ -45,7 +55,7 @@ function bundle(entry) {
       `name = "rag-edge-check"`,
       `main = ${JSON.stringify(entry.replaceAll("\\", "/"))}`,
       `compatibility_date = "${COMPAT_DATE}"`,
-      `compatibility_flags = ["nodejs_compat"]`,
+      `compatibility_flags = [${nodejsCompat ? '"nodejs_compat"' : ""}]`,
       "",
     ].join("\n"),
   );
@@ -61,6 +71,8 @@ function bundle(entry) {
       path.join(out, "dist"),
       "--alias",
       `@devilsdev/rag-pipeline-utils:${library.replaceAll("\\", "/")}`,
+      "--alias",
+      `@devilsdev/rag-pipeline-utils/edge:${edgeLibrary.replaceAll("\\", "/")}`,
     ],
     {
       cwd: here,
@@ -91,13 +103,18 @@ function chunked(text, size = 7) {
   });
 }
 
+// Qdrant point ids the Workers stored, to compare with the Node build's.
+const storedPointIds = [];
+
 async function upstream(request) {
   const url = new URL(request.url);
   const json = (body) =>
     new Response(JSON.stringify(body), {
       headers: { "content-type": "application/json" },
     });
-  const body = request.method === "POST" ? await request.json() : {};
+  const body = ["POST", "PUT"].includes(request.method)
+    ? await request.json()
+    : {};
   const question = JSON.stringify(body);
 
   if (url.pathname === "/v1/messages") {
@@ -171,6 +188,13 @@ async function upstream(request) {
       status: "ok",
     });
   }
+  if (url.pathname === "/collections/docs/points" && request.method === "PUT") {
+    storedPointIds.push(...body.points.map((p) => p.id));
+    return json({ result: { status: "completed" }, status: "ok" });
+  }
+  if (url.pathname === "/collections/docs/index") {
+    return json({ result: { status: "completed" }, status: "ok" });
+  }
   if (url.pathname === "/collections/docs") {
     return json({ result: { status: "green" }, status: "ok" });
   }
@@ -179,14 +203,14 @@ async function upstream(request) {
   });
 }
 
-async function serve(bundled, bindings = {}) {
+async function serve(bundled, bindings = {}, { nodejsCompat = true } = {}) {
   return new Miniflare({
     modules: [
       { type: "ESModule", path: bundled.file, contents: bundled.source },
     ],
     modulesRoot: path.dirname(bundled.file),
     compatibilityDate: COMPAT_DATE,
-    compatibilityFlags: ["nodejs_compat"],
+    compatibilityFlags: nodejsCompat ? ["nodejs_compat"] : [],
     bindings,
     outboundService: upstream,
   });
@@ -198,17 +222,14 @@ function report(name, ok, detail = "") {
   console.log(`${ok ? "ok  " : "FAIL"}  ${name}${detail ? `  ${detail}` : ""}`);
 }
 
-// 1. The library's runtime-neutral features.
-const probe = bundle(path.join(here, "probe-worker.js"));
-console.log(`probe bundle: ${(probe.size / 1024 / 1024).toFixed(1)} MB`);
-{
-  const mf = await serve(probe);
+async function runProbe(label, bundled, bindings, options) {
+  const mf = await serve(bundled, bindings, options);
   try {
     const res = await mf.dispatchFetch("http://localhost/");
     const results = await res.json();
     for (const [name, r] of Object.entries(results)) {
       report(
-        name,
+        `${label}: ${name}`,
         r.ok,
         r.ok
           ? JSON.stringify(r.value).slice(0, 100)
@@ -220,7 +241,54 @@ console.log(`probe bundle: ${(probe.size / 1024 / 1024).toFixed(1)} MB`);
   }
 }
 
-// 2. The Cloudflare Worker example, as written.
+// 1. The main entry's runtime-neutral features, with nodejs_compat.
+const probe = bundle(path.join(here, "probe-worker.js"));
+console.log(`probe bundle: ${(probe.size / 1024 / 1024).toFixed(1)} MB`);
+await runProbe("main", probe);
+
+// 2. /edge without nodejs_compat, compared with the Node build: the same
+// cache key and Qdrant point ids from Node's crypto and the edge's.
+const node = createRequire(import.meta.url)(library);
+const SYSTEM_PROMPT = "Answer from the documents only. ".repeat(4);
+const nodeCacheKey = new node.AnthropicConnector({
+  apiKey: "k",
+  baseURL: "https://upstream.test",
+  systemPrompt: SYSTEM_PROMPT,
+}).getCacheKey("llm");
+const nodePointIds = [];
+await new node.QdrantRetriever({
+  url: "https://upstream.test",
+  collection: "docs",
+  fetch: async (url, init) => {
+    const u = new URL(url);
+    if (u.pathname.endsWith("/points") && init.method === "PUT") {
+      nodePointIds.push(...JSON.parse(init.body).points.map((p) => p.id));
+    }
+    return globalThis.Response.json({ result: {}, status: "ok" });
+  },
+}).store([{ id: "vacation", content: "twenty days", vector: [1, 0] }]);
+
+const edgeProbe = bundle(path.join(here, "edge-probe.js"), {
+  nodejsCompat: false,
+});
+console.log(
+  `edge probe bundle: ${(edgeProbe.size / 1024 / 1024).toFixed(1)} MB`,
+);
+await runProbe(
+  "edge",
+  edgeProbe,
+  { NODE_CACHE_KEY: nodeCacheKey },
+  { nodejsCompat: false },
+);
+report(
+  "edge: Qdrant point ids match the Node build",
+  storedPointIds.length === 1 &&
+    nodePointIds.length === 1 &&
+    storedPointIds[0] === nodePointIds[0],
+  `${storedPointIds[0]} / ${nodePointIds[0]}`,
+);
+
+// 3. The Cloudflare Worker example, as written.
 const example = bundle(
   path.join(root, "examples", "cloudflare-worker", "src", "worker.js"),
 );
@@ -280,7 +348,7 @@ const example = bundle(
   }
 }
 
-for (const b of [probe, example])
+for (const b of [probe, edgeProbe, example])
   fs.rmSync(b.out, { recursive: true, force: true });
 if (failed) {
   console.error(`\n${failed} edge check(s) failed`);

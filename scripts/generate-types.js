@@ -57,6 +57,8 @@ export interface TelemetryTracer {
 export interface TelemetryOptions {
   /** Default: \`trace.getTracer("@devilsdev/rag-pipeline-utils", version)\`. */
   tracer?: TelemetryTracer;
+  /** The @opentelemetry/api module, for @devilsdev/rag-pipeline-utils/edge, which cannot load it itself (from 3.2.0). */
+  api?: any;
   /** Also record the query text and the retrieved document ids and scores. Default false. */
   recordContent?: boolean;
 }
@@ -407,6 +409,12 @@ fs.writeFileSync(
 fs.writeFileSync(
   path.join(distDir, "testing.d.ts"),
   'export * from "./types/testing";\n',
+);
+// ./edge exports a subset of the main entry, the same declarations.
+const edgeNames = Object.keys(require("../src/edge.js"));
+fs.writeFileSync(
+  path.join(distDir, "edge.d.ts"),
+  `export { ${edgeNames.join(", ")} } from "./index";\n`,
 );
 console.log("TypeScript definitions generated: dist/index.d.ts");
 

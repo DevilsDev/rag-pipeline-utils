@@ -79,6 +79,7 @@ const sidebars = {
         "Deployment-Azure",
         "Deployment-GCP",
         "Deployment-Cloudflare-Workers",
+        "Deployment-Edge",
       ],
     },
     {
