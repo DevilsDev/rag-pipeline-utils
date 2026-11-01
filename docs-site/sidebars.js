@@ -38,6 +38,7 @@ const sidebars = {
       collapsed: false,
       items: [
         "Usage",
+        "Packages",
         "CLI",
         "Config-Builder",
         "Integrations",

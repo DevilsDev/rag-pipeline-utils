@@ -191,6 +191,31 @@ Before releasing a new version:
 - [ ] Publish to npm: `npm publish`
 - [ ] Create GitHub release with changelog
 
+### Scoped packages
+
+`@devilsdev/rag-core`, `@devilsdev/rag-connectors`, `@devilsdev/rag-eval`
+and `@devilsdev/rag-guardrails` (built into `packages/` by `npm run build`)
+release with the main package, at its version:
+
+- `npm version <x>` runs `scripts/sync-package-versions.js`, which sets the
+  four packages' versions and the main package's dependencies on them, and
+  updates `package-lock.json`. `npm run build` fails if they disagree.
+- The release workflow publishes the four, then the main package. A version
+  already on npm is skipped, so a failed release can be re-run.
+- **A new package's first publish is manual.** npm sets up trusted
+  publishing in a package's settings, so the package has to exist first.
+  For each new name, after `npm run build`:
+
+  1. `cd packages/<name> && npm publish --access public`, logged in as an
+     owner of the `@devilsdev` scope (npm asks for the second factor).
+  2. On npmjs.com, open the package, then Settings → Trusted publishing →
+     GitHub Actions: repository `DevilsDev/rag-pipeline-utils`, workflow
+     `release.yml`, environment `npm`.
+
+  Then create the GitHub release as usual. The workflow skips the versions
+  already published and publishes the main package. Versions published by
+  hand have no provenance attestation; later ones do.
+
 ---
 
 ## Questions?

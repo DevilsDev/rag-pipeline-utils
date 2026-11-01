@@ -1,0 +1,61 @@
+{
+  "name": "@devilsdev/rag-connectors",
+  "version": "3.1.1",
+  "description": "Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant and pgvector.",
+  "keywords": [
+    "rag",
+    "openai",
+    "anthropic",
+    "ollama",
+    "qdrant",
+    "pgvector"
+  ],
+  "license": "MIT",
+  "author": "Ali Kahwaji",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@devilsdev/rag-core": "3.1.1",
+    "axios": "^1.21.0"
+  },
+  "peerDependencies": {
+    "openai": ">=4.93.0",
+    "pg": ">=8.11.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    }
+  }
+}
