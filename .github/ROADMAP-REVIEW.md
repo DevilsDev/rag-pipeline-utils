@@ -1,10 +1,10 @@
 # Roadmap review and proposed plan
 
-> **Status, 2026-10-29 (after 2.6.2):** 2.6.0, 2.6.1 and 2.6.2 have shipped section 4's 2.6.0 plan, except the generated API reference, which moved to 2.7.0. 2.6.2 fixed `npm install` on machines without husky, a bug in every release since 2.2.1. For 2.7.0, `validateDataset`, `runEvaluation`, `compareConfigurations` and `rag-pipeline eval` are merged, and the `rag-eval` Action is built and tested in `DevilsDev/rag-eval-action`; its `v1` waits for 2.7.0 on npm. Left for 2.7.0: synthetic datasets, the pgvector and Qdrant connectors, the API reference and, last, the benchmark. `DashboardGenerator` turned out to be an operations dashboard, so the evaluation report has its own renderer (section 7.5 assumed otherwise). Section 9.5 is still open.
+> **Status, 2026-11-02 (3.1.1 released; 3.2.0 merged, not yet published):** the plan in section 4 has been delivered through 3.2.0, with the changes listed in [section 10](#10-outcome-as-of-2026-11-02). What remains: Pinecone and Weaviate connectors, the hallucination and citation benchmark on a public QA dataset, issue templates, the launch post and listings, the Docker image and the docs-site extras (i18n, blog comments, VS Code snippets), the layout-shift item in section 9.5, and jsdom as an optional peer, which is breaking and moved to 4.0. Sections 1 to 9 are kept as written on 2026-10-29, apart from the outcome notes in section 8.
 
 _Written 2026-10-29, the day after `@devilsdev/rag-pipeline-utils@2.5.0` was published. Its recommendations are applied in `PROJECT_ROADMAP.md` and `PROJECT_v3_PLAN.md` (2026-10-29); the decisions in section 8 record the defaults that were chosen._
 
-**Contents:** 1. Where things stand · 2. `PROJECT_ROADMAP.md` problems · 3. `PROJECT_v3_PLAN.md` conflicts · 4. Proposed plan · 5. Edits to the two files · 6. Competitive strategy · 7. What was dropped, and what to revive · 8. Decisions needed · 9. Docs site: fixes and redesign
+**Contents:** 1. Where things stand · 2. `PROJECT_ROADMAP.md` problems · 3. `PROJECT_v3_PLAN.md` conflicts · 4. Proposed plan · 5. Edits to the two files · 6. Competitive strategy · 7. What was dropped, and what to revive · 8. Decisions needed · 9. Docs site: fixes and redesign · 10. Outcome
 
 Two roadmap documents exist:
 
@@ -399,16 +399,24 @@ The release column refers to the plan in section 4.
 
 ---
 
-## 8. Decisions needed from you
+## 8. Decisions needed from you (all decided)
 
 1. **Caching as 2.6.0** before 3.0? (Recommended: yes.)
+   _Outcome: yes, shipped in 2.6.0. The four-week soak before 3.0 did not happen: 3.0.0 followed a day later._
 2. **3.0 scope:** everything listed above in 3.0 with a beta, or the split deferred to 3.1?
+   _Outcome: 3.0.0 shipped items 2 to 4, 6 and the first part of 7, with no beta. The split came in 3.2.0, as packages built from one source rather than a monorepo._
 3. **Roadmap items to drop:** Hydra.js and the graph-based pipeline UI. Drop them, or keep them as "considered"?
+   _Outcome: both dropped from the roadmap._
 4. **Apply the edits in section 5** to both files, in one PR?
+   _Outcome: applied on 2026-10-29._
 5. **Competitive strategy:** adopt the position in section 6 (a layer that works with the big frameworks) and the 2.6 / 2.7 additions in section 4?
+   _Outcome: adopted; the roadmap's direction line states it._
 6. **Revived features (7.5):** revive the items marked "Revive" and "Revive in a different form" in the releases listed there?
+   _Outcome: all revived; the "Later" items shipped in 3.1.0 and 3.2.0 (section 10)._
 7. **Deprecated experimental classes:** remove them from the main entry in 3.0 as planned, or first rebuild one of them for real (multi-tenancy or SSO)?
+   _Outcome: removed in 3.0.0; none was rebuilt. They remain under `/experimental`._
 8. **Docs site (section 9):** fix and redesign the site in the order of section 9.3?
+   _Outcome: phases A to D done (PRs #94 to #98), except the item in section 9.5._
 
 ---
 
@@ -508,7 +516,13 @@ Make the site look and read like the README: the same banner identity, honest cl
 - Run a link checker on the built site in CI (Docusaurus already fails on broken internal links; add external links on a weekly schedule).
 - Add Lighthouse CI on the homepage and one docs page, with targets of at least 90 for performance, accessibility, best practices and SEO.
 
-### 9.5 Open item from Phase D
+### 9.4 Where it fits
+
+- Phase A goes with the **2.5.x** items; it's documentation only and can ship any time.
+- Phases B and C can land on `main` between releases, since the site deploys on its own. Ship them before the 2.6.0 announcement, so the new features land on the redesigned site.
+- Phase D goes with **2.6.0**, together with the `/testing` entry.
+
+### 9.5 Open item from Phase D (still open)
 
 Lighthouse (desktop, in CI) reports a cumulative layout shift of about 0.43 on `/docs/Config-Builder`, which holds its performance score at 78. The homepage and Introduction score 96 to 97.
 
@@ -521,8 +535,59 @@ Lighthouse (desktop, in CI) reports a cumulative layout shift of about 0.43 on `
 
 In a real browser at Lighthouse's width the shift measures 0, and the Lighthouse filmstrip shows no visible movement. It is deterministic (the same value on every run), so the next step is a Lighthouse trace (`--save-assets`) to see which frame records it. Performance is a warning, not an error, so it does not block pull requests.
 
-### 9.4 Where it fits
+---
 
-- Phase A goes with the **2.5.x** items; it's documentation only and can ship any time.
-- Phases B and C can land on `main` between releases, since the site deploys on its own. Ship them before the 2.6.0 announcement, so the new features land on the redesigned site.
-- Phase D goes with **2.6.0**, together with the `/testing` entry.
+## 10. Outcome, as of 2026-11-02
+
+3.1.1 is the latest release on npm. The 3.2.0 work is merged on `main` and waits for its release; its packages need a first manual publish (see `docs/VERSIONING.md`).
+
+### The plan in section 4, against what shipped
+
+| Plan                                                                              | Result                                                                                                                                                                                                                       | Release           |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2.5.x patches (tracer JSON export, `ParallelEmbedder`)                            | Fixed                                                                                                                                                                                                                        | 2.6.0             |
+| Caching (`CacheBackend`, `MemoryCache`, `RedisCache`, three layers)               | Shipped as planned                                                                                                                                                                                                           | 2.6.0             |
+| Vercel AI SDK adapter; grounding on any framework's output                        | Shipped                                                                                                                                                                                                                      | 2.6.0             |
+| `baseURL` on `OpenAIConnector`, `validatePlugin`, `/testing`, semantic similarity | Shipped                                                                                                                                                                                                                      | 2.6.0             |
+| `query --trace`, `--explain`, `--stats`, `--streaming`, `--timeout`; `--quiet`    | Shipped                                                                                                                                                                                                                      | 2.6.0             |
+| StackBlitz for the examples; lighter startup                                      | Shipped: importing the package loads 9 packages instead of 54                                                                                                                                                                | 2.6.0             |
+| `validateDataset`, `compareConfigurations`, `rag-pipeline eval --report html`     | Shipped; the report has its own renderer, not `DashboardGenerator`                                                                                                                                                           | 2.7.0             |
+| `generateSyntheticDataset`                                                        | Shipped, with `rag-pipeline generate-dataset`                                                                                                                                                                                | 2.7.0             |
+| `rag-eval` GitHub Action                                                          | `DevilsDev/rag-eval-action`; v2 since 3.1                                                                                                                                                                                    | 2.7.0             |
+| pgvector and Qdrant connectors                                                    | Shipped, tested against real servers in CI. **Pinecone not started**                                                                                                                                                         | 2.7.0             |
+| Public benchmark                                                                  | Pipeline overhead and vector-store latency and recall. **Hallucination detection and citation accuracy on a public QA dataset not done**                                                                                     | 2.7.0             |
+| Generated API reference (moved from 2.6.0)                                        | Shipped, checked for freshness in CI                                                                                                                                                                                         | 2.7.0             |
+| 3.0: remove experimental classes from the main entry                              | Done; still under `/experimental`                                                                                                                                                                                            | 3.0.0             |
+| 3.0: drop Node 18                                                                 | Went further: Node.js 22 or later, since 18 and 20 are end of life                                                                                                                                                           | 3.0.0             |
+| 3.0: `openai` SDK major upgrade                                                   | Done                                                                                                                                                                                                                         | 3.0.0             |
+| 3.0: migration guide                                                              | Done                                                                                                                                                                                                                         | 3.0.0             |
+| 3.0: smaller install                                                              | `openai` became an optional peer (3.0.0). Instead of a separate `@devilsdev/rag-cli` package, the CLI's dependencies are bundled into the CLI (3.2.0: 48 MB to 33 MB). **jsdom as an optional peer moved to 4.0** (breaking) | 3.0.0, 3.2.0, 4.0 |
+| 3.0: split into `rag-core`, `rag-connectors`, `rag-eval`, `rag-guardrails`        | Built from one source instead of a monorepo; the main package depends on and re-exports them, so imports keep working. `rag-eval` alone installs about 6 MB                                                                  | 3.2.0             |
+| 3.0: sub-packages published from CI with OIDC                                     | `release.yml` publishes the four before the main package; each needs one manual first publish                                                                                                                                | 3.2.0             |
+| 3.1+: streaming-first API                                                         | Not as a separate API; streaming reports time to first token                                                                                                                                                                 | 3.2.0             |
+| 3.1+: edge runtimes                                                               | Cloudflare Workers with `nodejs_compat`; the `/edge` entry without Node.js APIs. Vercel now recommends Node.js over Edge, and Next.js 16.3 drops `runtime = 'edge'`                                                          | 3.2.0             |
+| 3.1+: more vector stores (Weaviate and others)                                    | **Not started**                                                                                                                                                                                                              |                   |
+| 3.1+: MCP server template                                                         | `examples/mcp-server`                                                                                                                                                                                                        | 3.2.0             |
+| 3.1+: cost-aware routing                                                          | `createModelRouter`, also as the `router` llm in `.ragrc.json`                                                                                                                                                               | 3.2.0             |
+| 3.1+: OpenTelemetry exporter                                                      | `createRagPipeline({ telemetry })` emits spans following the GenAI conventions, rather than an exporter for `ExecutionTracer`                                                                                                | 3.2.0             |
+| 3.1+: context packer                                                              | `maxContextTokens` and `packContext()`                                                                                                                                                                                       | 3.1.0             |
+| 3.1+: plugin contract test kit                                                    | `runContractTests` and `checkContract` in `/testing`                                                                                                                                                                         | 3.1.0             |
+| Distribution (6.7): launch post, awesome lists, MCP directories, issue templates  | **Not done.** The posts are drafted in `release-notes/launch/`; there is no `.github/ISSUE_TEMPLATE/`                                                                                                                        | Anytime           |
+| Docker image, i18n, blog comments, VS Code snippets, release webhook              | Not started; unscheduled                                                                                                                                                                                                     |                   |
+
+### Against the 3.0 release criteria in section 4
+
+- **Upgrading from 2.x breaks nothing:** not the case by design. 3.0 required Node.js 22 and a separate `openai` install, and the migration guide covers both.
+- **A sub-package import is at least 30% smaller:** met. Installing `@devilsdev/rag-eval` takes about 6 MB, and all four scoped packages about 10 MB, against 33 MB for the full package (3.2.0).
+- **All tests pass:** yes, in CI for every release.
+- **Caching cuts repeat-query latency by at least 50%:** the generation cache skips the LLM call on a hit. It was not measured against this target.
+- **Two external reviewers of the migration guide, and a two-week beta:** not done. 3.0.0 went straight to a release.
+
+### The metrics in section 6
+
+| Metric                 | 2026-10-28 | 2026-11-02                     |
+| ---------------------- | ---------: | ------------------------------ |
+| Weekly npm downloads   |         90 | 1,100 (week ending 2026-10-29) |
+| GitHub stars and forks |    1 and 0 | 1 and 0                        |
+
+The first target in section 6, 1,000 weekly downloads, was reached within a week rather than three months, but a single week is too early to rely on: new releases bring automated downloads (mirrors, scanners, CI). The target of 10 dependents is not yet measured.
