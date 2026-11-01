@@ -68,7 +68,7 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
    | loader    | `auto`                                       | Picks a loader per file extension                                                                                                                                                                                                                                                                                    |
    | embedder  | `local`, `openai`, `ollama`, `cohere`        | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                           |
    | retriever | `file-store`, `memory`, `pgvector`, `qdrant` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant) |
-   | llm       | `openai`, `anthropic`, `ollama`, `router`    | Optional; `router` from 3.2.0, see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                 |
+   | llm       | `openai`, `anthropic`, `ollama`, `router`    | Optional; for `router` see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                         |
    | reranker  | `scoring`                                    | Optional                                                                                                                                                                                                                                                                                                             |
 
 2. **Custom plugins** declared under `plugins`, as module paths relative to the config file. The module may export a class (constructed with the entry's `config`) or an object:
@@ -85,12 +85,6 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
 API keys come from the environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY` (or `config.apiKey`).
 
 ### Routing between models
-
-:::info[Coming in 3.2.0]
-
-The `router` llm ships in the next release.
-
-:::
 
 The `router` llm sends each query to the cheapest model suited to it ([how it decides](./Performance.md#routing-queries-to-cheaper-models)). Its `routes` are llm entries like the ones above: a `name`, its `config`, and optionally `handles` (the query classes it serves, `simple` or `complex`; all when omitted), `model` and `pricing`:
 
@@ -202,15 +196,15 @@ rag-pipeline query "What is the remote work policy?"
 rag-pipeline query "remote work" --top-k 5 --json
 ```
 
-| Option           | Description                                                                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                              |
-| `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                                   |
-| `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                                             |
-| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                              |
-| `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate. With `--streaming`, also the time to first token; with a `router`, the chosen model (from 3.2.0) |
-| `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                              |
-| `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata)               |
+| Option           | Description                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                 |
+| `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                      |
+| `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                                |
+| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                 |
+| `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate. With `--streaming`, also the time to first token; with a `router`, the chosen model |
+| `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                 |
+| `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata)  |
 
 ```bash
 rag-pipeline query "How many vacation days do I get?" --explain --trace
@@ -487,7 +481,7 @@ Times real queries against the configured pipeline and index.
 rag-pipeline ai benchmark                          # up to 5 queries sampled from the index, 3 runs
 rag-pipeline ai benchmark --queries queries.txt --runs 10 --top-k 5
 rag-pipeline ai benchmark --json
-rag-pipeline ai benchmark --streaming              # time to first token, with an llm stage (3.2.0)
+rag-pipeline ai benchmark --streaming              # time to first token, with an llm stage
 ```
 
 | Option             | Default | Meaning                                                                                                                   |
@@ -495,14 +489,14 @@ rag-pipeline ai benchmark --streaming              # time to first token, with a
 | `--queries <file>` | sampled | One query per line, or a JSON array of strings. Without a file, the first 8 words of the first 5 indexed chunks are used. |
 | `--runs <n>`       | `3`     | Passes over the query set                                                                                                 |
 | `--top-k <n>`      | `3`     | Passages to retrieve                                                                                                      |
-| `--streaming`      |         | From 3.2.0: stream the end-to-end answers and add a first-token row (needs an `llm` stage)                                |
+| `--streaming`      |         | Stream the end-to-end answers and add a first-token row (needs an `llm` stage)                                            |
 | `--json`           |         | Print every measurement as JSON                                                                                           |
 
 - Reports the number of samples, p50, p95, mean and max latency for each stage: query embedding, retrieval, reranking (only when a reranker is configured) and end-to-end `query`.
 - Percentiles use the nearest-rank method, so each value is an observed sample.
 - The time to load the config and index, and the first (warm-up) query, are reported separately and are not included in the statistics.
 - If an `llm` stage is configured, end-to-end includes answer generation, so every run makes real provider calls.
-- With `--streaming` (from 3.2.0), the answers are streamed and a `first token (streamed)` row reports the time to first token: from the start of the query to the first token, retrieval included. In JSON it is `stages.firstToken`. Without an `llm` stage there is nothing to stream, and the command says so.
+- With `--streaming`, the answers are streamed and a `first token (streamed)` row reports the time to first token: from the start of the query to the first token, retrieval included. In JSON it is `stages.firstToken`. Without an `llm` stage there is nothing to stream, and the command says so.
 - Also prints the results returned per query and the environment: Node version, platform, indexed chunk count, embedder and dimensions, retriever, reranker and llm.
 
 ### `ai feedback` and `ai search`

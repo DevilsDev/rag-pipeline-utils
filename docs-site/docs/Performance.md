@@ -228,12 +228,6 @@ Built-in prices are list prices marked unverified (see `PRICING_METADATA` for th
 
 ### **Routing queries to cheaper models**
 
-:::info[Coming in 3.2.0]
-
-`createModelRouter` ships in the next release.
-
-:::
-
 Most questions a RAG service gets are lookups that a small model answers as well as a large one. `createModelRouter` is an `llm` that sends each query to the cheapest model suited to it: a classifier puts the query in a class, and among the models that handle that class the router picks the one with the lowest estimated cost for this query, its prompt (the query and the documents) plus the expected answer, at the model's price.
 
 ```javascript

@@ -1,6 +1,6 @@
 # Roadmap review and proposed plan
 
-> **Status, 2026-11-02 (3.1.1 released; 3.2.0 merged, not yet published):** the plan in section 4 has been delivered through 3.2.0, with the changes listed in [section 10](#10-outcome-as-of-2026-11-02). What remains: Pinecone and Weaviate connectors, the hallucination and citation benchmark on a public QA dataset, issue templates, the launch post and listings, the Docker image and the docs-site extras (i18n, blog comments, VS Code snippets), the layout-shift item in section 9.5, and jsdom as an optional peer, which is breaking and moved to 4.0. Sections 1 to 9 are kept as written on 2026-10-29, apart from the outcome notes in section 8.
+> **Status, 2026-11-03 (after 3.2.0):** the plan in section 4 has been delivered through 3.2.0, with the changes listed in [section 10](#10-outcome-as-of-2026-11-02). What remains: Pinecone and Weaviate connectors, the hallucination and citation benchmark on a public QA dataset, issue templates, the launch post and listings, the Docker image and the docs-site extras (i18n, blog comments, VS Code snippets), the layout-shift item in section 9.5, and jsdom as an optional peer, which is breaking and moved to 4.0. Sections 1 to 9 are kept as written on 2026-10-29, apart from the outcome notes in section 8.
 
 _Written 2026-10-29, the day after `@devilsdev/rag-pipeline-utils@2.5.0` was published. Its recommendations are applied in `PROJECT_ROADMAP.md` and `PROJECT_v3_PLAN.md` (2026-10-29); the decisions in section 8 record the defaults that were chosen._
 
@@ -539,7 +539,7 @@ In a real browser at Lighthouse's width the shift measures 0, and the Lighthouse
 
 ## 10. Outcome, as of 2026-11-02
 
-3.1.1 is the latest release on npm. The 3.2.0 work is merged on `main` and waits for its release; its packages need a first manual publish (see `docs/VERSIONING.md`).
+3.2.0, released 2026-11-03, completes the work in this table; its four scoped packages were published by hand the first time (see `docs/VERSIONING.md`).
 
 ### The plan in section 4, against what shipped
 

@@ -9,9 +9,13 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.2.0] - 2026-11-03
 
-Planned for 3.2.0.
+A minor release with no breaking changes. It adds OpenTelemetry spans,
+time to first token, cost-aware model routing, Cloudflare Workers and a
+`/edge` entry without Node.js APIs, and splits the library into four
+packages (`@devilsdev/rag-core`, `-connectors`, `-eval`, `-guardrails`)
+that this package re-exports. Installs are 15 MB smaller.
 
 ### Added
 
@@ -1037,6 +1041,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.2.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.2.0
 [3.1.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.1
 [3.1.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.0
 [3.0.2]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.0.2

@@ -6,11 +6,14 @@ Thank you for helping keep `@devilsdev/rag-pipeline-utils` and its users safe.
 
 Only the latest minor release line receives security patches. When a new
 minor version ships, the previous line receives one more patch window of
-30 days before support ends.
+30 days before support ends. From 3.2.0 this covers the scoped packages
+(`@devilsdev/rag-core`, `-connectors`, `-eval` and `-guardrails`), which
+are released together with the main package at the same version.
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 3.1.x   | :white_check_mark:                                           |
+| 3.2.x   | :white_check_mark:                                           |
+| 3.1.x   | Security fixes for 30 days after the 3.2.0 release, then :x: |
 | 3.0.x   | Security fixes for 30 days after the 3.1.0 release, then :x: |
 | 2.7.x   | Security fixes for 30 days after the 3.0.0 release, then :x: |
 | < 2.7   | :x:                                                          |
