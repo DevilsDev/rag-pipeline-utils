@@ -111,7 +111,11 @@ class CostTracker extends EventEmitter {
         const result = await pipeline.run(...args);
 
         const { inputTokens, outputTokens } = tracker._extractUsage(result);
-        const model = result.model || tracker.config.model;
+        // A routed run (createModelRouter) names the model it used.
+        const model =
+          result.model ||
+          (result.route && result.route.model) ||
+          tracker.config.model;
         const costEstimate = tracker.calculator.estimate(
           model,
           inputTokens,

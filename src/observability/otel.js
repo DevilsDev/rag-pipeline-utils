@@ -206,7 +206,9 @@ function instrument(tel, kind, component) {
       };
     },
     llm(method, [, docs, options = {}]) {
-      const model = options.model || config.model;
+      // A router's per-run decision names the model it chose.
+      const route = options.route || {};
+      const model = route.model || options.model || config.model;
       return {
         name: model ? `chat ${model}` : 'chat',
         kind: SpanKind.CLIENT,
@@ -215,6 +217,7 @@ function instrument(tel, kind, component) {
           'gen_ai.provider.name': provider,
           'gen_ai.request.model': model,
           'gen_ai.request.stream': method === 'generateStream',
+          'rag.route.class': route.class,
           'gen_ai.request.temperature':
             options.temperature ?? config.temperature,
           'gen_ai.request.max_tokens': options.maxTokens ?? config.maxTokens,
@@ -283,6 +286,14 @@ function runAttributes(tel, result) {
   if (result.cache) {
     for (const [layer, outcome] of Object.entries(result.cache)) {
       attributes[`rag.cache.${layer}`] = outcome;
+    }
+  }
+  if (result.route) {
+    attributes['rag.route.class'] = result.route.class;
+    attributes['rag.route.model'] = result.route.model;
+    attributes['rag.route.estimated_cost'] = result.route.estimatedCost;
+    if (result.route.fallbackFrom) {
+      attributes['rag.route.fallback_from'] = result.route.fallbackFrom;
     }
   }
   if (result.timing) {

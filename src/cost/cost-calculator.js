@@ -106,6 +106,22 @@ const PRICING = {
     source: 'https://platform.claude.com/docs/en/about-claude/pricing',
     asOf: '2026-10-30',
   },
+  // $1 / $5 per million input / output tokens.
+  'claude-haiku-4.5': {
+    input: 0.001,
+    output: 0.005,
+    unit: 1000,
+    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    asOf: '2026-11-01',
+  },
+  // $4 / $20 per million input / output tokens.
+  'claude-opus-5.5': {
+    input: 0.004,
+    output: 0.02,
+    unit: 1000,
+    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    asOf: '2026-11-01',
+  },
   'cohere-command': {
     input: 0.001,
     output: 0.002,

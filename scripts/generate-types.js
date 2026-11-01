@@ -156,6 +156,20 @@ export interface PipelineRunResult {
   packing?: ContextPacking;
   /** How long the run took, from the start of run(); on successful results. */
   timing?: { totalMs: number };
+  /** The model router's decision, when the llm is a createModelRouter() and was called. */
+  route?: RouteDecision;
+}
+
+/** Which model a createModelRouter() chose for a run. */
+export interface RouteDecision {
+  /** The query class from the router's classifier. */
+  class: string;
+  /** The model that answered. */
+  model: string;
+  /** Estimated cost in USD of the chosen model for this query. */
+  estimatedCost: number;
+  /** Models that failed before \`model\` answered (with \`fallback: true\`). */
+  fallbackFrom?: string[];
 }
 
 /** When a streamed answer started and finished, from the start of run(). */
@@ -193,6 +207,8 @@ export interface StreamChunk {
   packing?: ContextPacking;
   /** On the last chunk: time to first token and total time. */
   timing?: StreamTiming;
+  /** On the last chunk, when the llm is a createModelRouter(). */
+  route?: RouteDecision;
 }
 
 /** A pipeline returned by {@link createRagPipeline}. */
