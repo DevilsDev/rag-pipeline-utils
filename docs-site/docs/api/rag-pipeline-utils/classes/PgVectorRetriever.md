@@ -176,10 +176,10 @@ The documents most similar to a query vector.
 
 #### Parameters
 
-| Parameter | Type                                                                                           | Description                        |
-| --------- | ---------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `request` | \| `number`[] \| \{ `queryVector`: `number`[]; `signal?`: `AbortSignal`; `topK?`: `number`; \} | -                                  |
-| `k?`      | `number`                                                                                       | Results when `request` is a vector |
+| Parameter | Type                                                                                            | Description                                                                                      |
+| --------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `request` | \| `number`[] \| \{ `queryVector?`: `number`[]; `signal?`: `AbortSignal`; `topK?`: `number`; \} | A vector, or an object with one (required; optional in the type to match the retriever contract) |
+| `k?`      | `number`                                                                                        | Results when `request` is a vector                                                               |
 
 #### Returns
 

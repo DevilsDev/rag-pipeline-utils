@@ -163,7 +163,8 @@ class FileVectorStore {
   /**
    * Cosine-similarity search.
    *
-   * @param {{queryVector: number[], topK?: number}} request
+   * @param {{queryVector?: number[], topK?: number}} request - queryVector is
+   *   required (optional in the type to match the retriever contract)
    * @returns {Promise<Array<{id: string, score: number, content: string, metadata: object}>>}
    */
   async retrieve(request = {}) {
