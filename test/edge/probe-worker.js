@@ -11,6 +11,7 @@ import {
   OllamaConnector,
   OpenAIConnector,
   QdrantRetriever,
+  createModelRouter,
   createRagPipeline,
   detectInjection,
   packContext,
@@ -83,6 +84,19 @@ const CHECKS = {
     const r = await p.run({ query: "vacation" });
     if (r.cache.retrieval !== "hit") throw new Error(r.cache.retrieval);
     return r.cache;
+  },
+  async "createModelRouter picks the cheap model for a simple query"() {
+    const llm = createModelRouter({
+      routes: [
+        { model: "claude-haiku-4-5", llm: fakeLlm, handles: ["simple"] },
+        { model: "claude-sonnet-5-5", llm: fakeLlm },
+      ],
+    });
+    const p = createRagPipeline({ ...(await indexed()), llm });
+    const r = await p.run({ query: "How many vacation days?" });
+    if (r.route?.model !== "claude-haiku-4-5")
+      throw new Error(JSON.stringify(r.route));
+    return r.route;
   },
   async packContext() {
     return packContext(DOCS, { maxTokens: 12 }).kept;

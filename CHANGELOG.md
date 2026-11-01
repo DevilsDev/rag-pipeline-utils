@@ -57,6 +57,19 @@ ingest` builds and returns passages with their sources, offline and
   (`test/edge`). See the new Cloudflare Workers deployment page for what
   doesn't work there (files, the CLI, the plugin sandbox) and for Vercel.
 
+- **Cost-aware model routing.** `createModelRouter({ routes })` is an
+  llm that sends each query to the cheapest model suited to it: a
+  classifier (`classifyQuery` by default, or your own `classify`) puts the
+  query in a class, and among the routes that handle that class it picks
+  the lowest estimated cost for this query's prompt and expected answer.
+  Prices come from `CostCalculator` or per-route `pricing`; a route with no
+  price is an error rather than free. Runs report `route: { class, model,
+estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
+  span attributes and in the `chat` span's name. `fallback: true` retries
+  failures on the next cheapest route. `CostTracker` prices routed runs at
+  the chosen model, and `CostCalculator` adds Claude Haiku 4.5 and Claude
+  Opus 5.5 list prices.
+
 ### Changed
 
 - **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The

@@ -98,6 +98,7 @@ const { AgenticPipeline } = require('./agentic/agentic-pipeline');
 const { CostCalculator, PRICING_METADATA } = require('./cost/cost-calculator');
 const { CostTracker } = require('./cost/cost-tracker');
 const { TokenBudget } = require('./cost/token-budget');
+const { createModelRouter, classifyQuery } = require('./cost/model-router');
 
 // Pipeline Debugger
 const { ExecutionTracer } = require('./debug/execution-tracer');
@@ -263,6 +264,8 @@ module.exports = {
   PRICING_METADATA,
   CostTracker,
   TokenBudget,
+  createModelRouter,
+  classifyQuery,
 
   // Pipeline Debugger
   ExecutionTracer,

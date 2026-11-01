@@ -147,6 +147,7 @@ interface RunResult {
   cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
   packing?: object; // with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
   timing?: { totalMs: number }; // from 3.2.0: ms since run() was called
+  route?: { class: string; model: string; estimatedCost: number }; // from 3.2.0, with createModelRouter
 }
 
 // Failures resolve instead of throwing:
@@ -586,6 +587,37 @@ console.log(PRICING_METADATA);
 ```
 
 Built-in prices are unverified. Pass the `pricing` or `customPricing` option to `CostCalculator` to use your own; unknown models produce a one-time `RAG_UNKNOWN_MODEL_PRICING` warning.
+
+### createModelRouter
+
+From 3.2.0. An `llm` that sends each query to the cheapest model suited to it. See [Routing queries to cheaper models](./Performance.md#routing-queries-to-cheaper-models).
+
+```typescript
+createModelRouter(options: {
+  routes: Array<{
+    llm: object;              // an llm plugin: generate(), optionally generateStream()
+    model: string;            // priced from CostCalculator unless `pricing` is given
+    handles?: string[];       // query classes it serves; all when omitted
+    pricing?: { input: number; output: number; unit?: number }; // USD per unit (1000) tokens
+  }>;
+  classify?: (query: string, docs: object[]) => string | Promise<string>; // default classifyQuery
+  expectedOutputTokens?: number; // default 300; a run's maxTokens wins
+  countTokens?: (text: string) => number; // default: about 4 characters per token
+  fallback?: boolean;         // default false
+  calculator?: CostCalculator;
+  cacheKey?: string;          // identity of a custom classify, for the generation cache
+}): {
+  route(query, docs?, options?): Promise<{ class: string; model: string; estimatedCost: number }>;
+  generate(query, docs?, options?): Promise<string>;
+  generateStream(query, docs?, options?): AsyncIterable<{ token: string; done: boolean }>;
+  getCacheKey(role): string | null;
+  readonly routes: Array<{ model; handles; pricing }>;
+}
+```
+
+`classifyQuery(query)` is the default classifier: `"complex"` or `"simple"`.
+
+With `createRagPipeline`, results and a stream's done chunk carry `route: { class, model, estimatedCost, fallbackFrom? }`.
 
 ---
 

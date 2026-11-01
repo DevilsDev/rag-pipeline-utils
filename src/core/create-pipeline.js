@@ -85,20 +85,25 @@ function computeQuality({ query, answer, results, options }) {
  *
  * The done chunk carries `timing: { firstTokenMs, totalMs }`, both measured
  * from the start of run(): `firstTokenMs` is when the first non-empty token
- * arrived (null when none did).
+ * arrived (null when none did), and the fields of `doneFields()`.
  *
  * @param {AsyncIterable<object|string>} source
  * @param {object} params
  * @param {AbortSignal} params.signal
  * @param {((text: string) => object)|null} params.finalize
  * @param {number} params.startedAt - performance.now() at the start of run()
+ * @param {() => object} [params.doneFields] - More fields for the done chunk,
+ *   read when the stream ends
  * @param {() => void} params.onEnd
  */
-async function* guardStream(source, { signal, finalize, startedAt, onEnd }) {
+async function* guardStream(
+  source,
+  { signal, finalize, startedAt, doneFields = () => ({}), onEnd },
+) {
   let firstTokenMs = null;
   const timing = () => ({
-    firstTokenMs,
-    totalMs: performance.now() - startedAt,
+    ...doneFields(),
+    timing: { firstTokenMs, totalMs: performance.now() - startedAt },
   });
   try {
     let text = '';
@@ -110,7 +115,7 @@ async function* guardStream(source, { signal, finalize, startedAt, onEnd }) {
         firstTokenMs = performance.now() - startedAt;
       }
       if (!finalize) {
-        yield chunk && chunk.done ? { ...chunk, timing: timing() } : chunk;
+        yield chunk && chunk.done ? { ...chunk, ...timing() } : chunk;
         continue;
       }
       text += token;
@@ -122,7 +127,7 @@ async function* guardStream(source, { signal, finalize, startedAt, onEnd }) {
     }
     if (signal.aborted) throw signal.reason;
     if (finalize) {
-      yield { token: '', done: true, ...finalize(text), timing: timing() };
+      yield { token: '', done: true, ...finalize(text), ...timing() };
     }
   } finally {
     onEnd();
@@ -166,6 +171,11 @@ async function* reportWhenComplete(source, signal, onComplete) {
  *
  * A successful result carries `timing: { totalMs }`, measured from the start
  * of run().
+ *
+ * An llm with a `route(query, docs, options)` method (createModelRouter) is
+ * asked which model to use once per run, after packing; when it generates,
+ * its decision `{ class, model, estimatedCost, fallbackFrom? }` is reported
+ * as `route` on the result or the stream's done chunk.
  *
  * `cache` (factory option): `true`, a CacheBackend, or
  * `{ embeddings, retrieval, generation, ttlSeconds }` - see
@@ -238,10 +248,18 @@ module.exports.createRagPipeline = function createRagPipeline({
     // Per-run cache outcome per layer: 'hit', 'miss' or 'skip'.
     const cacheStatus = {};
     let packing;
+    // The router's decision, reported once the llm was called with it.
+    let route;
+    let routed = false;
     const withCache = (result) => {
       const out = pc ? { ...result, cache: { ...cacheStatus } } : result;
       const timing = { totalMs: performance.now() - startedAt };
-      return packing ? { ...out, packing, timing } : { ...out, timing };
+      return {
+        ...out,
+        ...(packing && { packing }),
+        ...(routed && { route: { ...route } }),
+        timing,
+      };
     };
 
     const doWork = (async () => {
@@ -312,7 +330,13 @@ module.exports.createRagPipeline = function createRagPipeline({
         };
       }
 
-      const genOptions = { ...opts, signal };
+      if (llmI && typeof llmI.route === 'function') {
+        route = await llmI.route(query, results, opts);
+        run.throwIfAborted();
+      }
+      const genOptions = route
+        ? { ...opts, signal, route }
+        : { ...opts, signal };
       const wantsQuality = Boolean(opts.citations || opts.evaluate);
       const generationKey =
         pc && llmI
@@ -346,8 +370,10 @@ module.exports.createRagPipeline = function createRagPipeline({
             yield { token: '', done: true };
           })();
         } else if (llmI.generateStream) {
+          routed = Boolean(route);
           source = await llmI.generateStream(query, results, genOptions);
         } else if (llmI.generate) {
+          routed = Boolean(route);
           // Fallback: simulate streaming from regular generate
           const answer =
             (await llmI.generate(query, results, genOptions)) ?? '';
@@ -372,6 +398,7 @@ module.exports.createRagPipeline = function createRagPipeline({
             signal,
             finalize,
             startedAt,
+            doneFields: () => (routed ? { route: { ...route } } : {}),
             onEnd: run.detach,
           });
         }
@@ -391,6 +418,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       if (typeof cachedAnswer === 'string') {
         answer = cachedAnswer;
       } else {
+        routed = Boolean(route);
         const raw = (await llmI.generate?.(query, results, genOptions)) ?? '';
         run.throwIfAborted();
         answer = String(raw);

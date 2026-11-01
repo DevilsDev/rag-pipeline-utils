@@ -226,6 +226,69 @@ console.log(tracker.getSummary()); // { totalTokens, totalCost, sessionCount, av
 
 Built-in prices are list prices marked unverified (see `PRICING_METADATA` for their `asOf` date and sources). Pass your own prices through `calculatorOptions` (`pricing` / `customPricing`) when the numbers matter.
 
+### **Routing queries to cheaper models**
+
+:::info[Coming in 3.2.0]
+
+`createModelRouter` ships in the next release.
+
+:::
+
+Most questions a RAG service gets are lookups that a small model answers as well as a large one. `createModelRouter` is an `llm` that sends each query to the cheapest model suited to it: a classifier puts the query in a class, and among the models that handle that class the router picks the one with the lowest estimated cost for this query, its prompt (the query and the documents) plus the expected answer, at the model's price.
+
+```javascript
+const {
+  createRagPipeline,
+  createModelRouter,
+  MemoryRetriever,
+} = require("@devilsdev/rag-pipeline-utils");
+
+// Stand-ins for AnthropicConnector({ model: "claude-haiku-4-5" }) and
+// AnthropicConnector() (Claude Sonnet 5.5, the connector's default).
+const small = { generate: async () => "Twenty days." };
+const large = { generate: async () => "Because the policy weighs tenure..." };
+
+const llm = createModelRouter({
+  routes: [
+    { model: "claude-haiku-4-5", llm: small, handles: ["simple"] },
+    { model: "claude-sonnet-5-5", llm: large }, // every class
+  ],
+});
+
+const retriever = new MemoryRetriever();
+await retriever.store([
+  {
+    id: "vacation",
+    content: "Employees get twenty vacation days.",
+    vector: [1, 0],
+  },
+]);
+const pipeline = createRagPipeline({
+  embedder: { embed: async () => [1, 0] },
+  retriever,
+  llm,
+});
+
+const simple = await pipeline.run({
+  query: "How many vacation days do I get?",
+});
+console.log(simple.route);
+// { class: "simple", model: "claude-haiku-4-5", estimatedCost: 0.0016... }
+
+const complex = await pipeline.run({
+  query: "Why do contractors get fewer days?",
+});
+console.log(complex.route.model); // "claude-sonnet-5-5"
+```
+
+- **Classes.** The default classifier, `classifyQuery`, returns `"complex"` for questions that ask for reasoning (why, explain, compare, trade-offs, "how does"), ask several things at once or run past 30 words, and `"simple"` otherwise. It is a heuristic: pass `classify(query, docs)` (sync or async, returning any class name) for your traffic, for example a small model or embedding classifier. A route's `handles` lists its classes; without it a route handles all of them. A class no route handles fails the run.
+- **Prices.** Each route's price comes from `CostCalculator` by `model` (built in for the OpenAI, Anthropic and Cohere models in its table, including Claude Haiku 4.5, Sonnet 5.5 and Opus 5.5), or from `pricing: { input, output, unit }` in USD per `unit` tokens (default 1000). A route with no price is an error when the router is created, rather than counting as free. The expected answer length is the run's `maxTokens`, or `expectedOutputTokens` (default 300).
+- **Reporting.** `result.route` (and a stream's done chunk) is `{ class, model, estimatedCost }`, present when the router generated the answer (not on a cached one). With `telemetry`, the `chat` span is named after the chosen model and the run span carries `rag.route.class`, `rag.route.model` and `rag.route.estimated_cost`. `CostTracker` prices routed runs at the chosen model.
+- **Fallback.** With `fallback: true`, a model that fails hands the query to the next cheapest route for its class (a stream only before its first token; never on abort), and `result.route` adds `fallbackFrom: [models]`. Connectors already retry, so it is off by default.
+- **Caching.** The router has a cache key when every route's llm has one; with a custom `classify`, also pass `cacheKey` (a version string for your classifier), or the generation cache stays off.
+
+The router works on its own too (`await llm.generate(query, docs)`), for example as `AgenticPipeline`'s llm; only `createRagPipeline` reports the decision.
+
 ---
 
 ## **Production Deployment**
