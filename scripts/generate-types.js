@@ -294,8 +294,8 @@ export interface EmbedderPlugin {
 export interface RetrieverPlugin {
   /** Returns up to \`topK\` documents for the query, closest first. */
   retrieve(options: RetrieveOptions): SearchResult[] | Promise<SearchResult[]>;
-  /** Adds documents. Not called by the pipeline; required by pluginRegistry and the CLI. */
-  store?(documents: Document[]): unknown;
+  /** Adds documents with their embeddings. Not called by the pipeline; required by pluginRegistry and the CLI. */
+  store?(documents: Array<Document & { vector: number[] }>): unknown;
 }
 
 /** An LLM. To register it with pluginRegistry it needs \`metadata: { name, version, type: "llm" }\`. */

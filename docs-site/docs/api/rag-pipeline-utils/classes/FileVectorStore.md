@@ -167,11 +167,11 @@ Cosine-similarity search.
 
 #### Parameters
 
-| Parameter             | Type                                                | Description |
-| --------------------- | --------------------------------------------------- | ----------- |
-| `request?`            | \{ `queryVector`: `number`[]; `topK?`: `number`; \} | -           |
-| `request.queryVector` | `number`[]                                          | -           |
-| `request.topK?`       | `number`                                            | -           |
+| Parameter              | Type                                                 | Description                                                                    |
+| ---------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `request?`             | \{ `queryVector?`: `number`[]; `topK?`: `number`; \} | queryVector is required (optional in the type to match the retriever contract) |
+| `request.queryVector?` | `number`[]                                           | -                                                                              |
+| `request.topK?`        | `number`                                             | -                                                                              |
 
 #### Returns
 

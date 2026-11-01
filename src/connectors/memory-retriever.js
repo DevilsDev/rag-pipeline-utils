@@ -133,9 +133,10 @@ class MemoryRetriever extends BaseConnector {
 
   /**
    * Retrieve the top-k most similar documents to a query vector.
-   * @param {number[]|{ query?: string, queryVector: number[], topK?: number, signal?: AbortSignal }} queryOrObj
+   * @param {number[]|{ query?: string, queryVector?: number[], topK?: number, signal?: AbortSignal }} queryOrObj
    *   Either a raw vector array or an object with queryVector, optional topK
-   *   and optional AbortSignal.
+   *   and optional AbortSignal. queryVector is required (optional in the
+   *   type only to match the pipeline's retriever contract).
    * @param {number} [k=10] - Number of results to return (used when queryOrObj is an array)
    * @returns {Promise<Array<{ id: string, score: number, metadata: Object, content: string }>>}
    * @throws {Error} When the query vector's dimension differs from the stored vectors

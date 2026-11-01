@@ -38,13 +38,13 @@ Returns up to `topK` documents for the query, closest first.
 store ? documents : unknown;
 ```
 
-Adds documents. Not called by the pipeline; required by pluginRegistry and the CLI.
+Adds documents with their embeddings. Not called by the pipeline; required by pluginRegistry and the CLI.
 
 #### Parameters
 
-| Parameter   | Type                        |
-| ----------- | --------------------------- |
-| `documents` | [`Document`](Document.md)[] |
+| Parameter   | Type                                     |
+| ----------- | ---------------------------------------- |
+| `documents` | ([`Document`](Document.md) & `object`)[] |
 
 #### Returns
 

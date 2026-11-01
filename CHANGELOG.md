@@ -103,6 +103,15 @@ estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
 
 ### Fixed
 
+- TypeScript: under `strict`, `MemoryRetriever`, `FileVectorStore`,
+  `QdrantRetriever`, `PgVectorRetriever`, `ScoringReranker`,
+  `EmbeddingReranker`, `CascadeReranker` and the new `createModelRouter`
+  were rejected as `createRagPipeline` components, because their declared
+  types disagreed with the plugin contracts. Their declarations now match
+  (retrievers take an optional `queryVector`, rerankers return the
+  documents they were given with `relevanceScore`), and the retriever
+  contract's `store()` takes documents with a `vector`. Nothing changes at
+  runtime.
 - `AnthropicConnector.generateStream` and `OllamaConnector.generateStream`
   decode streamed bytes as UTF-8 across chunk boundaries, so a character
   split between two network chunks is no longer garbled; they also read

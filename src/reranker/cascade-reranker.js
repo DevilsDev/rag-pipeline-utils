@@ -34,12 +34,14 @@ class CascadeReranker extends EventEmitter {
   /**
    * Run documents through each reranker in sequence.
    *
+   * @template {object} T
    * @param {string} query - The search query
-   * @param {Array<object|string>} documents - Documents to rerank
+   * @param {Array<T|string>} documents - Documents to rerank (a string
+   *   becomes `{ text }`)
    * @param {object} [options]
    * @param {number} [options.topK] - Maximum number of results to return
    * @param {AbortSignal} [options.signal] - Forwarded to every stage; checked between stages
-   * @returns {Promise<object[]>} Reranked documents from the final stage
+   * @returns {Promise<Array<T & { relevanceScore: number }>>} Reranked documents from the final stage
    * @throws {Error} If no rerankers are configured
    */
   async rerank(query, documents, options = {}) {

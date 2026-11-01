@@ -306,7 +306,9 @@ class PgVectorRetriever {
 
   /**
    * The documents most similar to a query vector.
-   * @param {number[]|{ queryVector: number[], topK?: number, signal?: AbortSignal }} request
+   * @param {number[]|{ queryVector?: number[], topK?: number, signal?: AbortSignal }} request
+   *   A vector, or an object with one (required; optional in the type to
+   *   match the retriever contract)
    * @param {number} [k=10] - Results when `request` is a vector
    * @returns {Promise<Array<{ id: string, score: number, content: string, metadata: Object }>>}
    */
