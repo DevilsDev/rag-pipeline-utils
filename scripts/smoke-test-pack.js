@@ -70,11 +70,34 @@ const packOutput = run(
 );
 const tarball = path.join(workDir, packOutput.trim().split("\n").pop());
 
+// The scoped packages the main package depends on (built by its prepack),
+// from their tarballs: a release publishes them first.
+const { PACKAGES: SCOPED, OUT: SCOPED_DIR } = require("./build-packages");
+const scopedTarballs = Object.fromEntries(
+  SCOPED.map(({ name }) => {
+    const dir = path.join(SCOPED_DIR, name.split("/")[1]);
+    const file = run(
+      npm,
+      ["pack", "--silent", "--pack-destination", workDir],
+      dir,
+    )
+      .trim()
+      .split("\n")
+      .pop();
+    return [name, `file:${path.join(workDir, file)}`];
+  }),
+);
+
 const consumerDir = path.join(workDir, "consumer");
 fs.mkdirSync(consumerDir);
 fs.writeFileSync(
   path.join(consumerDir, "package.json"),
-  JSON.stringify({ name: "smoke-consumer", version: "1.0.0", private: true }),
+  JSON.stringify({
+    name: "smoke-consumer",
+    version: "1.0.0",
+    private: true,
+    overrides: scopedTarballs,
+  }),
 );
 console.log("📥 Installing tarball into a clean consumer project");
 run(
@@ -135,6 +158,34 @@ const results = [
       if (!text.includes(`- ${name}@`)) {
         throw new Error(`${name} is missing from cli.cjs.LICENSES.txt`);
       }
+    }
+  }),
+  check("the scoped packages are installed once and re-exported", () => {
+    const script = [
+      `const main = require('${pkgName}');`,
+      "const core = require('@devilsdev/rag-core');",
+      "const evals = require('@devilsdev/rag-eval');",
+      "const connectors = require('@devilsdev/rag-connectors');",
+      "const guardrails = require('@devilsdev/rag-guardrails');",
+      "const same = [",
+      "  [main.createRagPipeline, core.createRagPipeline],",
+      "  [main.MemoryRetriever, core.MemoryRetriever],",
+      "  [main.CitationTracker, evals.CitationTracker],",
+      "  [main.AnthropicConnector, connectors.AnthropicConnector],",
+      "  [main.GuardrailsPipeline, guardrails.GuardrailsPipeline],",
+      "];",
+      "same.forEach(([a, b], i) => { if (!a || a !== b) throw new Error('not the same object, pair ' + i); });",
+    ].join("\n");
+    runCapture(["-e", script], consumerDir);
+    for (const { name } of SCOPED) {
+      const nested = path.join(
+        consumerDir,
+        "node_modules",
+        ...pkgName.split("/"),
+        "node_modules",
+        ...name.split("/"),
+      );
+      if (fs.existsSync(nested)) throw new Error(`a second copy of ${name}`);
     }
   }),
   check("no install-time scripts run in users' projects", () => {

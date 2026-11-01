@@ -89,6 +89,23 @@ jobs:
           fi
           grep -o "rag-pipeline-utils@v[^/]*/assets/[a-z.-]*" README.md
 
+      # The scoped packages first: the main package depends on each at its own
+      # version. A version already on npm is skipped, so a release that
+      # failed after publishing some of them can be re-run. Each package
+      # needs a trusted publisher on npmjs.com for this workflow, which npm
+      # configures once the package exists (its first publish is manual).
+      - name: Publish the scoped packages (OIDC)
+        run: |
+          version=$(node -p "require('./package.json').version")
+          for dir in rag-core rag-connectors rag-eval rag-guardrails; do
+            name=$(node -p "require('./packages/$dir/package.json').name")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm"
+            else
+              (cd "packages/$dir" && npm publish --access public --provenance --ignore-scripts)
+            fi
+          done
+
       # --provenance attaches a SLSA build provenance attestation to the
       # tarball, signed via Sigstore. Visible on the npm package page as
       # a "provenance" badge. Requires id-token: write.
@@ -105,7 +122,7 @@ jobs:
       - name: Summary
         if: success()
         run: |
-          echo "## ✅ Published @devilsdev/rag-pipeline-utils" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Published @devilsdev/rag-pipeline-utils, rag-core, rag-connectors, rag-eval and rag-guardrails" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Version: $(node -p "require('./package.json').version")" >> $GITHUB_STEP_SUMMARY
           echo "Provenance: attached via OIDC + Sigstore" >> $GITHUB_STEP_SUMMARY

@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * Installs the scoped packages (dist-packages/, from build-packages.js) the
+ * Installs the scoped packages (packages/, built by `npm run build`) the
  * way users will, from their tarballs, into a clean project, and checks:
  * one copy of rag-core serves all of them (shared classes are identical),
  * a pipeline mixing the four runs, ESM imports work, the type declarations
  * compile, and installing only rag-eval brings no connector or loader
  * dependencies.
  *
- * rag-core is not on npm yet, so the project overrides it with its
- * tarball. Needs network access for the npm dependencies (ajv, pino, axios).
+ * The project overrides the packages' dependencies on each other with
+ * the tarballs, so nothing comes from the npm registry but third parties. Needs network access for the npm dependencies (ajv, pino, axios).
  *
  * Usage: node scripts/test-packages.js
  */
@@ -52,9 +52,9 @@ function check(name, fn) {
   }
 }
 
-if (!fs.existsSync(OUT)) {
+if (!fs.existsSync(path.join(OUT, "rag-core", "dist", "index.cjs"))) {
   console.error(
-    "No dist-packages/. Run `node scripts/build-packages.js` first.",
+    "The scoped packages are not built. Run `npm run build` first.",
   );
   process.exit(1);
 }
@@ -74,7 +74,6 @@ for (const pkg of PACKAGES) {
 function project(name, deps) {
   const dir = path.join(work, name);
   fs.mkdirSync(dir);
-  const core = `file:${tarballs["@devilsdev/rag-core"]}`;
   fs.writeFileSync(
     path.join(dir, "package.json"),
     JSON.stringify({
@@ -83,9 +82,11 @@ function project(name, deps) {
       dependencies: Object.fromEntries(
         deps.map((d) => [d, `file:${tarballs[d]}`]),
       ),
-      // rag-core isn't published yet: the packages' "3.x.y" dependency on it
-      // resolves to the tarball.
-      overrides: { "@devilsdev/rag-core": core },
+      // The packages' "3.x.y" dependencies on each other resolve to the
+      // tarballs, not the registry.
+      overrides: Object.fromEntries(
+        Object.entries(tarballs).map(([name, file]) => [name, `file:${file}`]),
+      ),
     }),
   );
   run(NPM, ["install", "--no-audit", "--no-fund", "--ignore-scripts"], dir);

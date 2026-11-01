@@ -1,0 +1,63 @@
+{
+  "name": "@devilsdev/rag-core",
+  "version": "3.1.1",
+  "description": "createRagPipeline and its building blocks: retrieval, reranking, caching, cost tracking and model routing.",
+  "keywords": [
+    "rag",
+    "retrieval-augmented-generation",
+    "pipeline",
+    "llm"
+  ],
+  "license": "MIT",
+  "author": "Ali Kahwaji",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./all-types": {
+      "types": "./all-types.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "all-types.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "pino": "^9.6.0"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": ">=1.0.0 <2",
+    "pino-pretty": ">=10.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "pino-pretty": {
+      "optional": true
+    }
+  }
+}

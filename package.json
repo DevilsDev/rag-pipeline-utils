@@ -44,8 +44,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "node scripts/build.js && node scripts/generate-types.js && node scripts/check-type-exports.js",
-    "build:packages": "node scripts/build-packages.js",
+    "build": "node scripts/build-packages.js --bundles && node scripts/build.js && node scripts/generate-types.js && node scripts/build-packages.js --types && node scripts/check-type-exports.js",
     "test:packages": "node scripts/test-packages.js",
     "prepack": "npm run build && node scripts/pin-readme-assets.js",
     "postpack": "node scripts/pin-readme-assets.js --restore",
@@ -127,7 +126,8 @@
     "observability:stop": "cd observability && ./scripts/stop.sh",
     "telemetry:init": "node -e \"require('./src/observability/telemetry').initializeTelemetry()\"",
     "security:monitor": "node -e \"require('./src/observability/security-monitor').initializeSecurityMonitoring()\"",
-    "audit:compliance": "node -e \"require('./src/observability/audit-logger').initializeAuditLogging()\""
+    "audit:compliance": "node -e \"require('./src/observability/audit-logger').initializeAuditLogging()\"",
+    "version": "node scripts/sync-package-versions.js && git add package.json package-lock.json packages/*/package.json"
   },
   "repository": {
     "type": "git",
@@ -179,6 +179,9 @@
     "CHANGELOG.md",
     "BENCHMARKS.md",
     "SEMVER.md"
+  ],
+  "workspaces": [
+    "packages/*"
   ],
   "publishConfig": {
     "access": "public"
@@ -251,6 +254,10 @@
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
+    "@devilsdev/rag-connectors": "3.1.1",
+    "@devilsdev/rag-core": "3.1.1",
+    "@devilsdev/rag-eval": "3.1.1",
+    "@devilsdev/rag-guardrails": "3.1.1",
     "ajv": "^8.17.1",
     "axios": "^1.21.0",
     "chokidar": "^4.0.3",

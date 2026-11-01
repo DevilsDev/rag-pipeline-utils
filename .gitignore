@@ -268,5 +268,3 @@ dist/
 # Downloaded benchmark datasets (not redistributable)
 benchmarks/.data/
 
-# Scoped packages built by scripts/build-packages.js
-dist-packages/

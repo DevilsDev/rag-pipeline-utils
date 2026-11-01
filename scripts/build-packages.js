@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Builds the scoped packages into dist-packages/<name>/, from the same
- * source as @devilsdev/rag-pipeline-utils (run `npm run build` first, for
- * the type declarations):
+ * Builds the scoped packages into packages/<name>/ (npm workspaces), from
+ * the same source as @devilsdev/rag-pipeline-utils, which depends on them
+ * and re-exports them (`npm run build` runs this):
  *
  *   @devilsdev/rag-core        createRagPipeline, retrieval, caching, costs
  *   @devilsdev/rag-connectors  embedders, LLMs and vector stores
@@ -11,15 +11,23 @@
  *   @devilsdev/rag-guardrails  injection detection and guards
  *
  * rag-core owns every source file its entry reaches. Each other package
- * owns the files only it reaches, and depends on rag-core for the rest:
- * its bundle loads those modules from rag-core (one copy, so instanceof
- * and shared state hold across packages). The build fails if a package
- * needs another non-core package's files, or bundles an npm package.
+ * owns the files only it reaches, and depends on rag-core for the rest.
+ * Every package exposes its modules by path (Symbol.for("<name>/internal")),
+ * and a bundle that needs another package's module loads it from that
+ * package (scopedModulesPlugin) instead of bundling a copy, so instanceof
+ * and shared state hold across the packages and the main package. The
+ * build fails if a package needs another non-core package's files, or
+ * bundles a file it does not own.
  *
  * Dependencies come from what each bundle requires, with the main
- * package's version ranges; every version is the main package's version.
+ * package's version ranges. Every version is the main package's version,
+ * and so is the main package's dependency on each (see
+ * scripts/sync-package-versions.js).
  *
- * Usage: node scripts/build-packages.js
+ * Usage: node scripts/build-packages.js [--bundles | --types]
+ *   --bundles  bundles, package.json, README and LICENSE (before
+ *              scripts/build.js, whose bundles load these packages)
+ *   --types    declarations (after scripts/generate-types.js)
  */
 
 const esbuild = require("esbuild");
@@ -29,9 +37,10 @@ const { builtinModules } = require("module");
 
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "src");
-const OUT = path.join(ROOT, "dist-packages");
-const INTERNAL = "@devilsdev/rag-core/internal";
+const OUT = path.join(ROOT, "packages");
 const CORE = "@devilsdev/rag-core";
+const internalKey = (name) => `${name}/internal`;
+const dirOf = (name) => path.join(OUT, name.split("/")[1]);
 
 const PACKAGES = [
   {
@@ -131,87 +140,102 @@ function assignFiles() {
     throw new Error(`Scoped package boundaries:\n  ${errors.join("\n  ")}`);
   }
   PACKAGES[0].ownFiles = coreFiles;
-  return coreFiles;
+  return owners;
 }
 
-/** Loads rag-core's modules from the installed rag-core, not a copy. */
-function coreModulesPlugin(coreFiles) {
+/**
+ * Loads modules owned by a scoped package (other than `self`) from that
+ * package, through its internal lookup, instead of bundling a copy.
+ *
+ * @param {Map<string, string>} owners - src-relative file -> package name
+ * @param {string|null} self - The package being built (null: the main package)
+ */
+function scopedModulesPlugin(owners, self) {
   return {
-    name: "rag-core-modules",
+    name: "scoped-package-modules",
     setup(build) {
       build.onResolve({ filter: /^\.\.?\// }, (args) => {
-        if (!args.importer.startsWith(SRC)) return undefined;
         let resolved = path.resolve(args.resolveDir, args.path);
+        if (!resolved.startsWith(SRC)) return undefined;
         if (!resolved.endsWith(".js") && !resolved.endsWith(".json")) {
           resolved += fs.existsSync(`${resolved}.js`) ? ".js" : "/index.js";
         }
         const rel = srcRelative(resolved);
-        return coreFiles.has(rel)
-          ? { path: rel, namespace: "rag-core" }
+        const owner = owners.get(rel);
+        return owner && owner !== self
+          ? { path: `${owner}|${rel}`, namespace: "scoped" }
           : undefined;
       });
-      build.onLoad({ filter: /.*/, namespace: "rag-core" }, (args) => ({
-        contents: `module.exports = require(${JSON.stringify(CORE)})[Symbol.for(${JSON.stringify(INTERNAL)})](${JSON.stringify(args.path)});`,
-        loader: "js",
-      }));
+      build.onLoad({ filter: /.*/, namespace: "scoped" }, (args) => {
+        const [owner, rel] = args.path.split("|");
+        return {
+          contents: `module.exports = require(${JSON.stringify(owner)})[Symbol.for(${JSON.stringify(internalKey(owner))})](${JSON.stringify(rel)});`,
+          loader: "js",
+        };
+      });
     },
   };
 }
 
-async function bundle(pkg, coreFiles, outDir) {
-  const isCore = pkg.name === CORE;
-  const options = {
+/** Fails if a bundle contains a file a scoped package owns. */
+function assertNoCopies(metafile, owners, label) {
+  const copies = Object.keys(metafile.inputs).filter(
+    (i) => i.startsWith("src/") && owners.has(i.slice(4)),
+  );
+  if (copies.length) {
+    throw new Error(
+      `${label} bundles files of the scoped packages instead of loading them:\n  ${copies.join("\n  ")}`,
+    );
+  }
+}
+
+async function bundle(pkg, owners, outDir) {
+  // Every module the package owns, by path, for the other packages and the
+  // main package (see scopedModulesPlugin).
+  const internal = [...pkg.ownFiles]
+    .sort()
+    .map(
+      (f) =>
+        `  ${JSON.stringify(f)}: () => require(${JSON.stringify(`./${f}`)}),`,
+    )
+    .join("\n");
+  const others = PACKAGES.map((p) => p.name).filter((n) => n !== pkg.name);
+  const { metafile } = await esbuild.build({
+    stdin: {
+      contents: [
+        `const mod = require("./${pkg.entry}");`,
+        `const modules = {\n${internal}\n};`,
+        `Object.defineProperty(mod, Symbol.for(${JSON.stringify(internalKey(pkg.name))}), {`,
+        "  value: (file) => {",
+        `    if (!modules[file]) throw new Error(${JSON.stringify(`${pkg.name} has no module `)} + file);`,
+        "    return modules[file]();",
+        "  },",
+        "});",
+        "module.exports = mod;",
+      ].join("\n"),
+      resolveDir: SRC,
+      sourcefile: "package-entry.js",
+    },
     bundle: true,
     format: "cjs",
     platform: "node",
     target: "node22",
     outfile: path.join(outDir, "dist", "index.cjs"),
     packages: "external",
+    external: others,
+    plugins: [scopedModulesPlugin(owners, pkg.name)],
     metafile: true,
     logLevel: "warning",
-  };
-  if (isCore) {
-    // Every core module, by path, for the other packages (see the plugin).
-    const internal = [...coreFiles]
-      .sort()
-      .map(
-        (f) =>
-          `  ${JSON.stringify(f)}: () => require(${JSON.stringify(`./${f}`)}),`,
-      )
-      .join("\n");
-    options.stdin = {
-      contents: [
-        `const core = require("./${pkg.entry}");`,
-        `const modules = {\n${internal}\n};`,
-        `Object.defineProperty(core, Symbol.for(${JSON.stringify(INTERNAL)}), {`,
-        "  value: (file) => {",
-        "    if (!modules[file]) throw new Error(`@devilsdev/rag-core has no module ${file}`);",
-        "    return modules[file]();",
-        "  },",
-        "});",
-        "module.exports = core;",
-      ].join("\n"),
-      resolveDir: SRC,
-      sourcefile: "rag-core-entry.js",
-    };
-  } else {
-    options.entryPoints = [path.join(SRC, pkg.entry)];
-    options.plugins = [coreModulesPlugin(coreFiles)];
-    options.external = [CORE];
-  }
-  const { metafile } = await esbuild.build(options);
+  });
 
-  // Only this package's own files may be in its bundle.
-  // (package.json is embedded for the library version, the same in every
-  // package.)
-  const bundled = Object.keys(metafile.inputs).filter(
+  // Only this package's own files may be in its bundle. (package.json is
+  // embedded for the library version, the same in every package.)
+  const foreign = Object.keys(metafile.inputs).filter(
     (i) =>
-      !i.startsWith("rag-core:") &&
-      i !== "src/rag-core-entry.js" &&
-      i !== "package.json",
-  );
-  const foreign = bundled.filter(
-    (i) => !i.startsWith("src/") || !pkg.ownFiles.has(i.slice(4)),
+      !i.startsWith("scoped:") &&
+      i !== "src/package-entry.js" &&
+      i !== "package.json" &&
+      (!i.startsWith("src/") || !pkg.ownFiles.has(i.slice(4))),
   );
   if (foreign.length) {
     throw new Error(
@@ -234,8 +258,9 @@ function manifest(pkg, requires) {
   const peerDependencies = {};
   const peerDependenciesMeta = {};
   for (const name of [...requires].sort()) {
-    if (name === CORE) dependencies[name] = rootPkg.version;
-    else if (rootPkg.dependencies?.[name]) {
+    if (PACKAGES.some((p) => p.name === name)) {
+      dependencies[name] = rootPkg.version;
+    } else if (rootPkg.dependencies?.[name]) {
       dependencies[name] = rootPkg.dependencies[name];
     } else if (rootPkg.peerDependencies?.[name]) {
       peerDependencies[name] = rootPkg.peerDependencies[name];
@@ -278,6 +303,7 @@ function manifest(pkg, requires) {
       "LICENSE",
     ],
     sideEffects: false,
+    publishConfig: { access: "public" },
     ...(Object.keys(dependencies).length && { dependencies }),
     ...(Object.keys(peerDependencies).length && { peerDependencies }),
     ...(Object.keys(peerDependenciesMeta).length && { peerDependenciesMeta }),
@@ -338,57 +364,83 @@ function readme(pkg, names) {
   ].join("\n");
 }
 
-async function build() {
-  if (!fs.existsSync(path.join(ROOT, "dist", "index.d.ts"))) {
+/** Fails unless the main package depends on each package at its version. */
+function checkLockstep() {
+  const wrong = PACKAGES.filter(
+    (p) => rootPkg.dependencies?.[p.name] !== rootPkg.version,
+  ).map((p) => `${p.name}: ${rootPkg.dependencies?.[p.name] ?? "missing"}`);
+  if (wrong.length) {
     throw new Error(
-      "Run `npm run build` first (it writes the type declarations).",
+      `@devilsdev/rag-pipeline-utils@${rootPkg.version} must depend on the scoped packages at ${rootPkg.version} (${wrong.join(", ")}). Run node scripts/sync-package-versions.js.`,
     );
   }
-  const coreFiles = assignFiles();
-  fs.rmSync(OUT, { recursive: true, force: true });
+}
+
+/**
+ * @param {{bundles?: boolean, types?: boolean}} [phases] - Default: both
+ * @returns {Promise<Array<object>>} What was built, per package
+ */
+async function build({ bundles = true, types = true } = {}) {
+  checkLockstep();
+  if (types && !fs.existsSync(path.join(ROOT, "dist", "index.d.ts"))) {
+    throw new Error(
+      "Run scripts/generate-types.js first: the packages ship its declarations.",
+    );
+  }
+  const owners = assignFiles();
 
   const built = [];
   for (const pkg of PACKAGES) {
-    const outDir = path.join(OUT, pkg.name.split("/")[1]);
-    fs.mkdirSync(path.join(outDir, "dist"), { recursive: true });
-    const requires = await bundle(pkg, coreFiles, outDir);
+    const outDir = dirOf(pkg.name);
     const names = Object.keys(require(path.join(SRC, pkg.entry)));
-
-    fs.writeFileSync(
-      path.join(outDir, "dist", "index.mjs"),
-      [
-        "import { createRequire } from 'module';",
-        "const require = createRequire(import.meta.url);",
-        "const mod = require('./index.cjs');",
-        `export const { ${names.join(", ")} } = mod;`,
-        "export default mod;",
-        "",
-      ].join("\n"),
-    );
-    writeTypes(pkg, names, outDir);
-    const pkgJson = manifest(pkg, requires);
-    fs.writeFileSync(
-      path.join(outDir, "package.json"),
-      `${JSON.stringify(pkgJson, null, 2)}\n`,
-    );
-    fs.writeFileSync(path.join(outDir, "README.md"), readme(pkg, names));
-    fs.copyFileSync(path.join(ROOT, "LICENSE"), path.join(outDir, "LICENSE"));
-    built.push({
+    const entry = {
       name: pkg.name,
       files: pkg.ownFiles.size,
       exports: names.length,
-      dependencies: Object.keys(pkgJson.dependencies || {}),
-    });
+    };
+    if (bundles) {
+      fs.rmSync(path.join(outDir, "dist"), { recursive: true, force: true });
+      fs.mkdirSync(path.join(outDir, "dist"), { recursive: true });
+      const requires = await bundle(pkg, owners, outDir);
+      fs.writeFileSync(
+        path.join(outDir, "dist", "index.mjs"),
+        [
+          "import { createRequire } from 'module';",
+          "const require = createRequire(import.meta.url);",
+          "const mod = require('./index.cjs');",
+          `export const { ${names.join(", ")} } = mod;`,
+          "export default mod;",
+          "",
+        ].join("\n"),
+      );
+      const pkgJson = manifest(pkg, requires);
+      fs.writeFileSync(
+        path.join(outDir, "package.json"),
+        `${JSON.stringify(pkgJson, null, 2)}\n`,
+      );
+      fs.writeFileSync(path.join(outDir, "README.md"), readme(pkg, names));
+      fs.copyFileSync(path.join(ROOT, "LICENSE"), path.join(outDir, "LICENSE"));
+      entry.dependencies = Object.keys(pkgJson.dependencies || {});
+    }
+    if (types) writeTypes(pkg, names, outDir);
+    built.push(entry);
   }
   return built;
 }
 
 if (require.main === module) {
-  build().then(
+  const only = process.argv.find((a) => a === "--bundles" || a === "--types");
+  const phases = only
+    ? { bundles: only === "--bundles", types: only === "--types" }
+    : {};
+  build(phases).then(
     (built) => {
       for (const p of built) {
+        const deps = p.dependencies
+          ? `, dependencies: ${p.dependencies.join(", ") || "none"}`
+          : "";
         console.log(
-          `${p.name}@${rootPkg.version}: ${p.exports} exports, ${p.files} source files, dependencies: ${p.dependencies.join(", ") || "none"}`,
+          `${p.name}@${rootPkg.version}: ${p.exports} exports, ${p.files} source files${deps}`,
         );
       }
     },
@@ -399,4 +451,11 @@ if (require.main === module) {
   );
 }
 
-module.exports = { build, PACKAGES, OUT };
+module.exports = {
+  build,
+  assignFiles,
+  scopedModulesPlugin,
+  assertNoCopies,
+  PACKAGES,
+  OUT,
+};

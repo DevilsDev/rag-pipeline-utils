@@ -87,6 +87,15 @@ estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
 - **`telemetry: { api }`** passes the `@opentelemetry/api` module to
   `createRagPipeline`, for `/edge`, which cannot load it itself.
 
+- **Scoped packages.** `@devilsdev/rag-core` (`createRagPipeline`,
+  retrieval, reranking, caching, costs and routing),
+  `@devilsdev/rag-connectors`, `@devilsdev/rag-eval` and
+  `@devilsdev/rag-guardrails`, for installing only what you use: `rag-eval`
+  alone installs about 6 MB. `@devilsdev/rag-pipeline-utils` depends on the
+  four and re-exports them, so its objects are theirs (`instanceof` holds
+  across them); its API does not change. All five release together, at
+  the same version.
+
 ### Changed
 
 - **A smaller install: 15 MB and 51 packages less.** The `rag-pipeline`

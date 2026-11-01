@@ -205,8 +205,9 @@ jobs:
 
   packages:
     # The scoped packages (@devilsdev/rag-core, -connectors, -eval and
-    # -guardrails), built from this source and installed together from their
-    # tarballs. Nothing is published.
+    # -guardrails), which the main package re-exports: built from this
+    # source, their generated package.json files committed, and installed
+    # together from their tarballs. Nothing is published.
     name: Scoped packages
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -231,7 +232,14 @@ jobs:
         run: npm ci --prefer-offline
 
       - name: Build
-        run: npm run build && npm run build:packages
+        run: npm run build
+
+      - name: Generated package files are committed
+        run: |
+          if ! git diff --exit-code -- packages; then
+            echo "::error::packages/ is out of date: run npm run build and commit packages/*/package.json and README.md"
+            exit 1
+          fi
 
       - name: Install and run them together
         run: npm run test:packages
