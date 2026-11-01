@@ -1,7 +1,7 @@
 # Project Roadmap: RAG Pipeline Utils
 
-> Current release: 2.6.2 (2026-10-29)
-> Last updated: 2026-10-29
+> Current release: 3.1.1 (2026-10-31); 3.2.0 is merged and waits for its release
+> Last updated: 2026-11-02
 
 This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what comes next. The scope and order of the 3.0 work are explained in [PROJECT_v3_PLAN.md](PROJECT_v3_PLAN.md); the reasoning behind this version of the roadmap is in [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md).
 
@@ -9,7 +9,7 @@ This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what co
 
 **Status:** ✅ Done · 🚧 In progress · 🔜 Planned
 
-**Releases:** fixes and features merge to `main` as they are ready and are published together in the next minor (the 2.5.x fixes shipped in 2.6.0); a patch release for anything urgent is built from the last release tag, so it carries no unreleased work (2.6.2 was released this way). The docs site deploys from `main` on every merge, so documentation for an unreleased feature carries a "Coming in 2.7.0" note until the release PR removes it. Each feature PR also updates the README and the CHANGELOG. "Anytime" rows are not tied to a package release.
+**Releases:** fixes and features merge to `main` as they are ready and are published together in the next minor (the 2.5.x fixes shipped in 2.6.0); a patch release for anything urgent is built from the last release tag, so it carries no unreleased work (2.6.2 was released this way). The docs site deploys from `main` on every merge, so documentation for an unreleased feature carries a "Coming in 3.2.0" note until the release PR removes it. Each feature PR also updates the README and the CHANGELOG. "Anytime" rows are not tied to a package release.
 
 <!--
 This file is read by scripts/create-roadmap-issues.js,

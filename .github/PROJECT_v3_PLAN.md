@@ -1,7 +1,9 @@
 # v3.0 — Planning & Scoping
 
-> **Status**: planning. No code yet. Updated 2026-10-29 after 2.6.2; see
-> [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md) for the reasoning behind the changes.
+> **Status (2026-11-02)**: done. 3.0.0 shipped on 2026-10-30, and the
+> package split followed in 3.2.0; [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md)
+> section 10 compares this plan with what shipped. Kept as the record of
+> the plan, last updated 2026-10-29 after 2.6.2.
 > This document defines what v3.0
 > is, what it isn't, and the order in which the work should land. The
 > intent is that any contributor (or future-me) can read this doc cold
