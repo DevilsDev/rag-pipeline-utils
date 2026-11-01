@@ -8,7 +8,9 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
+const { writeThirdPartyLicenses } = require("./lib/third-party-licenses");
 
+const root = path.resolve(__dirname, "..");
 const distDir = path.resolve(__dirname, "../dist");
 const entryPoint = path.resolve(__dirname, "../src/index.js");
 
@@ -81,7 +83,7 @@ const NODE_STUBS = [
 ];
 // A CommonJS entry bundles to a default export only; re-export its names.
 const edgeNames = Object.keys(require("../src/edge.js"));
-esbuild.buildSync({
+const edgeBuild = esbuild.buildSync({
   stdin: {
     contents: [
       'import edge from "./edge.js";',
@@ -108,8 +110,14 @@ esbuild.buildSync({
   banner: {
     js: "var process = globalThis.process || { env: {} };",
   },
+  metafile: true,
   logLevel: "warning",
 });
+writeThirdPartyLicenses(
+  edgeBuild.metafile,
+  path.join(distDir, "edge.mjs"),
+  root,
+);
 
 // Edge runtimes forbid require() and have no Node built-ins: a stray one
 // (an external left by a future change) must fail the build, not a deploy.

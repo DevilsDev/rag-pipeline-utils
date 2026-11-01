@@ -215,6 +215,10 @@ const results = [
       "const r = await edge.createRagPipeline({ embedder, retriever }).run({ query: 'vacation days' });",
       "if (!r.success || r.results[0].id !== 'vacation') throw new Error(JSON.stringify(r));",
       "if ('OpenAIConnector' in edge) throw new Error('edge exports OpenAIConnector');",
+      "const notices = new URL('./edge.mjs.LICENSES.txt', import.meta.resolve('" +
+        pkgName +
+        "/edge'));",
+      "if (!(await import('node:fs')).readFileSync(notices, 'utf8').includes('- axios@')) throw new Error('edge.mjs.LICENSES.txt');",
     ].join("\n");
     const { stdout, stderr } = runCapture(
       ["--input-type=module", "-e", script],
