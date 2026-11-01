@@ -68,28 +68,34 @@ Add a reranker to the end of the cascade.
 ### rerank()
 
 ```ts
-rerank(
+rerank<T>(
    query,
    documents,
    options?
-): Promise<object[]>;
+): Promise<(T & object)[]>;
 ```
 
 Run documents through each reranker in sequence.
 
+#### Type Parameters
+
+| Type Parameter                                        | Description |
+| ----------------------------------------------------- | ----------- |
+| <a id="type-parameter-t"></a> `T` _extends_ `unknown` |             |
+
 #### Parameters
 
-| Parameter         | Type                                               | Description                                      |
-| ----------------- | -------------------------------------------------- | ------------------------------------------------ |
-| `query`           | `string`                                           | The search query                                 |
-| `documents`       | (`string` \| `object`)[]                           | Documents to rerank                              |
-| `options?`        | \{ `signal?`: `AbortSignal`; `topK?`: `number`; \} | -                                                |
-| `options.signal?` | `AbortSignal`                                      | Forwarded to every stage; checked between stages |
-| `options.topK?`   | `number`                                           | Maximum number of results to return              |
+| Parameter         | Type                                               | Description                                       |
+| ----------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `query`           | `string`                                           | The search query                                  |
+| `documents`       | (`string` \| `T`)[]                                | Documents to rerank (a string becomes `{ text }`) |
+| `options?`        | \{ `signal?`: `AbortSignal`; `topK?`: `number`; \} | -                                                 |
+| `options.signal?` | `AbortSignal`                                      | Forwarded to every stage; checked between stages  |
+| `options.topK?`   | `number`                                           | Maximum number of results to return               |
 
 #### Returns
 
-`Promise`\<`object`[]\>
+`Promise`\<(`T` & `object`)[]\>
 
 Reranked documents from the final stage
 

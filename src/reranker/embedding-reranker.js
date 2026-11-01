@@ -134,12 +134,14 @@ class EmbeddingReranker extends EventEmitter {
   /**
    * Rerank documents by cosine similarity to the query embedding.
    *
+   * @template {object} T
    * @param {string} query - The search query
-   * @param {Array<object|string>} documents - Documents to rerank
+   * @param {Array<T|string>} documents - Documents to rerank (a string
+   *   becomes `{ text }`)
    * @param {object} [options]
    * @param {number} [options.topK] - Maximum number of results to return
    * @param {AbortSignal} [options.signal] - Cancels pending embedding calls
-   * @returns {Promise<object[]>} Reranked documents with .relevanceScore
+   * @returns {Promise<Array<T & { relevanceScore: number }>>} Reranked documents with .relevanceScore
    */
   async rerank(query, documents, options = {}) {
     if (!Array.isArray(documents) || documents.length === 0) {

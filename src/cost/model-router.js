@@ -66,6 +66,20 @@ async function* streamFrom(llm, query, docs, options) {
 }
 
 /**
+ * The llm createModelRouter returns.
+ *
+ * @typedef {object} ModelRouter
+ * @property {string} name
+ * @property {(query: string, docs?: object[], runOptions?: object) => Promise<{class: string, model: string, estimatedCost: number, fallbackFrom?: string[]}>} route
+ *   Chooses the model for a query
+ * @property {(query: string, docs?: object[], options?: object) => Promise<string>} generate
+ * @property {(query: string, docs?: object[], options?: object) => AsyncGenerator<{token: string, done: boolean}>} generateStream
+ * @property {(role: string) => string|null} getCacheKey
+ * @property {Array<{model: string, handles: string[]|null, pricing: {input: number, output: number, unit: number}}>} routes
+ *   The routes with their resolved prices (copies)
+ */
+
+/**
  * Create a cost-aware router over several LLMs.
  *
  * @example
@@ -99,7 +113,7 @@ async function* streamFrom(llm, query, docs, options) {
  * @param {string} [options.cacheKey] - Identity of a custom `classify` for
  *   createRagPipeline({ cache }); without it, a custom classifier turns
  *   the generation cache off
- * @returns {{ route: Function, generate: Function, generateStream: Function, getCacheKey: Function, routes: Array }}
+ * @returns {ModelRouter}
  */
 function createModelRouter(options = {}) {
   const {

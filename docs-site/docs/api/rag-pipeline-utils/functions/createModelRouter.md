@@ -6,7 +6,7 @@ mdx:
 # Function: createModelRouter()
 
 ```ts
-function createModelRouter(options?): object;
+function createModelRouter(options?): ModelRouter;
 ```
 
 Create a cost-aware router over several LLMs.
@@ -26,37 +26,7 @@ Create a cost-aware router over several LLMs.
 
 ## Returns
 
-`object`
-
-### generate
-
-```ts
-generate: Function;
-```
-
-### generateStream
-
-```ts
-generateStream: Function;
-```
-
-### getCacheKey
-
-```ts
-getCacheKey: Function;
-```
-
-### route
-
-```ts
-route: Function;
-```
-
-### routes
-
-```ts
-routes: any[];
-```
+`ModelRouter`
 
 ## Example
 

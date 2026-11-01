@@ -220,10 +220,10 @@ Retrieve the top-k most similar documents to a query vector.
 
 #### Parameters
 
-| Parameter    | Type                                                                                                               | Description                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `queryOrObj` | \| `number`[] \| \{ `query?`: `string`; `queryVector`: `number`[]; `signal?`: `AbortSignal`; `topK?`: `number`; \} | Either a raw vector array or an object with queryVector, optional topK and optional AbortSignal. |
-| `k?`         | `number`                                                                                                           | Number of results to return (used when queryOrObj is an array)                                   |
+| Parameter    | Type                                                                                                                | Description                                                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `queryOrObj` | \| `number`[] \| \{ `query?`: `string`; `queryVector?`: `number`[]; `signal?`: `AbortSignal`; `topK?`: `number`; \} | Either a raw vector array or an object with queryVector, optional topK and optional AbortSignal. queryVector is required (optional in the type only to match the pipeline's retriever contract). |
+| `k?`         | `number`                                                                                                            | Number of results to return (used when queryOrObj is an array)                                                                                                                                   |
 
 #### Returns
 

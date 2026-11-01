@@ -49,27 +49,33 @@ new ScoringReranker(options?): ScoringReranker;
 ### rerank()
 
 ```ts
-rerank(
+rerank<T>(
    query,
    documents,
    options?
-): Promise<object[]>;
+): Promise<(T & object)[]>;
 ```
 
 Rerank documents against a query using BM25 scoring.
 
+#### Type Parameters
+
+| Type Parameter                                        | Description |
+| ----------------------------------------------------- | ----------- |
+| <a id="type-parameter-t"></a> `T` _extends_ `unknown` |             |
+
 #### Parameters
 
-| Parameter         | Type                                               | Description                                  |
-| ----------------- | -------------------------------------------------- | -------------------------------------------- |
-| `query`           | `string`                                           | The search query                             |
-| `documents`       | (`string` \| `object`)[]                           | Documents to rerank                          |
-| `options?`        | \{ `signal?`: `AbortSignal`; `topK?`: `number`; \} | -                                            |
-| `options.signal?` | `AbortSignal`                                      | Rejects with AbortError when already aborted |
-| `options.topK?`   | `number`                                           | Maximum number of results to return          |
+| Parameter         | Type                                               | Description                                       |
+| ----------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `query`           | `string`                                           | The search query                                  |
+| `documents`       | (`string` \| `T`)[]                                | Documents to rerank (a string becomes `{ text }`) |
+| `options?`        | \{ `signal?`: `AbortSignal`; `topK?`: `number`; \} | -                                                 |
+| `options.signal?` | `AbortSignal`                                      | Rejects with AbortError when already aborted      |
+| `options.topK?`   | `number`                                           | Maximum number of results to return               |
 
 #### Returns
 
-`Promise`\<`object`[]\>
+`Promise`\<(`T` & `object`)[]\>
 
 Reranked documents with .relevanceScore

@@ -34,12 +34,14 @@ class ScoringReranker extends EventEmitter {
   /**
    * Rerank documents against a query using BM25 scoring.
    *
+   * @template {object} T
    * @param {string} query - The search query
-   * @param {Array<object|string>} documents - Documents to rerank
+   * @param {Array<T|string>} documents - Documents to rerank (a string
+   *   becomes `{ text }`)
    * @param {object} [options]
    * @param {number} [options.topK] - Maximum number of results to return
    * @param {AbortSignal} [options.signal] - Rejects with AbortError when already aborted
-   * @returns {Promise<object[]>} Reranked documents with .relevanceScore
+   * @returns {Promise<Array<T & { relevanceScore: number }>>} Reranked documents with .relevanceScore
    */
   async rerank(query, documents, options = {}) {
     throwIfAborted(options.signal);
