@@ -289,6 +289,8 @@ console.log(complex.route.model); // "claude-sonnet-5-5"
 
 The router works on its own too (`await llm.generate(query, docs)`), for example as `AgenticPipeline`'s llm; only `createRagPipeline` reports the decision.
 
+The CLI configures the same router in `.ragrc.json` with the `router` llm; see [Routing between models](./CLI.md#routing-between-models).
+
 ---
 
 ## **Production Deployment**

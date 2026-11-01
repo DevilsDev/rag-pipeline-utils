@@ -5,8 +5,10 @@ const pluginRegistry = require("../core/plugin-registry.js");
 
 /**
  * Built-in components a .ragrc.json pipeline entry can name. Each factory
- * receives the entry's `config` object and the directory of the config file.
- * Requires are lazy so naming one provider does not load the others.
+ * receives the entry's `config` object, the directory of the config file and
+ * `resolve(stage, name, config)`, which builds another component the same way
+ * a pipeline entry is built. Requires are lazy so naming one provider does
+ * not load the others.
  */
 const BUILT_INS = {
   // "auto" picks a loader per file extension (see loader/document-reader).
@@ -72,6 +74,8 @@ const BUILT_INS = {
       ),
     ollama: (cfg) =>
       new (require("../connectors/ollama-connector").OllamaConnector)(cfg),
+    // createModelRouter over other llm entries; see buildRouter.
+    router: (cfg, configDir, resolve) => buildRouter(cfg, resolve),
   },
   reranker: {
     scoring: (cfg) =>
@@ -80,6 +84,56 @@ const BUILT_INS = {
 };
 
 const STAGES = ["loader", "embedder", "retriever", "reranker", "llm"];
+
+/**
+ * The "router" llm: createModelRouter over routes that are themselves llm
+ * entries, e.g.
+ *
+ *   { "stage": "llm", "name": "router", "config": { "routes": [
+ *     { "name": "anthropic", "config": { "model": "claude-haiku-4-5" }, "handles": ["simple"] },
+ *     { "name": "anthropic", "config": { "model": "claude-sonnet-5-5" } } ] } }
+ *
+ * A route's model (for its price) is `model`, else its `config.model`, else
+ * the connector's default. The classifier is the default classifyQuery: a
+ * custom one is code, so it needs createModelRouter in JavaScript.
+ */
+function buildRouter(cfg, resolve) {
+  const { createModelRouter } = require("../cost/model-router");
+  const { routes, fallback, expectedOutputTokens } = cfg;
+  if (!Array.isArray(routes) || routes.length === 0) {
+    throw new Error(
+      'The router llm needs "routes": a list of llm entries like { "name": "openai", "config": { "model": "gpt-4o-mini" } }',
+    );
+  }
+  return createModelRouter({
+    fallback,
+    expectedOutputTokens,
+    routes: routes.map((route, i) => {
+      if (!route || typeof route.name !== "string") {
+        throw new Error(`router routes[${i}] needs a "name" (an llm)`);
+      }
+      if (route.name === "router") {
+        throw new Error(`router routes[${i}] cannot be another router`);
+      }
+      const llm = resolve("llm", route.name, route.config || {});
+      const model =
+        route.model ||
+        (route.config && route.config.model) ||
+        (llm.config && llm.config.model);
+      if (!model) {
+        throw new Error(
+          `router routes[${i}] (${route.name}) needs a "model" to price it`,
+        );
+      }
+      return {
+        llm,
+        model,
+        ...(route.handles && { handles: route.handles }),
+        ...(route.pricing && { pricing: route.pricing }),
+      };
+    }),
+  });
+}
 
 /**
  * Instantiate a custom plugin from `plugins.<stage>.<name>` in the config.
@@ -133,7 +187,11 @@ function resolveComponent(entry, config, configDir) {
   const entryConfig = entry.config || {};
 
   const builtIn = BUILT_INS[stage]?.[name];
-  if (builtIn) return builtIn(entryConfig, configDir);
+  if (builtIn) {
+    const resolve = (s, n, c) =>
+      resolveComponent({ stage: s, name: n, config: c }, config, configDir);
+    return builtIn(entryConfig, configDir, resolve);
+  }
 
   const modulePath = config.plugins?.[stage]?.[name];
   if (typeof modulePath === "string") {

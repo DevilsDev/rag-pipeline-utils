@@ -56,6 +56,22 @@ function printTrace(result) {
     );
   }
   console.log(`  ${"total".padEnd(11)} ${result.durationMs.toFixed(1)} ms`);
+  if (result.route) {
+    const {
+      class: queryClass,
+      model,
+      estimatedCost,
+      fallbackFrom,
+    } = result.route;
+    console.log(
+      `  ${"route".padEnd(11)} ${model} (${queryClass}, est. $${estimatedCost.toFixed(6)})`,
+    );
+    if (fallbackFrom) {
+      console.log(
+        `  ${"fell back".padEnd(11)} from ${fallbackFrom.join(", ")}`,
+      );
+    }
+  }
 }
 
 /** Rough token count: about 4 characters per token for English text. */
@@ -179,8 +195,10 @@ async function handleQuery(globalOptions, question, options = {}) {
     });
 
     const llmStage = (config.pipeline || []).find((s) => s.stage === "llm");
+    // A routed run is priced at the model the router chose.
+    const model = result.route ? result.route.model : llmStage?.config?.model;
     const stats = options.stats
-      ? computeStats(result, question, llmStage?.config?.model)
+      ? computeStats(result, question, model)
       : undefined;
     const explained = options.explain ? explanation(result) : undefined;
 

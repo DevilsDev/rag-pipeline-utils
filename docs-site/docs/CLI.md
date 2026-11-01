@@ -68,7 +68,7 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
    | loader    | `auto`                                       | Picks a loader per file extension                                                                                                                                                                                                                                                                                    |
    | embedder  | `local`, `openai`, `ollama`, `cohere`        | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                           |
    | retriever | `file-store`, `memory`, `pgvector`, `qdrant` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant) |
-   | llm       | `openai`, `anthropic`, `ollama`              | Optional                                                                                                                                                                                                                                                                                                             |
+   | llm       | `openai`, `anthropic`, `ollama`, `router`    | Optional; `router` from 3.2.0, see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                 |
    | reranker  | `scoring`                                    | Optional                                                                                                                                                                                                                                                                                                             |
 
 2. **Custom plugins** declared under `plugins`, as module paths relative to the config file. The module may export a class (constructed with the entry's `config`) or an object:
@@ -83,6 +83,46 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
 3. Plugins registered programmatically on `pluginRegistry`.
 
 API keys come from the environment: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `COHERE_API_KEY` (or `config.apiKey`).
+
+### Routing between models
+
+:::info[Coming in 3.2.0]
+
+The `router` llm ships in the next release.
+
+:::
+
+The `router` llm sends each query to the cheapest model suited to it ([how it decides](./Performance.md#routing-queries-to-cheaper-models)). Its `routes` are llm entries like the ones above: a `name`, its `config`, and optionally `handles` (the query classes it serves, `simple` or `complex`; all when omitted), `model` and `pricing`:
+
+```json
+{
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    { "stage": "embedder", "name": "local" },
+    { "stage": "retriever", "name": "file-store" },
+    {
+      "stage": "llm",
+      "name": "router",
+      "config": {
+        "routes": [
+          {
+            "name": "anthropic",
+            "config": { "model": "claude-haiku-4-5" },
+            "handles": ["simple"]
+          },
+          { "name": "anthropic", "config": { "model": "claude-sonnet-5-5" } }
+        ],
+        "fallback": true
+      }
+    }
+  ]
+}
+```
+
+- A route is priced by `model`, else `config.model`, else the connector's default model, from the [pricing table](./API-Reference.md#pricing_metadata). A model that isn't in the table (an Ollama model, say) needs `"pricing": { "input": 0, "output": 0 }` in USD per 1000 tokens, or the config is rejected rather than treating it as free.
+- `fallback: true` hands a failed query to the next cheapest route for its class. `expectedOutputTokens` (default 300) is the answer length used in the estimate.
+- Queries are classified by the default classifier. A custom classifier is code: use [`createModelRouter`](./API-Reference.md#createmodelrouter) in JavaScript.
+- `query --trace` prints the chosen model, the query's class and the estimated cost, `--stats` prices the run at the chosen model, and `--json` adds a `route` key.
 
 ---
 
@@ -162,15 +202,15 @@ rag-pipeline query "What is the remote work policy?"
 rag-pipeline query "remote work" --top-k 5 --json
 ```
 
-| Option           | Description                                                                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                |
-| `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                     |
-| `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                               |
-| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                |
-| `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate. With `--streaming`, also the time to first token (from 3.2.0)                      |
-| `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                |
-| `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata) |
+| Option           | Description                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                              |
+| `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                                   |
+| `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                                             |
+| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                              |
+| `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate. With `--streaming`, also the time to first token; with a `router`, the chosen model (from 3.2.0) |
+| `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                              |
+| `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata)               |
 
 ```bash
 rag-pipeline query "How many vacation days do I get?" --explain --trace
