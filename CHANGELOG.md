@@ -69,6 +69,12 @@ estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
   failures on the next cheapest route. `CostTracker` prices routed runs at
   the chosen model, and `CostCalculator` adds Claude Haiku 4.5 and Claude
   Opus 5.5 list prices.
+- **Routing from `.ragrc.json`.** The `router` llm configures
+  `createModelRouter` for the CLI: its `routes` are llm entries (`name`,
+  `config`, `handles`, `model`, `pricing`), with `fallback` and
+  `expectedOutputTokens`. `.ragrc.schema.json` describes it. `query --trace`
+  prints the chosen model, class and estimated cost, `--json` adds `route`,
+  and `--stats` prices the run at the chosen model.
 
 ### Changed
 
