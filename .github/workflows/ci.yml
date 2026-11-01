@@ -167,7 +167,8 @@ jobs:
 
   edge:
     # The library in workerd, the Cloudflare Workers runtime: Wrangler bundles
-    # test/edge's probe and examples/cloudflare-worker against this build.
+    # test/edge's probes and examples/cloudflare-worker against this build,
+    # the main entry with nodejs_compat and /edge without it.
     name: Edge runtime (Cloudflare Workers)
     runs-on: ubuntu-latest
     timeout-minutes: 10

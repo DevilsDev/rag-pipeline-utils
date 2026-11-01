@@ -31,6 +31,10 @@
       "require": "./dist/testing.cjs",
       "import": "./dist/testing.mjs"
     },
+    "./edge": {
+      "types": "./dist/edge.d.ts",
+      "default": "./dist/edge.mjs"
+    },
     "./cli": "./bin/cli.js"
   },
   "bin": {
@@ -217,6 +221,7 @@
     "esbuild": "^0.25.2",
     "eslint": "^8.57.1",
     "eslint-plugin-storybook": "^0.12.0",
+    "events": "3.3.0",
     "framer-motion": "^12.7.4",
     "husky": "^8.0.3",
     "hyparquet": "1.32.0",

@@ -101,3 +101,23 @@ if (missingTesting.length > 0) {
   process.exit(1);
 }
 console.log(`✅ All ${testingExports.length} testing exports are declared`);
+
+// ./edge: re-exports from dist/index.d.ts, so each name must be declared
+// there and listed in dist/edge.d.ts.
+const edgeExports = Object.keys(require("../src/edge.js"));
+const edgeDts = fs.readFileSync(path.join(dist, "edge.d.ts"), "utf8");
+const edgeListed = new Set(
+  (edgeDts.match(/export\s*\{([^}]*)\}/) || ["", ""])[1]
+    .split(",")
+    .map((name) => name.trim()),
+);
+const missingEdge = edgeExports.filter(
+  (name) => !declared.has(name) || !edgeListed.has(name),
+);
+if (missingEdge.length > 0) {
+  console.error(
+    `❌ edge export(s) missing from dist/edge.d.ts or dist/index.d.ts: ${missingEdge.join(", ")}`,
+  );
+  process.exit(1);
+}
+console.log(`✅ All ${edgeExports.length} edge exports are declared`);

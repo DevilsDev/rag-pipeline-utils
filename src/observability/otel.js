@@ -30,13 +30,14 @@ function loadOtelApi() {
   return loadOptionalPeer(
     '@opentelemetry/api',
     () => require('@opentelemetry/api'), // eslint-disable-line global-require
-    'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api',
+    'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api (with @devilsdev/rag-pipeline-utils/edge, pass it: telemetry: { api })',
   );
 }
 
 /**
- * Normalise the `telemetry` option of createRagPipeline.
- * @param {boolean|{tracer?: object, recordContent?: boolean}} option
+ * Normalise the `telemetry` option of createRagPipeline. `api` is the
+ * @opentelemetry/api module, for builds that cannot require() it (/edge).
+ * @param {boolean|{tracer?: object, api?: object, recordContent?: boolean}} option
  * @returns {null|{api: object, tracer: object, recordContent: boolean}}
  */
 function createTelemetry(option) {
@@ -44,10 +45,15 @@ function createTelemetry(option) {
   const opts = option === true ? {} : option;
   if (typeof opts !== 'object') {
     throw new TypeError(
-      'telemetry must be true or { tracer?, recordContent? }',
+      'telemetry must be true or { tracer?, api?, recordContent? }',
     );
   }
-  const api = loadOtelApi();
+  const api = opts.api || loadOtelApi();
+  if (!api.trace || !api.context || !api.SpanStatusCode) {
+    throw new TypeError(
+      'telemetry.api must be the @opentelemetry/api module (import * as api from "@opentelemetry/api")',
+    );
+  }
   const tracer =
     opts.tracer || api.trace.getTracer(TRACER_NAME, LIBRARY_VERSION);
   if (!tracer || typeof tracer.startActiveSpan !== 'function') {

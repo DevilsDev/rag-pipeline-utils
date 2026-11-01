@@ -8,7 +8,9 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
+const { writeThirdPartyLicenses } = require("./lib/third-party-licenses");
 
+const root = path.resolve(__dirname, "..");
 const distDir = path.resolve(__dirname, "../dist");
 const entryPoint = path.resolve(__dirname, "../src/index.js");
 
@@ -52,6 +54,90 @@ esbuild.buildSync({
   external,
   logLevel: "warning",
 });
+
+// The ./edge entry: src/edge.js as one self-contained ES module with no
+// Node.js APIs, for Vercel Edge, Workers without nodejs_compat, Deno and
+// browsers. Node's crypto, events and pino are replaced by Web API versions;
+// the other built-ins the library loads on import (for files and plugins on
+// disk, which the entry leaves out) by stubs that throw when used. Anything
+// else Node-only fails this build.
+const edgeDir = path.resolve(__dirname, "../src/edge");
+const unavailable = path.join(edgeDir, "unavailable.js");
+const NODE_STUBS = [
+  "fs",
+  "fs/promises",
+  "path",
+  "os",
+  "url",
+  "util",
+  "http",
+  "https",
+  "perf_hooks",
+  "async_hooks",
+  "child_process",
+  "zlib",
+  // Code-generating (new Function), which edge runtimes forbid; only plugin
+  // manifests use it.
+  "ajv",
+  "ajv-formats",
+];
+// A CommonJS entry bundles to a default export only; re-export its names.
+const edgeNames = Object.keys(require("../src/edge.js"));
+const edgeBuild = esbuild.buildSync({
+  stdin: {
+    contents: [
+      'import edge from "./edge.js";',
+      `export const { ${edgeNames.join(", ")} } = edge;`,
+      "export default edge;",
+    ].join("\n"),
+    resolveDir: path.resolve(__dirname, "../src"),
+    sourcefile: "edge-entry.mjs",
+  },
+  bundle: true,
+  format: "esm",
+  platform: "browser",
+  target: "es2022",
+  outfile: path.join(distDir, "edge.mjs"),
+  alias: {
+    crypto: path.join(edgeDir, "crypto.js"),
+    pino: path.join(edgeDir, "pino.js"),
+    events: require.resolve("events/"),
+    "@opentelemetry/api": path.join(edgeDir, "no-otel-api.js"),
+    ...Object.fromEntries(NODE_STUBS.map((name) => [name, unavailable])),
+  },
+  // Vercel Edge has process.env; Workers without nodejs_compat and browsers
+  // have no process at all.
+  banner: {
+    js: "var process = globalThis.process || { env: {} };",
+  },
+  metafile: true,
+  logLevel: "warning",
+});
+writeThirdPartyLicenses(
+  edgeBuild.metafile,
+  path.join(distDir, "edge.mjs"),
+  root,
+);
+
+// Edge runtimes forbid require() and have no Node built-ins: a stray one
+// (an external left by a future change) must fail the build, not a deploy.
+{
+  const edgeSource = fs.readFileSync(path.join(distDir, "edge.mjs"), "utf8");
+  // A require() of an external becomes __require("name"); imports would be
+  // top-level statements. (The logger's guarded require.resolve() probe for
+  // pino-pretty returns false on the edge.)
+  const stray = [
+    /\b__require\d*\(\s*["']/,
+    /^\s*import\s[^;]*?from\s*["']/m,
+    /^\s*export\s[^;]*?from\s*["']/m,
+    /\bimport\s*\(\s*["']/,
+  ].filter((pattern) => pattern.test(edgeSource));
+  if (stray.length) {
+    throw new Error(
+      `dist/edge.mjs must be self-contained, found: ${stray.join(", ")}`,
+    );
+  }
+}
 
 // ESM build — thin wrapper that re-exports named exports from CJS bundle
 // This is the standard pattern used by most npm packages (axios, chalk, etc.)
@@ -130,3 +216,4 @@ console.log(`  CommonJS: ${path.join(distDir, "index.cjs")}`);
 console.log(`  ESM:      ${path.join(distDir, "index.mjs")}`);
 console.log(`  Experimental: ${path.join(distDir, "experimental.{cjs,mjs}")}`);
 console.log(`  Testing:      ${path.join(distDir, "testing.{cjs,mjs}")}`);
+console.log(`  Edge:         ${path.join(distDir, "edge.mjs")}`);
