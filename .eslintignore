@@ -1,6 +1,7 @@
 node_modules/
 coverage/
 dist/
+dist-packages/
 
 # test data & helper directories (not actual tests)
 __tests__/fixtures/

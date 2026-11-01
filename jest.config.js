@@ -4,7 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testMatch: ["**/__tests__/**/*.@(test|spec).js"],
   // worktree copies would otherwise collide in the module map
-  modulePathIgnorePatterns: ["<rootDir>/.claude/"],
+  modulePathIgnorePatterns: ["<rootDir>/.claude/", "<rootDir>/dist-packages/"],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/__tests__/fixtures/",
