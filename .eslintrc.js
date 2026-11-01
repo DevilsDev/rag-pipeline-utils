@@ -32,6 +32,7 @@ module.exports = {
     "docs-site",
     "public",
     "dist",
+    "dist-packages",
     "coverage",
     "*.min.js",
     "build/",

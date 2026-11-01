@@ -45,6 +45,8 @@
   },
   "scripts": {
     "build": "node scripts/build.js && node scripts/generate-types.js && node scripts/check-type-exports.js",
+    "build:packages": "node scripts/build-packages.js",
+    "test:packages": "node scripts/test-packages.js",
     "prepack": "npm run build && node scripts/pin-readme-assets.js",
     "postpack": "node scripts/pin-readme-assets.js --restore",
     "docs:validate": "node scripts/validate-docs-examples.js",
