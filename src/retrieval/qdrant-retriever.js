@@ -92,7 +92,10 @@ class QdrantRetriever {
     this.createCollection = createCollection;
     this.cacheKey = cacheKey;
     this._apiKey = apiKey;
-    this._fetch = fetchImpl;
+    // Bound: Cloudflare Workers reject fetch called as another object's
+    // method ("Illegal invocation").
+    this._fetch =
+      fetchImpl === globalThis.fetch ? fetchImpl.bind(globalThis) : fetchImpl;
     this._ready = null;
   }
 

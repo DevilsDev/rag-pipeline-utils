@@ -293,7 +293,53 @@ function signalOptions(signal) {
   return signal ? { signal } : {};
 }
 
+/**
+ * The text of a streamed response body, chunk by chunk. Handles what axios
+ * returns for `responseType: 'stream'` on each runtime: a Node stream of
+ * Buffers, a web ReadableStream of Uint8Arrays (Cloudflare Workers), or a
+ * string. Bytes are decoded as UTF-8 across chunk boundaries, so a character
+ * split between two chunks stays whole.
+ *
+ * @param {AsyncIterable<Uint8Array|string>|ReadableStream|string} data
+ * @yields {string}
+ */
+async function* textChunks(data) {
+  if (typeof data === 'string') {
+    if (data) yield data;
+    return;
+  }
+  const decoder = new TextDecoder();
+  const chunks =
+    data && typeof data[Symbol.asyncIterator] === 'function'
+      ? data
+      : readerChunks(data);
+  for await (const chunk of chunks) {
+    const text =
+      typeof chunk === 'string'
+        ? chunk
+        : decoder.decode(chunk, { stream: true });
+    if (text) yield text;
+  }
+  const rest = decoder.decode();
+  if (rest) yield rest;
+}
+
+/** A ReadableStream without async iteration, read through its reader. */
+async function* readerChunks(stream) {
+  const reader = stream.getReader();
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) return;
+      yield value;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 module.exports = {
+  textChunks,
   createAbortError,
   isAbortError,
   throwIfAborted,

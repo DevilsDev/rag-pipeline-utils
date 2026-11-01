@@ -1,0 +1,10 @@
+name = "rag-worker"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+# The library uses Node.js APIs (events, crypto, buffer, ...) that Workers
+# provide under this flag.
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: the Claude model (the library's default otherwise).
+# [vars]
+# ANTHROPIC_MODEL = "claude-sonnet-5-5"

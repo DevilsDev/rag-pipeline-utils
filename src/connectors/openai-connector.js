@@ -1,6 +1,7 @@
 'use strict';
 
 const { BaseConnector } = require('./base-connector');
+const { loadOptionalPeer } = require('../utils/optional-peer');
 const {
   missingApiKeyError,
   raceAbort,
@@ -38,17 +39,12 @@ const DEFAULT_CONFIG = {
  * @private
  */
 function loadOpenAI() {
-  try {
-    require.resolve('openai');
-  } catch {
-    const err = new Error(
-      'OpenAIConnector needs the "openai" package, an optional peer ' +
-        'dependency since 3.0.0: npm install openai',
-    );
-    err.code = 'MISSING_DEPENDENCY';
-    throw err;
-  }
-  return require('openai'); // eslint-disable-line global-require
+  return loadOptionalPeer(
+    'openai',
+    () => require('openai'), // eslint-disable-line global-require
+    'OpenAIConnector needs the "openai" package, an optional peer ' +
+      'dependency since 3.0.0: npm install openai',
+  );
 }
 
 /**

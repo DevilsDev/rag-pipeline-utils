@@ -99,7 +99,7 @@ console.log(result.answer); // null: no LLM configured, so retrieval only
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations.
+Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations. From 3.2.0 it also runs on [Cloudflare Workers](https://devilsdev.github.io/rag-pipeline-utils/docs/Deployment-Cloudflare-Workers) with the `nodejs_compat` flag.
 
 Optional peer dependencies, installed only by projects that use them:
 

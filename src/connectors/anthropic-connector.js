@@ -9,6 +9,7 @@ const {
   raceAbort,
   resolveApiKey,
   signalOptions,
+  textChunks,
   throwIfAborted,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
@@ -193,9 +194,9 @@ class AnthropicConnector extends BaseConnector {
 
     let buffer = '';
 
-    for await (const chunk of response.data) {
+    for await (const text of textChunks(response.data)) {
       throwIfAborted(signal);
-      buffer += chunk.toString();
+      buffer += text;
       const lines = buffer.split('\n');
       // Keep the last incomplete line in the buffer
       buffer = lines.pop() || '';
