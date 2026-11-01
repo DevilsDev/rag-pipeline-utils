@@ -8,7 +8,9 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
+const { writeThirdPartyLicenses } = require("./lib/third-party-licenses");
 
+const root = path.resolve(__dirname, "..");
 const distDir = path.resolve(__dirname, "../dist");
 const entryPoint = path.resolve(__dirname, "../src/index.js");
 
@@ -17,7 +19,9 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-// All runtime dependencies should be external (not bundled)
+// Runtime dependencies are external (installed with the package); anything
+// else a bundle uses, such as the CLI's prompts and colours (devDependencies),
+// is bundled, with its license notices in <bundle>.LICENSES.txt.
 const pkg = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8"),
 );
@@ -29,7 +33,7 @@ const external = [
 ];
 
 // CommonJS build — self-contained bundle
-esbuild.buildSync({
+const libraryBuild = esbuild.buildSync({
   entryPoints: [entryPoint],
   bundle: true,
   format: "cjs",
@@ -37,12 +41,18 @@ esbuild.buildSync({
   target: "node22",
   outfile: path.join(distDir, "index.cjs"),
   external,
+  metafile: true,
   logLevel: "warning",
 });
+writeThirdPartyLicenses(
+  libraryBuild.metafile,
+  path.join(distDir, "index.cjs"),
+  root,
+);
 
 // The rag-pipeline CLI, bundled so the package doesn't ship src/. bin/cli.js
 // loads it (and falls back to src/ in a development checkout).
-esbuild.buildSync({
+const cliBuild = esbuild.buildSync({
   entryPoints: [path.resolve(__dirname, "../src/cli.js")],
   bundle: true,
   format: "cjs",
@@ -50,8 +60,14 @@ esbuild.buildSync({
   target: "node22",
   outfile: path.join(distDir, "cli.cjs"),
   external,
+  // It bundles the CLI's prompts and colours: whitespace and syntax only,
+  // so names stay readable in stack traces.
+  minifyWhitespace: true,
+  minifySyntax: true,
+  metafile: true,
   logLevel: "warning",
 });
+writeThirdPartyLicenses(cliBuild.metafile, path.join(distDir, "cli.cjs"), root);
 
 // ESM build — thin wrapper that re-exports named exports from CJS bundle
 // This is the standard pattern used by most npm packages (axios, chalk, etc.)

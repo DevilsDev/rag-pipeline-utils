@@ -72,11 +72,17 @@ estimatedCost }`, also on the stream's done chunk, as `rag.route.*`
 
 ### Changed
 
-- **A smaller package: 3.4 MB to 2.3 MB unpacked, 373 files to 161.** The
-  `rag-pipeline` CLI now runs from a bundle (`dist/cli.cjs`), like the
-  library, so the package no longer ships `src/` (1.7 MB) next to `dist/`.
-  Nothing changes for users: the package's `exports` map never allowed
-  imports from `src/`, and every CLI command behaves the same.
+- **A smaller install: 15 MB and 51 packages less.** The `rag-pipeline`
+  CLI now runs from a bundle (`dist/cli.cjs`), like the library, so the
+  package no longer ships `src/` (373 files to 165). The bundle includes
+  the CLI's prompts, spinner, colours, tables and argument parser
+  (`inquirer`, `ora`, `chalk`, `cli-table3`, `commander`), which are no
+  longer installed as dependencies, and the unused `ajv-formats` is
+  dropped: installing the package goes from 48 MB to 33 MB. The package
+  itself stays about 3.4 MB unpacked. Their license notices ship in
+  `dist/cli.cjs.LICENSES.txt`. Nothing changes for users: the package's
+  `exports` map never allowed imports from `src/`, and every CLI command
+  behaves the same.
 
 ### Fixed
 
