@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "Composable retrieval-augmented generation (RAG) for Node.js: grounded citations, evaluation, guardrails, hybrid retrieval and a CLI.",
   "main": "dist/index.cjs",
   "type": "commonjs",
@@ -254,10 +254,10 @@
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
-    "@devilsdev/rag-connectors": "3.1.1",
-    "@devilsdev/rag-core": "3.1.1",
-    "@devilsdev/rag-eval": "3.1.1",
-    "@devilsdev/rag-guardrails": "3.1.1",
+    "@devilsdev/rag-connectors": "3.2.0",
+    "@devilsdev/rag-core": "3.2.0",
+    "@devilsdev/rag-eval": "3.2.0",
+    "@devilsdev/rag-guardrails": "3.2.0",
     "ajv": "^8.17.1",
     "axios": "^1.21.0",
     "chokidar": "^4.0.3",

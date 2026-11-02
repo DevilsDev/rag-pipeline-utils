@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-eval",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "RAG evaluation: faithfulness, relevance, context precision and recall, groundedness, datasets, reports and citation checks.",
   "keywords": [
     "rag",
@@ -41,6 +41,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@devilsdev/rag-core": "3.1.1"
+    "@devilsdev/rag-core": "3.2.0"
   }
 }

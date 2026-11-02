@@ -6,9 +6,9 @@ description: Run createRagPipeline on Cloudflare Workers with the nodejs_compat 
 
 # Cloudflare Workers
 
-:::info[Coming in 3.2.0]
+:::note[Version]
 
-Workers support needs 3.2.0: earlier versions load, but Claude and Ollama streaming, `QdrantRetriever` and the optional `openai` and `@opentelemetry/api` packages fail there.
+Workers support needs 3.2.0 or later: earlier versions load, but Claude and Ollama streaming, `QdrantRetriever` and the optional `openai` and `@opentelemetry/api` packages fail there.
 
 :::
 
@@ -85,4 +85,4 @@ The bundle is about 1.5 MB compressed.
 
 ## Without nodejs_compat
 
-The main entry needs `nodejs_compat`. Without the flag, import `@devilsdev/rag-pipeline-utils/edge` instead (from 3.2.0): the library without Node.js APIs, which CI also runs in workerd. It leaves out what needs files or Node-only packages, `OpenAIConnector` among them. See [Edge runtimes](./Deployment-Edge.md), which also covers Vercel Edge Functions.
+The main entry needs `nodejs_compat`. Without the flag, import `@devilsdev/rag-pipeline-utils/edge` instead: the library without Node.js APIs, which CI also runs in workerd. It leaves out what needs files or Node-only packages, `OpenAIConnector` among them. See [Edge runtimes](./Deployment-Edge.md), which also covers Vercel Edge Functions.

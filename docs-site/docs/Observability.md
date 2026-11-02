@@ -1,6 +1,6 @@
 # Observability & Monitoring
 
-**@devilsdev/rag-pipeline-utils** ships small, dependency-free observability helpers: a structured logger, in-process metrics primitives, an execution tracer, a metrics aggregator with an HTML dashboard, and cost tracking. They are all exported from the main entry. There are no `/observability` subpaths, no built-in Prometheus endpoint and no alerting engine. From 3.2.0, `createRagPipeline({ telemetry: true })` emits [OpenTelemetry spans](#opentelemetry). Feed the data these helpers produce into the monitoring stack you already run.
+**@devilsdev/rag-pipeline-utils** ships small, dependency-free observability helpers: a structured logger, in-process metrics primitives, an execution tracer, a metrics aggregator with an HTML dashboard, and cost tracking. They are all exported from the main entry. There are no `/observability` subpaths, no built-in Prometheus endpoint and no alerting engine. `createRagPipeline({ telemetry: true })` emits [OpenTelemetry spans](#opentelemetry). Feed the data these helpers produce into the monitoring stack you already run.
 
 `createRagPipeline()` does not record metrics or events on its own. You wrap the pipeline (`ExecutionTracer`, `CostTracker`) or record what you need around `run()`.
 
@@ -14,7 +14,7 @@
 | Counters, gauges, histograms  | `metrics`                                 | In-memory metric objects, JSON export                               |
 | Pipeline event history        | `eventLogger`                             | In-memory event list, JSON export                                   |
 | Per-run traces                | `ExecutionTracer`, `TraceInspector`       | Trace records, bottleneck and anomaly analysis                      |
-| Distributed tracing           | `createRagPipeline({ telemetry })`        | From 3.2.0: OpenTelemetry spans for each run and stage              |
+| Distributed tracing           | `createRagPipeline({ telemetry })`        | OpenTelemetry spans for each run and stage                          |
 | Rolling metrics and dashboard | `MetricsAggregator`, `DashboardGenerator` | Snapshot object, standalone HTML, text report                       |
 | Cost per run                  | `CostTracker`, `TokenBudget`              | `result.cost`, session summaries                                    |
 | Quality per run               | `run({ options: { evaluate: true } })`    | `result.evaluation` scores                                          |
@@ -143,12 +143,6 @@ The tracer records the run as a whole, not each stage separately. For per-stage 
 For distributed tracing, see [OpenTelemetry](#opentelemetry) below.
 
 ## OpenTelemetry
-
-:::info[Coming in 3.2.0]
-
-The `telemetry` option ships in the next release.
-
-:::
 
 `createRagPipeline({ telemetry: true })` records each run as an OpenTelemetry span, with a child span for every stage call it makes. Install the API, an optional peer dependency, alongside the OpenTelemetry SDK your service already uses:
 

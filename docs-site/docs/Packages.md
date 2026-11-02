@@ -6,12 +6,6 @@ description: Install only what you use. @devilsdev/rag-core, rag-connectors, rag
 
 # Packages
 
-:::info[Coming in 3.2.0]
-
-The scoped packages ship with 3.2.0.
-
-:::
-
 `@devilsdev/rag-pipeline-utils` is made of four packages. Install the full package for everything, or only the parts you use:
 
 | Package                     | What it has                                                                                                                                                  | Installs        |
