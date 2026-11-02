@@ -6,12 +6,6 @@ description: The /edge entry runs without Node.js APIs, on Vercel Edge Functions
 
 # Edge runtimes
 
-:::info[Coming in 3.2.0]
-
-`@devilsdev/rag-pipeline-utils/edge` ships in the next release.
-
-:::
-
 `@devilsdev/rag-pipeline-utils/edge` is the library without Node.js APIs: one ES module that needs only Web APIs (`fetch`, `crypto.getRandomValues`, `TextEncoder`, streams). Use it where Node.js modules don't exist:
 
 - Vercel Edge Functions

@@ -194,7 +194,7 @@ for await (const chunk of stream) {
 
 With `citations` or `evaluate` in stream mode, the stream ends with one `{ token: '', done: true, citations, evaluation }` chunk.
 
-From 3.2.0, the done chunk also carries `timing: { firstTokenMs, totalMs }`. `firstTokenMs` is the time to first token: how long after `run()` was called the first non-empty token arrived, retrieval and reranking included, so it is the wait your users see. It is `null` when the model produced no tokens. A non-streamed result carries `timing: { totalMs }`.
+The done chunk also carries `timing: { firstTokenMs, totalMs }`. `firstTokenMs` is the time to first token: how long after `run()` was called the first non-empty token arrived, retrieval and reranking included, so it is the wait your users see. It is `null` when the model produced no tokens. A non-streamed result carries `timing: { totalMs }`.
 
 ```javascript
 for await (const chunk of stream) {

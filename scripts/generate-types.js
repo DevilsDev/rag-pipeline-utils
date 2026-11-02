@@ -57,7 +57,7 @@ export interface TelemetryTracer {
 export interface TelemetryOptions {
   /** Default: \`trace.getTracer("@devilsdev/rag-pipeline-utils", version)\`. */
   tracer?: TelemetryTracer;
-  /** The @opentelemetry/api module, for @devilsdev/rag-pipeline-utils/edge, which cannot load it itself (from 3.2.0). */
+  /** The @opentelemetry/api module, for @devilsdev/rag-pipeline-utils/edge, which cannot load it itself. */
   api?: any;
   /** Also record the query text and the retrieved document ids and scores. Default false. */
   recordContent?: boolean;

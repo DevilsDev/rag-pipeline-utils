@@ -12,7 +12,7 @@ The package has five entry points:
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                                                                                      |
 | `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                    |
-| `@devilsdev/rag-pipeline-utils/edge`         | From 3.2.0: the library without Node.js APIs, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                  |
+| `@devilsdev/rag-pipeline-utils/edge`         | The library without Node.js APIs, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                              |
 | `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
 | `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                              |
 
@@ -147,8 +147,8 @@ interface RunResult {
   evaluation?: object; // when options.evaluate is set
   cache?: object; // "hit" | "miss" | "skip" per layer, when a cache is configured
   packing?: object; // with maxContextTokens: { tokens, maxTokens, kept, dropped, truncated }
-  timing?: { totalMs: number }; // from 3.2.0: ms since run() was called
-  route?: { class: string; model: string; estimatedCost: number }; // from 3.2.0, with createModelRouter
+  timing?: { totalMs: number }; // ms since run() was called
+  route?: { class: string; model: string; estimatedCost: number }; // with createModelRouter
 }
 
 // Failures resolve instead of throwing:
@@ -591,7 +591,7 @@ Built-in prices are unverified. Pass the `pricing` or `customPricing` option to 
 
 ### createModelRouter
 
-From 3.2.0. An `llm` that sends each query to the cheapest model suited to it. See [Routing queries to cheaper models](./Performance.md#routing-queries-to-cheaper-models).
+An `llm` that sends each query to the cheapest model suited to it. See [Routing queries to cheaper models](./Performance.md#routing-queries-to-cheaper-models).
 
 ```typescript
 createModelRouter(options: {
@@ -1113,7 +1113,7 @@ interface StreamChunk {
   citations?: object; // final chunk only, when options.citations is set
   evaluation?: object; // final chunk only, when options.evaluate is set
   packing?: object; // final chunk only, with maxContextTokens
-  timing?: { firstTokenMs: number | null; totalMs: number }; // final chunk, from 3.2.0
+  timing?: { firstTokenMs: number | null; totalMs: number }; // final chunk
 }
 ```
 
