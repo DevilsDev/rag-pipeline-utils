@@ -1,7 +1,7 @@
 # Project Roadmap: RAG Pipeline Utils
 
 > Current release: 3.2.0 (2026-11-03)
-> Last updated: 2026-11-02
+> Last updated: 2026-11-03
 
 This roadmap tracks what `@devilsdev/rag-pipeline-utils` has shipped and what comes next. The scope and order of the 3.0 work are explained in [PROJECT_v3_PLAN.md](PROJECT_v3_PLAN.md); the reasoning behind this version of the roadmap is in [ROADMAP-REVIEW.md](ROADMAP-REVIEW.md).
 
@@ -93,7 +93,7 @@ and do not use "|" inside a cell. Renaming a Feature changes its issue title.
 | v3.2.0      | Examples      | MCP server template                             | examples/mcp-server: a search_documents tool over stdio with the official MCP SDK, for Claude Desktop and Claude Code                                                                                                            | ✅ Done | examples           |
 | v3.2.0      | Core          | Cost-aware routing                              | createModelRouter: cheapest priced model per query class, reported as result.route; the router llm in .ragrc.json                                                                                                                | ✅ Done | core               |
 | v3.1.1      | npm page      | Homepage link to the docs site                  | package.json `homepage` points to the GitHub README; point it to devilsdev.github.io/rag-pipeline-utils, so the npm sidebar's Homepage opens the documentation                                                                   | ✅ Done | npm, docs          |
-| v3.x        | npm page      | Deprecate releases that fail to install         | `npm deprecate` 2.0.0 to 2.6.1 (their husky postinstall fails without a global husky), so npm warns on those versions and on install and points to 2.6.2 or later                                                                | 🔜      | npm, release       |
+| v3.2.0      | npm page      | Deprecate releases that fail to install         | 2.0.0 to 2.6.1 deprecated on npm (their husky postinstall fails without a global husky): npm warns on install and points to 3.2.0 or later                                                                                       | ✅ Done | npm, release       |
 | v3.1.1      | npm page      | Quick start on the first screen                 | Move a short runnable example above the table of contents and refresh the feature bullets (rag-pipeline eval, contract tests, context packing, pgvector and Qdrant), since the npm page shows the README top first               | ✅ Done | npm, docs          |
 | v3.1.1      | npm page      | Absolute links in the README                    | Replace relative links (SEMVER.md, CHANGELOG.md, SECURITY.md, LICENSE, examples/, docs/CONTRIBUTING.md, BENCHMARKS.md) with absolute GitHub or docs URLs so they work on npmjs.com, and check every README link and image in CI  | ✅ Done | npm, docs, ci      |
 | v3.1.1      | npm page      | Images pinned to the release                    | Load the banner and demo GIFs from the release tag (cdn.jsdelivr.net/gh/...@v3.x.y) instead of @main, which jsDelivr caches for up to 7 days and which changes the pages of older versions; the release workflow updates the tag | ✅ Done | npm, release       |
