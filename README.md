@@ -252,7 +252,7 @@ On GitHub, [`DevilsDev/rag-eval-action`](https://github.com/DevilsDev/rag-eval-a
 
 ### Check answers from another framework
 
-Already on LangChain, LlamaIndex, Mastra or the AI SDK? `checkAnswer` checks the answer your chain produced against the sources it was given, in the shape your framework returns them:
+Already on LangChain, Mastra, the AI SDK or LlamaIndex? `checkAnswer` checks the answer your chain produced against the sources it was given, in the shape your framework returns them:
 
 ```js
 import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
@@ -293,7 +293,7 @@ Writing your own plugin? `runContractTests("retriever", () => new MyRetriever())
 
 ### Protect an internal assistant
 
-`GuardrailsPipeline` wraps any pipeline. Access control runs before the LLM sees a document, prompt-injection detection runs on the query, and PII is redacted from the answer, its citations and its evaluation details.
+`GuardrailsPipeline` wraps any pipeline. Access control runs before the LLM sees a document, prompt-injection detection runs on the query and, with `detectInjection`, on the retrieved documents too (indirect injection: instructions planted in a page or file you index), and PII is redacted from the answer, its citations and its evaluation details.
 
 ```js
 import {
@@ -325,7 +325,7 @@ const assistant = new GuardrailsPipeline(
   createRagPipeline({ retriever, llm: openai }),
   {
     preRetrieval: { enableInjectionDetection: true },
-    retrieval: { enforceACL: true },
+    retrieval: { enforceACL: true, detectInjection: true },
     postGeneration: { enablePIIDetection: true },
     strict: true, // block instead of warn
   },
@@ -539,7 +539,7 @@ The result of `run()` is:
 | **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                                                                                                                                           |
 | **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                                                                                                                                                                                                                                                               |
 | **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; contract tests for your plugins with `runContractTests()` and `checkContract()`                                                                                                                                                                                                                     |
-| **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                                                                                                                                                                                                                                                                 |
+| **Guardrails**   | Injection detection on queries and retrieved documents, with input normalisation; ACL and relevance filtering before generation; PII redaction                                                                                                                                                                                                                                             |
 | **Agentic**      | `QueryPlanner`, `IterativeRetriever`, `SelfCritiqueChecker`, `AgenticPipeline`                                                                                                                                                                                                                                                                                                             |
 | **GraphRAG**     | `KnowledgeGraph`, `EntityExtractor`, `GraphRetriever`                                                                                                                                                                                                                                                                                                                                      |
 | **Streaming**    | Token streaming with a final chunk carrying citations, evaluation and the time to first token; `SSEAdapter`, `WebSocketAdapter`                                                                                                                                                                                                                                                            |
@@ -548,21 +548,18 @@ The result of `run()` is:
 
 ## How it compares
 
-A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (competitor details as of October 2026). The other libraries are broader frameworks; this one is narrower on purpose.
+A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (as of November 2026). Mastra and the AI SDK are often used together with this library rather than instead of it.
 
-|                  | rag-pipeline-utils                                                                                                    | LangChain.js                          | LlamaIndex.TS                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
-| Focus            | RAG pipelines for Node.js services                                                                                    | General-purpose LLM orchestration     | Indexing-first RAG                   |
-| Evaluation       | Built in: faithfulness, relevance, context P/R                                                                        | Via LangSmith (separate, paid option) | Some metrics, evolving               |
-| Citations        | Built in: per-sentence, with groundedness score                                                                       | Possible, wired up by hand            | Possible, wired up by hand           |
-| Guardrails       | Built in: pre-retrieval, retrieval, post-generation                                                                   | Via integrations (Guardrails AI etc.) | Via integrations                     |
-| Vector stores    | Memory, file, PostgreSQL with pgvector and Qdrant, plus a plugin contract                                             | 50+ integrations                      | Many integrations and native indexes |
-| LLM providers    | OpenAI (and compatible APIs), Anthropic, Ollama, AI SDK models, plus plugins                                          | Largest ecosystem                     | Large ecosystem                      |
-| Agents and tools | Query planning and iterative retrieval                                                                                | Mature agent framework                | Agent framework                      |
-| Packaging        | One package, or only the parts you use (`rag-core`, `rag-connectors`, `rag-eval`, `rag-guardrails`); ESM and CommonJS | Many packages, mostly ESM             | One package, mostly ESM              |
-| Stability        | Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) with deprecations     | Versioned per package                 | Versioned                            |
+|               | rag-pipeline-utils                                                                       | LangChain.js                       | Mastra                               | Vercel AI SDK                           |
+| ------------- | ---------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------ | --------------------------------------- |
+| Focus         | RAG with grounding, evaluation and guardrails                                            | General-purpose LLM orchestration  | Agents and workflows                 | Model calls, streaming, tools, UI hooks |
+| Evaluation    | Deterministic metrics, no model calls; CLI and GitHub Action that fail CI on regressions | `openevals` (LLM judge), LangSmith | LLM-judge scorers in `@mastra/evals` | None built in                           |
+| Citations     | Per sentence, with a groundedness score and a number check                               | Wired up by hand                   | Wired up by hand                     | Passes provider citations through       |
+| Guardrails    | ACL before generation, injection detection (pattern-based), PII redaction                | Via integrations                   | Model-based processors               | Middleware you write                    |
+| Vector stores | Memory, file, pgvector and Qdrant, plus a plugin contract                                | 50+ integrations                   | Many integrations                    | Bring your own                          |
+| Agents        | Query planning and iterative retrieval                                                   | Mature agent framework             | Agents, workflows, memory            | Tool calling and agent loops            |
 
-Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
+Choose LangChain.js for the widest integration catalogue, Mastra for agents and workflows with LLM-judge evals, and the AI SDK as the model layer; use this library for the retrieval, grounding and evaluation parts, on its own or under any of them. **LlamaIndex.TS is deprecated** (its repository is archived); see [Coming from LlamaIndex.TS](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration-LlamaIndex).
 
 ## Connectors and plugins
 

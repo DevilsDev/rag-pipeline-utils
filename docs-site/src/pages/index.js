@@ -237,10 +237,11 @@ function Compare() {
             <p className={styles.eyebrow}>How it compares</p>
             <h2>Narrow on purpose</h2>
             <p>
-              LangChain.js and LlamaIndex.TS are broad frameworks with large
-              integration catalogues. This library focuses on RAG for Node.js
-              services and ships evaluation, citations and guardrails as part of
-              the pipeline, in one MIT package with a small surface to review.
+              LangChain.js and Mastra are broad frameworks for agents and
+              workflows, and the AI SDK is a model layer. This library focuses
+              on RAG and ships deterministic evaluation, citations and
+              guardrails as part of the pipeline, on its own or next to any of
+              them, with a small surface to review.
             </p>
           </div>
           <Link

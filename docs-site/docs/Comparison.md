@@ -2,148 +2,147 @@
 id: Comparison
 title: Comparison vs Other Frameworks
 sidebar_label: Comparison
-description: Honest, up-to-date comparison of @devilsdev/rag-pipeline-utils against LangChain.js and LlamaIndex.TS — including where we lose.
+description: Honest comparison of @devilsdev/rag-pipeline-utils with LangChain.js, Mastra and the Vercel AI SDK, including where we lose, and what to do now that LlamaIndex.TS is deprecated.
 ---
 
 # Comparison vs Other Frameworks
 
 This page exists to give you a decision framework, not to sell you on
-this package. Where the alternatives win, we say so. The goal is for
-you to leave knowing whether `@devilsdev/rag-pipeline-utils` is the
-right choice for **your** workload — not whether it's "the best" in
-the abstract.
+this package. Where the alternatives win, we say so. Two of them,
+Mastra and the Vercel AI SDK, are as often used **together with** this
+library as instead of it, so the page says how they combine too.
 
-> **Currency**: this comparison reflects the state of each project
-> as of **October 2026** (3.0.0). The JS RAG ecosystem moves fast. If you read
-> this six months later, double-check the points where each project
-> has likely improved.
+> **Currency**: this comparison reflects each project as of
+> **November 2026** (3.2.0; Mastra `@mastra/core` 1.81, AI SDK 7.0). The
+> JS AI ecosystem moves fast; if you read this months later, check the
+> points where each project has likely improved.
+
+:::note[LlamaIndex.TS is deprecated]
+LlamaIndex.TS (`llamaindex` on npm) was deprecated by its maintainers and
+its repository archived in 2026; the last release is 0.12.1 (December
+2025). LlamaIndex for Python is unaffected. If you are moving off it, see
+[Coming from LlamaIndex.TS](./Migration-LlamaIndex).
+:::
 
 ## At a glance
 
-| Dimension                  | `@devilsdev/rag-pipeline-utils`                                                                                                                                                                                 | LangChain.js                                                    | LlamaIndex.TS                                |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
-| **Primary focus**          | Production RAG pipelines for Node.js services                                                                                                                                                                   | General-purpose LLM orchestration                               | Indexing-first RAG with rich data structures |
-| **License**                | MIT                                                                                                                                                                                                             | MIT                                                             | MIT                                          |
-| **Bundle**                 | Single package (plus `/testing` helpers and an `/experimental` entry for simulated modules)                                                                                                                     | Many packages (`@langchain/core`, `@langchain/community`, etc.) | Single package, larger surface               |
-| **Built-in evaluation**    | ✅ Faithfulness, relevance, context P/R, groundedness                                                                                                                                                           | 🟡 Via separate `langsmith` (paid SaaS option)                  | 🟡 Some metrics, evolving                    |
-| **Built-in citations**     | ✅ Per-sentence attribution + groundedness score                                                                                                                                                                | 🟡 Doable manually                                              | 🟡 Doable manually                           |
-| **Built-in guardrails**    | ✅ 3-layer (pre / retrieval / post)                                                                                                                                                                             | 🟡 Via integrations (Guardrails AI, etc.)                       | 🟡 Via integrations                          |
-| **Vector store ecosystem** | In-memory and JSON-file stores, PostgreSQL/pgvector and Qdrant, BM25 and hybrid search, plus a plugin contract for any other                                                                                    | ✅ 50+ integrations                                             | ✅ Many integrations + native indexes        |
-| **LLM provider ecosystem** | OpenAI (and OpenAI-compatible APIs via `baseURL`), Anthropic, Ollama, any Vercel AI SDK model via `createAiSdkAdapter`; Cohere for embeddings and reranking; plus a plugin contract                             | ✅ Largest ecosystem                                            | ✅ Large ecosystem                           |
-| **Agentic / tools**        | 🟡 Query planning (heuristic or LLM-proposed) + iterative retrieval via DAG                                                                                                                                     | ✅ Mature agent framework, tool use                             | ✅ Agent framework                           |
-| **GraphRAG**               | ✅ Knowledge-graph construction + traversal                                                                                                                                                                     | 🟡 Via integrations                                             | 🟡 Via property graphs                       |
-| **MCP support**            | Tool definitions and a handler (`MCPServer`); the [MCP server example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/mcp-server) serves a search tool over stdio with the official MCP SDK | 🟡 Community add-ons                                            | 🟡 Community add-ons                         |
-| **TypeScript types**       | ✅ `.d.ts` generated from JSDoc; build fails on undeclared exports                                                                                                                                              | ✅ Native TS                                                    | ✅ Native TS                                 |
-| **Module format**          | Dual ESM + CJS                                                                                                                                                                                                  | Mostly ESM, some CJS                                            | Mostly ESM                                   |
-| **Stability policy**       | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)                                                                                                              | Versioned per package                                           | Versioned                                    |
-| **Security policy**        | ✅ Documented disclosure + capability matrix                                                                                                                                                                    | Via GitHub Security                                             | Via GitHub Security                          |
-| **Production complexity**  | Low — pipeline + components                                                                                                                                                                                     | Medium — many abstractions                                      | Medium — index types vocabulary              |
+| Dimension                 | `@devilsdev/rag-pipeline-utils`                                                                                                      | LangChain.js                                      | Mastra                                                                                            | Vercel AI SDK                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Primary focus**         | RAG pipelines with grounding, evaluation and guardrails                                                                              | General-purpose LLM orchestration                 | TypeScript framework for agents and workflows                                                     | Provider-neutral model calls, streaming, tools and UI hooks                 |
+| **License**               | MIT                                                                                                                                  | MIT                                               | Apache-2.0                                                                                        | Apache-2.0                                                                  |
+| **RAG pipeline**          | ✅ `createRagPipeline`: embed, retrieve, rerank, pack context, generate                                                              | ✅ Retrievers and chains                          | ✅ `@mastra/rag`: chunking, vector query tool, reranking, GraphRAG                                | 🟡 Building blocks (`embed`, `embedMany`, `rerank`); you write the pipeline |
+| **Evaluation**            | ✅ Deterministic: faithfulness, relevance, context precision and recall, retrieval of expected sources; CLI and GitHub Action for CI | 🟡 `openevals` (LLM-judge) and LangSmith (hosted) | ✅ `@mastra/evals`: about 20 LLM-judge scorers (faithfulness, context recall...) plus code checks | ❌ None built in                                                            |
+| **Citations**             | ✅ Per sentence, with a groundedness score and number checks (negation from 3.3.0)                                                   | 🟡 Wired up by hand                               | 🟡 Wired up by hand                                                                               | 🟡 Passes provider citations through; doesn't check them                    |
+| **Guardrails**            | ✅ ACL filtering before generation, injection detection on the query and retrieved documents, PII redaction (pattern-based)          | 🟡 Via integrations                               | ✅ Processors: prompt injection, PII, moderation, system-prompt scrubbing (model-based)           | 🟡 Middleware you write                                                     |
+| **Vector stores**         | In-memory and JSON file, PostgreSQL/pgvector and Qdrant, BM25 and hybrid search, plus a plugin contract                              | ✅ 50+ integrations                               | ✅ Many integrations (`@mastra/pg`, Pinecone, Qdrant...)                                          | ❌ Bring your own                                                           |
+| **LLM providers**         | OpenAI (and compatible), Anthropic, Cohere, Ollama, and any AI SDK model through `createAiSdkAdapter`                                | ✅ Largest ecosystem                              | ✅ Through the AI SDK's providers                                                                 | ✅ Largest provider catalogue                                               |
+| **Agents and tools**      | 🟡 Query planning and iterative retrieval                                                                                            | ✅ Mature agent framework                         | ✅ Agents, workflows, memory                                                                      | ✅ Tool calling and agent loops                                             |
+| **Runs offline in tests** | ✅ TF-IDF embedder, test doubles, contract tests for your plugins                                                                    | 🟡 Fake models                                    | 🟡 Mock models                                                                                    | ✅ Mock providers                                                           |
+| **Edge runtimes**         | ✅ Cloudflare Workers (tested in workerd), `/edge` entry without Node.js APIs                                                        | 🟡 Partial                                        | 🟡 Partial                                                                                        | ✅ Designed for it                                                          |
+| **Install size**          | 33 MB full; `@devilsdev/rag-eval` alone about 6 MB                                                                                   | Varies by packages                                | Large (framework, storage, telemetry)                                                             | Small core, providers separate                                              |
+| **Module format**         | ESM and CommonJS                                                                                                                     | Mostly ESM                                        | ESM                                                                                               | ESM and CommonJS                                                            |
+| **Stability policy**      | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)                                   | Versioned per package                             | Versioned per package                                                                             | Versioned, with codemods for majors                                         |
+
+## Use them together
+
+- **With the AI SDK:** use any AI SDK model as this library's embedder and
+  LLM with [`createAiSdkAdapter`](./Integrations), or keep calling
+  `generateText` yourself and check the answer with
+  [`checkAnswer`](./Integrations#check-an-answer-from-any-framework).
+- **With Mastra:** keep your agents and workflows, and use
+  `checkAnswer` or `@devilsdev/rag-eval` as a deterministic first pass
+  that costs no model calls, before Mastra's LLM-judge scorers.
+- **With LangChain.js:** `checkAnswer` takes LangChain `Document`s
+  (`pageContent`, `metadata`) as they come out of a retrieval chain, and
+  `rag-pipeline eval` can score a test set against your chain's answers.
 
 ## Where each one wins
 
 ### LangChain.js wins when…
 
-- You need the **largest ecosystem** of vector store, LLM, and tool
-  integrations out of the box without writing connectors. LangChain
-  has hundreds of community-maintained integrations.
-- Your application is **broader than RAG** — agents, tool use, multi-
-  step workflows, code generation, structured output enforcement.
-  LangChain's primary investment is general LLM orchestration; RAG is
-  one use case among many.
-- You're comfortable with **opinionated abstractions** like Runnables,
-  Expression Language, and the chain composition vocabulary.
-- You want a **paid SaaS observability layer** (LangSmith) for
-  evaluation, tracing, prompt management, and dataset curation.
+- You need the **largest catalogue** of vector store, LLM and tool
+  integrations without writing connectors.
+- Your application is **broader than RAG**: agents, tool use, multi-step
+  workflows, structured output.
+- You want a **hosted observability and evaluation product** (LangSmith).
 
-### LlamaIndex.TS wins when…
+### Mastra wins when…
 
-- Your workload is **indexing-heavy** and you benefit from rich
-  index types: vector, summary, tree, keyword table, knowledge graph,
-  document summary, composable graph indexes. LlamaIndex's worldview
-  centers on choosing the right index for your data.
-- You want **deep integration with structured data sources** (SQL,
-  property graphs) treated as first-class citizens alongside
-  unstructured documents.
-- You're already on the Python LlamaIndex stack and want a
-  consistent JS counterpart.
+- You're building **agents and workflows** in TypeScript and want RAG,
+  memory, evals and guardrails in one framework with a local dev studio.
+- You want **LLM-judge metrics** for things word overlap can't settle,
+  such as paraphrases, tone or rubric scoring, and accept their per-call
+  cost and variability.
+- You want **model-based guardrails** (a classifier model rather than
+  patterns).
+
+### The Vercel AI SDK wins when…
+
+- You mostly need **model calls**: one API over every provider,
+  streaming, tool calling, and React, Svelte or Vue hooks for chat UIs.
+- You'd rather **assemble your own retrieval** from small primitives.
+  It's an excellent base layer, and this library runs on top of it.
 
 ### `@devilsdev/rag-pipeline-utils` wins when…
 
-- You're building **a Node.js service that does RAG**, and you want a
-  pipeline-shaped API rather than a chain-of-everything API. Three
-  primitives: `pipeline`, `plugin`, `connector`.
-- **Evaluation, citations, and guardrails are required, not optional.**
-  Faithfulness scoring, per-sentence attribution, and 3-layer guardrails
-  ship in the box. The metrics are lexical (no judge LLM calls), so they
-  add no API spend; they are also less nuanced than LLM-judged metrics.
-- You need a **predictable, narrow surface area for security review**.
-  One package, or only the parts you use (`@devilsdev/rag-eval` alone is
-  about 6 MB), MIT-licensed, no required SaaS.
-- You want a **dual ESM + CommonJS build** and a documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)
-  with explicit deprecation windows.
-- You want your documents searchable from **MCP** (Model Context Protocol)
-  clients such as Claude Desktop and Claude Code: the
-  [MCP server example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/mcp-server)
-  does that with the official MCP SDK and this library's retrieval.
+- **Grounding and evaluation are requirements.** Every answer comes back
+  with per-sentence citations and a groundedness score, numbers (and, from
+  3.3.0, negation) are checked against the sources, and `rag-pipeline eval`
+  fails CI when answers get worse than on your main branch.
+- You want those checks to be **deterministic and free**: no judge model,
+  the same result every run, offline in tests. The trade-off is that
+  word overlap misses paraphrases that an LLM judge would accept.
+- You need **access control before generation**: documents a user may
+  not see are filtered out before the model reads them.
+- You need a **narrow surface for security review**: one package or only
+  the parts you use, MIT, no required SaaS.
 
 ## Migration friction
 
-| From                                    | Effort     | What's involved                                                                                                                                                                             |
-| --------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LangChain.js                            | Medium     | The chain ↔ pipeline mapping is not 1:1, but most concepts have direct analogues. Plan to rewrite chain composition; keep your custom retrievers and prompt templates with light wrapping. |
-| LlamaIndex.TS                           | Medium     | Index → retriever mapping requires deciding which retrieval strategy fits each LlamaIndex index type. Vector indexes map cleanly; summary/tree indexes need rethinking.                     |
-| Custom in-house RAG                     | Low–Medium | If you've built ad-hoc retrieval + LLM orchestration, the framework slots in cleanly. The plugin contracts let you keep your existing retriever / embedder code.                            |
-| Other Python RAG (e.g. Haystack, RAGAS) | Hard       | Different language. Use the framework's evaluation primitives as the equivalent of RAGAS metrics; everything else is a port.                                                                |
+| From             | Effort     | What's involved                                                                                                                                                          |
+| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| LlamaIndex.TS    | Low–Medium | Vector-index RAG maps directly; see [Coming from LlamaIndex.TS](./Migration-LlamaIndex). Summary, tree and keyword-table indexes have no equivalent and need rethinking. |
+| LangChain.js     | Medium     | Chain composition becomes a pipeline; keep custom retrievers and prompts with light wrapping. Or keep the chain and add `checkAnswer` and `rag-pipeline eval` alongside. |
+| AI SDK (DIY RAG) | Low        | Pass your AI SDK models through `createAiSdkAdapter`; your retrieval code becomes a retriever plugin.                                                                    |
+| Custom in-house  | Low–Medium | The plugin contracts let you keep your retriever and embedder code; `runContractTests` checks they behave as the pipeline expects.                                       |
 
 ## Cost considerations
 
-All three frameworks are MIT-licensed and free. Operating costs are
-dominated by:
-
-- **Embedding API spend** (proportional to corpus size + re-indexing
-  frequency)
-- **LLM API spend** (proportional to query volume × tokens per query)
-- **Vector store hosting** (pinecone / weaviate / etc.)
-
-`@devilsdev/rag-pipeline-utils` does **not** ship a paid tier or
-require a SaaS account for any feature. LangChain offers LangSmith as
-a paid observability/eval product; LangSmith is genuinely useful but
-optional.
+All of these are free and open source; operating costs come from
+embedding and LLM API calls and vector store hosting. One difference is
+evaluation: LLM-judge metrics (Mastra, `openevals`, LangSmith) make model
+calls for every scored answer, while this library's metrics make none.
 
 ## Honest non-goals
 
-This framework explicitly does not try to be:
+This library does not try to be:
 
-- **A general LLM orchestration framework.** If you want to build
-  agents that browse the web, write code, and call arbitrary tools,
-  LangChain is a better starting point.
-- **A no-code / low-code RAG builder.** This is a developer-facing
-  Node.js library. There's no UI to drag-and-drop pipelines together.
-- **A managed vector store.** Bring your own (or use the in-memory
-  retriever for development).
+- **An agent framework.** Use Mastra, LangChain or the AI SDK for agents,
+  and this library for the RAG and grounding parts.
+- **A no-code builder or a hosted service.** It's a Node.js library with
+  no UI.
+- **A vector database.** Bring your own, or use the in-memory and file
+  stores for development.
 - **A Python framework.** Node.js 22 or later only.
 
 ## How to decide
 
-Pick `@devilsdev/rag-pipeline-utils` if you can answer **yes** to:
+Pick `@devilsdev/rag-pipeline-utils` (on its own or next to the others)
+if you can answer **yes** to:
 
-- Are you building on **Node.js 22+**?
-- Is your primary workload **RAG** (not general agents)?
-- Do you need **citations or evaluation** to be a first-class concern?
-- Do you value **a small, narrow API** over breadth of integrations?
-- Are you comfortable writing a 50-line plugin for an integration
-  that doesn't ship out of the box?
+- Is your primary workload **RAG** on **Node.js 22+** or Workers?
+- Do you need **citations or evaluation** you can run in CI?
+- Do you value **deterministic checks** and a small API over breadth?
+- Are you comfortable writing a 50-line plugin for an integration that
+  doesn't ship?
 
-Pick **LangChain.js** if you need maximum integration breadth, agentic
-workflows, or want LangSmith for hosted observability.
-
-Pick **LlamaIndex.TS** if your data structure choices matter as much
-as your retrieval strategy choices.
+Pick **LangChain.js** for integration breadth or LangSmith, **Mastra**
+for agents and workflows with LLM-judge evals, and the **AI SDK** as
+your model layer under any of them.
 
 ## See also
 
-- [Concept overview](./Concepts-Core) — the four conceptual modules
-  in this framework
-- [Architecture](./Architecture) — internal design
-- [Examples](./Examples) — recipes and patterns
-- [Provider connectors](./Plugins) — what ships and how to add more
+- [Coming from LlamaIndex.TS](./Migration-LlamaIndex)
+- [Integrations](./Integrations): the AI SDK adapter and `checkAnswer`
+- [Concept overview](./Concepts-Core)
+- [Evaluation](./Evaluation): the metrics and their limits
