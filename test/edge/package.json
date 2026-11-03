@@ -9,5 +9,9 @@
   "devDependencies": {
     "miniflare": "^4.20260730.0",
     "wrangler": "^4.156.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.5",
+    "undici": "^7.30.1"
   }
 }
