@@ -56,17 +56,18 @@ Suggested description (under 350 characters):
 
 > Retrieval-augmented generation for Node.js, with answers you can check: sentence-level citations, evaluation that fails CI on regressions, guardrails, pgvector and Qdrant, and Cloudflare Workers support.
 
-Suggested topics (replace `utils`, `orchestration` and `retrieval-augmented-generation-rag`):
+Topics (replacing `utils`, `orchestration`, `retrieval-augmented-generation-rag` and `pipeline`), 20, the most GitHub allows:
 
-`rag`, `retrieval-augmented-generation`, `llm`, `nodejs`, `typescript`, `llm-evaluation`, `rag-evaluation`, `guardrails`, `citations`, `pgvector`, `qdrant`, `opentelemetry`, `cloudflare-workers`, `vector-search`, `cli`, `ai-sdk`, `mastra`
+`rag`, `retrieval-augmented-generation`, `llm`, `ai`, `nodejs`, `javascript`, `typescript`, `llm-evaluation`, `rag-evaluation`, `guardrails`, `citations`, `pgvector`, `qdrant`, `opentelemetry`, `observability`, `cloudflare-workers`, `vector-search`, `cli`, `ai-sdk`, `mastra`
 
-Command, if you want it applied as is:
+Applied on 2026-11-04 with this command:
 
 ```bash
 gh repo edit DevilsDev/rag-pipeline-utils \
   --description "Retrieval-augmented generation for Node.js, with answers you can check: sentence-level citations, evaluation that fails CI on regressions, guardrails, pgvector and Qdrant, and Cloudflare Workers support." \
   --homepage "https://devilsdev.github.io/rag-pipeline-utils/" \
   --remove-topic utils --remove-topic orchestration --remove-topic retrieval-augmented-generation-rag \
+  --remove-topic pipeline \
   --add-topic retrieval-augmented-generation --add-topic typescript --add-topic llm-evaluation \
   --add-topic rag-evaluation --add-topic guardrails --add-topic citations --add-topic pgvector \
   --add-topic qdrant --add-topic opentelemetry --add-topic cloudflare-workers \

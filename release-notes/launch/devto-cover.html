@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1000px;
+        height: 420px;
+        overflow: hidden;
+        background: #0b1020;
+      }
+      .card {
+        position: relative;
+        width: 1000px;
+        height: 420px;
+        box-sizing: border-box;
+        background:
+          radial-gradient(
+            circle at 88% 12%,
+            rgba(167, 139, 250, 0.22),
+            rgba(167, 139, 250, 0) 55%
+          ),
+          linear-gradient(135deg, #0b1020, #16213e);
+        font-family:
+          "Segoe UI",
+          -apple-system,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        color: #f8fafc;
+        padding: 48px 52px;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .left {
+        position: relative;
+        width: 420px;
+      }
+      .tag {
+        font-size: 15px;
+        color: #94a3b8;
+        letter-spacing: 0.04em;
+      }
+      h1 {
+        font-size: 40px;
+        line-height: 1.12;
+        margin: 14px 0 0;
+        font-weight: 700;
+      }
+      h1 .hl {
+        background: linear-gradient(90deg, #38bdf8, #a78bfa);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .bar {
+        width: 96px;
+        height: 5px;
+        border-radius: 3px;
+        margin: 22px 0 20px;
+        background: linear-gradient(90deg, #38bdf8, #a78bfa);
+      }
+      .sub {
+        font-size: 18px;
+        color: #cbd5e1;
+        line-height: 1.45;
+      }
+      .pkg {
+        position: absolute;
+        left: 52px;
+        bottom: 40px;
+        font:
+          15px Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #94a3b8;
+      }
+      .pkg b {
+        color: #e2e8f0;
+        font-weight: 600;
+      }
+
+      .term {
+        position: absolute;
+        right: 52px;
+        top: 54px;
+        width: 462px;
+        height: 312px;
+        background: #111a33;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        font:
+          14px/1.6 Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #cbd5e1;
+      }
+      .tbar {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        border-bottom: 1px solid #1e293b;
+      }
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #334155;
+      }
+      .tbar span.t {
+        margin-left: 10px;
+        color: #64748b;
+        font-size: 13px;
+      }
+      .body {
+        padding: 14px 18px;
+        white-space: pre;
+      }
+      .dim {
+        color: #64748b;
+      }
+      .ok {
+        color: #4ade80;
+      }
+      .bad {
+        color: #f87171;
+      }
+      .key {
+        color: #a78bfa;
+      }
+      .str {
+        color: #fbbf24;
+      }
+      .w {
+        color: #f8fafc;
+      }
+      .pass {
+        background: #16a34a;
+        color: #fff;
+        padding: 0 6px;
+        border-radius: 3px;
+        font-weight: 700;
+      }
+      .fail {
+        background: #dc2626;
+        color: #fff;
+        padding: 0 6px;
+        border-radius: 3px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="left">
+        <div class="tag">NODE.JS &middot; RAG &middot; TESTING</div>
+        <h1>Test your RAG answers <span class="hl">in CI</span></h1>
+        <div class="bar"></div>
+        <div class="sub">
+          Grounding checks that catch unsupported and contradicted answers.
+          Deterministic, no model calls.
+        </div>
+      </div>
+      <div class="pkg">npm i <b>@devilsdev/rag-pipeline-utils</b></div>
+
+      <div class="term">
+        <div class="tbar">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <span class="t">npx vitest run</span>
+        </div>
+        <!-- prettier-ignore -->
+        <div class="body"><span class="dim">expect.extend(</span><span class="key">ragMatchers</span><span class="dim">)</span>
+
+<span class="pass">PASS</span> <span class="w">answers.test.js</span>
+  <span class="ok">&#10003;</span> vacation answer toBeGroundedIn
+  <span class="ok">&#10003;</span> cites the policy source
+  <span class="ok">&#10003;</span> toContainNoPII
+
+<span class="fail">FAIL</span> <span class="w">negation.test.js</span>
+  <span class="bad">&#10007;</span> toBeGroundedIn(sources)
+    <span class="dim">1 of 1 sentence(s) not supported:</span>
+    <span class="str">- "Employees never receive paid vacation."</span></div>
+      </div>
+    </div>
+  </body>
+</html>
