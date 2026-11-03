@@ -11,6 +11,21 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **`groundingMiddleware`** for the Vercel AI SDK: wrap any model with
+  `wrapLanguageModel({ model, middleware: groundingMiddleware({ retriever }) })`
+  and each `generateText` or `streamText` call retrieves passages for the
+  last user message (embedder, retriever, reranker, `topK`,
+  `maxContextTokens`), gives them to the model as untrusted reference data,
+  checks the answer with `checkAnswer` and returns the report as
+  `providerMetadata.ragPipeline` and the passages as `sources`. The
+  pre-retrieval, retrieval (ACL, injection in documents) and
+  post-generation (PII) guards are options; with `strict`, a flagged query
+  or answer throws `GroundingBlockedError`. Per-request `query`, `topK` and
+  ACL `context` go in `providerOptions.ragPipeline`. Tested against AI SDK 6
+  and 7; the AI SDK is not a dependency.
+
 ### Fixed
 
 - **Grounding ignored negation.** `checkAnswer`, `CitationTracker`,
