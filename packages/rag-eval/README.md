@@ -8,7 +8,7 @@ Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev
 npm install @devilsdev/rag-eval
 ```
 
-Exports: `evaluateRagDataset`, `scoreAnswer`, `computeBLEU`, `computeROUGE`, `checkNumericConsistency`, `extractNumbers`, `computeFaithfulness`, `computeSemanticSimilarity`, `validateDataset`, `generateSyntheticDataset`, `runEvaluation`, `compareConfigurations`, `evaluationVerdict`, `renderEvaluationReport`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`, `PipelineEvaluator`, `checkAnswer`, `normalizeSources`, `CitationTracker`, `mapSentenceToSources`, `buildIDFWeights`, `detectHallucinations`.
+Exports: `evaluateRagDataset`, `scoreAnswer`, `computeBLEU`, `computeROUGE`, `checkNumericConsistency`, `checkPolarityConsistency`, `extractNumbers`, `computeFaithfulness`, `computeSemanticSimilarity`, `validateDataset`, `generateSyntheticDataset`, `runEvaluation`, `compareConfigurations`, `evaluationVerdict`, `renderEvaluationReport`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`, `PipelineEvaluator`, `checkAnswer`, `normalizeSources`, `CitationTracker`, `mapSentenceToSources`, `buildIDFWeights`, `detectHallucinations`.
 
 Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 

@@ -21,13 +21,14 @@ that gap.
 | `CitationTracker`                                  | Per-sentence attribution of the generated answer to source documents, plus a hallucination report.                                                                             |
 | `compute*()` functions                             | Standalone metrics: `computeFaithfulness`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`.                                 |
 | `checkNumericConsistency()` / `extractNumbers()`   | The numeric check used by claim support: numbers in a claim must appear in the source ("20" equals "twenty").                                                                  |
+| `checkPolarityConsistency()`                       | The polarity check used by claim support (coming in 3.3.0): a negated claim needs a negated source sentence, and the reverse.                                                  |
 | `evaluateRagDataset()`                             | Batch helper: runs `[{ prompt, expected }]` from a JSON file through a pipeline built from a config and scores each answer against `expected` with BLEU/ROUGE. Needs an `llm`. |
 | `runEvaluation()` / `compareConfigurations()`      | Run a test set through a pipeline and report regressions against a baseline (also `rag-pipeline eval`).                                                                        |
 | `validateDataset()` / `generateSyntheticDataset()` | Check a test set; draft one from your documents with an LLM (also `rag-pipeline generate-dataset`).                                                                            |
 | `checkAnswer()`                                    | Check an answer from any framework against its sources.                                                                                                                        |
 | `computeSemanticSimilarity()`                      | Embedding cosine similarity to a reference answer.                                                                                                                             |
 
-All metrics are computed locally and deterministically; no judge LLM is called. Grounding is lexical (the share of a sentence's content words found in a document, optionally IDF-weighted) plus a numeric-consistency check. Negation ("not twenty days"), units ("20 hours" vs "20 days") and claims that combine several documents are not checked.
+All metrics are computed locally and deterministically; no judge LLM is called. Grounding is lexical (the share of a sentence's content words found in a document, optionally IDF-weighted) plus numeric-consistency and polarity checks (the polarity check comes in 3.3.0). Paraphrase, units ("20 hours" vs "20 days") and claims that combine several documents are not checked.
 
 ## Metrics
 
