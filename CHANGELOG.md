@@ -34,6 +34,13 @@ page.
 
 ### Documentation
 
+- Comparison: LlamaIndex.TS is marked deprecated (its repository is
+  archived), and Mastra and the Vercel AI SDK are compared, with how to use
+  them together with this library, in the README, on the Comparison page
+  and on the docs homepage. A new page, "Coming from LlamaIndex.TS", maps
+  its documents, indexes, query engines, rerankers and evaluators to this
+  library. The README mentions the retrieval guard's scan of retrieved
+  documents for injection (`detectInjection`).
 - README: the comparison table mentions the scoped packages, the `run()`
   result shape includes `route` and `timing`, and the examples list
   includes the Cloudflare Worker and the MCP server.

@@ -92,6 +92,7 @@ const sidebars = {
         "Performance",
         "Benchmarks",
         "Migration",
+        "Migration-LlamaIndex",
         "Troubleshooting",
         "FAQ",
         "Changelog",
