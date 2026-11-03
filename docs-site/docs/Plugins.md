@@ -272,6 +272,12 @@ There is no public plugin registry. Registry commands (`search`, `info`, `publis
 
 ---
 
+## **Community Plugins**
+
+Plugins published by other developers. None are listed yet. To list yours, publish it to npm, make its tests run `runContractTests` from `@devilsdev/rag-pipeline-utils/testing` (see [Testing a plugin in code](#testing-a-plugin-in-code)), and open a [plugin submission](https://github.com/DevilsDev/rag-pipeline-utils/issues/new?template=plugin_submission.yml). The maintainers check that the plugin is public, installs and passes the contract tests. A listing is not an endorsement or a security review, so check a plugin before you use it, for example with `rag-pipeline hub certify check`.
+
+---
+
 ## **Plugin Signatures**
 
 Plugins can be registered with a signed manifest. `register()` verifies it before importing anything:

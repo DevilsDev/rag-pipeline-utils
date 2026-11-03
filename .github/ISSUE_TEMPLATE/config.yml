@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and help
+    url: https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/q-a
+    about: Ask how to do something, or get help with your setup.
+  - name: Report a security vulnerability
+    url: https://github.com/DevilsDev/rag-pipeline-utils/security/policy
+    about: Please report security issues privately, not as a public issue.
+  - name: Documentation
+    url: https://devilsdev.github.io/rag-pipeline-utils/
+    about: Guides, API reference, troubleshooting and examples.

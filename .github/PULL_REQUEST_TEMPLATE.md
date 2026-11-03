@@ -1,9 +1,16 @@
-## ✅ Release Quality Checklist
+## What and why
 
-- [ ] CHANGELOG.md updated
-- [ ] Blog post generated (`docs-site/blog/*release*.md`)
-- [ ] `release:tag` and `release:sync` flows tested
+<!-- What this pull request changes, and the problem it solves. Link the issue: "Fixes #123". -->
 
-<!-- CI Badge -->
+## How it was tested
 
-![Release Review Passed](https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/enforce-release-review.yml/badge.svg)
+<!-- Tests added or changed, and anything you checked by hand. -->
+
+## Checklist
+
+- [ ] `npm test` and `npm run lint` pass
+- [ ] Tests cover the change
+- [ ] README.md updated if the change is user-facing
+- [ ] CHANGELOG.md has an entry under the next release
+- [ ] The row in `.github/PROJECT_ROADMAP.md` is updated, if there is one
+- [ ] Docs pages in `docs-site/docs/` updated, with a "Coming in X.Y.0" note for unreleased features

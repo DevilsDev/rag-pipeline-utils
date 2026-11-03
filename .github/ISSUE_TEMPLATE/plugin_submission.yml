@@ -1,0 +1,78 @@
+name: Plugin submission
+description: Ask for your plugin to be listed on the Community plugins page
+title: "plugin: "
+labels: ["plugin submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Published a loader, embedder, retriever, reranker or LLM plugin? Submit it here and it will be listed under [Community plugins](https://devilsdev.github.io/rag-pipeline-utils/docs/Plugins#community-plugins) once it is checked.
+        Listing is not an endorsement or a security review: the maintainers check that the plugin is public, installs, and passes the contract tests.
+
+  - type: input
+    id: name
+    attributes:
+      label: Plugin name
+      placeholder: "Pinecone retriever"
+    validations:
+      required: true
+
+  - type: input
+    id: npm
+    attributes:
+      label: npm package
+      placeholder: "@acme/rag-retriever-pinecone"
+    validations:
+      required: true
+
+  - type: input
+    id: repo
+    attributes:
+      label: Source repository
+      placeholder: "https://github.com/acme/rag-retriever-pinecone"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      multiple: true
+      options:
+        - loader
+        - embedder
+        - retriever
+        - reranker
+        - llm
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: One or two sentences for the listing, and a short usage example.
+      render: js
+    validations:
+      required: true
+
+  - type: input
+    id: license
+    attributes:
+      label: License
+      placeholder: "MIT"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: The plugin's tests run `runContractTests` from `@devilsdev/rag-pipeline-utils/testing` for its stage, and they pass.
+          required: true
+        - label: It works with `@devilsdev/rag-pipeline-utils` 3.x (state the tested version in the description).
+          required: true
+        - label: It does not send data anywhere except the service it connects to, and it has no install scripts.
+          required: true
+        - label: "Optional: I ran `rag-pipeline hub certify check` and included the score in the description."

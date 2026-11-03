@@ -1,0 +1,61 @@
+name: Feature request
+description: Suggest a feature or an improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The project aims to be the grounding, evaluation and guardrails layer for RAG in Node.js, used on its own or next to LangChain, the Vercel AI SDK and Mastra. Check the [roadmap](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.github/PROJECT_ROADMAP.md) first: your idea may already be planned, or listed under "Considered, not planned".
+        Open-ended ideas are welcome in [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/ideas).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you would like it to work. An example of the API, config or CLI command you have in mind helps.
+      render: js
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: What you use now, or how another library handles it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Pipeline
+        - Connectors
+        - Retrievers / vector stores
+        - Evaluation
+        - Guardrails
+        - Context packing / model routing / cost
+        - Observability
+        - CLI
+        - Edge runtimes
+        - Integrations (LangChain, AI SDK, Mastra, MCP)
+        - Docs and examples
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to open a pull request for this.
