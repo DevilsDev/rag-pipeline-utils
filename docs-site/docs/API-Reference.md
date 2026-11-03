@@ -460,7 +460,33 @@ checkNumericConsistency("It takes twenty days.", "Processing takes 20 days.");
 // { consistent: true, claimNumbers: ["20"], missing: [] }
 ```
 
-Not checked: negation, units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
+### checkPolarityConsistency
+
+:::info[Coming in 3.3.0]
+`checkPolarityConsistency` and the polarity check in claim support are in 3.3.0.
+:::
+
+Claim support also checks negation: a sentence that is negated where the closest sentence of the source is not, or the reverse, scores below 0.4 and is not grounded.
+
+```typescript
+checkPolarityConsistency(claimText: string, docText: string): {
+  consistent: boolean;
+  claimNegated: boolean;
+  sourceSentence: string | null; // the source sentence it was compared with
+}
+```
+
+```js no-run
+import { checkPolarityConsistency } from "@devilsdev/rag-pipeline-utils";
+
+checkPolarityConsistency(
+  "Employees never receive paid vacation.",
+  "Employees receive twenty days of paid vacation per year.",
+);
+// { consistent: false, claimNegated: true, sourceSentence: "Employees receive twenty days of paid vacation per year." }
+```
+
+Not checked: paraphrase, negation expressed without a negation word ("excluded", "denied"), units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
 
 ---
 

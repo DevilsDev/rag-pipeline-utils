@@ -288,6 +288,109 @@ function checkNumericConsistency(claimText, docText) {
 }
 
 /**
+ * Words that negate a sentence. tokenize() drops apostrophes, so "don't" is
+ * "dont" and "can't" is "cant".
+ */
+const NEGATION_WORDS = new Set(
+  (
+    'not no never none nobody nothing nowhere neither nor cannot without ' +
+    'dont doesnt didnt isnt arent wasnt werent wont wouldnt shouldnt ' +
+    'couldnt cant hasnt havent hadnt mustnt neednt'
+  ).split(' '),
+);
+
+/** Negation words followed by these are not negations ("not only", "no doubt"). */
+const NON_NEGATING_NEXT = {
+  not: new Set(['only', 'just', 'merely']),
+  no: new Set(['doubt', 'matter']),
+  nothing: new Set(['but']),
+};
+
+/**
+ * Whether a token list reads as negated: an odd number of negations, so
+ * "not without approval" counts as positive.
+ *
+ * @param {string[]} tokens
+ * @returns {boolean}
+ */
+function isNegated(tokens) {
+  let count = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (!NEGATION_WORDS.has(t)) continue;
+    if (NON_NEGATING_NEXT[t] && NON_NEGATING_NEXT[t].has(tokens[i + 1])) {
+      continue;
+    }
+    count += 1;
+  }
+  return count % 2 === 1;
+}
+
+/**
+ * Polarity consistency between a claim and a document. Word overlap alone
+ * grounds "employees never receive paid vacation" against a source that says
+ * "employees receive twenty days of paid vacation", because the negation is
+ * one word among many. The claim is compared with the document sentence that
+ * shares most of its content words (any of them, on a tie): it is consistent
+ * when that sentence is negated exactly when the claim is.
+ *
+ * Errs on the side of not grounding: a source that negates in other words
+ * ("contractors are excluded from vacation") does not match a negated claim,
+ * and a sentence joining a positive and a negative statement is judged by
+ * the source sentence closest to it as a whole.
+ *
+ * @param {string} claimText
+ * @param {string} docText
+ * @returns {{ consistent: boolean, claimNegated: boolean, sourceSentence: string|null }}
+ *   sourceSentence: the closest document sentence the claim was compared with
+ */
+function checkPolarityConsistency(claimText, docText) {
+  const claimTokens = tokenize(claimText);
+  const claimNegated = isNegated(claimTokens);
+  const claimWords = [
+    ...new Set(
+      contentTokens(claimTokens.filter((t) => !NEGATION_WORDS.has(t))),
+    ),
+  ];
+  if (claimWords.length === 0) {
+    return { consistent: true, claimNegated, sourceSentence: null };
+  }
+
+  const candidates = splitSentences(docText)
+    .map((sentence) => {
+      const tokens = tokenize(sentence);
+      const set = new Set(tokens);
+      const support =
+        claimWords.filter((t) => set.has(t)).length / claimWords.length;
+      return { sentence, tokens, support };
+    })
+    .filter((c) => c.support > 0)
+    .sort((a, b) => b.support - a.support);
+  if (candidates.length === 0) {
+    return { consistent: true, claimNegated, sourceSentence: null };
+  }
+
+  // Only the closest sentences: "contractors receive paid vacation" must be
+  // judged by "contractors do not receive paid vacation", not by a sentence
+  // about employees that happens to share "receive paid vacation".
+  const best = candidates[0].support;
+  const compared = candidates.filter((c) => c.support === best);
+  const match = compared.find((c) => isNegated(c.tokens) === claimNegated);
+  return {
+    consistent: Boolean(match),
+    claimNegated,
+    sourceSentence: (match || compared[0]).sentence,
+  };
+}
+
+/**
+ * Multiplier applied to the support score when a claim's polarity
+ * contradicts the document (see checkPolarityConsistency). It keeps the
+ * score below 0.4, under the default 0.5 support threshold.
+ */
+const POLARITY_MISMATCH_FACTOR = 0.4;
+
+/**
  * Multiplier applied to the support score when a claim states numbers the
  * document does not contain. Together with the share of matching numbers it
  * keeps the score below 0.4, i.e. under the default 0.5 support threshold.
@@ -306,12 +409,15 @@ const NUMERIC_MISMATCH_FACTOR = 0.4;
  * checkNumericConsistency), the score becomes
  *   lexicalScore * NUMERIC_MISMATCH_FACTOR (0.4) * matchedNumbers / claimNumbers
  * which is always below 0.4, so the claim fails the default 0.5 threshold.
+ * Polarity consistency: with the same texts, a claim that is negated where
+ * the document is not, or the reverse (see checkPolarityConsistency), has its
+ * score multiplied by POLARITY_MISMATCH_FACTOR (0.4).
  *
  * @param {string[]} claimTokens - Tokens of the sentence/claim/query
  * @param {string[]|Set<string>} docTokens - Tokens of the document
  * @param {Map<string, number>|null} [idfWeights] - Optional token weights
  * @param {{ claimText?: string, docText?: string }} [options] - Raw texts
- *   enabling the numeric consistency check
+ *   enabling the numeric and polarity consistency checks
  * @returns {number} Support score between 0 and 1
  */
 function computeSupportScore(
@@ -346,6 +452,9 @@ function computeSupportScore(
         numeric.claimNumbers.length;
       score *= NUMERIC_MISMATCH_FACTOR * share;
     }
+    if (!checkPolarityConsistency(claimText, docText).consistent) {
+      score *= POLARITY_MISMATCH_FACTOR;
+    }
   }
   return score;
 }
@@ -355,8 +464,11 @@ module.exports = {
   contentTokens,
   computeSupportScore,
   checkNumericConsistency,
+  checkPolarityConsistency,
+  isNegated,
   extractNumbers,
   NUMERIC_MISMATCH_FACTOR,
+  POLARITY_MISMATCH_FACTOR,
   scoreAnswer,
   tokenize,
   computeBLEU,
