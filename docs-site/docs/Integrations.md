@@ -10,6 +10,7 @@ description: Ground any Vercel AI SDK model with middleware, use AI SDK models a
 You don't have to switch frameworks to use this library. These pieces work with what you already have:
 
 - **`groundingMiddleware`** (coming in 3.3.0) adds retrieval, answer checks and guardrails to any Vercel AI SDK model.
+- **`createMastraScorer`** and **`createMastraGuardrails`** (coming in 3.3.0) bring the metrics and guardrails to Mastra agents.
 - **`checkAnswer`** checks an answer from any framework against its sources: per-sentence citations, groundedness, unsupported sentences and evaluation scores.
 - **`createAiSdkAdapter`** turns Vercel AI SDK models into an embedder and an LLM for `createRagPipeline()`.
 
@@ -197,6 +198,76 @@ Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardra
 
 The middleware is a plain object and the package doesn't import the AI SDK, so it works from ESM or CommonJS. It is tested against AI SDK 6 and 7; AI SDK 5 uses the same call shapes but isn't tested. For TypeScript, set `specificationVersion` to your version's middleware version (`"v2"` for 5, `"v3"` for 6, the default, `"v4"` for 7).
 
-## Mastra and other frameworks
+## Mastra
 
-Mastra agents and most other frameworks give you an answer string and the retrieved chunks. Pass them to `checkAnswer` as above, as strings or as `{ id, content }` objects.
+:::info[Coming in 3.3.0]
+`createMastraScorer` and `createMastraGuardrails` are in 3.3.0.
+:::
+
+### Scorers
+
+`createMastraScorer` turns this library's metrics into Mastra scorers. They make no model calls, so they cost nothing and score the same way every run: run them on every response, or as a cheap first pass next to Mastra's LLM-judge scorers. Pass `createScorer` from Mastra; Mastra is not a dependency of this package.
+
+```javascript no-run
+import { Agent } from "@mastra/core/agent";
+import { createScorer } from "@mastra/core/evals";
+import { createMastraScorer } from "@devilsdev/rag-pipeline-utils";
+
+const groundedness = createMastraScorer({
+  createScorer,
+  metric: "groundedness",
+});
+
+const agent = new Agent({
+  id: "handbook",
+  name: "Handbook assistant",
+  instructions: "Answer from the handbook search tool.",
+  model,
+  tools: { vectorQueryTool },
+  scorers: {
+    groundedness: {
+      scorer: groundedness,
+      sampling: { type: "ratio", rate: 1 },
+    },
+  },
+});
+```
+
+| `metric`                 | Score                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `groundedness` (default) | Share of answer sentences supported by the context: words, numbers and negation, as in `checkAnswer`. The reason quotes the unsupported sentences |
+| `faithfulness`           | Share of answer sentences whose content words appear in the context (`computeFaithfulness`)                                                       |
+| `contextPrecision`       | Share of passages relevant to the question                                                                                                        |
+| `contextRecall`          | Share of the reference answer supported by the context. Needs `groundTruth`, for example from `runEvals`                                          |
+
+The context is, by default, what the agent's tool calls returned: an array of passages, or an object with `relevantContext`, `results`, `sources` or `documents`, as Mastra's vector query tool returns. Pass `context` (fixed passages) or `getContext(run)` to score against something else. Passages can be strings, `{ id, content }`, LangChain `Document`s or LlamaIndex nodes. A run with no context scores 0, with a reason saying so.
+
+### Guardrails processor
+
+`createMastraGuardrails` is a Mastra processor with this library's guardrails: prompt-injection detection on the user's message, and PII redaction of the answer. A flagged message calls Mastra's `abort()`, so the run stops with a tripwire (`result.tripwire`), the same way Mastra's own processors stop it.
+
+```javascript no-run
+import { createMastraGuardrails } from "@devilsdev/rag-pipeline-utils";
+
+const guardrails = createMastraGuardrails({ injection: true, pii: "redact" });
+
+const agent = new Agent({
+  // ...
+  inputProcessors: [guardrails],
+  outputProcessors: [guardrails],
+});
+```
+
+| Option        | Default    | What it does                                                                                                                               |
+| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `injection`   | `true`     | Check the last user message; `false` to skip, or `PreRetrievalGuard` options                                                               |
+| `pii`         | `"redact"` | Replace emails, phone numbers, US SSNs and card numbers in the answer with `[REDACTED]`; `"block"` aborts the run instead; `false` to skip |
+| `piiPatterns` |            | Extra patterns by name, such as `{ employeeId: /EMP-\d{5}/g }`                                                                             |
+
+Both checks are pattern-based, unlike Mastra's `PromptInjectionDetector` and `PIIDetector`, which call a model: they are free and fast, and catch less. Use whichever fits, or both.
+
+Tested against `@mastra/core` 1.81.
+
+## Other frameworks
+
+Most other frameworks give you an answer string and the retrieved chunks. Pass them to `checkAnswer` as above, as strings or as `{ id, content }` objects.

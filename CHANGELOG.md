@@ -13,6 +13,14 @@ page.
 
 ### Added
 
+- **Mastra adapters.** `createMastraScorer({ createScorer, metric })` turns
+  groundedness, faithfulness, context precision or context recall into a
+  Mastra scorer that makes no model calls; by default it scores against
+  what the agent's tool calls returned. `createMastraGuardrails()` is a
+  Mastra processor that aborts the run on prompt injection in the user's
+  message and redacts PII from the answer (or aborts, with
+  `pii: "block"`). Mastra is not a dependency.
+
 - **`groundingMiddleware`** for the Vercel AI SDK: wrap any model with
   `wrapLanguageModel({ model, middleware: groundingMiddleware({ retriever }) })`
   and each `generateText` or `streamText` call retrieves passages for the

@@ -137,6 +137,8 @@ RAG Pipeline Utils - TypeScript Definitions
 - [createEmbeddingStream](functions/createEmbeddingStream.md)
 - [createError](functions/createError.md)
 - [createHotReloadManager](functions/createHotReloadManager.md)
+- [createMastraGuardrails](functions/createMastraGuardrails.md)
+- [createMastraScorer](functions/createMastraScorer.md)
 - [createModelRouter](functions/createModelRouter.md)
 - [createRagPipeline](functions/createRagPipeline.md)
 - [detectHallucinations](functions/detectHallucinations.md)
