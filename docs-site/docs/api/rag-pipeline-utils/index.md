@@ -120,6 +120,7 @@ RAG Pipeline Utils - TypeScript Definitions
 - [buildIDFWeights](functions/buildIDFWeights.md)
 - [checkAnswer](functions/checkAnswer.md)
 - [checkNumericConsistency](functions/checkNumericConsistency.md)
+- [checkPolarityConsistency](functions/checkPolarityConsistency.md)
 - [classifyQuery](functions/classifyQuery.md)
 - [compareConfigurations](functions/compareConfigurations.md)
 - [computeAnswerRelevance](functions/computeAnswerRelevance.md)

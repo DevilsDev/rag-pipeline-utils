@@ -17,7 +17,11 @@ The grounding metrics (citations, faithfulness, context precision and recall, gr
 
 ### Known limitations
 
-Grounding is lexical plus a numeric-consistency check. It does not detect negation ("not twenty days"), units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
+:::info[Coming in 3.3.0]
+The polarity check is in 3.3.0. In 3.2 and earlier, a negated sentence ("employees do not receive twenty days") is grounded by a source that states the opposite.
+:::
+
+Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"). The polarity check looks for negation words (not, no, never, without, don't and the like), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one. It does not detect units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
 
 ---
 
@@ -115,9 +119,9 @@ Signatures:
 | `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5)                                 |
 | `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer` |
 
-### Numeric consistency helpers
+### Numeric and polarity consistency helpers
 
-The numeric check used by the grounding metrics is exported as well:
+The numeric and polarity checks used by the grounding metrics are exported as well:
 
 ```javascript
 const {
@@ -133,6 +137,19 @@ checkNumericConsistency("Returns within 45 days", "Returns within 30 days");
 
 extractNumbers("20 items, 3.5% and twenty");
 // { values: ["20", "3.5", "20"], parts: [...] }
+```
+
+`checkPolarityConsistency` (coming in 3.3.0) compares a claim with the source sentence closest to it:
+
+```js no-run
+const { checkPolarityConsistency } = require("@devilsdev/rag-pipeline-utils");
+
+checkPolarityConsistency(
+  "Contractors receive paid vacation.",
+  "Employees receive twenty days of paid vacation. Contractors do not receive paid vacation.",
+);
+// { consistent: false, claimNegated: false,
+//   sourceSentence: "Contractors do not receive paid vacation." }
 ```
 
 ---
@@ -548,7 +565,7 @@ See [Benchmarks](./Benchmarks.md) for methodology and for benchmarking your own 
 - **Use a reference answer.** Without one, context recall is skipped and groundedness rests on faithfulness and precision alone.
 - **Combine metrics.** Faithfulness catches unsupported claims; context precision and recall tell you whether retrieval or generation is the problem.
 - **Track trends, not absolutes.** Lexical scores depend on your corpus and phrasing. Compare runs on the same test set and evaluator options; scores from before 2.5.0 are not comparable with 2.5.0 scores.
-- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (negation, units, multi-document claims) in mind.
+- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, units, multi-document claims) in mind.
 
 ---
 

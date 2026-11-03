@@ -41,6 +41,7 @@ const {
   computeBLEU,
   computeROUGE,
   checkNumericConsistency,
+  checkPolarityConsistency,
   extractNumbers,
 } = require('./evaluate/scoring');
 const { computeFaithfulness } = require('./evaluate/faithfulness');
@@ -211,6 +212,7 @@ module.exports = {
   computeBLEU,
   computeROUGE,
   checkNumericConsistency,
+  checkPolarityConsistency,
   extractNumbers,
   computeFaithfulness,
   computeSemanticSimilarity,

@@ -11,6 +11,19 @@ page.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Grounding ignored negation.** `checkAnswer`, `CitationTracker`,
+  `computeFaithfulness`, `computeContextRecall` and the post-generation
+  guard grounded "Full-time employees never receive paid vacation" against
+  a source saying they receive twenty days, because the negation was one
+  word among many. A sentence that is negated where the closest sentence of
+  its source is not, or the reverse, now scores below 0.4 and is not
+  grounded. The check is exported as `checkPolarityConsistency`. It looks
+  for negation words, so a source that negates in other words ("contractors
+  are excluded") no longer supports a negated sentence, and answers can
+  score lower than before.
+
 ### Security
 
 - Dev, docs-site and edge-test dependencies updated (lockfile refresh,

@@ -184,7 +184,7 @@ See the [CLI reference](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI)
 
 ### Answer questions with sources your users can check
 
-Citations map every sentence of the answer to the passages that support it. A sentence whose facts or numbers are missing from the sources is reported as ungrounded.
+Citations map every sentence of the answer to the passages that support it. A sentence whose facts or numbers are missing from the sources is reported as ungrounded, and from 3.3.0 so is one that negates its source ("employees never receive paid vacation" against "employees receive twenty days").
 
 ```js
 import { CitationTracker } from "@devilsdev/rag-pipeline-utils";
