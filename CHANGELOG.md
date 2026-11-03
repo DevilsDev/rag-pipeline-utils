@@ -26,6 +26,13 @@ page.
   ACL `context` go in `providerOptions.ragPipeline`. Tested against AI SDK 6
   and 7; the AI SDK is not a dependency.
 
+- **Matchers for Jest and Vitest** in `/testing`: `expect.extend(ragMatchers)`
+  adds `toBeGroundedIn(sources?)`, `toCite(ids, sources?)` and
+  `toContainNoPII()`. They take an answer or a `pipeline.run()` result
+  (whose `results` are the default sources), read sources in every shape
+  `checkAnswer` accepts, and list the unsupported sentences, missing
+  citations or PII found when they fail.
+
 ### Fixed
 
 - **Grounding ignored negation.** `checkAnswer`, `CitationTracker`,

@@ -312,6 +312,8 @@ console.log(result.results[0].id); // "vacation"
 console.log(llm.calls.length); // 1
 ```
 
+From 3.3.0, `expect.extend(ragMatchers)` adds `toBeGroundedIn`, `toCite` and `toContainNoPII` to Jest and Vitest, so `expect(result).toBeGroundedIn()` fails a test when an answer says something its sources don't ([matchers](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#matchers-for-answers)).
+
 Writing your own plugin? `runContractTests("retriever", () => new MyRetriever())` from the same entry registers tests for the behaviour the pipeline relies on, in Jest, Vitest, Mocha or `node:test` ([contract tests](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#contract-tests-for-your-plugins)).
 
 ### Protect an internal assistant
