@@ -1,15 +1,15 @@
 {
   "benchmark": "speed",
-  "createdAt": "2026-11-01T22:41:59.310Z",
+  "createdAt": "2026-11-03T20:39:40.135Z",
   "environment": {
-    "libraryVersion": "3.2.0",
-    "commit": "eceefa6",
-    "node": "v22.23.4",
-    "platform": "linux 7.0.0-1017-azure",
+    "libraryVersion": "3.3.0",
+    "commit": "485b727",
+    "node": "v22.23.3",
+    "platform": "linux 7.0.0-1014-aws",
     "arch": "x64",
-    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "cpu": "Intel(R) Xeon(R) 6975P-C",
     "cores": 4,
-    "memoryGB": 15.6,
+    "memoryGB": 15.3,
     "runner": "GitHub Actions Linux (ubuntu24)",
     "services": {
       "pgvector": "pgvector/pgvector:0.8.7-pg17",
@@ -29,18 +29,18 @@
   "pipeline": {
     "no cache": {
       "unit": "µs",
-      "p50": 5,
-      "p95": 9.2,
-      "p99": 21.8,
-      "mean": 5.9,
+      "p50": 2.7,
+      "p95": 4.9,
+      "p99": 10.3,
+      "mean": 3.4,
       "samples": 5000
     },
     "memory cache, all hits": {
       "unit": "µs",
-      "p50": 15.6,
-      "p95": 35.5,
-      "p99": 53,
-      "mean": 21.3,
+      "p50": 11.4,
+      "p95": 19.4,
+      "p99": 36.9,
+      "mean": 14.8,
       "samples": 5000
     }
   },
@@ -51,17 +51,17 @@
           "setting": null,
           "index": "exact",
           "ingest": {
-            "docsPerSecond": 1602007,
-            "totalMs": 0.6,
+            "docsPerSecond": 1863641,
+            "totalMs": 0.5,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 0.686,
-            "p95": 1.056,
-            "p99": 1.239,
-            "mean": 0.716,
+            "p50": 0.507,
+            "p95": 0.542,
+            "p99": 0.89,
+            "mean": 0.519,
             "samples": 200
           },
           "recallAt10": 1
@@ -72,17 +72,17 @@
           "setting": null,
           "index": "exact",
           "ingest": {
-            "docsPerSecond": 4873,
-            "totalMs": 205.2,
+            "docsPerSecond": 6556,
+            "totalMs": 152.5,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 0.863,
-            "p95": 1.187,
-            "p99": 1.344,
-            "mean": 0.897,
+            "p50": 0.663,
+            "p95": 0.685,
+            "p99": 1.05,
+            "mean": 0.671,
             "samples": 200
           },
           "recallAt10": 1
@@ -93,55 +93,55 @@
           "setting": "efSearch 40 (default)",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 711,
-            "totalMs": 1405.9,
+            "docsPerSecond": 1082,
+            "totalMs": 924.3,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 1.526,
-            "p95": 1.725,
-            "p99": 2.079,
-            "mean": 1.564,
+            "p50": 1.154,
+            "p95": 1.398,
+            "p99": 1.479,
+            "mean": 1.176,
             "samples": 200
           },
-          "recallAt10": 0.9275
+          "recallAt10": 0.9245
         },
         {
           "setting": "efSearch 100",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 711,
-            "totalMs": 1405.9,
+            "docsPerSecond": 1082,
+            "totalMs": 924.3,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 1.786,
-            "p95": 2.83,
-            "p99": 5.097,
-            "mean": 1.952,
+            "p50": 1.27,
+            "p95": 1.454,
+            "p99": 2.873,
+            "mean": 1.299,
             "samples": 200
           },
-          "recallAt10": 0.998
+          "recallAt10": 0.9975
         },
         {
           "setting": "efSearch 200",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 711,
-            "totalMs": 1405.9,
+            "docsPerSecond": 1082,
+            "totalMs": 924.3,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 1.836,
-            "p95": 2.021,
-            "p99": 2.934,
-            "mean": 1.893,
+            "p50": 1.403,
+            "p95": 1.699,
+            "p99": 2.313,
+            "mean": 1.451,
             "samples": 200
           },
           "recallAt10": 1
@@ -152,17 +152,17 @@
           "setting": null,
           "index": "exact: below Qdrant's indexing threshold",
           "ingest": {
-            "docsPerSecond": 4683,
-            "totalMs": 213.6,
+            "docsPerSecond": 6783,
+            "totalMs": 147.4,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 1.696,
-            "p95": 2.366,
-            "p99": 3.417,
-            "mean": 1.763,
+            "p50": 1.313,
+            "p95": 1.52,
+            "p99": 3.04,
+            "mean": 1.371,
             "samples": 200
           },
           "recallAt10": 1
@@ -175,17 +175,17 @@
           "setting": null,
           "index": "exact",
           "ingest": {
-            "docsPerSecond": 1698959,
-            "totalMs": 5.9,
+            "docsPerSecond": 3652269,
+            "totalMs": 2.7,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 11.602,
-            "p95": 12.482,
-            "p99": 13.503,
-            "mean": 11.742,
+            "p50": 5.837,
+            "p95": 6.472,
+            "p99": 6.593,
+            "mean": 5.917,
             "samples": 200
           },
           "recallAt10": 1
@@ -196,17 +196,17 @@
           "setting": null,
           "index": "exact",
           "ingest": {
-            "docsPerSecond": 5096,
-            "totalMs": 1962.4,
+            "docsPerSecond": 7361,
+            "totalMs": 1358.4,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 13.705,
-            "p95": 15.103,
-            "p99": 15.503,
-            "mean": 13.994,
+            "p50": 8,
+            "p95": 9.12,
+            "p99": 9.915,
+            "mean": 8.229,
             "samples": 200
           },
           "recallAt10": 1
@@ -217,58 +217,58 @@
           "setting": "efSearch 40 (default)",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 464,
-            "totalMs": 21558.7,
+            "docsPerSecond": 634,
+            "totalMs": 15764.5,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 1.787,
-            "p95": 2.238,
-            "p99": 2.525,
-            "mean": 1.828,
+            "p50": 1.346,
+            "p95": 1.737,
+            "p99": 2.759,
+            "mean": 1.411,
             "samples": 200
           },
-          "recallAt10": 0.58
+          "recallAt10": 0.5545
         },
         {
           "setting": "efSearch 100",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 464,
-            "totalMs": 21558.7,
+            "docsPerSecond": 634,
+            "totalMs": 15764.5,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 2.539,
-            "p95": 2.767,
-            "p99": 3.026,
-            "mean": 2.568,
+            "p50": 1.91,
+            "p95": 2.084,
+            "p99": 2.402,
+            "mean": 1.919,
             "samples": 200
           },
-          "recallAt10": 0.75
+          "recallAt10": 0.7345
         },
         {
           "setting": "efSearch 200",
           "index": "HNSW (m 16, ef_construction 64)",
           "ingest": {
-            "docsPerSecond": 464,
-            "totalMs": 21558.7,
+            "docsPerSecond": 634,
+            "totalMs": 15764.5,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 3.469,
-            "p95": 3.722,
-            "p99": 3.891,
-            "mean": 3.501,
+            "p50": 2.649,
+            "p95": 2.834,
+            "p99": 3.074,
+            "mean": 2.66,
             "samples": 200
           },
-          "recallAt10": 0.876
+          "recallAt10": 0.875
         }
       ],
       "QdrantRetriever": [
@@ -276,17 +276,17 @@
           "setting": null,
           "index": "exact: below Qdrant's indexing threshold",
           "ingest": {
-            "docsPerSecond": 7456,
-            "totalMs": 1341.3,
+            "docsPerSecond": 10392,
+            "totalMs": 962.3,
             "batchSize": 500
           },
           "query": {
             "unit": "ms",
             "topK": 10,
-            "p50": 5.103,
-            "p95": 6.806,
-            "p99": 8.681,
-            "mean": 5.554,
+            "p50": 3.469,
+            "p95": 4.867,
+            "p99": 5.077,
+            "mean": 3.767,
             "samples": 200
           },
           "recallAt10": 1
