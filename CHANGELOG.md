@@ -9,6 +9,17 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Documentation
+
+- Roadmap: a growth goal of 10,000 npm downloads a month by May 2027,
+  with the baseline, how progress is measured, the reasons to choose the
+  library in the order to lead with them, a three-phase plan, and a row
+  for each new adoption item (integration listings, StackBlitz links, a
+  testing guide, observability recipes, template galleries, a monthly
+  review).
+
 ## [3.3.0] - 2026-11-04
 
 A minor release with no breaking changes. Grounding now catches answers

@@ -58,7 +58,7 @@ Suggested description (under 350 characters):
 
 Suggested topics (replace `utils`, `orchestration` and `retrieval-augmented-generation-rag`):
 
-`rag`, `retrieval-augmented-generation`, `llm`, `nodejs`, `typescript`, `llm-evaluation`, `rag-evaluation`, `guardrails`, `citations`, `pgvector`, `qdrant`, `opentelemetry`, `cloudflare-workers`, `vector-search`, `cli`
+`rag`, `retrieval-augmented-generation`, `llm`, `nodejs`, `typescript`, `llm-evaluation`, `rag-evaluation`, `guardrails`, `citations`, `pgvector`, `qdrant`, `opentelemetry`, `cloudflare-workers`, `vector-search`, `cli`, `ai-sdk`, `mastra`
 
 Command, if you want it applied as is:
 
@@ -69,7 +69,8 @@ gh repo edit DevilsDev/rag-pipeline-utils \
   --remove-topic utils --remove-topic orchestration --remove-topic retrieval-augmented-generation-rag \
   --add-topic retrieval-augmented-generation --add-topic typescript --add-topic llm-evaluation \
   --add-topic rag-evaluation --add-topic guardrails --add-topic citations --add-topic pgvector \
-  --add-topic qdrant --add-topic opentelemetry --add-topic cloudflare-workers
+  --add-topic qdrant --add-topic opentelemetry --add-topic cloudflare-workers \
+  --add-topic ai-sdk --add-topic mastra
 ```
 
 ## Not eligible yet
