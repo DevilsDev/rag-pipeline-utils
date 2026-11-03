@@ -1,148 +1,151 @@
 ---
-title: "I relicensed my RAG framework from GPL-3.0 to MIT — and what the review told me next"
+title: "A benchmark found my RAG library ignoring most words. Now my answers get tested in CI"
 published: false
-description: Why GPL was killing adoption of my Node.js RAG library, what the community review uncovered, and the supply-chain hardening I did along the way (OIDC trusted publishing + SLSA provenance).
-tags: node, ai, opensource, rag
+description: How a retrieval benchmark caught a bug that made most queries embed to zeros, and how to put RAG answer quality in your Node.js CI with rag-pipeline-utils 3.2.
+tags: node, ai, rag, testing
 series:
 canonical_url:
 ---
 
-# I relicensed my RAG framework from GPL-3.0 to MIT — and what the review told me next
+# A benchmark found my RAG library ignoring most words. Now my answers get tested in CI
 
-Three weeks ago I pushed `@devilsdev/rag-pipeline-utils@2.3.1` and kept building. Last week I shipped `2.4.5`, published through GitHub Actions OIDC with SLSA provenance, licensed MIT, with a completely rewritten README and five new docs pages.
+I maintain [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils), a retrieval-augmented generation library for Node.js. Its unit tests were green: thousands of them. Then I ran its offline retriever against a public benchmark, BEIR SciFact, and it scored **0.12 nDCG@10**. Plain BM25 scores 0.665 on the same data.
 
-None of that was on my roadmap. I submitted the package for community review and got back two detailed reviews that, politely, told me my positioning was hurting adoption. This is what happened next.
+The bug was one line of intent turned around. When a corpus had more distinct words than the vocabulary limit (10,000), the TF-IDF embedder kept the _rarest_ words, mostly ones that appear in a single document. So most queries contained no word the embedder knew, and embedded to a vector of zeros. Every small test corpus fit under the limit, so no unit test ever hit it. After the fix the score went to **0.47**.
 
-## The package
+The same benchmark run found two more problems in two brand-new vector stores before they were released: Qdrant requests stalled about 40 ms each on compressed responses, and pgvector silently returned at most 40 rows whatever `topK` you asked for.
 
-`@devilsdev/rag-pipeline-utils` is a Node.js framework for building Retrieval-Augmented Generation pipelines. Three primitives — `pipeline`, `plugin`, `connector` — with optional layers for citations, evaluation, guardrails, agentic reasoning, and GraphRAG.
+None of these were exceptions or failing assertions. They were answers that got quietly worse. That is the normal way RAG breaks: someone changes the chunk size, the prompt, the model or the embedder, everything still runs, and the answers drift. Unit tests can't see it. So I built the library around measuring it.
 
-The value prop I thought I was selling: "comprehensive enterprise-grade toolkit with 104 exports and 2,050+ tests."
-
-The value prop the reviewers heard: "overengineered utility library with no clear buyer."
-
-## The reviews
-
-Two independent reviews came back with significant overlap. The five biggest hits:
-
-### 1. The GPL-3.0 license was killing adoption
-
-> _"The moment I saw GPL-3.0 my commercial evaluation stopped. You don't want that."_
-
-GPL has strong copyleft. Any product that links against a GPL library must itself be released under a GPL-compatible license if distributed. That's a conversation most engineering leads don't want to have with their legal team for a supporting library. The chill on adoption is silent — nobody tells you "I chose LangChain because your license scared my lawyer."
-
-Every comparable tool in this space (LangChain.js, LlamaIndex.TS, Vercel AI SDK) ships MIT. I was the outlier, and I didn't gain anything from being the outlier.
-
-**Fix**: Relicense to MIT. Full LICENSE rewrite, badge change, package.json update, one commit.
-
-### 2. "Utils" framing undersold the scope
-
-> _"The name says toolkit. The code ships a pipeline framework, GraphRAG, and 3-layer guardrails. Stop underselling."_
-
-My README led with export counts and lists of capabilities. The reviewers pointed out that this is vendor-brochure thinking, not developer thinking. What does it do? Why should I care in the first 30 seconds?
-
-**Fix**: Rewrite the headline.
-
-- Before: _"The complete Node.js toolkit for production-grade RAG."_
-- After: _"Composable RAG for Node.js — with built-in evaluation, citations, guardrails, and observability."_
-
-The new framing leads with three core primitives (`pipeline`, `plugin`, `connector`) and positions the advanced features as layers you opt into when you need them. Concrete > comprehensive.
-
-### 3. The docs had unverified performance claims
-
-> _"<200ms retrieval latency — against what corpus? What provider? On what hardware? Delete or prove."_
-
-Retrieval latency in a RAG pipeline is dominated by factors the framework doesn't control: the embedding model, the vector store, the LLM provider, the region, the corpus size. Publishing a number without the full stack is marketing, not engineering. Reviewers called it out and I deserved it.
-
-**Fix**: Delete the claims. Replace with a [BENCHMARKS.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/BENCHMARKS.md) that ships a methodology, a report schema, an environment disclosure template, and an end-to-end harness template. No headline numbers. Anyone who wants a number generates it themselves on their stack.
-
-### 4. ESM/CJS inconsistency
-
-Some docs used ESM `import`, others used CJS `require()`. The package exports both, but the docs-site homepage still led with `require()` while the README used `import`. That's a signal that the project doesn't know what its primary module system is.
-
-**Fix**: ESM everywhere in documentation. CJS still works (dual-build via `package.json#exports`) but docs lead with `import`.
-
-### 5. No stated stability policy, no security-capability matrix
-
-Enterprise reviewers expect to see:
-
-- A SEMVER policy defining what counts as breaking and how long deprecations run
-- A security capability matrix distinguishing "implemented and battle-tested" from "recommended practice" from "example code that needs hardening"
-- A responsible-disclosure process (not the same as a security policy!)
-
-I had none of these.
-
-**Fix**: Wrote all three.
-
-- [SEMVER.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) — public API stability contract, minimum one-minor deprecation window
-- [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md) — triage SLAs, safe-harbor, supported versions
-- [Security Capabilities matrix](https://devilsdev.github.io/rag-pipeline-utils/docs/Security-Capabilities) — 🟢 implemented / 🟡 recommended / 🟠 example / 🔴 not in scope across 6 categories
-
-## The bonus round: OIDC trusted publishing
-
-Since I was already in the supply-chain headspace, I killed the `NPM_TOKEN` ritual for good.
-
-Old flow: generate token on npmjs.com → paste in `.npmrc` → `npm publish` → scrub `.npmrc` → revoke token. Every release. Tokens drift into chat histories and Slack DMs.
-
-New flow: `gh release create v2.4.5 ...` → GitHub Actions obtains a short-lived OIDC token from its identity provider → npm accepts it because this repo + workflow + environment is configured as a Trusted Publisher → tarball ships with SLSA provenance attached.
+## The pipeline, in short
 
 ```bash
-npm audit signatures @devilsdev/rag-pipeline-utils
-# 7 packages have verified attestations
+npm install @devilsdev/rag-pipeline-utils
 ```
 
-The provenance attestation cryptographically binds the published bytes to:
+`createRagPipeline()` wires an embedder, a retriever, an optional reranker and an LLM. Each stage is a small JavaScript contract (`embed()`, `retrieve()`, `generate()`...), so a Vercel AI SDK model, your own vector store or a test double all plug in the same way. It ships connectors for OpenAI, Anthropic, Cohere and Ollama, stores for pgvector and Qdrant, and an offline TF-IDF embedder with an in-memory store, so everything below runs without an API key.
 
-- The git repository (`DevilsDev/rag-pipeline-utils`)
-- The workflow file (`.github/workflows/release.yml`)
-- The commit SHA
-- The runner environment
+## 1. Check every answer against its sources
 
-After the first OIDC release verified successfully, I deleted the `NPM_TOKEN` repository secret. No long-lived credential exists anywhere for this repo anymore.
+An answer that sounds right and cites nothing is the failure users notice. `CitationTracker` maps each sentence of an answer to the passages that support it, and it checks that the numbers in the answer appear in the sources:
 
-The setup is roughly 20 minutes, one-time:
+```js
+import { CitationTracker } from "@devilsdev/rag-pipeline-utils";
 
-1. GitHub Actions workflow with `permissions: id-token: write` and `environment: npm`
-2. npm CLI 11.5.1+ in the workflow (Node 22 ships older, `npm install -g npm@11.5.1` at job start)
-3. `npm publish --access public --provenance`
-4. Configure Trusted Publisher on the npm package settings page
-5. Create a `npm` environment in the GitHub repo settings
+const sources = [
+  {
+    id: "policy",
+    content: "Employees receive twenty days of paid vacation per year.",
+  },
+];
+const tracker = new CitationTracker();
 
-The [release.yml](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.github/workflows/release.yml) is ~80 lines and has a commented header explaining each step.
+tracker.track(
+  "Employees receive twenty days of paid vacation per year.",
+  sources,
+).groundednessScore; // 1
+tracker.track(
+  "Employees receive thirty days of paid vacation per year.",
+  sources,
+).groundednessScore; // 0: the number does not match the source
+```
 
-## What actually changed in the numbers
+Already on LangChain, LlamaIndex, Mastra or the AI SDK? You don't have to switch. `checkAnswer` takes the answer and the documents in the shape your framework returns them (`pageContent` and `metadata` included):
 
-| Metric                             | Before (2.3.1)       | After (2.4.5)                          |
-| ---------------------------------- | -------------------- | -------------------------------------- |
-| License                            | GPL-3.0              | MIT                                    |
-| README length                      | 15,972 chars         | 8,067 chars                            |
-| Unverified performance claims      | 4                    | 0                                      |
-| Stability policy                   | None                 | SEMVER.md published                    |
-| Security disclosure policy         | None                 | SECURITY.md published                  |
-| Security capability matrix         | None                 | 6-category scorecard                   |
-| Benchmarks methodology             | None                 | BENCHMARKS.md + E2E harness            |
-| Comparison vs LangChain/LlamaIndex | None                 | Published, honest                      |
-| Runnable demo                      | None                 | Fastify + Docker + Fly/Railway configs |
-| Publish auth                       | Long-lived NPM_TOKEN | OIDC, no standing credential           |
-| Tarball provenance                 | None                 | SLSA v1, verifiable                    |
+```js
+import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
 
-## The meta-lesson
+const check = await checkAnswer({
+  question: "How many vacation days do I get?",
+  answer: "Full-time employees receive thirty days of paid vacation per year.",
+  sources: [
+    {
+      pageContent:
+        "Full-time employees receive twenty days of paid vacation per year.",
+      metadata: { source: "handbook.md" },
+    },
+  ],
+});
 
-The reviewers were right about everything.
+check.grounded; // false
+check.unsupported.length; // 1
+```
 
-I had been optimizing for "completeness of feature list" when I should have been optimizing for "time from package-page-visit to first successful pipeline run." Every piece of friction I defended — the license, the "utils" framing, the export-counting, the unverified stats — was visible to anyone evaluating the project and invisible to me.
+If that's all you need, `npm install @devilsdev/rag-eval` gets just the evaluation part, about 6 MB.
 
-The cost to fix all of it was real but bounded: about 15 hours of focused work across a week. The cost of _not_ fixing it was unknowable but permanent — every serious reviewer who walked away without opening an issue.
+## 2. Score a test set, and fail the build when it drops
 
-If you're maintaining an open-source library and haven't done a cold-read review in a while, do one. You'll find at least one thing on this list.
+Set up a project with `npx rag-pipeline init --template openai` (or `ollama`, `anthropic`) and `npx rag-pipeline ingest docs/`. Then keep a JSON file of questions, with the expected answer and the documents that should be found:
+
+```json
+[
+  {
+    "prompt": "How many vacation days do I get?",
+    "expected": "Twenty days of paid vacation per year.",
+    "sourceIds": ["docs/vacation.md"]
+  }
+]
+```
+
+No test set yet? `rag-pipeline generate-dataset` drafts one from your documents for you to review. Then:
+
+```bash
+# on main: score the set and save it as the baseline
+npx rag-pipeline eval tests.json --min faithfulness=0.8 --output main.json
+
+# on a pull request: fail if any metric or case got worse than main
+npx rag-pipeline eval tests.json --baseline main.json
+```
+
+It scores faithfulness, relevance, context precision and, with a reference answer, context recall, plus whether the expected documents were retrieved at all. With the offline `local` template there is no LLM, so only retrieval is scored. The report lists which cases got worse and why, and can be written as Markdown or HTML.
+
+On GitHub, [`rag-eval-action`](https://github.com/marketplace/actions/rag-pipeline-eval) does the main-versus-PR comparison for you and posts the result as a comment on every pull request. A prompt tweak that makes answers stop using the documents now fails review the same way a broken test does.
+
+## 3. Test RAG code without a network
+
+Tests that call a real model are slow, cost money and flake. `/testing` has a deterministic embedder, an LLM that echoes the top passage and records every call, and fixture documents:
+
+```js
+import { createTestPipeline } from "@devilsdev/rag-pipeline-utils/testing";
+
+const { pipeline, llm } = await createTestPipeline();
+const result = await pipeline.run({
+  query: "How many vacation days do I get?",
+});
+
+result.results[0].id; // "vacation"
+llm.calls.length; // 1
+```
+
+If you write your own retriever or LLM wrapper, `runContractTests("retriever", () => new MyRetriever())` registers tests for everything the pipeline relies on (sorted scores, `topK`, cancellation...), in Jest, Vitest, Mocha or `node:test`.
+
+## What 3.2 added
+
+[3.2.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-2-release) came out this week:
+
+- **Install only what you use.** Four packages, `@devilsdev/rag-core`, `rag-connectors`, `rag-eval` and `rag-guardrails`, and the main package re-exports all of them. The full install went from 48 MB to 33 MB.
+- **Cheaper model per query.** `createModelRouter` classifies each question and sends lookups to a small model and harder questions to a large one, with the estimated cost of each choice on the result.
+- **OpenTelemetry.** `telemetry: true` records each run as spans that follow the GenAI semantic conventions, so your tracing backend shows the model, tokens and timings per stage. Prompts aren't recorded unless you opt in.
+- **Time to first token.** Streamed answers report `firstTokenMs`, measured from the start of the run, so retrieval time is included.
+- **Edge runtimes.** The pipeline runs in Cloudflare Workers, tested in workerd in CI, and an `/edge` entry runs where there are no Node.js APIs at all.
+- **An MCP server example**, so Claude Desktop and other MCP clients can search your indexed documents.
+
+## What it isn't
+
+The grounding check is deterministic: it compares the words and numbers in each sentence with the sources, with no model involved, so it costs nothing and gives the same result every run. The price is that it misses paraphrases, and it doesn't yet notice negation: "employees do not receive twenty days" still matches the source. A negation check is planned for 3.3, and an optional LLM-judge mode for the cases words can't settle after that.
+
+It also isn't an agent framework, and it doesn't host anything or ship its own vector database. If you need a large integration catalogue or agents, LangChain.js and Mastra are better choices, and the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) says where each one wins. This library aims to be the grounding, evaluation and guardrails layer, used on its own or next to those.
+
+## The lesson
+
+Benchmark what your users experience, not just what your functions return. My unit tests checked that `train()` built a vocabulary; they never asked whether the vocabulary was any good. One public dataset and one number answered that.
+
+If you run RAG in production, how do you catch quality regressions today: an offline test set in CI, sampling live traffic, or user reports? I'd like to hear what works.
 
 ---
 
-**Links**
-
-- Package: [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) on npm
-- Source: [DevilsDev/rag-pipeline-utils](https://github.com/DevilsDev/rag-pipeline-utils) on GitHub
+- npm: [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils)
+- GitHub: [DevilsDev/rag-pipeline-utils](https://github.com/DevilsDev/rag-pipeline-utils)
 - Docs: [devilsdev.github.io/rag-pipeline-utils](https://devilsdev.github.io/rag-pipeline-utils/)
-- Runnable demo: [`examples/fastify-rag-demo`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo)
-
-Feedback always welcome. If you're doing a similar cleanup, drop what you learned in the comments.
+- Benchmarks and method: [Benchmarks](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks)
+- GitHub Action: [rag-eval-action](https://github.com/DevilsDev/rag-eval-action)

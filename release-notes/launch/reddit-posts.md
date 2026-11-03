@@ -1,6 +1,6 @@
 # Reddit post drafts
 
-Different subs want different tones. Same underlying information, different framing.
+Updated for 3.2.0 (2026-11-04). Different subs want different tones; same facts, different framing. Check each sub's self-promotion rules before posting (several require a 9:1 ratio of other activity or a specific flair or weekly thread).
 
 ---
 
@@ -8,50 +8,44 @@ Different subs want different tones. Same underlying information, different fram
 
 **Title**:
 
-> Built a RAG framework for Node.js with evaluation metrics + citations + guardrails baked in
+> I put RAG answer quality in CI for my Node.js project — eval, grounding checks and offline test doubles (MIT)
 
 **Body**:
 
 ```
-Spent the last few months on @devilsdev/rag-pipeline-utils — a Node.js
-framework for production RAG services. Just shipped v2.4.5 and wanted
-to share with folks building in this space.
+I maintain @devilsdev/rag-pipeline-utils, a RAG library for Node.js. 3.2
+came out this week, and the thing I most want feedback on is how it tests
+RAG, because that's where my own project was weakest.
 
-What's in it:
+My unit tests were green, but on a public benchmark (BEIR SciFact) the
+offline retriever scored 0.12 nDCG@10. The TF-IDF embedder kept the rarest
+words once the vocabulary hit its limit, so most queries embedded to
+zeros. Fixed, it's 0.47. No unit test could see it.
 
-* createRagPipeline({ retriever, llm }) — the core factory, three
-  primitives: pipeline, plugin, connector
-* RAG evaluation built-in — faithfulness, relevance, context
-  precision/recall, groundedness. No separate SaaS required.
-* Per-sentence citation tracking with groundedness scoring — every
-  answer sentence maps back to the source chunks
-* 3-layer guardrails — prompt-injection detection pre-retrieval,
-  relevance gating during retrieval, PII + groundedness post-generation
-* GraphRAG for multi-hop questions
-* Built-in connectors for OpenAI, Anthropic, Cohere, Ollama — plus a
-  JSON Schema plugin contract for custom ones
-* Dual ESM/CJS build, MIT, zero runtime vulnerabilities at release
-* Published via GitHub Actions OIDC with SLSA provenance — no standing
-  npm token
+So the library is built around catching that kind of drift:
 
-Runnable Fastify demo with Fly/Railway deploy configs in
-~150 LoC of server.js:
+* `rag-pipeline eval tests.json --baseline main.json` fails CI when
+  faithfulness, relevance or retrieval get worse than main. A GitHub Action
+  posts the comparison on each PR.
+* `/testing` has a deterministic embedder and an LLM double that records
+  its calls, so tests need no network or keys.
+* `runContractTests("retriever", () => new MyRetriever())` tests your own
+  plugin against what the pipeline relies on (Jest/Vitest/Mocha/node:test).
+* `checkAnswer()` checks answers from LangChain, LlamaIndex, Mastra or the
+  AI SDK against their sources, if you don't want to switch.
 
-https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo
-
-The comparison page is intentionally honest about where LangChain.js
-and LlamaIndex.TS win — it's meant to help you decide rather than sell:
-
-https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison
+Also in 3.2: four sub-packages (eval alone is ~6 MB; full install 48 -> 33
+MB), per-query model routing by estimated cost, OpenTelemetry spans, time
+to first token, Cloudflare Workers support tested in workerd.
 
 npm: https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils
 repo: https://github.com/DevilsDev/rag-pipeline-utils
+write-up: <dev.to link>
 
-Feedback welcome, especially from folks building RAG in production
-Node services. What's the thing that trips you up most right now?
+How do you test RAG or LLM features in your Node services today?
 ```
 
-**Flair**: Show and Tell / Project (whichever r/node uses currently)
+**Flair**: whichever project / show-and-tell flair r/node uses
 
 **Best time**: Tuesday–Thursday 09:00–11:00 Pacific
 
@@ -61,49 +55,40 @@ Node services. What's the thing that trips you up most right now?
 
 **Title**:
 
-> Node.js RAG framework with 3-layer guardrails + GraphRAG + Ollama support (MIT)
+> Node.js RAG library that runs fully offline (TF-IDF + Ollama) and scores its own answers — v3.2, MIT
 
 **Body**:
 
 ```
-For the Node-leaning folks here: shipped v2.4.5 of
-@devilsdev/rag-pipeline-utils, a RAG framework focused on:
+For the Node-leaning folks: @devilsdev/rag-pipeline-utils 3.2.
 
-* Local-first development via built-in Ollama connector — no
-  required cloud dependency for the LLM
-* TF-IDF in-memory retriever for dev/test, plus a plugin contract
-  for any vector store (Pinecone / Weaviate / Qdrant / pgvector — you
-  write ~50 lines of adapter)
-* 3-layer guardrails you can turn on independently (pre-retrieval
-  injection detection, retrieval-time relevance gating, post-gen PII
-  and groundedness checks)
-* GraphRAG for when vector retrieval misses multi-hop connections
-* Per-sentence citation tracking with groundedness scoring
-* RAG evaluation metrics (faithfulness, relevance, context P/R,
-  groundedness) — run online for gating or offline for CI regression
+Local-first bits:
 
-What it's NOT: it's a developer library, not a GUI builder, and it's
-Node.js only (no Python port).
+* Runs with no cloud at all: an offline TF-IDF embedder, a persistent
+  local index, and the Ollama connector for generation (embeddings via
+  Ollama too).
+* `npx rag-pipeline init --template ollama`, `ingest docs/`, `query "..."`
+  and `serve` from the CLI.
+* Every answer comes back with sentence-level citations and a groundedness
+  score, including a check that numbers in the answer appear in the
+  sources, which catches a lot of small-model hallucination.
+* `rag-pipeline eval` scores a question set so you can compare two local
+  models (or quantisations) on your own documents instead of vibes.
+* Retrieval numbers on BEIR SciFact, with the method:
+  https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks
+  (BM25 matches the published 0.665; the offline TF-IDF embedder is 0.47,
+  fine for tests and air-gapped use, not a replacement for a real embedder.)
+* pgvector and Qdrant stores when you outgrow the local index.
 
-The Ollama connector makes the dev story genuinely offline — you can
-wire up a pipeline, ingest docs, run queries and see citations
-without any cloud account.
+repo: https://github.com/DevilsDev/rag-pipeline-utils
 
-Runnable Fastify + Ollama demo coming in the next release; for now
-the Fastify + OpenAI demo is here:
-https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo
-
-Swap `OpenAIConnector` for `OllamaConnector` and point it at your
-local Ollama server for the same demo running fully offline.
-
-npm: https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils
-
-Happy to answer anything about the architecture.
+What local embedding models are people pairing with Ollama for RAG these
+days?
 ```
 
 **Flair**: Resources / Project
 
-**Best time**: Weekends are surprisingly active on r/LocalLLaMA; Saturday afternoon UTC is a decent window.
+**Best time**: weekends are active; Saturday afternoon UTC is a decent window.
 
 ---
 
@@ -111,80 +96,50 @@ Happy to answer anything about the architecture.
 
 **Title**:
 
-> Cut my RAG service's "trust surface" from "pile of prompts" to "measurable metrics + citations + guardrails" — here's what that actually looks like in code
+> How I catch RAG quality regressions in CI: baselines from main, grounding checks, and per-PR comments
 
 **Body**:
 
 ```
-Been frustrated with RAG pipelines that "work" in demos but have no
-visible quality signal in production. Spent some time building the
-missing middle layer as a Node.js framework. Sharing the design here
-in case it's useful to others solving the same problem.
+Sharing the approach (and the library) I use to stop RAG answers from
+silently getting worse when someone changes a prompt, chunk size, model
+or embedder.
 
-Three specific production problems I kept hitting:
+1. A question set in JSON: { prompt, expected, sourceIds }. A generator
+   drafts one from your documents; you review it.
+2. On main: score it and save the report as the baseline.
+3. On every PR: score again and fail if any metric's mean drops more than
+   a tolerance, listing the individual cases that got worse.
+4. Metrics: faithfulness (answer sentences supported by retrieved text,
+   computed from the text, not an LLM judge), relevance, context
+   precision/recall, and whether the expected documents were retrieved.
+5. A GitHub Action posts the comparison as a PR comment.
 
-1. "How do I know this answer is grounded?"
-   → Per-sentence citation tracking + groundedness score. Every
-   returned sentence has its source chunk IDs. Below-threshold
-   sentences can be visually de-emphasized in UI or rejected
-   outright.
+It's part of @devilsdev/rag-pipeline-utils (Node.js, MIT). If you're on
+another framework, `@devilsdev/rag-eval` and checkAnswer() work on its
+outputs without switching.
 
-2. "How do I detect quality drift?"
-   → Online evaluation with faithfulness/relevance/context P/R
-   scores attached to every response. Sample them, log them to
-   your metrics stack, alert when they drop.
+What made me take this seriously: the library's own embedder scored 0.12
+nDCG@10 on BEIR SciFact with every unit test green.
 
-3. "How do I stop prompt injection from leaking other customers'
-   data?"
-   → 3-layer guardrails: input sanitization pre-retrieval, ACL-aware
-   retrieval filtering (tenant ID honored), PII detection on output.
-
-The whole thing is composable. Core pipeline is ~30 lines of config.
-Each guardrail layer is opt-in. Evaluation is a single flag.
-
-Code:
-  const pipeline = createRagPipeline({
-    retriever: new MemoryRetriever(),
-    llm: new OpenAIConnector({ apiKey }),
-  });
-
-  const safe = new GuardrailsPipeline(pipeline, {
-    preRetrieval: { enableInjectionDetection: true },
-    retrieval: { minRelevanceScore: 0.5 },
-    postGeneration: { enablePIIDetection: true, minGroundedness: 0.7 },
-  });
-
-  const result = await safe.run({
-    query: userQuestion,
-    options: { citations: true, evaluate: true },
-  });
-
-  // result.answer, result.citations, result.evaluation.scores
-
-More details and a runnable Fastify demo in the repo. MIT-licensed,
-zero runtime vulns, published via OIDC + SLSA provenance.
-
-npm: https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils
 repo: https://github.com/DevilsDev/rag-pipeline-utils
-comparison vs LangChain/LlamaIndex: https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison
+eval docs: https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation
+write-up: <dev.to link>
 
-Curious: what's your current approach to measuring RAG quality in
-production? Are you sampling evaluation online, running offline
-datasets in CI, or just relying on user feedback?
+What are you using for regression testing: offline sets in CI, sampled
+production traffic with an LLM judge, or user feedback?
 ```
 
 **Flair**: Discussion / Project
 
-**Best time**: Weekday evenings UTC tend to be active.
+**Best time**: weekday evenings UTC.
 
 ---
 
 ## General posting notes
 
-1. **Don't post all three the same day.** Space them across a week. Reddit sees cross-posts; if your first post gets traction, the second can still do well, but posting all three at once looks like spam.
-2. **Engage every top-level comment in the first two hours.** That's where Reddit momentum lives.
-3. **Link the docs-site Comparison page** from every post — that's your highest-leverage piece for fence-sitters.
-4. **Ready to link to specific code**, not just the repo. If someone asks "how does the citation tracking work?", have `src/evaluation/citation-tracker.js` already bookmarked.
-5. **If the OIDC trusted-publishing angle comes up** (it will on r/node), that's the conversation that shows you care about supply chain. Answer it, don't deflect.
-6. **Decline to argue** about RAG being dead / agents being the future / whatever meta-debate. Answer substantively and move on.
-7. **Accept the downvotes you'll get** for anything that reads as self-promotion. Reddit is noisier than HN. Quality of engagement > upvote count.
+1. **Space the posts across a week.** Posting all three at once looks like spam.
+2. **Answer every top-level comment in the first two hours.**
+3. **Link specific code when asked**, not just the repo: `src/evaluate/faithfulness.js`, `src/citation/`, `src/guardrails/injection-detector.js`.
+4. **Be precise about limits.** Injection detection is pattern-based; faithfulness is lexical support, not entailment, so it misses paraphrases and (until the 3.3 fix) negation. Saying so up front earns more trust than defending it later.
+5. **Skip meta-debates** (RAG is dead, agents are the future). Answer substantively and move on.
