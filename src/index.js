@@ -69,6 +69,10 @@ const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
 const { createAiSdkAdapter } = require('./adapters/ai-sdk');
 const {
+  createMastraScorer,
+  createMastraGuardrails,
+} = require('./adapters/mastra');
+const {
   groundingMiddleware,
   GroundingBlockedError,
 } = require('./adapters/ai-sdk-middleware');
@@ -240,6 +244,8 @@ module.exports = {
   checkAnswer,
   normalizeSources,
   createAiSdkAdapter,
+  createMastraScorer,
+  createMastraGuardrails,
   groundingMiddleware,
   GroundingBlockedError,
   MemoryCache,
