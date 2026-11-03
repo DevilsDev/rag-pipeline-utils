@@ -13,6 +13,8 @@
  * - createTestPipeline(): a ready, indexed pipeline built from the above.
  * - runContractTests() / checkContract(): the behaviour createRagPipeline
  *   relies on from each plugin type, as tests for your own plugins.
+ * - ragMatchers: toBeGroundedIn, toCite and toContainNoPII for
+ *   expect.extend() in Jest or Vitest.
  */
 
 const { createRagPipeline } = require('./core/create-pipeline');
@@ -256,6 +258,12 @@ async function createTestPipeline({
 }
 
 const { runContractTests, checkContract } = require('./testing/contract-tests');
+const {
+  ragMatchers,
+  toBeGroundedIn,
+  toCite,
+  toContainNoPII,
+} = require('./testing/matchers');
 
 module.exports = {
   HashEmbedder,
@@ -264,4 +272,8 @@ module.exports = {
   createTestPipeline,
   runContractTests,
   checkContract,
+  ragMatchers,
+  toBeGroundedIn,
+  toCite,
+  toContainNoPII,
 };

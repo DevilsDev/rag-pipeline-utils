@@ -80,7 +80,6 @@ gh repo edit DevilsDev/rag-pipeline-utils \
 
 ## Order
 
-0. Preferably ship the 3.3 negation fix first: as of 3.2.0 the grounding check scores "employees do not receive twenty days" as grounded against a source saying they get twenty days, which a launch reader could find in a minute. The dev.to post states this limit; update it after the fix.
 1. Merge the issue templates (PR #164) and update the About text, so visitors from the posts land on a tidy repo.
 2. Publish the dev.to post (`devto-post.md`).
 3. Show HN (`hn-show-hn.md`), Tuesday to Thursday, 08:00–10:00 Pacific.

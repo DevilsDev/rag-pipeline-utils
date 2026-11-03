@@ -70,7 +70,7 @@ console.log(result.answer); // null: no LLM configured, so retrieval only
 
 ## Why this library
 
-- **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including a check that numbers in the answer appear in the sources.
+- **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including checks that numbers in the answer appear in the sources and that it doesn't negate them.
 - **Measured, not guessed.** `rag-pipeline eval` scores a test set and fails CI when answers regress; [`rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) posts the result on every pull request. Retrieval is [benchmarked](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) on BEIR SciFact.
 - **Provider-neutral.** OpenAI, Anthropic, Cohere and Ollama connectors; PostgreSQL with pgvector and Qdrant stores; an offline TF-IDF embedder. Anything with an `embed()` or `generate()` method works too, including Vercel AI SDK models.
 - **Production behaviour.** Cancellation and timeouts on every stage, retries only on transient errors, ACL filtering before generation, PII redaction, caching, and a token budget for the context sent to the model.
@@ -184,7 +184,7 @@ See the [CLI reference](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI)
 
 ### Answer questions with sources your users can check
 
-Citations map every sentence of the answer to the passages that support it. A sentence whose facts or numbers are missing from the sources is reported as ungrounded, and from 3.3.0 so is one that negates its source ("employees never receive paid vacation" against "employees receive twenty days").
+Citations map every sentence of the answer to the passages that support it. A sentence whose facts or numbers are missing from the sources is reported as ungrounded, and so is one that negates its source ("employees never receive paid vacation" against "employees receive twenty days").
 
 ```js
 import { CitationTracker } from "@devilsdev/rag-pipeline-utils";
@@ -273,9 +273,11 @@ console.log(check.grounded); // false
 console.log(check.unsupported.length); // 1
 ```
 
+On Mastra, `createMastraScorer({ createScorer })` runs the same check as an agent scorer, with no model calls, and `createMastraGuardrails()` adds injection detection and PII redaction as a processor ([Mastra docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#mastra)).
+
 ### Ground an AI SDK app
 
-Already using the Vercel AI SDK? From 3.3.0, `groundingMiddleware` adds retrieval, answer checks and guardrails to any AI SDK model, and your `generateText` and `streamText` calls stay as they are:
+Already using the Vercel AI SDK? `groundingMiddleware` adds retrieval, answer checks and guardrails to any AI SDK model, and your `generateText` and `streamText` calls stay as they are:
 
 ```ts
 import { generateText, wrapLanguageModel } from "ai";
@@ -311,6 +313,8 @@ const result = await pipeline.run({
 console.log(result.results[0].id); // "vacation"
 console.log(llm.calls.length); // 1
 ```
+
+`expect.extend(ragMatchers)` adds `toBeGroundedIn`, `toCite` and `toContainNoPII` to Jest and Vitest, so `expect(result).toBeGroundedIn()` fails a test when an answer says something its sources don't ([matchers](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#matchers-for-answers)).
 
 Writing your own plugin? `runContractTests("retriever", () => new MyRetriever())` from the same entry registers tests for the behaviour the pipeline relies on, in Jest, Vitest, Mocha or `node:test` ([contract tests](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#contract-tests-for-your-plugins)).
 
@@ -557,9 +561,9 @@ The result of `run()` is:
 | **Chunking**     | `ChunkingEngine` with sentence, fixed-size, recursive, semantic and structure-aware strategies                                                                                                                                                                                                                                                                                             |
 | **Retrieval**    | `MemoryRetriever`, persistent `FileVectorStore`, `PgVectorRetriever` (PostgreSQL), `QdrantRetriever`, `BM25Search`, `HybridRetriever` (Reciprocal Rank Fusion)                                                                                                                                                                                                                             |
 | **Reranking**    | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                                                                                                                                                                                                                                                                                                         |
-| **Citations**    | Per-sentence source mapping, hallucination report, numeric-consistency check                                                                                                                                                                                                                                                                                                               |
+| **Citations**    | Per-sentence source mapping, hallucination report, numeric and negation checks                                                                                                                                                                                                                                                                                                             |
 | **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder; test sets with `validateDataset`, `runEvaluation`, `compareConfigurations`, `generateSyntheticDataset` and `rag-pipeline eval`                                                                                                             |
-| **Integrations** | `groundingMiddleware` for any AI SDK model (from 3.3.0); `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                                                                                  |
+| **Integrations** | `groundingMiddleware` for any AI SDK model and Mastra scorers and guardrails; `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                                                             |
 | **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                                                                                                                                                                                                                                                               |
 | **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; contract tests for your plugins with `runContractTests()` and `checkContract()`                                                                                                                                                                                                                     |
 | **Guardrails**   | Injection detection on queries and retrieved documents, with input normalisation; ACL and relevance filtering before generation; PII redaction                                                                                                                                                                                                                                             |
@@ -577,7 +581,7 @@ A short summary of the [comparison page](https://devilsdev.github.io/rag-pipelin
 | ------------- | ---------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------ | --------------------------------------- |
 | Focus         | RAG with grounding, evaluation and guardrails                                            | General-purpose LLM orchestration  | Agents and workflows                 | Model calls, streaming, tools, UI hooks |
 | Evaluation    | Deterministic metrics, no model calls; CLI and GitHub Action that fail CI on regressions | `openevals` (LLM judge), LangSmith | LLM-judge scorers in `@mastra/evals` | None built in                           |
-| Citations     | Per sentence, with a groundedness score and a number check                               | Wired up by hand                   | Wired up by hand                     | Passes provider citations through       |
+| Citations     | Per sentence, with a groundedness score and number and negation checks                   | Wired up by hand                   | Wired up by hand                     | Passes provider citations through       |
 | Guardrails    | ACL before generation, injection detection (pattern-based), PII redaction                | Via integrations                   | Model-based processors               | Middleware you write                    |
 | Vector stores | Memory, file, pgvector and Qdrant, plus a plugin contract                                | 50+ integrations                   | Many integrations                    | Bring your own                          |
 | Agents        | Query planning and iterative retrieval                                                   | Mature agent framework             | Agents, workflows, memory            | Tool calling and agent loops            |

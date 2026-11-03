@@ -2,7 +2,7 @@
 id: Testing
 title: Testing your RAG code
 sidebar_label: Testing
-description: Deterministic, offline test helpers from @devilsdev/rag-pipeline-utils/testing - a hash embedder, an echo LLM, fixtures and a ready test pipeline.
+description: Deterministic, offline test helpers from @devilsdev/rag-pipeline-utils/testing - a hash embedder, an echo LLM, fixtures, a ready test pipeline and matchers such as toBeGroundedIn.
 ---
 
 # Testing your RAG code
@@ -15,6 +15,7 @@ description: Deterministic, offline test helpers from @devilsdev/rag-pipeline-ut
 | `EchoLLM`              | LLM that answers with the top retrieved document, or an answer you set, and records every call                 |
 | `fixtures.documents`   | Three short policy documents (vacation, remote work, expenses)                                                 |
 | `createTestPipeline()` | A pipeline with `HashEmbedder`, a `MemoryRetriever` holding the documents, and `EchoLLM`                       |
+| `ragMatchers`          | `toBeGroundedIn`, `toCite` and `toContainNoPII` for `expect.extend()` in Jest and Vitest                       |
 
 ## A test pipeline in one call
 
@@ -71,6 +72,67 @@ console.log(call.docs[0].id); // "vacation"
 ```
 
 `answer` can also be a function of the query and documents, `(query, docs) => string`. `EchoLLM` streams too (`generateStream`), word by word.
+
+## Matchers for answers
+
+Register the matchers once, in a setup file or at the top of a test file, then assert on answers the way you assert on any other value:
+
+```js no-run
+import { expect, test } from "vitest"; // or Jest's global expect
+import {
+  createTestPipeline,
+  ragMatchers,
+} from "@devilsdev/rag-pipeline-utils/testing";
+
+expect.extend(ragMatchers);
+
+test("answers vacation questions from the handbook", async () => {
+  const { pipeline } = await createTestPipeline();
+  const result = await pipeline.run({
+    query: "How many vacation days do I get?",
+  });
+
+  expect(result).toBeGroundedIn(); // every sentence supported by result.results
+  expect(result).toCite("vacation");
+  expect(result).toContainNoPII();
+});
+```
+
+| Matcher                                   | Passes when                                                                                                                                               |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `toBeGroundedIn(sources?, { threshold })` | Every sentence of the answer is supported by a source: its content words, numbers and negation match, as in `checkAnswer`                                 |
+| `toCite(id \| ids, sources?)`             | At least one sentence is supported by each given source                                                                                                   |
+| `toContainNoPII({ patterns })`            | No email, phone number, US SSN or card number (the post-generation guard's patterns, plus yours) appears in the string, or in any string inside an object |
+
+The value under test is an answer string or anything with an `answer`, such as a `pipeline.run()` result. Without `sources`, `toBeGroundedIn` and `toCite` use the result's `results`. Sources can be in any shape `checkAnswer` reads: strings, `{ id, content }`, LangChain `Document`s or LlamaIndex nodes, so you can test answers from another framework too:
+
+```js no-run
+expect(chainOutput.answer).toBeGroundedIn(chainOutput.context); // LangChain Documents
+```
+
+A failure lists what went wrong, for example:
+
+```text
+expected the answer to be grounded in the 1 source(s), but 1 of 2 sentence(s) are not supported (groundedness 0.50):
+  - Contractors get a company car.
+```
+
+The checks are deterministic, so a test fails or passes the same way every run. Like `checkAnswer`, they compare words, so a correct paraphrase can fail `toBeGroundedIn`; assert on answers from `EchoLLM`, fixtures, or recorded model output you've reviewed.
+
+For TypeScript, declare the matchers once:
+
+```ts
+// vitest.d.ts (for Jest, augment jest.Matchers<R> instead)
+import "vitest";
+
+declare module "vitest" {
+  interface Assertion<T = any> {
+    toBeGroundedIn(sources?: unknown[], options?: { threshold?: number }): T;
+    toCite(ids: string | string[], sources?: unknown[]): T;
+    toContainNoPII(options?: { patterns?: Record<string, RegExp> }): T;
+  }
+}
+```
 
 ## Contract tests for your plugins
 

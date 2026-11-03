@@ -5,6 +5,10 @@ mdx:
 
 # testing
 
+## Namespaces
+
+- [ragMatchers](namespaces/ragMatchers/index.md)
+
 ## Classes
 
 - [EchoLLM](classes/EchoLLM.md)
@@ -19,3 +23,6 @@ mdx:
 - [checkContract](functions/checkContract.md)
 - [createTestPipeline](functions/createTestPipeline.md)
 - [runContractTests](functions/runContractTests.md)
+- [toBeGroundedIn](functions/toBeGroundedIn.md)
+- [toCite](functions/toCite.md)
+- [toContainNoPII](functions/toContainNoPII.md)

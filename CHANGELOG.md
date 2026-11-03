@@ -9,9 +9,24 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.3.0] - 2026-11-04
+
+A minor release with no breaking changes. Grounding now catches answers
+that negate their source, and the checks come to the tools you already
+use: `groundingMiddleware` for the Vercel AI SDK, `toBeGroundedIn` and
+other matchers for Jest and Vitest, and scorers and a guardrails
+processor for Mastra. The comparison drops LlamaIndex.TS, which is
+deprecated, and adds a guide for moving off it.
 
 ### Added
+
+- **Mastra adapters.** `createMastraScorer({ createScorer, metric })` turns
+  groundedness, faithfulness, context precision or context recall into a
+  Mastra scorer that makes no model calls; by default it scores against
+  what the agent's tool calls returned. `createMastraGuardrails()` is a
+  Mastra processor that aborts the run on prompt injection in the user's
+  message and redacts PII from the answer (or aborts, with
+  `pii: "block"`). Mastra is not a dependency.
 
 - **`groundingMiddleware`** for the Vercel AI SDK: wrap any model with
   `wrapLanguageModel({ model, middleware: groundingMiddleware({ retriever }) })`
@@ -25,6 +40,13 @@ page.
   or answer throws `GroundingBlockedError`. Per-request `query`, `topK` and
   ACL `context` go in `providerOptions.ragPipeline`. Tested against AI SDK 6
   and 7; the AI SDK is not a dependency.
+
+- **Matchers for Jest and Vitest** in `/testing`: `expect.extend(ragMatchers)`
+  adds `toBeGroundedIn(sources?)`, `toCite(ids, sources?)` and
+  `toContainNoPII()`. They take an answer or a `pipeline.run()` result
+  (whose `results` are the default sources), read sources in every shape
+  `checkAnswer` accepts, and list the unsupported sentences, missing
+  citations or PII found when they fail.
 
 ### Fixed
 
@@ -1098,6 +1120,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.3.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.3.0
 [3.2.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.2.0
 [3.1.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.1
 [3.1.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.0
