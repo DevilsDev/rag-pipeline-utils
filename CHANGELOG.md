@@ -20,6 +20,8 @@ page.
   submissions, links to Discussions and the security policy for questions
   and vulnerabilities, a pull request checklist that replaces the old
   release-only one, and a Community plugins section on the Plugins page.
+- Roadmap: the 3.3 and 3.4 plan (`.github/PLAN-3.3.md`), based on a scan of
+  comparable npm packages, with a row for each item.
 
 ## [3.2.0] - 2026-11-03
 
