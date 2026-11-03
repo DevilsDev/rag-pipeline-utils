@@ -119,9 +119,16 @@ llm.calls.length; // 1
 
 If you write your own retriever or LLM wrapper, `runContractTests("retriever", () => new MyRetriever())` registers tests for everything the pipeline relies on (sorted scores, `topK`, cancellation...), in Jest, Vitest, Mocha or `node:test`.
 
-## What 3.2 added
+## What 3.2 and 3.3 added
 
-[3.2.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-2-release) came out this week:
+[3.3.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-3-release) brings the checks to the tools you already use:
+
+- **AI SDK middleware.** `wrapLanguageModel({ model, middleware: groundingMiddleware({ retriever }) })` adds retrieval, answer checks and guardrails to any Vercel AI SDK model; `generateText` and `streamText` stay as they are, and the passages come back as `sources`.
+- **Matchers.** `expect(result).toBeGroundedIn()`, `toCite("vacation")` and `toContainNoPII()` for Jest and Vitest.
+- **Mastra.** Scorers that make no model calls, and a guardrails processor.
+- **Negation.** The grounding check now catches answers that contradict their source.
+
+[3.2.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-2-release), the week before:
 
 - **Install only what you use.** Four packages, `@devilsdev/rag-core`, `rag-connectors`, `rag-eval` and `rag-guardrails`, and the main package re-exports all of them. The full install went from 48 MB to 33 MB.
 - **Cheaper model per query.** `createModelRouter` classifies each question and sends lookups to a small model and harder questions to a large one, with the estimated cost of each choice on the result.
@@ -132,7 +139,7 @@ If you write your own retriever or LLM wrapper, `runContractTests("retriever", (
 
 ## What it isn't
 
-The grounding check is deterministic: it compares the words and numbers in each sentence with the sources, with no model involved, so it costs nothing and gives the same result every run. The price is that it misses paraphrases, and it doesn't yet notice negation: "employees do not receive twenty days" still matches the source. A negation check is planned for 3.3, and an optional LLM-judge mode for the cases words can't settle after that.
+The grounding check is deterministic: it compares the words and numbers in each sentence with the sources, with no model involved, so it costs nothing and gives the same result every run. Since 3.3 it also catches negation: "employees never receive paid vacation" no longer matches a source that says they get twenty days. The price is that it misses paraphrases; an optional LLM-judge mode for the cases words can't settle is planned.
 
 It also isn't an agent framework, and it doesn't host anything or ship its own vector database. If you need a large integration catalogue or agents, LangChain.js and Mastra are better choices, and the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) says where each one wins. This library aims to be the grounding, evaluation and guardrails layer, used on its own or next to those.
 

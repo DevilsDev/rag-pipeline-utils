@@ -9,8 +9,8 @@ description: Ground any Vercel AI SDK model with middleware, use AI SDK models a
 
 You don't have to switch frameworks to use this library. These pieces work with what you already have:
 
-- **`groundingMiddleware`** (coming in 3.3.0) adds retrieval, answer checks and guardrails to any Vercel AI SDK model.
-- **`createMastraScorer`** and **`createMastraGuardrails`** (coming in 3.3.0) bring the metrics and guardrails to Mastra agents.
+- **`groundingMiddleware`** adds retrieval, answer checks and guardrails to any Vercel AI SDK model.
+- **`createMastraScorer`** and **`createMastraGuardrails`** bring the metrics and guardrails to Mastra agents.
 - **`checkAnswer`** checks an answer from any framework against its sources: per-sentence citations, groundedness, unsupported sentences and evaluation scores.
 - **`createAiSdkAdapter`** turns Vercel AI SDK models into an embedder and an LLM for `createRagPipeline()`.
 
@@ -131,10 +131,6 @@ Tested against AI SDK 6 and 7.
 
 ## Ground an AI SDK app with middleware
 
-:::info[Coming in 3.3.0]
-`groundingMiddleware` is in 3.3.0.
-:::
-
 Already calling `generateText` or `streamText`? `groundingMiddleware` adds retrieval and grounding to any AI SDK model without changing the rest of your code. Wrap the model with the AI SDK's `wrapLanguageModel`:
 
 ```javascript no-run
@@ -199,10 +195,6 @@ Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardra
 The middleware is a plain object and the package doesn't import the AI SDK, so it works from ESM or CommonJS. It is tested against AI SDK 6 and 7; AI SDK 5 uses the same call shapes but isn't tested. For TypeScript, set `specificationVersion` to your version's middleware version (`"v2"` for 5, `"v3"` for 6, the default, `"v4"` for 7).
 
 ## Mastra
-
-:::info[Coming in 3.3.0]
-`createMastraScorer` and `createMastraGuardrails` are in 3.3.0.
-:::
 
 ### Scorers
 

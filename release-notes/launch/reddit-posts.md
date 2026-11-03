@@ -1,6 +1,6 @@
 # Reddit post drafts
 
-Updated for 3.2.0 (2026-11-04). Different subs want different tones; same facts, different framing. Check each sub's self-promotion rules before posting (several require a 9:1 ratio of other activity or a specific flair or weekly thread).
+Updated for 3.3.0 (2026-11-04). Different subs want different tones; same facts, different framing. Check each sub's self-promotion rules before posting (several require a 9:1 ratio of other activity or a specific flair or weekly thread).
 
 ---
 
@@ -13,7 +13,7 @@ Updated for 3.2.0 (2026-11-04). Different subs want different tones; same facts,
 **Body**:
 
 ```
-I maintain @devilsdev/rag-pipeline-utils, a RAG library for Node.js. 3.2
+I maintain @devilsdev/rag-pipeline-utils, a RAG library for Node.js. 3.3
 came out this week, and the thing I most want feedback on is how it tests
 RAG, because that's where my own project was weakest.
 
@@ -33,6 +33,8 @@ So the library is built around catching that kind of drift:
   plugin against what the pipeline relies on (Jest/Vitest/Mocha/node:test).
 * `checkAnswer()` checks answers from LangChain, LlamaIndex, Mastra or the
   AI SDK against their sources, if you don't want to switch.
+* New in 3.3: `expect(result).toBeGroundedIn()` matchers for Jest and
+  Vitest, and middleware that adds all of this to any AI SDK model.
 
 Also in 3.2: four sub-packages (eval alone is ~6 MB; full install 48 -> 33
 MB), per-query model routing by estimated cost, OpenTelemetry spans, time
@@ -55,12 +57,12 @@ How do you test RAG or LLM features in your Node services today?
 
 **Title**:
 
-> Node.js RAG library that runs fully offline (TF-IDF + Ollama) and scores its own answers — v3.2, MIT
+> Node.js RAG library that runs fully offline (TF-IDF + Ollama) and scores its own answers — v3.3, MIT
 
 **Body**:
 
 ```
-For the Node-leaning folks: @devilsdev/rag-pipeline-utils 3.2.
+For the Node-leaning folks: @devilsdev/rag-pipeline-utils 3.3.
 
 Local-first bits:
 
@@ -141,5 +143,5 @@ production traffic with an LLM judge, or user feedback?
 1. **Space the posts across a week.** Posting all three at once looks like spam.
 2. **Answer every top-level comment in the first two hours.**
 3. **Link specific code when asked**, not just the repo: `src/evaluate/faithfulness.js`, `src/citation/`, `src/guardrails/injection-detector.js`.
-4. **Be precise about limits.** Injection detection is pattern-based; faithfulness is lexical support, not entailment, so it misses paraphrases and (until the 3.3 fix) negation. Saying so up front earns more trust than defending it later.
+4. **Be precise about limits.** Injection detection is pattern-based; faithfulness is lexical support, not entailment, so it misses paraphrases (negation is checked since 3.3). Saying so up front earns more trust than defending it later.
 5. **Skip meta-debates** (RAG is dead, agents are the future). Answer substantively and move on.

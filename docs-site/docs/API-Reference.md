@@ -462,11 +462,7 @@ checkNumericConsistency("It takes twenty days.", "Processing takes 20 days.");
 
 ### checkPolarityConsistency
 
-:::info[Coming in 3.3.0]
-`checkPolarityConsistency` and the polarity check in claim support are in 3.3.0.
-:::
-
-Claim support also checks negation: a sentence that is negated where the closest sentence of the source is not, or the reverse, scores below 0.4 and is not grounded.
+Claim support also checks negation (from 3.3.0): a sentence that is negated where the closest sentence of the source is not, or the reverse, scores below 0.4 and is not grounded.
 
 ```typescript
 checkPolarityConsistency(claimText: string, docText: string): {

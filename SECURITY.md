@@ -12,7 +12,8 @@ are released together with the main package at the same version.
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 3.2.x   | :white_check_mark:                                           |
+| 3.3.x   | :white_check_mark:                                           |
+| 3.2.x   | Security fixes for 30 days after the 3.3.0 release, then :x: |
 | 3.1.x   | Security fixes for 30 days after the 3.2.0 release, then :x: |
 | 3.0.x   | Security fixes for 30 days after the 3.1.0 release, then :x: |
 | 2.7.x   | Security fixes for 30 days after the 3.0.0 release, then :x: |

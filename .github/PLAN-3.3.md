@@ -1,5 +1,7 @@
 # Plan for 3.3 and 3.4
 
+> **Status (2026-11-04):** 3.3.0 is done: negation in grounding (#168), the comparison and the LlamaIndex.TS guide (#170), AI SDK grounding middleware (#171), test-runner matchers (#172) and Mastra adapters (#173). 3.4.0 is next.
+>
 > Written 2026-11-04, after 3.2.0. Based on a scan of the npm packages in the same space (download counts for the week ending 2026-11-02, stars from GitHub on 2026-11-04), summarised in section 1. The rows in [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) track the work; this file explains the choice and order.
 
 ## Headline

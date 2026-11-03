@@ -15,7 +15,7 @@ description: Deterministic, offline test helpers from @devilsdev/rag-pipeline-ut
 | `EchoLLM`              | LLM that answers with the top retrieved document, or an answer you set, and records every call                 |
 | `fixtures.documents`   | Three short policy documents (vacation, remote work, expenses)                                                 |
 | `createTestPipeline()` | A pipeline with `HashEmbedder`, a `MemoryRetriever` holding the documents, and `EchoLLM`                       |
-| `ragMatchers`          | `toBeGroundedIn`, `toCite` and `toContainNoPII` for `expect.extend()` in Jest and Vitest (coming in 3.3.0)     |
+| `ragMatchers`          | `toBeGroundedIn`, `toCite` and `toContainNoPII` for `expect.extend()` in Jest and Vitest                       |
 
 ## A test pipeline in one call
 
@@ -74,10 +74,6 @@ console.log(call.docs[0].id); // "vacation"
 `answer` can also be a function of the query and documents, `(query, docs) => string`. `EchoLLM` streams too (`generateStream`), word by word.
 
 ## Matchers for answers
-
-:::info[Coming in 3.3.0]
-`ragMatchers` is in 3.3.0.
-:::
 
 Register the matchers once, in a setup file or at the top of a test file, then assert on answers the way you assert on any other value:
 

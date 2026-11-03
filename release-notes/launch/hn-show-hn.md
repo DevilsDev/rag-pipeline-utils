@@ -1,6 +1,6 @@
 # Hacker News — "Show HN" draft
 
-Updated for 3.2.0 (2026-11-04).
+Updated for 3.3.0 (2026-11-04).
 
 ## Title (keep ≤80 chars)
 
@@ -44,6 +44,8 @@ What's in it:
   runContractTests() for your own retrievers/LLM wrappers.
 * Guardrails: ACL filtering before generation, prompt-injection detection,
   PII redaction.
+* 3.3 added: AI SDK middleware (wrapLanguageModel), Jest/Vitest
+  matchers like toBeGroundedIn, Mastra scorers, and a negation check.
 * 3.2 added: four installable sub-packages (eval alone is ~6 MB),
   per-query model routing by estimated cost, OpenTelemetry GenAI spans,
   time to first token, and Cloudflare Workers (tested in workerd in CI).
@@ -66,7 +68,6 @@ about the eval design, the benchmarks or the edge-runtime work.
 - [ ] The GitHub "About" description and topics are updated (suggested text in [listings.md](listings.md))
 - [ ] The dev.to post is published first, so the Show HN comment can link it if asked
 - [ ] Issue templates are live (PR #164), so first-time visitors land on a structured form
-- [ ] Preferably post after the 3.3 negation fix ships, and update the limits paragraph in the dev.to post to match
 - [ ] Be ready to answer in the first 90 minutes
 
 ## Timing
@@ -76,14 +77,14 @@ about the eval design, the benchmarks or the edge-runtime work.
 
 ## Response patterns to prepare for
 
-| Likely comment                                 | Response shape                                                                                                                                                                                                             |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Why not LangChain?"                           | You can use both: `checkAnswer` and `@devilsdev/rag-eval` check answers from a LangChain chain. Point to the Comparison page for where LangChain wins (integrations, agents).                                              |
-| "LLM-as-judge metrics are unreliable"          | Agree that they're noisy. Faithfulness here is computed against the retrieved text, not by asking a model for a score; the number check is deterministic. Baselines compare against your own main branch, not an absolute. |
-| "Your grounding check passes a negated answer" | True as of 3.2.0, and the post says so: it's lexical, so "do not receive twenty days" matches. Say what the fix is and when (negation/polarity check in 3.3, opt-in LLM judge after). Don't argue it.                      |
-| "nDCG 0.47 is low"                             | It's the offline TF-IDF embedder, meant for tests and air-gapped dev. With a real embedder use pgvector/Qdrant. The point of publishing it is that the number is reproducible (`npm run bench:quality`).                   |
-| "Is the guardrail injection check real?"       | It's pattern- and heuristic-based, not a model; say so, and point to the Security Capabilities matrix for what is and isn't covered.                                                                                       |
-| "Show me the code"                             | README first screen (runs offline), `examples/fastify-rag-demo`, `examples/cloudflare-worker`, `examples/mcp-server`.                                                                                                      |
+| Likely comment                           | Response shape                                                                                                                                                                                                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Why not LangChain?"                     | You can use both: `checkAnswer` and `@devilsdev/rag-eval` check answers from a LangChain chain. Point to the Comparison page for where LangChain wins (integrations, agents).                                              |
+| "LLM-as-judge metrics are unreliable"    | Agree that they're noisy. Faithfulness here is computed against the retrieved text, not by asking a model for a score; the number check is deterministic. Baselines compare against your own main branch, not an absolute. |
+| "Word overlap can't judge meaning"       | Agree for paraphrases: a correct paraphrase fails, and the docs say so. Numbers and negation are checked (since 3.3). An opt-in LLM-judge mode for what words can't settle is planned for 3.4.                             |
+| "nDCG 0.47 is low"                       | It's the offline TF-IDF embedder, meant for tests and air-gapped dev. With a real embedder use pgvector/Qdrant. The point of publishing it is that the number is reproducible (`npm run bench:quality`).                   |
+| "Is the guardrail injection check real?" | It's pattern- and heuristic-based, not a model; say so, and point to the Security Capabilities matrix for what is and isn't covered.                                                                                       |
+| "Show me the code"                       | README first screen (runs offline), `examples/fastify-rag-demo`, `examples/cloudflare-worker`, `examples/mcp-server`.                                                                                                      |
 
 ## What NOT to do
 

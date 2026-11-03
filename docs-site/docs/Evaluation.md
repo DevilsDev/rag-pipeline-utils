@@ -17,11 +17,7 @@ The grounding metrics (citations, faithfulness, context precision and recall, gr
 
 ### Known limitations
 
-:::info[Coming in 3.3.0]
-The polarity check is in 3.3.0. In 3.2 and earlier, a negated sentence ("employees do not receive twenty days") is grounded by a source that states the opposite.
-:::
-
-Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"). The polarity check looks for negation words (not, no, never, without, don't and the like), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one. It does not detect units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
+Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"); versions before 3.3.0 don't have the polarity check. The polarity check looks for negation words (not, no, never, without, don't and the like), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one. It does not detect units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
 
 ---
 
@@ -139,7 +135,7 @@ extractNumbers("20 items, 3.5% and twenty");
 // { values: ["20", "3.5", "20"], parts: [...] }
 ```
 
-`checkPolarityConsistency` (coming in 3.3.0) compares a claim with the source sentence closest to it:
+`checkPolarityConsistency` compares a claim with the source sentence closest to it:
 
 ```js no-run
 const { checkPolarityConsistency } = require("@devilsdev/rag-pipeline-utils");

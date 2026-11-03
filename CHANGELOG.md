@@ -9,7 +9,14 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.3.0] - 2026-11-04
+
+A minor release with no breaking changes. Grounding now catches answers
+that negate their source, and the checks come to the tools you already
+use: `groundingMiddleware` for the Vercel AI SDK, `toBeGroundedIn` and
+other matchers for Jest and Vitest, and scorers and a guardrails
+processor for Mastra. The comparison drops LlamaIndex.TS, which is
+deprecated, and adds a guide for moving off it.
 
 ### Added
 
@@ -1113,6 +1120,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.3.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.3.0
 [3.2.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.2.0
 [3.1.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.1
 [3.1.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.0
