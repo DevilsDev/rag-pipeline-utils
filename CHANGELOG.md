@@ -11,6 +11,14 @@ page.
 
 ## [Unreleased]
 
+### Security
+
+- Dev, docs-site and edge-test dependencies updated (lockfile refresh,
+  `sharp` ^0.35.5, and npm `overrides` for `serialize-javascript`, `uuid`,
+  `minimatch`, `undici`), which closes 88 of the open Dependabot alerts. The
+  published package is unaffected: its `dependencies` ranges did not change and
+  `npm audit --omit=dev` still reports 0 vulnerabilities.
+
 ### Documentation
 
 - README: the comparison table mentions the scoped packages, the `run()`
