@@ -1,13 +1,9 @@
 ---
 title: "A benchmark found my RAG library ignoring most words. Now my answers get tested in CI"
 published: false
-description: How a retrieval benchmark caught a bug that made most queries embed to zeros, and how to put RAG answer quality in your Node.js CI with rag-pipeline-utils 3.2.
+description: How a retrieval benchmark caught a bug that made most queries embed to zeros, and how to put RAG answer quality in your Node.js CI with rag-pipeline-utils 3.3.
 tags: node, ai, rag, testing
-series:
-canonical_url:
 ---
-
-# A benchmark found my RAG library ignoring most words. Now my answers get tested in CI
 
 I maintain [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils), a retrieval-augmented generation library for Node.js. Its unit tests were green: thousands of them. Then I ran its offline retriever against a public benchmark, BEIR SciFact, and it scored **0.12 nDCG@10**. Plain BM25 scores 0.665 on the same data.
 
@@ -50,7 +46,7 @@ tracker.track(
 ).groundednessScore; // 0: the number does not match the source
 ```
 
-Already on LangChain, LlamaIndex, Mastra or the AI SDK? You don't have to switch. `checkAnswer` takes the answer and the documents in the shape your framework returns them (`pageContent` and `metadata` included):
+Already on LangChain, LlamaIndex, Mastra or the AI SDK? You don't have to switch. `checkAnswer` takes the answer and the documents as you already have them: plain strings, LangChain Documents (`pageContent` and `metadata` included) or LlamaIndex nodes:
 
 ```js
 import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
@@ -128,7 +124,7 @@ If you write your own retriever or LLM wrapper, `runContractTests("retriever", (
 - **Mastra.** Scorers that make no model calls, and a guardrails processor.
 - **Negation.** The grounding check now catches answers that contradict their source.
 
-[3.2.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-2-release), the week before:
+[3.2.0](https://devilsdev.github.io/rag-pipeline-utils/blog/v3-2-release), the day before:
 
 - **Install only what you use.** Four packages, `@devilsdev/rag-core`, `rag-connectors`, `rag-eval` and `rag-guardrails`, and the main package re-exports all of them. The full install went from 48 MB to 33 MB.
 - **Cheaper model per query.** `createModelRouter` classifies each question and sends lookups to a small model and harder questions to a large one, with the estimated cost of each choice on the result.

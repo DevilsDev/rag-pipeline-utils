@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 420px;
+        overflow: hidden;
+        background: #0b1020;
+      }
+      .card {
+        position: relative;
+        width: 1280px;
+        height: 420px;
+        box-sizing: border-box;
+        overflow: hidden;
+        background:
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(167, 139, 250, 0.28),
+            rgba(167, 139, 250, 0) 45%
+          ),
+          radial-gradient(
+            circle at 5% 100%,
+            rgba(56, 189, 248, 0.18),
+            rgba(56, 189, 248, 0) 40%
+          ),
+          linear-gradient(135deg, #0b1020, #16213e);
+        font-family:
+          "Segoe UI",
+          -apple-system,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        color: #f8fafc;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.035) 1px,
+            transparent 1px
+          );
+        background-size: 32px 32px;
+      }
+      .left {
+        position: absolute;
+        left: 64px;
+        top: 58px;
+        width: 600px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font:
+          600 17px Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #cbd5e1;
+      }
+      .brand .logo {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #38bdf8, #a78bfa);
+        display: grid;
+        place-items: center;
+        color: #0b1020;
+        font:
+          800 15px "Segoe UI",
+          sans-serif;
+      }
+      h1 {
+        font-size: 58px;
+        line-height: 1.04;
+        margin: 26px 0 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      h1 .hl {
+        background: linear-gradient(90deg, #38bdf8, #a78bfa);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .sub {
+        margin-top: 22px;
+        font-size: 20px;
+        line-height: 1.45;
+        color: #cbd5e1;
+      }
+      .chips {
+        position: absolute;
+        left: 64px;
+        bottom: 46px;
+        display: flex;
+        gap: 10px;
+      }
+      .chip {
+        font-size: 14px;
+        color: #cbd5e1;
+        padding: 6px 14px;
+        border-radius: 16px;
+        border: 1px solid #334155;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .panel {
+        position: absolute;
+        right: 60px;
+        top: 62px;
+        width: 500px;
+        background: rgba(17, 26, 51, 0.92);
+        border: 1px solid #334155;
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        padding: 22px 26px 24px;
+        box-sizing: border-box;
+        transform: rotate(-1.5deg);
+      }
+      .label {
+        font:
+          13px Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #64748b;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .src {
+        margin: 8px 0 18px;
+        font-size: 15px;
+        line-height: 1.5;
+        color: #94a3b8;
+        padding: 10px 14px;
+        border-left: 3px solid #475569;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 0 8px 8px 0;
+      }
+      .line {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-top: 12px;
+        font-size: 18px;
+        line-height: 1.4;
+      }
+      .ic {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 14px;
+        margin-top: 1px;
+      }
+      .ok .ic {
+        background: rgba(74, 222, 128, 0.15);
+        color: #4ade80;
+      }
+      .bad .ic {
+        background: rgba(248, 113, 113, 0.15);
+        color: #f87171;
+      }
+      .ok .t {
+        color: #e2e8f0;
+      }
+      .bad .t {
+        color: #f8fafc;
+        text-decoration: underline wavy #f87171;
+        text-underline-offset: 5px;
+        text-decoration-thickness: 2px;
+      }
+      .why {
+        display: block;
+        margin-top: 6px;
+        font:
+          13px Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #f87171;
+        text-decoration: none;
+      }
+      .foot {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .score {
+        font:
+          600 15px Consolas,
+          "Cascadia Mono",
+          monospace;
+        color: #cbd5e1;
+      }
+      .score b {
+        color: #fbbf24;
+      }
+      .verdict {
+        font:
+          700 13px Consolas,
+          monospace;
+        color: #fff;
+        background: #dc2626;
+        padding: 4px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.05em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="left">
+        <div class="brand">
+          <div class="logo">R</div>
+          rag-pipeline-utils
+        </div>
+        <h1>
+          Catch hallucinations<br /><span class="hl"
+            >before your users do.</span
+          >
+        </h1>
+        <div class="sub">
+          Grounding checks, evals and guardrails for Node.js RAG.<br />Runs in
+          your CI. No model calls, same score every run.
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip">AI SDK</div>
+        <div class="chip">LangChain.js</div>
+        <div class="chip">Mastra</div>
+        <div class="chip">Jest + Vitest</div>
+      </div>
+
+      <div class="panel">
+        <div class="label">Source</div>
+        <div class="src">
+          Employees get twenty days of paid vacation. Contractors do not receive
+          paid vacation.
+        </div>
+        <div class="label">Answer</div>
+        <div class="line ok">
+          <div class="ic">&#10003;</div>
+          <div class="t">Employees get twenty days of paid vacation.</div>
+        </div>
+        <div class="line bad">
+          <div class="ic">&#10007;</div>
+          <div>
+            <span class="t">Contractors also receive paid vacation.</span
+            ><span class="why">contradicts the source (negation)</span>
+          </div>
+        </div>
+        <div class="foot">
+          <div class="score">groundedness <b>0.50</b></div>
+          <div class="verdict">NOT GROUNDED</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
