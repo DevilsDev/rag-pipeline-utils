@@ -273,6 +273,29 @@ console.log(check.grounded); // false
 console.log(check.unsupported.length); // 1
 ```
 
+### Ground an AI SDK app
+
+Already using the Vercel AI SDK? From 3.3.0, `groundingMiddleware` adds retrieval, answer checks and guardrails to any AI SDK model, and your `generateText` and `streamText` calls stay as they are:
+
+```ts
+import { generateText, wrapLanguageModel } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { groundingMiddleware } from "@devilsdev/rag-pipeline-utils";
+
+const model = wrapLanguageModel({
+  model: openai("gpt-4o-mini"),
+  middleware: groundingMiddleware({ retriever, embedder }),
+});
+
+const { text, sources, providerMetadata } = await generateText({
+  model,
+  prompt: "How many vacation days do I get?",
+});
+console.log(providerMetadata.ragPipeline.grounded); // false if a sentence is unsupported
+```
+
+Each call retrieves passages for the last user message, gives them to the model as untrusted reference data, checks the answer against them, and returns them as `sources`. The ACL, injection and PII guards are options. See [the middleware docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#ground-an-ai-sdk-app-with-middleware).
+
 ### Test your RAG code offline
 
 `@devilsdev/rag-pipeline-utils/testing` has a deterministic embedder, an LLM that echoes the top passage and records its calls, and fixture documents, so tests need no network or API keys:
@@ -536,7 +559,7 @@ The result of `run()` is:
 | **Reranking**    | `ScoringReranker`, `EmbeddingReranker` (cached), `CascadeReranker`                                                                                                                                                                                                                                                                                                                         |
 | **Citations**    | Per-sentence source mapping, hallucination report, numeric-consistency check                                                                                                                                                                                                                                                                                                               |
 | **Evaluation**   | Faithfulness, relevance, context precision, context recall (with a reference), groundedness, BLEU/ROUGE, semantic similarity with any embedder; test sets with `validateDataset`, `runEvaluation`, `compareConfigurations`, `generateSyntheticDataset` and `rag-pipeline eval`                                                                                                             |
-| **Integrations** | `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                                                                                                                                           |
+| **Integrations** | `groundingMiddleware` for any AI SDK model (from 3.3.0); `checkAnswer` for answers from LangChain, LlamaIndex, Mastra or the AI SDK; `createAiSdkAdapter`                                                                                                                                                                                                                                  |
 | **Caching**      | Opt-in caches for query embeddings, retrieval and answers, in memory (`MemoryCache`) or Redis (`RedisCache`)                                                                                                                                                                                                                                                                               |
 | **Testing**      | `/testing` entry: offline `HashEmbedder`, `EchoLLM`, fixtures, `createTestPipeline()`; contract tests for your plugins with `runContractTests()` and `checkContract()`                                                                                                                                                                                                                     |
 | **Guardrails**   | Injection detection with input normalisation, ACL and relevance filtering before generation, PII redaction                                                                                                                                                                                                                                                                                 |

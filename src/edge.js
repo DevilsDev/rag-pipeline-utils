@@ -47,6 +47,10 @@ const { ChunkingEngine } = require('./chunking/chunking-engine');
 const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
 const { createAiSdkAdapter } = require('./adapters/ai-sdk');
+const {
+  groundingMiddleware,
+  GroundingBlockedError,
+} = require('./adapters/ai-sdk-middleware');
 const { MemoryCache } = require('./cache/memory-cache');
 const { RedisCache } = require('./cache/redis-cache');
 const {
@@ -129,6 +133,8 @@ module.exports = {
   checkAnswer,
   normalizeSources,
   createAiSdkAdapter,
+  groundingMiddleware,
+  GroundingBlockedError,
   MemoryCache,
   RedisCache,
   mapSentenceToSources,
