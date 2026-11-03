@@ -521,6 +521,8 @@ The result of `run()` is:
   evaluation?: { scores; details; metadata };
   packing?: { tokens; maxTokens; kept; dropped; truncated }; // with maxContextTokens
   cache?: { embeddings; retrieval; generation };             // with a cache
+  route?: { class; model; estimatedCost };                   // with createModelRouter
+  timing?: { totalMs };                                      // ms since run() was called
   error?: string;                   // set when success is false
 }
 ```
@@ -548,17 +550,17 @@ The result of `run()` is:
 
 A short summary of the [comparison page](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) (competitor details as of October 2026). The other libraries are broader frameworks; this one is narrower on purpose.
 
-|                  | rag-pipeline-utils                                                                                                | LangChain.js                          | LlamaIndex.TS                        |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
-| Focus            | RAG pipelines for Node.js services                                                                                | General-purpose LLM orchestration     | Indexing-first RAG                   |
-| Evaluation       | Built in: faithfulness, relevance, context P/R                                                                    | Via LangSmith (separate, paid option) | Some metrics, evolving               |
-| Citations        | Built in: per-sentence, with groundedness score                                                                   | Possible, wired up by hand            | Possible, wired up by hand           |
-| Guardrails       | Built in: pre-retrieval, retrieval, post-generation                                                               | Via integrations (Guardrails AI etc.) | Via integrations                     |
-| Vector stores    | Memory, file, PostgreSQL with pgvector and Qdrant, plus a plugin contract                                         | 50+ integrations                      | Many integrations and native indexes |
-| LLM providers    | OpenAI (and compatible APIs), Anthropic, Ollama, AI SDK models, plus plugins                                      | Largest ecosystem                     | Large ecosystem                      |
-| Agents and tools | Query planning and iterative retrieval                                                                            | Mature agent framework                | Agent framework                      |
-| Packaging        | One package, dual ESM and CommonJS                                                                                | Many packages, mostly ESM             | One package, mostly ESM              |
-| Stability        | Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) with deprecations | Versioned per package                 | Versioned                            |
+|                  | rag-pipeline-utils                                                                                                    | LangChain.js                          | LlamaIndex.TS                        |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
+| Focus            | RAG pipelines for Node.js services                                                                                    | General-purpose LLM orchestration     | Indexing-first RAG                   |
+| Evaluation       | Built in: faithfulness, relevance, context P/R                                                                        | Via LangSmith (separate, paid option) | Some metrics, evolving               |
+| Citations        | Built in: per-sentence, with groundedness score                                                                       | Possible, wired up by hand            | Possible, wired up by hand           |
+| Guardrails       | Built in: pre-retrieval, retrieval, post-generation                                                                   | Via integrations (Guardrails AI etc.) | Via integrations                     |
+| Vector stores    | Memory, file, PostgreSQL with pgvector and Qdrant, plus a plugin contract                                             | 50+ integrations                      | Many integrations and native indexes |
+| LLM providers    | OpenAI (and compatible APIs), Anthropic, Ollama, AI SDK models, plus plugins                                          | Largest ecosystem                     | Large ecosystem                      |
+| Agents and tools | Query planning and iterative retrieval                                                                                | Mature agent framework                | Agent framework                      |
+| Packaging        | One package, or only the parts you use (`rag-core`, `rag-connectors`, `rag-eval`, `rag-guardrails`); ESM and CommonJS | Many packages, mostly ESM             | One package, mostly ESM              |
+| Stability        | Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md) with deprecations     | Versioned per package                 | Versioned                            |
 
 Choose LangChain.js for the widest integration catalogue or work that goes well beyond RAG, and LlamaIndex.TS for rich index types and structured data sources. Choose this library when evaluation, citations and guardrails are requirements and you want a small surface to review.
 
@@ -612,7 +614,7 @@ They are exported only from `/experimental`, not from the main entry (2.x also e
 - [API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/API-Reference)
 - [Generated API reference](https://devilsdev.github.io/rag-pipeline-utils/docs/api): every export, with its methods, options and types
 - [Evaluation guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation)
-- [Examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples): basic pipeline, OpenAI with Pinecone, and a deployable Fastify service ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
+- [Examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples): basic pipeline, OpenAI with Pinecone, a deployable Fastify service, a Cloudflare Worker and an MCP server for Claude and other MCP clients ([run the basic pipeline in your browser](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline))
 - [Changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md), [benchmark results](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) and [methodology](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/BENCHMARKS.md)
 
 ## Security

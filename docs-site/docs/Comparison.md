@@ -77,7 +77,8 @@ the abstract.
   ship in the box. The metrics are lexical (no judge LLM calls), so they
   add no API spend; they are also less nuanced than LLM-judged metrics.
 - You need a **predictable, narrow surface area for security review**.
-  One package, MIT-licensed, no required SaaS.
+  One package, or only the parts you use (`@devilsdev/rag-eval` alone is
+  about 6 MB), MIT-licensed, no required SaaS.
 - You want a **dual ESM + CommonJS build** and a documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)
   with explicit deprecation windows.
 - You want your documents searchable from **MCP** (Model Context Protocol)
