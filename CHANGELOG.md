@@ -9,6 +9,14 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Documentation
+
+- README: the comparison table mentions the scoped packages, the `run()`
+  result shape includes `route` and `timing`, and the examples list
+  includes the Cloudflare Worker and the MCP server.
+
 ## [3.2.0] - 2026-11-03
 
 A minor release with no breaking changes. It adds OpenTelemetry spans,
