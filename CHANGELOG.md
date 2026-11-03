@@ -16,6 +16,10 @@ page.
 - README: the comparison table mentions the scoped packages, the `run()`
   result shape includes `route` and `timing`, and the examples list
   includes the Cloudflare Worker and the MCP server.
+- Issue templates for bug reports, feature requests and plugin
+  submissions, links to Discussions and the security policy for questions
+  and vulnerabilities, a pull request checklist that replaces the old
+  release-only one, and a Community plugins section on the Plugins page.
 
 ## [3.2.0] - 2026-11-03
 

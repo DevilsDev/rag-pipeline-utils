@@ -1,5 +1,15 @@
 # Contributing to RAG Pipeline Utils
 
+## Issues and first contributions
+
+- **Bugs, features and plugin submissions:** open an issue with one of the [issue templates](https://github.com/DevilsDev/rag-pipeline-utils/issues/new/choose). A bug report needs a minimal reproduction; `createTestPipeline()` from `@devilsdev/rag-pipeline-utils/testing` runs without API keys.
+- **Questions:** ask in [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions/categories/q-a).
+- **Security issues:** report them privately, as described in [SECURITY.md](../SECURITY.md).
+- **First contribution:** issues labelled [`good first issue`](https://github.com/DevilsDev/rag-pipeline-utils/issues?q=is%3Aopen+label%3A%22good+first+issue%22) are small and self-contained. Comment on one to say you are taking it.
+- **Plugins:** you don't need a pull request to share a plugin. Publish it to npm and use the plugin submission template to have it listed on the [Community plugins](https://devilsdev.github.io/rag-pipeline-utils/docs/Plugins#community-plugins) page.
+
+A pull request should pass `npm test` and `npm run lint`, and a user-facing change also updates the README, the CHANGELOG and the docs pages. The pull request template lists what to check.
+
 ## 🚀 **CI/CD & Linting Strategy**
 
 Our CI/CD pipeline uses a **branch-conditional linting strategy** designed for maximum developer productivity while maintaining code quality.

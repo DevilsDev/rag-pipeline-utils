@@ -1,0 +1,95 @@
+name: Bug report
+description: Something in @devilsdev/rag-pipeline-utils (or one of the @devilsdev/rag-* packages) does not work as documented
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. A small reproduction is the fastest way to a fix.
+        For questions about how to do something, please use [Discussions](https://github.com/DevilsDev/rag-pipeline-utils/discussions) instead.
+        **Security issues:** do not open an issue. Report them privately as described in the [security policy](https://github.com/DevilsDev/rag-pipeline-utils/security/policy).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code, `.ragrc.json` or CLI command that shows the problem. A link to a repository or StackBlitz is fine too. If you can, use `createTestPipeline()` or `EchoLLM` and `HashEmbedder` from `@devilsdev/rag-pipeline-utils/testing`, so it runs without API keys.
+      render: js
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output
+      description: The full error and stack trace, or the CLI output. Remove any API keys.
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: Output of `npm ls @devilsdev/rag-pipeline-utils` (or the scoped package you use).
+      placeholder: "3.2.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - "@devilsdev/rag-pipeline-utils"
+        - "@devilsdev/rag-core"
+        - "@devilsdev/rag-connectors"
+        - "@devilsdev/rag-eval"
+        - "@devilsdev/rag-guardrails"
+        - "rag-eval-action (GitHub Action)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Pipeline (createRagPipeline, run, streaming)
+        - Connectors (OpenAI, Anthropic, Ollama, ...)
+        - Retrievers / vector stores (pgvector, Qdrant, memory)
+        - Evaluation (eval CLI, runEvaluation, datasets)
+        - Guardrails
+        - Context packing / model routing / cost
+        - Observability (OpenTelemetry, timing)
+        - CLI
+        - Edge / Cloudflare Workers
+        - TypeScript types
+        - Docs
+        - Other
+
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and OS
+      description: For example "Node 22.11 on macOS", "Node 24 on Windows" or "Cloudflare Workers (wrangler 4)".
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the [existing issues](https://github.com/DevilsDev/rag-pipeline-utils/issues?q=is%3Aissue) and [Troubleshooting](https://devilsdev.github.io/rag-pipeline-utils/docs/Troubleshooting) page.
+          required: true
+        - label: I removed API keys and private data from the report.
+          required: true
