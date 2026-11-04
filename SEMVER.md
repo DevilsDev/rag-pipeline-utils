@@ -81,9 +81,10 @@ patches freely):
 - Adding new optional parameters at the end of a signature
 - Improving error messages or adding context to them
 - Changing the shape of _logs_ (not errors)
-- Changing OpenTelemetry span names, kinds, attributes or events to
-  follow the GenAI semantic conventions, which are still at Development
-  status; each change is listed in the CHANGELOG
+- Changing an OpenTelemetry span name, kind or attribute to match the
+  GenAI semantic conventions (Development status). Each change is listed
+  under "Changed" in the CHANGELOG with the old and new values; changes
+  for any other reason follow the rules for breaking changes
 - Performance improvements that don't change observable behavior
 - Internal refactors invisible to the public API
 
