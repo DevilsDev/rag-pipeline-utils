@@ -71,6 +71,7 @@ console.log(result.answer); // null: no LLM configured, so retrieval only
 ## Why this library
 
 - **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including checks that numbers in the answer appear in the sources and that it doesn't negate them.
+- **Scores where you look at traces.** With `telemetry: true`, evaluation scores become OpenTelemetry `gen_ai.evaluation.result` events on the spans they judge, and `toLangfuseScores(result)` sends them to Langfuse (3.5.0).
 - **Measured, not guessed.** `rag-pipeline eval` scores a test set and fails CI when answers regress; [`rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) posts the result on every pull request. Retrieval is [benchmarked](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) on BEIR SciFact, and the guardrails' precision and recall on public labelled sets.
 - **Provider-neutral.** OpenAI, Anthropic, Cohere and Ollama connectors; PostgreSQL with pgvector and Qdrant stores; an offline TF-IDF embedder. Anything with an `embed()` or `generate()` method works too, including Vercel AI SDK models.
 - **Production behaviour.** Cancellation and timeouts on every stage, retries only on transient errors, ACL filtering before generation, PII redaction, caching, and a token budget for the context sent to the model.

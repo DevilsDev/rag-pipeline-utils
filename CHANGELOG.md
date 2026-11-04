@@ -52,6 +52,30 @@ flagged }`, or PII `spans` scored by overlap) and reports precision,
   The patterns miss most injections, which is the case for a detector.
   `RetrievalGuard`'s ACL filter gets correctness tests over every
   combination of restriction and permissions.
+- **Scores in OpenTelemetry and Langfuse.** With `telemetry` on and
+  `evaluate` or `citations` in a run, each score is emitted as a
+  `gen_ai.evaluation.result` event (a log record, per the GenAI semantic
+  conventions), parented to the span it judges: `chat` for faithfulness,
+  relevance, groundedness and `citationCoverage`, `retrieval` for context
+  precision and recall. Events use the logs API of `@opentelemetry/api`
+  1.10+; with SDKs that register their LoggerProvider through
+  `@opentelemetry/api-logs`, pass it as `telemetry: { logs }` (or a
+  `{ logger }`). There is no new dependency, and without a logs API the
+  events are skipped. The run result carries its ids in
+  `result.telemetry` (`traceId`, `spanId`, `spans.retrieval`,
+  `spans.generation`), and `toLangfuseScores(result)` turns its scores
+  (or a `checkAnswer()` result's) into `langfuse.score.create()` objects
+  attached to the trace and the observation each judges; without a trace
+  id they are Langfuse experiment evaluations. `evaluationScores(result)`
+  returns them as a plain list. Langfuse is not a dependency.
+
+### Changed
+
+- The retrieval span is named `retrieval` with kind internal, as the
+  GenAI conventions define it (it was `retrieval <data source>`, kind
+  client). The data source is still in `gen_ai.data_source.id`. Only
+  pgvector and Qdrant spans change name; dashboards that match on the old
+  name need updating.
 
 ### Fixed
 

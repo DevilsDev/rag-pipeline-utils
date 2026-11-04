@@ -46,6 +46,10 @@ const { PipelineEvaluator } = require('./evaluate/pipeline-evaluator');
 const { ChunkingEngine } = require('./chunking/chunking-engine');
 const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
+const {
+  evaluationScores,
+  toLangfuseScores,
+} = require('./observability/scores');
 const { createAiSdkAdapter } = require('./adapters/ai-sdk');
 const {
   groundingMiddleware,
@@ -141,6 +145,8 @@ module.exports = {
   // Citation & Grounding
   CitationTracker,
   checkAnswer,
+  evaluationScores,
+  toLangfuseScores,
   normalizeSources,
   createAiSdkAdapter,
   groundingMiddleware,

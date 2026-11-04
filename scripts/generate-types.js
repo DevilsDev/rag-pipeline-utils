@@ -59,8 +59,24 @@ export interface TelemetryOptions {
   tracer?: TelemetryTracer;
   /** The @opentelemetry/api module, for @devilsdev/rag-pipeline-utils/edge, which cannot load it itself. */
   api?: any;
+  /**
+   * The @opentelemetry/api-logs module, for evaluation events when your SDK registers its
+   * LoggerProvider there (before sdk-logs 3). With @opentelemetry/api 1.10+ its own logs API is used.
+   */
+  logs?: any;
+  /** A Logger (\`emit(logRecord)\`) for the gen_ai.evaluation.result events. */
+  logger?: { emit(logRecord: any): void };
   /** Also record the query text and the retrieved document ids and scores. Default false. */
   recordContent?: boolean;
+}
+
+/** A run's OpenTelemetry ids, on its result when \`telemetry\` is on. */
+export interface RunTelemetry {
+  traceId: string;
+  /** The \`rag.pipeline.run\` span. */
+  spanId: string;
+  /** The stage spans, when the stage ran (not served from the cache). */
+  spans: { retrieval?: string; generation?: string };
 }
 
 /** A cache store: get / set / delete, optionally stats. */
@@ -160,6 +176,8 @@ export interface PipelineRunResult {
   timing?: { totalMs: number };
   /** The model router's decision, when the llm is a createModelRouter() and was called. */
   route?: RouteDecision;
+  /** The run's trace and span ids, when \`telemetry\` is on. */
+  telemetry?: RunTelemetry;
 }
 
 /** Which model a createModelRouter() chose for a run. */
@@ -211,6 +229,8 @@ export interface StreamChunk {
   timing?: StreamTiming;
   /** On the last chunk, when the llm is a createModelRouter(). */
   route?: RouteDecision;
+  /** On the last chunk, the run's trace and span ids, when \`telemetry\` is on. */
+  telemetry?: RunTelemetry;
 }
 
 /** A pipeline returned by {@link createRagPipeline}. */

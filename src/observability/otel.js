@@ -14,9 +14,21 @@
  * set: by default spans carry counts, durations, models, cache outcomes and
  * packing, never query text, document content or answers.
  *
+ * With `evaluate` or `citations` in a run, each score is emitted as a
+ * `gen_ai.evaluation.result` event (an OpenTelemetry log record), parented to
+ * the span of what it judges: the retrieval for contextPrecision and
+ * contextRecall, the chat call for the rest, the run when that stage had no
+ * span. Events use the logs API of `@opentelemetry/api` 1.10 or later, or
+ * `telemetry: { logs }` (@opentelemetry/api-logs, for SDKs before sdk-logs
+ * 3) or `{ logger }`; without a LoggerProvider they are no-ops, and with
+ * an older api and neither option they are skipped. The run result carries its trace and span ids in
+ * `result.telemetry`.
+ *
  * `@opentelemetry/api` is an optional peer dependency, loaded only when
  * telemetry is configured.
  */
+
+const { evaluationScores } = require('./scores');
 
 const { version: LIBRARY_VERSION } = require('../../package.json');
 const { loadOptionalPeer } = require('../utils/optional-peer');
@@ -36,16 +48,18 @@ function loadOtelApi() {
 
 /**
  * Normalise the `telemetry` option of createRagPipeline. `api` is the
- * @opentelemetry/api module, for builds that cannot require() it (/edge).
- * @param {boolean|{tracer?: object, api?: object, recordContent?: boolean}} option
- * @returns {null|{api: object, tracer: object, recordContent: boolean}}
+ * @opentelemetry/api module, for builds that cannot require() it (/edge);
+ * `logs` is @opentelemetry/api-logs, for evaluation events with an SDK that
+ * registers its LoggerProvider there, and `logger` a Logger to emit them with.
+ * @param {boolean|{tracer?: object, api?: object, logs?: object, logger?: object, recordContent?: boolean}} option
+ * @returns {null|{api: object, tracer: object, logger: object|null, runKey: symbol, recordContent: boolean}}
  */
 function createTelemetry(option) {
   if (!option) return null;
   const opts = option === true ? {} : option;
   if (typeof opts !== 'object') {
     throw new TypeError(
-      'telemetry must be true or { tracer?, api?, recordContent? }',
+      'telemetry must be true or { tracer?, api?, logs?, logger?, recordContent? }',
     );
   }
   const api = opts.api || loadOtelApi();
@@ -59,7 +73,42 @@ function createTelemetry(option) {
   if (!tracer || typeof tracer.startActiveSpan !== 'function') {
     throw new TypeError('telemetry.tracer must be an OpenTelemetry Tracer');
   }
-  return { api, tracer, recordContent: Boolean(opts.recordContent) };
+  let logger = opts.logger || null;
+  if (logger && typeof logger.emit !== 'function') {
+    throw new TypeError('telemetry.logger must be an OpenTelemetry Logger');
+  }
+  if (!logger) {
+    if (
+      opts.logs &&
+      !(opts.logs.logs && typeof opts.logs.logs.getLogger === 'function')
+    ) {
+      throw new TypeError(
+        'telemetry.logs must be the @opentelemetry/api-logs module (import * as logs from "@opentelemetry/api-logs")',
+      );
+    }
+    // @opentelemetry/api has the logs API from 1.10. It is not loaded from
+    // @opentelemetry/api-logs unless passed: that package registers its
+    // LoggerProvider under a different global (SDKs before sdk-logs 3), and
+    // a peer dependency on it would conflict with older OTel installs.
+    const source = [opts.logs, api].find(
+      (m) => m && m.logs && typeof m.logs.getLogger === 'function',
+    );
+    if (source) logger = source.logs.getLogger(TRACER_NAME, LIBRARY_VERSION);
+  }
+  return {
+    api,
+    tracer,
+    logger,
+    // Holds the spans of one run, so its scores find them under concurrency
+    runKey: api.createContextKey('rag.pipeline.run'),
+    recordContent: Boolean(opts.recordContent),
+  };
+}
+
+/** Remember a stage's span in the current run, for its evaluation events. */
+function recordStage(tel, stage, span) {
+  const run = tel.api.context.active().getValue(tel.runKey);
+  if (run) run[stage] = span.spanContext();
 }
 
 /** gen_ai.provider.name for the built-in connectors; undefined otherwise. */
@@ -168,9 +217,10 @@ function instrument(tel, kind, component) {
         (typeof component.table === 'string'
           ? component.table.replace(/"/g, '')
           : undefined);
+      // The GenAI conventions name the span after the operation alone
       return {
-        name: source ? `retrieval ${source}` : 'retrieval',
-        kind: SpanKind.CLIENT,
+        name: 'retrieval',
+        kind: SpanKind.INTERNAL,
         attributes: clean({
           'gen_ai.operation.name': 'retrieval',
           'gen_ai.data_source.id': source,
@@ -236,6 +286,7 @@ function instrument(tel, kind, component) {
     },
   };
 
+  const STAGES = { retriever: 'retrieval', llm: 'generation' };
   const METHODS = {
     embedder: ['embed', 'embedQuery'],
     retriever: ['retrieve'],
@@ -250,9 +301,11 @@ function instrument(tel, kind, component) {
       return (...args) => {
         const spec = spanFor[kind](prop, args);
         const options = { kind: spec.kind, attributes: spec.attributes };
+        const stage = STAGES[kind];
         if (prop === 'generateStream') {
           // The span outlives this call: it ends with the stream.
           return tel.tracer.startActiveSpan(spec.name, options, (span) => {
+            if (stage) recordStage(tel, stage, span);
             const startedAt = performance.now();
             let source;
             try {
@@ -266,6 +319,7 @@ function instrument(tel, kind, component) {
           });
         }
         return inSpan(tel, spec.name, options, async (span) => {
+          if (stage) recordStage(tel, stage, span);
           const out = await value.apply(target, args);
           spec.after(span, out);
           return out;
@@ -333,32 +387,54 @@ function traceRun(tel, run) {
       'rag.pipeline.run',
       { kind: SpanKind.INTERNAL, attributes },
       async (span) => {
+        const stages = {};
+        const runContext = tel.api.context
+          .active()
+          .setValue(tel.runKey, stages);
         let result;
         try {
-          result = await run(params);
+          result = await tel.api.context.with(runContext, () => run(params));
         } catch (error) {
           markError(tel, span, error);
           span.end();
           throw error;
         }
         if (result && typeof result[Symbol.asyncIterator] === 'function') {
+          // A stream's stages run as it is read, so each step resumes in
+          // the run's context: their spans nest under the run and are
+          // recorded for its evaluation events.
+          const iterator = result[Symbol.asyncIterator]();
           return (async function* tracedStream() {
+            let finished = false;
             try {
-              for await (const chunk of result) {
+              for (;;) {
+                const step = await tel.api.context.with(runContext, () =>
+                  iterator.next(),
+                );
+                if (step.done) break;
+                const chunk = step.value;
                 if (chunk && chunk.done) {
                   span.setAttributes(runAttributes(tel, chunk));
+                  finishRun(tel, span, stages, chunk);
                 }
                 yield chunk;
               }
+              finished = true;
             } catch (error) {
+              finished = true;
               markError(tel, span, error);
               throw error;
             } finally {
+              // Stopped early: let the source clean up
+              if (!finished && typeof iterator.return === 'function') {
+                await iterator.return();
+              }
               span.end();
             }
           })();
         }
         span.setAttributes(runAttributes(tel, result));
+        finishRun(tel, span, stages, result);
         if (!result || result.success === false) {
           const message = (result && result.error) || 'run failed';
           span.setAttribute('error.type', errorType(message));
@@ -369,6 +445,38 @@ function traceRun(tel, run) {
       },
     );
   };
+}
+
+/**
+ * Put the run's ids on its result, and emit one gen_ai.evaluation.result
+ * event per score, parented to the span of the stage it judges.
+ */
+function finishRun(tel, span, stages, result) {
+  if (!result || typeof result !== 'object') return;
+  const own = span.spanContext();
+  result.telemetry = {
+    traceId: own.traceId,
+    spanId: own.spanId,
+    spans: Object.fromEntries(
+      Object.entries(stages).map(([stage, ctx]) => [stage, ctx.spanId]),
+    ),
+  };
+  if (!tel.logger) return;
+  for (const score of evaluationScores(result, {
+    explanations: tel.recordContent,
+  })) {
+    const parent = stages[score.target] || own;
+    tel.logger.emit({
+      eventName: 'gen_ai.evaluation.result',
+      context: tel.api.trace.setSpanContext(tel.api.context.active(), parent),
+      attributes: clean({
+        'gen_ai.evaluation.name': score.name,
+        'gen_ai.evaluation.score.value': score.value,
+        'gen_ai.evaluation.score.label': score.label,
+        'gen_ai.evaluation.explanation': score.explanation,
+      }),
+    });
+  }
 }
 
 function errorType(message) {

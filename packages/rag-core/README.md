@@ -8,7 +8,7 @@ Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev
 npm install @devilsdev/rag-core
 ```
 
-Exports: `createRagPipeline`, `createPipeline`, `packContext`, `createError`, `wrapError`, `ERROR_CODES`, `retry`, `withRetry`, `ChunkingEngine`, `BM25Search`, `reciprocalRankFusion`, `HybridRetriever`, `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `MemoryCache`, `RedisCache`, `CostCalculator`, `PRICING_METADATA`, `CostTracker`, `TokenBudget`, `createModelRouter`, `classifyQuery`, `MemoryRetriever`, `BaseConnector`.
+Exports: `createRagPipeline`, `createPipeline`, `evaluationScores`, `toLangfuseScores`, `packContext`, `createError`, `wrapError`, `ERROR_CODES`, `retry`, `withRetry`, `ChunkingEngine`, `BM25Search`, `reciprocalRankFusion`, `HybridRetriever`, `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `MemoryCache`, `RedisCache`, `CostCalculator`, `PRICING_METADATA`, `CostTracker`, `TokenBudget`, `createModelRouter`, `classifyQuery`, `MemoryRetriever`, `BaseConnector`.
 
 Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 
