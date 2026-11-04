@@ -118,7 +118,86 @@ function renderQuality(report) {
   ].join("\n");
 }
 
-const RENDERERS = { speed: renderSpeed, quality: renderQuality };
+const f3 = (x) => (typeof x === "number" ? x.toFixed(3) : "-");
+const ci = (i) => (i ? `${i[0].toFixed(2)}–${i[1].toFixed(2)}` : "-");
+
+function renderGuardrails(report) {
+  const env = report.environment;
+  const parts = [
+    `Measured with ${env.libraryVersion}` +
+      (env.commit ? ` (commit \`${env.commit}\`)` : "") +
+      ` ${env.runner === "local" ? "on a local machine" : `on ${env.runner}`}, Node ${env.node}.` +
+      (report.model
+        ? ` Classifier: \`${report.model.model}\` (revision \`${report.model.revision.slice(0, 7)}\`), threshold ${report.model.threshold}, first ${report.model.maxTokens} tokens, transformers.js ${report.model.transformersJs}.`
+        : ""),
+    "",
+  ];
+  for (const suite of Object.values(report.suites)) {
+    const s = suite.source;
+    const rev = s.revision ? `, revision \`${s.revision.slice(0, 7)}\`` : "";
+    parts.push(
+      `**${suite.title}**: ${s.dataset}, ${num(suite.cases)} cases, ${num(suite.positives)} positive (${s.license}${rev}).${suite.note ? ` ${suite.note}` : ""}${s.note ? ` ${s.note}` : ""}`,
+      "",
+    );
+    const rows = Object.entries(suite.detectors).map(([name, m]) => [
+      `\`${name}\``,
+      f3(m.precision),
+      f3(m.recall),
+      ci(m.recallInterval),
+      f3(m.f1),
+      `${m.tp} / ${m.fp} / ${m.fn} / ${m.tn}`,
+    ]);
+    if (Object.values(suite.detectors).some((m) => m.spans)) {
+      parts.push(
+        "By document: a document is positive when it has any labelled span, of any label.",
+        "",
+      );
+    }
+    parts.push(
+      table(
+        [
+          "Detector",
+          "Precision",
+          "Recall",
+          "Recall 95% CI",
+          "F1",
+          "TP / FP / FN / TN",
+        ],
+        rows,
+      ),
+      "",
+    );
+    for (const [name, m] of Object.entries(suite.detectors)) {
+      if (!m.spans) continue;
+      parts.push(
+        `Spans found by \`${name}\`: ${num(m.spans.predicted)} matches, ${f3(m.spans.precision)} of them on a labelled span; recall ${f3(m.spans.recall)} (${ci(m.spans.recallInterval)}) on the ${num(m.spans.gold)} spans of the covered labels.`,
+        "",
+        table(
+          ["Labelled as", "Spans", "Found", "Recall", "Covered"],
+          Object.entries(m.spans.byLabel)
+            .filter(([, l]) => l.covered || l.gold >= 100)
+            .map(([label, l]) => [
+              `\`${label}\``,
+              num(l.gold),
+              num(l.found),
+              f3(l.recall),
+              l.covered ? "yes" : "no",
+            ]),
+        ),
+        "",
+        "Labels with fewer than 100 spans that the patterns don't cover are left out of this table; they are in the report.",
+        "",
+      );
+    }
+  }
+  return parts.join("\n").trim();
+}
+
+const RENDERERS = {
+  speed: renderSpeed,
+  quality: renderQuality,
+  guardrails: renderGuardrails,
+};
 
 function render(content) {
   let out = content;

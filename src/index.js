@@ -98,6 +98,11 @@ const {
   patternPIIDetector,
   detectedText,
 } = require('./guardrails/detectors');
+const {
+  evaluateDetectors,
+  detectorVerdict,
+  renderDetectorReport,
+} = require('./guardrails/evaluate-detectors');
 const { RetrievalGuard } = require('./guardrails/retrieval-guard');
 const { PostGenerationGuard } = require('./guardrails/post-generation-guard');
 const { GuardrailsPipeline } = require('./guardrails/guardrails-pipeline');
@@ -271,6 +276,9 @@ module.exports = {
   patternInjectionDetector,
   patternPIIDetector,
   detectedText,
+  evaluateDetectors,
+  detectorVerdict,
+  renderDetectorReport,
   RetrievalGuard,
   PostGenerationGuard,
   GuardrailsPipeline,

@@ -52,6 +52,34 @@ function collectMin(value, previous = {}) {
   return { ...previous, [metric]: min };
 }
 
+const DETECTOR_METRICS = [
+  "precision",
+  "recall",
+  "f1",
+  "accuracy",
+  "spans.precision",
+  "spans.recall",
+];
+
+/**
+ * Collector for repeatable --min detector.metric=value
+ * (rag-pipeline eval-guardrails), e.g. pattern-injection.recall=0.5
+ */
+function collectDetectorMin(value, previous = {}) {
+  const match = /^(.+?)\.((?:spans\.)?[a-z0-9]+)=(\d*\.?\d+)$/i.exec(
+    String(value).trim(),
+  );
+  if (!match || !DETECTOR_METRICS.includes(match[2])) {
+    throw new InvalidArgumentError(
+      `Use detector.metric=value, e.g. pattern-injection.recall=0.5; metric is one of ${DETECTOR_METRICS.join(", ")}.`,
+    );
+  }
+  const min = Number(match[3]);
+  if (min > 1)
+    throw new InvalidArgumentError("The value must be between 0 and 1.");
+  return { ...previous, [`${match[1]}.${match[2]}`]: min };
+}
+
 /**
  * Parser for a non-negative number (eval --tolerance, --case-tolerance)
  */
@@ -69,6 +97,7 @@ const COMMANDS = [
   "ingest",
   "query",
   "eval",
+  "eval-guardrails",
   "generate-dataset",
   "run",
   "serve",
@@ -138,6 +167,7 @@ module.exports = {
   createProgressBar,
   parsePositiveInteger,
   collectMin,
+  collectDetectorMin,
   parseTolerance,
   generateCompletionScript,
   getVersion,

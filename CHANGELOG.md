@@ -35,6 +35,23 @@ detectors }`, `piiDetectors`) now use; the sync `check()` and
   `patternPIIDetector()` are the built-in checks as detectors, and
   `runContractTests("detector", ...)` checks your own. Without
   `detectors`, every guard returns what it did before.
+- **Measured guardrails.** `rag-pipeline eval-guardrails <cases.jsonl>`
+  runs injection and PII detectors over labelled cases (`{ kind, text,
+flagged }`, or PII `spans` scored by overlap) and reports precision,
+  recall, F1, the confusion counts and a 95% interval per detector and
+  per tag, as JSON (`--output`) and Markdown or HTML (`--report`). It
+  loads your detectors with `--detectors <module>`, and exits 1 when a
+  detector throws or a `--min detector.metric=value` is not met. From
+  code: `evaluateDetectors()`, `detectorVerdict()` and
+  `renderDetectorReport()`. The Benchmarks page publishes the numbers
+  for the built-in patterns and the
+  `protectai/deberta-v3-base-prompt-injection-v2` classifier on the
+  deepset/prompt-injections and jackhhao/jailbreak-classification test
+  splits, Gretel's synthetic PII documents and a new pack of RAG attack
+  fixtures (`benchmarks/guardrails.js`, run in the Benchmarks workflow).
+  The patterns miss most injections, which is the case for a detector.
+  `RetrievalGuard`'s ACL filter gets correctness tests over every
+  combination of restriction and permissions.
 
 ### Fixed
 

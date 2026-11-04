@@ -30,7 +30,7 @@ One PR per item, each branched from `main` (not stacked), each with the README, 
 A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, spans? } }`, sync or async. `PreRetrievalGuard`, `RetrievalGuard` and `PostGenerationGuard` take a `detectors` option that replaces or adds to the built-in pattern checks (`mode: "replace" | "add"`), and the built-in injection and PII checks become detectors themselves, so their behaviour is unchanged by default.
 
 - A contract test kit entry (`runContractTests` covers loaders, embedders, retrievers, rerankers and LLMs today) so a community detector can be checked.
-- Example adapters in the docs, not dependencies: a prompt-injection classifier over HTTP (such as `protectai/deberta-v3-base-prompt-injection-v2`, Apache-2.0) and Presidio. Not content-safety models: OpenAI's moderation endpoint and Llama Guard flag harmful content and have no prompt-injection category, so they aren't injection detectors (Meta's injection model is Prompt Guard).
+- Example adapters in the docs, not dependencies: a prompt-injection classifier (`protectai/deberta-v3-base-prompt-injection-v2`, Apache-2.0) and Presidio. Checked 2026-11-05: Hugging Face Text Embeddings Inference doesn't serve DeBERTa classifiers, so the example runs the model's ONNX export in-process with transformers.js; ProtectAI has archived the project the model came from, and its card says it is English-only and doesn't detect jailbreaks. Not content-safety models: OpenAI's moderation endpoint and Llama Guard flag harmful content and have no prompt-injection category, so they aren't injection detectors (Meta's injection model is Prompt Guard).
 - Async detectors mean the guards' `check()` may return a promise. The guards are sync today, so this needs an additive API (`checkAsync()`, or a promise only when an async detector is configured); decide in the PR, and keep the sync path for existing callers.
 
 ### 2.2 Measured guardrails (3.5)
@@ -38,7 +38,7 @@ A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, span
 `rag-pipeline eval-guardrails <labelled.jsonl>` runs the injection and PII detectors over labelled examples and reports precision, recall and F1 per detector and per label, as JSON, Markdown and HTML like `rag-pipeline eval`.
 
 - **Datasets, checked 2026-11-04:**
-  - Injection: `deepset/prompt-injections` (Apache-2.0) and `jackhhao/jailbreak-classification` (Apache-2.0), using their test splits.
+  - Injection: `deepset/prompt-injections` (Apache-2.0), test split. Jailbreaks: `jackhhao/jailbreak-classification` (Apache-2.0), its configured test split (`balanced/`, 262 rows), reported on its own because a jailbreak is a different task from an injection.
   - A model comparison must use a set the model wasn't trained on: `protectai/deberta-v3-base-prompt-injection-v2` lists `jackhhao/jailbreak-classification` in its training data (checked 2026-11-04), so its numbers are reported on `deepset/prompt-injections` only. Check the training data of any model before reporting it.
   - PII: `gretelai/synthetic_pii_finance_multilingual` (Apache-2.0).
   - RAG-specific attacks, such as poisoned chunks, indirect injection in a retrieved document and fabricated sources: a fixtures pack written for this project.

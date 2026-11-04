@@ -269,6 +269,39 @@ Model answers vary from run to run. Run the same configuration a few times to se
 
 ---
 
+## `eval-guardrails`
+
+:::info[Coming in 3.5.0]
+`eval-guardrails` is in 3.5.0.
+:::
+
+Measures injection and PII detectors on labelled cases: precision, recall and F1 per detector, with the confusion counts (TP, FP, FN, TN) and a 95% interval. It exits `1` when a detector throws or a `--min` is not met, so it can gate a CI job. It needs no `.ragrc.json`.
+
+```bash
+# The built-in pattern detectors
+rag-pipeline eval-guardrails cases.jsonl --report guardrails.md
+
+# Your detectors only, with a minimum recall
+rag-pipeline eval-guardrails cases.jsonl --detectors ./detectors.mjs   --no-built-in --min deberta-injection.recall=0.6
+```
+
+Each case is `{ id?, kind: "injection" | "pii", text, flagged, stage?, tags? }`; a PII case can give `spans: [{ label, start, end }]` instead of `flagged`, which also scores each match by overlap. See [Measure your detectors](./Concepts-Guardrails.md#measure-your-detectors).
+
+| Option                          | Description                                                                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--detectors <module>`          | A module (`.mjs`, `.cjs` or `.js`) exporting an array of detectors, or a function returning one, as its default export, `detectors` or `module.exports` |
+| `--no-built-in`                 | Leave out `patternInjectionDetector()` and `patternPIIDetector()`                                                                                       |
+| `--covered <labels>`            | Span labels the PII detectors are meant to find, comma-separated; the headline span recall counts only these                                            |
+| `--min <detector.metric=value>` | Minimum for a detector's `precision`, `recall`, `f1`, `accuracy`, `spans.precision` or `spans.recall`. Repeatable                                       |
+| `--output <file>`               | Save the report as JSON                                                                                                                                 |
+| `--report <file>`               | Write a summary: `.html` for a standalone page, any other name Markdown                                                                                 |
+| `--concurrency <n>`             | Cases in flight per detector (default 4)                                                                                                                |
+| `--json`                        | Print `{ passed, reasons, ...report }` as JSON                                                                                                          |
+
+The report lists case ids, not their text, so it can be shared without the cases.
+
+---
+
 ## `generate-dataset`
 
 Writes a test set for [`eval`](#eval) from your index: the configured `llm` writes a question and answer about each chunk, and each case records the chunk's source file.

@@ -13,6 +13,7 @@ const { logger } = require("../utils/logger.js");
 const {
   parsePositiveInteger,
   collectMin,
+  collectDetectorMin,
   parseTolerance,
   generateCompletionScript,
   getVersion,
@@ -31,6 +32,7 @@ const handlers = {
   ingest: () => require("./handlers/ingest-handler.js"),
   query: () => require("./handlers/query-handler.js"),
   eval: () => require("./handlers/eval-handler.js"),
+  evalGuardrails: () => require("./handlers/eval-guardrails-handler.js"),
   generate: () => require("./handlers/generate-handler.js"),
 };
 /* eslint-enable global-require */
@@ -200,6 +202,47 @@ class EnhancedCLI {
       .option("--json", "Print the verdict, summary and comparison as JSON")
       .action(async (dataset, options) => {
         await handlers.eval().handleEval(this.program.opts(), dataset, options);
+      });
+
+    this.program
+      .command("eval-guardrails")
+      .description(
+        "Measure injection and PII detectors on labelled cases: precision, recall and F1",
+      )
+      .argument(
+        "<cases>",
+        "Labelled cases: .jsonl or .json, each { kind, text, flagged | spans }",
+      )
+      .option(
+        "--detectors <module>",
+        "Module exporting more detectors (an array, or a function returning one)",
+      )
+      .option("--no-built-in", "Leave out the built-in pattern detectors")
+      .option(
+        "--covered <labels>",
+        "Span labels the PII detectors are meant to find, comma-separated, for the headline span recall",
+      )
+      .option("--output <report>", "Save the report as JSON")
+      .option(
+        "--report <file>",
+        "Write a summary: .html for a page, .md for Markdown",
+      )
+      .option(
+        "--min <detector.metric=value>",
+        "Minimum for a detector's metric, e.g. pattern-injection.recall=0.5 (repeatable)",
+        collectDetectorMin,
+      )
+      .option(
+        "--concurrency <n>",
+        "Cases in flight per detector",
+        parsePositiveInteger,
+        4,
+      )
+      .option("--json", "Print the verdict and report as JSON")
+      .action(async (cases, options) => {
+        await handlers
+          .evalGuardrails()
+          .handleEvalGuardrails(this.program.opts(), cases, options);
       });
 
     this.program
