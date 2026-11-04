@@ -12,6 +12,7 @@ const { PipelineEvaluator } = require('../evaluate/pipeline-evaluator');
 const {
   computeSemanticSimilarity,
 } = require('../evaluate/semantic-similarity');
+const { runJudge } = require('./llm-judge');
 
 /**
  * Text of one source in the shapes common frameworks use.
@@ -85,6 +86,40 @@ function normalizeSources(sources) {
  *   referenceAnswer is given); only when `evaluate` is not false
  * @property {Array<{id: string, content: string, metadata: Object}>} sources
  *   - The sources as they were checked
+ * @property {JudgeReport} [judge] - Only when the `judge` option is given
+ */
+
+/**
+ * Any LLM for the `judge` option: this library's LLM plugin contract.
+ * `generate` may return the text, or an object with `text` or `content`
+ * (and optionally `usage`).
+ *
+ * @typedef {Object} JudgeLLM
+ * @property {(prompt: string, context: Array<any>, options?: Object) => (string|{text?: string, content?: string, usage?: Object}|Promise<string|{text?: string, content?: string, usage?: Object}>)} generate
+ */
+
+/**
+ * The verdict on one sentence when a judge is used.
+ *
+ * @typedef {Object} JudgeVerdict
+ * @property {string} sentence
+ * @property {'supported'|'unsupported'} verdict - The combined verdict
+ * @property {string|null} sourceId - Id of the supporting source, when supported
+ * @property {string} reason - Why, in words (the judge's reason when it decided)
+ * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'no_sources'} lexicalReason
+ *   - What the lexical check found. Only `low_overlap` sentences go to the judge
+ * @property {'lexical'|'judge'} decidedBy
+ */
+
+/**
+ * What the judge did.
+ *
+ * @typedef {Object} JudgeReport
+ * @property {JudgeVerdict[]} verdicts - One per sentence, in order
+ * @property {number} calls - Calls made to `judge.generate` (0 or 1)
+ * @property {{inputTokens: number, outputTokens: number, totalTokens: number}} [usage]
+ *   - Token usage summed over the calls, when the LLM result carries `usage`
+ * @property {string} [error] - Why the judge's reply could not be parsed
  */
 
 /**
@@ -109,6 +144,14 @@ function normalizeSources(sources) {
  * @param {Object} [params.embedder] - With a referenceAnswer, adds
  *   `evaluation.scores.semanticSimilarity` (computeSemanticSimilarity)
  * @param {boolean} [params.evaluate=true] - Also compute evaluation scores
+ * @param {JudgeLLM} [params.judge] - Opt-in LLM judge for sentences the
+ *   lexical check failed for lack of word overlap (correct paraphrases).
+ *   It never overturns a sentence that failed the number or negation check,
+ *   and a "supported" verdict must name a source whose numbers and negation
+ *   match the sentence. Unparseable output keeps a sentence unsupported.
+ *   With a judge, `grounded`, `groundedness` and `unsupported` combine both
+ *   checks and `judge` reports the verdicts; `citations` and `evaluation`
+ *   stay lexical. Errors thrown by `judge.generate` are not caught.
  * @returns {Promise<AnswerCheck>}
  */
 async function checkAnswer({
@@ -118,9 +161,13 @@ async function checkAnswer({
   referenceAnswer,
   embedder,
   evaluate = true,
+  judge,
 } = {}) {
   if (typeof answer !== 'string') {
     throw new TypeError('answer must be a string');
+  }
+  if (judge != null && typeof judge.generate !== 'function') {
+    throw new TypeError('judge must have a generate() method');
   }
   const docs = normalizeSources(sources);
 
@@ -134,6 +181,7 @@ async function checkAnswer({
       citations: [],
       evaluation: undefined,
       sources: docs,
+      ...(judge != null && { judge: { verdicts: [], calls: 0 } }),
     };
   }
 
@@ -141,9 +189,22 @@ async function checkAnswer({
   const sentences =
     (tracked.hallucinationReport && tracked.hallucinationReport.sentences) ||
     [];
-  const unsupported = sentences
+  let unsupported = sentences
     .filter((s) => s.classification !== 'grounded')
     .map((s) => s.text);
+  let groundedness = tracked.groundednessScore;
+
+  let judged;
+  if (judge != null) {
+    judged = await runJudge({ judge, sentences, docs });
+    unsupported = judged.verdicts
+      .filter((v) => v.verdict !== 'supported')
+      .map((v) => v.sentence);
+    groundedness =
+      sentences.length > 0
+        ? (sentences.length - unsupported.length) / sentences.length
+        : 0;
+  }
 
   let evaluation;
   if (evaluate) {
@@ -162,11 +223,12 @@ async function checkAnswer({
 
   return {
     grounded: sentences.length > 0 && unsupported.length === 0,
-    groundedness: tracked.groundednessScore,
+    groundedness,
     unsupported,
     citations: tracked.citations,
     evaluation,
     sources: docs,
+    ...(judged && { judge: judged }),
   };
 }
 

@@ -28,7 +28,7 @@ that gap.
 | `checkAnswer()`                                    | Check an answer from any framework against its sources.                                                                                                                        |
 | `computeSemanticSimilarity()`                      | Embedding cosine similarity to a reference answer.                                                                                                                             |
 
-All metrics are computed locally and deterministically; no judge LLM is called. Grounding is lexical (the share of a sentence's content words found in a document, optionally IDF-weighted) plus numeric-consistency and polarity checks. Paraphrase, units ("20 hours" vs "20 days") and claims that combine several documents are not checked.
+All metrics are computed locally and deterministically; no judge LLM is called unless you pass one to `checkAnswer` (from 3.4.0, see [the LLM judge](./Evaluation#paraphrases-the-optional-llm-judge)). Grounding is lexical (the share of a sentence's content words found in a document, optionally IDF-weighted) plus numeric-consistency and polarity checks. Paraphrase (without the judge), units ("20 hours" vs "20 days") and claims that combine several documents are not checked.
 
 ## Metrics
 

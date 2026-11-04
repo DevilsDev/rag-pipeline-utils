@@ -17,7 +17,45 @@ The grounding metrics (citations, faithfulness, context precision and recall, gr
 
 ### Known limitations
 
-Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"); versions before 3.3.0 don't have the polarity check. The polarity check looks for negation words (not, no, never, without, don't and the like), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one. It does not detect units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
+Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"); versions before 3.3.0 don't have the polarity check. The polarity check looks for negation words (not, no, never, without, don't and the like), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one (from 3.4.0 an optional [LLM judge](#paraphrases-the-optional-llm-judge) can rule on paraphrases). It does not detect units ("20 hours" vs "20 days"), ordinals, a lone "one", differently split decimals, or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
+
+### Paraphrases: the optional LLM judge
+
+:::info[Coming in 3.4.0]
+The `judge` option of `checkAnswer` is in 3.4.0.
+:::
+
+A correct paraphrase shares too few words with its source to pass the lexical check: "Staff working full time get 20 days of paid leave annually" is reported unsupported against "Full-time employees receive twenty days of paid vacation per year." Pass `judge`, any LLM with this library's `generate()` contract (`OpenAIConnector`, `AnthropicConnector`, `OllamaConnector` or your own), and it rules on those sentences:
+
+```js no-run
+import { checkAnswer, OpenAIConnector } from "@devilsdev/rag-pipeline-utils";
+
+const judge = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+
+const check = await checkAnswer({
+  answer: "Staff working full time get 20 days of paid leave annually.",
+  sources: [
+    "Full-time employees receive twenty days of paid vacation per year.",
+  ],
+  judge,
+});
+
+check.grounded; // true when the judge accepts the paraphrase
+check.judge.verdicts; // [{ sentence, verdict, sourceId, reason, lexicalReason, decidedBy }]
+check.judge.calls; // 1
+check.judge.usage; // { inputTokens, outputTokens, totalTokens } when the LLM returns usage
+```
+
+The deterministic check stays in charge:
+
+- **It runs first, and without `judge` nothing changes**: same result, same shape, no model call.
+- **The judge only sees sentences that failed for lack of word overlap** (`lexicalReason: "low_overlap"`). A sentence that failed because a number doesn't match its source (`"number_mismatch"`) or because it is negated where its source is not (`"polarity_mismatch"`) is never sent, and stays unsupported.
+- **A "supported" verdict must name a source, and that source must pass the number and negation checks** against the sentence; a negated sentence also needs a negated source sentence that shares its words. Otherwise the sentence stays unsupported, so the judge can't accept "30 days" against a source that says twenty, or "workers aren't entitled to holidays" against one that grants them.
+- **It fails closed.** Output that isn't the expected JSON (a code fence around it is fine), a missing or malformed verdict, or an unknown source id leaves the sentence unsupported, with the reason in `verdicts[i].reason`. An error thrown by `generate()` is not caught.
+- **Sources are untrusted data.** They go to the judge inside `<reference_documents>` delimiters, with an instruction not to follow instructions inside them; the answer's sentences are delimited the same way.
+- **One call per answer**, for all the sentences that need it, and none when the lexical check settles everything. `check.judge.calls` counts the calls and `check.judge.usage` sums the token usage the LLM result reports (`usage` with `inputTokens`/`outputTokens` or `prompt_tokens`/`completion_tokens`); the built-in connectors return plain text, so they report calls only.
+
+With a judge, `grounded`, `groundedness` and `unsupported` combine both checks. `citations` and the `evaluation` scores (faithfulness and the rest) stay lexical, so a judged answer can be grounded with a faithfulness below 1. `PipelineEvaluator`, the CLI, the test matchers, the Mastra scorers and the AI SDK middleware make no model calls.
 
 ---
 
