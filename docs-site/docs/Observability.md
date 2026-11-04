@@ -210,7 +210,7 @@ With `evaluate` or `citations` in a run, each score is also emitted as a [`gen_a
 
 The names are those of `rag-pipeline eval` and `runEvaluation()`, so a score means the same thing in a trace and in an eval report. The value is `gen_ai.evaluation.score.value`, from 0 to 1. When a stage had no span (a cache hit), its scores are parented to the run span. Skipped scores (context recall without a reference answer) are left out.
 
-Events use the logs API: `@opentelemetry/api` 1.10 or later has it; with an older version, install `@opentelemetry/api-logs` (0.203 or later), an optional peer dependency. They go to the global LoggerProvider your SDK registered, so configure a log exporter (`logRecordProcessors` in `NodeSDK`) to see them; without one, they are no-ops, and without either package, they are skipped. To use a specific logger, pass `telemetry: { logger }`; on `/edge`, `telemetry: { api, logs }`.
+Events use the logs API of `@opentelemetry/api` 1.10 or later and go to the global LoggerProvider your SDK registered (`@opentelemetry/sdk-logs` 3), so configure a log exporter to see them; without one they are no-ops. SDKs before sdk-logs 3 register their LoggerProvider through `@opentelemetry/api-logs` instead, which the library does not load on its own: pass it, `telemetry: { logs }` (`import * as logs from "@opentelemetry/api-logs"`, 0.203 or later), or a logger, `telemetry: { logger }`. With an older `@opentelemetry/api` and neither option, events are skipped.
 
 ### Scores in Langfuse
 
@@ -226,6 +226,12 @@ import {
 } from "@devilsdev/rag-pipeline-utils";
 
 new NodeSDK({ spanProcessors: [new LangfuseSpanProcessor()] }).start();
+// To see the rag.pipeline.run span too, add it to Langfuse's default filter:
+// new LangfuseSpanProcessor({
+//   shouldExportSpan: ({ otelSpan }) =>
+//     isDefaultExportSpan(otelSpan) ||
+//     otelSpan.instrumentationScope.name === "@devilsdev/rag-pipeline-utils",
+// })
 const langfuse = new LangfuseClient();
 
 const pipeline = createRagPipeline({
@@ -242,6 +248,7 @@ for (const score of toLangfuseScores(result)) langfuse.score.create(score);
 await langfuse.flush();
 ```
 
+- Langfuse's default span filter keeps spans with `gen_ai.*` attributes, which the stage spans have and the `rag.pipeline.run` span doesn't; `isDefaultExportSpan` from `@langfuse/otel` and the filter above keep it as well. A score whose stage had no span (a cache hit) is attached to the trace only.
 - Without `telemetry`, pass the trace yourself: `toLangfuseScores(result, { traceId, observationId? })`, for example `getActiveTraceId()` from `@langfuse/tracing` inside your own observation.
 - It also takes a `checkAnswer()` result, which adds `groundedSentences` (labelled `grounded` or `ungrounded` in `metadata.label`); `{ comments: true }` adds the unsupported sentences as the comment. Comments quote the answer, so they are off by default.
 - With no trace id, the objects are the evaluations a Langfuse experiment evaluator returns (`name`, `value`, `dataType`, `comment`, `metadata`).

@@ -465,6 +465,7 @@ import {
   type EmbedderPlugin, type RetrieverPlugin, type RerankerPlugin,
   type LLMPlugin, type PipelineRunResult, type SearchResult,
   type GuardDetector, PostGenerationGuard, patternPIIDetector,
+  toLangfuseScores, evaluationScores, type TelemetryOptions,
 } from "${pkgName}";
 
 const docs: SearchResult[] = [
@@ -518,6 +519,20 @@ async function main(): Promise<void> {
 // Type-checked only, never called: typical calls to the rest of the API
 // must compile under --strict.
 async function surface(): Promise<void> {
+  const telemetry: TelemetryOptions = {
+    logger: { emit(record) { void record; } },
+    logs: undefined,
+  };
+  const traced: PipelineRunResult = await createRagPipeline({ embedder, retriever, llm, telemetry }).run({
+    query: "vacation",
+    options: { evaluate: true, citations: true },
+  });
+  const traceId: string | undefined = traced.telemetry?.traceId;
+  const generationSpan: string | undefined = traced.telemetry?.spans.generation;
+  const langfuseScores = toLangfuseScores(traced, { traceId });
+  const firstName: string | undefined = langfuseScores[0]?.name;
+  const listed: number = evaluationScores(traced).length;
+  void generationSpan; void firstName; void listed;
   const config = loadConfig(".");
   const checked = validateRagrc({ pipeline: [] });
   const normalized = normalizeConfig({ pipeline: [] });

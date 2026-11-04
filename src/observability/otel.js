@@ -19,13 +19,13 @@
  * the span of what it judges: the retrieval for contextPrecision and
  * contextRecall, the chat call for the rest, the run when that stage had no
  * span. Events use the logs API of `@opentelemetry/api` 1.10 or later, or
- * `@opentelemetry/api-logs` with older versions, and need a LoggerProvider;
- * without one they are no-ops. The run result carries its trace and span ids in
+ * `telemetry: { logs }` (@opentelemetry/api-logs, for SDKs before sdk-logs
+ * 3) or `{ logger }`; without a LoggerProvider they are no-ops, and with
+ * an older api and neither option they are skipped. The run result carries its trace and span ids in
  * `result.telemetry`.
  *
- * `@opentelemetry/api` (and `@opentelemetry/api-logs`, for events with
- * api < 1.10) are optional peer dependencies, loaded only when telemetry is
- * configured.
+ * `@opentelemetry/api` is an optional peer dependency, loaded only when
+ * telemetry is configured.
  */
 
 const { evaluationScores } = require('./scores');
@@ -46,20 +46,11 @@ function loadOtelApi() {
   );
 }
 
-/** @opentelemetry/api-logs if it is installed. */
-function loadLogsApi() {
-  try {
-    return require('@opentelemetry/api-logs'); // eslint-disable-line global-require
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Normalise the `telemetry` option of createRagPipeline. `api` is the
  * @opentelemetry/api module, for builds that cannot require() it (/edge);
- * `logs` is @opentelemetry/api-logs, likewise, and `logger` a Logger to
- * emit evaluation events with.
+ * `logs` is @opentelemetry/api-logs, for evaluation events with an SDK that
+ * registers its LoggerProvider there, and `logger` a Logger to emit them with.
  * @param {boolean|{tracer?: object, api?: object, logs?: object, logger?: object, recordContent?: boolean}} option
  * @returns {null|{api: object, tracer: object, logger: object|null, runKey: symbol, recordContent: boolean}}
  */
@@ -95,9 +86,11 @@ function createTelemetry(option) {
         'telemetry.logs must be the @opentelemetry/api-logs module (import * as logs from "@opentelemetry/api-logs")',
       );
     }
-    // @opentelemetry/api has the logs API from 1.10; older versions need
-    // @opentelemetry/api-logs
-    const source = [opts.logs, api, loadLogsApi()].find(
+    // @opentelemetry/api has the logs API from 1.10. It is not loaded from
+    // @opentelemetry/api-logs unless passed: that package registers its
+    // LoggerProvider under a different global (SDKs before sdk-logs 3), and
+    // a peer dependency on it would conflict with older OTel installs.
+    const source = [opts.logs, api].find(
       (m) => m && m.logs && typeof m.logs.getLogger === 'function',
     );
     if (source) logger = source.logs.getLogger(TRACER_NAME, LIBRARY_VERSION);

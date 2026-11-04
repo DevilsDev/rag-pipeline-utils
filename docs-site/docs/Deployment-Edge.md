@@ -98,7 +98,7 @@ const pipeline = createRagPipeline({
 });
 ```
 
-The spans are the same as on Node.js ([OpenTelemetry](./Observability.md#opentelemetry)). From 3.5.0, [evaluation events](./Observability.md#evaluation-scores-as-events) use the logs API of the `api` you pass (1.10 or later); with an older version, pass `@opentelemetry/api-logs` as `telemetry: { api, logs }`. You need a tracer provider that works in your runtime.
+The spans are the same as on Node.js ([OpenTelemetry](./Observability.md#opentelemetry)). From 3.5.0, [evaluation events](./Observability.md#evaluation-scores-as-events) use the logs API of the `api` you pass (1.10 or later), or `telemetry: { api, logs }` with `@opentelemetry/api-logs`. You need a tracer provider that works in your runtime.
 
 ## Differences from Node.js
 

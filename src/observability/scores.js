@@ -86,7 +86,10 @@ function evaluationScores(result, { explanations = false } = {}) {
  * ids in `result.telemetry`; Langfuse uses the same ids when it receives the
  * spans (LangfuseSpanProcessor), so each score is attached to the trace and
  * to the span it judges: the retrieval for contextPrecision and
- * contextRecall, the generation for the rest.
+ * contextRecall, the generation for the rest. A score whose stage had no
+ * span (a cache hit) gets the trace only: Langfuse's default span filter
+ * keeps the stage spans (they have gen_ai.* attributes) but not the run
+ * span, so an observation id for it could point at nothing.
  *
  * @param {object} result - A pipeline run result, a stream's done chunk, or a checkAnswer() result
  * @param {object} [options]
@@ -104,9 +107,7 @@ function toLangfuseScores(result, options = {}) {
   return evaluationScores(result, { explanations: comments }).map((s) => {
     const observation =
       observationId ||
-      (fromSameTrace
-        ? (tel.spans && tel.spans[s.target]) || tel.spanId
-        : undefined);
+      (fromSameTrace && tel.spans ? tel.spans[s.target] : undefined);
     return {
       name: s.name,
       value: s.value,

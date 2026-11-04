@@ -73,7 +73,9 @@ async function pipeline(extra = {}) {
         yield TEXT;
       },
     },
-    telemetry: true,
+    // @opentelemetry/api 1.9 has no logs API: pass api-logs, whose global
+    // LoggerProvider the SDK registered
+    telemetry: { logs: logsApi },
     ...extra,
   });
 }
@@ -175,13 +177,17 @@ test("a streamed run emits on its done chunk, with the stages nested", async () 
 
 test("a stage without a span (a cache hit) parents to the run", async () => {
   const p = await pipeline({ cache: true });
-  await p.run({ query: "vacation?", options: QUALITY });
+  const first = await p.run({ query: "vacation?", options: QUALITY });
+  const firstIds = { ...first.telemetry };
   spans.reset();
   records.reset();
   const result = await p.run({ query: "vacation?", options: QUALITY });
   expect(spanByName("retrieval")).toHaveLength(0);
   expect(result.telemetry.spans).not.toHaveProperty("retrieval");
   expect(parentOf("contextPrecision")).toBe(result.telemetry.spanId);
+  // A cached run gets its own result: the first caller's ids are unchanged
+  expect(first.telemetry).toEqual(firstIds);
+  expect(result.telemetry.spanId).not.toBe(firstIds.spanId);
 });
 
 test("no quality options, no events", async () => {
@@ -225,18 +231,18 @@ test("rejects a logger or logs module of the wrong shape", async () => {
   );
 });
 
-test("without a logs API, runs work and emit nothing", () => {
-  jest.isolateModules(() => {
-    jest.doMock("@opentelemetry/api-logs", () => {
-      const error = new Error("Cannot find module '@opentelemetry/api-logs'");
-      error.code = "MODULE_NOT_FOUND";
-      throw error;
-    });
-    const { createTelemetry } = require("../../../src/observability/otel");
-    // @opentelemetry/api 1.9 has no logs API
-    expect(createTelemetry(true).logger).toBeNull();
-    expect(createTelemetry({ api: { ...api, logs: undefined } }).logger).toBe(
-      null,
-    );
+test("without a logs API, runs work and emit nothing", async () => {
+  const { createTelemetry } = require("../../../src/observability/otel");
+  // @opentelemetry/api 1.9 has no logs API, and api-logs is never loaded
+  // unless passed
+  expect(createTelemetry(true).logger).toBeNull();
+  const result = await (
+    await pipeline({ telemetry: true })
+  ).run({
+    query: "vacation?",
+    options: QUALITY,
   });
+  expect(result.success).toBe(true);
+  expect(result.telemetry.traceId).toMatch(/^[0-9a-f]{32}$/);
+  expect(events()).toHaveLength(0);
 });

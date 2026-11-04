@@ -58,9 +58,10 @@ flagged }`, or PII `spans` scored by overlap) and reports precision,
   conventions), parented to the span it judges: `chat` for faithfulness,
   relevance, groundedness and `citationCoverage`, `retrieval` for context
   precision and recall. Events use the logs API of `@opentelemetry/api`
-  1.10+, or `@opentelemetry/api-logs` (a new optional peer, 0.203+) with
-  older versions, and are skipped without either; `telemetry: { logger }`
-  and `{ logs }` pass them in. The run result carries its ids in
+  1.10+; with SDKs that register their LoggerProvider through
+  `@opentelemetry/api-logs`, pass it as `telemetry: { logs }` (or a
+  `{ logger }`). There is no new dependency, and without a logs API the
+  events are skipped. The run result carries its ids in
   `result.telemetry` (`traceId`, `spanId`, `spans.retrieval`,
   `spans.generation`), and `toLangfuseScores(result)` turns its scores
   (or a `checkAnswer()` result's) into `langfuse.score.create()` objects

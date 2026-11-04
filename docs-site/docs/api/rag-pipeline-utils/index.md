@@ -102,6 +102,7 @@ RAG Pipeline Utils - TypeScript Definitions
 - [RetrieveOptions](interfaces/RetrieveOptions.md)
 - [RetrieverPlugin](interfaces/RetrieverPlugin.md)
 - [RouteDecision](interfaces/RouteDecision.md)
+- [RunTelemetry](interfaces/RunTelemetry.md)
 - [SearchResult](interfaces/SearchResult.md)
 - [StreamChunk](interfaces/StreamChunk.md)
 - [StreamTiming](interfaces/StreamTiming.md)

@@ -138,7 +138,6 @@ async function main() {
       pino: path.join(edgeDir, "pino.js"),
       events: require.resolve("events/"),
       "@opentelemetry/api": path.join(edgeDir, "no-otel-api.js"),
-      "@opentelemetry/api-logs": path.join(edgeDir, "no-otel-api-logs.js"),
       ...Object.fromEntries(NODE_STUBS.map((name) => [name, unavailable])),
     },
     // Vercel Edge has process.env; Workers without nodejs_compat and browsers

@@ -97,12 +97,18 @@ describe("toLangfuseScores", () => {
     });
   });
 
-  test("falls back to the run span when a stage had none", () => {
+  test("gives only the trace when a stage had no span", () => {
+    // Langfuse's default filter drops the run span, so it is never the target
     const [score] = toLangfuseScores({
       ...run,
       telemetry: { ...run.telemetry, spans: {} },
     });
-    expect(score.observationId).toBe("1111111111111111");
+    expect(score).toEqual({
+      name: "faithfulness",
+      value: 0.9,
+      dataType: "NUMERIC",
+      traceId: "a".repeat(32),
+    });
   });
 
   test("an explicit observationId wins; another trace drops the span ids", () => {

@@ -18,7 +18,10 @@ With `telemetry` on, a run result carries its OpenTelemetry trace and span
 ids in `result.telemetry`; Langfuse uses the same ids when it receives the
 spans (LangfuseSpanProcessor), so each score is attached to the trace and
 to the span it judges: the retrieval for contextPrecision and
-contextRecall, the generation for the rest.
+contextRecall, the generation for the rest. A score whose stage had no
+span (a cache hit) gets the trace only: Langfuse's default span filter
+keeps the stage spans (they have gen_ai.\* attributes) but not the run
+span, so an observation id for it could point at nothing.
 
 ## Parameters
 
