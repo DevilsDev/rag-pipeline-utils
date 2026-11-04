@@ -412,8 +412,12 @@ function detectorVerdict(report, min = {}) {
 
 const fixed = (v) => (typeof v === 'number' ? v.toFixed(3) : '-');
 const interval = (i) => (i ? `${i[0].toFixed(2)}–${i[1].toFixed(2)}` : '-');
+// Backslashes first, so a name ending in "\" can't escape the cell's "|"
 const mdCell = (text) =>
-  String(text).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+  String(text)
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ');
 
 function tables(report) {
   const out = [];

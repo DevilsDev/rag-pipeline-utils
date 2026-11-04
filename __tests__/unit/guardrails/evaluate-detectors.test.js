@@ -420,6 +420,12 @@ describe("renderDetectorReport", () => {
     );
   });
 
+  test("escapes backslashes and pipes in Markdown cells", async () => {
+    const odd = { ...keyword, name: "a|b\\" };
+    const report = await evaluateDetectors(injectionCases, [odd]);
+    expect(renderDetectorReport(report)).toContain("| a\\|b\\\\ | injection |");
+  });
+
   test("rejects an unknown format", async () => {
     const report = await evaluateDetectors(injectionCases, [keyword]);
     expect(() => renderDetectorReport(report, { format: "pdf" })).toThrow(
