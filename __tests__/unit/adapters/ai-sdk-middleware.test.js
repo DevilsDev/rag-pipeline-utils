@@ -377,6 +377,147 @@ describe("groundingMiddleware with streamText", () => {
   });
 });
 
+describe("groundingMiddleware with a judge", () => {
+  const POLICY =
+    "Full-time employees receive twenty days of paid vacation per year.";
+  const PARAPHRASE =
+    "Staff working full time get 20 days of paid leave annually.";
+  const WRONG_NUMBER =
+    "Full-time employees receive thirty days of paid vacation per year.";
+  const NEGATED = "Full-time employees never receive paid vacation.";
+
+  /** An LLM that says "supported" to every claim, citing `source`. */
+  function yesJudge({ source = "vacation", reason = "Same meaning." } = {}) {
+    const judge = {
+      prompts: [],
+      async generate(prompt) {
+        judge.prompts.push(prompt);
+        const count = (prompt.match(/<claim index="/g) || []).length;
+        return JSON.stringify(
+          Array.from({ length: count }, (_, i) => ({
+            claim: i + 1,
+            verdict: "supported",
+            source,
+            reason,
+          })),
+        );
+      },
+    };
+    return judge;
+  }
+
+  const generate = (text, options) =>
+    ai.generateText({
+      model: ai.wrapLanguageModel({
+        model: mockModel(text).model,
+        middleware: groundingMiddleware({
+          retriever: bm25(),
+          topK: 1,
+          ...options,
+        }),
+      }),
+      prompt: "How many vacation days do I get?",
+    });
+
+  test("rules on a paraphrase but never on a wrong number or a negation", async () => {
+    const judge = yesJudge();
+    const result = await generate(
+      `${POLICY} ${PARAPHRASE} ${WRONG_NUMBER} ${NEGATED}`,
+      { judge },
+    );
+    const report = result.providerMetadata.ragPipeline;
+    expect(judge.prompts).toHaveLength(1);
+    expect(report.unsupported).toEqual([WRONG_NUMBER, NEGATED]);
+    expect(report.grounded).toBe(false);
+    expect(report.judge.calls).toBe(1);
+    const paraphrase = report.judge.verdicts.find(
+      (v) => v.sentence === PARAPHRASE,
+    );
+    expect(paraphrase).toMatchObject({
+      verdict: "supported",
+      sourceId: "vacation",
+      decidedBy: "judge",
+    });
+  });
+
+  test("streams with the judge's verdicts in the report", async () => {
+    const result = ai.streamText({
+      model: ai.wrapLanguageModel({
+        model: mockModel(PARAPHRASE).model,
+        middleware: groundingMiddleware({
+          retriever: bm25(),
+          topK: 1,
+          judge: yesJudge(),
+        }),
+      }),
+      prompt: "How many vacation days do I get?",
+    });
+    for await (const delta of result.textStream) void delta;
+    const report = (await result.providerMetadata).ragPipeline;
+    expect(report.grounded).toBe(true);
+    expect(report.judge.verdicts[0].decidedBy).toBe("judge");
+  });
+
+  test("a judge that throws leaves the sentence unsupported and the answer intact", async () => {
+    const judge = {
+      async generate() {
+        throw new Error("rate limited");
+      },
+    };
+    const result = await generate(PARAPHRASE, { judge });
+    expect(result.text).toBe(PARAPHRASE);
+    const report = result.providerMetadata.ragPipeline;
+    expect(report.grounded).toBe(false);
+    expect(report.unsupported).toEqual([PARAPHRASE]);
+    expect(report.judge).toMatchObject({ calls: 1, error: "rate limited" });
+  });
+
+  test("without a judge there is no judge report; check: false calls no judge", async () => {
+    const plain = await generate(PARAPHRASE, {});
+    expect(plain.providerMetadata.ragPipeline.judge).toBeUndefined();
+
+    const judge = yesJudge();
+    const unchecked = await generate(PARAPHRASE, { judge, check: false });
+    expect(judge.prompts).toHaveLength(0);
+    expect(unchecked.providerMetadata.ragPipeline.judge).toBeUndefined();
+  });
+
+  test("an AI SDK model as the judge, through createAiSdkAdapter", async () => {
+    const { createAiSdkAdapter } = require("../../../src/adapters/ai-sdk");
+    const verdicts = [
+      { claim: 1, verdict: "supported", source: "vacation", reason: "Same." },
+    ];
+    const judgeModel = mockModel(JSON.stringify(verdicts));
+    const { llm: judge } = createAiSdkAdapter({
+      ai: { generateText: ai.generateText },
+      languageModel: judgeModel.model,
+    });
+    const result = await generate(PARAPHRASE, { judge });
+    expect(judgeModel.calls).toHaveLength(1);
+    expect(userText(judgeModel.calls[0])).toContain(PARAPHRASE);
+    expect(result.providerMetadata.ragPipeline.grounded).toBe(true);
+  });
+
+  test("redacts PII in the judge's verdicts", async () => {
+    const result = await generate(
+      "Staff working full time get 20 days of paid leave annually, says jane.doe@example.com.",
+      {
+        judge: yesJudge({ reason: "jane.doe@example.com confirms it." }),
+        postGeneration: true,
+      },
+    );
+    const report = result.providerMetadata.ragPipeline;
+    expect(report.judge.verdicts.length).toBeGreaterThan(0);
+    expect(JSON.stringify(report)).not.toContain("jane.doe@example.com");
+  });
+
+  test("rejects a judge without generate()", () => {
+    expect(() => groundingMiddleware({ retriever: bm25(), judge: {} })).toThrow(
+      /judge must be an LLM/,
+    );
+  });
+});
+
 test("GroundingBlockedError is an Error with the report", () => {
   const err = new GroundingBlockedError("blocked", { query: "q" });
   expect(err).toBeInstanceOf(Error);

@@ -28,8 +28,17 @@ page.
   `sourceId`, `reason`, `lexicalReason`, `decidedBy: "lexical" | "judge"`),
   the number of calls and, when the LLM result carries `usage`, the summed
   token usage; `grounded`, `groundedness` and `unsupported` combine both
-  checks. `PipelineEvaluator`, the CLI, the test matchers, the Mastra
-  scorers and the AI SDK middleware stay deterministic.
+  checks. `PipelineEvaluator`, the CLI, the test matchers and the Mastra
+  scorers stay deterministic.
+- **The LLM judge in the AI SDK middleware.** `groundingMiddleware({
+retriever, judge })` passes `judge` to the answer check, and the report
+  in `providerMetadata.ragPipeline` gains `judge` (the verdicts, calls and
+  usage), for `generateText` and `streamText`. A judge that throws, such as
+  on a rate limit, doesn't fail the call: the answer is returned, its
+  sentences stay unsupported and `judge.error` says why. With the
+  post-generation guard, PII is redacted from the verdicts too. Give the
+  judge the base model, not the wrapped one. A judge for the CLI is not in
+  this release.
 - `@devilsdev/rag-mcp-server`, an installable MCP server:
   `npx @devilsdev/rag-mcp-server ./docs` indexes the Markdown, HTML, CSV
   and text files in a folder with the offline TF-IDF embedder and serves

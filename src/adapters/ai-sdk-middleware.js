@@ -41,6 +41,7 @@ const METADATA_KEY = 'ragPipeline';
  * @property {Function} [countTokens] - Token counter for maxContextTokens
  * @property {string} [systemPrompt] - Replaces the default RAG system prompt
  * @property {boolean} [check=true] - Run checkAnswer on the answer
+ * @property {Object} [judge] - An LLM with `generate()` (this library's LLM contract, e.g. `createAiSdkAdapter({ ai, languageModel }).llm`) that rules on the sentences the lexical check failed for lack of word overlap; see checkAnswer. Give it the base model, not the wrapped one, or each judge call is grounded again
  * @property {boolean} [sources=true] - Return the passages as source parts
  * @property {Object|boolean} [preRetrieval] - PreRetrievalGuard options (true for defaults): injection detection on the query
  * @property {Object|boolean} [retrieval] - RetrievalGuard options (true for defaults): ACL, minimum score, injection in documents
@@ -59,6 +60,7 @@ const METADATA_KEY = 'ragPipeline';
  * @property {number} [groundedness] - Share of supported sentences, 0..1
  * @property {string[]} [unsupported] - Sentences no passage supports
  * @property {Array<Object>} [citations] - Per-sentence citations
+ * @property {Object} [judge] - With the `judge` option: the verdicts, the number of calls, the token usage when known, and `error` when the judge failed (its sentences then stay unsupported)
  * @property {Object} guardrails - What each enabled guard found
  */
 
@@ -143,6 +145,7 @@ function groundingMiddleware(options = {}) {
     countTokens,
     systemPrompt,
     check = true,
+    judge,
     sources = true,
     strict = false,
     getQuery,
@@ -153,6 +156,11 @@ function groundingMiddleware(options = {}) {
   if (!pipeline && (!retriever || typeof retriever.retrieve !== 'function')) {
     throw new TypeError(
       'groundingMiddleware: pass a retriever (an object with retrieve()) or a pipeline',
+    );
+  }
+  if (judge != null && typeof judge.generate !== 'function') {
+    throw new TypeError(
+      'groundingMiddleware: judge must be an LLM with a generate() method',
     );
   }
   if (pipeline && typeof pipeline.run !== 'function') {
@@ -279,15 +287,33 @@ function groundingMiddleware(options = {}) {
       guardrails: state.guardrails,
     };
     if (check && text.trim()) {
-      const checked = await checkAnswer({
+      const input = {
         question: state.query,
         answer: text,
         sources: state.docs,
-      });
+      };
+      let checked;
+      if (judge != null) {
+        // A judge that throws (rate limit, network) must not fail the answer:
+        // fall back to the lexical check, so its sentences stay unsupported.
+        try {
+          checked = await checkAnswer({ ...input, judge });
+        } catch (error) {
+          checked = await checkAnswer(input);
+          checked.judge = {
+            verdicts: [],
+            calls: 1,
+            error: String((error && error.message) || error),
+          };
+        }
+      } else {
+        checked = await checkAnswer(input);
+      }
       report.grounded = checked.grounded;
       report.groundedness = checked.groundedness;
       report.unsupported = checked.unsupported;
       report.citations = checked.citations;
+      if (checked.judge) report.judge = checked.judge;
     }
     let output = text;
     if (postGuard) {
@@ -311,6 +337,19 @@ function groundingMiddleware(options = {}) {
           ...c,
           sentence: postGuard.redact(c.sentence || ''),
         }));
+      }
+      if (report.judge) {
+        report.judge = {
+          ...report.judge,
+          verdicts: report.judge.verdicts.map((v) => ({
+            ...v,
+            sentence: postGuard.redact(v.sentence || ''),
+            ...(v.reason != null && { reason: postGuard.redact(v.reason) }),
+          })),
+          ...(report.judge.error != null && {
+            error: postGuard.redact(report.judge.error),
+          }),
+        };
       }
     }
     const json = toJson(report);

@@ -55,7 +55,7 @@ The deterministic check stays in charge:
 - **Sources are untrusted data.** They go to the judge inside `<reference_documents>` delimiters, with an instruction not to follow instructions inside them; the answer's sentences are delimited the same way.
 - **One call per answer**, for all the sentences that need it, and none when the lexical check settles everything. `check.judge.calls` counts the calls and `check.judge.usage` sums the token usage the LLM result reports (`usage` with `inputTokens`/`outputTokens` or `prompt_tokens`/`completion_tokens`); the built-in connectors return plain text, so they report calls only.
 
-With a judge, `grounded`, `groundedness` and `unsupported` combine both checks. `citations` and the `evaluation` scores (faithfulness and the rest) stay lexical, so a judged answer can be grounded with a faithfulness below 1. `PipelineEvaluator`, the CLI, the test matchers, the Mastra scorers and the AI SDK middleware make no model calls.
+With a judge, `grounded`, `groundedness` and `unsupported` combine both checks. `citations` and the `evaluation` scores (faithfulness and the rest) stay lexical, so a judged answer can be grounded with a faithfulness below 1. The AI SDK middleware takes the same `judge` option ([Integrations](./Integrations#judge-paraphrases)). `PipelineEvaluator`, the CLI, the test matchers and the Mastra scorers make no model calls.
 
 ---
 
