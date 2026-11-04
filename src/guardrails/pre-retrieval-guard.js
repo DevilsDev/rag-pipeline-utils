@@ -96,17 +96,22 @@ class PreRetrievalGuard extends EventEmitter {
   }
 
   /**
-   * check() for async detectors, such as a model or a moderation API.
+   * check() for async detectors, such as a classifier model or a service.
    * Detectors run concurrently.
    *
    * @param {string} query
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - Passed to each detector in its context
    * @returns {Promise<ReturnType<PreRetrievalGuard['check']>>}
    */
-  async checkAsync(query) {
+  async checkAsync(query, { signal } = {}) {
     const state = this._prepare(query);
     if (state.result) return this._emit(state.result);
     const detections = this._runDetectors(state)
-      ? await runDetectorsAsync(this._detectors, state.sanitizedQuery, CONTEXT)
+      ? await runDetectorsAsync(this._detectors, state.sanitizedQuery, {
+          ...CONTEXT,
+          ...(signal && { signal }),
+        })
       : [];
     return this._finish(state, detections);
   }

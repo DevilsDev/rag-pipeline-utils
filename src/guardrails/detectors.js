@@ -9,7 +9,7 @@
  * `detect` returns `{ flagged, score?, labels?, matches? }`, or a promise of
  * it. `matches` is `[{ label, text, start?, end? }]`; a PII detector must
  * fill `text` with the exact matched string, because redaction replaces it.
- * `context` is `{ stage: 'query' | 'document' | 'output', document? }`.
+ * `context` is `{ stage: 'query' | 'document' | 'output', document?, signal? }`.
  *
  * The guards take `detectors: [...]` alongside their built-in pattern checks,
  * and `builtIn: false` to replace them. `patternInjectionDetector()` and

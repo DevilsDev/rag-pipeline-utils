@@ -15,15 +15,19 @@ page.
 
 - **Pluggable guard detectors.** `PreRetrievalGuard`, `RetrievalGuard`
   and `PostGenerationGuard` take `detectors`: objects `{ name, kind:
-'injection' | 'pii', detect(text, context) }`, such as a model, a
-  moderation API or a PII service, run with the built-in patterns or, with
+'injection' | 'pii', detect(text, context) }`, such as an
+  injection classifier or a PII service, run with the built-in patterns or, with
   `builtIn: false`, instead of them. Async detectors run through the new
   `checkAsync()` and `filterAsync()`, which `GuardrailsPipeline`,
   `groundingMiddleware` and `createMastraGuardrails` (`injection: {
 detectors }`, `piiDetectors`) now use; the sync `check()` and
   `filter()` throw a `TypeError` for an async detector instead of
   skipping it. A detector that throws blocks by default
-  (`onDetectorError: 'skip'` to ignore it). What a PII detector finds is
+  (`onDetectorError: 'skip'` to ignore it), and each gets the request's
+  `AbortSignal` in `context.signal` (`checkAsync(text, { signal })`;
+  `GuardrailsPipeline` and the middleware pass theirs). `RetrievalGuard`
+  runs detectors in its injection scan, so it requires
+  `detectInjection: true` with them. What a PII detector finds is
   redacted from the answer and from text copied from it (citations,
   evaluation details, the middleware's report); the matched text stays
   out of the guard result's JSON, and `detectedText(result)` passes it to

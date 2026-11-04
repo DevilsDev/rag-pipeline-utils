@@ -120,7 +120,7 @@ PreRetrievalGuard#checked
 ### checkAsync()
 
 ```ts
-checkAsync(query): Promise<{
+checkAsync(query, options?): Promise<{
   injection: {
      detected: boolean;
      matches: object[];
@@ -131,14 +131,16 @@ checkAsync(query): Promise<{
 }>;
 ```
 
-check() for async detectors, such as a model or a moderation API.
+check() for async detectors, such as a classifier model or a service.
 Detectors run concurrently.
 
 #### Parameters
 
-| Parameter | Type     | Description |
-| --------- | -------- | ----------- |
-| `query`   | `string` | -           |
+| Parameter         | Type                            | Description                            |
+| ----------------- | ------------------------------- | -------------------------------------- |
+| `query`           | `string`                        | -                                      |
+| `options?`        | \{ `signal?`: `AbortSignal`; \} | -                                      |
+| `options.signal?` | `AbortSignal`                   | Passed to each detector in its context |
 
 #### Returns
 

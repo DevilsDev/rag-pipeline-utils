@@ -49,6 +49,13 @@ class RetrievalGuard extends EventEmitter {
     this.config = { ...DEFAULT_CONFIG, ...options };
     /** @private */
     this._detectors = resolveDetectors('RetrievalGuard', 'injection', options);
+    if (this._detectors.length > 0 && this.config.detectInjection !== true) {
+      // Detectors only run in the injection scan; without it they would be
+      // configured and never called.
+      throw new TypeError(
+        'RetrievalGuard: detectors run in the injection scan; set detectInjection: true',
+      );
+    }
   }
 
   /**
@@ -81,15 +88,17 @@ class RetrievalGuard extends EventEmitter {
   }
 
   /**
-   * filter() for async detectors, such as a model or a moderation API. Each
+   * filter() for async detectors, such as a classifier model or a service. Each
    * document that reaches the injection scan is checked by every detector,
    * all concurrently.
    *
    * @param {Array<object>} results
    * @param {object} [context={}]
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - Passed to each detector in its context
    * @returns {Promise<ReturnType<RetrievalGuard['filter']>>}
    */
-  async filterAsync(results, context = {}) {
+  async filterAsync(results, context = {}, { signal } = {}) {
     const state = this._screen(results, context);
     if (state.output) return state.output;
     const detections = await Promise.all(
@@ -98,6 +107,7 @@ class RetrievalGuard extends EventEmitter {
           ? runDetectorsAsync(this._detectors, documentText(state.results[i]), {
               stage: 'document',
               document: state.results[i],
+              ...(signal && { signal }),
             })
           : [],
       ),

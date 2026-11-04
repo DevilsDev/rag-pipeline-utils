@@ -320,6 +320,8 @@ export interface RerankerPlugin {
 export interface DetectorContext {
   stage: "query" | "document" | "output";
   document?: any;
+  /** The request's AbortSignal, when the caller passed one to checkAsync() / filterAsync(). */
+  signal?: AbortSignal;
 }
 
 /** What a detector found. PII detectors must give each match's exact \`text\`, which is redacted. */

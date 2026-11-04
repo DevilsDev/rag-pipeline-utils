@@ -111,7 +111,11 @@ RetrievalGuard#filtered
 ### filterAsync()
 
 ```ts
-filterAsync(results, context?): Promise<{
+filterAsync(
+   results,
+   context?,
+   options?
+): Promise<{
   metadata: {
      reasons: {
       [x: string]: number;
@@ -122,16 +126,18 @@ filterAsync(results, context?): Promise<{
 }>;
 ```
 
-filter() for async detectors, such as a model or a moderation API. Each
+filter() for async detectors, such as a classifier model or a service. Each
 document that reaches the injection scan is checked by every detector,
 all concurrently.
 
 #### Parameters
 
-| Parameter  | Type       | Description |
-| ---------- | ---------- | ----------- |
-| `results`  | `object`[] | -           |
-| `context?` | `object`   | -           |
+| Parameter         | Type                            | Description                            |
+| ----------------- | ------------------------------- | -------------------------------------- |
+| `results`         | `object`[]                      | -                                      |
+| `context?`        | `object`                        | -                                      |
+| `options?`        | \{ `signal?`: `AbortSignal`; \} | -                                      |
+| `options.signal?` | `AbortSignal`                   | Passed to each detector in its context |
 
 #### Returns
 

@@ -86,14 +86,19 @@ class PostGenerationGuard extends EventEmitter {
    *
    * @param {string} output
    * @param {Array<object>} [retrievedDocs=[]]
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - Passed to each detector in its context
    * @returns {Promise<ReturnType<PostGenerationGuard['check']>>}
    */
-  async checkAsync(output, retrievedDocs = []) {
+  async checkAsync(output, retrievedDocs = [], { signal } = {}) {
     if (output == null || typeof output !== 'string') {
       return this._invalid();
     }
     const detections = this._runDetectors()
-      ? await runDetectorsAsync(this._detectors, output, CONTEXT)
+      ? await runDetectorsAsync(this._detectors, output, {
+          ...CONTEXT,
+          ...(signal && { signal }),
+        })
       : [];
     return this._check(output, retrievedDocs, detections);
   }

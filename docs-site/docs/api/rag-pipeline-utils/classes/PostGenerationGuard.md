@@ -104,7 +104,11 @@ PostGenerationGuard#checked
 ### checkAsync()
 
 ```ts
-checkAsync(output, retrievedDocs?): Promise<{
+checkAsync(
+   output,
+   retrievedDocs?,
+   options?
+): Promise<{
   groundednessScore?: number;
   issues: string[];
   safe: boolean;
@@ -117,10 +121,12 @@ Detectors run concurrently.
 
 #### Parameters
 
-| Parameter        | Type       | Description |
-| ---------------- | ---------- | ----------- |
-| `output`         | `string`   | -           |
-| `retrievedDocs?` | `object`[] | -           |
+| Parameter         | Type                            | Description                            |
+| ----------------- | ------------------------------- | -------------------------------------- |
+| `output`          | `string`                        | -                                      |
+| `retrievedDocs?`  | `object`[]                      | -                                      |
+| `options?`        | \{ `signal?`: `AbortSignal`; \} | -                                      |
+| `options.signal?` | `AbortSignal`                   | Passed to each detector in its context |
 
 #### Returns
 

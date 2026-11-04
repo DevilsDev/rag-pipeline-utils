@@ -93,8 +93,15 @@ class GuardrailsPipeline extends EventEmitter {
 
     // 1. Pre-retrieval guard
     let query = input.query;
+    // The run's AbortSignal reaches each detector, so a slow model detector
+    // stops when the request does.
+    const signal = input.options && input.options.signal;
+    const callOptions = signal ? { signal } : {};
     if (this.preGuard) {
-      guardrails.preRetrieval = await this.preGuard.checkAsync(query);
+      guardrails.preRetrieval = await this.preGuard.checkAsync(
+        query,
+        callOptions,
+      );
       this.emit('preRetrieval', guardrails.preRetrieval);
 
       if (!guardrails.preRetrieval.safe && this.config.strict) {
@@ -117,6 +124,7 @@ class GuardrailsPipeline extends EventEmitter {
             preGenerationFilter = await this.retrievalGuard.filterAsync(
               docs,
               input.context,
+              callOptions,
             );
             return preGenerationFilter.results;
           },
@@ -137,7 +145,11 @@ class GuardrailsPipeline extends EventEmitter {
       // from unfiltered documents. Filtering now only fixes result.results;
       // if ACL removed anything the answer may contain restricted content.
       guardrails.retrieval = summarizeFilter(
-        await this.retrievalGuard.filterAsync(result.results, input.context),
+        await this.retrievalGuard.filterAsync(
+          result.results,
+          input.context,
+          callOptions,
+        ),
       );
       this.emit('retrieval', guardrails.retrieval);
       result.results = guardrails.retrieval.results;
@@ -157,6 +169,7 @@ class GuardrailsPipeline extends EventEmitter {
       guardrails.postGeneration = await this.postGuard.checkAsync(
         result.answer,
         result.results,
+        callOptions,
       );
       this.emit('postGeneration', guardrails.postGeneration);
 

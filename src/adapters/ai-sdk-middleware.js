@@ -76,6 +76,10 @@ class GroundingBlockedError extends Error {
 
 const guardOptions = (value) => (value === true ? {} : value);
 
+/** The call's AbortSignal, for the guards to pass to their detectors. */
+const guardCall = (params) =>
+  params && params.abortSignal ? { signal: params.abortSignal } : {};
+
 /** Text of a message's text parts (user and assistant content are part arrays). */
 function messageText(message) {
   if (!message) return '';
@@ -205,7 +209,7 @@ function groundingMiddleware(options = {}) {
 
     const guardrails = {};
     if (preGuard) {
-      const pre = await preGuard.checkAsync(query);
+      const pre = await preGuard.checkAsync(query, guardCall(params));
       guardrails.preRetrieval = { safe: pre.safe, issues: pre.issues };
       if (!pre.safe && strict) {
         throw new GroundingBlockedError(
@@ -229,6 +233,7 @@ function groundingMiddleware(options = {}) {
             filtered = await retrievalGuard.filterAsync(
               docs,
               callOptions.context || {},
+              guardCall(params),
             );
             return filtered.results;
           },
@@ -251,6 +256,7 @@ function groundingMiddleware(options = {}) {
       docs: Array.isArray(result.results) ? result.results : [],
       guardrails,
       userIndex,
+      ...(params.abortSignal && { signal: params.abortSignal }),
     };
   }
 
@@ -321,7 +327,11 @@ function groundingMiddleware(options = {}) {
     }
     let output = text;
     if (postGuard) {
-      const post = await postGuard.checkAsync(text, state.docs);
+      const post = await postGuard.checkAsync(
+        text,
+        state.docs,
+        state.signal ? { signal: state.signal } : {},
+      );
       // What PII detectors found is redacted from the report too.
       const found = detectedText(post);
       report.guardrails.postGeneration = {
