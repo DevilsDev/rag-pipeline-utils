@@ -8,7 +8,7 @@ Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev
 npm install @devilsdev/rag-guardrails
 ```
 
-Exports: `PreRetrievalGuard`, `detectInjection`, `patternInjectionDetector`, `patternPIIDetector`, `detectedText`, `RetrievalGuard`, `PostGenerationGuard`, `GuardrailsPipeline`.
+Exports: `PreRetrievalGuard`, `detectInjection`, `patternInjectionDetector`, `patternPIIDetector`, `detectedText`, `evaluateDetectors`, `detectorVerdict`, `renderDetectorReport`, `RetrievalGuard`, `PostGenerationGuard`, `GuardrailsPipeline`.
 
 Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 

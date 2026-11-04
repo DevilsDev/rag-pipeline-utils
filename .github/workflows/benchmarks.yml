@@ -13,6 +13,10 @@ on:
       sizes:
         description: "Corpus sizes for the vector store benchmark"
         default: "1000,10000"
+      model:
+        description: "Also measure the prompt-injection classifier (downloads 738 MB)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -116,5 +120,59 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: benchmark-quality
+          path: benchmark-results/
+          retention-days: 90
+
+  guardrails:
+    name: Guardrails
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MODEL: protectai/deberta-v3-base-prompt-injection-v2
+      MODEL_REVISION: 90c9989b1a342275dd0d1a95aad283c04e075671
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --prefer-offline
+
+      # Pull requests measure the patterns only; a manual run adds the
+      # classifier, from its pinned revision.
+      - name: Download the classifier
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.model }}
+        run: |
+          npm install --no-save @huggingface/transformers@4.3.2
+          dir="models/$MODEL"
+          mkdir -p "$dir/onnx"
+          base="https://huggingface.co/$MODEL/resolve/$MODEL_REVISION/onnx"
+          for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json added_tokens.json; do
+            curl -sSfL --retry 3 -o "$dir/$f" "$base/$f"
+          done
+          curl -sSfL --retry 3 -o "$dir/onnx/model.onnx" "$base/model.onnx"
+          echo "f0ea7f239f765aedbde7c9e163a7cb38a79c5b8853d3f76db5152172047b228c  $dir/onnx/model.onnx" | sha256sum -c
+          echo "TRANSFORMERS_LOCAL_MODELS=$PWD/models/" >> "$GITHUB_ENV"
+          echo "MODEL_FLAG=--model" >> "$GITHUB_ENV"
+
+      # Datasets downloaded from pinned Hugging Face commits and checked
+      # against their SHA-256 (benchmarks/guard-datasets.js)
+      - name: Guardrail benchmark
+        run: node benchmarks/guardrails.js $MODEL_FLAG --output=benchmark-results/guardrails.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: benchmark-guardrails
           path: benchmark-results/
           retention-days: 90

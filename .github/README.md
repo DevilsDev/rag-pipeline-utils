@@ -71,7 +71,7 @@ console.log(result.answer); // null: no LLM configured, so retrieval only
 ## Why this library
 
 - **Grounded by default.** Answers come back with the passages they were built from, sentence-level citations and a groundedness score, including checks that numbers in the answer appear in the sources and that it doesn't negate them.
-- **Measured, not guessed.** `rag-pipeline eval` scores a test set and fails CI when answers regress; [`rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) posts the result on every pull request. Retrieval is [benchmarked](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) on BEIR SciFact.
+- **Measured, not guessed.** `rag-pipeline eval` scores a test set and fails CI when answers regress; [`rag-eval-action`](https://github.com/DevilsDev/rag-eval-action) posts the result on every pull request. Retrieval is [benchmarked](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks) on BEIR SciFact, and the guardrails' precision and recall on public labelled sets.
 - **Provider-neutral.** OpenAI, Anthropic, Cohere and Ollama connectors; PostgreSQL with pgvector and Qdrant stores; an offline TF-IDF embedder. Anything with an `embed()` or `generate()` method works too, including Vercel AI SDK models.
 - **Production behaviour.** Cancellation and timeouts on every stage, retries only on transient errors, ACL filtering before generation, PII redaction, caching, and a token budget for the context sent to the model.
 - **Built to extend.** Each stage is a small contract, and `runContractTests()` tests your own plugin against what the pipeline relies on.
@@ -387,6 +387,8 @@ console.log(result.guardrails.retrieval.removed); // [{ id: "salaries" }]
 [Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=guardrails.js&startScript=guardrails), offline, with a stand-in LLM in place of OpenAI.
 
 The built-in checks are patterns. From 3.5.0 (unreleased), each guard also takes `detectors`: an injection classifier or a PII service that finds what patterns miss, such as a person's name, alongside the patterns or instead of them. See [Plug in your own detectors](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Guardrails#plug-in-your-own-detectors).
+
+How well the patterns work is measured: on public test sets they rarely raise a false alarm and miss most injections, and they find emails and SSNs but not names or addresses ([guardrail accuracy](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), with a prompt-injection classifier for comparison). From 3.5.0, `rag-pipeline eval-guardrails cases.jsonl` measures your own detectors on cases you label, and fails CI below a `--min`.
 
 ### Combine keyword and vector search
 
