@@ -193,6 +193,42 @@ The three guards of [`GuardrailsPipeline`](./Concepts-Guardrails) are options (`
 
 Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardrails` and the call continues (with the query sanitised, documents filtered and PII redacted). With `strict: true`, a flagged query or answer throws `GroundingBlockedError` (`code: "GROUNDING_BLOCKED"`, with the report), and a flagged query never reaches the model.
 
+### Judge paraphrases
+
+:::info[Coming in 3.4.0]
+The `judge` option of `groundingMiddleware` is in 3.4.0.
+:::
+
+The answer check compares words, numbers and negation, so a correct paraphrase is reported unsupported. Pass `judge`, any LLM with `generate()`, and it rules on the sentences that failed for lack of word overlap, the same as [`checkAnswer({ judge })`](./Evaluation#paraphrases-the-optional-llm-judge): it never overturns a wrong number or a negation, and one call per answer at most.
+
+```javascript no-run
+import { generateText, wrapLanguageModel } from "ai";
+import { openai } from "@ai-sdk/openai";
+import {
+  createAiSdkAdapter,
+  groundingMiddleware,
+} from "@devilsdev/rag-pipeline-utils";
+
+const base = openai("gpt-4o-mini");
+const { llm: judge } = createAiSdkAdapter({
+  ai: { generateText },
+  languageModel: base,
+});
+
+const model = wrapLanguageModel({
+  model: base,
+  middleware: groundingMiddleware({ retriever, embedder, judge }),
+});
+
+const { providerMetadata } = await generateText({
+  model,
+  prompt: "How many vacation days do I get?",
+});
+providerMetadata.ragPipeline.judge.verdicts; // [{ sentence, verdict, sourceId, reason, lexicalReason, decidedBy }]
+```
+
+Give the judge the base model, not the wrapped one: a judge on the wrapped model would retrieve and check its own verdicts. If the judge throws (a rate limit, a network error), the call still returns the answer: its sentences stay unsupported and `ragPipeline.judge.error` says why. With `postGeneration`, PII is redacted from the verdicts too.
+
 The middleware is a plain object and the package doesn't import the AI SDK, so it works from ESM or CommonJS. It is tested against AI SDK 6 and 7; AI SDK 5 uses the same call shapes but isn't tested. For TypeScript, set `specificationVersion` to your version's middleware version (`"v2"` for 5, `"v3"` for 6, the default, `"v4"` for 7).
 
 ## Mastra
