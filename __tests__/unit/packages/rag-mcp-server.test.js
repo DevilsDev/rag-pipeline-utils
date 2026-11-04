@@ -412,7 +412,11 @@ describe("package", () => {
   test("is versioned with the library and pins the scoped packages to it", () => {
     expect(pkg.name).toBe("@devilsdev/rag-mcp-server");
     expect(pkg.version).toBe(root.version);
-    expect(pkg.bin).toEqual({ "rag-mcp-server": "./bin/rag-mcp-server.js" });
+    // In the form `npm pkg fix` writes, so npm publish has nothing to correct.
+    expect(pkg.bin).toEqual({ "rag-mcp-server": "bin/rag-mcp-server.js" });
+    expect(pkg.repository.url).toBe(
+      "git+https://github.com/DevilsDev/rag-pipeline-utils.git",
+    );
     expect(pkg.engines).toEqual(root.engines);
     expect(pkg.publishConfig).toEqual({ access: "public" });
     for (const [name, range] of Object.entries(pkg.dependencies)) {

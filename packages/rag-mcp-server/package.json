@@ -16,7 +16,7 @@
   "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "url": "git+https://github.com/DevilsDev/rag-pipeline-utils.git",
     "directory": "packages/rag-mcp-server"
   },
   "bugs": {
@@ -29,7 +29,7 @@
   "type": "commonjs",
   "main": "./lib/server.js",
   "bin": {
-    "rag-mcp-server": "./bin/rag-mcp-server.js"
+    "rag-mcp-server": "bin/rag-mcp-server.js"
   },
   "exports": {
     ".": "./lib/server.js",
