@@ -122,8 +122,11 @@ jobs:
       # The MCP server last: it depends on rag-core, rag-connectors and
       # rag-eval (published above), and nothing depends on it, so a failure
       # here (such as a missing trusted publisher) can't hold back the
-      # library. Plain JavaScript, no build. Skipped when already on npm, so
-      # the workflow can be re-run.
+      # library. Plain JavaScript, no build. Skipped when already on npm.
+      # A re-run can't reach this step once the main package is published
+      # (its publish has no skip), so if this step fails, publish it by hand:
+      # cd packages/rag-mcp-server && npm publish --access public. It needs
+      # a trusted publisher on npmjs.com for this workflow, like the others.
       - name: Publish the MCP server (OIDC)
         run: |
           version=$(node -p "require('./package.json').version")
