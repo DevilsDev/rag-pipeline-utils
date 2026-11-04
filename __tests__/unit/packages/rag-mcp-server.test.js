@@ -312,6 +312,41 @@ test("stdout carries only the protocol: nothing before initialize, JSON-RPC afte
   }
 });
 
+describe("reading Markdown and HTML", () => {
+  const { readPassages } = require(path.join(PKG, "lib", "documents.js"));
+  const { checkAnswer } = require("../../../src/grounding/check-answer");
+
+  test("decodes entities, so a source's negation is seen", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rag-mcp-entities-"));
+    write(
+      path.join(dir, "policy.md"),
+      "# Policy\n\nContractors don't receive paid vacation. Support is run by AT&T.\n",
+    );
+    const passages = await readPassages(dir);
+    expect(passages[0].text).toContain("Contractors don't receive");
+    expect(passages[0].text).toContain("AT&T");
+
+    const check = await checkAnswer({
+      answer: "Contractors don't receive paid vacation.",
+      sources: passages.map((p) => ({ id: p.id, content: p.text })),
+      evaluate: false,
+    });
+    expect(check.grounded).toBe(true);
+  });
+
+  test("leaves no tag fragments in passage text", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rag-mcp-tags-"));
+    write(path.join(dir, "a.md"), "Hello <<b>script>alert(1)</b> world.\n");
+    write(
+      path.join(dir, "b.html"),
+      "<body><p>Twenty <<i>script>days</i> &lt;b&gt;.</p></body>",
+    );
+    for (const passage of await readPassages(dir)) {
+      expect(passage.text).not.toMatch(/[<>]/);
+    }
+  });
+});
+
 describe("command line", () => {
   const run = (args) =>
     spawnSync(process.execPath, [BIN, ...args], { encoding: "utf8" });

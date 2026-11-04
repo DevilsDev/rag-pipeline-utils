@@ -51,11 +51,13 @@ function decodeEntities(text) {
 }
 
 /**
- * Text without tags. The result is plain text for search, so a `<` or `>`
- * left by a nested or broken tag (such as `<<b>script>`) is dropped too.
+ * Plain text of HTML: tags removed and entities decoded, so "don&#39;t"
+ * reads as "don't" for the negation check. Passages are text for search,
+ * so a `<` or `>` left by a nested or broken tag (such as `<<b>script>`) or
+ * produced by decoding is dropped too.
  */
-function stripTags(html) {
-  return html.replace(/<[^>]*>/g, " ").replace(/[<>]/g, " ");
+function plainText(html) {
+  return decodeEntities(html.replace(/<[^>]*>/g, " ")).replace(/[<>]/g, " ");
 }
 
 /** Visible text of an HTML document: no head, scripts, styles or tags. */
@@ -64,11 +66,11 @@ function htmlText(html) {
   const text = (body ? body[1] : html)
     .replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/\1\s*>/gi, " ");
-  return decodeEntities(stripTags(text)).replace(/\s+/g, " ").trim();
+  return plainText(text).replace(/\s+/g, " ").trim();
 }
 
 const READERS = {
-  ".md": (raw) => chunk(stripTags(require("marked").marked(raw))),
+  ".md": (raw) => chunk(plainText(require("marked").marked(raw))),
   ".html": (raw) => chunk(htmlText(raw)),
   ".csv": (raw) => {
     const { parse } = require("csv-parse/sync");
