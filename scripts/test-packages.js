@@ -5,11 +5,12 @@
  * way users will, from their tarballs, into a clean project, and checks:
  * one copy of rag-core serves all of them (shared classes are identical),
  * a pipeline mixing the four runs, ESM imports work, the type declarations
- * compile, and installing only rag-eval brings no connector or loader
- * dependencies.
+ * compile, installing only rag-eval brings no connector or loader
+ * dependencies, and @devilsdev/rag-mcp-server, installed from its tarball,
+ * serves its tools to an MCP client over stdio.
  *
  * The project overrides the packages' dependencies on each other with
- * the tarballs, so nothing comes from the npm registry but third parties. Needs network access for the npm dependencies (ajv, pino, axios).
+ * the tarballs, so nothing comes from the npm registry but third parties. Needs network access for the npm dependencies (ajv, pino, axios, the MCP SDK).
  *
  * Usage: node scripts/test-packages.js
  */
@@ -251,6 +252,67 @@ check("rag-eval alone installs no connector or loader dependencies", () => {
       "console.log(typeof computeFaithfulness);",
   );
   if (out.trim() !== "function") throw new Error(out);
+});
+
+// @devilsdev/rag-mcp-server is hand-written (not built), and its
+// dependencies on the scoped packages resolve to the tarballs above.
+check("rag-mcp-server installs and serves its tools over stdio", () => {
+  const mcpDir = path.join(OUT, "rag-mcp-server");
+  const file = run(
+    NPM,
+    ["pack", "--silent", "--pack-destination", work],
+    mcpDir,
+  )
+    .trim()
+    .split("\n")
+    .pop();
+  tarballs["@devilsdev/rag-mcp-server"] = path.join(work, file);
+  const dir = project("mcp", ["@devilsdev/rag-mcp-server"]);
+  if (
+    fs.existsSync(
+      path.join(dir, "node_modules", "@devilsdev", "rag-guardrails"),
+    )
+  ) {
+    throw new Error(
+      "rag-mcp-server installed rag-guardrails, which it doesn't use",
+    );
+  }
+  const docs = path.join(dir, "docs");
+  fs.mkdirSync(docs);
+  fs.writeFileSync(
+    path.join(docs, "vacation.md"),
+    "# Vacation\n\nEmployees get twenty vacation days per year.\n",
+  );
+  const bin = path.join(
+    dir,
+    "node_modules",
+    "@devilsdev",
+    "rag-mcp-server",
+    "bin",
+    "rag-mcp-server.js",
+  );
+  const out = node(
+    dir,
+    [
+      "const { Client } = require('@modelcontextprotocol/sdk/client/index.js');",
+      "const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');",
+      "(async () => {",
+      `  const transport = new StdioClientTransport({ command: process.execPath, args: [${JSON.stringify(bin)}, ${JSON.stringify(docs)}], stderr: 'ignore' });`,
+      "  const client = new Client({ name: 'test-packages', version: '1.0.0' });",
+      "  await client.connect(transport);",
+      "  const { tools } = await client.listTools();",
+      "  const names = tools.map((t) => t.name).sort().join(',');",
+      "  if (names !== 'check_answer,search_documents') throw new Error(names);",
+      "  const r = await client.callTool({ name: 'search_documents', arguments: { query: 'vacation days' } });",
+      "  if (r.structuredContent.passages[0].id !== 'vacation.md#0') throw new Error(JSON.stringify(r));",
+      "  const c = await client.callTool({ name: 'check_answer', arguments: { answer: 'Employees get twenty vacation days per year.' } });",
+      "  if (!c.structuredContent.grounded) throw new Error(JSON.stringify(c));",
+      "  await client.close();",
+      "  console.log('ok');",
+      "})().catch((e) => { console.error(e); process.exit(1); });",
+    ].join("\n"),
+  );
+  if (out.trim() !== "ok") throw new Error(`unexpected output: ${out}`);
 });
 
 if (!process.env.KEEP_WORK) fs.rmSync(work, { recursive: true, force: true });

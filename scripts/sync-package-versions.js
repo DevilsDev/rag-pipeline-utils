@@ -4,10 +4,12 @@
  * Keeps the scoped packages in lockstep with @devilsdev/rag-pipeline-utils:
  * sets each packages/<name>/package.json version (and their dependencies
  * on each other), and the main package's dependency on each, to the main
- * package's version, then updates package-lock.json.
+ * package's version, then updates package-lock.json. The standalone
+ * @devilsdev/rag-mcp-server gets the same version and pins, without the
+ * main package depending on it.
  *
  * Runs as the `version` lifecycle script, so `npm version <x>` bumps all
- * five together; `npm run build` fails when they disagree.
+ * six together; `npm run build` fails when they disagree.
  *
  * Usage: node scripts/sync-package-versions.js
  */
@@ -28,8 +30,15 @@ const write = (file, json) =>
 for (const name of names) root.dependencies[name] = root.version;
 write(rootFile, root);
 
-for (const pkg of PACKAGES) {
-  const file = path.join(OUT, pkg.name.split("/")[1], "package.json");
+// Hand-written packages in packages/ that build-packages.js doesn't
+// generate. They ship with the same version and pin the scoped packages,
+// but the main package does not depend on them (rag-mcp-server brings the
+// MCP SDK, which stays out of the main package's install).
+const STANDALONE = ["rag-mcp-server"];
+
+const dirs = [...PACKAGES.map((p) => p.name.split("/")[1]), ...STANDALONE];
+for (const dir of dirs) {
+  const file = path.join(OUT, dir, "package.json");
   if (!fs.existsSync(file)) continue;
   const json = JSON.parse(fs.readFileSync(file, "utf8"));
   json.version = root.version;

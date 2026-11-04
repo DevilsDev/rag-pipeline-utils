@@ -30,6 +30,20 @@ page.
   token usage; `grounded`, `groundedness` and `unsupported` combine both
   checks. `PipelineEvaluator`, the CLI, the test matchers, the Mastra
   scorers and the AI SDK middleware stay deterministic.
+- `@devilsdev/rag-mcp-server`, an installable MCP server:
+  `npx @devilsdev/rag-mcp-server ./docs` indexes the Markdown, HTML, CSV
+  and text files in a folder with the offline TF-IDF embedder and serves
+  two tools over stdio. `search_documents({ query, topK? })` returns
+  passages with id, source, score and text;
+  `check_answer({ answer, question?, sources? })` runs `checkAnswer`
+  against the sources given,
+  or against passages retrieved for the question and answer, and returns
+  `grounded`, `groundedness`, the unsupported sentences and citations.
+  Options: `--top-k` and `--embedder local`. It depends on
+  `@devilsdev/rag-core`, `-connectors` and `-eval`, versioned in lockstep;
+  the MCP SDK is not a dependency of the main package. The release
+  workflow publishes it after the main package. `examples/mcp-server`
+  stays as the starting point for building your own server.
 
 ### Documentation
 

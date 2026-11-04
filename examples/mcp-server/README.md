@@ -4,6 +4,8 @@ An [MCP](https://modelcontextprotocol.io) server that gives Claude, or any other
 
 The assistant is the language model, so the server needs no LLM and no API key. It runs offline with the built-in TF-IDF embedder.
 
+> **Just want the server?** From 3.4.0, [`@devilsdev/rag-mcp-server`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/packages/rag-mcp-server) is the same idea as an installable package, with a `check_answer` tool as well: `npx @devilsdev/rag-mcp-server ./docs` indexes the folder at startup and serves it, with nothing to clone or ingest. Use this example when you want to build your own: another embedder, a persistent index or a vector database, or tools of your own.
+
 ## Run it
 
 Requires Node.js 22 or later.

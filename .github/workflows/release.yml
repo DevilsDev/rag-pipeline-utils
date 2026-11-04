@@ -116,13 +116,39 @@ jobs:
       #
       # No NODE_AUTH_TOKEN: npm CLI 11.5+ detects id-token: write and
       # negotiates OIDC trusted-publisher exchange with the registry.
+      #
+      # Skipped when this version is already on npm, like the other steps,
+      # so re-running failed jobs reaches the steps after it.
       - name: Publish to npm with provenance (OIDC)
-        run: npm publish --access public --provenance --ignore-scripts
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "@devilsdev/rag-pipeline-utils@$version" version >/dev/null 2>&1; then
+            echo "@devilsdev/rag-pipeline-utils@$version is already on npm"
+          else
+            npm publish --access public --provenance --ignore-scripts
+          fi
+
+      # The MCP server last: it depends on rag-core, rag-connectors and
+      # rag-eval (published above), and nothing depends on it, so a failure
+      # here (such as a missing trusted publisher) can't hold back the
+      # library. Plain JavaScript, no build. Skipped when already on npm, so
+      # after fixing the cause, re-run the failed jobs: every earlier publish
+      # is skipped. It needs a trusted publisher on npmjs.com for this
+      # workflow, like the others.
+      - name: Publish the MCP server (OIDC)
+        run: |
+          version=$(node -p "require('./package.json').version")
+          name=$(node -p "require('./packages/rag-mcp-server/package.json').name")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "$name@$version is already on npm"
+          else
+            (cd packages/rag-mcp-server && npm publish --access public --provenance --ignore-scripts)
+          fi
 
       - name: Summary
         if: success()
         run: |
-          echo "## ✅ Published @devilsdev/rag-pipeline-utils, rag-core, rag-connectors, rag-eval and rag-guardrails" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Published @devilsdev/rag-pipeline-utils, rag-core, rag-connectors, rag-eval, rag-guardrails and rag-mcp-server" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Version: $(node -p "require('./package.json').version")" >> $GITHUB_STEP_SUMMARY
           echo "Provenance: attached via OIDC + Sigstore" >> $GITHUB_STEP_SUMMARY
