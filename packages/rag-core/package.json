@@ -50,10 +50,14 @@
   },
   "peerDependencies": {
     "@opentelemetry/api": ">=1.0.0 <2",
+    "@opentelemetry/api-logs": ">=0.203.0 <1",
     "pino-pretty": ">=10.0.0"
   },
   "peerDependenciesMeta": {
     "@opentelemetry/api": {
+      "optional": true
+    },
+    "@opentelemetry/api-logs": {
       "optional": true
     },
     "pino-pretty": {

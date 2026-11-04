@@ -168,20 +168,20 @@ A run produces spans like these, nested under whatever span is active when you c
 ```
 rag.pipeline.run
 ├── embeddings text-embedding-3-small
-├── retrieval rag_documents
+├── retrieval
 ├── rerank
 └── chat gpt-4o-mini
 ```
 
 The stage spans follow the OpenTelemetry [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai), which are still at Development status and may change:
 
-| Span                      | Kind     | Attributes                                                                                                                                                                                                                                                                                                          |
-| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `rag.pipeline.run`        | internal | `rag.top_k`, `rag.stream`, `rag.success`, `rag.result_count`, `rag.answered`, `rag.groundedness` (with citations), `rag.cache.<layer>`, `rag.packing.*` (with `maxContextTokens`), `rag.time_to_first_token_ms` (streams), `rag.route.*` (with `createModelRouter`), `error.type` (`timeout`, `aborted` or `error`) |
-| `embeddings <model>`      | client   | `gen_ai.operation.name: "embeddings"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.embeddings.dimension.count`                                                                                                                                                                                          |
-| `retrieval <data source>` | client   | `gen_ai.operation.name: "retrieval"`, `gen_ai.data_source.id` (the Qdrant collection or pgvector table), `gen_ai.retrieval.top_k`, `rag.retrieval.result_count`                                                                                                                                                     |
-| `rerank`                  | internal | `rag.rerank.input_count`, `rag.rerank.output_count`, `rag.rerank.top_k`                                                                                                                                                                                                                                             |
-| `chat <model>`            | client   | `gen_ai.operation.name: "chat"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.request.temperature`, `gen_ai.request.max_tokens`, `gen_ai.request.stream`, `gen_ai.response.time_to_first_chunk` (streams, in seconds)                                                                                    |
+| Span                 | Kind     | Attributes                                                                                                                                                                                                                                                                                                          |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rag.pipeline.run`   | internal | `rag.top_k`, `rag.stream`, `rag.success`, `rag.result_count`, `rag.answered`, `rag.groundedness` (with citations), `rag.cache.<layer>`, `rag.packing.*` (with `maxContextTokens`), `rag.time_to_first_token_ms` (streams), `rag.route.*` (with `createModelRouter`), `error.type` (`timeout`, `aborted` or `error`) |
+| `embeddings <model>` | client   | `gen_ai.operation.name: "embeddings"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.embeddings.dimension.count`                                                                                                                                                                                          |
+| `retrieval`          | internal | `gen_ai.operation.name: "retrieval"`, `gen_ai.data_source.id` (the Qdrant collection or pgvector table), `gen_ai.retrieval.top_k`, `rag.retrieval.result_count`                                                                                                                                                     |
+| `rerank`             | internal | `rag.rerank.input_count`, `rag.rerank.output_count`, `rag.rerank.top_k`                                                                                                                                                                                                                                             |
+| `chat <model>`       | client   | `gen_ai.operation.name: "chat"`, `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.request.temperature`, `gen_ai.request.max_tokens`, `gen_ai.request.stream`, `gen_ai.response.time_to_first_chunk` (streams, in seconds)                                                                                    |
 
 - **Nothing you or your users typed is recorded by default.** Spans carry counts, durations, models, cache outcomes and packing, never query text, documents or answers. `telemetry: { recordContent: true }` adds the query (`rag.query.text`, `gen_ai.retrieval.query.text`) and the retrieved document ids and scores (`gen_ai.retrieval.documents`); traces are often sent to third parties, so turn it on deliberately.
 - A failed stage sets its span's status to ERROR with an exception event. `run()` resolves `{ success: false }` rather than throwing, and its span carries the error too. A run that times out or is aborted ends with `error.type: "timeout"` or `"aborted"`.
@@ -191,6 +191,61 @@ The stage spans follow the OpenTelemetry [GenAI semantic conventions](https://gi
 - `gen_ai.provider.name` and the model come from the built-in connectors. Your own plugins get spans too, without them.
 - Stage calls run inside their span, so HTTP spans from auto-instrumentation (`@opentelemetry/instrumentation-undici`, for example) nest under the stage that made them.
 - `AgenticPipeline`, guardrail filtering (`filterResults`) and the loader don't get their own spans; their time shows in the run span.
+- From 3.5.0 the retrieval span is named `retrieval` and has kind internal, as the conventions define it; before, it was `retrieval <data source>` with kind client. The data source is still in `gen_ai.data_source.id`.
+- From 3.5.0 the run result carries its ids in `result.telemetry`: `{ traceId, spanId, spans: { retrieval?, generation? } }` (the run span and the stage spans; a stream has them on its done chunk).
+
+### Evaluation scores as events
+
+:::info[Coming in 3.5.0]
+Evaluation events and `toLangfuseScores` are in 3.5.0.
+:::
+
+With `evaluate` or `citations` in a run, each score is also emitted as a [`gen_ai.evaluation.result`](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-events.md) event: an OpenTelemetry log record, parented to the span of what it judges.
+
+| Score (`gen_ai.evaluation.name`)                                                | Parent span | From        |
+| ------------------------------------------------------------------------------- | ----------- | ----------- |
+| `faithfulness`, `relevance`, `groundedness` (and `bleu`, `rouge` when computed) | `chat`      | `evaluate`  |
+| `contextPrecision`, `contextRecall` (with a `referenceAnswer`)                  | `retrieval` | `evaluate`  |
+| `citationCoverage`: the share of answer sentences a retrieved document supports | `chat`      | `citations` |
+
+The names are those of `rag-pipeline eval` and `runEvaluation()`, so a score means the same thing in a trace and in an eval report. The value is `gen_ai.evaluation.score.value`, from 0 to 1. When a stage had no span (a cache hit), its scores are parented to the run span. Skipped scores (context recall without a reference answer) are left out.
+
+Events use the logs API: `@opentelemetry/api` 1.10 or later has it; with an older version, install `@opentelemetry/api-logs` (0.203 or later), an optional peer dependency. They go to the global LoggerProvider your SDK registered, so configure a log exporter (`logRecordProcessors` in `NodeSDK`) to see them; without one, they are no-ops, and without either package, they are skipped. To use a specific logger, pass `telemetry: { logger }`; on `/edge`, `telemetry: { api, logs }`.
+
+### Scores in Langfuse
+
+Langfuse receives OpenTelemetry spans with its `LangfuseSpanProcessor` and uses the same trace and span ids, so `toLangfuseScores(result)` returns the run's scores attached to its trace and to the observation each one judges, in the shape `langfuse.score.create()` takes. Langfuse is not a dependency of this library:
+
+```js no-run
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { LangfuseSpanProcessor } from "@langfuse/otel";
+import { LangfuseClient } from "@langfuse/client";
+import {
+  createRagPipeline,
+  toLangfuseScores,
+} from "@devilsdev/rag-pipeline-utils";
+
+new NodeSDK({ spanProcessors: [new LangfuseSpanProcessor()] }).start();
+const langfuse = new LangfuseClient();
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever,
+  llm,
+  telemetry: true,
+});
+const result = await pipeline.run({
+  query,
+  options: { evaluate: true, citations: true },
+});
+for (const score of toLangfuseScores(result)) langfuse.score.create(score);
+await langfuse.flush();
+```
+
+- Without `telemetry`, pass the trace yourself: `toLangfuseScores(result, { traceId, observationId? })`, for example `getActiveTraceId()` from `@langfuse/tracing` inside your own observation.
+- It also takes a `checkAnswer()` result, which adds `groundedSentences` (labelled `grounded` or `ungrounded` in `metadata.label`); `{ comments: true }` adds the unsupported sentences as the comment. Comments quote the answer, so they are off by default.
+- With no trace id, the objects are the evaluations a Langfuse experiment evaluator returns (`name`, `value`, `dataType`, `comment`, `metadata`).
+- `evaluationScores(result)` returns the same scores as `{ name, value, target, label? }`, for any other tool.
 
 ---
 

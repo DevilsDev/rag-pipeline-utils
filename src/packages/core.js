@@ -25,10 +25,16 @@ const { TokenBudget } = require('../cost/token-budget');
 const { createModelRouter, classifyQuery } = require('../cost/model-router');
 const { MemoryRetriever } = require('../connectors/memory-retriever');
 const { BaseConnector } = require('../connectors/base-connector');
+const {
+  evaluationScores,
+  toLangfuseScores,
+} = require('../observability/scores');
 
 module.exports = {
   createRagPipeline,
   createPipeline: createRagPipeline,
+  evaluationScores,
+  toLangfuseScores,
   packContext,
   createError: errorFormatter.createError,
   wrapError: errorFormatter.wrapError,

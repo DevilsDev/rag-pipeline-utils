@@ -67,6 +67,10 @@ const { ChunkingEngine } = require('./chunking/chunking-engine');
 // Citation & Grounding
 const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
+const {
+  evaluationScores,
+  toLangfuseScores,
+} = require('./observability/scores');
 const { createAiSdkAdapter } = require('./adapters/ai-sdk');
 const {
   createMastraScorer,
@@ -252,6 +256,8 @@ module.exports = {
   // Citation & Grounding
   CitationTracker,
   checkAnswer,
+  evaluationScores,
+  toLangfuseScores,
   normalizeSources,
   createAiSdkAdapter,
   createMastraScorer,
