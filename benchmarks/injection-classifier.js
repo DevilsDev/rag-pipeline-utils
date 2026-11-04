@@ -63,7 +63,7 @@ async function createInjectionClassifier({
       revision: REVISION,
       threshold,
       maxTokens: 512,
-      transformersJs: require("@huggingface/transformers/package.json").version,
+      transformersJs: env.version,
     },
   };
 }

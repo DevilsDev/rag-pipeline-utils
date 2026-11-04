@@ -193,7 +193,8 @@ Labels with fewer than 100 spans that the patterns don't cover are left out of t
 
 - **The patterns rarely raise a false alarm and miss most attacks.** They
   match known phrasings ("ignore previous instructions", role
-  switches, encoded text), so precision is high and recall is low. An
+  switches, encoded text), so on the public sets precision is high and
+  recall is low. An
   injection in plain words, or in a language the rules don't cover, gets
   through. That is the case for adding a model-based detector.
 - **The classifier catches more, and is not a complete answer either.**
@@ -217,8 +218,9 @@ Labels with fewer than 100 spans that the patterns don't cover are left out of t
   points; the 95% interval is shown for that reason.
 - **The RAG fixtures are illustrative.** They were written for this
   project before any detector was run on them and have not been changed
-  since; they show the kinds of attack a retrieved document can carry,
-  not a measured rate.
+  since, by an author who knew the pattern rules; they show the kinds of
+  attack a retrieved document can carry, not a measured rate or a fair
+  comparison.
 
 To measure detectors on your own labelled cases, see
 [Measure your detectors](./Concepts-Guardrails#measure-your-detectors).
