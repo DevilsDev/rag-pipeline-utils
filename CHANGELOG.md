@@ -11,6 +11,15 @@ page.
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-11-04
+
+A minor release with no breaking changes. An optional LLM judge closes
+the paraphrase gap in the answer check without giving up its guarantees:
+it only sees sentences that failed for lack of shared words, and it never
+overturns a wrong number or a negation. `@devilsdev/rag-mcp-server` serves
+a folder of documents to Claude and other MCP clients, with search and
+answer checks, offline. The npm page gets a short README of its own.
+
 ### Added
 
 - **Opt-in LLM judge for paraphrases.** `checkAnswer({ ..., judge: llm })`
@@ -56,6 +65,12 @@ retriever, judge })` passes `judge` to the answer check, and the report
 
 ### Documentation
 
+- **A short README for npm.** The package page on npmjs.com now shows a
+  page of about 110 lines: what the library does, `checkAnswer`, an offline
+  pipeline, what's included, the packages and links. The full README moved
+  to `.github/README.md`, which GitHub shows on the repository page, so
+  GitHub is unchanged. Both READMEs' examples run in the docs tests, and
+  both keep absolute links.
 - **Run the README use cases on StackBlitz.** Ten of the README's use
   cases link to a script in `examples/use-cases` that opens and runs on
   StackBlitz with no install or API key: six are the README's code as is,
@@ -1182,6 +1197,7 @@ First public release on the 2.4 line, introducing the v2.4 feature set.
 For release notes prior to v2.4.0, see
 [github.com/DevilsDev/rag-pipeline-utils/releases](https://github.com/DevilsDev/rag-pipeline-utils/releases).
 
+[3.4.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.4.0
 [3.3.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.3.0
 [3.2.0]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.2.0
 [3.1.1]: https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.1.1

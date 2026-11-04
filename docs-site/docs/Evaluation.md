@@ -21,10 +21,6 @@ Grounding is lexical plus a numeric-consistency check and a polarity check: a se
 
 ### Paraphrases: the optional LLM judge
 
-:::info[Coming in 3.4.0]
-The `judge` option of `checkAnswer` is in 3.4.0.
-:::
-
 A correct paraphrase shares too few words with its source to pass the lexical check: "Staff working full time get 20 days of paid leave annually" is reported unsupported against "Full-time employees receive twenty days of paid vacation per year." Pass `judge`, any LLM with this library's `generate()` contract (`OpenAIConnector`, `AnthropicConnector`, `OllamaConnector` or your own), and it rules on those sentences:
 
 ```js no-run

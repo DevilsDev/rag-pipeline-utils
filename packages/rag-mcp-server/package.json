@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-mcp-server",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "An MCP server for your documents: npx @devilsdev/rag-mcp-server ./docs indexes a folder offline and serves search_documents and check_answer over stdio.",
   "keywords": [
     "mcp",
@@ -45,9 +45,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@devilsdev/rag-connectors": "3.3.0",
-    "@devilsdev/rag-core": "3.3.0",
-    "@devilsdev/rag-eval": "3.3.0",
+    "@devilsdev/rag-connectors": "3.4.0",
+    "@devilsdev/rag-core": "3.4.0",
+    "@devilsdev/rag-eval": "3.4.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "csv-parse": "^7.0.3",
     "marked": "15.0.12",

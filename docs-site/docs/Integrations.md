@@ -299,10 +299,6 @@ Tested against `@mastra/core` 1.81.
 
 ## MCP server for Claude and other MCP clients
 
-:::info[Coming in 3.4.0]
-`@devilsdev/rag-mcp-server` is in 3.4.0.
-:::
-
 `@devilsdev/rag-mcp-server` gives Claude, Cursor or any other [MCP](https://modelcontextprotocol.io) client a folder of your documents to search, and a way to check answers against them. It indexes the folder when it starts, with the offline TF-IDF embedder and an in-memory retriever, so it needs no API key, database or network:
 
 ```bash

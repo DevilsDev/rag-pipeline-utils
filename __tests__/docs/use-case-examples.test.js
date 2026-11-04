@@ -27,7 +27,7 @@ const scripts = fs
     file,
     code: fs.readFileSync(path.join(DIR, file), "utf8"),
   }));
-const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
+const readme = fs.readFileSync(path.join(ROOT, ".github/README.md"), "utf8");
 const readmeBlocks = extractBlocks(readme, ["js"]);
 
 /** The harness rewrites this package's imports; other packages are required. */
