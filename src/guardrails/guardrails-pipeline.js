@@ -4,6 +4,7 @@ const { EventEmitter } = require('events');
 const { PreRetrievalGuard } = require('./pre-retrieval-guard');
 const { RetrievalGuard } = require('./retrieval-guard');
 const { PostGenerationGuard } = require('./post-generation-guard');
+const { detectedText } = require('./detectors');
 
 /**
  * Default configuration for the GuardrailsPipeline.
@@ -93,7 +94,7 @@ class GuardrailsPipeline extends EventEmitter {
     // 1. Pre-retrieval guard
     let query = input.query;
     if (this.preGuard) {
-      guardrails.preRetrieval = this.preGuard.check(query);
+      guardrails.preRetrieval = await this.preGuard.checkAsync(query);
       this.emit('preRetrieval', guardrails.preRetrieval);
 
       if (!guardrails.preRetrieval.safe && this.config.strict) {
@@ -112,8 +113,8 @@ class GuardrailsPipeline extends EventEmitter {
     let preGenerationFilter = null;
     const filterOptions = this.retrievalGuard
       ? {
-          filterResults: (docs) => {
-            preGenerationFilter = this.retrievalGuard.filter(
+          filterResults: async (docs) => {
+            preGenerationFilter = await this.retrievalGuard.filterAsync(
               docs,
               input.context,
             );
@@ -136,7 +137,7 @@ class GuardrailsPipeline extends EventEmitter {
       // from unfiltered documents. Filtering now only fixes result.results;
       // if ACL removed anything the answer may contain restricted content.
       guardrails.retrieval = summarizeFilter(
-        this.retrievalGuard.filter(result.results, input.context),
+        await this.retrievalGuard.filterAsync(result.results, input.context),
       );
       this.emit('retrieval', guardrails.retrieval);
       result.results = guardrails.retrieval.results;
@@ -153,7 +154,7 @@ class GuardrailsPipeline extends EventEmitter {
 
     // 4. Post-generation guard on answer
     if (this.postGuard && result.answer) {
-      guardrails.postGeneration = this.postGuard.check(
+      guardrails.postGeneration = await this.postGuard.checkAsync(
         result.answer,
         result.results,
       );
@@ -168,8 +169,10 @@ class GuardrailsPipeline extends EventEmitter {
         };
       }
       result.answer = guardrails.postGeneration.sanitizedOutput;
-      this._redactDeep(result.citations);
-      this._redactDeep(result.evaluation);
+      // Detector findings are redacted from derived text too.
+      const found = detectedText(guardrails.postGeneration);
+      this._redactDeep(result.citations, found);
+      this._redactDeep(result.evaluation, found);
     }
 
     result.guardrails = guardrails;
@@ -181,14 +184,15 @@ class GuardrailsPipeline extends EventEmitter {
    * scrub every string in them with the same PII patterns as the answer.
    *
    * @param {*} value - Object, array or string to redact in place
+   * @param {string[]} [matches=[]] - Strings found by PII detectors, redacted too
    * @returns {*} The redacted value
    * @private
    */
-  _redactDeep(value) {
-    if (typeof value === 'string') return this.postGuard.redact(value);
+  _redactDeep(value, matches = []) {
+    if (typeof value === 'string') return this.postGuard.redact(value, matches);
     if (value && typeof value === 'object') {
       for (const key of Object.keys(value)) {
-        value[key] = this._redactDeep(value[key]);
+        value[key] = this._redactDeep(value[key], matches);
       }
     }
     return value;

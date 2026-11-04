@@ -22,6 +22,7 @@ const { checkAnswer } = require('../grounding/check-answer');
 const { PreRetrievalGuard } = require('../guardrails/pre-retrieval-guard');
 const { RetrievalGuard } = require('../guardrails/retrieval-guard');
 const { PostGenerationGuard } = require('../guardrails/post-generation-guard');
+const { detectedText } = require('../guardrails/detectors');
 const {
   RAG_SYSTEM_PROMPT,
   formatContext,
@@ -204,7 +205,7 @@ function groundingMiddleware(options = {}) {
 
     const guardrails = {};
     if (preGuard) {
-      const pre = preGuard.check(query);
+      const pre = await preGuard.checkAsync(query);
       guardrails.preRetrieval = { safe: pre.safe, issues: pre.issues };
       if (!pre.safe && strict) {
         throw new GroundingBlockedError(
@@ -224,8 +225,11 @@ function groundingMiddleware(options = {}) {
         ...(countTokens && { countTokens }),
         ...(params.abortSignal && { signal: params.abortSignal }),
         ...(retrievalGuard && {
-          filterResults: (docs) => {
-            filtered = retrievalGuard.filter(docs, callOptions.context || {});
+          filterResults: async (docs) => {
+            filtered = await retrievalGuard.filterAsync(
+              docs,
+              callOptions.context || {},
+            );
             return filtered.results;
           },
         }),
@@ -317,7 +321,9 @@ function groundingMiddleware(options = {}) {
     }
     let output = text;
     if (postGuard) {
-      const post = postGuard.check(text, state.docs);
+      const post = await postGuard.checkAsync(text, state.docs);
+      // What PII detectors found is redacted from the report too.
+      const found = detectedText(post);
       report.guardrails.postGeneration = {
         safe: post.safe,
         issues: post.issues,
@@ -330,12 +336,14 @@ function groundingMiddleware(options = {}) {
       }
       output = post.sanitizedOutput;
       if (report.unsupported) {
-        report.unsupported = report.unsupported.map((s) => postGuard.redact(s));
+        report.unsupported = report.unsupported.map((s) =>
+          postGuard.redact(s, found),
+        );
       }
       if (report.citations) {
         report.citations = report.citations.map((c) => ({
           ...c,
-          sentence: postGuard.redact(c.sentence || ''),
+          sentence: postGuard.redact(c.sentence || '', found),
         }));
       }
       if (report.judge) {
@@ -343,11 +351,13 @@ function groundingMiddleware(options = {}) {
           ...report.judge,
           verdicts: report.judge.verdicts.map((v) => ({
             ...v,
-            sentence: postGuard.redact(v.sentence || ''),
-            ...(v.reason != null && { reason: postGuard.redact(v.reason) }),
+            sentence: postGuard.redact(v.sentence || '', found),
+            ...(v.reason != null && {
+              reason: postGuard.redact(v.reason, found),
+            }),
           })),
           ...(report.judge.error != null && {
-            error: postGuard.redact(report.judge.error),
+            error: postGuard.redact(report.judge.error, found),
           }),
         };
       }

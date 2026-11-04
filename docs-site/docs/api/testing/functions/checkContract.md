@@ -21,13 +21,14 @@ Run the contract checks for a plugin without a test framework.
 
 ## Parameters
 
-| Parameter           | Type                                                                                                 | Description                                                                                                  |
-| ------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `type`              | `"loader"` \| `"embedder"` \| `"retriever"` \| `"reranker"` \| `"llm"`                               | Plugin type                                                                                                  |
-| `factory`           | () => `object` \| `Promise`\<`object`\>                                                              | Returns a new, empty plugin for each check                                                                   |
-| `options?`          | \{ `registry?`: `boolean`; `setup?`: (`retriever`, `documents`) => `void` \| `Promise`\<`void`\>; \} | -                                                                                                            |
-| `options.registry?` | `boolean`                                                                                            | Also require the `metadata` pluginRegistry.register() needs                                                  |
-| `options.setup?`    | (`retriever`, `documents`) => `void` \| `Promise`\<`void`\>                                          | Retrievers: loads the test documents (default: `retriever.store(documents)`), for retrievers without store() |
+| Parameter           | Type                                                                                                                        | Description                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `type`              | `"loader"` \| `"embedder"` \| `"retriever"` \| `"reranker"` \| `"llm"` \| `"detector"`                                      | Plugin type                                                                                                  |
+| `factory`           | () => `object` \| `Promise`\<`object`\>                                                                                     | Returns a new, empty plugin for each check                                                                   |
+| `options?`          | \{ `positive?`: `string`; `registry?`: `boolean`; `setup?`: (`retriever`, `documents`) => `void` \| `Promise`\<`void`\>; \} | -                                                                                                            |
+| `options.positive?` | `string`                                                                                                                    | Detectors: text the detector must flag, instead of the default sample for its kind                           |
+| `options.registry?` | `boolean`                                                                                                                   | Also require the `metadata` pluginRegistry.register() needs                                                  |
+| `options.setup?`    | (`retriever`, `documents`) => `void` \| `Promise`\<`void`\>                                                                 | Retrievers: loads the test documents (default: `retriever.store(documents)`), for retrievers without store() |
 
 ## Returns
 

@@ -11,6 +11,27 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Pluggable guard detectors.** `PreRetrievalGuard`, `RetrievalGuard`
+  and `PostGenerationGuard` take `detectors`: objects `{ name, kind:
+'injection' | 'pii', detect(text, context) }`, such as a model, a
+  moderation API or a PII service, run with the built-in patterns or, with
+  `builtIn: false`, instead of them. Async detectors run through the new
+  `checkAsync()` and `filterAsync()`, which `GuardrailsPipeline`,
+  `groundingMiddleware` and `createMastraGuardrails` (`injection: {
+detectors }`, `piiDetectors`) now use; the sync `check()` and
+  `filter()` throw a `TypeError` for an async detector instead of
+  skipping it. A detector that throws blocks by default
+  (`onDetectorError: 'skip'` to ignore it). What a PII detector finds is
+  redacted from the answer and from text copied from it (citations,
+  evaluation details, the middleware's report); the matched text stays
+  out of the guard result's JSON, and `detectedText(result)` passes it to
+  `redact(text, matches)`. `patternInjectionDetector()` and
+  `patternPIIDetector()` are the built-in checks as detectors, and
+  `runContractTests("detector", ...)` checks your own. Without
+  `detectors`, every guard returns what it did before.
+
 ### Fixed
 
 - `@devilsdev/rag-mcp-server`: its package.json is in the form npm

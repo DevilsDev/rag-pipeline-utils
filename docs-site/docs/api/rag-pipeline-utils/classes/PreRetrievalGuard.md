@@ -23,15 +23,18 @@ new PreRetrievalGuard(options?): PreRetrievalGuard;
 
 #### Parameters
 
-| Parameter                           | Type                                                                                                                                                                                                         | Description                                          |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| `options?`                          | \{ `allowedTopics?`: `string`[]; `blockedTopics?`: `string`[]; `enableInjectionDetection?`: `boolean`; `enableTopicFiltering?`: `boolean`; `injectionPatterns?`: `RegExp`[]; `maxQueryLength?`: `number`; \} | Override default configuration                       |
-| `options.allowedTopics?`            | `string`[]                                                                                                                                                                                                   | If non-empty, only these topics are permitted        |
-| `options.blockedTopics?`            | `string`[]                                                                                                                                                                                                   | Topics to reject                                     |
-| `options.enableInjectionDetection?` | `boolean`                                                                                                                                                                                                    | Whether to check for prompt injection                |
-| `options.enableTopicFiltering?`     | `boolean`                                                                                                                                                                                                    | Whether to enforce topic constraints                 |
-| `options.injectionPatterns?`        | `RegExp`[]                                                                                                                                                                                                   | Additional injection patterns (merged with defaults) |
-| `options.maxQueryLength?`           | `number`                                                                                                                                                                                                     | Maximum allowed query length                         |
+| Parameter                           | Type                                                                                                                                                                                                                                                                                                     | Description                                                                                     |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `options?`                          | \{ `allowedTopics?`: `string`[]; `blockedTopics?`: `string`[]; `builtIn?`: `boolean`; `detectors?`: `object`[]; `enableInjectionDetection?`: `boolean`; `enableTopicFiltering?`: `boolean`; `injectionPatterns?`: `RegExp`[]; `maxQueryLength?`: `number`; `onDetectorError?`: `"skip"` \| `"block"`; \} | Override default configuration                                                                  |
+| `options.allowedTopics?`            | `string`[]                                                                                                                                                                                                                                                                                               | If non-empty, only these topics are permitted                                                   |
+| `options.blockedTopics?`            | `string`[]                                                                                                                                                                                                                                                                                               | Topics to reject                                                                                |
+| `options.builtIn?`                  | `boolean`                                                                                                                                                                                                                                                                                                | false: use only `detectors`, not the built-in patterns                                          |
+| `options.detectors?`                | `object`[]                                                                                                                                                                                                                                                                                               | Injection detectors to run on the query as well (see ./detectors); async ones need checkAsync() |
+| `options.enableInjectionDetection?` | `boolean`                                                                                                                                                                                                                                                                                                | Whether to check for prompt injection                                                           |
+| `options.enableTopicFiltering?`     | `boolean`                                                                                                                                                                                                                                                                                                | Whether to enforce topic constraints                                                            |
+| `options.injectionPatterns?`        | `RegExp`[]                                                                                                                                                                                                                                                                                               | Additional injection patterns (merged with defaults)                                            |
+| `options.maxQueryLength?`           | `number`                                                                                                                                                                                                                                                                                                 | Maximum allowed query length                                                                    |
+| `options.onDetectorError?`          | `"skip"` \| `"block"`                                                                                                                                                                                                                                                                                    | A detector that throws makes the query unsafe ('block') or is ignored ('skip')                  |
 
 #### Returns
 
@@ -111,3 +114,40 @@ sanitizedQuery: string;
 #### Fires
 
 PreRetrievalGuard#checked
+
+---
+
+### checkAsync()
+
+```ts
+checkAsync(query): Promise<{
+  injection: {
+     detected: boolean;
+     matches: object[];
+  };
+  issues: string[];
+  safe: boolean;
+  sanitizedQuery: string;
+}>;
+```
+
+check() for async detectors, such as a model or a moderation API.
+Detectors run concurrently.
+
+#### Parameters
+
+| Parameter | Type     | Description |
+| --------- | -------- | ----------- |
+| `query`   | `string` | -           |
+
+#### Returns
+
+`Promise`\<\{
+`injection`: \{
+`detected`: `boolean`;
+`matches`: `object`[];
+\};
+`issues`: `string`[];
+`safe`: `boolean`;
+`sanitizedQuery`: `string`;
+\}\>

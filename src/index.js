@@ -93,6 +93,11 @@ const { FileVectorStore } = require('./retrieval/file-vector-store');
 // Guardrails
 const { PreRetrievalGuard } = require('./guardrails/pre-retrieval-guard');
 const { detectInjection } = require('./guardrails/injection-detector');
+const {
+  patternInjectionDetector,
+  patternPIIDetector,
+  detectedText,
+} = require('./guardrails/detectors');
 const { RetrievalGuard } = require('./guardrails/retrieval-guard');
 const { PostGenerationGuard } = require('./guardrails/post-generation-guard');
 const { GuardrailsPipeline } = require('./guardrails/guardrails-pipeline');
@@ -263,6 +268,9 @@ module.exports = {
   // Guardrails
   PreRetrievalGuard,
   detectInjection,
+  patternInjectionDetector,
+  patternPIIDetector,
+  detectedText,
   RetrievalGuard,
   PostGenerationGuard,
   GuardrailsPipeline,
