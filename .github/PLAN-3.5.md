@@ -8,7 +8,7 @@
 
 **3.6 widens the way in:** a Pinecone retriever and `npm create rag-pipeline` starters. Both need steps only the maintainer can take (a Pinecone project and CI secret, a seventh npm package with its own trusted publisher), so they are split off rather than holding 3.5 back.
 
-This split is a proposal; section 5 lists it as a decision.
+The maintainer agreed to this split and to the other recommendations in section 5 on 2026-11-04.
 
 ## 1. Order
 
@@ -86,7 +86,9 @@ A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, span
 - **Pinecone without an emulator:** if no CI secret is set, the retriever ships with mocked tests only, which is weaker than pgvector and Qdrant; the docs would say so.
 - **Starters go stale** quickly; without per-template CI and Dependabot they will break within weeks.
 
-## 5. Decisions for the maintainer
+## 5. Decisions (agreed 2026-11-04)
+
+The maintainer agreed to every recommendation below.
 
 1. **Split 3.5 and 3.6 as above, or all six in 3.5?** Recommended: split, so 3.5 isn't held by account and publishing steps.
 2. **Publish the guardrail numbers whatever they show?** Recommended: yes.
