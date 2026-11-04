@@ -195,10 +195,6 @@ Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardra
 
 ### Judge paraphrases
 
-:::info[Coming in 3.4.0]
-The `judge` option of `groundingMiddleware` is in 3.4.0.
-:::
-
 The answer check compares words, numbers and negation, so a correct paraphrase is reported unsupported. Pass `judge`, any LLM with `generate()`, and it rules on the sentences that failed for lack of word overlap, the same as [`checkAnswer({ judge })`](./Evaluation#paraphrases-the-optional-llm-judge): it never overturns a wrong number or a negation, and one call per answer at most.
 
 ```javascript no-run

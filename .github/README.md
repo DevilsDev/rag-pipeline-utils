@@ -313,7 +313,7 @@ console.log(providerMetadata.ragPipeline.grounded); // false if a sentence is un
 
 [Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=ai-sdk.js&startScript=ai-sdk), offline, with the AI SDK's mock model in place of OpenAI.
 
-Each call retrieves passages for the last user message, gives them to the model as untrusted reference data, checks the answer against them, and returns them as `sources`. The ACL, injection and PII guards are options. See [the middleware docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#ground-an-ai-sdk-app-with-middleware).
+Each call retrieves passages for the last user message, gives them to the model as untrusted reference data, checks the answer against them, and returns them as `sources`. The ACL, injection and PII guards are options, and from 3.4.0 a `judge` LLM can rule on paraphrases. See [the middleware docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#ground-an-ai-sdk-app-with-middleware).
 
 ### Test your RAG code offline
 
