@@ -1,9 +1,9 @@
 {
   "benchmark": "guardrails",
-  "createdAt": "2026-11-04T20:33:19.951Z",
+  "createdAt": "2026-11-04T20:41:33.855Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "0af3f8c",
+    "commit": "12d9cda",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -12,7 +12,8 @@
     "model": "protectai/deberta-v3-base-prompt-injection-v2",
     "revision": "90c9989b1a342275dd0d1a95aad283c04e075671",
     "threshold": 0.5,
-    "maxTokens": 512
+    "maxTokens": 512,
+    "transformersJs": "4.3.2"
   },
   "suites": {
     "injection": {
@@ -24,6 +25,7 @@
         "file": "data/test-00000-of-00001-701d16158af87368.parquet",
         "sha256": "39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e"
       },
+      "note": "Held out for the classifier: its model card (checked 2026-11-05) lists its Apache-2.0 training sets by name, and deepset/prompt-injections is not among them.",
       "cases": 116,
       "positives": 60,
       "detectors": {
@@ -96,7 +98,7 @@
           ],
           "falseAlarms": [],
           "failed": [],
-          "msPerCase": 0.3017
+          "msPerCase": 0.2759
         },
         "deberta-injection": {
           "kind": "injection",
@@ -155,7 +157,7 @@
           ],
           "falseAlarms": [],
           "failed": [],
-          "msPerCase": 272.7759
+          "msPerCase": 214.2586
         }
       }
     },
@@ -241,7 +243,7 @@
           ],
           "falseAlarms": ["jackhhao-0", "jackhhao-139"],
           "failed": [],
-          "msPerCase": 0.6718
+          "msPerCase": 0.687
         }
       }
     },
@@ -250,7 +252,7 @@
       "source": {
         "dataset": "benchmarks/fixtures/rag-attacks.jsonl",
         "license": "Apache-2.0, this repository",
-        "note": "Written for this project before any detector was run on it; illustrative, not a benchmark.",
+        "note": "Written for this project before any detector was run on it, by an author who knew the built-in pattern rules (one case is a sentence chosen earlier because the patterns miss it), so the comparison on these cases is a demonstration, not a fair test.",
         "sha256": "d8b9fa1d95a1f4c4a2ac939a788df87495f89ce4d7d8ec6ec273832ca011ce16"
       },
       "cases": 40,
@@ -439,7 +441,7 @@
           ],
           "falseAlarms": ["benign-doc-01", "benign-query-03"],
           "failed": [],
-          "msPerCase": 1.05
+          "msPerCase": 1.025
         },
         "deberta-injection": {
           "kind": "injection",
@@ -617,7 +619,7 @@
             "benign-query-05"
           ],
           "failed": [],
-          "msPerCase": 283.325
+          "msPerCase": 199.05
         }
       }
     },
@@ -969,7 +971,7 @@
               }
             }
           },
-          "msPerCase": 0.1422
+          "msPerCase": 0.1446
         }
       }
     }
