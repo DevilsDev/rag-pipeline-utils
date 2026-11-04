@@ -11,6 +11,12 @@ page.
 
 ## [Unreleased]
 
+### Fixed
+
+- `@devilsdev/rag-mcp-server`: its package.json is in the form npm
+  publishes (`bin` without `./`, a `git+https` repository URL), so
+  publishing no longer prints "npm auto-corrected some errors".
+
 ## [3.4.0] - 2026-11-04
 
 A minor release with no breaking changes. An optional LLM judge closes
