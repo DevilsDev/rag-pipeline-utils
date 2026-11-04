@@ -57,6 +57,8 @@ A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, span
 
 `fromAnthropicCitations(message, documents)` and `fromOpenAIFileCitations(response)` normalise a provider's citations into `CitationTracker`'s format; `verifyCitations()` then checks each cited passage against its claim with the same lexical, number and negation checks (and the optional judge). A citation that exists can still fail to support its sentence; that is what this reports.
 
+- **Built 2026-11-05:** the functions normalise into their own shape (`{ provider, answer, claims: [{ text, start, end, citations: [{ sourceId, title, location, passages }] }] }`), not CitationTracker's, because CitationTracker's has no passage text to verify against; `documents` became an option. Each claim is checked against only the passages it cites, together (a claim may take one fact from each of two passages); `runJudge` gained an `allowed` list per claim so the judge can't support a claim with another claim's passage. An OpenAI claim is the sentence ending at the citation's index, an inferred boundary.
+
 - **Anthropic:** each citation carries `cited_text` and a `document_index`, with a `char_location`, `page_location` or `content_block_location`, so it can be verified from the response alone.
 - **OpenAI file search:** a `file_citation` annotation carries only `file_id`, `filename` and `index`, with no cited text. Verifying it needs the search results, which the caller requests with `include: ["file_search_call.results"]`. Without them the function reports the citation as unverifiable rather than guessing. Effort is M, not S–M, because of this.
 

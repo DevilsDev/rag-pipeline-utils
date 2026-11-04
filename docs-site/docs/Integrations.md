@@ -12,6 +12,7 @@ You don't have to switch frameworks to use this library. These pieces work with 
 - **`groundingMiddleware`** adds retrieval, answer checks and guardrails to any Vercel AI SDK model.
 - **`createMastraScorer`** and **`createMastraGuardrails`** bring the metrics and guardrails to Mastra agents.
 - **`checkAnswer`** checks an answer from any framework against its sources: per-sentence citations, groundedness, unsupported sentences and evaluation scores.
+- **`verifyCitations`** checks the citations Claude or OpenAI file search returned: whether each cited passage supports its claim (3.5.0; see [Verify the citations a model returns](./Evaluation.md#verify-the-citations-a-model-returns)).
 - **`createAiSdkAdapter`** turns Vercel AI SDK models into an embedder and an LLM for `createRagPipeline()`.
 - **`@devilsdev/rag-mcp-server`** (3.4.0) serves a folder of documents to Claude and other MCP clients, with search and answer checks.
 

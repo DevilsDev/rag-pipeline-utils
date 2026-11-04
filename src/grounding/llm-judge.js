@@ -78,19 +78,21 @@ function classifyFailure(sentence, docs, idfWeights, threshold) {
  *
  * @param {Array<{text: string, classification: string}>} sentences - From
  *   CitationTracker's hallucination report
- * @param {Array<{content: string}>} docs
+ * @param {Array<{id?: string, content: string}>} docs
+ * @param {Array<string[]>} [allowed] - Per sentence, the ids of the only
+ *   docs that may support it (verifyCitations: the passages it cites)
  * @returns {string[]}
  */
-function lexicalReasons(sentences, docs) {
+function lexicalReasons(sentences, docs, allowed) {
   const idfWeights = DEFAULT_CONFIG.useIDFWeighting
     ? buildIDFWeights(docs)
     : null;
-  return sentences.map((s) =>
+  return sentences.map((s, i) =>
     s.classification === 'grounded'
       ? REASONS.supported
       : classifyFailure(
           s.text,
-          docs,
+          allowed ? docs.filter((d) => allowed[i].includes(d.id)) : docs,
           idfWeights,
           DEFAULT_CONFIG.similarityThreshold,
         ),
@@ -290,10 +292,13 @@ const REASON_TEXT = {
  * @param {{generate: Function}} params.judge
  * @param {Array<{text: string, classification: string, bestSource: Object|null}>} params.sentences
  * @param {Array<{id: string, content: string}>} params.docs
+ * @param {Array<string[]>} [params.allowed] - Per sentence, the ids of the
+ *   only docs that may support it; a verdict naming another doc is kept
+ *   unsupported. Default: any doc.
  * @returns {Promise<{verdicts: Array<Object>, calls: number, usage?: Object, error?: string}>}
  */
-async function runJudge({ judge, sentences, docs }) {
-  const reasons = lexicalReasons(sentences, docs);
+async function runJudge({ judge, sentences, docs, allowed }) {
+  const reasons = lexicalReasons(sentences, docs, allowed);
   const verdicts = sentences.map((s, i) => {
     const supported = reasons[i] === REASONS.supported;
     const best = s.bestSource;
@@ -347,6 +352,15 @@ async function runJudge({ judge, sentences, docs }) {
     if (ruling.verdict === 'unsupported') {
       entry.sourceId = null;
       entry.reason = ruling.reason || 'judge: unsupported';
+      return;
+    }
+    if (
+      allowed &&
+      ruling.source !== null &&
+      byId.has(ruling.source) &&
+      !allowed[sentenceIndex].includes(ruling.source)
+    ) {
+      entry.reason = `judge cited source "${ruling.source}", which this claim does not cite; kept unsupported`;
       return;
     }
     const cited = ruling.source !== null ? byId.get(ruling.source) : undefined;

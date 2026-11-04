@@ -35,6 +35,11 @@ const { computeGroundedness } = require('../evaluate/groundedness');
 const { PipelineEvaluator } = require('../evaluate/pipeline-evaluator');
 const { evaluateRagDataset } = require('../evaluate/evaluator');
 const { checkAnswer, normalizeSources } = require('../grounding/check-answer');
+const {
+  fromAnthropicCitations,
+  fromOpenAIFileCitations,
+  verifyCitations,
+} = require('../grounding/provider-citations');
 const { CitationTracker } = require('../citation/citation-tracker');
 const {
   mapSentenceToSources,
@@ -64,6 +69,9 @@ module.exports = {
   computeGroundedness,
   PipelineEvaluator,
   checkAnswer,
+  fromAnthropicCitations,
+  fromOpenAIFileCitations,
+  verifyCitations,
   normalizeSources,
   CitationTracker,
   mapSentenceToSources,

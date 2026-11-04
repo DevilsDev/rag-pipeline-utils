@@ -466,6 +466,7 @@ import {
   type LLMPlugin, type PipelineRunResult, type SearchResult,
   type GuardDetector, PostGenerationGuard, patternPIIDetector,
   toLangfuseScores, evaluationScores, type TelemetryOptions,
+  fromAnthropicCitations, verifyCitations,
 } from "${pkgName}";
 
 const docs: SearchResult[] = [
@@ -533,6 +534,9 @@ async function surface(): Promise<void> {
   const firstName: string | undefined = langfuseScores[0]?.name;
   const listed: number = evaluationScores(traced).length;
   void generationSpan; void firstName; void listed;
+  const cited = await verifyCitations(fromAnthropicCitations({ content: [] }));
+  const citedOk: boolean = cited.verified;
+  void citedOk;
   const config = loadConfig(".");
   const checked = validateRagrc({ pipeline: [] });
   const normalized = normalizeConfig({ pipeline: [] });
