@@ -167,10 +167,12 @@ import {
 // A prompt-injection classifier run in-process with transformers.js:
 // protectai/deberta-v3-base-prompt-injection-v2 (Apache-2.0, labels SAFE
 // and INJECTION), from its ONNX export. The model is 738 MB, downloaded on
-// first use.
+// first use. The revision is the one the Benchmarks page measured.
 const id = "protectai/deberta-v3-base-prompt-injection-v2";
-const tokenizer = await AutoTokenizer.from_pretrained(id);
+const revision = "90c9989b1a342275dd0d1a95aad283c04e075671";
+const tokenizer = await AutoTokenizer.from_pretrained(id, { revision });
 const model = await AutoModelForSequenceClassification.from_pretrained(id, {
+  revision,
   dtype: "fp32",
 });
 const INJECTION = Number(

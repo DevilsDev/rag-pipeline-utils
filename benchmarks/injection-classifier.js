@@ -58,7 +58,13 @@ async function createInjectionClassifier({
       const score = exp[injection] / exp.reduce((a, b) => a + b, 0);
       return { flagged: score > threshold, score };
     },
-    info: { model: MODEL, revision: REVISION, threshold, maxTokens: 512 },
+    info: {
+      model: MODEL,
+      revision: REVISION,
+      threshold,
+      maxTokens: 512,
+      transformersJs: require("@huggingface/transformers/package.json").version,
+    },
   };
 }
 

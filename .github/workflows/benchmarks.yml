@@ -156,11 +156,13 @@ jobs:
           npm install --no-save @huggingface/transformers@4.3.2
           dir="models/$MODEL"
           mkdir -p "$dir/onnx"
-          base="https://huggingface.co/$MODEL/resolve/$MODEL_REVISION/onnx"
+          # The same layout as the Hugging Face repo, which transformers.js
+          # reads: config and tokenizer at the root, the model in onnx/
+          base="https://huggingface.co/$MODEL/resolve/$MODEL_REVISION"
           for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json added_tokens.json; do
             curl -sSfL --retry 3 -o "$dir/$f" "$base/$f"
           done
-          curl -sSfL --retry 3 -o "$dir/onnx/model.onnx" "$base/model.onnx"
+          curl -sSfL --retry 3 -o "$dir/onnx/model.onnx" "$base/onnx/model.onnx"
           echo "f0ea7f239f765aedbde7c9e163a7cb38a79c5b8853d3f76db5152172047b228c  $dir/onnx/model.onnx" | sha256sum -c
           echo "TRANSFORMERS_LOCAL_MODELS=$PWD/models/" >> "$GITHUB_ENV"
           echo "MODEL_FLAG=--model" >> "$GITHUB_ENV"

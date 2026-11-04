@@ -128,7 +128,7 @@ function renderGuardrails(report) {
       (env.commit ? ` (commit \`${env.commit}\`)` : "") +
       ` ${env.runner === "local" ? "on a local machine" : `on ${env.runner}`}, Node ${env.node}.` +
       (report.model
-        ? ` Classifier: \`${report.model.model}\` (revision \`${report.model.revision.slice(0, 7)}\`), threshold ${report.model.threshold}, first ${report.model.maxTokens} tokens.`
+        ? ` Classifier: \`${report.model.model}\` (revision \`${report.model.revision.slice(0, 7)}\`), threshold ${report.model.threshold}, first ${report.model.maxTokens} tokens, transformers.js ${report.model.transformersJs}.`
         : ""),
     "",
   ];

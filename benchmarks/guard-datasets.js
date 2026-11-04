@@ -176,7 +176,7 @@ function loadRagFixtures() {
     source: {
       dataset: "benchmarks/fixtures/rag-attacks.jsonl",
       license: "Apache-2.0, this repository",
-      note: "Written for this project before any detector was run on it; illustrative, not a benchmark.",
+      note: "Written for this project before any detector was run on it, by an author who knew the built-in pattern rules (one case is a sentence chosen earlier because the patterns miss it), so the comparison on these cases is a demonstration, not a fair test.",
       sha256: sha256(Buffer.from(text)),
     },
     cases: text

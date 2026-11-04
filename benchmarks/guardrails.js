@@ -96,6 +96,7 @@ async function main() {
   const suites = {
     injection: {
       title: "Prompt injection",
+      note: "Held out for the classifier: its model card (checked 2026-11-05) lists its Apache-2.0 training sets by name, and deepset/prompt-injections is not among them.",
       ...deepset,
       detectors: injection,
     },
