@@ -1,0 +1,28 @@
+{
+  "name": "rag-pipeline-use-cases",
+  "version": "1.0.0",
+  "description": "The README use cases of @devilsdev/rag-pipeline-utils, runnable offline; StackBlitz opens each one",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node check-your-answer.js",
+    "citations": "node citations.js",
+    "evaluate": "node evaluate.js",
+    "check-answer": "node check-answer.js",
+    "ai-sdk": "node ai-sdk.js",
+    "testing": "node testing.js",
+    "guardrails": "node guardrails.js",
+    "hybrid-search": "node hybrid-search.js",
+    "token-budget": "node token-budget.js",
+    "timeout": "node timeout.js",
+    "cache": "node cache.js"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "^3.3.0",
+    "ai": "^6.0.0"
+  },
+  "license": "MIT"
+}

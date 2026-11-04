@@ -8,6 +8,7 @@ Runnable examples for `@devilsdev/rag-pipeline-utils` 3.x. Each needs Node.js 22
 | [`openai-pinecone/`](./openai-pinecone)     | OpenAI + Pinecone                        | `OpenAIConnector` as embedder and llm, a Pinecone retriever adapter, citations and evaluation.                                                      | `npm run mock`              |
 | [`fastify-rag-demo/`](./fastify-rag-demo)   | Fastify 5 + OpenAI + in-memory retriever | HTTP RAG service with citations, evaluation, strict guardrails and request cancellation. Ships with Dockerfile + Fly.io + Railway configs.          | `npm run start:offline`     |
 | [`mcp-server/`](./mcp-server)               | MCP SDK + built-ins                      | An MCP server whose `search_documents` tool lets Claude and other MCP clients search your indexed documents and cite them.                          | Always offline              |
+| [`use-cases/`](./use-cases)                 | Built-ins + AI SDK                       | The README use cases as scripts, one per use case, and a checker for an answer you paste in.                                                        | Always offline              |
 | [`cloudflare-worker/`](./cloudflare-worker) | Cloudflare Workers + Claude              | A Worker that answers from bundled documents as JSON or server-sent events, with citations and time to first token. Needs 3.2.0.                    | Passages only without a key |
 
 Each example is **self-contained**: its own `package.json`, its own
@@ -21,6 +22,7 @@ Each example opens on StackBlitz, which installs it and runs its offline mode. N
 - [basic-pipeline](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/basic-pipeline)
 - [openai-pinecone](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) (runs `npm run mock`)
 - [fastify-rag-demo](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/fastify-rag-demo) (runs `npm run start:offline`)
+- [use-cases](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js): paste an answer and its sources and see the sentences they don't support. Each README use case links to its own script.
 
 If StackBlitz stays on "Cloning repo from GitHub" for more than a minute, reload the page.
 
