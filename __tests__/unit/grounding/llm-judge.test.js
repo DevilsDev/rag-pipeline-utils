@@ -189,6 +189,41 @@ describe("checkAnswer with a judge", () => {
     });
   });
 
+  test("a negated sentence sharing no words with the cited source is not flipped", async () => {
+    const answer = "Workers aren't entitled to holidays.";
+    const check = await checkAnswer({
+      answer,
+      sources: [HANDBOOK],
+      judge: supportiveJudge(),
+      evaluate: false,
+    });
+    expect(check.grounded).toBe(false);
+    expect(check.unsupported).toEqual([answer]);
+    expect(check.judge.verdicts[0]).toEqual(
+      expect.objectContaining({
+        verdict: "unsupported",
+        lexicalReason: "polarity_mismatch",
+        decidedBy: "lexical",
+      }),
+    );
+  });
+
+  test("a negated paraphrase of a negated source can be flipped", async () => {
+    const check = await checkAnswer({
+      answer: "Contractors don't get paid leave.",
+      sources: [
+        {
+          id: "contractors",
+          content: "Contractors do not receive paid vacation.",
+        },
+      ],
+      judge: supportiveJudge({ source: "contractors" }),
+      evaluate: false,
+    });
+    expect(check.grounded).toBe(true);
+    expect(check.judge.verdicts[0].decidedBy).toBe("judge");
+  });
+
   test("an unrelated negated source does not keep a paraphrase from the judge", async () => {
     const check = await checkAnswer({
       answer: PARAPHRASE,

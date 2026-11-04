@@ -17,6 +17,7 @@ const {
   checkNumericConsistency,
   checkPolarityConsistency,
   extractNumbers,
+  isNegated,
 } = require('../evaluate/scoring');
 const { buildIDFWeights } = require('../citation/source-mapper');
 const { DEFAULT_CONFIG } = require('../citation/citation-tracker');
@@ -362,9 +363,17 @@ async function runJudge({ judge, sentences, docs }) {
       entry.reason = `judge said supported, but the numbers do not match source "${ruling.source}"; kept unsupported`;
       return;
     }
-    const doc = numeric.find(
-      (d) => checkPolarityConsistency(entry.sentence, d.content).consistent,
-    );
+    // A negated sentence needs a source sentence it shares words with that
+    // is negated too: checkPolarityConsistency passes when nothing is
+    // shared, and a source that negates in other words does not support a
+    // negated sentence (the 3.3 rule).
+    const negated = isNegated(tokenize(entry.sentence));
+    const doc = numeric.find((d) => {
+      const polarity = checkPolarityConsistency(entry.sentence, d.content);
+      return (
+        polarity.consistent && (!negated || polarity.sourceSentence !== null)
+      );
+    });
     if (!doc) {
       entry.decidedBy = 'lexical';
       entry.lexicalReason = REASONS.polarityMismatch;
