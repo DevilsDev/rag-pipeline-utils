@@ -50,23 +50,25 @@ function decodeEntities(text) {
   });
 }
 
+/**
+ * Text without tags. The result is plain text for search, so a `<` or `>`
+ * left by a nested or broken tag (such as `<<b>script>`) is dropped too.
+ */
+function stripTags(html) {
+  return html.replace(/<[^>]*>/g, " ").replace(/[<>]/g, " ");
+}
+
 /** Visible text of an HTML document: no head, scripts, styles or tags. */
 function htmlText(html) {
   const body = /<body[^>]*>([\s\S]*)<\/body>/i.exec(html);
   const text = (body ? body[1] : html)
     .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/\1\s*>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
-  return decodeEntities(text).replace(/\s+/g, " ").trim();
+    .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/\1\s*>/gi, " ");
+  return decodeEntities(stripTags(text)).replace(/\s+/g, " ").trim();
 }
 
 const READERS = {
-  ".md": (raw) =>
-    chunk(
-      require("marked")
-        .marked(raw)
-        .replace(/<[^>]+>/g, ""),
-    ),
+  ".md": (raw) => chunk(stripTags(require("marked").marked(raw))),
   ".html": (raw) => chunk(htmlText(raw)),
   ".csv": (raw) => {
     const { parse } = require("csv-parse/sync");
