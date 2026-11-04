@@ -210,6 +210,8 @@ console.log(good.groundednessScore); // 1
 console.log(wrong.groundednessScore); // 0: the number does not match the source
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=citations.js&startScript=citations), no install or API key.
+
 ### Measure answer quality in CI
 
 `PipelineEvaluator` scores faithfulness, relevance, context precision and, when you supply a reference answer, context recall. Run it over a fixed question set and fail the build when scores drop.
@@ -232,6 +234,8 @@ const report = evaluator.evaluate(
 console.log(report.scores); // includes contextRecall because a reference was given
 if (report.scores.faithfulness < 0.8) process.exitCode = 1;
 ```
+
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=evaluate.js&startScript=evaluate), no install or API key.
 
 From the command line, `rag-pipeline eval` runs the whole set, saves a report and fails the job when scores fall below a minimum or drop from a saved baseline:
 
@@ -273,6 +277,8 @@ console.log(check.grounded); // false
 console.log(check.unsupported.length); // 1
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-answer.js&startScript=check-answer), or [paste an answer of your own](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) and its sources to see which sentences they don't support. No install or API key.
+
 On Mastra, `createMastraScorer({ createScorer })` runs the same check as an agent scorer, with no model calls, and `createMastraGuardrails()` adds injection detection and PII redaction as a processor ([Mastra docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#mastra)).
 
 ### Ground an AI SDK app
@@ -296,6 +302,8 @@ const { text, sources, providerMetadata } = await generateText({
 console.log(providerMetadata.ragPipeline.grounded); // false if a sentence is unsupported
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=ai-sdk.js&startScript=ai-sdk), offline, with the AI SDK's mock model in place of OpenAI.
+
 Each call retrieves passages for the last user message, gives them to the model as untrusted reference data, checks the answer against them, and returns them as `sources`. The ACL, injection and PII guards are options. See [the middleware docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#ground-an-ai-sdk-app-with-middleware).
 
 ### Test your RAG code offline
@@ -313,6 +321,8 @@ const result = await pipeline.run({
 console.log(result.results[0].id); // "vacation"
 console.log(llm.calls.length); // 1
 ```
+
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=testing.js&startScript=testing), no install or API key.
 
 `expect.extend(ragMatchers)` adds `toBeGroundedIn`, `toCite` and `toContainNoPII` to Jest and Vitest, so `expect(result).toBeGroundedIn()` fails a test when an answer says something its sources don't ([matchers](https://devilsdev.github.io/rag-pipeline-utils/docs/Testing#matchers-for-answers)).
 
@@ -365,6 +375,8 @@ const result = await assistant.run({
 console.log(result.guardrails.retrieval.removed); // [{ id: "salaries" }]
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=guardrails.js&startScript=guardrails), offline, with a stand-in LLM in place of OpenAI.
+
 ### Combine keyword and vector search
 
 `HybridRetriever` merges any retrievers with Reciprocal Rank Fusion. BM25 finds exact terms such as product codes; vectors find paraphrases.
@@ -409,6 +421,8 @@ const results = await hybrid.retrieve({
 });
 console.log(results[0].id); // "err-4012"
 ```
+
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=hybrid-search.js&startScript=hybrid-search), no install or API key.
 
 On the BEIR SciFact benchmark, `BM25Search` alone matches the published BM25 baseline (nDCG@10 0.665); fusion helps when the vector side is a strong embedder, so weight the retrievers to suit. See [retrieval quality](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#retrieval-quality).
 
@@ -463,6 +477,8 @@ const result = await pipeline.run({
 console.log(result.packing); // { tokens, maxTokens: 2000, kept, dropped, truncated }
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=token-budget.js&startScript=token-budget), offline, on the test pipeline.
+
 `packContext(documents, { maxTokens, countTokens })` does the same outside a run; pass your model's tokenizer as `countTokens` for exact counts.
 
 ### Keep request latency bounded
@@ -491,6 +507,8 @@ const result = await pipeline.run({
 if (!result.success) console.error(result.error); // "Execution timeout" or "Execution aborted"
 ```
 
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=timeout.js&startScript=timeout), offline, with a slow stand-in LLM so the timeout fires.
+
 ### Cache repeated questions
 
 `cache: true` caches query embeddings, retrieval results and answers in memory, so a repeated question makes no model calls. Use `RedisCache` to share the cache between processes. Cached results are not reused when the index, embedder, model or its settings change, and access-control filtering still runs on every request:
@@ -512,6 +530,8 @@ const again = await pipeline.run({ query: "How many vacation days do I get?" });
 console.log(again.cache.generation); // "hit"
 console.log(llm.calls.length); // 1
 ```
+
+[Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=cache.js&startScript=cache), no install or API key.
 
 Answers are cached only at temperature 0. See [Caching](https://devilsdev.github.io/rag-pipeline-utils/docs/Caching).
 

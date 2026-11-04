@@ -13,6 +13,14 @@ page.
 
 ### Documentation
 
+- **Run the README use cases on StackBlitz.** Ten of the README's use
+  cases link to a script in `examples/use-cases` that opens and runs on
+  StackBlitz with no install or API key: six are the README's code as is,
+  and the AI SDK, guardrails, token budget and timeout examples use a mock
+  or stand-in model. `check-your-answer.js` checks an answer and sources
+  you paste in. A test runs every script and fails when one drifts from
+  its README block. Multi-part questions and fully local runs need a real
+  model, so they have no link.
 - Roadmap: a growth goal of 10,000 npm downloads a month by May 2027,
   with the baseline, how progress is measured, the reasons to choose the
   library in the order to lead with them, a three-phase plan, and a row
