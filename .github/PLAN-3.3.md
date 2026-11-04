@@ -2,7 +2,7 @@
 
 > **Status (2026-11-04):** 3.3.0 is done: negation in grounding (#168), the comparison and the LlamaIndex.TS guide (#170), AI SDK grounding middleware (#171), test-runner matchers (#172) and Mastra adapters (#173). 3.4.0 is next.
 >
-> **Status (2026-11-04, later):** 3.4.0 ships the LLM-judge mode (#179, and in the AI SDK middleware #181) and the installable MCP server (#180). The rest of section 3 (measured guardrails, provider citations, score export, pluggable detectors, Pinecone and the starters) moves to 3.5.0.
+> **Status (2026-11-04, later):** 3.4.0 ships the LLM-judge mode (#179, and in the AI SDK middleware #181) and the installable MCP server (#180). The rest of section 3 (measured guardrails, provider citations, score export, pluggable detectors, Pinecone and the starters) moves to 3.5.0; [PLAN-3.5.md](PLAN-3.5.md) plans it.
 >
 > Written 2026-11-04, after 3.2.0. Based on a scan of the npm packages in the same space (download counts for the week ending 2026-11-02, stars from GitHub on 2026-11-04), summarised in section 1. The rows in [PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) track the work; this file explains the choice and order.
 
