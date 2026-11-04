@@ -195,10 +195,6 @@ Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardra
 
 ### Judge paraphrases
 
-:::info[Coming in 3.4.0]
-The `judge` option of `groundingMiddleware` is in 3.4.0.
-:::
-
 The answer check compares words, numbers and negation, so a correct paraphrase is reported unsupported. Pass `judge`, any LLM with `generate()`, and it rules on the sentences that failed for lack of word overlap, the same as [`checkAnswer({ judge })`](./Evaluation#paraphrases-the-optional-llm-judge): it never overturns a wrong number or a negation, and one call per answer at most.
 
 ```javascript no-run
@@ -298,10 +294,6 @@ Both checks are pattern-based, unlike Mastra's `PromptInjectionDetector` and `PI
 Tested against `@mastra/core` 1.81.
 
 ## MCP server for Claude and other MCP clients
-
-:::info[Coming in 3.4.0]
-`@devilsdev/rag-mcp-server` is in 3.4.0.
-:::
 
 `@devilsdev/rag-mcp-server` gives Claude, Cursor or any other [MCP](https://modelcontextprotocol.io) client a folder of your documents to search, and a way to check answers against them. It indexes the folder when it starts, with the offline TF-IDF embedder and an in-memory retriever, so it needs no API key, database or network:
 

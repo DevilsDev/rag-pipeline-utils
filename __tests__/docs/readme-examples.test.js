@@ -1,6 +1,7 @@
 /**
- * Runs every JavaScript example in README.md against the current source, so
- * the README cannot drift from the code. See example-harness.js for the
+ * Runs every JavaScript example in both READMEs against the current source,
+ * so they cannot drift from the code: .github/README.md is the one GitHub
+ * shows, README.md the short one npm shows. See example-harness.js for the
  * offline connector and the `// literal` comment convention.
  */
 
@@ -14,12 +15,14 @@ const {
   useTempWorkingDirectory,
 } = require("./example-harness");
 
-const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
-const examples = extractBlocks(readme, ["js"]).filter((b) =>
-  b.code.includes(PKG),
-);
+const READMES = { GitHub: ".github/README.md", npm: "README.md" };
 
-describe("README examples", () => {
+describe.each(Object.entries(READMES))("%s README examples", (_name, file) => {
+  const readme = fs.readFileSync(path.join(ROOT, file), "utf8");
+  const examples = extractBlocks(readme, ["js"]).filter((b) =>
+    b.code.includes(PKG),
+  );
+
   const workdir = useTempWorkingDirectory();
   beforeAll(() => {
     jest.useRealTimers();
@@ -28,7 +31,9 @@ describe("README examples", () => {
   afterAll(() => workdir.leave());
 
   test("README has runnable examples", () => {
-    expect(examples.length).toBeGreaterThanOrEqual(8);
+    expect(examples.length).toBeGreaterThanOrEqual(
+      file === "README.md" ? 2 : 8,
+    );
   });
 
   test.each(examples.map((e, i) => [`${i + 1}. ${e.heading || "README"}`, e]))(

@@ -16,6 +16,7 @@ const DOCS_DIRS = [
   "docs-site/blog/**/*.md",
   "docs-site/src/**/*.{js,jsx}",
   "README.md",
+  ".github/README.md",
   "docs/**/*.md",
 ];
 
