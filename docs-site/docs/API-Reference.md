@@ -482,7 +482,7 @@ checkPolarityConsistency(
 // { consistent: false, claimNegated: true, sourceSentence: "Employees receive twenty days of paid vacation per year." }
 ```
 
-Not checked: paraphrase, negation expressed without a negation word ("excluded", "denied"), units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
+Not checked: paraphrase (from 3.4.0, `checkAnswer({ judge })` can ask an LLM about sentences that fail for lack of word overlap only; see [Evaluation](./Evaluation#paraphrases-the-optional-llm-judge)), negation expressed without a negation word ("excluded", "denied"), units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
 
 ---
 

@@ -279,6 +279,15 @@ console.log(check.unsupported.length); // 1
 
 [Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-answer.js&startScript=check-answer), or [paste an answer of your own](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) and its sources to see which sentences they don't support. No install or API key.
 
+The check compares words, numbers and negation, so a correct paraphrase ("Staff working full time get 20 days of paid leave annually") is reported unsupported too. From 3.4.0 (unreleased), pass any LLM as `judge` and it rules on the sentences that failed for lack of word overlap, in one call per answer:
+
+```ts
+const check = await checkAnswer({ answer, sources, judge: openai }); // any llm with generate()
+check.judge.verdicts; // [{ sentence, verdict, sourceId, reason, lexicalReason, decidedBy }]
+```
+
+It never overturns a sentence that failed for a wrong number or a negation, a "supported" verdict must name a source whose numbers and negation match, and output it can't parse keeps the sentence unsupported. Without `judge` nothing changes and no model is called. See [the LLM judge](https://devilsdev.github.io/rag-pipeline-utils/docs/Evaluation#paraphrases-the-optional-llm-judge).
+
 On Mastra, `createMastraScorer({ createScorer })` runs the same check as an agent scorer, with no model calls, and `createMastraGuardrails()` adds injection detection and PII redaction as a processor ([Mastra docs](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations#mastra)).
 
 ### Ground an AI SDK app

@@ -11,6 +11,26 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Opt-in LLM judge for paraphrases.** `checkAnswer({ ..., judge: llm })`
+  asks any LLM with this library's `generate()` contract to rule on the
+  sentences the lexical check failed for lack of word overlap, such as a
+  correct paraphrase, in one call per answer. The deterministic check runs
+  first and stays the default: without `judge` the result and its shape
+  are unchanged. The judge never overturns a sentence that failed because
+  a number doesn't match its source or because it is negated where its
+  source is not, and a "supported" verdict counts only when it names a
+  source that passes the number and negation checks against the sentence.
+  Sources and sentences go to the judge as delimited, untrusted data;
+  output that isn't the expected JSON verdicts keeps a sentence
+  unsupported. `check.judge` lists a verdict per sentence (`verdict`,
+  `sourceId`, `reason`, `lexicalReason`, `decidedBy: "lexical" | "judge"`),
+  the number of calls and, when the LLM result carries `usage`, the summed
+  token usage; `grounded`, `groundedness` and `unsupported` combine both
+  checks. `PipelineEvaluator`, the CLI, the test matchers, the Mastra
+  scorers and the AI SDK middleware stay deterministic.
+
 ### Documentation
 
 - **Run the README use cases on StackBlitz.** Ten of the README's use
