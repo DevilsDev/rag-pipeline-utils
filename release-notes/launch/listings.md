@@ -78,7 +78,12 @@ gh repo edit DevilsDev/rag-pipeline-utils \
 
 - **sindresorhus/awesome-nodejs**: needs a repository more than 30 days old with **at least 100 stars**. The repository has 1 star (2026-11-04). Revisit after the launch posts.
 - **Hannibal046/Awesome-LLM** (27k stars): last updated 2025-07-31, so a pull request is unlikely to be reviewed.
-- **MCP server directories** (the official MCP registry, mcp.so, Smithery, Glama, PulseMCP): they list servers you can install and run. `examples/mcp-server` is an example in this repository, not a published package, so it doesn't qualify and submitting it would mislead. If a published MCP server is wanted (for example `npx @devilsdev/rag-mcp-server ./docs`), that's a feature to build first; it is one of the candidates in the 3.3 plan (`.github/PLAN-3.3.md`).
+- **MCP server directories**: they list servers you can install and run. `examples/mcp-server` is an example in this repository, not a published package, so it doesn't qualify and submitting it would mislead. `@devilsdev/rag-mcp-server` (`packages/rag-mcp-server`, `npx @devilsdev/rag-mcp-server ./docs`) is that installable server: once 3.4.0 publishes it to npm, it is eligible. Submit the package, not the example. What each needs, checked 2026-11-04:
+  - **Official MCP registry** (registry.modelcontextprotocol.io): publish a `server.json` with the `mcp-publisher` CLI, with a package entry `registryType: "npm"`, `identifier: "@devilsdev/rag-mcp-server"`, the version and `transport: { type: "stdio" }`. The registry verifies npm packages by the `mcpName` field in the published package.json, which must equal the server name; the package has `"mcpName": "io.github.DevilsDev/rag-mcp-server"`. An `io.github.<org>/*` name needs an org owner to authenticate, and the registry docs say the interactive GitHub login can't prove an org role today: publish from GitHub Actions (OIDC) instead. Whether the namespace must match the org's casing (`DevilsDev`) or lowercase: to check before the first publish (a wrong `mcpName` needs a patch release).
+  - **mcp.so**: a pull request (or issue) to `chatmcp/mcpso` adding one Markdown line, the repository link and a one-sentence description, per a third-party write-up: to check.
+  - **Glama**: indexes GitHub repositories; to be listed as runnable it builds the server from a Dockerfile whose command starts the stdio server, per the same write-up. There is no Dockerfile for the MCP server yet: to check.
+  - **Smithery**: a form at smithery.ai/new. It has moved towards hosted servers reached over HTTPS, and whether it still lists stdio-only npm packages: to check.
+  - **PulseMCP**: a submission form on pulsemcp.com; it also picks up servers from the official registry. To check.
 
 ## Order
 

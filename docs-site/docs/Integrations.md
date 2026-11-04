@@ -13,6 +13,7 @@ You don't have to switch frameworks to use this library. These pieces work with 
 - **`createMastraScorer`** and **`createMastraGuardrails`** bring the metrics and guardrails to Mastra agents.
 - **`checkAnswer`** checks an answer from any framework against its sources: per-sentence citations, groundedness, unsupported sentences and evaluation scores.
 - **`createAiSdkAdapter`** turns Vercel AI SDK models into an embedder and an LLM for `createRagPipeline()`.
+- **`@devilsdev/rag-mcp-server`** (3.4.0) serves a folder of documents to Claude and other MCP clients, with search and answer checks.
 
 ## Check an answer from any framework
 
@@ -259,6 +260,48 @@ const agent = new Agent({
 Both checks are pattern-based, unlike Mastra's `PromptInjectionDetector` and `PIIDetector`, which call a model: they are free and fast, and catch less. Use whichever fits, or both.
 
 Tested against `@mastra/core` 1.81.
+
+## MCP server for Claude and other MCP clients
+
+:::info[Coming in 3.4.0]
+`@devilsdev/rag-mcp-server` is in 3.4.0.
+:::
+
+`@devilsdev/rag-mcp-server` gives Claude, Cursor or any other [MCP](https://modelcontextprotocol.io) client a folder of your documents to search, and a way to check answers against them. It indexes the folder when it starts, with the offline TF-IDF embedder and an in-memory retriever, so it needs no API key, database or network:
+
+```bash
+npx @devilsdev/rag-mcp-server ./docs
+```
+
+The client starts the server over stdio. In Claude Code:
+
+```bash
+claude mcp add docs -- npx -y @devilsdev/rag-mcp-server /absolute/path/to/docs
+```
+
+In Claude Desktop, and other clients with an `mcpServers` config:
+
+```json
+{
+  "mcpServers": {
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@devilsdev/rag-mcp-server", "/absolute/path/to/docs"]
+    }
+  }
+}
+```
+
+It serves two read-only tools:
+
+| Tool               | Input                                   | Returns                                                                                                                           |
+| ------------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `search_documents` | `query`, `topK` (1–20, default 4)       | `{ passages: [{ id, source, score, text }] }`, best first                                                                         |
+| `check_answer`     | `answer`, `question`, `sources`, `topK` | `checkAnswer` on the answer: `grounded`, `groundedness`, `unsupported` sentences, `citations` per sentence, the `sources` checked |
+
+`check_answer` checks against the `sources` you pass, as strings or `{ id, text }`; without them, it retrieves passages for the question and answer from the index. Passage text comes from your files, and the tool descriptions tell the client to treat it as data, not instructions.
+
+The server reads Markdown, HTML, CSV and text files, the types the CLI's `ingest` reads, and skips the rest. Options: `--top-k <n>` sets the default passage count and `--embedder local` is the only embedder. For another embedder, a persistent index or a vector database, build your own server from the [MCP server example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/mcp-server).
 
 ## Other frameworks
 

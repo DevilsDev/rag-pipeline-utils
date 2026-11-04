@@ -189,7 +189,7 @@ Evaluate a test set from the command line with `rag-pipeline eval <dataset>`
 - **Streaming Embeddings**: `StreamingEmbedder` and `createEmbeddingStream` for large corpora
 - **Cost Management**: token and cost tracking with documented pricing provenance
 - **Dashboards**: HTML and text reports from collected metrics
-- **MCP Integration**: `MCPServer` and `MCPToolBuilder` build tool definitions and handle tool calls; the [MCP server example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/mcp-server) serves a search tool to Claude and other MCP clients
+- **MCP Integration**: `MCPServer` and `MCPToolBuilder` build tool definitions and handle tool calls; the [MCP server example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/mcp-server) serves a search tool to Claude and other MCP clients, and [`@devilsdev/rag-mcp-server`](./Integrations.md#mcp-server-for-claude-and-other-mcp-clients) (3.4.0) is the installable version
 - **Developer Tools**: CLI with a local index, `doctor` diagnostics, plugin install and certification checks, and a local HTTP dev server
 
 ### **Experimental**

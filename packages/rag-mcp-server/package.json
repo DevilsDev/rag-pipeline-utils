@@ -1,0 +1,56 @@
+{
+  "name": "@devilsdev/rag-mcp-server",
+  "version": "3.3.0",
+  "description": "An MCP server for your documents: npx @devilsdev/rag-mcp-server ./docs indexes a folder offline and serves search_documents and check_answer over stdio.",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "rag",
+    "claude",
+    "grounding",
+    "citations"
+  ],
+  "license": "MIT",
+  "author": "Ali Kahwaji",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "directory": "packages/rag-mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils/issues"
+  },
+  "mcpName": "io.github.DevilsDev/rag-mcp-server",
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "commonjs",
+  "main": "./lib/server.js",
+  "bin": {
+    "rag-mcp-server": "./bin/rag-mcp-server.js"
+  },
+  "exports": {
+    ".": "./lib/server.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@devilsdev/rag-connectors": "3.3.0",
+    "@devilsdev/rag-core": "3.3.0",
+    "@devilsdev/rag-eval": "3.3.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "csv-parse": "^7.0.3",
+    "marked": "15.0.12",
+    "zod": "^4.6.7"
+  }
+}
