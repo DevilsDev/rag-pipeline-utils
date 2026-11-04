@@ -4,6 +4,11 @@ const { EventEmitter } = require('events');
 const { validateInput } = require('../security/validator');
 const { tokenize } = require('../evaluate/scoring');
 const { detectInjection, DEFAULT_RULES } = require('./injection-detector');
+const {
+  resolveDetectors,
+  runDetectorsSync,
+  runDetectorsAsync,
+} = require('./detectors');
 
 /**
  * Default configuration for the PreRetrievalGuard.
@@ -37,9 +42,18 @@ class PreRetrievalGuard extends EventEmitter {
    * @param {string[]} [options.blockedTopics=[]] - Topics to reject
    * @param {string[]} [options.allowedTopics=[]] - If non-empty, only these topics are permitted
    * @param {RegExp[]} [options.injectionPatterns] - Additional injection patterns (merged with defaults)
+   * @param {Array<object>} [options.detectors=[]] - Injection detectors to run on the query as well (see ./detectors); async ones need checkAsync()
+   * @param {boolean} [options.builtIn=true] - false: use only `detectors`, not the built-in patterns
+   * @param {'block'|'skip'} [options.onDetectorError='block'] - A detector that throws makes the query unsafe ('block') or is ignored ('skip')
    */
   constructor(options = {}) {
     super();
+    /** @private */
+    this._detectors = resolveDetectors(
+      'PreRetrievalGuard',
+      'injection',
+      options,
+    );
     this.config = { ...DEFAULT_CONFIG, ...options };
     /** @private Extra patterns supplied by the caller */
     this._customPatterns = options.injectionPatterns
@@ -70,6 +84,51 @@ class PreRetrievalGuard extends EventEmitter {
    * @fires PreRetrievalGuard#checked
    */
   check(query) {
+    const state = this._prepare(query);
+    if (state.result) return this._emit(state.result);
+    const detections = this._runDetectors(state)
+      ? runDetectorsSync(this._detectors, state.sanitizedQuery, CONTEXT, {
+          guard: 'PreRetrievalGuard',
+          asyncMethod: 'checkAsync',
+        })
+      : [];
+    return this._finish(state, detections);
+  }
+
+  /**
+   * check() for async detectors, such as a classifier model or a service.
+   * Detectors run concurrently.
+   *
+   * @param {string} query
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - Passed to each detector in its context
+   * @returns {Promise<ReturnType<PreRetrievalGuard['check']>>}
+   */
+  async checkAsync(query, { signal } = {}) {
+    const state = this._prepare(query);
+    if (state.result) return this._emit(state.result);
+    const detections = this._runDetectors(state)
+      ? await runDetectorsAsync(this._detectors, state.sanitizedQuery, {
+          ...CONTEXT,
+          ...(signal && { signal }),
+        })
+      : [];
+    return this._finish(state, detections);
+  }
+
+  /** @private */
+  _runDetectors() {
+    return this.config.enableInjectionDetection && this._detectors.length > 0;
+  }
+
+  /** @private */
+  _emit(result) {
+    this.emit('checked', result);
+    return result;
+  }
+
+  /** @private Validation and the built-in checks, before any detector runs. */
+  _prepare(query) {
     const issues = [];
 
     // 1. Validate query is a non-empty string
@@ -79,14 +138,14 @@ class PreRetrievalGuard extends EventEmitter {
       query.trim().length === 0
     ) {
       issues.push('Query must be a non-empty string');
-      const result = {
-        safe: false,
-        issues,
-        sanitizedQuery: '',
-        injection: { detected: false, matches: [] },
+      return {
+        result: {
+          safe: false,
+          issues,
+          sanitizedQuery: '',
+          injection: { detected: false, matches: [] },
+        },
       };
-      this.emit('checked', result);
-      return result;
     }
 
     // 2. Run basic input validation (length + disallowed tokens)
@@ -106,7 +165,7 @@ class PreRetrievalGuard extends EventEmitter {
 
     // 3. Injection detection on a normalised copy of the query
     let injection = { detected: false, matches: [] };
-    if (this.config.enableInjectionDetection) {
+    if (this.config.enableInjectionDetection && this.config.builtIn !== false) {
       const found = detectInjection(sanitizedQuery, {
         patterns: this._customPatterns,
       });
@@ -146,16 +205,37 @@ class PreRetrievalGuard extends EventEmitter {
       }
     }
 
+    return { issues, sanitizedQuery, injection };
+  }
+
+  /** @private Merge the detectors' findings and emit the result. */
+  _finish({ issues, sanitizedQuery, injection }, detections) {
+    const skip = this.config.onDetectorError === 'skip';
+    for (const d of detections) {
+      if (d.error) {
+        if (!skip) {
+          issues.push(`Injection detector "${d.detector}" failed: ${d.error}`);
+        }
+      } else if (d.flagged) {
+        injection = { ...injection, detected: true };
+        const labels =
+          d.labels && d.labels.length ? `: ${d.labels.join(', ')}` : '';
+        issues.push(
+          `Potential prompt injection detected by ${d.detector}${labels}`,
+        );
+      }
+    }
     const result = {
       safe: issues.length === 0,
       issues,
       sanitizedQuery,
       injection,
     };
-
-    this.emit('checked', result);
-    return result;
+    if (this._detectors.length > 0) result.detections = detections;
+    return this._emit(result);
   }
 }
+
+const CONTEXT = Object.freeze({ stage: 'query' });
 
 module.exports = { PreRetrievalGuard, DEFAULT_CONFIG };

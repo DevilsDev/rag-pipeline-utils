@@ -157,19 +157,21 @@ runContractTests("llm", () => new MyLLM(), { describe, it });
 
 The checks use `node:assert`, so they need nothing from the framework beyond `describe` and `it`. Each type checks what the pipeline calls:
 
-| Type        | Checks                                                                                                                                                                                                      |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `loader`    | `load()` can be called with no arguments                                                                                                                                                                    |
-| `embedder`  | `embed(text)` returns a non-empty array of finite numbers; every vector, `embedQuery()`'s included, has the same length; it accepts `{ signal }`                                                            |
-| `retriever` | an empty store returns an array; after `store(documents)`, `retrieve({ query, queryVector, topK, signal })` returns the closest first, sorted by numeric `score`, at most `topK`, with content and metadata |
-| `reranker`  | `rerank(query, documents, { topK })` returns only documents it was given, at most `topK`, with the one that answers the query first                                                                         |
-| `llm`       | `generate(query, documents, options)` resolves to a string; `generateStream()`, when present, yields `{ token, done }` and ends with `done: true`                                                           |
+| Type        | Checks                                                                                                                                                                                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `loader`    | `load()` can be called with no arguments                                                                                                                                                                                                            |
+| `embedder`  | `embed(text)` returns a non-empty array of finite numbers; every vector, `embedQuery()`'s included, has the same length; it accepts `{ signal }`                                                                                                    |
+| `retriever` | an empty store returns an array; after `store(documents)`, `retrieve({ query, queryVector, topK, signal })` returns the closest first, sorted by numeric `score`, at most `topK`, with content and metadata                                         |
+| `reranker`  | `rerank(query, documents, { topK })` returns only documents it was given, at most `topK`, with the one that answers the query first                                                                                                                 |
+| `llm`       | `generate(query, documents, options)` resolves to a string; `generateStream()`, when present, yields `{ token, done }` and ends with `done: true`                                                                                                   |
+| `detector`  | (from 3.5.0) a [guard detector](./Concepts-Guardrails#plug-in-your-own-detectors): doesn't flag ordinary text, flags an obvious case of its kind (or `positive`), PII matches are exact substrings, and it works in its guard with `builtIn: false` |
 
-Every type also runs `validatePlugin` and one query through `createRagPipeline` with stand-ins for the other stages. The options:
+Every pipeline type also runs `validatePlugin` and one query through `createRagPipeline` with stand-ins for the other stages. The options:
 
 - `registry: true` also requires the `metadata` that `pluginRegistry.register()` needs.
 - `setup(retriever, documents)` loads the test documents into a retriever that has no `store()`, such as one that reads an existing index.
 - `name` names the test group (default `"<type> contract"`).
+- `positive` is text a detector must flag, in place of the default sample for its kind (an injection, or a name, email and phone number).
 
 To run the same checks without a test framework, for example in a script, use `checkContract`:
 

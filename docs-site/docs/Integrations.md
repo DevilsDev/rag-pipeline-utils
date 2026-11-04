@@ -185,11 +185,11 @@ await generateText({
 
 The three guards of [`GuardrailsPipeline`](./Concepts-Guardrails) are options (`true` for their defaults, or their options object):
 
-| Option           | What it does                                                                                                                                 |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `preRetrieval`   | Prompt-injection detection on the query                                                                                                      |
-| `retrieval`      | `enforceACL` with `context.userPermissions`, `minRelevanceScore`, `detectInjection` in retrieved documents: before the model sees them       |
-| `postGeneration` | PII redaction of the answer and the report. Redaction needs the whole answer, so streamed text is held back and sent when the model finishes |
+| Option           | What it does                                                                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `preRetrieval`   | Prompt-injection detection on the query; from 3.5.0 also your own [`detectors`](./Concepts-Guardrails#plug-in-your-own-detectors)                                                                 |
+| `retrieval`      | `enforceACL` with `context.userPermissions`, `minRelevanceScore`, `detectInjection` in retrieved documents: before the model sees them                                                            |
+| `postGeneration` | PII redaction of the answer and the report, from 3.5.0 including what your PII `detectors` find. Redaction needs the whole answer, so streamed text is held back and sent when the model finishes |
 
 Without `strict`, findings are reported in `providerMetadata.ragPipeline.guardrails` and the call continues (with the query sanitised, documents filtered and PII redacted). With `strict: true`, a flagged query or answer throws `GroundingBlockedError` (`code: "GROUNDING_BLOCKED"`, with the report), and a flagged query never reaches the model.
 
@@ -283,13 +283,15 @@ const agent = new Agent({
 });
 ```
 
-| Option        | Default    | What it does                                                                                                                               |
-| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `injection`   | `true`     | Check the last user message; `false` to skip, or `PreRetrievalGuard` options                                                               |
-| `pii`         | `"redact"` | Replace emails, phone numbers, US SSNs and card numbers in the answer with `[REDACTED]`; `"block"` aborts the run instead; `false` to skip |
-| `piiPatterns` |            | Extra patterns by name, such as `{ employeeId: /EMP-\d{5}/g }`                                                                             |
+| Option         | Default    | What it does                                                                                                                               |
+| -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `injection`    | `true`     | Check the last user message; `false` to skip, or `PreRetrievalGuard` options                                                               |
+| `pii`          | `"redact"` | Replace emails, phone numbers, US SSNs and card numbers in the answer with `[REDACTED]`; `"block"` aborts the run instead; `false` to skip |
+| `piiPatterns`  |            | Extra patterns by name, such as `{ employeeId: /EMP-\d{5}/g }`                                                                             |
+| `piiDetectors` |            | (from 3.5.0) PII [detectors](./Concepts-Guardrails#plug-in-your-own-detectors) to run on the answer too; their matches are redacted        |
+| `piiBuiltIn`   | `true`     | (from 3.5.0) `false` uses only `piiDetectors`, not the built-in patterns                                                                   |
 
-Both checks are pattern-based, unlike Mastra's `PromptInjectionDetector` and `PIIDetector`, which call a model: they are free and fast, and catch less. Use whichever fits, or both.
+Both checks are pattern-based by default, unlike Mastra's `PromptInjectionDetector` and `PIIDetector`, which call a model: they are free and fast, and catch less. Use whichever fits, or both. From 3.5.0, `injection: { detectors }` and `piiDetectors` add a model or service of your own; with any detector configured, the processor's hooks return promises, which Mastra awaits.
 
 Tested against `@mastra/core` 1.81.
 

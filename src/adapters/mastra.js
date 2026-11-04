@@ -260,14 +260,22 @@ function createMastraScorer(options = {}) {
  * const guardrails = createMastraGuardrails({ injection: true, pii: "redact" });
  *
  * @param {Object} [options]
- * @param {boolean|Object} [options.injection=true] - Check the last user message; PreRetrievalGuard options
+ * @param {boolean|Object} [options.injection=true] - Check the last user message; PreRetrievalGuard options, including `detectors`
  * @param {'redact'|'block'|false} [options.pii='redact'] - Redact PII in the answer, or abort the run
  * @param {Object<string, RegExp>} [options.piiPatterns] - Extra PII patterns by name
+ * @param {Array<Object>} [options.piiDetectors] - PII detectors to run on the answer too; their matches are redacted
+ * @param {boolean} [options.piiBuiltIn=true] - false: use only piiDetectors, not the built-in PII patterns
  * @param {string} [options.id='rag-pipeline-guardrails']
- * @returns {Object} A Mastra processor
+ * @returns {Object} A Mastra processor. With detectors, its methods return promises (Mastra awaits them)
  */
 function createMastraGuardrails(options = {}) {
-  const { injection = true, pii = 'redact', piiPatterns } = options;
+  const {
+    injection = true,
+    pii = 'redact',
+    piiPatterns,
+    piiDetectors,
+    piiBuiltIn,
+  } = options;
   const preGuard = injection
     ? new PreRetrievalGuard(injection === true ? {} : injection)
     : null;
@@ -275,8 +283,19 @@ function createMastraGuardrails(options = {}) {
     ? new PostGenerationGuard({
         enableGroundednessCheck: false,
         ...(piiPatterns && { piiPatterns }),
+        ...(piiDetectors && { detectors: piiDetectors }),
+        ...(piiBuiltIn === false && { builtIn: false }),
       })
     : null;
+
+  // Detectors may be async, so with any configured the processor awaits
+  // the guards; without, it stays synchronous as before.
+  const usesDetectors =
+    (injection &&
+      typeof injection === 'object' &&
+      Array.isArray(injection.detectors) &&
+      injection.detectors.length > 0) ||
+    (Array.isArray(piiDetectors) && piiDetectors.length > 0);
 
   const processor = {
     id: options.id || 'rag-pipeline-guardrails',
@@ -285,62 +304,98 @@ function createMastraGuardrails(options = {}) {
   };
 
   if (preGuard) {
-    processor.processInput = ({ messages, abort }) => {
-      const text = lastText(messages, 'user');
-      if (text) {
-        const result = preGuard.check(text);
-        if (!result.safe) {
-          abort(`Blocked by guardrails: ${result.issues.join('; ')}`, {
-            metadata: { issues: result.issues },
-          });
-        }
+    const onResult = (result, abort) => {
+      if (!result.safe) {
+        abort(`Blocked by guardrails: ${result.issues.join('; ')}`, {
+          metadata: { issues: result.issues },
+        });
       }
-      return messages;
     };
+    processor.processInput = usesDetectors
+      ? async ({ messages, abort }) => {
+          const text = lastText(messages, 'user');
+          if (text) onResult(await preGuard.checkAsync(text), abort);
+          return messages;
+        }
+      : ({ messages, abort }) => {
+          const text = lastText(messages, 'user');
+          if (text) onResult(preGuard.check(text), abort);
+          return messages;
+        };
   }
 
   if (postGuard) {
-    const redact = (text) => {
-      const result = postGuard.check(text, []);
-      return {
-        safe: result.safe,
-        issues: result.issues,
-        text: result.sanitizedOutput,
-      };
+    processor.processOutputResult = ({ messages, abort }) => {
+      const texts = assistantTexts(messages);
+      if (!usesDetectors) {
+        const results = new Map(texts.map((t) => [t, postGuard.check(t, [])]));
+        return redactMessages(messages, results, pii, abort);
+      }
+      return Promise.all(texts.map((t) => postGuard.checkAsync(t, []))).then(
+        (checked) =>
+          redactMessages(
+            messages,
+            new Map(texts.map((t, i) => [t, checked[i]])),
+            pii,
+            abort,
+          ),
+      );
     };
-    processor.processOutputResult = ({ messages, abort }) =>
-      messages.map((message) => {
-        if (!message || message.role !== 'assistant') return message;
-        const content = message.content;
-        const issues = [];
-        const clean = (text) => {
-          const r = redact(text);
-          if (!r.safe) issues.push(...r.issues);
-          return r.text;
-        };
-        let next = content;
-        if (typeof content === 'string') next = clean(content);
-        else if (content && typeof content === 'object') {
-          next = { ...content };
-          if (Array.isArray(content.parts)) {
-            next.parts = content.parts.map((p) =>
-              p && p.type === 'text' ? { ...p, text: clean(p.text) } : p,
-            );
-          }
-          if (typeof content.content === 'string') {
-            next.content = clean(content.content);
-          }
-        }
-        if (issues.length > 0 && pii === 'block') {
-          abort(`Blocked by guardrails: ${[...new Set(issues)].join('; ')}`, {
-            metadata: { issues },
-          });
-        }
-        return { ...message, content: next };
-      });
   }
 
   return processor;
+}
+
+/** The text of each assistant message: a string, text parts, or `content`. */
+function assistantTexts(messages) {
+  const out = [];
+  for (const message of messages || []) {
+    if (!message || message.role !== 'assistant') continue;
+    const content = message.content;
+    if (typeof content === 'string') out.push(content);
+    else if (content && typeof content === 'object') {
+      if (Array.isArray(content.parts)) {
+        for (const p of content.parts) {
+          if (p && p.type === 'text') out.push(p.text);
+        }
+      }
+      if (typeof content.content === 'string') out.push(content.content);
+    }
+  }
+  return out;
+}
+
+/** Replace each assistant text with its redacted version from `results`. */
+function redactMessages(messages, results, pii, abort) {
+  return messages.map((message) => {
+    if (!message || message.role !== 'assistant') return message;
+    const content = message.content;
+    const issues = [];
+    const clean = (text) => {
+      const r = results.get(text);
+      if (!r.safe) issues.push(...r.issues);
+      return r.sanitizedOutput;
+    };
+    let next = content;
+    if (typeof content === 'string') next = clean(content);
+    else if (content && typeof content === 'object') {
+      next = { ...content };
+      if (Array.isArray(content.parts)) {
+        next.parts = content.parts.map((p) =>
+          p && p.type === 'text' ? { ...p, text: clean(p.text) } : p,
+        );
+      }
+      if (typeof content.content === 'string') {
+        next.content = clean(content.content);
+      }
+    }
+    if (issues.length > 0 && pii === 'block') {
+      abort(`Blocked by guardrails: ${[...new Set(issues)].join('; ')}`, {
+        metadata: { issues },
+      });
+    }
+    return { ...message, content: next };
+  });
 }
 
 module.exports = {

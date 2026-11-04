@@ -316,6 +316,33 @@ export interface RerankerPlugin {
   rerank(query: string, documents: SearchResult[], options?: { topK?: number; signal?: AbortSignal }): SearchResult[] | Promise<SearchResult[]>;
 }
 
+/** Where a guard runs a detector, with the document for retrieval guards. */
+export interface DetectorContext {
+  stage: "query" | "document" | "output";
+  document?: any;
+  /** The request's AbortSignal, when the caller passed one to checkAsync() / filterAsync(). */
+  signal?: AbortSignal;
+}
+
+/** What a detector found. PII detectors must give each match's exact \`text\`, which is redacted. */
+export interface DetectorResult {
+  flagged: boolean;
+  score?: number;
+  labels?: string[];
+  matches?: Array<{ label?: string; text: string; start?: number; end?: number }>;
+}
+
+/**
+ * A detector for the guards' \`detectors\` option: prompt injection
+ * (PreRetrievalGuard, RetrievalGuard) or PII (PostGenerationGuard). Async
+ * detectors need the guards' checkAsync() / filterAsync().
+ */
+export interface GuardDetector {
+  name: string;
+  kind: "injection" | "pii";
+  detect(text: string, context: DetectorContext): DetectorResult | Promise<DetectorResult>;
+}
+
 /** The interface of {@link pluginRegistry}. */
 export interface PluginRegistry {
   /**

@@ -464,6 +464,7 @@ import {
   eventLogger, ParallelProcessor, createError, wrapError, ERROR_CODES,
   type EmbedderPlugin, type RetrieverPlugin, type RerankerPlugin,
   type LLMPlugin, type PipelineRunResult, type SearchResult,
+  type GuardDetector, PostGenerationGuard, patternPIIDetector,
 } from "${pkgName}";
 
 const docs: SearchResult[] = [
@@ -499,6 +500,18 @@ async function main(): Promise<void> {
   let streamed = "";
   for await (const chunk of stream) streamed += chunk.token;
   if (streamed !== "vacation -> b,a") throw new Error("stream: " + streamed);
+  const names: GuardDetector = {
+    name: "names",
+    kind: "pii",
+    async detect(text) {
+      const matches = text.includes("Jane") ? [{ label: "person", text: "Jane" }] : [];
+      return { flagged: matches.length > 0, matches };
+    },
+  };
+  const builtIn: GuardDetector = patternPIIDetector();
+  const guard = new PostGenerationGuard({ detectors: [names, builtIn], builtIn: false, enableGroundednessCheck: false });
+  const guarded = await guard.checkAsync("Ask Jane at jane@example.com.");
+  if (guarded.sanitizedOutput !== "Ask [REDACTED] at [REDACTED].") throw new Error("detectors: " + guarded.sanitizedOutput);
   logger.debug("contracts ok");
 }
 

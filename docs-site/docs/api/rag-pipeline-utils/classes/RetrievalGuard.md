@@ -23,15 +23,18 @@ new RetrievalGuard(options?): RetrievalGuard;
 
 #### Parameters
 
-| Parameter                    | Type                                                                                                                                                                                                  | Description                                    |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `options?`                   | \{ `detectInjection?`: `boolean`; `enforceACL?`: `boolean`; `injectionAction?`: `"remove"` \| `"flag"`; `injectionPatterns?`: `RegExp`[]; `maxAgeDays?`: `number`; `minRelevanceScore?`: `number`; \} | Override default configuration                 |
-| `options.detectInjection?`   | `boolean`                                                                                                                                                                                             | Scan document text for prompt injection        |
-| `options.enforceACL?`        | `boolean`                                                                                                                                                                                             | Whether to enforce access control              |
-| `options.injectionAction?`   | `"remove"` \| `"flag"`                                                                                                                                                                                | Remove flagged documents or keep and mark them |
-| `options.injectionPatterns?` | `RegExp`[]                                                                                                                                                                                            | Extra injection patterns for the scan          |
-| `options.maxAgeDays?`        | `number`                                                                                                                                                                                              | Maximum document age in days (0 = disabled)    |
-| `options.minRelevanceScore?` | `number`                                                                                                                                                                                              | Minimum relevance score threshold              |
+| Parameter                    | Type                                                                                                                                                                                                                                                                                              | Description                                                                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options?`                   | \{ `builtIn?`: `boolean`; `detectInjection?`: `boolean`; `detectors?`: `object`[]; `enforceACL?`: `boolean`; `injectionAction?`: `"remove"` \| `"flag"`; `injectionPatterns?`: `RegExp`[]; `maxAgeDays?`: `number`; `minRelevanceScore?`: `number`; `onDetectorError?`: `"skip"` \| `"block"`; \} | Override default configuration                                                                                                                                                        |
+| `options.builtIn?`           | `boolean`                                                                                                                                                                                                                                                                                         | false: use only `detectors` for the injection scan                                                                                                                                    |
+| `options.detectInjection?`   | `boolean`                                                                                                                                                                                                                                                                                         | Scan document text for prompt injection                                                                                                                                               |
+| `options.detectors?`         | `object`[]                                                                                                                                                                                                                                                                                        | Injection detectors to run on each document's text too, when detectInjection is on (see ./detectors); async ones need filterAsync(), which calls them once per document, concurrently |
+| `options.enforceACL?`        | `boolean`                                                                                                                                                                                                                                                                                         | Whether to enforce access control                                                                                                                                                     |
+| `options.injectionAction?`   | `"remove"` \| `"flag"`                                                                                                                                                                                                                                                                            | Remove flagged documents or keep and mark them                                                                                                                                        |
+| `options.injectionPatterns?` | `RegExp`[]                                                                                                                                                                                                                                                                                        | Extra injection patterns for the scan                                                                                                                                                 |
+| `options.maxAgeDays?`        | `number`                                                                                                                                                                                                                                                                                          | Maximum document age in days (0 = disabled)                                                                                                                                           |
+| `options.minRelevanceScore?` | `number`                                                                                                                                                                                                                                                                                          | Minimum relevance score threshold                                                                                                                                                     |
+| `options.onDetectorError?`   | `"skip"` \| `"block"`                                                                                                                                                                                                                                                                             | A detector that throws counts as a finding ('block': the document is removed or flagged) or is ignored ('skip')                                                                       |
 
 #### Returns
 
@@ -102,3 +105,48 @@ results: object[];
 #### Fires
 
 RetrievalGuard#filtered
+
+---
+
+### filterAsync()
+
+```ts
+filterAsync(
+   results,
+   context?,
+   options?
+): Promise<{
+  metadata: {
+     reasons: {
+      [x: string]: number;
+     };
+  };
+  removed: object[];
+  results: object[];
+}>;
+```
+
+filter() for async detectors, such as a classifier model or a service. Each
+document that reaches the injection scan is checked by every detector,
+all concurrently.
+
+#### Parameters
+
+| Parameter         | Type                            | Description                            |
+| ----------------- | ------------------------------- | -------------------------------------- |
+| `results`         | `object`[]                      | -                                      |
+| `context?`        | `object`                        | -                                      |
+| `options?`        | \{ `signal?`: `AbortSignal`; \} | -                                      |
+| `options.signal?` | `AbortSignal`                   | Passed to each detector in its context |
+
+#### Returns
+
+`Promise`\<\{
+`metadata`: \{
+`reasons`: \{
+\[`x`: `string`\]: `number`;
+\};
+\};
+`removed`: `object`[];
+`results`: `object`[];
+\}\>

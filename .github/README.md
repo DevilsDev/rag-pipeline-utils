@@ -386,6 +386,8 @@ console.log(result.guardrails.retrieval.removed); // [{ id: "salaries" }]
 
 [Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=guardrails.js&startScript=guardrails), offline, with a stand-in LLM in place of OpenAI.
 
+The built-in checks are patterns. From 3.5.0 (unreleased), each guard also takes `detectors`: an injection classifier or a PII service that finds what patterns miss, such as a person's name, alongside the patterns or instead of them. See [Plug in your own detectors](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Guardrails#plug-in-your-own-detectors).
+
 ### Combine keyword and vector search
 
 `HybridRetriever` merges any retrievers with Reciprocal Rank Fusion. BM25 finds exact terms such as product codes; vectors find paraphrases.

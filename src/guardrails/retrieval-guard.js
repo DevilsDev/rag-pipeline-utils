@@ -2,6 +2,11 @@
 
 const { EventEmitter } = require('events');
 const { detectInjection } = require('./injection-detector');
+const {
+  resolveDetectors,
+  runDetectorsSync,
+  runDetectorsAsync,
+} = require('./detectors');
 
 /**
  * Default configuration for the RetrievalGuard.
@@ -35,10 +40,22 @@ class RetrievalGuard extends EventEmitter {
    * @param {boolean} [options.detectInjection=false] - Scan document text for prompt injection
    * @param {'remove'|'flag'} [options.injectionAction='remove'] - Remove flagged documents or keep and mark them
    * @param {RegExp[]} [options.injectionPatterns=[]] - Extra injection patterns for the scan
+   * @param {Array<object>} [options.detectors=[]] - Injection detectors to run on each document's text too, when detectInjection is on (see ./detectors); async ones need filterAsync(), which calls them once per document, concurrently
+   * @param {boolean} [options.builtIn=true] - false: use only `detectors` for the injection scan
+   * @param {'block'|'skip'} [options.onDetectorError='block'] - A detector that throws counts as a finding ('block': the document is removed or flagged) or is ignored ('skip')
    */
   constructor(options = {}) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...options };
+    /** @private */
+    this._detectors = resolveDetectors('RetrievalGuard', 'injection', options);
+    if (this._detectors.length > 0 && this.config.detectInjection !== true) {
+      // Detectors only run in the injection scan; without it they would be
+      // configured and never called.
+      throw new TypeError(
+        'RetrievalGuard: detectors run in the injection scan; set detectInjection: true',
+      );
+    }
   }
 
   /**
@@ -55,15 +72,63 @@ class RetrievalGuard extends EventEmitter {
    * @fires RetrievalGuard#filtered
    */
   filter(results, context = {}) {
+    const state = this._screen(results, context);
+    if (state.output) return state.output;
+    const detections = state.scan.map((i) =>
+      this._detectors.length > 0
+        ? runDetectorsSync(
+            this._detectors,
+            documentText(state.results[i]),
+            { stage: 'document', document: state.results[i] },
+            { guard: 'RetrievalGuard', asyncMethod: 'filterAsync' },
+          )
+        : [],
+    );
+    return this._finish(state, detections);
+  }
+
+  /**
+   * filter() for async detectors, such as a classifier model or a service. Each
+   * document that reaches the injection scan is checked by every detector,
+   * all concurrently.
+   *
+   * @param {Array<object>} results
+   * @param {object} [context={}]
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal] - Passed to each detector in its context
+   * @returns {Promise<ReturnType<RetrievalGuard['filter']>>}
+   */
+  async filterAsync(results, context = {}, { signal } = {}) {
+    const state = this._screen(results, context);
+    if (state.output) return state.output;
+    const detections = await Promise.all(
+      state.scan.map((i) =>
+        this._detectors.length > 0
+          ? runDetectorsAsync(this._detectors, documentText(state.results[i]), {
+              stage: 'document',
+              document: state.results[i],
+              ...(signal && { signal }),
+            })
+          : [],
+      ),
+    );
+    return this._finish(state, detections);
+  }
+
+  /**
+   * @private Relevance, freshness and ACL, then which documents go on to
+   * the injection scan.
+   */
+  _screen(results, context) {
     if (!Array.isArray(results)) {
       const output = { results: [], removed: [], metadata: { reasons: {} } };
       this.emit('filtered', output);
-      return output;
+      return { output };
     }
 
-    const kept = [];
-    const removed = [];
     const reasons = {};
+    const dropped = new Array(results.length).fill(false);
+    const scan = [];
 
     const now = Date.now();
     const maxAgeMs =
@@ -71,7 +136,7 @@ class RetrievalGuard extends EventEmitter {
         ? this.config.maxAgeDays * 24 * 60 * 60 * 1000
         : 0;
 
-    for (const result of results) {
+    results.forEach((result, i) => {
       let dominated = false;
       const doc = result.metadata || result.doc || result;
 
@@ -117,31 +182,56 @@ class RetrievalGuard extends EventEmitter {
         }
       }
 
-      // 4. Indirect prompt injection in document text (opt-in)
-      if (!dominated && this.config.detectInjection) {
-        const text = documentText(result);
-        const found = detectInjection(text, {
-          patterns: this.config.injectionPatterns,
-        });
-        if (found.detected) {
-          reasons.injection = (reasons.injection || 0) + 1;
-          if (this.config.injectionAction === 'flag') {
-            kept.push({
-              ...result,
-              injection: { detected: true, matches: found.matches },
-            });
-            continue;
-          }
-          dominated = true;
-        }
-      }
+      dropped[i] = dominated;
+      if (!dominated && this.config.detectInjection) scan.push(i);
+    });
 
-      if (dominated) {
-        removed.push(result);
-      } else {
-        kept.push(result);
+    return { results, reasons, dropped, scan };
+  }
+
+  /** @private 4. Indirect prompt injection in document text (opt-in). */
+  _finish({ results, reasons, dropped, scan }, detections) {
+    const findings = new Map();
+    const skip = this.config.onDetectorError === 'skip';
+    scan.forEach((i, n) => {
+      const matches =
+        this.config.builtIn === false
+          ? []
+          : detectInjection(documentText(results[i]), {
+              patterns: this.config.injectionPatterns,
+            }).matches;
+      const found = detections[n] || [];
+      const flagged = found.some((d) => d.flagged || (d.error && !skip));
+      if (matches.length > 0 || flagged) {
+        findings.set(i, { matches, detections: found });
       }
-    }
+    });
+
+    const kept = [];
+    const removed = [];
+    results.forEach((result, i) => {
+      const finding = findings.get(i);
+      if (finding) {
+        reasons.injection = (reasons.injection || 0) + 1;
+        if (this.config.injectionAction === 'flag') {
+          kept.push({
+            ...result,
+            injection: {
+              detected: true,
+              matches: finding.matches,
+              ...(this._detectors.length > 0 && {
+                detections: finding.detections,
+              }),
+            },
+          });
+          return;
+        }
+        removed.push(result);
+        return;
+      }
+      if (dropped[i]) removed.push(result);
+      else kept.push(result);
+    });
 
     const output = {
       results: kept,
