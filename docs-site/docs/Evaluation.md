@@ -588,11 +588,11 @@ const message = await new Anthropic().messages.create({
 const check = await verifyCitations(
   fromAnthropicCitations(message, { documents }),
 );
-if (!check.verified) {
-  for (const claim of check.claims.filter((c) => c.verdict !== "supported")) {
-    console.warn(claim.text, "->", claim.reason);
-  }
+for (const claim of check.claims.filter((c) => c.verdict !== "supported")) {
+  console.warn(claim.text, "->", claim.reason);
 }
+// Sentences the model didn't cite at all: `verified` doesn't cover them
+for (const sentence of check.uncited) console.warn("uncited:", sentence.text);
 ```
 
 For OpenAI's Responses API with file search, ask for the search results, because a `file_citation` carries only the file id and a position, not the cited text:
@@ -615,19 +615,19 @@ const check = await verifyCitations(fromOpenAIFileCitations(response));
 
 What the result reports:
 
-- **`verified`**: true only when every claim is supported and every citation could be checked.
+- **`verified`**: true only when there is at least one cited claim, every claim is supported and every citation could be checked. It covers what the model cited: an answer with no citations is never verified, and sentences without a citation are listed in `uncited`, not counted against it.
 - **`claims`**: one per cited claim, with `verdict` (`supported`, `unsupported` or `unverifiable`), `lexicalReason` (`supported`, `low_overlap`, `number_mismatch`, `polarity_mismatch` or `unverifiable`), `reason` in words, `decidedBy` (`lexical` or `judge`), `score`, and each citation's `sourceId`, `location`, own `score` and `supports`. A claim is checked against all its cited passages together, so a sentence taking one fact from each of two passages is supported even though neither passage supports it alone.
 - **`uncited`**: sentences with content that no citation covers.
 - **`summary`**: counts of claims by verdict, citations, unverifiable citations and uncited sentences; `skipped` counts citations of other kinds (OpenAI's web and container citations).
 
 How each provider maps:
 
-|                        | Claude                                                                                                                                                               | OpenAI Responses                                                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Claim                  | each cited text block                                                                                                                                                | the sentence that ends at the citation's `index` (inferred: OpenAI gives a position, not a span) |
-| Cited text             | `cited_text`, in every citation type                                                                                                                                 | the file search results for the cited `file_id` (any of its chunks may support the claim)        |
-| `sourceId`             | your `documents[document_index].id` (pass the documents in request order), else the document title, else the index; a search result's `source`; a web result's `url` | `file_id`, with `filename` as the title                                                          |
-| Without the cited text | —                                                                                                                                                                    | `unverifiable`, with a reason that names `include: ["file_search_call.results"]`                 |
+|                        | Claude                                                                                                                                                               | OpenAI Responses                                                                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claim                  | each cited text block                                                                                                                                                | each sentence from the previous citation's `index` up to this one: OpenAI gives a position after the cited text (a sentence or a paragraph, often shared by several citations), not a span, so the boundary is inferred |
+| Cited text             | `cited_text`, in every citation type                                                                                                                                 | the file search results for the cited `file_id` (any of its chunks may support the claim)                                                                                                                               |
+| `sourceId`             | your `documents[document_index].id` (pass the documents in request order), else the document title, else the index; a search result's `source`; a web result's `url` | `file_id`, with `filename` as the title                                                                                                                                                                                 |
+| Without the cited text | —                                                                                                                                                                    | `unverifiable`, with a reason that names `include: ["file_search_call.results"]`                                                                                                                                        |
 
 Pass a stream's final message (`stream.finalMessage()`, or the completed response). With `{ judge }`, claims that failed for lack of word overlap go to the judge in one call; it may only name a passage the claim cites, and a number or negation mismatch is never overturned.
 

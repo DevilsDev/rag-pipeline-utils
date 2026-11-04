@@ -88,7 +88,7 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * What verifyCitations() resolves to.
  *
  * @typedef {Object} CitationVerification
- * @property {boolean} verified - Every claim supported and every citation checkable
+ * @property {boolean} verified - At least one claim, every claim supported and every citation checkable; uncited sentences don't count against it (see `uncited`)
  * @property {'anthropic'|'openai'} provider
  * @property {VerifiedClaim[]} claims
  * @property {Array<{text: string, start: number, end: number}>} uncited - Sentences with content that no citation covers
@@ -257,8 +257,10 @@ function fromAnthropicCitations(message, { documents } = {}) {
  * the text, not the passage: the passages come from the file search
  * results, which the request must ask for with
  * `include: ["file_search_call.results"]`. Without them every citation is
- * unverifiable. The claim is the sentence that ends at or contains the
- * citation's index (OpenAI gives no span, so the boundary is inferred).
+ * unverifiable. OpenAI gives a position, not a span, and puts it after the
+ * text it cites, a sentence or a paragraph (several citations can share
+ * it): each sentence from the previous citation's position up to this one
+ * is a claim carrying its citations. The boundary is inferred.
  * Web and container citations are counted in `skipped`. Pass a stream's
  * completed response.
  *
@@ -318,36 +320,53 @@ function fromOpenAIFileCitations(response) {
       const offset = answer.length;
       answer += part.text;
       const sentences = sentencesWithOffsets(part.text);
+      const markers = new Map(); // index -> file citations at it
       for (const a of part.annotations || []) {
         if (!a || a.type !== 'file_citation') {
           const type = (a && a.type) || 'unknown';
           skipped[type] = (skipped[type] || 0) + 1;
           continue;
         }
-        // The citation follows its claim: take the sentence before index
-        const at = Math.max(0, Math.min(a.index, part.text.length) - 1);
-        const sentence =
-          sentences.find((s) => at >= s.start && at < s.end) ||
-          [...sentences].reverse().find((s) => s.end <= a.index) ||
-          sentences[0];
-        if (!sentence) continue;
-        const key = offset + sentence.start;
-        if (!cited.has(key)) {
-          cited.set(key, {
-            text: sentence.text,
-            start: key,
-            end: offset + sentence.end,
-            citations: [],
-          });
+        const at = Math.max(
+          0,
+          Math.min(Number(a.index) || 0, part.text.length),
+        );
+        if (!markers.has(at)) markers.set(at, []);
+        markers.get(at).push(a);
+      }
+      // A marker follows the text it cites, which may be a sentence or a
+      // whole paragraph: it covers every sentence that starts after the
+      // previous marker, and each of those is checked on its own.
+      let previous = 0;
+      for (const at of [...markers.keys()].sort((x, y) => x - y)) {
+        let covered = sentences.filter(
+          (s) => s.start >= previous && s.start < at,
+        );
+        // A marker inside the first sentence of its span
+        if (covered.length === 0) {
+          covered = sentences.filter((s) => s.start < at && s.end >= at);
         }
-        const claim = cited.get(key);
-        if (!claim.citations.some((c) => c.sourceId === a.file_id)) {
-          claim.citations.push({
-            sourceId: a.file_id,
-            title: a.filename ?? null,
-            location: { type: 'file_citation', index: offset + a.index },
-            passages: chunks.get(a.file_id) || [],
-          });
+        previous = at;
+        for (const sentence of covered) {
+          const key = offset + sentence.start;
+          if (!cited.has(key)) {
+            cited.set(key, {
+              text: sentence.text,
+              start: key,
+              end: offset + sentence.end,
+              citations: [],
+            });
+          }
+          const claim = cited.get(key);
+          for (const a of markers.get(at)) {
+            if (claim.citations.some((c) => c.sourceId === a.file_id)) continue;
+            claim.citations.push({
+              sourceId: a.file_id,
+              title: a.filename ?? null,
+              location: { type: 'file_citation', index: offset + at },
+              passages: chunks.get(a.file_id) || [],
+            });
+          }
         }
       }
     }
@@ -395,11 +414,9 @@ const REASON_TEXT = {
  *   it may only name a passage the claim cites, and never overturns a
  *   number or negation mismatch. One call at most. Errors from
  *   `judge.generate` are not caught.
- * @param {Array<object>} [options.documents] - Documents to weight terms by
- *   (IDF); default: all cited passages
  * @returns {Promise<CitationVerification>}
  */
-async function verifyCitations(input, { judge, documents } = {}) {
+async function verifyCitations(input, { judge } = {}) {
   checkInput(input);
   if (judge != null && typeof judge.generate !== 'function') {
     throw new TypeError('judge must have a generate() method');
@@ -416,13 +433,10 @@ async function verifyCitations(input, { judge, documents } = {}) {
       }),
     ),
   );
-  const weightDocs = Array.isArray(documents)
-    ? documents.map((d) => ({
-        content: typeof d === 'string' ? d : d.content || d.text || '',
-      }))
-    : passageDocs;
+  // Terms weighted over the cited passages, as checkAnswer weights over
+  // its sources
   const idfWeights = DEFAULT_CONFIG.useIDFWeighting
-    ? buildIDFWeights(weightDocs)
+    ? buildIDFWeights(passageDocs)
     : null;
   const byId = new Map(passageDocs.map((d) => [d.id, d]));
 

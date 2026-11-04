@@ -228,6 +228,53 @@ describe("fromOpenAIFileCitations", () => {
     });
   });
 
+  test("a marker after a paragraph covers each of its sentences", async () => {
+    // OpenAI's own example puts several citations at one index, after a
+    // paragraph
+    const paragraph = `${VACATION} ${REMOTE}`;
+    const text = `${paragraph}\n\nParking is free.`;
+    const normalized = fromOpenAIFileCitations(
+      openaiResponse({
+        text,
+        annotations: [
+          {
+            type: "file_citation",
+            file_id: "a",
+            filename: "a",
+            index: paragraph.length,
+          },
+          {
+            type: "file_citation",
+            file_id: "b",
+            filename: "b",
+            index: paragraph.length,
+          },
+          {
+            type: "file_citation",
+            file_id: "a",
+            filename: "a",
+            index: paragraph.length,
+          },
+        ],
+        results: [
+          { file_id: "a", text: VACATION },
+          { file_id: "b", text: REMOTE },
+        ],
+      }),
+    );
+    expect(normalized.claims.map((c) => c.text)).toEqual([VACATION, REMOTE]);
+    expect(
+      normalized.claims.map((c) => c.citations.map((k) => k.sourceId)),
+    ).toEqual([
+      ["a", "b"],
+      ["a", "b"],
+    ]);
+    const r = await verifyCitations(normalized);
+    expect(r.claims.map((c) => c.verdict)).toEqual(["supported", "supported"]);
+    // After the last marker: not cited
+    expect(r.uncited.map((s) => s.text)).toEqual(["Parking is free."]);
+  });
+
   test.each([
     [null, /needs a Responses API response/],
     [{ choices: [] }, /Chat Completions has no file citations/],
