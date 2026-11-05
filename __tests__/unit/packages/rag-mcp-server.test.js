@@ -424,6 +424,26 @@ describe("package", () => {
     }
   });
 
+  test("server.json (the MCP Registry entry) matches the package", () => {
+    const server = JSON.parse(
+      fs.readFileSync(path.join(PKG, "server.json"), "utf8"),
+    );
+    // The registry checks that the npm package's mcpName is this name
+    expect(server.name).toBe(pkg.mcpName);
+    expect(server.version).toBe(pkg.version);
+    expect(server.description.length).toBeLessThanOrEqual(100);
+    expect(server.packages).toEqual([
+      expect.objectContaining({
+        registryType: "npm",
+        identifier: pkg.name,
+        version: pkg.version,
+        transport: { type: "stdio" },
+      }),
+    ]);
+    // Not shipped to npm: it's for mcp-publisher
+    expect(pkg.files).not.toContain("server.json");
+  });
+
   test("the main package does not depend on it or on the MCP SDK", () => {
     const all = { ...root.dependencies, ...root.peerDependencies };
     expect(all).not.toHaveProperty("@devilsdev/rag-mcp-server");

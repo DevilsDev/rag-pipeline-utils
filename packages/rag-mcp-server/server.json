@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.DevilsDev/rag-mcp-server",
+  "title": "RAG for your documents",
+  "description": "Search a folder of documents and check answers against them. Offline: no API key or database.",
+  "repository": {
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils",
+    "source": "github",
+    "subfolder": "packages/rag-mcp-server"
+  },
+  "websiteUrl": "https://devilsdev.github.io/rag-pipeline-utils/",
+  "version": "3.5.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@devilsdev/rag-mcp-server",
+      "version": "3.5.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "docs_folder",
+          "description": "Absolute path to the folder of documents to index (Markdown, HTML, CSV and text files)",
+          "isRequired": true
+        }
+      ]
+    }
+  ]
+}

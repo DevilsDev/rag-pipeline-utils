@@ -48,6 +48,15 @@ for (const dir of dirs) {
   write(file, json);
 }
 
+// The MCP Registry entry (mcp-publisher publish) names the version too
+const serverJson = path.join(OUT, "rag-mcp-server", "server.json");
+if (fs.existsSync(serverJson)) {
+  const json = JSON.parse(fs.readFileSync(serverJson, "utf8"));
+  json.version = root.version;
+  for (const pkg of json.packages || []) pkg.version = root.version;
+  write(serverJson, json);
+}
+
 execFileSync(
   process.platform === "win32" ? "npm.cmd" : "npm",
   [

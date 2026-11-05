@@ -22,6 +22,9 @@ page.
   and a grounding check, and runs without an API key, returning the
   matching passages. CI scaffolds, builds and runs each one against the
   current build (`npm run test:templates`); `--live` runs them with Claude.
+- **An MCP Registry entry for `@devilsdev/rag-mcp-server`**
+  (`packages/rag-mcp-server/server.json`, `io.github.DevilsDev/rag-mcp-server`),
+  kept at the release version by `npm version`, for `mcp-publisher publish`.
 
 - **Consumer journeys** (`npm run test:consumer`): eleven developer journeys
   against the packed package and the live Claude API, run before a
