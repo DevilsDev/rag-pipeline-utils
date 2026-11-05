@@ -1,0 +1,3 @@
+# Copy to .dev.vars (read by `wrangler dev`). Without a key the Worker
+# returns the matching passages. In production: npx wrangler secret put ANTHROPIC_API_KEY
+ANTHROPIC_API_KEY=

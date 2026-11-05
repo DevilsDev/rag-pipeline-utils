@@ -91,6 +91,7 @@ console.log(result.results[0].id); // "vacation"
 - **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry spans with evaluation scores as events (or Langfuse scores).
 - **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant and Pinecone (3.6.0); anything with `embed()` or `generate()` works too.
 - **A CLI:** `init`, `ingest`, `query`, `eval` and `serve` against a local index, offline if you want.
+- **Starter templates** (3.6.0): `npm create rag-pipeline` for Next.js with the AI SDK, Mastra or Cloudflare Workers.
 
 ## Packages
 

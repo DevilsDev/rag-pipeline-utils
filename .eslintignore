@@ -35,3 +35,6 @@ __tests__/fixtures/**
 **/-backup.js
 **/.backup.js
 **/*.bak
+
+# Starter templates: ES modules and TypeScript for the generated projects
+packages/create-rag-pipeline/templates/**

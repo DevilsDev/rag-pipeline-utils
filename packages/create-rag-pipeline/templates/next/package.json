@@ -1,0 +1,29 @@
+{
+  "name": "rag-next",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Next.js app that answers from your documents with the AI SDK and @devilsdev/rag-pipeline-utils: retrieval, grounding checks and sources.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.97",
+    "@devilsdev/rag-pipeline-utils": "LIBRARY_VERSION",
+    "ai": "^7.0.163",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

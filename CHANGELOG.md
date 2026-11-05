@@ -27,6 +27,15 @@ page.
   the retriever contract against an eventually consistent in-memory
   Pinecone of both kinds in CI, and against real indexes of both kinds;
   `examples/openai-pinecone` uses it instead of its own adapter.
+- **Starter templates: `npm create rag-pipeline`** (the new
+  `create-rag-pipeline` package). `--template next` is a Next.js app with
+  any AI SDK model wrapped in `groundingMiddleware`; `mastra` is a Mastra
+  agent with a document-search tool, the groundedness scorer and
+  guardrails; `workers` is a Cloudflare Worker on the `/edge` build, with
+  streaming. Each answers from a folder of documents, returns its sources
+  and a grounding check, and runs without an API key, returning the
+  matching passages. CI scaffolds, builds and runs each one against the
+  current build (`npm run test:templates`); `--live` runs them with Claude.
 - **An MCP Registry entry for `@devilsdev/rag-mcp-server`**
   (`packages/rag-mcp-server/server.json`, `io.github.DevilsDev/rag-mcp-server`),
   kept at the release version by `npm version`, for `mcp-publisher publish`.

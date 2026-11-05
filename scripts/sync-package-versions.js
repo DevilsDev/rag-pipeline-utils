@@ -5,11 +5,11 @@
  * sets each packages/<name>/package.json version (and their dependencies
  * on each other), and the main package's dependency on each, to the main
  * package's version, then updates package-lock.json. The standalone
- * @devilsdev/rag-mcp-server gets the same version and pins, without the
+ * @devilsdev/rag-mcp-server and create-rag-pipeline get the same version and pins, without the
  * main package depending on it.
  *
  * Runs as the `version` lifecycle script, so `npm version <x>` bumps all
- * six together; `npm run build` fails when they disagree.
+ * seven together; `npm run build` fails when they disagree.
  *
  * Usage: node scripts/sync-package-versions.js
  */
@@ -34,7 +34,7 @@ write(rootFile, root);
 // generate. They ship with the same version and pin the scoped packages,
 // but the main package does not depend on them (rag-mcp-server brings the
 // MCP SDK, which stays out of the main package's install).
-const STANDALONE = ["rag-mcp-server"];
+const STANDALONE = ["rag-mcp-server", "create-rag-pipeline"];
 
 const dirs = [...PACKAGES.map((p) => p.name.split("/")[1]), ...STANDALONE];
 for (const dir of dirs) {
