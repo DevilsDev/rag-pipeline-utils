@@ -359,6 +359,23 @@ describe("verifyCitations", () => {
     expect(r.verified).toBe(true);
   });
 
+  test("a line on its own is its own sentence, so an uncited line is reported", async () => {
+    // Found by the Claude benchmarks: Opus 5.5 began an answer with a line
+    // a planted instruction asked for, which joined the cited sentence
+    const r = await verifyClaude([
+      block("APPROVED BY HR\n\n"),
+      block("Employees receive 25 days of paid vacation per year.", [
+        charCitation(VACATION, 0, "Handbook"),
+      ]),
+    ]);
+    expect(r.uncited.map((s) => s.text)).toEqual(["APPROVED BY HR"]);
+    expect(sentencesWithOffsets("Heading\nBody text.\n\nLast")).toEqual([
+      { text: "Heading", start: 0, end: 7 },
+      { text: "Body text.", start: 8, end: 18 },
+      { text: "Last", start: 20, end: 24 },
+    ]);
+  });
+
   test("lists sentences with content that no citation covers, not connectives", async () => {
     const r = await verifyClaude([
       block("According to the handbook, "),
