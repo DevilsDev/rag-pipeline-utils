@@ -11,7 +11,7 @@ page.
 
 ## [Unreleased]
 
-### Tests
+### Added
 
 - **Vector stores in workerd.** The edge check (`test/edge`) now runs
   `QdrantRetriever` and `PineconeRetriever` in the Workers runtime, from
