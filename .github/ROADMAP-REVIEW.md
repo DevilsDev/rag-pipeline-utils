@@ -46,11 +46,11 @@ What 2.5.0 did **not** deliver: the caching layer that the v3 plan had assigned 
 
 ### Marked done, but not confirmed
 
-| Roadmap item                        | Problem                                                                                                                                                                                    |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CHANGELOG auto-generation           | semantic-release was removed in 2.5.0; the changelog is now written by hand                                                                                                                |
-| Contributor guide & issue templates | The guide exists as `docs/CONTRIBUTING.md` (GitHub reads it from `docs/`); there is no `.github/ISSUE_TEMPLATE/`, only a PR template                                                       |
-| Blog post sync from changelog       | Only by hand: `npm run release:tag` (`scripts/generate-release-note.js`) writes a blog post from a tag; the `publish-release-blog.yml` workflow named in the test checklist does not exist |
+| Roadmap item                        | Problem                                                                                                                                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CHANGELOG auto-generation           | semantic-release was removed in 2.5.0; the changelog is now written by hand                                                                                                               |
+| Contributor guide & issue templates | The guide exists as `docs/CONTRIBUTING.md` (GitHub reads it from `docs/`); there is no `.github/ISSUE_TEMPLATE/`, only a PR template                                                      |
+| Blog post sync from changelog       | Done in 3.7.0: `.github/workflows/release-blog.yml` drafts the post from the CHANGELOG (`scripts/generate-release-note.js`) when a release is published, and opens a pull request with it |
 
 ### Stale or contradictory
 

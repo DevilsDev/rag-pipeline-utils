@@ -1,6 +1,8 @@
 /**
  * Version: 2.0.0
- * Description: Tags release, updates changelog, optionally opens blog preview
+ * Description: Drafts the release blog post (scripts/generate-release-note.js),
+ * optionally opens it for review, then commits and tags. Releases normally
+ * use .github/workflows/release-blog.yml instead, which opens a pull request.
  * Author: Ali Kahwaji
  */
 
@@ -18,20 +20,16 @@ if (!VERSION) {
   process.exit(1);
 }
 
-const tag = `v${VERSION}`;
-const blogPath = path.join("docs-site", "blog");
+const tag = `v${VERSION.replace(/^v/, "")}`;
 
-// Step 1: Run changelog injection
-execSync(`node scripts/generate-release-note.js ${VERSION}`, {
-  stdio: "inherit",
-});
+// Step 1: Draft the blog post from the CHANGELOG (skipped if one exists)
+const { generate } = require("./generate-release-note.js");
+const result = generate({ version: VERSION });
+const file = result.skipped ? null : path.relative(process.cwd(), result.path);
 
-// Step 2: Find generated blog file
-const date = new Date().toISOString().split("T")[0];
-const file = path.join(blogPath, `${date}-release-${tag}.md`);
-
-if (!fs.existsSync(file)) {
-  console.error(`❌ Blog post not generated: ${file}`);
+// Step 2: Check the draft was written
+if (!file || !fs.existsSync(file)) {
+  console.error(`❌ Blog post not generated: ${result.reason || file}`);
   // eslint-disable-line no-console
   process.exit(1);
 }
@@ -66,7 +64,7 @@ if (PREVIEW) {
 // Final tagging + push
 function finalizeRelease() {
   execSync(`git add CHANGELOG.md ${file}`);
-  execSync(`git commit -m "release: v${VERSION}"`);
+  execSync(`git commit -m "release: ${tag}"`);
   execSync(`git tag ${tag}`);
   execSync("git push && git push --tags");
   console.log(`🎉 Release ${tag} published and blog post staged!`);
