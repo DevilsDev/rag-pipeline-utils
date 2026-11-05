@@ -102,6 +102,7 @@
     "bench:claude-citations": "node benchmarks/claude-citations.js",
     "bench:judge-more": "node benchmarks/judge-more.js",
     "bench:claude-latency": "node benchmarks/claude-latency.js",
+    "claude:usage": "node scripts/claude-usage-report.js && node benchmarks/render.js",
     "dev": "node scripts/dev-tools.js menu",
     "dev:health": "node scripts/dev-tools.js health",
     "dev:setup": "node scripts/dev-tools.js setup",

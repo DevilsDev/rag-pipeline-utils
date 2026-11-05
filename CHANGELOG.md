@@ -11,6 +11,16 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Consumer journeys** (`npm run test:consumer`): eleven developer journeys
+  against the packed package and the live Claude API, run before a
+  release (they found the API-key leak fixed in 3.5.0).
+- **A record of the project's Claude API use**: the live suite and the
+  journeys log each call's usage (no content), and `npm run claude:usage`
+  builds the "Claude API calls behind these numbers" tables on the
+  Benchmarks page from those ledgers and the benchmarks' response cache.
+
 ## [3.5.0] - 2026-11-05
 
 A minor release with no breaking changes, about checks you can measure and

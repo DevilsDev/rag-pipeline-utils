@@ -2,7 +2,8 @@
 
 /**
  * Preloaded into every consumer-journey process (NODE_OPTIONS=--require) by
- * scripts/consumer-journeys.js. It is harness instrumentation, like an APM
+ * scripts/consumer-journeys.js, and into the live test suite by
+ * __tests__/live/usage-ledger.js. It is harness instrumentation, like an APM
  * agent: the journey code stays exactly what a developer would write.
  *
  * For every call to the Claude Messages API, made through https.request
@@ -37,6 +38,7 @@ const PRICES = [
   ["claude-haiku-4-5", 1, 5],
   ["claude-sonnet-5-5", 2, 10],
   ["claude-opus-5-5", 4, 20],
+  ["claude-fable-5-1", 10, 50],
 ];
 
 function priceOf(model) {
@@ -72,6 +74,7 @@ function record(entry) {
     status: entry.status,
     via: entry.via,
   };
+  if (typeof entry.latencyMs === "number") line.latency_ms = entry.latencyMs;
   if (entry.estimated) line.estimated = true;
   fs.appendFileSync(LEDGER, JSON.stringify(line) + "\n");
 }
@@ -164,11 +167,12 @@ https.request = function patchedRequest(...args) {
   if (overCap()) {
     process.nextTick(() =>
       req.destroy(
-        new Error(`consumer-journeys spend cap of $${HARD_CAP} reached`),
+        new Error(`Claude usage-ledger spend cap of $${HARD_CAP} reached`),
       ),
     );
     return req;
   }
+  const startedAt = Date.now();
   const sent = [];
   const write = req.write;
   const end = req.end;
@@ -220,6 +224,7 @@ https.request = function patchedRequest(...args) {
           model: usage.model || modelFromBody(Buffer.concat(sent)),
           status: res.statusCode,
           via: "https",
+          latencyMs: Date.now() - startedAt,
         });
       }
       return emit.call(this, event, ...rest);
@@ -243,10 +248,11 @@ if (typeof globalThis.fetch === "function") {
       return originalFetch.call(this, input, init);
     }
     if (overCap()) {
-      throw new Error(`consumer-journeys spend cap of $${HARD_CAP} reached`);
+      throw new Error(`Claude usage-ledger spend cap of $${HARD_CAP} reached`);
     }
     const body = init && typeof init.body === "string" ? init.body : undefined;
     probe(body);
+    const startedAt = Date.now();
     const response = await originalFetch.call(this, input, init);
     try {
       const copy = response.clone();
@@ -259,6 +265,7 @@ if (typeof globalThis.fetch === "function") {
             model: usage.model || modelFromBody(body),
             status: response.status,
             via: "fetch",
+            latencyMs: Date.now() - startedAt,
           });
         })
         .catch(() => {

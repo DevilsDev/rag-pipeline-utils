@@ -200,6 +200,87 @@ const {
   renderLatency,
 } = require("./render-claude");
 
+const MODEL_NAMES = {
+  "claude-haiku-5-5": "Claude Haiku 5.5",
+  "claude-haiku-4-5": "Claude Haiku 4.5",
+  "claude-sonnet-5-5": "Claude Sonnet 5.5",
+  "claude-opus-5-5": "Claude Opus 5.5",
+  "claude-fable-5-1": "Claude Fable 5.1",
+};
+const modelName = (id) => MODEL_NAMES[id] || `\`${id}\``;
+const usd = (x) => `$${x < 1 ? x.toFixed(3) : x.toFixed(2)}`;
+const mtok = (n) => `${(n / 1e6).toFixed(2)}M`;
+const modelOrder = (id) => {
+  const i = Object.keys(MODEL_NAMES).indexOf(id);
+  return i === -1 ? 99 : i;
+};
+
+function renderClaudeUsage(report) {
+  const t = report.totals;
+  const dates = report.rows
+    .flatMap((r) => [r.firstDate, r.lastDate])
+    .filter(Boolean)
+    .sort();
+  let span = "-";
+  if (dates.length) {
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+    span = first === last ? first : `${first} to ${last}`;
+  }
+  const models = Object.entries(report.byModel).sort(
+    ([a], [b]) => modelOrder(a) - modelOrder(b),
+  );
+  return [
+    `Every Claude API call behind the Claude sections above, the consumer journeys and the live test suite, from their response cache and usage ledgers (${span}): ${num(t.calls)} calls, ${mtok(t.inputTokens)} input and ${mtok(t.outputTokens)} output tokens, ${usd(t.usd)} at the published prices of ${report.prices.asOf}. Metadata only: no prompt, answer or key is kept in this report.`,
+    "",
+    "**By model**",
+    "",
+    table(
+      ["Model", "Calls", "Input tokens", "Output tokens", "Cost"],
+      models.map(([id, m]) => [
+        modelName(id),
+        num(m.calls),
+        mtok(m.inputTokens),
+        mtok(m.outputTokens),
+        usd(m.usd),
+      ]),
+    ),
+    "",
+    "**By activity**",
+    "",
+    table(
+      [
+        "Activity",
+        "Model",
+        "Calls",
+        "Errors",
+        "Refusals",
+        "Tokens in / out",
+        "Cost",
+        "Latency p50 / p95",
+        "Dates",
+      ],
+      report.rows.map((r) => [
+        r.activity,
+        modelName(r.model),
+        num(r.calls),
+        num(r.errors),
+        num(r.refusals),
+        `${mtok(r.inputTokens)} / ${mtok(r.outputTokens)}`,
+        usd(r.usd) + (r.estimatedUsd ? " (part estimated)" : ""),
+        r.latencyMs
+          ? `${(r.latencyMs.p50 / 1000).toFixed(1)} s / ${(r.latencyMs.p95 / 1000).toFixed(1)} s`
+          : "-",
+        r.firstDate === r.lastDate
+          ? r.firstDate
+          : `${r.firstDate} to ${r.lastDate}`,
+      ]),
+    ),
+    "",
+    "Errors are HTTP errors, most of them deliberate: the consumer journeys call a model that doesn't exist and use an invalid key on purpose, and the connector's first request to a model that rejects `temperature` returns a 400 that it retries without it. Latency is per call, network included; streamed calls report theirs in the latency section above, and calls logged before 2026-11-05 05:40 UTC have no latency recorded.",
+  ].join("\n");
+}
+
 const RENDERERS = {
   speed: renderSpeed,
   quality: renderQuality,
@@ -208,6 +289,7 @@ const RENDERERS = {
   "claude-citations": renderClaudeCitations,
   "judge-more": renderJudgeMore,
   "claude-latency": renderLatency,
+  "claude-usage": renderClaudeUsage,
 };
 
 function render(content) {
