@@ -159,9 +159,12 @@ function overCap() {
 const originalRequest = https.request;
 https.request = function patchedRequest(...args) {
   const req = originalRequest.apply(this, args);
-  const host = String(req.host || "");
+  // The exact host, not a substring: "api.anthropic.com.example" is not it
+  const host = String(req.host || "")
+    .toLowerCase()
+    .replace(/:\d+$/, "");
   const path = String(req.path || "");
-  if (!host.includes("api.anthropic.com") || !path.includes("/v1/messages")) {
+  if (host !== "api.anthropic.com" || !path.startsWith("/v1/messages")) {
     return req;
   }
   if (overCap()) {
@@ -244,7 +247,17 @@ if (typeof globalThis.fetch === "function") {
         : input instanceof URL
           ? input.href
           : input && input.url;
-    if (!/api\.anthropic\.com\/v1\/messages(\?|$)/.test(String(url))) {
+    let parsed = null;
+    try {
+      parsed = new URL(String(url));
+    } catch {
+      // not an absolute URL: not a Claude call
+    }
+    if (
+      !parsed ||
+      parsed.hostname !== "api.anthropic.com" ||
+      parsed.pathname !== "/v1/messages"
+    ) {
       return originalFetch.call(this, input, init);
     }
     if (overCap()) {

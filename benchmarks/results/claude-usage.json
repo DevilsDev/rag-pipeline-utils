@@ -1,6 +1,6 @@
 {
   "report": "claude-usage",
-  "generatedAt": "2026-11-05T05:51:57.928Z",
+  "generatedAt": "2026-11-05T06:00:38.254Z",
   "note": "Metadata only (model, date, status, tokens, latency): no prompt, answer or key.",
   "prices": {
     "perMillionTokens": {
@@ -34,16 +34,16 @@
   },
   "sources": {
     "benchmarkResponses": 9304,
-    "consumerJourneyCalls": 279,
-    "liveTestCalls": 5
+    "consumerJourneyCalls": 291,
+    "liveTestCalls": 10
   },
   "totals": {
-    "calls": 9588,
-    "errors": 40,
+    "calls": 9605,
+    "errors": 45,
     "refusals": 60,
-    "inputTokens": 13918307,
-    "outputTokens": 3783112,
-    "usd": 58.7016
+    "inputTokens": 13922773,
+    "outputTokens": 3783911,
+    "usd": 58.7155
   },
   "byModel": {
     "claude-haiku-5-5": {
@@ -53,16 +53,16 @@
       "usd": 1.3912
     },
     "claude-haiku-4-5": {
-      "calls": 2463,
-      "inputTokens": 2800148,
-      "outputTokens": 502682,
-      "usd": 5.3135
+      "calls": 2468,
+      "inputTokens": 2801778,
+      "outputTokens": 502964,
+      "usd": 5.3166
     },
     "claude-sonnet-5-5": {
-      "calls": 2940,
-      "inputTokens": 4436341,
-      "outputTokens": 829318,
-      "usd": 17.1659
+      "calls": 2950,
+      "inputTokens": 4439177,
+      "outputTokens": 829835,
+      "usd": 17.1767
     },
     "claude-opus-5-5": {
       "calls": 611,
@@ -77,7 +77,7 @@
       "usd": 24.5493
     },
     "claude-sonnet-9-9": {
-      "calls": 14,
+      "calls": 16,
       "inputTokens": 0,
       "outputTokens": 0,
       "usd": 0
@@ -328,14 +328,14 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-9-9",
-      "calls": 14,
-      "errors": 14,
+      "calls": 16,
+      "errors": 16,
       "refusals": 0,
       "inputTokens": 0,
       "outputTokens": 0,
       "usd": 0,
       "latencyMs": {
-        "p50": 883,
+        "p50": 403,
         "p95": 1644
       },
       "firstDate": "2026-11-05",
@@ -377,15 +377,15 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-5-5",
-      "calls": 87,
-      "errors": 26,
+      "calls": 97,
+      "errors": 29,
       "refusals": 0,
-      "inputTokens": 27811,
-      "outputTokens": 4826,
-      "usd": 0.1039,
+      "inputTokens": 30647,
+      "outputTokens": 5343,
+      "usd": 0.1147,
       "estimatedUsd": 0.0016,
       "latencyMs": {
-        "p50": 1721,
+        "p50": 1646,
         "p95": 2716
       },
       "firstDate": "2026-11-05",
@@ -410,12 +410,12 @@
     {
       "activity": "live test suite",
       "model": "claude-haiku-4-5",
-      "calls": 5,
+      "calls": 10,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 1630,
-      "outputTokens": 279,
-      "usd": 0.003,
+      "inputTokens": 3260,
+      "outputTokens": 561,
+      "usd": 0.0061,
       "latencyMs": {
         "p50": 1130,
         "p95": 1447

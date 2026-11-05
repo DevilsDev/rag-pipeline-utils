@@ -85,13 +85,22 @@ function mask(text) {
   return out;
 }
 
+function quoteWindowsArg(arg) {
+  return arg
+    .replace(/(\\*)"/g, (_, slashes) => `${slashes}${slashes}\\"`)
+    .replace(/(\\+)$/, (_, slashes) => `${slashes}${slashes}`);
+}
+
 function sh(cmd, args, cwd, extra = {}) {
   // npm and npx are .cmd shims on Windows and need a shell, which splits
   // arguments on spaces: quote them.
   const shell = isWin && (cmd === NPM || cmd === NPX);
   const argv = shell
     ? args.map((a) =>
-        /[\s"&|<>^]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a,
+        // Windows quoting (CommandLineToArgvW): backslashes are literal
+        // except before a quote, so double only those (and any at the end,
+        // which come before the closing quote), then escape the quotes
+        /[\s"&|<>^]/.test(a) ? `"${quoteWindowsArg(a)}"` : a,
       )
     : args;
   const result = spawnSync(cmd, argv, {
