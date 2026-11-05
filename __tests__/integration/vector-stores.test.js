@@ -99,6 +99,27 @@ databaseSuite("WeaviateRetriever", "WEAVIATE_URL", (url) => {
         },
       },
     );
+
+    // delete(ids) is a batch delete with ContainsAny, outside the contract.
+    it("WeaviateRetriever: delete() removes documents by id", async () => {
+      const { DOCS } = require("../utils/retriever-contract");
+      const retriever = new WeaviateRetriever({
+        url,
+        collection: `Contract_${randomBytes(4).toString("hex")}`,
+      });
+      try {
+        await retriever.store(DOCS);
+        await retriever.delete([DOCS[0].id, "not-stored"]);
+        expect(await retriever.size()).toBe(2);
+        expect((await retriever.list()).map((d) => d.id).sort()).toEqual(
+          [DOCS[1].id, DOCS[2].id].sort(),
+        );
+      } finally {
+        await fetch(`${url}/v1/schema/${retriever.collection}`, {
+          method: "DELETE",
+        });
+      }
+    });
   });
 });
 
