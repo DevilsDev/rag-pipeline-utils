@@ -47,6 +47,7 @@
     "build": "node scripts/build-packages.js --bundles && node scripts/build.js && node scripts/generate-types.js && node scripts/build-packages.js --types && node scripts/check-type-exports.js",
     "test:packages": "node scripts/test-packages.js",
     "test:consumer": "node scripts/consumer-journeys.js",
+    "test:templates": "node scripts/test-templates.js",
     "prepack": "npm run build && node scripts/pin-readme-assets.js",
     "postpack": "node scripts/pin-readme-assets.js --restore",
     "docs:validate": "node scripts/validate-docs-examples.js",

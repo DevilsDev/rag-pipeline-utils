@@ -145,10 +145,23 @@ jobs:
             (cd packages/rag-mcp-server && npm publish --access public --provenance --ignore-scripts)
           fi
 
+      # npm create rag-pipeline: plain JavaScript and template files, no
+      # dependencies, so nothing else waits on it. Unscoped, so its first
+      # version is published by hand and the trusted publisher added then;
+      # skipped when this version is already on npm.
+      - name: Publish create-rag-pipeline (OIDC)
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "create-rag-pipeline@$version" version >/dev/null 2>&1; then
+            echo "create-rag-pipeline@$version is already on npm"
+          else
+            (cd packages/create-rag-pipeline && npm publish --access public --provenance --ignore-scripts)
+          fi
+
       - name: Summary
         if: success()
         run: |
-          echo "## ✅ Published @devilsdev/rag-pipeline-utils, rag-core, rag-connectors, rag-eval, rag-guardrails and rag-mcp-server" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Published @devilsdev/rag-pipeline-utils, rag-core, rag-connectors, rag-eval, rag-guardrails, rag-mcp-server and create-rag-pipeline" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Version: $(node -p "require('./package.json').version")" >> $GITHUB_STEP_SUMMARY
           echo "Provenance: attached via OIDC + Sigstore" >> $GITHUB_STEP_SUMMARY

@@ -115,6 +115,14 @@ Optional peer dependencies, installed only by projects that use them:
 | `pino-pretty`        | pretty-printed logs                           |
 | `@opentelemetry/api` | OpenTelemetry spans (`telemetry`)             |
 
+### Start a project
+
+`npm create rag-pipeline` (coming in 3.6.0) scaffolds a working app that answers from a folder of documents and checks every answer against them: Next.js with the AI SDK, a Mastra agent, or a Cloudflare Worker. It runs before you add an API key, returning the matching passages. See [Starter templates](https://devilsdev.github.io/rag-pipeline-utils/docs/Starter-Templates).
+
+```bash
+npm create rag-pipeline@latest my-app -- --template next   # or mastra, workers
+```
+
 Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pipeline-utils/docs/Migration#upgrading-to-v300) lists the changes to make.
 
 > **`npm install` failed with `husky: not found`?** Versions 2.0.0 to 2.6.1 ran a development hook on install. Install 2.6.2 or later: `npm install @devilsdev/rag-pipeline-utils@latest`.
