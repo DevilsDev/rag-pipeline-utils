@@ -11,6 +11,22 @@ page.
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-11-05
+
+A minor release with no breaking changes, about checks you can measure and
+see, and a security fix: upgrade if you use `AnthropicConnector`,
+`CohereConnector` or `OllamaConnector`, whose errors carried the API key.
+The guards take your own injection and PII detectors, and
+`rag-pipeline eval-guardrails` measures them; the built-in patterns' precision
+and recall are published on public test sets, low recall included.
+Evaluation scores become OpenTelemetry events on the spans they judge and
+Langfuse scores. `verifyCitations()` checks that the passages Claude or
+OpenAI file search cite support the sentences citing them.
+`AnthropicConnector` works with current Claude models: on 3.4.0 the judge
+failed on all of them but Haiku 4.5, and `generate()` could return
+`undefined`. One telemetry change follows the GenAI conventions: the
+retrieval span is now named `retrieval`.
+
 ### Security
 
 - **Connector errors no longer carry the API key.** `AnthropicConnector`,
@@ -26,35 +42,6 @@ headers, data }` and no request config; a streamed request's error body
 x-api-key` instead of `Request failed with status code 401`. Found by
   the consumer journeys. `OpenAIConnector` uses the OpenAI SDK, whose
   errors don't carry the key.
-
-### Fixed
-
-- **TypeScript with `@types/node` 25 or later.** The generated
-  declarations said `extends EventEmitter<[never]>` (48 files), which
-  `@types/node` 25+ rejects (TS2344), so a strict project without
-  `skipLibCheck` didn't compile. They now say `extends EventEmitter`, and
-  the pack smoke test also compiles against the latest `@types/node`.
-- **`CostTracker` estimates input tokens from everything the model reads**
-  (the query, the retrieved passages and the prompt around them) when a
-  result carries no usage; it counted only the query, about 25 times too
-  few on a three-passage run. `result.cost.tokensEstimated` says when the
-  counts are estimated, and `result.cost.requestedModel` gives the model
-  the run asked for next to `model`, the price-table entry
-  (`claude-haiku-4-5` is priced as `claude-haiku-4.5`).
-- A strict `GuardrailsPipeline` block says why: `error` is
-  `"Post-generation guard flagged output: PII detected (email): 1
-occurrence(s); ..."` (the same start as before, then the guard's issues,
-  which name kinds and counts, never the PII).
-
-### Documentation
-
-- The README's LLM quick start starts with Claude (`AnthropicConnector`
-  with `LocalEmbedder`, since Anthropic has no embeddings API), then
-  OpenAI; the guardrails use case says that `strict: true` blocks rather
-  than redacts; the Usage page explains the optional result fields in
-  TypeScript; the middleware example defines its retriever and embedder;
-  Observability gives a local in-memory setup and which OpenTelemetry
-  line has the logs API. From the consumer journeys.
 
 ### Added
 
@@ -145,6 +132,23 @@ documents })` and `fromOpenAIFileCitations(response)` normalise the
 
 ### Fixed
 
+- **TypeScript with `@types/node` 25 or later.** The generated
+  declarations said `extends EventEmitter<[never]>` (48 files), which
+  `@types/node` 25+ rejects (TS2344), so a strict project without
+  `skipLibCheck` didn't compile. They now say `extends EventEmitter`, and
+  the pack smoke test also compiles against the latest `@types/node`.
+- **`CostTracker` estimates input tokens from everything the model reads**
+  (the query, the retrieved passages and the prompt around them) when a
+  result carries no usage; it counted only the query, about 25 times too
+  few on a three-passage run. `result.cost.tokensEstimated` says when the
+  counts are estimated, and `result.cost.requestedModel` gives the model
+  the run asked for next to `model`, the price-table entry
+  (`claude-haiku-4-5` is priced as `claude-haiku-4.5`).
+- A strict `GuardrailsPipeline` block says why: `error` is
+  `"Post-generation guard flagged output: PII detected (email): 1
+occurrence(s); ..."` (the same start as before, then the guard's issues,
+  which name kinds and counts, never the PII).
+
 - **`AnthropicConnector` works with current Claude models** (found by the
   Claude benchmarks, confirmed live):
   - Claude 4.7 and later reject any temperature but the default with
@@ -171,6 +175,16 @@ documents })` and `fromOpenAIFileCitations(response)` normalise the
 - `@devilsdev/rag-mcp-server`: its package.json is in the form npm
   publishes (`bin` without `./`, a `git+https` repository URL), so
   publishing no longer prints "npm auto-corrected some errors".
+
+### Documentation
+
+- The README's LLM quick start starts with Claude (`AnthropicConnector`
+  with `LocalEmbedder`, since Anthropic has no embeddings API), then
+  OpenAI; the guardrails use case says that `strict: true` blocks rather
+  than redacts; the Usage page explains the optional result fields in
+  TypeScript; the middleware example defines its retriever and embedder;
+  Observability gives a local in-memory setup and which OpenTelemetry
+  line has the logs API. From the consumer journeys.
 
 ## [3.4.0] - 2026-11-04
 

@@ -196,10 +196,6 @@ The stage spans follow the OpenTelemetry [GenAI semantic conventions](https://gi
 
 ### Evaluation scores as events
 
-:::info[Coming in 3.5.0]
-Evaluation events and `toLangfuseScores` are in 3.5.0.
-:::
-
 With `evaluate` or `citations` in a run, each score is also emitted as a [`gen_ai.evaluation.result`](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-events.md) event: an OpenTelemetry log record, parented to the span of what it judges.
 
 | Score (`gen_ai.evaluation.name`)                                                | Parent span | From        |
