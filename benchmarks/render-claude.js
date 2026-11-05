@@ -27,9 +27,11 @@ function table(header, rows) {
   ].join("\n");
 }
 
+// Backslashes first, so a text ending in "\" can't escape the cell's "|"
 const cell = (text) =>
   String(text)
     .replace(/\s+/g, " ")
+    .replace(/\\/g, "\\\\")
     .replace(/\|/g, "\\|")
     .replace(/</g, "&lt;")
     .trim();
