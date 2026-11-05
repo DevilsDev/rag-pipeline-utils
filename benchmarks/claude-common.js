@@ -99,6 +99,7 @@ async function mapLimit(items, limit, fn) {
 }
 
 module.exports = {
+  buildLong,
   args,
   environment,
   wilson,
@@ -107,3 +108,22 @@ module.exports = {
   mapLimit,
   ratio,
 };
+
+const FILLER = require("./fixtures/filler.json").sentences;
+
+/**
+ * A long source for the edge cases: the filler sentences
+ * cycled to about `words` words, with `needle` inserted at the
+ * fraction `at` of the way through.
+ */
+function buildLong({ words, at, needle }) {
+  const parts = [];
+  let count = 0;
+  for (let i = 0; count < words; i++) {
+    const s = FILLER[i % FILLER.length];
+    parts.push(s);
+    count += s.split(/\s+/).length;
+  }
+  parts.splice(Math.round(parts.length * at), 0, needle);
+  return parts.join(" ");
+}

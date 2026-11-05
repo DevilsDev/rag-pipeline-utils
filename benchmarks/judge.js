@@ -1,24 +1,35 @@
 #!/usr/bin/env node
 /**
  * Groundedness benchmark: how well checkAnswer() finds answers with
- * unsupported content, lexically and with Claude as the judge, on RAGTruth
- * (benchmarks/judge-datasets.js).
+ * unsupported content, lexically and with Claude as the judge.
  *
- * Each sampled answer is checked twice with the library as shipped
- * (`evaluate: false`):
- *   - lexical: checkAnswer({ answer, sources })
- *   - judge:   checkAnswer({ answer, sources, judge: new AnthropicConnector(...) })
- * An answer is flagged when checkAnswer finds any unsupported sentence
- * (`grounded: false`); it is labelled unsupported when RAGTruth's
- * annotators marked any hallucination span in it. Sentences are scored
- * too: a sentence is labelled unsupported when it overlaps a span.
+ * Two suites, the same cases for every model:
+ *   - RAGTruth (benchmarks/judge-datasets.js): a seeded, balanced sample of
+ *     test answers. An answer is flagged when checkAnswer finds any
+ *     unsupported sentence (`grounded: false`); it is labelled unsupported
+ *     when RAGTruth's annotators marked a hallucination span in it.
+ *     Sentences are scored too: a sentence is labelled unsupported when it
+ *     overlaps a span.
+ *   - Edge cases (benchmarks/fixtures/judge-edge-cases.jsonl): written for
+ *     this project and committed before any model saw them, each with the
+ *     expected verdict and a category.
  *
- * Neither the library nor the judge prompt was tuned on RAGTruth or any
- * other public set.
+ * Each answer is checked with the library as shipped (`evaluate: false`):
+ * lexically, checkAnswer({ answer, sources }), and with
+ * checkAnswer({ answer, sources, judge: new AnthropicConnector({ apiKey, model, maxTokens }) }).
  *
- *   node benchmarks/judge.js [--model=claude-haiku-4-5-20251001] [--per-class=75]
- *     [--seed=20261105] [--concurrency=4] [--max-tokens=2000] [--lexical-only]
- *     [--cap=5] [--data-dir=dir] [--output=file.json]
+ * One change is made to the connector's request, recorded per model in the
+ * report: AnthropicConnector sends the judge's `temperature: 0`, which some
+ * models reject with a 400 (see the report's `shippedJudge`). For those
+ * models the benchmark removes `temperature` from the request body; the
+ * rest of the request and the parsing of the reply are the library's own.
+ *
+ * Neither the library nor the judge prompt was tuned on RAGTruth, on any
+ * other public set, or on the edge cases.
+ *
+ *   node benchmarks/judge.js [--models=a,b] [--per-class=75] [--seed=20261105]
+ *     [--concurrency=4] [--max-tokens=2000] [--lexical-only] [--cap=90]
+ *     [--data-dir=dir] [--output=file.json]
  *
  * The key comes from ANTHROPIC_API_KEY or ~/.config/rag-pipeline-utils/live-test.env
  * (see __tests__/live/live-env.js). Responses are cached in
@@ -44,15 +55,113 @@ const {
   confusionMetrics,
   percentile,
   mapLimit,
+  buildLong,
+  ratio,
+  wilson,
 } = require("./claude-common");
 
-const MODEL = args.model || "claude-haiku-4-5-20251001";
+const DEFAULT_MODELS = [
+  "claude-haiku-4-5-20251001",
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
+  "claude-fable-5-1",
+];
+const MODELS = args.models ? args.models.split(",") : DEFAULT_MODELS;
 const PER_CLASS = Number(args["per-class"] || 75);
 const SEED = Number(args.seed || 20261105);
 const CONCURRENCY = Number(args.concurrency || 4);
 const MAX_TOKENS = Number(args["max-tokens"] || 2000);
+const EDGE_FILE = path.join(__dirname, "fixtures", "judge-edge-cases.jsonl");
 
-/** Locate each checked sentence in the answer, in order. */
+const round1 = (x) => Number(x.toFixed(1));
+const latency = (values) => ({
+  p50: round1(percentile(values, 50)),
+  p95: round1(percentile(values, 95)),
+});
+
+/** A judge that never answers: checkAnswer keeps its lexical verdicts and reports why. */
+const SILENT_JUDGE = { generate: async () => "[]" };
+
+function makeJudge(cache, model, omitTemperature, calls) {
+  const judge = new AnthropicConnector({
+    apiKey: cache.apiKey || "cached",
+    model,
+    maxTokens: MAX_TOKENS,
+  });
+  judge.client.defaults.adapter = cache.axiosAdapter(
+    (call) => calls.push(call),
+    { omitTemperature },
+  );
+  return judge;
+}
+
+/**
+ * Does the shipped judge work on this model? One small check through the
+ * connector as shipped; a 400 about temperature means the benchmark must
+ * remove it.
+ */
+async function shippedJudge(cache, model) {
+  const calls = [];
+  try {
+    await checkAnswer({
+      answer: "Staff get five weeks off annually.",
+      sources: [
+        {
+          id: "leave",
+          content: "Each worker may take five weeks of paid leave every year.",
+        },
+      ],
+      evaluate: false,
+      judge: makeJudge(cache, model, false, calls),
+    });
+    return { works: true, omitTemperature: false };
+  } catch (error) {
+    const status = error.response && error.response.status;
+    if (status === 400 && /temperature/i.test(error.message)) {
+      return { works: false, error: error.message, omitTemperature: true };
+    }
+    throw error;
+  }
+}
+
+async function judged(c, cache, model, omitTemperature) {
+  const calls = [];
+  const t0 = performance.now();
+  const check = await checkAnswer({
+    answer: c.answer,
+    sources: c.sources,
+    evaluate: false,
+    judge: makeJudge(cache, model, omitTemperature, calls),
+  });
+  const wallMs = performance.now() - t0;
+  // Latency per check: local work plus the API call as it was measured
+  // when made (a cache hit takes no time, so its recorded latency is added)
+  const apiMs = calls.reduce((n, k) => n + k.latencyMs, 0);
+  const newMs = calls
+    .filter((k) => !k.cached)
+    .reduce((n, k) => n + k.latencyMs, 0);
+  return {
+    grounded: check.grounded,
+    calls: check.judge.calls,
+    error: check.judge.error || null,
+    usageReported: Boolean(check.judge.usage),
+    usage: calls[0] ? calls[0].usage : null,
+    stopReason: calls[0] ? calls[0].stopReason : null,
+    firstBlock: calls[0] ? calls[0].firstBlock : null,
+    latencyMs: wallMs - newMs + apiMs,
+    verdicts: check.judge.verdicts.map((v) => ({
+      sentence: v.sentence,
+      verdict: v.verdict,
+      lexicalReason: v.lexicalReason,
+      decidedBy: v.decidedBy,
+      reason: v.reason,
+    })),
+  };
+}
+
+// --- RAGTruth --------------------------------------------------------------
+
 function locate(answer, sentences) {
   let cursor = 0;
   return sentences.map((text) => {
@@ -67,74 +176,13 @@ function locate(answer, sentences) {
 const overlapsAny = (range, spans) =>
   spans.some((s) => range.start < s.end && s.start < range.end);
 
-async function checkCase(c, cache) {
-  const t0 = performance.now();
-  const lexical = await checkAnswer({
-    answer: c.answer,
-    sources: c.sources,
-    evaluate: false,
-  });
-  const lexicalMs = performance.now() - t0;
-  const out = {
-    id: c.id,
-    task: c.task,
-    hallucinated: c.hallucinated,
-    lexical: { grounded: lexical.grounded, unsupported: lexical.unsupported },
-    lexicalMs,
-  };
-  if (args["lexical-only"]) return out;
-
-  const judge = new AnthropicConnector({
-    apiKey: cache.apiKey || "cached",
-    model: MODEL,
-    maxTokens: MAX_TOKENS,
-  });
-  const calls = [];
-  judge.client.defaults.adapter = cache.axiosAdapter((call) =>
-    calls.push(call),
-  );
-  const t1 = performance.now();
-  const judged = await checkAnswer({
-    answer: c.answer,
-    sources: c.sources,
-    evaluate: false,
-    judge,
-  });
-  const wallMs = performance.now() - t1;
-  // Latency per check: local work plus the API call as it was measured
-  // when made (a cache hit takes no time, so its recorded latency is added)
-  const apiMs = calls.reduce((n, k) => n + k.latencyMs, 0);
-  const localMs =
-    wallMs -
-    calls.filter((k) => !k.cached).reduce((n, k) => n + k.latencyMs, 0);
-  out.judge = {
-    grounded: judged.grounded,
-    calls: judged.judge.calls,
-    error: judged.judge.error || null,
-    // checkAnswer's own judge.usage stays empty with AnthropicConnector,
-    // whose generate() returns only the text; usage comes from the cache
-    usageReported: Boolean(judged.judge.usage),
-    usage: calls[0] ? calls[0].usage : null,
-    stopReason: calls[0] ? calls[0].stopReason : null,
-    latencyMs: localMs + apiMs,
-    verdicts: judged.judge.verdicts.map((v) => ({
-      sentence: v.sentence,
-      verdict: v.verdict,
-      lexicalReason: v.lexicalReason,
-      decidedBy: v.decidedBy,
-    })),
-  };
-  return out;
-}
-
-function responseMetrics(results, key) {
+function responseMetrics(rows, flagged) {
   const counts = { tp: 0, fp: 0, fn: 0, tn: 0 };
-  for (const r of results) {
-    const flagged = !r[key].grounded;
-    if (r.hallucinated) counts[flagged ? "tp" : "fn"] += 1;
-    else counts[flagged ? "fp" : "tn"] += 1;
+  for (const r of rows) {
+    const f = flagged(r);
+    if (r.hallucinated) counts[f ? "tp" : "fn"] += 1;
+    else counts[f ? "fp" : "tn"] += 1;
   }
-  const unsupported = confusionMetrics(counts);
   const supported = confusionMetrics({
     tp: counts.tn,
     fp: counts.fn,
@@ -142,7 +190,7 @@ function responseMetrics(results, key) {
     tn: counts.tp,
   });
   return {
-    unsupported,
+    unsupported: confusionMetrics(counts),
     supported: {
       precision: supported.precision,
       recall: supported.recall,
@@ -150,33 +198,39 @@ function responseMetrics(results, key) {
       precisionInterval: supported.precisionInterval,
       recallInterval: supported.recallInterval,
     },
-    flaggedShare: Number(((counts.tp + counts.fp) / results.length).toFixed(4)),
+    flaggedShare: ratio(counts.tp + counts.fp, rows.length),
   };
 }
 
-function latency(values) {
-  return {
-    p50: Number(percentile(values, 50).toFixed(1)),
-    p95: Number(percentile(values, 95).toFixed(1)),
-  };
+const TASKS = ["all", "QA", "Summary", "Data2txt"];
+
+function byTask(rows, flagged) {
+  return Object.fromEntries(
+    TASKS.map((task) => {
+      const sub = rows.filter((r) => task === "all" || r.task === task);
+      return [task, { cases: sub.length, ...responseMetrics(sub, flagged) }];
+    }),
+  );
 }
 
-function sentenceAnalysis(results, sample) {
+/** Sentence-level scores, lexical and judged, and counts by lexical reason. */
+function sentenceAnalysis(rows, sample, model) {
   const byId = new Map(sample.map((c) => [c.id, c]));
   const lexical = { tp: 0, fp: 0, fn: 0, tn: 0 };
-  const judged = { tp: 0, fp: 0, fn: 0, tn: 0 };
+  const judgedCounts = { tp: 0, fp: 0, fn: 0, tn: 0 };
   const reasons = {};
   let sentences = 0;
   let unlocated = 0;
   let mismatched = 0;
-  for (const r of results) {
+  for (const r of rows) {
     const c = byId.get(r.id);
+    const verdicts = r.judge[model].verdicts;
     const ranges = locate(
       c.answer,
-      r.judge.verdicts.map((v) => v.sentence),
+      verdicts.map((v) => v.sentence),
     );
     const lexicalSet = new Set(r.lexical.unsupported);
-    r.judge.verdicts.forEach((v, i) => {
+    verdicts.forEach((v, i) => {
       sentences += 1;
       // The lexical run and the judge run's lexical reasons must agree
       if ((v.lexicalReason !== "supported") !== lexicalSet.has(v.sentence)) {
@@ -189,10 +243,10 @@ function sentenceAnalysis(results, sample) {
       const gold = overlapsAny(ranges[i], c.spans);
       const lexFlag = lexicalSet.has(v.sentence);
       const judgeFlag = v.verdict !== "supported";
-      lexical[gold ? (lexFlag ? "tp" : "fn") : lexFlag ? "fp" : "tn"] += 1;
-      judged[gold ? (judgeFlag ? "tp" : "fn") : judgeFlag ? "fp" : "tn"] += 1;
-      const reason = v.lexicalReason;
-      const row = (reasons[reason] = reasons[reason] || {
+      const cell = (flag) => (gold ? (flag ? "tp" : "fn") : flag ? "fp" : "tn");
+      lexical[cell(lexFlag)] += 1;
+      judgedCounts[cell(judgeFlag)] += 1;
+      const row = (reasons[v.lexicalReason] = reasons[v.lexicalReason] || {
         sentences: 0,
         labelledUnsupported: 0,
         judgeSupported: 0,
@@ -211,140 +265,287 @@ function sentenceAnalysis(results, sample) {
     unlocated,
     lexicalMismatches: mismatched,
     lexical: confusionMetrics(lexical),
-    judge: confusionMetrics(judged),
+    judge: confusionMetrics(judgedCounts),
     byLexicalReason: reasons,
   };
 }
 
-async function main() {
-  const { cases, source } = await loadRagTruth(args["data-dir"]);
-  const sample = sampleRagTruth(cases, { perClass: PER_CLASS, seed: SEED });
-  const { apiKey } = args["lexical-only"] ? { apiKey: null } : liveAnthropic();
-  const cache = new ClaudeCache({
-    apiKey,
-    capUSD: Number(args.cap || 5),
-  });
-  console.log(
-    `${source.dataset}: ${cases.length} cases, sample ${sample.length} (${PER_CLASS} per task and label, seed ${SEED})`,
-  );
+// --- Edge cases ------------------------------------------------------------
 
-  let done = 0;
-  const results = await mapLimit(sample, CONCURRENCY, async (c) => {
-    try {
-      return await checkCase(c, cache);
-    } finally {
-      done += 1;
-      if (done % 25 === 0) {
-        console.log(
-          `${done}/${sample.length}  spent so far US$${cache.spentUSD().toFixed(4)}`,
-        );
+function loadEdgeCases() {
+  const text = fs.readFileSync(EDGE_FILE, "utf8");
+  return text
+    .split(/\r?\n/)
+    .filter((l) => l.trim())
+    .map((l) => JSON.parse(l))
+    .map((c) => ({
+      ...c,
+      sources: c.sources.map((s) =>
+        s.long ? { id: s.id, content: buildLong(s.long) } : s,
+      ),
+    }));
+}
+
+const verdictOf = (check) => (check.grounded ? "supported" : "unsupported");
+
+function scoreEdge(cases, results) {
+  const categories = {};
+  const failures = [];
+  let sentenceTotal = 0;
+  let sentenceRight = 0;
+  let sentenceSkipped = 0;
+  cases.forEach((c, i) => {
+    const r = results[i];
+    const cat = (categories[c.category] = categories[c.category] || {
+      cases: 0,
+      correct: 0,
+      falseAlarms: 0,
+      misses: 0,
+    });
+    cat.cases += 1;
+    if (r.verdict === c.expected) cat.correct += 1;
+    else {
+      const kind = c.expected === "supported" ? "false_alarm" : "miss";
+      cat[kind === "false_alarm" ? "falseAlarms" : "misses"] += 1;
+      failures.push({
+        id: c.id,
+        category: c.category,
+        expected: c.expected,
+        got: r.verdict,
+        kind,
+        answer: c.answer,
+        sentences: r.verdicts,
+      });
+    }
+    if (c.expectedSentences) {
+      if (r.verdicts.length !== c.expectedSentences.length) {
+        sentenceSkipped += 1;
+      } else {
+        c.expectedSentences.forEach((e, k) => {
+          sentenceTotal += 1;
+          if (r.verdicts[k].verdict === e) sentenceRight += 1;
+        });
       }
     }
   });
+  const correct = Object.values(categories).reduce((n, c) => n + c.correct, 0);
+  return {
+    correct,
+    cases: cases.length,
+    accuracy: ratio(correct, cases.length),
+    accuracyInterval: wilson(correct, cases.length),
+    falseAlarms: failures.filter((f) => f.kind === "false_alarm").length,
+    misses: failures.filter((f) => f.kind === "miss").length,
+    sentences: {
+      scored: sentenceTotal,
+      correct: sentenceRight,
+      casesWithOtherSplit: sentenceSkipped,
+    },
+    categories,
+    failures,
+  };
+}
 
-  const configs = { lexical: "lexical" };
-  if (!args["lexical-only"]) configs.judge = "judge";
-  const tasks = ["all", "QA", "Summary", "Data2txt"];
-  const metrics = {};
-  for (const task of tasks) {
-    const rows = results.filter((r) => task === "all" || r.task === task);
-    metrics[task] = {
-      cases: rows.length,
-      labelledUnsupported: rows.filter((r) => r.hallucinated).length,
-    };
-    for (const key of Object.keys(configs)) {
-      metrics[task][key] = responseMetrics(rows, key);
-    }
+// --- Main ------------------------------------------------------------------
+
+async function main() {
+  const { cases, source } = await loadRagTruth(args["data-dir"]);
+  const sample = sampleRagTruth(cases, { perClass: PER_CLASS, seed: SEED });
+  const edge = loadEdgeCases();
+  const lexicalOnly = Boolean(args["lexical-only"]);
+  const { apiKey } = lexicalOnly ? { apiKey: null } : liveAnthropic();
+  const cache = new ClaudeCache({ apiKey, capUSD: Number(args.cap || 90) });
+  console.log(
+    `${source.dataset}: ${cases.length} cases, sample ${sample.length} (${PER_CLASS} per task and label, seed ${SEED}); ${edge.length} edge cases`,
+  );
+
+  // Lexical, once: it doesn't depend on the model
+  const rows = [];
+  for (const c of sample) {
+    const t0 = performance.now();
+    const check = await checkAnswer({
+      answer: c.answer,
+      sources: c.sources,
+      evaluate: false,
+    });
+    rows.push({
+      id: c.id,
+      task: c.task,
+      hallucinated: c.hallucinated,
+      lexical: { grounded: check.grounded, unsupported: check.unsupported },
+      lexicalMs: performance.now() - t0,
+      judge: {},
+    });
+  }
+  const edgeLexical = [];
+  for (const c of edge) {
+    const check = await checkAnswer({
+      answer: c.answer,
+      sources: c.sources,
+      evaluate: false,
+      judge: SILENT_JUDGE, // the lexical verdicts, with their reasons
+    });
+    edgeLexical.push({
+      verdict: verdictOf(check),
+      verdicts: check.judge.verdicts.map((v) => ({
+        sentence: v.sentence,
+        verdict: v.verdict,
+        lexicalReason: v.lexicalReason,
+      })),
+    });
   }
 
   const report = {
     benchmark: "judge",
     createdAt: new Date().toISOString(),
     environment: environment(),
-    dataset: {
-      ...source,
-      cases: cases.length,
-      sample: {
-        size: sample.length,
-        perTaskAndLabel: PER_CLASS,
-        seed: SEED,
-        rule: "For each task, an equal number of answers with and without annotated hallucinations, drawn with a seeded shuffle from the answers annotated as good quality (25 refusals or truncated answers excluded).",
-      },
-    },
     tuning:
-      "Neither checkAnswer nor the judge prompt was tuned on RAGTruth or any other public set; the library ran as shipped.",
-    settings: { evaluate: false },
-    metrics,
+      "Neither checkAnswer nor the judge prompt was tuned on RAGTruth, on any other public set, or on the edge cases; the library ran as shipped.",
+    settings: { evaluate: false, judgeMaxTokens: MAX_TOKENS },
+    ragtruth: {
+      dataset: {
+        ...source,
+        cases: cases.length,
+        sample: {
+          size: sample.length,
+          perTaskAndLabel: PER_CLASS,
+          seed: SEED,
+          rule: "For each task, an equal number of answers with and without annotated hallucinations, drawn with a seeded shuffle from the answers annotated as good quality (25 refusals or truncated answers excluded).",
+        },
+      },
+      lexical: {
+        metrics: byTask(rows, (r) => !r.lexical.grounded),
+        latencyMs: latency(rows.map((r) => r.lexicalMs)),
+      },
+      models: {},
+    },
+    edge: {
+      file: "benchmarks/fixtures/judge-edge-cases.jsonl",
+      cases: edge.length,
+      lexical: scoreEdge(edge, edgeLexical),
+      models: {},
+    },
+    models: {},
   };
 
-  report.latencyMs = {
-    lexical: latency(results.map((r) => r.lexicalMs)),
-  };
-  if (!args["lexical-only"]) {
-    const used = cache.usageSummary();
-    const m = used[MODEL] || {
-      calls: 0,
-      inputTokens: 0,
-      outputTokens: 0,
-      costUSD: 0,
+  for (const model of lexicalOnly ? [] : MODELS) {
+    const start = cache.used.length;
+    const shipped = await shippedJudge(cache, model);
+    const omit = shipped.omitTemperature;
+    console.log(
+      `${model}: shipped judge ${shipped.works ? "works" : `fails (${shipped.error})`}`,
+    );
+
+    let done = 0;
+    const ragStart = cache.used.length;
+    await mapLimit(rows, CONCURRENCY, async (row, i) => {
+      row.judge[model] = await judged(sample[i], cache, model, omit);
+      done += 1;
+      if (done % 50 === 0) {
+        console.log(
+          `  ${model} ${done}/${rows.length}  total spend US$${cache.spentUSD().toFixed(4)}`,
+        );
+      }
+    });
+    const ragEntries = cache.used.slice(ragStart);
+    const edgeStart = cache.used.length;
+    const edgeResults = await mapLimit(edge, CONCURRENCY, async (c) => {
+      const r = await judged(c, cache, model, omit);
+      return {
+        verdict: r.grounded ? "supported" : "unsupported",
+        verdicts: r.verdicts,
+        calls: r.calls,
+        error: r.error,
+      };
+    });
+    const edgeEntries = cache.used.slice(edgeStart);
+    const allEntries = cache.used.slice(start);
+
+    const usage = (entries) => {
+      const u = { calls: entries.length, inputTokens: 0, outputTokens: 0 };
+      for (const e of entries) {
+        u.inputTokens += e.response.usage.input_tokens || 0;
+        u.outputTokens += e.response.usage.output_tokens || 0;
+      }
+      return u;
     };
-    const calls = results.reduce((n, r) => n + r.judge.calls, 0);
-    report.judge = {
-      model: MODEL,
-      maxTokens: MAX_TOKENS,
-      temperature: 0,
-      pricesPerMTok: PRICES[MODEL],
+    const cost = (entries) =>
+      Number(
+        cache
+          .usageSummary((e) => entries.includes(e))
+          [model]?.costUSD.toFixed(4) ?? 0,
+      );
+    const results = rows.map((r) => r.judge[model]);
+    const ragUsage = usage(ragEntries);
+    const ragCost = cost(ragEntries);
+    const errors = {};
+    for (const r of results) {
+      if (r.error) errors[r.error] = (errors[r.error] || 0) + 1;
+    }
+
+    report.models[model] = {
+      pricesPerMTok: PRICES[model],
       pricesChecked: "2026-11-05",
+      shippedJudge: shipped,
+      requestChange: omit
+        ? "temperature removed from the connector's request body"
+        : null,
       callDates: (() => {
-        const dates = cache.used.map((e) => e.createdAt.slice(0, 10)).sort();
+        const dates = allEntries.map((e) => e.createdAt.slice(0, 10)).sort();
         return dates.length ? [dates[0], dates[dates.length - 1]] : null;
       })(),
-      checksWithCall: results.filter((r) => r.judge.calls > 0).length,
-      calls,
-      errors: results.filter((r) => r.judge.error).length,
-      errorKinds: results.reduce((acc, r) => {
-        if (r.judge.error) acc[r.judge.error] = (acc[r.judge.error] || 0) + 1;
-        return acc;
-      }, {}),
-      truncated: results.filter((r) => r.judge.stopReason === "max_tokens")
-        .length,
-      usageReportedByCheckAnswer: results.filter((r) => r.judge.usageReported)
-        .length,
-      inputTokens: m.inputTokens,
-      outputTokens: m.outputTokens,
-      costUSD: m.costUSD,
-      costPer1000ChecksUSD: Number(
-        ((m.costUSD / results.length) * 1000).toFixed(2),
-      ),
+      totalCalls: allEntries.length,
+      totalCostUSD: cost(allEntries),
     };
-    report.latencyMs.judge = latency(results.map((r) => r.judge.latencyMs));
-    report.latencyMs.judgeWithCall = latency(
-      results.filter((r) => r.judge.calls > 0).map((r) => r.judge.latencyMs),
+    report.ragtruth.models[model] = {
+      metrics: byTask(rows, (r) => !r.judge[model].grounded),
+      checksWithCall: results.filter((r) => r.calls > 0).length,
+      calls: results.reduce((n, r) => n + r.calls, 0),
+      errors: Object.values(errors).reduce((a, b) => a + b, 0),
+      errorKinds: errors,
+      truncated: results.filter((r) => r.stopReason === "max_tokens").length,
+      firstBlockNotText: results.filter(
+        (r) => r.firstBlock && r.firstBlock !== "text",
+      ).length,
+      usageReportedByCheckAnswer: results.filter((r) => r.usageReported).length,
+      ...ragUsage,
+      costUSD: ragCost,
+      costPer1000ChecksUSD: Number(((ragCost / rows.length) * 1000).toFixed(2)),
+      latencyMs: latency(results.map((r) => r.latencyMs)),
+      latencyMsWithCall: latency(
+        results.filter((r) => r.calls > 0).map((r) => r.latencyMs),
+      ),
+      sentences: sentenceAnalysis(rows, sample, model),
+    };
+    report.edge.models[model] = {
+      ...scoreEdge(edge, edgeResults),
+      calls: edgeResults.reduce((n, r) => n + r.calls, 0),
+      errors: edgeResults.filter((r) => r.error).length,
+      ...usage(edgeEntries),
+      costUSD: cost(edgeEntries),
+    };
+
+    const m = report.ragtruth.models[model].metrics.all.unsupported;
+    const e = report.edge.models[model];
+    console.log(
+      `  RAGTruth P ${m.precision} R ${m.recall} F1 ${m.f1} (TP ${m.tp} FP ${m.fp} FN ${m.fn} TN ${m.tn}); edge ${e.correct}/${e.cases}; US$${report.models[model].totalCostUSD}; total spend US$${cache.spentUSD().toFixed(4)}`,
     );
-    report.sentences = sentenceAnalysis(results, sample);
-    report.cases = results.map((r) => ({
-      id: r.id,
-      task: r.task,
-      hallucinated: r.hallucinated,
-      lexicalFlagged: !r.lexical.grounded,
-      judgeFlagged: !r.judge.grounded,
-      judgeCalls: r.judge.calls,
-      ...(r.judge.error && { judgeError: r.judge.error }),
-    }));
   }
 
-  for (const task of tasks) {
-    for (const key of Object.keys(configs)) {
-      const u = metrics[task][key].unsupported;
-      console.log(
-        `${task.padEnd(9)} ${key.padEnd(8)} P ${u.precision}  R ${u.recall}  F1 ${u.f1}  (TP ${u.tp} FP ${u.fp} FN ${u.fn} TN ${u.tn})`,
-      );
-    }
-  }
-  if (report.judge) {
-    console.log(JSON.stringify(report.judge, null, 2));
-    console.log(JSON.stringify(report.latencyMs));
-  }
+  report.ragtruth.cases = rows.map((r) => ({
+    id: r.id,
+    task: r.task,
+    hallucinated: r.hallucinated,
+    lexicalFlagged: !r.lexical.grounded,
+    judgeFlagged: Object.fromEntries(
+      Object.entries(r.judge).map(([m, j]) => [m, !j.grounded]),
+    ),
+  }));
+
+  const l = report.ragtruth.lexical.metrics.all.unsupported;
+  console.log(
+    `lexical  RAGTruth P ${l.precision} R ${l.recall} F1 ${l.f1} (TP ${l.tp} FP ${l.fp} FN ${l.fn} TN ${l.tn}); edge ${report.edge.lexical.correct}/${report.edge.lexical.cases}`,
+  );
 
   if (args.output) {
     fs.mkdirSync(path.dirname(path.resolve(args.output)), { recursive: true });

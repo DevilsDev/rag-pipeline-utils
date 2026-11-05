@@ -2,7 +2,7 @@
 /**
  * Citation benchmark: when Claude cites its sources, how often does
  * verifyCitations() confirm the citations, and does it catch citations
- * that don't support their claim?
+ * that don't support their claim? The same cases for every model.
  *
  * 1. Real responses. A seeded sample of BEIR SciFact test claims
  *    (benchmarks/scifact.js, CC BY-SA 4.0, used, not redistributed). For
@@ -10,22 +10,34 @@
  *    on (the abstracts judged relevant to the claim, then BM25's top
  *    non-relevant abstracts up to three, in id order) and is asked what
  *    they say about the claim. fromAnthropicCitations() + verifyCitations()
- *    check the answer, lexically and with Claude Haiku as the judge.
- * 2. Hand review. The claims marked unsupported are classified by hand
- *    (benchmarks/fixtures/claude-citations-review.json, criteria
- *    committed before the run) as true problems or false alarms.
+ *    check the answer, lexically and with the same Claude model as judge.
+ * 2. Hand review. A seeded sample of the claims marked unsupported is
+ *    classified by hand (benchmarks/fixtures/claude-citations-review.json,
+ *    criteria committed before the run) as true problems or false alarms.
  * 3. Mutations, with no extra API calls. Each claim the lexical check
  *    supports (checked on its own) is altered: a number changed to one the
  *    cited passages don't contain, a negation added or removed, or its
  *    cited passages swapped for another document's (from an unrelated
  *    claim, or the full text of another abstract in the same request). A
  *    mutation is caught when the claim is no longer supported.
+ * 4. Edge cases (benchmarks/fixtures/citation-edge-cases.json), written for
+ *    this project and committed before any model saw them: questions the
+ *    documents can't answer, conflicting documents, multi-hop questions,
+ *    many documents, long documents, near-duplicates and instructions in a
+ *    document. Each case decides from the answer text whether the model
+ *    answered correctly; the library is right when it flags a wrong answer
+ *    (not verified, or sentences without a citation) and passes a correct
+ *    one.
  *
- *   node benchmarks/claude-citations.js [--model=claude-haiku-4-5-20251001]
- *     [--queries=50] [--seed=20261105] [--concurrency=4] [--cap=5]
- *     [--data-dir=dir] [--output=file.json] [--review-out=file.json]
+ * Models that reject `temperature` (see the report's `temperature`) get the
+ * request without it; the others get temperature 0. The judge goes through
+ * AnthropicConnector as in benchmarks/judge.js, with the same workaround.
  *
- * --review-out writes the claims to review, with their passages.
+ *   node benchmarks/claude-citations.js [--models=a,b] [--queries=50]
+ *     [--seed=20261105] [--concurrency=4] [--cap=90] [--data-dir=dir]
+ *     [--output=file.json] [--review-out=file.json] [--dry-run]
+ *
+ * --review-out writes the sampled claims to review, with their passages.
  */
 
 "use strict";
@@ -52,23 +64,34 @@ const {
   ratio,
   mapLimit,
   percentile,
+  buildLong,
 } = require("./claude-common");
 
-const MODEL = args.model || "claude-haiku-4-5-20251001";
+const DEFAULT_MODELS = [
+  "claude-haiku-4-5-20251001",
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
+  "claude-fable-5-1",
+];
+const MODELS = args.models ? args.models.split(",") : DEFAULT_MODELS;
 const QUERIES = Number(args.queries || 50);
 const SEED = Number(args.seed || 20261105);
 const CONCURRENCY = Number(args.concurrency || 4);
 const DOCS_PER_QUERY = 3;
-const MAX_TOKENS = 800;
+const MAX_TOKENS = 4000;
 const REVIEW_FILE = path.join(
   __dirname,
   "fixtures",
   "claude-citations-review.json",
 );
-const REVIEW_LIMIT = 60;
+const EDGE_FILE = path.join(__dirname, "fixtures", "citation-edge-cases.json");
+const REVIEW_PER_MODEL = 20;
 
-const prompt = (claim) =>
+const scifactPrompt = (claim) =>
   `A reader asks about this claim: "${claim}"\n\nUsing only the documents above, explain in one short paragraph what they say about the claim.`;
+const edgePrompt = (question) =>
+  `${question}\n\nAnswer using only the documents above.`;
 
 /** The seeded sample of claims, each with its three abstracts. */
 function selectCases({ documents, queries, qrels }) {
@@ -92,7 +115,8 @@ function selectCases({ documents, queries, qrels }) {
       (a, b) => Number(a) - Number(b),
     );
     return {
-      queryId,
+      id: queryId,
+      question: scifactPrompt(claim),
       claim,
       relevant,
       documents: docIds.map((id) => {
@@ -103,11 +127,33 @@ function selectCases({ documents, queries, qrels }) {
   });
 }
 
-function requestBody(c) {
+function loadEdgeCases() {
+  const spec = JSON.parse(fs.readFileSync(EDGE_FILE, "utf8"));
+  return spec.cases.map((c) => {
+    const documents = [
+      ...c.documents.map((d) =>
+        d.long ? { id: d.id, title: d.title, text: buildLong(d.long) } : d,
+      ),
+      ...(c.distractors ? spec.distractors : []),
+    ];
+    const pattern = (p) =>
+      new RegExp(p === "$refusal" ? spec.refusal : p, c.correct.flags ?? "i");
+    return {
+      id: c.id,
+      category: c.category,
+      question: edgePrompt(c.question),
+      documents,
+      mustMatch: (c.correct.mustMatch || []).map(pattern),
+      mustNotMatch: (c.correct.mustNotMatch || []).map(pattern),
+    };
+  });
+}
+
+function requestBody(model, c, temperature) {
   return {
-    model: MODEL,
+    model,
     max_tokens: MAX_TOKENS,
-    temperature: 0,
+    ...(temperature && { temperature: 0 }),
     messages: [
       {
         role: "user",
@@ -118,21 +164,66 @@ function requestBody(c) {
             title: d.title,
             citations: { enabled: true },
           })),
-          { type: "text", text: prompt(c.claim) },
+          { type: "text", text: c.question },
         ],
       },
     ],
   };
 }
 
-function judgeFor(cache, sink) {
+/** Whether `model` accepts temperature 0; a 400 costs nothing. */
+async function acceptsTemperature(cache, model) {
+  try {
+    await cache.messages({
+      model,
+      max_tokens: 5,
+      temperature: 0,
+      messages: [{ role: "user", content: "Reply with OK." }],
+    });
+    return { accepted: true };
+  } catch (error) {
+    const status = error.response && error.response.status;
+    if (status === 400 && /temperature/i.test(error.message)) {
+      return { accepted: false, error: error.message };
+    }
+    throw error;
+  }
+}
+
+function makeJudge(cache, model, omitTemperature, sink) {
   const judge = new AnthropicConnector({
     apiKey: cache.apiKey || "cached",
-    model: MODEL,
+    model,
     maxTokens: 2000,
   });
-  judge.client.defaults.adapter = cache.axiosAdapter((call) => sink.push(call));
+  judge.client.defaults.adapter = cache.axiosAdapter(
+    (call) => sink.push(call),
+    { omitTemperature },
+  );
   return judge;
+}
+
+async function answerAndVerify(cache, model, c, temperature) {
+  const res = await cache.messages(requestBody(model, c, temperature));
+  const message = res.data;
+  const normalized = fromAnthropicCitations(message, {
+    documents: c.documents.map((d) => ({ id: d.id })),
+  });
+  const lexical = await verifyCitations(normalized);
+  const sink = [];
+  const judge = await verifyCitations(normalized, {
+    judge: makeJudge(cache, model, !temperature, sink),
+  });
+  return {
+    id: c.id,
+    case: c,
+    stopReason: message.stop_reason,
+    latencyMs: res.latencyMs,
+    normalized,
+    lexical,
+    judge,
+    judgeCalls: sink,
+  };
 }
 
 // --- Mutations -------------------------------------------------------------
@@ -150,11 +241,10 @@ function changeNumber(text, passages) {
   const step = decimals ? 10 ** -decimals : 1;
   for (let k = 1; k < 50; k++) {
     const candidate = (Number(m[0]) + k * step).toFixed(decimals);
-    if (
-      !new RegExp(`(^|[^\\d.])${candidate.replace(".", "\\.")}(?![\\d])`).test(
-        haystack,
-      )
-    ) {
+    const present = new RegExp(
+      `(^|[^\\d.])${candidate.replace(".", "\\.")}(?![\\d])`,
+    ).test(haystack);
+    if (!present) {
       return (
         text.slice(0, m.index) + candidate + text.slice(m.index + m[0].length)
       );
@@ -181,9 +271,9 @@ function removeNegation(text) {
   return out === text ? null : out;
 }
 
-async function verifyOne(provider, claim) {
+async function verifyOne(claim) {
   const result = await verifyCitations({
-    provider,
+    provider: "anthropic",
     answer: claim.text,
     claims: [{ ...claim, start: 0, end: claim.text.length }],
     skipped: {},
@@ -199,20 +289,16 @@ const rate = (k, n) => ({
 });
 
 async function mutationTest(responses, documentsById) {
-  // Claims with cited text, checked on their own
   const pool = [];
   responses.forEach((r) => {
-    r.normalized.claims.forEach((claim, i) => {
+    r.normalized.claims.forEach((claim) => {
       const passages = claim.citations.flatMap((c) => c.passages);
       if (passages.length === 0) return;
-      pool.push({ r, claim, index: i, passages });
+      pool.push({ r, claim, passages });
     });
   });
   const baseline = [];
-  for (const p of pool) {
-    const v = await verifyOne("anthropic", p.claim);
-    baseline.push(v.verdict);
-  }
+  for (const p of pool) baseline.push((await verifyOne(p.claim)).verdict);
   const supported = pool.filter((p, i) => baseline[i] === "supported");
   const counts = {
     number: [0, 0],
@@ -223,7 +309,7 @@ async function mutationTest(responses, documentsById) {
   };
   const tally = async (key, claim) => {
     if (!claim) return;
-    const v = await verifyOne("anthropic", claim);
+    const v = await verifyOne(claim);
     counts[key][1] += 1;
     if (v.verdict !== "supported") counts[key][0] += 1;
   };
@@ -239,7 +325,7 @@ async function mutationTest(responses, documentsById) {
     let other = null;
     for (let k = 1; k < supported.length && !other; k++) {
       const q = supported[(i + k) % supported.length];
-      if (q.r.queryId === p.r.queryId) continue;
+      if (q.r.id === p.r.id) continue;
       const qDocs = new Set(q.r.case.documents.map((d) => d.id));
       if ([...cited].some((id) => qDocs.has(id))) continue;
       other = q;
@@ -278,14 +364,15 @@ async function mutationTest(responses, documentsById) {
   };
 }
 
-// --- Summary ---------------------------------------------------------------
+// --- Summaries -------------------------------------------------------------
 
 function summarize(responses, key) {
   const claims = responses.flatMap((r) => r[key].claims);
   const count = (v) => claims.filter((c) => c.verdict === v).length;
   const byReason = {};
-  for (const c of claims)
+  for (const c of claims) {
     byReason[c.lexicalReason] = (byReason[c.lexicalReason] || 0) + 1;
+  }
   const verified = responses.filter((r) => r[key].verified).length;
   return {
     claims: claims.length,
@@ -301,20 +388,26 @@ function summarize(responses, key) {
   };
 }
 
-function reviewSummary(responses, review) {
+function reviewSample(model, responses) {
   const flagged = responses.flatMap((r) =>
     r.lexical.claims
       .map((c, i) => ({
-        id: `${r.queryId}#${i}`,
+        id: `${model}|${r.id}#${i}`,
+        r,
+        i,
         lexical: c,
         judge: r.judge.claims[i],
       }))
       .filter((x) => x.lexical.verdict === "unsupported"),
   );
   const sampled =
-    flagged.length > REVIEW_LIMIT
-      ? shuffle(flagged, mulberry32(SEED)).slice(0, REVIEW_LIMIT)
+    flagged.length > REVIEW_PER_MODEL
+      ? shuffle(flagged, mulberry32(SEED)).slice(0, REVIEW_PER_MODEL)
       : flagged;
+  return { flagged: flagged.length, sampled };
+}
+
+function reviewSummary({ flagged, sampled }, review) {
   const labels = review.reviews || {};
   const tally = (rows) => {
     const out = { reviewed: 0, true_problem: 0, false_alarm: 0, unclear: 0 };
@@ -332,7 +425,7 @@ function reviewSummary(responses, review) {
     return out;
   };
   return {
-    flaggedByLexical: flagged.length,
+    flaggedByLexical: flagged,
     sampled: sampled.length,
     lexical: tally(sampled),
     // The same reviewed claims, as the judge left them
@@ -346,79 +439,117 @@ function reviewSummary(responses, review) {
   };
 }
 
+const flaggedBy = (v) => !v.verified || v.summary.uncitedSentences > 0;
+
+function scoreEdge(cases, responses) {
+  const categories = {};
+  const examples = [];
+  const empty = () => ({ caught: 0, missed: 0, falseAlarm: 0, passed: 0 });
+  cases.forEach((c, i) => {
+    const r = responses[i];
+    const text = r.normalized.answer;
+    const correct =
+      c.mustMatch.every((p) => p.test(text)) &&
+      !c.mustNotMatch.some((p) => p.test(text));
+    const cat = (categories[c.category] = categories[c.category] || {
+      cases: 0,
+      modelCorrect: 0,
+      lexical: empty(),
+      judge: empty(),
+    });
+    cat.cases += 1;
+    if (correct) cat.modelCorrect += 1;
+    const outcomes = {};
+    for (const key of ["lexical", "judge"]) {
+      const flagged = flaggedBy(r[key]);
+      const outcome = correct
+        ? flagged
+          ? "falseAlarm"
+          : "passed"
+        : flagged
+          ? "caught"
+          : "missed";
+      cat[key][outcome] += 1;
+      outcomes[key] = outcome;
+    }
+    examples.push({
+      id: c.id,
+      category: c.category,
+      modelCorrect: correct,
+      lexical: outcomes.lexical,
+      judge: outcomes.judge,
+      answer: text,
+      claims: r.judge.claims.map((k, j) => ({
+        text: k.text,
+        lexical: r.lexical.claims[j].verdict,
+        lexicalReason: r.lexical.claims[j].lexicalReason,
+        judge: k.verdict,
+        cites: k.citations.map((x) => x.sourceId),
+      })),
+      uncited: r.lexical.uncited.map((u) => u.text),
+    });
+  });
+  const total = (key, outcome) =>
+    Object.values(categories).reduce((n, c) => n + c[key][outcome], 0);
+  return {
+    cases: cases.length,
+    modelCorrect: Object.values(categories).reduce(
+      (n, c) => n + c.modelCorrect,
+      0,
+    ),
+    lexical: {
+      caught: total("lexical", "caught"),
+      missed: total("lexical", "missed"),
+      falseAlarm: total("lexical", "falseAlarm"),
+      passed: total("lexical", "passed"),
+    },
+    judge: {
+      caught: total("judge", "caught"),
+      missed: total("judge", "missed"),
+      falseAlarm: total("judge", "falseAlarm"),
+      passed: total("judge", "passed"),
+    },
+    categories,
+    examples,
+  };
+}
+
+function usageOf(entries) {
+  const u = { calls: entries.length, inputTokens: 0, outputTokens: 0 };
+  for (const e of entries) {
+    u.inputTokens += e.response.usage.input_tokens || 0;
+    u.outputTokens += e.response.usage.output_tokens || 0;
+  }
+  return u;
+}
+
+// --- Main ------------------------------------------------------------------
+
 async function main() {
   const data = await loadSciFact(args["data-dir"]);
   const cases = selectCases(data);
+  const edge = loadEdgeCases();
   const documentsById = new Map(data.documents.map((d) => [d.id, d]));
   if (args["dry-run"]) {
     for (const c of cases) {
       console.log(
-        `${c.queryId}\t${c.documents.map((d) => d.id).join(",")}\t${c.relevant.join(",")}\t${c.claim}`,
+        `${c.id}\t${c.documents.map((d) => d.id).join(",")}\t${c.relevant.join(",")}\t${c.claim}`,
+      );
+    }
+    for (const c of edge) {
+      console.log(
+        `${c.id}\t${c.documents.length} docs\t${c.documents.map((d) => d.text.split(/\s+/).length).join(",")} words`,
       );
     }
     return;
   }
   const { apiKey } = liveAnthropic();
-  const cache = new ClaudeCache({ apiKey, capUSD: Number(args.cap || 5) });
-  console.log(
-    `${cases.length} SciFact claims, ${DOCS_PER_QUERY} abstracts each`,
-  );
-
-  const answerCalls = [];
-  const judgeCalls = [];
-  const responses = await mapLimit(cases, CONCURRENCY, async (c) => {
-    const res = await cache.messages(requestBody(c));
-    answerCalls.push(res);
-    const message = res.data;
-    const normalized = fromAnthropicCitations(message, {
-      documents: c.documents.map((d) => ({ id: d.id })),
-    });
-    const lexical = await verifyCitations(normalized);
-    const sink = [];
-    const judge = await verifyCitations(normalized, {
-      judge: judgeFor(cache, sink),
-    });
-    judgeCalls.push(...sink);
-    return {
-      queryId: c.queryId,
-      case: c,
-      stopReason: message.stop_reason,
-      normalized,
-      lexical,
-      judge,
-    };
-  });
-
+  const cache = new ClaudeCache({ apiKey, capUSD: Number(args.cap || 90) });
   const review = JSON.parse(fs.readFileSync(REVIEW_FILE, "utf8"));
-  const used = cache.usageSummary();
-  const answerUsage = answerCalls.reduce(
-    (acc, r) => {
-      acc.calls += 1;
-      acc.inputTokens += r.data.usage.input_tokens;
-      acc.outputTokens += r.data.usage.output_tokens;
-      return acc;
-    },
-    { calls: 0, inputTokens: 0, outputTokens: 0 },
+  console.log(
+    `${cases.length} SciFact claims, ${DOCS_PER_QUERY} abstracts each; ${edge.length} edge cases`,
   );
-  const judgeUsage = judgeCalls.reduce(
-    (acc, k) => {
-      acc.calls += 1;
-      acc.inputTokens += k.usage.input_tokens;
-      acc.outputTokens += k.usage.output_tokens;
-      return acc;
-    },
-    { calls: 0, inputTokens: 0, outputTokens: 0 },
-  );
-  const price = PRICES[MODEL];
-  const cost = (u) =>
-    Number(
-      (
-        (u.inputTokens * price.input + u.outputTokens * price.output) /
-        1e6
-      ).toFixed(4),
-    );
 
-  const uncited = responses.map((r) => r.lexical.summary.uncitedSentences);
   const report = {
     benchmark: "claude-citations",
     createdAt: new Date().toISOString(),
@@ -430,80 +561,129 @@ async function main() {
       seed: SEED,
       rule: "A seeded sample of SciFact test claims; for each, the abstracts judged relevant to it and BM25's top non-relevant abstracts up to three, in id order.",
     },
-    model: {
-      id: MODEL,
-      temperature: 0,
-      maxTokens: MAX_TOKENS,
-      pricesPerMTok: price,
-      pricesChecked: "2026-11-05",
-      callDates: (() => {
-        const dates = cache.used.map((e) => e.createdAt.slice(0, 10)).sort();
-        return dates.length ? [dates[0], dates[dates.length - 1]] : null;
-      })(),
-      prompt: prompt("<claim>"),
+    prompts: {
+      scifact: scifactPrompt("<claim>"),
+      edge: edgePrompt("<question>"),
     },
-    answers: {
-      ...answerUsage,
-      costUSD: cost(answerUsage),
-      stopReasons: responses.reduce((acc, r) => {
-        acc[r.stopReason] = (acc[r.stopReason] || 0) + 1;
-        return acc;
-      }, {}),
-      withoutCitations: responses.filter(
-        (r) => r.normalized.claims.length === 0,
-      ).length,
-      skippedCitations: responses.reduce(
-        (n, r) =>
-          n + Object.values(r.normalized.skipped).reduce((a, b) => a + b, 0),
-        0,
-      ),
-      uncitedSentences: uncited.reduce((a, b) => a + b, 0),
-      answersWithUncitedSentences: uncited.filter((n) => n > 0).length,
-      citationsPerAnswerP50: percentile(
-        responses.map((r) => r.lexical.summary.citations),
-        50,
-      ),
-    },
-    lexical: summarize(responses, "lexical"),
-    judge: {
-      ...summarize(responses, "judge"),
-      model: MODEL,
-      ...judgeUsage,
-      costUSD: cost(judgeUsage),
-      errors: responses.filter((r) => r.judge.judge && r.judge.judge.error)
-        .length,
-    },
-    review: reviewSummary(responses, review),
-    mutation: await mutationTest(responses, documentsById),
-    spend: used,
+    maxTokens: MAX_TOKENS,
+    edgeFile: "benchmarks/fixtures/citation-edge-cases.json",
+    models: {},
   };
+  const reviewRows = [];
 
-  console.log(
-    JSON.stringify(
-      { ...report, review: { ...report.review, sample: undefined } },
-      null,
-      2,
-    ),
-  );
-
-  if (args["review-out"]) {
-    const rows = report.review.sample.map((id) => {
-      const [queryId, i] = id.split("#");
-      const r = responses.find((x) => x.queryId === queryId);
-      const claim = r.normalized.claims[Number(i)];
-      return {
-        id,
+  for (const model of MODELS) {
+    const start = cache.used.length;
+    const temperature = await acceptsTemperature(cache, model);
+    const temp = temperature.accepted;
+    console.log(
+      `${model}: temperature 0 ${temp ? "accepted" : `rejected (${temperature.error})`}`,
+    );
+    const mainStart = cache.used.length;
+    const responses = await mapLimit(cases, CONCURRENCY, (c) =>
+      answerAndVerify(cache, model, c, temp),
+    );
+    const mainEntries = cache.used.slice(mainStart);
+    const edgeStart = cache.used.length;
+    const edgeResponses = await mapLimit(edge, CONCURRENCY, (c) =>
+      answerAndVerify(cache, model, c, temp),
+    );
+    const edgeEntries = cache.used.slice(edgeStart);
+    const allEntries = cache.used.slice(start);
+    const summary = cache.usageSummary((e) => allEntries.includes(e))[model];
+    const costOfEntries = (entries) =>
+      cache.usageSummary((e) => entries.includes(e))[model]?.costUSD ?? 0;
+    const judgeCalls = responses.flatMap((r) => r.judgeCalls);
+    const uncited = responses.map((r) => r.lexical.summary.uncitedSentences);
+    const sample = reviewSample(model, responses);
+    for (const x of sample.sampled) {
+      const claim = x.r.normalized.claims[x.i];
+      reviewRows.push({
+        id: x.id,
         claim: claim.text,
         passages: claim.citations.map((c) => ({
           doc: c.sourceId,
           text: c.passages,
         })),
-        lexicalReason: r.lexical.claims[Number(i)].lexicalReason,
-        judge: r.judge.claims[Number(i)].verdict,
-        sciFactClaim: r.case.claim,
-      };
-    });
-    fs.writeFileSync(args["review-out"], JSON.stringify(rows, null, 2) + "\n");
+        lexicalReason: x.lexical.lexicalReason,
+        judge: x.judge.verdict,
+        sciFactClaim: x.r.case.claim,
+      });
+    }
+
+    report.models[model] = {
+      pricesPerMTok: PRICES[model],
+      pricesChecked: "2026-11-05",
+      temperature: temp ? 0 : "not sent (model rejects it)",
+      temperatureCheck: temperature,
+      callDates: (() => {
+        const dates = allEntries.map((e) => e.createdAt.slice(0, 10)).sort();
+        return dates.length ? [dates[0], dates[dates.length - 1]] : null;
+      })(),
+      totalCalls: allEntries.length,
+      totalCostUSD: summary ? summary.costUSD : 0,
+      scifact: {
+        answers: {
+          calls: responses.length,
+          stopReasons: responses.reduce((acc, r) => {
+            acc[r.stopReason] = (acc[r.stopReason] || 0) + 1;
+            return acc;
+          }, {}),
+          withoutCitations: responses.filter(
+            (r) => r.normalized.claims.length === 0,
+          ).length,
+          skippedCitations: responses.reduce(
+            (n, r) =>
+              n +
+              Object.values(r.normalized.skipped).reduce((a, b) => a + b, 0),
+            0,
+          ),
+          uncitedSentences: uncited.reduce((a, b) => a + b, 0),
+          answersWithUncitedSentences: uncited.filter((n) => n > 0).length,
+          citationsPerAnswerP50: percentile(
+            responses.map((r) => r.lexical.summary.citations),
+            50,
+          ),
+          latencyMs: {
+            p50: percentile(
+              responses.map((r) => r.latencyMs),
+              50,
+            ),
+            p95: percentile(
+              responses.map((r) => r.latencyMs),
+              95,
+            ),
+          },
+        },
+        lexical: summarize(responses, "lexical"),
+        judge: {
+          ...summarize(responses, "judge"),
+          calls: judgeCalls.length,
+          errors: responses.filter((r) => r.judge.judge && r.judge.judge.error)
+            .length,
+        },
+        usage: usageOf(mainEntries),
+        costUSD: costOfEntries(mainEntries),
+        review: reviewSummary(sample, review),
+        mutation: await mutationTest(responses, documentsById),
+      },
+      edge: {
+        ...scoreEdge(edge, edgeResponses),
+        usage: usageOf(edgeEntries),
+        costUSD: costOfEntries(edgeEntries),
+      },
+    };
+    const s = report.models[model].scifact;
+    const e = report.models[model].edge;
+    console.log(
+      `  SciFact: ${s.lexical.claims} claims, lexical supported ${s.lexical.supportedShare}, judge ${s.judge.supportedShare}, verified ${s.lexical.verifiedShare}/${s.judge.verifiedShare}; edge model correct ${e.modelCorrect}/${e.cases}, judge caught ${e.judge.caught} missed ${e.judge.missed} false alarms ${e.judge.falseAlarm}; US$${report.models[model].totalCostUSD}; total spend US$${cache.spentUSD().toFixed(4)}`,
+    );
+  }
+
+  if (args["review-out"]) {
+    fs.writeFileSync(
+      args["review-out"],
+      JSON.stringify(reviewRows, null, 2) + "\n",
+    );
   }
   if (args.output) {
     fs.mkdirSync(path.dirname(path.resolve(args.output)), { recursive: true });

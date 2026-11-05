@@ -26,13 +26,23 @@ const API = "https://api.anthropic.com";
 const API_VERSION = "2023-06-01";
 
 /**
- * US$ per million tokens, from Anthropic's pricing (checked 2026-11-05):
- * Claude Haiku 4.5 $1 input / $5 output, Claude Sonnet 5.5 $2 / $10.
+ * US$ per million tokens, standard tier, from
+ * https://platform.claude.com/docs/en/about-claude/pricing (checked
+ * 2026-11-05). Cache writes cost 1.25x input (5 minutes) or 2x (1 hour);
+ * cache reads have their own price. Claude Haiku 5.5 costs more for
+ * prompts over 100k tokens (`above100k`).
  */
 const PRICES = {
-  "claude-haiku-4-5-20251001": { input: 1, output: 5 },
-  "claude-haiku-4-5": { input: 1, output: 5 },
-  "claude-sonnet-5-5": { input: 2, output: 10 },
+  "claude-haiku-5-5": {
+    input: 0.1,
+    output: 0.5,
+    cacheRead: 0.01,
+    above100k: { input: 0.5, output: 2.5, cacheRead: 0.05 },
+  },
+  "claude-haiku-4-5-20251001": { input: 1, output: 5, cacheRead: 0.1 },
+  "claude-sonnet-5-5": { input: 2, output: 10, cacheRead: 0.1 },
+  "claude-opus-5-5": { input: 4, output: 20, cacheRead: 0.2 },
+  "claude-fable-5-1": { input: 10, output: 50, cacheRead: 0.25 },
 };
 
 const sha256 = (text) => crypto.createHash("sha256").update(text).digest("hex");
@@ -49,16 +59,29 @@ function stable(value) {
   return JSON.stringify(value);
 }
 
-function costOf(model, usage) {
+/** The price of `model`; throws for a model with no price, never assumes 0. */
+function priceOf(model) {
   const price = PRICES[model];
-  if (!price || !usage) return 0;
+  if (!price)
+    throw new Error(`No price for model "${model}"; add it to PRICES`);
+  return price;
+}
+
+function costOf(model, usage) {
+  let price = priceOf(model);
+  if (!usage) throw new Error(`No usage in a ${model} response`);
+  const read = usage.cache_read_input_tokens || 0;
+  const creation = usage.cache_creation || {};
+  const write1h = creation.ephemeral_1h_input_tokens || 0;
+  const write5m = (usage.cache_creation_input_tokens || 0) - write1h;
+  const prompt = (usage.input_tokens || 0) + read + write5m + write1h;
+  if (price.above100k && prompt > 100000) price = price.above100k;
   const input =
-    (usage.input_tokens || 0) +
-    1.25 * (usage.cache_creation_input_tokens || 0) +
-    0.1 * (usage.cache_read_input_tokens || 0);
-  return (
-    (input * price.input + (usage.output_tokens || 0) * price.output) / 1e6
-  );
+    (usage.input_tokens || 0) * price.input +
+    write5m * 1.25 * price.input +
+    write1h * 2 * price.input +
+    read * price.cacheRead;
+  return (input + (usage.output_tokens || 0) * price.output) / 1e6;
 }
 
 /** An error that carries the status and the API's message, and nothing else. */
@@ -75,9 +98,9 @@ class ClaudeCache {
    * @param {object} options
    * @param {string} [options.dir]
    * @param {string|null} [options.apiKey] - Needed only for uncached calls
-   * @param {number} [options.capUSD=5] - Refuse new calls past this total
+   * @param {number} [options.capUSD=90] - Refuse new calls past this total
    */
-  constructor({ dir = DEFAULT_DIR, apiKey = null, capUSD = 5 } = {}) {
+  constructor({ dir = DEFAULT_DIR, apiKey = null, capUSD = 90 } = {}) {
     this.dir = dir;
     this.apiKey = apiKey;
     this.capUSD = capUSD;
@@ -111,10 +134,13 @@ class ClaudeCache {
 
   /** Total spend over every cached call. */
   spentUSD() {
-    return this.entries().reduce(
-      (sum, e) => sum + costOf(e.model, e.response && e.response.usage),
-      0,
-    );
+    if (this.spent === undefined) {
+      this.spent = this.entries().reduce(
+        (sum, e) => sum + costOf(e.model, e.response && e.response.usage),
+        0,
+      );
+    }
+    return this.spent;
   }
 
   /**
@@ -133,6 +159,7 @@ class ClaudeCache {
         "Not in the cache and no API key: see __tests__/live/live-env.js",
       );
     }
+    priceOf(body.model); // throws before any call to an unpriced model
     const spent = this.spentUSD();
     if (spent >= this.capUSD) {
       throw new Error(
@@ -166,6 +193,7 @@ class ClaudeCache {
       http: { status: res.status, data, latencyMs },
     };
     fs.writeFileSync(this.file(key), JSON.stringify(entry) + "\n");
+    this.spent = this.spentUSD() + costOf(entry.model, data.usage);
     this.used.push(entry);
     return { ...entry.http, cached: false };
   }
@@ -176,9 +204,13 @@ class ClaudeCache {
    * reply while the call goes through this cache. `onCall` receives
    * { latencyMs, usage, cached } for each call.
    */
-  axiosAdapter(onCall) {
+  axiosAdapter(onCall, { omitTemperature = false } = {}) {
     return async (config) => {
       const body = JSON.parse(config.data);
+      // Workaround, not a fix: AnthropicConnector sends the judge's
+      // temperature 0, which Claude Sonnet 5.5, Opus 5.5 and Fable 5.1
+      // reject with a 400. The rest of the body is the connector's own.
+      if (omitTemperature) delete body.temperature;
       // messages() throws its own errors, without the config or headers an
       // axios error would carry (and with them the API key)
       const r = await this.messages(body);
@@ -187,6 +219,8 @@ class ClaudeCache {
           latencyMs: r.latencyMs,
           usage: r.data.usage,
           stopReason: r.data.stop_reason,
+          firstBlock:
+            r.data.content && r.data.content[0] && r.data.content[0].type,
           cached: r.cached,
         });
       }
@@ -223,4 +257,4 @@ class ClaudeCache {
   }
 }
 
-module.exports = { ClaudeCache, PRICES, costOf, stable };
+module.exports = { ClaudeCache, PRICES, costOf, priceOf, stable };

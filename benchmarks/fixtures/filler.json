@@ -1,0 +1,30 @@
+{
+  "about": "Neutral filler sentences for the long-source edge cases. A long source is built by cycling these sentences to the requested word count, with the case's needle sentence placed at the requested position. None of these sentences shares a content word with any needle.",
+  "sentences": [
+    "The town market sets up its stalls along the river path on most mornings.",
+    "Fishmongers arrive before sunrise and pack their crates with crushed ice.",
+    "A narrow lane behind the bakery leads up to the old chapel on the hill.",
+    "Local cyclists often stop at the fountain to refill their water bottles.",
+    "The weather along the coast changes quickly when wind comes off the sea.",
+    "Gardeners in the valley grow beans, onions and squash in tidy garden beds.",
+    "The village school keeps a small orchard of apple and pear trees.",
+    "Most shops close for an hour around midday and open again in the afternoon.",
+    "Hikers usually follow the ridge trail because it offers wide views of the bay.",
+    "The lighthouse keeper's cottage now houses a modest maritime museum.",
+    "Farmers bring cheese, honey and fresh eggs to the square every weekend.",
+    "Narrow wooden boats are painted in bright colours and moored in the harbour.",
+    "The regional bus stops twice an hour outside the post office.",
+    "Children gather in the park after lessons to play football on the grass.",
+    "An annual music evening fills the courtyard with folk songs and dancing.",
+    "The stone walls around the fields were built by hand generations ago.",
+    "Sheep graze on the slopes above the village throughout the warmer part of the year.",
+    "Visitors often photograph the arched footbridge that crosses the stream.",
+    "The town hall clock was restored by volunteers and chimes every hour.",
+    "A small cinema shows classic films on rainy evenings in the winter season.",
+    "Fog settles over the marshes early in the day and lifts by mid-morning.",
+    "The pottery studio sells bowls and jugs glazed in deep blue and green.",
+    "Several families run guesthouses with views over the rooftops to the water.",
+    "The cobbled main street is closed to cars during the summer fair.",
+    "Birdwatchers come in autumn to see geese resting on the tidal flats."
+  ]
+}
