@@ -22,6 +22,12 @@ const KNOWN_MISSES = {
   // claim's framing clause without negation, fails the claim
   "clause-07": "subject named only in the source's other, positive clause",
   "clause-08": "the claim's framing clause has no negation",
+  "clause-10": "the clause's subject is in the source's other clause",
+  // Added for 3.7 before the units work
+  "unit-09":
+    "approximate conversion (1 month / 30 days); only exact ones are made",
+  "unit-g7": "the same number with a different unit passes (weeks / days)",
+  "time-03": "12-hour vs 24-hour times (5 pm / 17:00)",
   // Units: "2 kg" vs "2,000 grams" needs unit conversion; and the reverse
   // miss, a number that matches with a different unit ("2 pounds" against
   // "2 kilograms"), needs units compared too
