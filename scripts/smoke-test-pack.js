@@ -448,6 +448,34 @@ const results = [
       );
     }
   }),
+  check("type declarations compile with the latest @types/node", () => {
+    // The repo pins @types/node 22; developers get the latest. 25 and later
+    // rejected `EventEmitter<[never]>` in the generated declarations.
+    run(
+      npm,
+      ["install", "--no-save", "--no-audit", "--no-fund", "@types/node@latest"],
+      consumerDir,
+    );
+    run(
+      process.execPath,
+      [
+        require.resolve("typescript/bin/tsc", { paths: [root] }),
+        "--noEmit",
+        "--strict",
+        "--module",
+        "node16",
+        "--moduleResolution",
+        "node16",
+        "--esModuleInterop",
+        "--typeRoots",
+        path.join(consumerDir, "node_modules", "@types"),
+        "--types",
+        "node",
+        "check.ts",
+      ],
+      consumerDir,
+    );
+  }),
   check("plugins written to the declared contracts work", () => {
     // Each component is typed only by the published interfaces. If the
     // declarations drift from what createRagPipeline calls, either this

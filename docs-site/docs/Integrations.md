@@ -137,8 +137,20 @@ Already calling `generateText` or `streamText`? `groundingMiddleware` adds retri
 
 ```javascript no-run
 import { generateText, wrapLanguageModel } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { groundingMiddleware } from "@devilsdev/rag-pipeline-utils";
+import { openai } from "@ai-sdk/openai"; // or anthropic("claude-haiku-4-5") from "@ai-sdk/anthropic"
+import {
+  groundingMiddleware,
+  LocalEmbedder,
+  MemoryRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+// Any retriever and embedder; here an in-memory index of your documents
+const embedder = new LocalEmbedder();
+embedder.train(docs.map((d) => d.content));
+const retriever = new MemoryRetriever();
+await retriever.store(
+  docs.map((d) => ({ ...d, vector: embedder.embed(d.content) })),
+);
 
 const model = wrapLanguageModel({
   model: openai("gpt-4o-mini"),

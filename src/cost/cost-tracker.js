@@ -20,6 +20,10 @@ const DEFAULT_CONFIG = {
  * @private
  */
 const CHARS_PER_TOKEN = 4;
+// Rough size of the RAG prompt around the passages (instructions and
+// delimiters) and of each passage's wrapper, for estimates
+const PROMPT_OVERHEAD_CHARS = 600;
+const PASSAGE_WRAPPER_CHARS = 40;
 
 /**
  * Wraps pipeline execution to automatically track token usage and costs.
@@ -77,12 +81,27 @@ class CostTracker extends EventEmitter {
       };
     }
 
-    // Estimate from content length
+    // Estimate from content length. The model reads the query and every
+    // retrieved passage, inside a prompt, so count all of it, not just
+    // the query (which under-counted about 25x on a three-passage run).
     const inputText = result.input || result.query || result.prompt || '';
     const outputText = result.output || result.answer || result.response || '';
+    const passages = Array.isArray(result.results) ? result.results : [];
+    const passageChars = passages.reduce((n, doc) => {
+      const text =
+        typeof doc === 'string'
+          ? doc
+          : (doc && (doc.content || doc.text)) || '';
+      return n + String(text).length + PASSAGE_WRAPPER_CHARS;
+    }, 0);
+    const promptChars = passages.length > 0 ? PROMPT_OVERHEAD_CHARS : 0;
     return {
-      inputTokens: Math.ceil(String(inputText).length / CHARS_PER_TOKEN),
+      inputTokens: Math.ceil(
+        (String(inputText).length + passageChars + promptChars) /
+          CHARS_PER_TOKEN,
+      ),
       outputTokens: Math.ceil(String(outputText).length / CHARS_PER_TOKEN),
+      estimated: true,
     };
   }
 
@@ -110,7 +129,8 @@ class CostTracker extends EventEmitter {
 
         const result = await pipeline.run(...args);
 
-        const { inputTokens, outputTokens } = tracker._extractUsage(result);
+        const { inputTokens, outputTokens, estimated } =
+          tracker._extractUsage(result);
         // A routed run (createModelRouter) names the model it used.
         const model =
           result.model ||
@@ -145,8 +165,14 @@ class CostTracker extends EventEmitter {
           inputTokens,
           outputTokens,
           estimatedCost: costEstimate.totalCost,
+          // The price-table entry used (as before), and the model the run
+          // asked for, which can differ in form (claude-haiku-4-5 is priced
+          // as claude-haiku-4.5)
           model: costEstimate.model,
+          requestedModel: model,
           currency: 'USD',
+          // Token counts estimated from text length (no usage reported)
+          ...(estimated && { tokensEstimated: true }),
         };
 
         // Record in session

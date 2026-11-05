@@ -39,6 +39,19 @@ function summarizeFilter(filterOutput) {
  *
  * @extends EventEmitter
  */
+/**
+ * A strict-mode block's message with the guard's reasons, so the error says
+ * why ("... flagged output: PII detected (email): 1 occurrence(s); ...").
+ * The issues name kinds and counts, never the PII itself; the full list is
+ * in result.guardrails.
+ */
+function withReasons(message, check) {
+  const issues = (check && check.issues) || [];
+  if (issues.length === 0) return message;
+  const text = issues.map(String).join('; ');
+  return `${message}: ${text.length > 300 ? `${text.slice(0, 297)}...` : text}`;
+}
+
 class GuardrailsPipeline extends EventEmitter {
   /**
    * @param {object} pipeline - The underlying RAG pipeline (must have a .run() method)
@@ -107,7 +120,10 @@ class GuardrailsPipeline extends EventEmitter {
       if (!guardrails.preRetrieval.safe && this.config.strict) {
         return {
           success: false,
-          error: 'Pre-retrieval guard blocked query',
+          error: withReasons(
+            'Pre-retrieval guard blocked query',
+            guardrails.preRetrieval,
+          ),
           guardrails,
         };
       }
@@ -177,7 +193,10 @@ class GuardrailsPipeline extends EventEmitter {
         // Do not spread result: it carries the raw answer and citations.
         return {
           success: false,
-          error: 'Post-generation guard flagged output',
+          error: withReasons(
+            'Post-generation guard flagged output',
+            guardrails.postGeneration,
+          ),
           guardrails,
         };
       }

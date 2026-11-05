@@ -212,6 +212,49 @@ The names are those of `rag-pipeline eval` and `runEvaluation()`, so a score mea
 
 Events use the logs API of `@opentelemetry/api` 1.10 or later and go to the global LoggerProvider your SDK registered (`@opentelemetry/sdk-logs` 3), so configure a log exporter to see them; without one they are no-ops. SDKs before sdk-logs 3 register their LoggerProvider through `@opentelemetry/api-logs` instead, which the library does not load on its own: pass it, `telemetry: { logs }` (`import * as logs from "@opentelemetry/api-logs"`, 0.203 or later), or a logger, `telemetry: { logger }`. With an older `@opentelemetry/api` and neither option, events are skipped.
 
+Which you get depends on the OpenTelemetry release line npm installs. `@opentelemetry/api` 1.10 and `@opentelemetry/sdk-logs` 3 belong to the OpenTelemetry 3 line, which needs Node.js 22.15 or later; on Node.js 22.0 to 22.14, or with packages that pin the 2.x line (`@opentelemetry/sdk-trace-base` 2), npm installs `@opentelemetry/api` 1.9, which has no logs API, so pass `telemetry: { logs }` as above. A local setup to see the spans and events without any account, on the 2.x line:
+
+```js no-run
+import * as api from "@opentelemetry/api";
+import * as logs from "@opentelemetry/api-logs";
+import {
+  BasicTracerProvider,
+  InMemorySpanExporter,
+  SimpleSpanProcessor,
+} from "@opentelemetry/sdk-trace-base";
+import {
+  LoggerProvider,
+  InMemoryLogRecordExporter,
+  SimpleLogRecordProcessor,
+} from "@opentelemetry/sdk-logs";
+import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
+
+api.context.setGlobalContextManager(
+  new AsyncLocalStorageContextManager().enable(),
+);
+const spans = new InMemorySpanExporter();
+api.trace.setGlobalTracerProvider(
+  new BasicTracerProvider({ spanProcessors: [new SimpleSpanProcessor(spans)] }),
+);
+const records = new InMemoryLogRecordExporter();
+// Log processors take { exporter }, not the exporter itself
+logs.logs.setGlobalLoggerProvider(
+  new LoggerProvider({
+    processors: [new SimpleLogRecordProcessor({ exporter: records })],
+  }),
+);
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever,
+  llm,
+  telemetry: { logs },
+});
+await pipeline.run({ query, options: { evaluate: true, citations: true } });
+console.log(spans.getFinishedSpans().map((s) => s.name));
+console.log(records.getFinishedLogRecords().map((r) => r.attributes));
+```
+
 ### Scores in Langfuse
 
 Langfuse receives OpenTelemetry spans with its `LangfuseSpanProcessor` and uses the same trace and span ids, so `toLangfuseScores(result)` returns the run's scores attached to its trace and to the observation each one judges, in the shape `langfuse.score.create()` takes. Langfuse is not a dependency of this library:

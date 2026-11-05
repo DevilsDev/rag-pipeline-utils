@@ -27,6 +27,8 @@ A correct paraphrase shares too few words with its source to pass the lexical ch
 import { checkAnswer, OpenAIConnector } from "@devilsdev/rag-pipeline-utils";
 
 const judge = new OpenAIConnector({ apiKey: process.env.OPENAI_API_KEY });
+// Or Claude: new AnthropicConnector({ apiKey: process.env.ANTHROPIC_API_KEY,
+//   model: "claude-haiku-5-5" }). Any current Claude model works from 3.5.0.
 
 const check = await checkAnswer({
   answer: "Staff working full time get 20 days of paid leave annually.",

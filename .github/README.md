@@ -121,7 +121,46 @@ Upgrading from 2.x? The [3.0 migration guide](https://devilsdev.github.io/rag-pi
 
 ## Quick start with an LLM
 
-To generate answers, add an LLM (`npm install openai` for `OpenAIConnector`). The same connector can also embed:
+To generate answers, add an LLM. With Claude, `AnthropicConnector` needs no extra package; Anthropic has no embeddings API, so pair it with the offline `LocalEmbedder` (or any embedder):
+
+```js
+import {
+  createRagPipeline,
+  AnthropicConnector,
+  LocalEmbedder,
+  MemoryRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const docs = [
+  {
+    id: "vacation",
+    content:
+      "Full-time employees receive twenty days of paid vacation per year.",
+  },
+  { id: "remote", content: "Remote work is allowed two days per week." },
+];
+const embedder = new LocalEmbedder();
+embedder.train(docs.map((doc) => doc.content));
+const retriever = new MemoryRetriever();
+await retriever.store(
+  docs.map((doc) => ({ ...doc, vector: embedder.embed(doc.content) })),
+);
+
+const pipeline = createRagPipeline({
+  embedder,
+  retriever,
+  // Reads ANTHROPIC_API_KEY; the default model is claude-sonnet-5-5
+  llm: new AnthropicConnector({ apiKey: process.env.ANTHROPIC_API_KEY }),
+});
+const result = await pipeline.run({
+  query: "How many vacation days do I get?",
+  options: { citations: true },
+});
+console.log(result.answer);
+console.log(result.citations.groundednessScore); // 0..1, share of grounded sentences
+```
+
+With OpenAI (`npm install openai`), the same connector can also embed:
 
 ```js
 import {
@@ -341,7 +380,7 @@ Writing your own plugin? `runContractTests("retriever", () => new MyRetriever())
 
 ### Protect an internal assistant
 
-`GuardrailsPipeline` wraps any pipeline. Access control runs before the LLM sees a document, prompt-injection detection runs on the query and, with `detectInjection`, on the retrieved documents too (indirect injection: instructions planted in a page or file you index), and PII is redacted from the answer, its citations and its evaluation details.
+`GuardrailsPipeline` wraps any pipeline. Access control runs before the LLM sees a document, prompt-injection detection runs on the query and, with `detectInjection`, on the retrieved documents too (indirect injection: instructions planted in a page or file you index), and PII is redacted from the answer, its citations and its evaluation details. With `strict: true`, as below, a flagged query or answer is blocked instead (`success: false`, and `error` says why).
 
 ```js
 import {
