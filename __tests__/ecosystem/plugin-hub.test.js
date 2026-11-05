@@ -65,8 +65,9 @@ describe("Plugin Hub", () => {
   });
 
   afterEach(() => {
-    // Cleanup timers and mocks
-    jest.runOnlyPendingTimers();
+    // Drop pending fake timers rather than run them: several tests switch to
+    // real timers, and advancing timers then only triggers a Jest warning.
+    jest.clearAllTimers();
     jest.useRealTimers();
     jest.restoreAllMocks();
   });
