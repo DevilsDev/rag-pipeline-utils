@@ -27,6 +27,9 @@ page.
   the retriever contract against an eventually consistent in-memory
   Pinecone of both kinds in CI, and against real indexes of both kinds;
   `examples/openai-pinecone` uses it instead of its own adapter.
+- **An MCP Registry entry for `@devilsdev/rag-mcp-server`**
+  (`packages/rag-mcp-server/server.json`, `io.github.DevilsDev/rag-mcp-server`),
+  kept at the release version by `npm version`, for `mcp-publisher publish`.
 
 - **Consumer journeys** (`npm run test:consumer`): eleven developer journeys
   against the packed package and the live Claude API, run before a
