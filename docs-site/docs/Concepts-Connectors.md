@@ -149,10 +149,6 @@ As with pgvector, the CLI's `local` embedder can't be used with it; use `openai`
 
 ### Pinecone
 
-:::info[Coming in 3.6.0]
-`PineconeRetriever` is in 3.6.0.
-:::
-
 `PineconeRetriever` keeps documents in a namespace of a [Pinecone](https://www.pinecone.io) serverless index. It talks to Pinecone's REST API (version 2026-07) with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too.
 
 ```javascript no-run
