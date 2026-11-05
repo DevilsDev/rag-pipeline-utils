@@ -38,7 +38,20 @@ page.
   a claim whose statement matches.
   On the project-written dev cases (`__tests__/fixtures/lexical-checks/`,
   the 3.7 ones committed before the change), correct claims passing went
-  from 32/47 to 46/47 and real mismatches caught from 40/45 to 45/45.
+  from 32/47 to 46/47 and real mismatches caught from 40/45 to 45/45 (51
+  cases now, with the regression cases added later: 50/51 and 45/45).
+
+  On the published sets, re-run from the cached Claude responses (see
+  "3.6.0 and 3.7 compared" on the Benchmarks page): every SciFact citation
+  claim the check flagged was already hand-reviewed, false alarms went from
+  43 to 35 across five models with the 3 real problems still caught, and the
+  citation benchmark's number mutations are caught as before. RAGTruth
+  sentences wrongly flagged went from 1,474 to 1,467 and misses from 108 to
+  109; HaluEval doesn't change. The first run on the frozen code found three
+  regressions in Yelp answers (hours written "7:0-23:0", "up to 8 people"
+  and "at 11 W ..." read as times, "seven days a week" as a duration the
+  source doesn't state); they were fixed, with project-written cases first,
+  and the sets were run once more.
 
 ## [3.6.0] - 2026-11-05
 

@@ -1,6 +1,6 @@
 {
   "report": "claude-usage",
-  "generatedAt": "2026-11-05T22:54:49.869Z",
+  "generatedAt": "2026-11-05T23:49:35.895Z",
   "note": "Metadata only (model, date, status, tokens, latency): no prompt, answer or key.",
   "prices": {
     "perMillionTokens": {
@@ -33,51 +33,51 @@
     "asOf": "2026-11-05"
   },
   "sources": {
-    "benchmarkResponses": 9732,
-    "consumerJourneyCalls": 350,
+    "benchmarkResponses": 10029,
+    "consumerJourneyCalls": 357,
     "liveTestCalls": 10
   },
   "totals": {
-    "calls": 10092,
-    "errors": 51,
+    "calls": 10396,
+    "errors": 56,
     "refusals": 60,
-    "inputTokens": 14357647,
-    "outputTokens": 3979879,
-    "usd": 60.9776
+    "inputTokens": 14812069,
+    "outputTokens": 4149876,
+    "usd": 62.8193
   },
   "byModel": {
     "claude-haiku-5-5": {
-      "calls": 3117,
-      "inputTokens": 4564116,
-      "outputTokens": 2005232,
-      "usd": 1.459
+      "calls": 3212,
+      "inputTokens": 4719975,
+      "outputTokens": 2097927,
+      "usd": 1.5209
     },
     "claude-haiku-4-5": {
-      "calls": 2598,
-      "inputTokens": 2891047,
-      "outputTokens": 524823,
-      "usd": 5.5151
+      "calls": 2678,
+      "inputTokens": 2990592,
+      "outputTokens": 549690,
+      "usd": 5.739
     },
     "claude-sonnet-5-5": {
-      "calls": 3107,
-      "inputTokens": 4591462,
-      "outputTokens": 871056,
-      "usd": 17.8935
+      "calls": 3205,
+      "inputTokens": 4747324,
+      "outputTokens": 906973,
+      "usd": 18.5644
     },
     "claude-opus-5-5": {
-      "calls": 633,
-      "inputTokens": 1167201,
-      "outputTokens": 297848,
-      "usd": 10.6258
+      "calls": 647,
+      "inputTokens": 1188566,
+      "outputTokens": 305992,
+      "usd": 10.8742
     },
     "claude-fable-5-1": {
-      "calls": 619,
-      "inputTokens": 1143821,
-      "outputTokens": 280920,
-      "usd": 25.4842
+      "calls": 634,
+      "inputTokens": 1165612,
+      "outputTokens": 289294,
+      "usd": 26.1208
     },
     "claude-sonnet-9-9": {
-      "calls": 18,
+      "calls": 20,
       "inputTokens": 0,
       "outputTokens": 0,
       "usd": 0
@@ -87,15 +87,15 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-haiku-5-5",
-      "calls": 2731,
+      "calls": 2825,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 3799005,
-      "outputTokens": 1852485,
-      "usd": 1.3061,
+      "inputTokens": 3954607,
+      "outputTokens": 1945141,
+      "usd": 1.368,
       "latencyMs": {
-        "p50": 3289,
-        "p95": 6519
+        "p50": 3337,
+        "p95": 6622
       },
       "firstDate": "2026-11-05",
       "lastDate": "2026-11-05"
@@ -103,15 +103,15 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-haiku-4-5",
-      "calls": 2239,
+      "calls": 2319,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 2274011,
-      "outputTokens": 471478,
-      "usd": 4.6314,
+      "inputTokens": 2373556,
+      "outputTokens": 496345,
+      "usd": 4.8553,
       "latencyMs": {
-        "p50": 2297,
-        "p95": 4897
+        "p50": 2391,
+        "p95": 5149
       },
       "firstDate": "2026-11-05",
       "lastDate": "2026-11-05"
@@ -119,15 +119,15 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-sonnet-5-5",
-      "calls": 2735,
+      "calls": 2829,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 3801664,
-      "outputTokens": 757284,
-      "usd": 15.1762,
+      "inputTokens": 3957266,
+      "outputTokens": 793132,
+      "usd": 15.8459,
       "latencyMs": {
-        "p50": 2818,
-        "p95": 4972
+        "p50": 2833,
+        "p95": 5167
       },
       "firstDate": "2026-11-05",
       "lastDate": "2026-11-05"
@@ -135,15 +135,15 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-opus-5-5",
-      "calls": 410,
+      "calls": 424,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 568024,
-      "outputTokens": 201531,
-      "usd": 6.3027,
+      "inputTokens": 589389,
+      "outputTokens": 209675,
+      "usd": 6.5511,
       "latencyMs": {
-        "p50": 4719,
-        "p95": 10189
+        "p50": 4773,
+        "p95": 10083
       },
       "firstDate": "2026-11-05",
       "lastDate": "2026-11-05"
@@ -151,14 +151,14 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-fable-5-1",
-      "calls": 409,
+      "calls": 424,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 567598,
-      "outputTokens": 195079,
-      "usd": 15.4299,
+      "inputTokens": 589389,
+      "outputTokens": 203453,
+      "usd": 16.0665,
       "latencyMs": {
-        "p50": 4023,
+        "p50": 4114,
         "p95": 14819
       },
       "firstDate": "2026-11-05",
@@ -328,8 +328,8 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-9-9",
-      "calls": 18,
-      "errors": 18,
+      "calls": 20,
+      "errors": 20,
       "refusals": 0,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -344,15 +344,15 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-haiku-5-5",
-      "calls": 126,
+      "calls": 127,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 27212,
-      "outputTokens": 5329,
+      "inputTokens": 27469,
+      "outputTokens": 5368,
       "usd": 0.0054,
       "estimatedUsd": 0.0001,
       "latencyMs": {
-        "p50": 1069,
+        "p50": 1071,
         "p95": 2188
       },
       "firstDate": "2026-11-05",
@@ -377,15 +377,15 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-5-5",
-      "calls": 112,
-      "errors": 33,
+      "calls": 116,
+      "errors": 36,
       "refusals": 0,
-      "inputTokens": 35465,
-      "outputTokens": 6159,
-      "usd": 0.1325,
+      "inputTokens": 35725,
+      "outputTokens": 6228,
+      "usd": 0.1337,
       "estimatedUsd": 0.0016,
       "latencyMs": {
-        "p50": 1658,
+        "p50": 1655,
         "p95": 2841
       },
       "firstDate": "2026-11-05",
