@@ -295,6 +295,8 @@ rag-pipeline query "test query" --top-k 10 --json
 
 ### **2. LLM Generation Issues**
 
+**Claude: HTTP 400 "`temperature` is deprecated for this model", or an empty answer (before 3.5.0).** Claude 4.7 and later models accept only the default temperature, and models that think reply with a thinking block before the answer. From 3.5.0 `AnthropicConnector` retries without `temperature` (warning `RAG_ANTHROPIC_TEMPERATURE`) and returns every text block; a reply with no text rejects with `code: "MODEL_REFUSED"` (Claude declined) or `"NO_TEXT"` (for example, `maxTokens` ran out while it was thinking: raise `maxTokens`). On 3.4.x, leave `temperature` unset and use a model that doesn't think, such as `claude-haiku-4-5`.
+
 **Problem**: Generated responses are poor quality or inconsistent.
 
 **Response Quality Debugging**:

@@ -128,7 +128,10 @@ Generate a response from Claude using the provided query and optional RAG contex
 
 `Promise`\<`string`\>
 
-The generated text
+The answer: every text block of the reply,
+joined. Rejects (code MODEL_REFUSED or NO_TEXT) when the reply has no
+text, such as a refusal or a reply that ran out of maxTokens while
+thinking.
 
 ---
 
@@ -164,6 +167,47 @@ Stream a response from Claude token-by-token via SSE.
 \}, `void`, `unknown`\>
 
 #### Yields
+
+---
+
+### generateWithUsage()
+
+```ts
+generateWithUsage(
+   query,
+   context?,
+   options?
+): Promise<{
+  text: string;
+  usage: {
+     inputTokens: number;
+     outputTokens: number;
+     totalTokens: number;
+  };
+}>;
+```
+
+Like generate(), with the reply's token usage. The LLM judge uses it so
+`check.judge.usage` reports what the judge cost.
+
+#### Parameters
+
+| Parameter  | Type     | Description       |
+| ---------- | -------- | ----------------- |
+| `query`    | `string` | -                 |
+| `context?` | `any`[]  | -                 |
+| `options?` | `any`    | As for generate() |
+
+#### Returns
+
+`Promise`\<\{
+`text`: `string`;
+`usage`: \{
+`inputTokens`: `number`;
+`outputTokens`: `number`;
+`totalTokens`: `number`;
+\};
+\}\>
 
 ---
 
