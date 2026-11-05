@@ -11,6 +11,26 @@ page.
 
 ## [Unreleased]
 
+### Fixed
+
+- **DAG timeouts no longer keep the process alive.** A `DAGEngine` run (and
+  so `AgenticPipeline`, which runs one) with a `timeout` left its timer
+  pending after the run finished, holding the process open for up to the
+  full timeout (60 seconds by default in `AgenticPipeline`). The timer is
+  now cleared when the run settles.
+- **The logger adds no process `exit` listener.** It now writes JSON to
+  stdout synchronously instead of through pino's asynchronous stream, which
+  registered an `exit` flush hook for every copy of the module; under Jest
+  (a fresh copy per test file) these piled up into
+  `MaxListenersExceededWarning`. Lines are also no longer lost on
+  `process.exit()`. Pretty printing (`LOG_PRETTY=true`) is unchanged.
+
+### Internal
+
+- The test suite exits on its own: no forced worker exit, no
+  `MaxListenersExceededWarning`, and no fake-timer warnings from the plugin
+  hub tests.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer
