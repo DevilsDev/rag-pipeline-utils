@@ -464,7 +464,9 @@ class PineconeRetriever {
 }
 
 function normalizeHost(host) {
-  const h = String(host).replace(/\/+$/, '');
+  // Trailing slashes off with a loop (a regex here can backtrack)
+  let h = String(host);
+  while (h.endsWith('/')) h = h.slice(0, -1);
   return /^https?:\/\//.test(h) ? h : `https://${h}`;
 }
 
