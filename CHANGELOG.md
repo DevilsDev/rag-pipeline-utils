@@ -90,6 +90,10 @@ documents })` and `fromOpenAIFileCitations(response)` normalise the
 
 ### Fixed
 
+- `CostCalculator`, `CostTracker` and `createModelRouter` price Claude
+  Haiku 5.5 ($0.10 / $0.50 per million input / output tokens, prompts up
+  to 100k tokens) and Claude Fable 5.1 ($10 / $50); they were reported as
+  costing 0, with a warning. Found by the live Claude tests.
 - `@devilsdev/rag-mcp-server`: its package.json is in the form npm
   publishes (`bin` without `./`, a `git+https` repository URL), so
   publishing no longer prints "npm auto-corrected some errors".
