@@ -1,0 +1,797 @@
+{
+  "benchmark": "judge-more",
+  "createdAt": "2026-11-05T04:11:55.413Z",
+  "environment": {
+    "libraryVersion": "3.4.0",
+    "commit": "1c1901c",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "plan": "benchmarks/fixtures/claude-bench-plan.md",
+  "tuning": "Neither checkAnswer nor the judge prompt was tuned on these cases; the library ran as shipped.",
+  "models": {
+    "claude-haiku-4-5-20251001": {
+      "pricesPerMTok": {
+        "input": 1,
+        "output": 5,
+        "cacheRead": 0.1
+      },
+      "calls": 2102,
+      "costUSD": 4.4192,
+      "temperatureDropped": false,
+      "callDates": ["2026-11-05", "2026-11-05"]
+    },
+    "claude-haiku-5-5": {
+      "pricesPerMTok": {
+        "input": 0.1,
+        "output": 0.5,
+        "cacheRead": 0.01,
+        "above100k": {
+          "input": 0.5,
+          "output": 2.5,
+          "cacheRead": 0.05
+        }
+      },
+      "calls": 2798,
+      "costUSD": 1.3493,
+      "temperatureDropped": true,
+      "callDates": ["2026-11-05", "2026-11-05"]
+    },
+    "claude-sonnet-5-5": {
+      "pricesPerMTok": {
+        "input": 2,
+        "output": 10,
+        "cacheRead": 0.1
+      },
+      "calls": 2798,
+      "costUSD": 15.7257,
+      "temperatureDropped": true,
+      "callDates": ["2026-11-05", "2026-11-05"]
+    }
+  },
+  "ragtruthFull": {
+    "dataset": {
+      "dataset": "RAGTruth (test split), wandb/RAGTruth-processed",
+      "license": "MIT (dataset card and upstream ParticleMedia/RAGTruth); source texts from MS MARCO, CNN/Daily Mail and Yelp keep their own terms; used, not redistributed",
+      "revision": "eb4f4b9d1b68eb7092d3e1a61c0cd82d9808737b",
+      "file": "data/test-00000-of-00001.parquet",
+      "sha256": "2fc4fb703ea47ee0d4ab6110b86312f94fdf0bda157bc6ee67c7e61fb90d3bbd",
+      "cases": 2675,
+      "labelledUnsupported": 943,
+      "rule": "Every test answer annotated as good quality (25 refusals or truncated answers excluded).",
+      "byTask": {
+        "QA": {
+          "cases": 875,
+          "labelledUnsupported": 160
+        },
+        "Summary": {
+          "cases": 900,
+          "labelledUnsupported": 204
+        },
+        "Data2txt": {
+          "cases": 900,
+          "labelledUnsupported": 579
+        }
+      }
+    },
+    "lexical": {
+      "metrics": {
+        "all": {
+          "cases": 2675,
+          "unsupported": {
+            "cases": 2675,
+            "tp": 918,
+            "fp": 1362,
+            "fn": 25,
+            "tn": 370,
+            "precision": 0.4026,
+            "recall": 0.9735,
+            "f1": 0.5697,
+            "accuracy": 0.4815,
+            "precisionInterval": [0.3827, 0.4229],
+            "recallInterval": [0.9612, 0.982]
+          },
+          "supported": {
+            "precision": 0.9367,
+            "recall": 0.2136,
+            "f1": 0.3479,
+            "precisionInterval": [0.9082, 0.9568],
+            "recallInterval": [0.195, 0.2336]
+          },
+          "flaggedShare": 0.8523
+        },
+        "QA": {
+          "cases": 875,
+          "unsupported": {
+            "cases": 875,
+            "tp": 156,
+            "fp": 527,
+            "fn": 4,
+            "tn": 188,
+            "precision": 0.2284,
+            "recall": 0.975,
+            "f1": 0.3701,
+            "accuracy": 0.3931,
+            "precisionInterval": [0.1985, 0.2614],
+            "recallInterval": [0.9375, 0.9902]
+          },
+          "supported": {
+            "precision": 0.9792,
+            "recall": 0.2629,
+            "f1": 0.4146,
+            "precisionInterval": [0.9477, 0.9919],
+            "recallInterval": [0.232, 0.2964]
+          },
+          "flaggedShare": 0.7806
+        },
+        "Summary": {
+          "cases": 900,
+          "unsupported": {
+            "cases": 900,
+            "tp": 183,
+            "fp": 514,
+            "fn": 21,
+            "tn": 182,
+            "precision": 0.2626,
+            "recall": 0.8971,
+            "f1": 0.4062,
+            "accuracy": 0.4056,
+            "precisionInterval": [0.2313, 0.2965],
+            "recallInterval": [0.8478, 0.9317]
+          },
+          "supported": {
+            "precision": 0.8966,
+            "recall": 0.2615,
+            "f1": 0.4049,
+            "precisionInterval": [0.847, 0.9313],
+            "recallInterval": [0.2302, 0.2954]
+          },
+          "flaggedShare": 0.7744
+        },
+        "Data2txt": {
+          "cases": 900,
+          "unsupported": {
+            "cases": 900,
+            "tp": 579,
+            "fp": 321,
+            "fn": 0,
+            "tn": 0,
+            "precision": 0.6433,
+            "recall": 1,
+            "f1": 0.783,
+            "accuracy": 0.6433,
+            "precisionInterval": [0.6115, 0.674],
+            "recallInterval": [0.9934, 1]
+          },
+          "supported": {
+            "precision": null,
+            "recall": 0,
+            "f1": 0,
+            "precisionInterval": null,
+            "recallInterval": [0, 0.0118]
+          },
+          "flaggedShare": 1
+        }
+      },
+      "latencyMs": {
+        "p50": 1.5,
+        "p95": 5.3
+      }
+    },
+    "models": {
+      "claude-haiku-4-5-20251001": {
+        "metrics": {
+          "all": {
+            "cases": 2675,
+            "unsupported": {
+              "cases": 2675,
+              "tp": 892,
+              "fp": 1167,
+              "fn": 51,
+              "tn": 565,
+              "precision": 0.4332,
+              "recall": 0.9459,
+              "f1": 0.5943,
+              "accuracy": 0.5447,
+              "precisionInterval": [0.412, 0.4547],
+              "recallInterval": [0.9296, 0.9586]
+            },
+            "supported": {
+              "precision": 0.9172,
+              "recall": 0.3262,
+              "f1": 0.4813,
+              "precisionInterval": [0.8928, 0.9365],
+              "recallInterval": [0.3045, 0.3487]
+            },
+            "flaggedShare": 0.7697
+          },
+          "QA": {
+            "cases": 875,
+            "unsupported": {
+              "cases": 875,
+              "tp": 154,
+              "fp": 459,
+              "fn": 6,
+              "tn": 256,
+              "precision": 0.2512,
+              "recall": 0.9625,
+              "f1": 0.3984,
+              "accuracy": 0.4686,
+              "precisionInterval": [0.2185, 0.287],
+              "recallInterval": [0.9206, 0.9827]
+            },
+            "supported": {
+              "precision": 0.9771,
+              "recall": 0.358,
+              "f1": 0.5241,
+              "precisionInterval": [0.9509, 0.9895],
+              "recallInterval": [0.3237, 0.3939]
+            },
+            "flaggedShare": 0.7006
+          },
+          "Summary": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 169,
+              "fp": 408,
+              "fn": 35,
+              "tn": 288,
+              "precision": 0.2929,
+              "recall": 0.8284,
+              "f1": 0.4328,
+              "accuracy": 0.5078,
+              "precisionInterval": [0.2572, 0.3313],
+              "recallInterval": [0.7707, 0.874]
+            },
+            "supported": {
+              "precision": 0.8916,
+              "recall": 0.4138,
+              "f1": 0.5653,
+              "precisionInterval": [0.853, 0.921],
+              "recallInterval": [0.3778, 0.4508]
+            },
+            "flaggedShare": 0.6411
+          },
+          "Data2txt": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 569,
+              "fp": 300,
+              "fn": 10,
+              "tn": 21,
+              "precision": 0.6548,
+              "recall": 0.9827,
+              "f1": 0.7859,
+              "accuracy": 0.6556,
+              "precisionInterval": [0.6225, 0.6856],
+              "recallInterval": [0.9685, 0.9906]
+            },
+            "supported": {
+              "precision": 0.6774,
+              "recall": 0.0654,
+              "f1": 0.1193,
+              "precisionInterval": [0.5014, 0.8143],
+              "recallInterval": [0.0432, 0.0979]
+            },
+            "flaggedShare": 0.9656
+          }
+        },
+        "calls": 1989,
+        "errors": 2,
+        "inputTokens": 2132124,
+        "outputTokens": 441646,
+        "costUSD": 4.3404,
+        "costPer1000ChecksUSD": 1.62,
+        "latencyMs": {
+          "p50": 1847.5,
+          "p95": 4672.7
+        }
+      },
+      "claude-haiku-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 2675,
+            "unsupported": {
+              "cases": 2675,
+              "tp": 903,
+              "fp": 1221,
+              "fn": 40,
+              "tn": 511,
+              "precision": 0.4251,
+              "recall": 0.9576,
+              "f1": 0.5888,
+              "accuracy": 0.5286,
+              "precisionInterval": [0.4043, 0.4463],
+              "recallInterval": [0.9428, 0.9687]
+            },
+            "supported": {
+              "precision": 0.9274,
+              "recall": 0.295,
+              "f1": 0.4477,
+              "precisionInterval": [0.9027, 0.9462],
+              "recallInterval": [0.274, 0.3169]
+            },
+            "flaggedShare": 0.794
+          },
+          "QA": {
+            "cases": 875,
+            "unsupported": {
+              "cases": 875,
+              "tp": 154,
+              "fp": 470,
+              "fn": 6,
+              "tn": 245,
+              "precision": 0.2468,
+              "recall": 0.9625,
+              "f1": 0.3929,
+              "accuracy": 0.456,
+              "precisionInterval": [0.2146, 0.2821],
+              "recallInterval": [0.9206, 0.9827]
+            },
+            "supported": {
+              "precision": 0.9761,
+              "recall": 0.3427,
+              "f1": 0.5072,
+              "precisionInterval": [0.9488, 0.989],
+              "recallInterval": [0.3088, 0.3782]
+            },
+            "flaggedShare": 0.7131
+          },
+          "Summary": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 170,
+              "fp": 438,
+              "fn": 34,
+              "tn": 258,
+              "precision": 0.2796,
+              "recall": 0.8333,
+              "f1": 0.4187,
+              "accuracy": 0.4756,
+              "precisionInterval": [0.2454, 0.3166],
+              "recallInterval": [0.7761, 0.8782]
+            },
+            "supported": {
+              "precision": 0.8836,
+              "recall": 0.3707,
+              "f1": 0.5223,
+              "precisionInterval": [0.8417, 0.9155],
+              "recallInterval": [0.3356, 0.4072]
+            },
+            "flaggedShare": 0.6756
+          },
+          "Data2txt": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 579,
+              "fp": 313,
+              "fn": 0,
+              "tn": 8,
+              "precision": 0.6491,
+              "recall": 1,
+              "f1": 0.7872,
+              "accuracy": 0.6522,
+              "precisionInterval": [0.6172, 0.6797],
+              "recallInterval": [0.9934, 1]
+            },
+            "supported": {
+              "precision": 1,
+              "recall": 0.0249,
+              "f1": 0.0486,
+              "precisionInterval": [0.6756, 1],
+              "recallInterval": [0.0127, 0.0484]
+            },
+            "flaggedShare": 0.9911
+          }
+        },
+        "calls": 1989,
+        "errors": 22,
+        "inputTokens": 2897888,
+        "outputTokens": 1405494,
+        "costUSD": 0.9925,
+        "costPer1000ChecksUSD": 0.37,
+        "latencyMs": {
+          "p50": 2541.9,
+          "p95": 6363.8
+        }
+      },
+      "claude-sonnet-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 2675,
+            "unsupported": {
+              "cases": 2675,
+              "tp": 901,
+              "fp": 1224,
+              "fn": 42,
+              "tn": 508,
+              "precision": 0.424,
+              "recall": 0.9555,
+              "f1": 0.5874,
+              "accuracy": 0.5267,
+              "precisionInterval": [0.4031, 0.4451],
+              "recallInterval": [0.9403, 0.9669]
+            },
+            "supported": {
+              "precision": 0.9236,
+              "recall": 0.2933,
+              "f1": 0.4452,
+              "precisionInterval": [0.8984, 0.943],
+              "recallInterval": [0.2723, 0.3152]
+            },
+            "flaggedShare": 0.7944
+          },
+          "QA": {
+            "cases": 875,
+            "unsupported": {
+              "cases": 875,
+              "tp": 155,
+              "fp": 474,
+              "fn": 5,
+              "tn": 241,
+              "precision": 0.2464,
+              "recall": 0.9688,
+              "f1": 0.3929,
+              "accuracy": 0.4526,
+              "precisionInterval": [0.2144, 0.2816],
+              "recallInterval": [0.9289, 0.9866]
+            },
+            "supported": {
+              "precision": 0.9797,
+              "recall": 0.3371,
+              "f1": 0.5016,
+              "precisionInterval": [0.9533, 0.9913],
+              "recallInterval": [0.3034, 0.3725]
+            },
+            "flaggedShare": 0.7189
+          },
+          "Summary": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 170,
+              "fp": 440,
+              "fn": 34,
+              "tn": 256,
+              "precision": 0.2787,
+              "recall": 0.8333,
+              "f1": 0.4177,
+              "accuracy": 0.4733,
+              "precisionInterval": [0.2446, 0.3156],
+              "recallInterval": [0.7761, 0.8782]
+            },
+            "supported": {
+              "precision": 0.8828,
+              "recall": 0.3678,
+              "f1": 0.5193,
+              "precisionInterval": [0.8406, 0.9149],
+              "recallInterval": [0.3328, 0.4043]
+            },
+            "flaggedShare": 0.6778
+          },
+          "Data2txt": {
+            "cases": 900,
+            "unsupported": {
+              "cases": 900,
+              "tp": 576,
+              "fp": 310,
+              "fn": 3,
+              "tn": 11,
+              "precision": 0.6501,
+              "recall": 0.9948,
+              "f1": 0.7863,
+              "accuracy": 0.6522,
+              "precisionInterval": [0.6181, 0.6808],
+              "recallInterval": [0.9849, 0.9982]
+            },
+            "supported": {
+              "precision": 0.7857,
+              "recall": 0.0343,
+              "f1": 0.0657,
+              "precisionInterval": [0.5241, 0.9243],
+              "recallInterval": [0.0192, 0.0603]
+            },
+            "flaggedShare": 0.9844
+          }
+        },
+        "calls": 1989,
+        "errors": 28,
+        "inputTokens": 2897888,
+        "outputTokens": 572711,
+        "costUSD": 11.5229,
+        "costPer1000ChecksUSD": 4.31,
+        "latencyMs": {
+          "p50": 2387.2,
+          "p95": 4676.2
+        }
+      }
+    }
+  },
+  "variance": {
+    "subset": {
+      "size": 300,
+      "seed": 20261106,
+      "rule": "From the 450-answer sample, 50 answers per task and label, from a seeded shuffle of each group."
+    },
+    "models": {
+      "claude-haiku-5-5": {
+        "runs": [
+          {
+            "run": 1,
+            "cached": true,
+            "precision": 0.5564,
+            "recall": 0.9533,
+            "f1": 0.7027,
+            "tp": 143,
+            "fp": 114,
+            "fn": 7,
+            "tn": 36
+          },
+          {
+            "run": 2,
+            "cached": false,
+            "precision": 0.5564,
+            "recall": 0.9533,
+            "f1": 0.7027,
+            "tp": 143,
+            "fp": 114,
+            "fn": 7,
+            "tn": 36
+          },
+          {
+            "run": 3,
+            "cached": false,
+            "precision": 0.5608,
+            "recall": 0.9533,
+            "f1": 0.7062,
+            "tp": 143,
+            "fp": 112,
+            "fn": 7,
+            "tn": 38
+          }
+        ],
+        "f1": {
+          "min": 0.7027,
+          "max": 0.7062,
+          "mean": 0.7039
+        },
+        "flips": {
+          "answers": 300,
+          "answersNotUnanimous": 2,
+          "answersNotUnanimousShare": 0.0067,
+          "pairs": [
+            {
+              "runs": [1, 2],
+              "answersChanged": 0
+            },
+            {
+              "runs": [1, 3],
+              "answersChanged": 2
+            },
+            {
+              "runs": [2, 3],
+              "answersChanged": 2
+            }
+          ],
+          "sentences": 2157,
+          "sentencesNotUnanimous": 69,
+          "sentencesNotUnanimousShare": 0.032
+        }
+      },
+      "claude-sonnet-5-5": {
+        "runs": [
+          {
+            "run": 1,
+            "cached": true,
+            "precision": 0.5603,
+            "recall": 0.96,
+            "f1": 0.7076,
+            "tp": 144,
+            "fp": 113,
+            "fn": 6,
+            "tn": 37
+          },
+          {
+            "run": 2,
+            "cached": false,
+            "precision": 0.5625,
+            "recall": 0.96,
+            "f1": 0.7094,
+            "tp": 144,
+            "fp": 112,
+            "fn": 6,
+            "tn": 38
+          },
+          {
+            "run": 3,
+            "cached": false,
+            "precision": 0.5603,
+            "recall": 0.96,
+            "f1": 0.7076,
+            "tp": 144,
+            "fp": 113,
+            "fn": 6,
+            "tn": 37
+          }
+        ],
+        "f1": {
+          "min": 0.7076,
+          "max": 0.7094,
+          "mean": 0.7082
+        },
+        "flips": {
+          "answers": 300,
+          "answersNotUnanimous": 1,
+          "answersNotUnanimousShare": 0.0033,
+          "pairs": [
+            {
+              "runs": [1, 2],
+              "answersChanged": 1
+            },
+            {
+              "runs": [1, 3],
+              "answersChanged": 0
+            },
+            {
+              "runs": [2, 3],
+              "answersChanged": 1
+            }
+          ],
+          "sentences": 2157,
+          "sentencesNotUnanimous": 33,
+          "sentencesNotUnanimousShare": 0.0153
+        }
+      }
+    }
+  },
+  "halueval": {
+    "dataset": {
+      "dataset": "HaluEval qa, pminervini/HaluEval",
+      "license": "Apache-2.0 (dataset card); upstream RUCAIBox/HaluEval is MIT; used, not redistributed",
+      "revision": "12a856119f03975a94509091e8cada3e6be6ead7",
+      "file": "qa/data-00000-of-00001.parquet",
+      "sha256": "1b7118e6dcc3881e5fc87b77b48d9334f0a24d51073ea9dc05baf5a74814580f",
+      "rows": 10000,
+      "cases": 500,
+      "seed": 20261107,
+      "rule": "A seeded shuffle of the rows: the first 250 give their right answer (supported), the next 250 their hallucinated answer (unsupported). Source: the row's knowledge."
+    },
+    "lexical": {
+      "metrics": {
+        "unsupported": {
+          "cases": 500,
+          "tp": 136,
+          "fp": 22,
+          "fn": 114,
+          "tn": 228,
+          "precision": 0.8608,
+          "recall": 0.544,
+          "f1": 0.6667,
+          "accuracy": 0.728,
+          "precisionInterval": [0.7982, 0.9062],
+          "recallInterval": [0.4821, 0.6046]
+        },
+        "supported": {
+          "precision": 0.6667,
+          "recall": 0.912,
+          "f1": 0.7703,
+          "precisionInterval": [0.6151, 0.7145],
+          "recallInterval": [0.8704, 0.9412]
+        },
+        "flaggedShare": 0.316
+      }
+    },
+    "models": {
+      "claude-haiku-4-5-20251001": {
+        "metrics": {
+          "unsupported": {
+            "cases": 500,
+            "tp": 122,
+            "fp": 20,
+            "fn": 128,
+            "tn": 230,
+            "precision": 0.8592,
+            "recall": 0.488,
+            "f1": 0.6224,
+            "accuracy": 0.704,
+            "precisionInterval": [0.7924, 0.9069],
+            "recallInterval": [0.4267, 0.5497]
+          },
+          "supported": {
+            "precision": 0.6425,
+            "recall": 0.92,
+            "f1": 0.7566,
+            "precisionInterval": [0.5915, 0.6904],
+            "recallInterval": [0.8797, 0.9476]
+          },
+          "flaggedShare": 0.284
+        },
+        "calls": 113,
+        "errors": 1,
+        "inputTokens": 43083,
+        "outputTokens": 7146,
+        "costUSD": 0.0788,
+        "costPer1000ChecksUSD": 0.16,
+        "latencyMs": {
+          "p50": 0.6,
+          "p95": 1243.4
+        }
+      },
+      "claude-haiku-5-5": {
+        "metrics": {
+          "unsupported": {
+            "cases": 500,
+            "tp": 131,
+            "fp": 22,
+            "fn": 119,
+            "tn": 228,
+            "precision": 0.8562,
+            "recall": 0.524,
+            "f1": 0.6501,
+            "accuracy": 0.718,
+            "precisionInterval": [0.7919, 0.9031],
+            "recallInterval": [0.4622, 0.5851]
+          },
+          "supported": {
+            "precision": 0.6571,
+            "recall": 0.912,
+            "f1": 0.7638,
+            "precisionInterval": [0.6056, 0.705],
+            "recallInterval": [0.8704, 0.9412]
+          },
+          "flaggedShare": 0.306
+        },
+        "calls": 113,
+        "errors": 0,
+        "inputTokens": 59051,
+        "outputTokens": 18223,
+        "costUSD": 0.015,
+        "costPer1000ChecksUSD": 0.03,
+        "latencyMs": {
+          "p50": 0.5,
+          "p95": 1813.7
+        }
+      },
+      "claude-sonnet-5-5": {
+        "metrics": {
+          "unsupported": {
+            "cases": 500,
+            "tp": 130,
+            "fp": 20,
+            "fn": 120,
+            "tn": 230,
+            "precision": 0.8667,
+            "recall": 0.52,
+            "f1": 0.65,
+            "accuracy": 0.72,
+            "precisionInterval": [0.803, 0.912],
+            "recallInterval": [0.4582, 0.5812]
+          },
+          "supported": {
+            "precision": 0.6571,
+            "recall": 0.92,
+            "f1": 0.7667,
+            "precisionInterval": [0.6059, 0.7049],
+            "recallInterval": [0.8797, 0.9476]
+          },
+          "flaggedShare": 0.3
+        },
+        "calls": 113,
+        "errors": 5,
+        "inputTokens": 59051,
+        "outputTokens": 11670,
+        "costUSD": 0.2348,
+        "costPer1000ChecksUSD": 0.47,
+        "latencyMs": {
+          "p50": 0.6,
+          "p95": 2048.9
+        }
+      }
+    }
+  }
+}

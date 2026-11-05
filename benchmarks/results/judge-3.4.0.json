@@ -1,0 +1,212 @@
+{
+  "about": "What the shipped judge did in 3.4.0, before the connector fixes in 3.5.0: AnthropicConnector sent temperature 0 (a 400 on these models) and read content[0].text (a thinking block on models that think first). Measured by benchmarks/judge.js on the same cases and cached responses, with only temperature removed from the request; kept as history for the Benchmarks page.",
+  "measuredAt": "2026-11-05T01:52:13.882Z",
+  "environment": {
+    "libraryVersion": "3.4.0",
+    "commit": "6c08981",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "models": {
+    "claude-haiku-4-5-20251001": {
+      "shippedJudge": {
+        "works": true,
+        "omitTemperature": false
+      },
+      "asShipped": {
+        "noTextReplies": 0,
+        "calls": 357,
+        "metrics": {
+          "unsupported": {
+            "cases": 450,
+            "tp": 213,
+            "fp": 164,
+            "fn": 12,
+            "tn": 61,
+            "precision": 0.565,
+            "recall": 0.9467,
+            "f1": 0.7076,
+            "accuracy": 0.6089,
+            "precisionInterval": [0.5145, 0.6141],
+            "recallInterval": [0.9091, 0.9692]
+          },
+          "supported": {
+            "precision": 0.8356,
+            "recall": 0.2711,
+            "f1": 0.4094,
+            "precisionInterval": [0.7343, 0.9034],
+            "recallInterval": [0.2172, 0.3327]
+          },
+          "flaggedShare": 0.8378
+        },
+        "edge": {
+          "correct": 52,
+          "cases": 72,
+          "falseAlarms": 7,
+          "misses": 13
+        }
+      }
+    },
+    "claude-haiku-5-5": {
+      "shippedJudge": {
+        "works": false,
+        "error": "Claude API 400: `temperature` is deprecated for this model.",
+        "omitTemperature": true
+      },
+      "asShipped": {
+        "noTextReplies": 336,
+        "calls": 357,
+        "metrics": {
+          "unsupported": {
+            "cases": 450,
+            "tp": 216,
+            "fp": 183,
+            "fn": 9,
+            "tn": 42,
+            "precision": 0.5414,
+            "recall": 0.96,
+            "f1": 0.6923,
+            "accuracy": 0.5733,
+            "precisionInterval": [0.4923, 0.5896],
+            "recallInterval": [0.9257, 0.9788]
+          },
+          "supported": {
+            "precision": 0.8235,
+            "recall": 0.1867,
+            "f1": 0.3043,
+            "precisionInterval": [0.6975, 0.9043],
+            "recallInterval": [0.1412, 0.2427]
+          },
+          "flaggedShare": 0.8867
+        },
+        "edge": {
+          "correct": 48,
+          "cases": 72,
+          "falseAlarms": 11,
+          "misses": 13
+        }
+      }
+    },
+    "claude-sonnet-5-5": {
+      "shippedJudge": {
+        "works": false,
+        "error": "Claude API 400: `temperature` is deprecated for this model.",
+        "omitTemperature": true
+      },
+      "asShipped": {
+        "noTextReplies": 25,
+        "calls": 357,
+        "metrics": {
+          "unsupported": {
+            "cases": 450,
+            "tp": 214,
+            "fp": 173,
+            "fn": 11,
+            "tn": 52,
+            "precision": 0.553,
+            "recall": 0.9511,
+            "f1": 0.6993,
+            "accuracy": 0.5911,
+            "precisionInterval": [0.5032, 0.6017],
+            "recallInterval": [0.9146, 0.9725]
+          },
+          "supported": {
+            "precision": 0.8254,
+            "recall": 0.2311,
+            "f1": 0.3611,
+            "precisionInterval": [0.7138, 0.8996],
+            "recallInterval": [0.1808, 0.2904]
+          },
+          "flaggedShare": 0.86
+        },
+        "edge": {
+          "correct": 51,
+          "cases": 72,
+          "falseAlarms": 8,
+          "misses": 13
+        }
+      }
+    },
+    "claude-opus-5-5": {
+      "shippedJudge": {
+        "works": false,
+        "error": "Claude API 400: `temperature` is deprecated for this model.",
+        "omitTemperature": true
+      },
+      "asShipped": {
+        "noTextReplies": 304,
+        "calls": 357,
+        "metrics": {
+          "unsupported": {
+            "cases": 450,
+            "tp": 216,
+            "fp": 182,
+            "fn": 9,
+            "tn": 43,
+            "precision": 0.5427,
+            "recall": 0.96,
+            "f1": 0.6934,
+            "accuracy": 0.5756,
+            "precisionInterval": [0.4936, 0.591],
+            "recallInterval": [0.9257, 0.9788]
+          },
+          "supported": {
+            "precision": 0.8269,
+            "recall": 0.1911,
+            "f1": 0.3105,
+            "precisionInterval": [0.7027, 0.9062],
+            "recallInterval": [0.1451, 0.2475]
+          },
+          "flaggedShare": 0.8844
+        },
+        "edge": {
+          "correct": 51,
+          "cases": 72,
+          "falseAlarms": 8,
+          "misses": 13
+        }
+      }
+    },
+    "claude-fable-5-1": {
+      "shippedJudge": {
+        "works": false,
+        "error": "Claude API 400: `temperature` is deprecated for this model.",
+        "omitTemperature": true
+      },
+      "asShipped": {
+        "noTextReplies": 170,
+        "calls": 357,
+        "metrics": {
+          "unsupported": {
+            "cases": 450,
+            "tp": 215,
+            "fp": 170,
+            "fn": 10,
+            "tn": 55,
+            "precision": 0.5584,
+            "recall": 0.9556,
+            "f1": 0.7049,
+            "accuracy": 0.6,
+            "precisionInterval": [0.5085, 0.6072],
+            "recallInterval": [0.9201, 0.9757]
+          },
+          "supported": {
+            "precision": 0.8462,
+            "recall": 0.2444,
+            "f1": 0.3793,
+            "precisionInterval": [0.7394, 0.9142],
+            "recallInterval": [0.1929, 0.3046]
+          },
+          "flaggedShare": 0.8556
+        },
+        "edge": {
+          "correct": 52,
+          "cases": 72,
+          "falseAlarms": 7,
+          "misses": 13
+        }
+      }
+    }
+  }
+}

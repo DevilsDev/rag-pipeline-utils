@@ -58,6 +58,16 @@ occurrence(s); ..."` (the same start as before, then the guard's issues,
 
 ### Added
 
+- **Claude benchmarks** on the Benchmarks page: `checkAnswer` on RAGTruth
+  (a balanced sample for five Claude models as the judge, the full test
+  split for three), HaluEval, three runs to measure run-to-run variation
+  and 136 project-written edge cases (`benchmarks/judge.js`,
+  `benchmarks/judge-more.js`); `verifyCitations` on Claude's own citations
+  over SciFact abstracts, with a hand review, mutations and 48 edge cases
+  (`benchmarks/claude-citations.js`); and answer latency through
+  `createRagPipeline` (`benchmarks/claude-latency.js`). Every API response
+  is cached, so the tables rebuild without calling the API.
+
 - **Pluggable guard detectors.** `PreRetrievalGuard`, `RetrievalGuard`
   and `PostGenerationGuard` take `detectors`: objects `{ name, kind:
 'injection' | 'pii', detect(text, context) }`, such as an
