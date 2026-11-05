@@ -11,6 +11,27 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **`PineconeRetriever` on indexes that embed text themselves** (integrated
+  embedding, such as the console's quick-start index with `chunk_text` and
+  `llama-text-embed-v2`), which 3.6.0 refused. The retriever finds the
+  embedded text field in the index description (or takes `textField`),
+  sends each document's `content` in it, and searches by the query text
+  with the Documents API's `embed` scoring, so documents need no vector
+  and a pipeline needs no embedder: `createRagPipeline` passes the query
+  text to the retriever when there is none. A request with only a vector,
+  or a document without content, is refused with the reason before
+  anything is sent. Upserts go in batches of up to 96 documents and under
+  2 MB, Pinecone's limits for embedded fields. Freshness waits, `list`,
+  `size`, `clear` and `removeBySource` work as on the other index kinds.
+  An index with both a `dense_vector` field and an embedded text field
+  still gets your vectors unless you pass `textField`. The retriever
+  passes a text version of the retriever contract against the in-memory
+  Pinecone (with a bag-of-words "model") and against a real
+  integrated-embedding index (`npm run test:live`), and `.ragrc.json`
+  takes `textField`.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer

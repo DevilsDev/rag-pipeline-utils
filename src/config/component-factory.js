@@ -72,6 +72,7 @@ const BUILT_INS = {
         index: cfg.index || process.env.PINECONE_INDEX,
         host: cfg.host || process.env.PINECONE_INDEX_HOST,
         namespace: cfg.namespace,
+        textField: cfg.textField,
         cacheKey: cfg.cacheKey,
       });
     },
