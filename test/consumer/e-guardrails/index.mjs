@@ -141,6 +141,8 @@ if (step === "detectors") {
   out.detectors = {
     patternsOnlyBlocked: patternsOnly.success === false,
     patternsOnlyError: patternsOnly.error ?? null,
+    // What the post-generation guard flagged, when it blocked
+    patternsOnlyPost: patternsOnly.guardrails?.postGeneration ?? null,
     withDetectorBlocked: withDetector.success === false,
     withDetectorError: withDetector.error ?? null,
     namedAnswer: named.answer ?? null,

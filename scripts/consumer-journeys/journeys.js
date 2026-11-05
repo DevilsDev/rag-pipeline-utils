@@ -1042,6 +1042,8 @@ const JOURNEYS = [
         "friction: 'Request failed with status code 404'; the API's 'not_found_error: model: claude-sonnet-9-9' is dropped",
       "unknown model: logged error does not contain the real key":
         "library bug (security): same as above, with the developer's real key",
+      "CLI query with a wrong key exits non-zero with a clear message":
+        "friction: exits 1, but prints 'Query failed: Request failed with status code 401' (the API's 'invalid x-api-key' is dropped, as in the library)",
     },
     checks: [
       [
@@ -1127,7 +1129,7 @@ const JOURNEYS = [
           const s = step(c, "cliWrong");
           assert(s.code !== 0, `exit ${s.code}: ${s.stdout.slice(-300)}`);
           assert(
-            /auth|api key|invalid|401/i.test(s.stderr + s.stdout),
+            /auth|api key|invalid/i.test(s.stderr + s.stdout),
             (s.stderr + s.stdout).slice(-300),
           );
           return info(
