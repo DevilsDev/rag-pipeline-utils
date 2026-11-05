@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T04:33:45.172Z",
+  "createdAt": "2026-11-05T07:12:59.259Z",
   "environment": {
     "libraryVersion": "3.5.0",
-    "commit": "8b247df",
+    "commit": "fb3d82f",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -34,73 +34,73 @@
           "cases": 450,
           "unsupported": {
             "cases": 450,
-            "tp": 217,
-            "fp": 186,
-            "fn": 8,
-            "tn": 39,
-            "precision": 0.5385,
-            "recall": 0.9644,
-            "f1": 0.6911,
-            "accuracy": 0.5689,
-            "precisionInterval": [0.4897, 0.5865],
-            "recallInterval": [0.9314, 0.9819]
+            "tp": 215,
+            "fp": 185,
+            "fn": 10,
+            "tn": 40,
+            "precision": 0.5375,
+            "recall": 0.9556,
+            "f1": 0.688,
+            "accuracy": 0.5667,
+            "precisionInterval": [0.4885, 0.5858],
+            "recallInterval": [0.9201, 0.9757]
           },
           "supported": {
-            "precision": 0.8298,
-            "recall": 0.1733,
-            "f1": 0.2868,
-            "precisionInterval": [0.6986, 0.9111],
-            "recallInterval": [0.1295, 0.2282]
+            "precision": 0.8,
+            "recall": 0.1778,
+            "f1": 0.2909,
+            "precisionInterval": [0.6696, 0.8876],
+            "recallInterval": [0.1334, 0.233]
           },
-          "flaggedShare": 0.8956
+          "flaggedShare": 0.8889
         },
         "QA": {
           "cases": 150,
           "unsupported": {
             "cases": 150,
             "tp": 73,
-            "fp": 54,
+            "fp": 52,
             "fn": 2,
-            "tn": 21,
-            "precision": 0.5748,
+            "tn": 23,
+            "precision": 0.584,
             "recall": 0.9733,
-            "f1": 0.7228,
-            "accuracy": 0.6267,
-            "precisionInterval": [0.4879, 0.6573],
+            "f1": 0.73,
+            "accuracy": 0.64,
+            "precisionInterval": [0.4963, 0.6666],
             "recallInterval": [0.9079, 0.9927]
           },
           "supported": {
-            "precision": 0.913,
-            "recall": 0.28,
-            "f1": 0.4286,
-            "precisionInterval": [0.732, 0.9758],
-            "recallInterval": [0.191, 0.3904]
+            "precision": 0.92,
+            "recall": 0.3067,
+            "f1": 0.46,
+            "precisionInterval": [0.7503, 0.9778],
+            "recallInterval": [0.2139, 0.4183]
           },
-          "flaggedShare": 0.8467
+          "flaggedShare": 0.8333
         },
         "Summary": {
           "cases": 150,
           "unsupported": {
             "cases": 150,
-            "tp": 69,
-            "fp": 57,
-            "fn": 6,
-            "tn": 18,
-            "precision": 0.5476,
-            "recall": 0.92,
-            "f1": 0.6866,
-            "accuracy": 0.58,
-            "precisionInterval": [0.4606, 0.6318],
-            "recallInterval": [0.8363, 0.9628]
+            "tp": 67,
+            "fp": 58,
+            "fn": 8,
+            "tn": 17,
+            "precision": 0.536,
+            "recall": 0.8933,
+            "f1": 0.67,
+            "accuracy": 0.56,
+            "precisionInterval": [0.4488, 0.621],
+            "recallInterval": [0.8034, 0.945]
           },
           "supported": {
-            "precision": 0.75,
-            "recall": 0.24,
-            "f1": 0.3636,
-            "precisionInterval": [0.551, 0.88],
-            "recallInterval": [0.1575, 0.3478]
+            "precision": 0.68,
+            "recall": 0.2267,
+            "f1": 0.34,
+            "precisionInterval": [0.4841, 0.828],
+            "recallInterval": [0.1466, 0.3334]
           },
-          "flaggedShare": 0.84
+          "flaggedShare": 0.8333
         },
         "Data2txt": {
           "cases": 150,
@@ -128,8 +128,8 @@
         }
       },
       "latencyMs": {
-        "p50": 1.5,
-        "p95": 4.8
+        "p50": 4.5,
+        "p95": 13.8
       }
     },
     "models": {
@@ -139,120 +139,120 @@
             "cases": 450,
             "unsupported": {
               "cases": 450,
-              "tp": 213,
-              "fp": 164,
-              "fn": 12,
-              "tn": 61,
-              "precision": 0.565,
-              "recall": 0.9467,
-              "f1": 0.7076,
-              "accuracy": 0.6089,
-              "precisionInterval": [0.5145, 0.6141],
-              "recallInterval": [0.9091, 0.9692]
+              "tp": 210,
+              "fp": 155,
+              "fn": 15,
+              "tn": 70,
+              "precision": 0.5753,
+              "recall": 0.9333,
+              "f1": 0.7119,
+              "accuracy": 0.6222,
+              "precisionInterval": [0.5241, 0.625],
+              "recallInterval": [0.8929, 0.9592]
             },
             "supported": {
-              "precision": 0.8356,
-              "recall": 0.2711,
-              "f1": 0.4094,
-              "precisionInterval": [0.7343, 0.9034],
-              "recallInterval": [0.2172, 0.3327]
+              "precision": 0.8235,
+              "recall": 0.3111,
+              "f1": 0.4516,
+              "precisionInterval": [0.729, 0.89],
+              "recallInterval": [0.2542, 0.3743]
             },
-            "flaggedShare": 0.8378
+            "flaggedShare": 0.8111
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
-              "tp": 71,
-              "fp": 46,
-              "fn": 4,
-              "tn": 29,
-              "precision": 0.6068,
-              "recall": 0.9467,
-              "f1": 0.7396,
-              "accuracy": 0.6667,
-              "precisionInterval": [0.5163, 0.6906],
-              "recallInterval": [0.8707, 0.9791]
+              "tp": 70,
+              "fp": 44,
+              "fn": 5,
+              "tn": 31,
+              "precision": 0.614,
+              "recall": 0.9333,
+              "f1": 0.7407,
+              "accuracy": 0.6733,
+              "precisionInterval": [0.5223, 0.6983],
+              "recallInterval": [0.8532, 0.9712]
             },
             "supported": {
-              "precision": 0.8788,
-              "recall": 0.3867,
-              "f1": 0.537,
-              "precisionInterval": [0.7267, 0.9518],
-              "recallInterval": [0.2846, 0.4998]
+              "precision": 0.8611,
+              "recall": 0.4133,
+              "f1": 0.5586,
+              "precisionInterval": [0.7134, 0.9392],
+              "recallInterval": [0.3088, 0.5263]
             },
-            "flaggedShare": 0.78
+            "flaggedShare": 0.76
           },
           "Summary": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
-              "tp": 68,
-              "fp": 45,
-              "fn": 7,
-              "tn": 30,
-              "precision": 0.6018,
-              "recall": 0.9067,
-              "f1": 0.7234,
-              "accuracy": 0.6533,
-              "precisionInterval": [0.5096, 0.6873],
-              "recallInterval": [0.8197, 0.9541]
+              "tp": 66,
+              "fp": 44,
+              "fn": 9,
+              "tn": 31,
+              "precision": 0.6,
+              "recall": 0.88,
+              "f1": 0.7135,
+              "accuracy": 0.6467,
+              "precisionInterval": [0.5066, 0.6867],
+              "recallInterval": [0.7874, 0.9356]
             },
             "supported": {
-              "precision": 0.8108,
-              "recall": 0.4,
-              "f1": 0.5357,
-              "precisionInterval": [0.6579, 0.9052],
-              "recallInterval": [0.2966, 0.5131]
+              "precision": 0.775,
+              "recall": 0.4133,
+              "f1": 0.5391,
+              "precisionInterval": [0.625, 0.8768],
+              "recallInterval": [0.3088, 0.5263]
             },
-            "flaggedShare": 0.7533
+            "flaggedShare": 0.7333
           },
           "Data2txt": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 74,
-              "fp": 73,
+              "fp": 67,
               "fn": 1,
-              "tn": 2,
-              "precision": 0.5034,
+              "tn": 8,
+              "precision": 0.5248,
               "recall": 0.9867,
-              "f1": 0.6667,
-              "accuracy": 0.5067,
-              "precisionInterval": [0.4235, 0.5831],
+              "f1": 0.6852,
+              "accuracy": 0.5467,
+              "precisionInterval": [0.4428, 0.6055],
               "recallInterval": [0.9283, 0.9976]
             },
             "supported": {
-              "precision": 0.6667,
-              "recall": 0.0267,
-              "f1": 0.0513,
-              "precisionInterval": [0.2077, 0.9385],
-              "recallInterval": [0.0073, 0.0921]
+              "precision": 0.8889,
+              "recall": 0.1067,
+              "f1": 0.1905,
+              "precisionInterval": [0.565, 0.9801],
+              "recallInterval": [0.055, 0.1966]
             },
-            "flaggedShare": 0.98
+            "flaggedShare": 0.94
           }
         },
-        "checksWithCall": 357,
-        "calls": 357,
+        "checksWithCall": 361,
+        "calls": 361,
         "errors": 1,
         "errorKinds": {
           "judge output is not valid JSON": 1
         },
         "truncated": 0,
         "firstBlockNotText": 0,
-        "usageReportedByCheckAnswer": 357,
-        "usageMatchesApi": 357,
-        "inputTokens": 378642,
-        "outputTokens": 78530,
-        "costUSD": 0.7713,
-        "costPer1000ChecksUSD": 1.71,
+        "usageReportedByCheckAnswer": 361,
+        "usageMatchesApi": 361,
+        "inputTokens": 382363,
+        "outputTokens": 79544,
+        "costUSD": 0.7801,
+        "costPer1000ChecksUSD": 1.73,
         "latencyMs": {
-          "p50": 1964.6,
-          "p95": 4401.2
+          "p50": 2009.5,
+          "p95": 4498.4
         },
         "latencyMsWithCall": {
-          "p50": 2421.2,
-          "p95": 4508.9
+          "p50": 2447.6,
+          "p95": 4642.2
         },
         "sentences": {
           "sentences": 3263,
@@ -260,52 +260,52 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 315,
-            "fp": 1633,
-            "fn": 107,
-            "tn": 1208,
-            "precision": 0.1617,
-            "recall": 0.7464,
-            "f1": 0.2658,
-            "accuracy": 0.4667,
-            "precisionInterval": [0.146, 0.1787],
-            "recallInterval": [0.7028, 0.7856]
+            "tp": 314,
+            "fp": 1474,
+            "fn": 108,
+            "tn": 1367,
+            "precision": 0.1756,
+            "recall": 0.7441,
+            "f1": 0.2842,
+            "accuracy": 0.5152,
+            "precisionInterval": [0.1587, 0.1939],
+            "recallInterval": [0.7004, 0.7834]
           },
           "judge": {
             "cases": 3263,
-            "tp": 282,
-            "fp": 1001,
-            "fn": 140,
-            "tn": 1840,
-            "precision": 0.2198,
-            "recall": 0.6682,
-            "f1": 0.3308,
-            "accuracy": 0.6503,
-            "precisionInterval": [0.198, 0.2433],
-            "recallInterval": [0.622, 0.7115]
+            "tp": 270,
+            "fp": 716,
+            "fn": 152,
+            "tn": 2125,
+            "precision": 0.2738,
+            "recall": 0.6398,
+            "f1": 0.3835,
+            "accuracy": 0.734,
+            "precisionInterval": [0.2469, 0.3025],
+            "recallInterval": [0.5929, 0.6842]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1315,
-              "labelledUnsupported": 107,
+              "sentences": 1475,
+              "labelledUnsupported": 108,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1420,
-              "labelledUnsupported": 226,
-              "judgeSupported": 665,
-              "judgeSupportedButLabelledUnsupported": 33
+              "sentences": 1445,
+              "labelledUnsupported": 235,
+              "judgeSupported": 802,
+              "judgeSupportedButLabelledUnsupported": 44
             },
             "number_mismatch": {
-              "sentences": 293,
-              "labelledUnsupported": 79,
+              "sentences": 237,
+              "labelledUnsupported": 68,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 235,
-              "labelledUnsupported": 10,
+              "sentences": 106,
+              "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -318,560 +318,25 @@
             "cases": 450,
             "unsupported": {
               "cases": 450,
-              "tp": 213,
-              "fp": 172,
-              "fn": 12,
-              "tn": 53,
-              "precision": 0.5532,
-              "recall": 0.9467,
-              "f1": 0.6984,
-              "accuracy": 0.5911,
-              "precisionInterval": [0.5033, 0.6021],
-              "recallInterval": [0.9091, 0.9692]
-            },
-            "supported": {
-              "precision": 0.8154,
-              "recall": 0.2356,
-              "f1": 0.3655,
-              "precisionInterval": [0.7045, 0.8911],
-              "recallInterval": [0.1848, 0.2952]
-            },
-            "flaggedShare": 0.8556
-          },
-          "QA": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 71,
-              "fp": 48,
-              "fn": 4,
-              "tn": 27,
-              "precision": 0.5966,
-              "recall": 0.9467,
-              "f1": 0.732,
-              "accuracy": 0.6533,
-              "precisionInterval": [0.5068, 0.6804],
-              "recallInterval": [0.8707, 0.9791]
-            },
-            "supported": {
-              "precision": 0.871,
-              "recall": 0.36,
-              "f1": 0.5094,
-              "precisionInterval": [0.7115, 0.9487],
-              "recallInterval": [0.2606, 0.473]
-            },
-            "flaggedShare": 0.7933
-          },
-          "Summary": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 67,
-              "fp": 49,
-              "fn": 8,
-              "tn": 26,
-              "precision": 0.5776,
-              "recall": 0.8933,
-              "f1": 0.7016,
-              "accuracy": 0.62,
-              "precisionInterval": [0.4866, 0.6636],
-              "recallInterval": [0.8034, 0.945]
-            },
-            "supported": {
-              "precision": 0.7647,
-              "recall": 0.3467,
-              "f1": 0.4771,
-              "precisionInterval": [0.6, 0.8756],
-              "recallInterval": [0.2488, 0.4595]
-            },
-            "flaggedShare": 0.7733
-          },
-          "Data2txt": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 75,
-              "fp": 75,
-              "fn": 0,
-              "tn": 0,
-              "precision": 0.5,
-              "recall": 1,
-              "f1": 0.6667,
-              "accuracy": 0.5,
-              "precisionInterval": [0.421, 0.579],
-              "recallInterval": [0.9513, 1]
-            },
-            "supported": {
-              "precision": null,
-              "recall": 0,
-              "f1": 0,
-              "precisionInterval": null,
-              "recallInterval": [0, 0.0487]
-            },
-            "flaggedShare": 1
-          }
-        },
-        "checksWithCall": 357,
-        "calls": 357,
-        "errors": 4,
-        "errorKinds": {
-          "judge output is not valid JSON": 4
-        },
-        "truncated": 0,
-        "firstBlockNotText": 336,
-        "usageReportedByCheckAnswer": 357,
-        "usageMatchesApi": 357,
-        "inputTokens": 515897,
-        "outputTokens": 243890,
-        "costUSD": 0.1735,
-        "costPer1000ChecksUSD": 0.39,
-        "latencyMs": {
-          "p50": 2698.4,
-          "p95": 6439.6
-        },
-        "latencyMsWithCall": {
-          "p50": 3318.3,
-          "p95": 6553.1
-        },
-        "sentences": {
-          "sentences": 3263,
-          "unlocated": 0,
-          "lexicalMismatches": 0,
-          "lexical": {
-            "cases": 3263,
-            "tp": 315,
-            "fp": 1633,
-            "fn": 107,
-            "tn": 1208,
-            "precision": 0.1617,
-            "recall": 0.7464,
-            "f1": 0.2658,
-            "accuracy": 0.4667,
-            "precisionInterval": [0.146, 0.1787],
-            "recallInterval": [0.7028, 0.7856]
-          },
-          "judge": {
-            "cases": 3263,
-            "tp": 307,
-            "fp": 1152,
-            "fn": 115,
-            "tn": 1689,
-            "precision": 0.2104,
-            "recall": 0.7275,
-            "f1": 0.3264,
-            "accuracy": 0.6117,
-            "precisionInterval": [0.1903, 0.2321],
-            "recallInterval": [0.6831, 0.7678]
-          },
-          "byLexicalReason": {
-            "supported": {
-              "sentences": 1315,
-              "labelledUnsupported": 107,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "low_overlap": {
-              "sentences": 1420,
-              "labelledUnsupported": 226,
-              "judgeSupported": 489,
-              "judgeSupportedButLabelledUnsupported": 8
-            },
-            "number_mismatch": {
-              "sentences": 293,
-              "labelledUnsupported": 79,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "polarity_mismatch": {
-              "sentences": 235,
-              "labelledUnsupported": 10,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            }
-          }
-        }
-      },
-      "claude-sonnet-5-5": {
-        "metrics": {
-          "all": {
-            "cases": 450,
-            "unsupported": {
-              "cases": 450,
-              "tp": 214,
-              "fp": 171,
-              "fn": 11,
-              "tn": 54,
-              "precision": 0.5558,
-              "recall": 0.9511,
-              "f1": 0.7016,
-              "accuracy": 0.5956,
-              "precisionInterval": [0.5059, 0.6047],
-              "recallInterval": [0.9146, 0.9725]
-            },
-            "supported": {
-              "precision": 0.8308,
-              "recall": 0.24,
-              "f1": 0.3724,
-              "precisionInterval": [0.7218, 0.9028],
-              "recallInterval": [0.1889, 0.2999]
-            },
-            "flaggedShare": 0.8556
-          },
-          "QA": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 72,
-              "fp": 47,
-              "fn": 3,
-              "tn": 28,
-              "precision": 0.605,
-              "recall": 0.96,
-              "f1": 0.7423,
-              "accuracy": 0.6667,
-              "precisionInterval": [0.5152, 0.6883],
-              "recallInterval": [0.8889, 0.9863]
-            },
-            "supported": {
-              "precision": 0.9032,
-              "recall": 0.3733,
-              "f1": 0.5283,
-              "precisionInterval": [0.751, 0.9665],
-              "recallInterval": [0.2726, 0.4865]
-            },
-            "flaggedShare": 0.7933
-          },
-          "Summary": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 67,
-              "fp": 49,
-              "fn": 8,
-              "tn": 26,
-              "precision": 0.5776,
-              "recall": 0.8933,
-              "f1": 0.7016,
-              "accuracy": 0.62,
-              "precisionInterval": [0.4866, 0.6636],
-              "recallInterval": [0.8034, 0.945]
-            },
-            "supported": {
-              "precision": 0.7647,
-              "recall": 0.3467,
-              "f1": 0.4771,
-              "precisionInterval": [0.6, 0.8756],
-              "recallInterval": [0.2488, 0.4595]
-            },
-            "flaggedShare": 0.7733
-          },
-          "Data2txt": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 75,
-              "fp": 75,
-              "fn": 0,
-              "tn": 0,
-              "precision": 0.5,
-              "recall": 1,
-              "f1": 0.6667,
-              "accuracy": 0.5,
-              "precisionInterval": [0.421, 0.579],
-              "recallInterval": [0.9513, 1]
-            },
-            "supported": {
-              "precision": null,
-              "recall": 0,
-              "f1": 0,
-              "precisionInterval": null,
-              "recallInterval": [0, 0.0487]
-            },
-            "flaggedShare": 1
-          }
-        },
-        "checksWithCall": 357,
-        "calls": 357,
-        "errors": 5,
-        "errorKinds": {
-          "judge output is not valid JSON": 5
-        },
-        "truncated": 0,
-        "firstBlockNotText": 25,
-        "usageReportedByCheckAnswer": 357,
-        "usageMatchesApi": 357,
-        "inputTokens": 515897,
-        "outputTokens": 98684,
-        "costUSD": 2.0186,
-        "costPer1000ChecksUSD": 4.49,
-        "latencyMs": {
-          "p50": 2453.6,
-          "p95": 4523.9
-        },
-        "latencyMsWithCall": {
-          "p50": 2838.7,
-          "p95": 4762.6
-        },
-        "sentences": {
-          "sentences": 3263,
-          "unlocated": 0,
-          "lexicalMismatches": 0,
-          "lexical": {
-            "cases": 3263,
-            "tp": 315,
-            "fp": 1633,
-            "fn": 107,
-            "tn": 1208,
-            "precision": 0.1617,
-            "recall": 0.7464,
-            "f1": 0.2658,
-            "accuracy": 0.4667,
-            "precisionInterval": [0.146, 0.1787],
-            "recallInterval": [0.7028, 0.7856]
-          },
-          "judge": {
-            "cases": 3263,
-            "tp": 309,
-            "fp": 1186,
-            "fn": 113,
-            "tn": 1655,
-            "precision": 0.2067,
-            "recall": 0.7322,
-            "f1": 0.3224,
-            "accuracy": 0.6019,
-            "precisionInterval": [0.1869, 0.228],
-            "recallInterval": [0.688, 0.7722]
-          },
-          "byLexicalReason": {
-            "supported": {
-              "sentences": 1315,
-              "labelledUnsupported": 107,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "low_overlap": {
-              "sentences": 1420,
-              "labelledUnsupported": 226,
-              "judgeSupported": 453,
-              "judgeSupportedButLabelledUnsupported": 6
-            },
-            "number_mismatch": {
-              "sentences": 293,
-              "labelledUnsupported": 79,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "polarity_mismatch": {
-              "sentences": 235,
-              "labelledUnsupported": 10,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            }
-          }
-        }
-      },
-      "claude-opus-5-5": {
-        "metrics": {
-          "all": {
-            "cases": 450,
-            "unsupported": {
-              "cases": 450,
-              "tp": 214,
-              "fp": 171,
-              "fn": 11,
-              "tn": 54,
-              "precision": 0.5558,
-              "recall": 0.9511,
-              "f1": 0.7016,
-              "accuracy": 0.5956,
-              "precisionInterval": [0.5059, 0.6047],
-              "recallInterval": [0.9146, 0.9725]
-            },
-            "supported": {
-              "precision": 0.8308,
-              "recall": 0.24,
-              "f1": 0.3724,
-              "precisionInterval": [0.7218, 0.9028],
-              "recallInterval": [0.1889, 0.2999]
-            },
-            "flaggedShare": 0.8556
-          },
-          "QA": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 71,
-              "fp": 47,
-              "fn": 4,
-              "tn": 28,
-              "precision": 0.6017,
-              "recall": 0.9467,
-              "f1": 0.7358,
-              "accuracy": 0.66,
-              "precisionInterval": [0.5115, 0.6855],
-              "recallInterval": [0.8707, 0.9791]
-            },
-            "supported": {
-              "precision": 0.875,
-              "recall": 0.3733,
-              "f1": 0.5234,
-              "precisionInterval": [0.7193, 0.9503],
-              "recallInterval": [0.2726, 0.4865]
-            },
-            "flaggedShare": 0.7867
-          },
-          "Summary": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 68,
-              "fp": 49,
-              "fn": 7,
-              "tn": 26,
-              "precision": 0.5812,
-              "recall": 0.9067,
-              "f1": 0.7083,
-              "accuracy": 0.6267,
-              "precisionInterval": [0.4906, 0.6666],
-              "recallInterval": [0.8197, 0.9541]
-            },
-            "supported": {
-              "precision": 0.7879,
-              "recall": 0.3467,
-              "f1": 0.4815,
-              "precisionInterval": [0.6225, 0.8932],
-              "recallInterval": [0.2488, 0.4595]
-            },
-            "flaggedShare": 0.78
-          },
-          "Data2txt": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 75,
-              "fp": 75,
-              "fn": 0,
-              "tn": 0,
-              "precision": 0.5,
-              "recall": 1,
-              "f1": 0.6667,
-              "accuracy": 0.5,
-              "precisionInterval": [0.421, 0.579],
-              "recallInterval": [0.9513, 1]
-            },
-            "supported": {
-              "precision": null,
-              "recall": 0,
-              "f1": 0,
-              "precisionInterval": null,
-              "recallInterval": [0, 0.0487]
-            },
-            "flaggedShare": 1
-          }
-        },
-        "checksWithCall": 357,
-        "calls": 357,
-        "errors": 0,
-        "errorKinds": {},
-        "truncated": 0,
-        "firstBlockNotText": 304,
-        "usageReportedByCheckAnswer": 357,
-        "usageMatchesApi": 357,
-        "inputTokens": 515897,
-        "outputTokens": 185540,
-        "costUSD": 5.7744,
-        "costPer1000ChecksUSD": 12.83,
-        "latencyMs": {
-          "p50": 4218.1,
-          "p95": 9745.8
-        },
-        "latencyMsWithCall": {
-          "p50": 4974.5,
-          "p95": 10247.9
-        },
-        "sentences": {
-          "sentences": 3263,
-          "unlocated": 0,
-          "lexicalMismatches": 0,
-          "lexical": {
-            "cases": 3263,
-            "tp": 315,
-            "fp": 1633,
-            "fn": 107,
-            "tn": 1208,
-            "precision": 0.1617,
-            "recall": 0.7464,
-            "f1": 0.2658,
-            "accuracy": 0.4667,
-            "precisionInterval": [0.146, 0.1787],
-            "recallInterval": [0.7028, 0.7856]
-          },
-          "judge": {
-            "cases": 3263,
-            "tp": 310,
-            "fp": 1197,
-            "fn": 112,
-            "tn": 1644,
-            "precision": 0.2057,
-            "recall": 0.7346,
-            "f1": 0.3214,
-            "accuracy": 0.5988,
-            "precisionInterval": [0.1861, 0.2269],
-            "recallInterval": [0.6905, 0.7745]
-          },
-          "byLexicalReason": {
-            "supported": {
-              "sentences": 1315,
-              "labelledUnsupported": 107,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "low_overlap": {
-              "sentences": 1420,
-              "labelledUnsupported": 226,
-              "judgeSupported": 441,
-              "judgeSupportedButLabelledUnsupported": 5
-            },
-            "number_mismatch": {
-              "sentences": 293,
-              "labelledUnsupported": 79,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "polarity_mismatch": {
-              "sentences": 235,
-              "labelledUnsupported": 10,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            }
-          }
-        }
-      },
-      "claude-fable-5-1": {
-        "metrics": {
-          "all": {
-            "cases": 450,
-            "unsupported": {
-              "cases": 450,
               "tp": 212,
-              "fp": 168,
+              "fp": 167,
               "fn": 13,
-              "tn": 57,
-              "precision": 0.5579,
+              "tn": 58,
+              "precision": 0.5594,
               "recall": 0.9422,
-              "f1": 0.7008,
-              "accuracy": 0.5978,
-              "precisionInterval": [0.5076, 0.607],
+              "f1": 0.702,
+              "accuracy": 0.6,
+              "precisionInterval": [0.509, 0.6085],
               "recallInterval": [0.9037, 0.9659]
             },
             "supported": {
-              "precision": 0.8143,
-              "recall": 0.2533,
-              "f1": 0.3864,
-              "precisionInterval": [0.7077, 0.8881],
-              "recallInterval": [0.201, 0.314]
+              "precision": 0.8169,
+              "recall": 0.2578,
+              "f1": 0.3919,
+              "precisionInterval": [0.7115, 0.8898],
+              "recallInterval": [0.205, 0.3187]
             },
-            "flaggedShare": 0.8444
+            "flaggedShare": 0.8422
           },
           "QA": {
             "cases": 150,
@@ -901,23 +366,23 @@
             "cases": 150,
             "unsupported": {
               "cases": 150,
-              "tp": 67,
-              "fp": 48,
-              "fn": 8,
-              "tn": 27,
-              "precision": 0.5826,
-              "recall": 0.8933,
-              "f1": 0.7053,
-              "accuracy": 0.6267,
-              "precisionInterval": [0.4912, 0.6686],
-              "recallInterval": [0.8034, 0.945]
+              "tp": 66,
+              "fp": 49,
+              "fn": 9,
+              "tn": 26,
+              "precision": 0.5739,
+              "recall": 0.88,
+              "f1": 0.6947,
+              "accuracy": 0.6133,
+              "precisionInterval": [0.4826, 0.6605],
+              "recallInterval": [0.7874, 0.9356]
             },
             "supported": {
-              "precision": 0.7714,
-              "recall": 0.36,
-              "f1": 0.4909,
-              "precisionInterval": [0.6098, 0.8793],
-              "recallInterval": [0.2606, 0.473]
+              "precision": 0.7429,
+              "recall": 0.3467,
+              "f1": 0.4727,
+              "precisionInterval": [0.5793, 0.8584],
+              "recallInterval": [0.2488, 0.4595]
             },
             "flaggedShare": 0.7667
           },
@@ -925,46 +390,48 @@
             "cases": 150,
             "unsupported": {
               "cases": 150,
-              "tp": 74,
-              "fp": 74,
-              "fn": 1,
-              "tn": 1,
-              "precision": 0.5,
-              "recall": 0.9867,
-              "f1": 0.6637,
-              "accuracy": 0.5,
-              "precisionInterval": [0.4205, 0.5795],
-              "recallInterval": [0.9283, 0.9976]
+              "tp": 75,
+              "fp": 72,
+              "fn": 0,
+              "tn": 3,
+              "precision": 0.5102,
+              "recall": 1,
+              "f1": 0.6757,
+              "accuracy": 0.52,
+              "precisionInterval": [0.4302, 0.5897],
+              "recallInterval": [0.9513, 1]
             },
             "supported": {
-              "precision": 0.5,
-              "recall": 0.0133,
-              "f1": 0.026,
-              "precisionInterval": [0.0945, 0.9055],
-              "recallInterval": [0.0024, 0.0717]
+              "precision": 1,
+              "recall": 0.04,
+              "f1": 0.0769,
+              "precisionInterval": [0.4385, 1],
+              "recallInterval": [0.0137, 0.1111]
             },
-            "flaggedShare": 0.9867
+            "flaggedShare": 0.98
           }
         },
-        "checksWithCall": 357,
-        "calls": 357,
-        "errors": 0,
-        "errorKinds": {},
-        "truncated": 0,
-        "firstBlockNotText": 170,
-        "usageReportedByCheckAnswer": 357,
-        "usageMatchesApi": 357,
-        "inputTokens": 515897,
-        "outputTokens": 178349,
-        "costUSD": 14.0764,
-        "costPer1000ChecksUSD": 31.28,
+        "checksWithCall": 361,
+        "calls": 361,
+        "errors": 5,
+        "errorKinds": {
+          "judge output is not valid JSON": 5
+        },
+        "truncated": 1,
+        "firstBlockNotText": 340,
+        "usageReportedByCheckAnswer": 361,
+        "usageMatchesApi": 361,
+        "inputTokens": 521051,
+        "outputTokens": 248996,
+        "costUSD": 0.1766,
+        "costPer1000ChecksUSD": 0.39,
         "latencyMs": {
-          "p50": 3209.8,
-          "p95": 14663.9
+          "p50": 2770,
+          "p95": 6454.4
         },
         "latencyMsWithCall": {
-          "p50": 4404.1,
-          "p95": 14851.7
+          "p50": 3442.8,
+          "p95": 6557.5
         },
         "sentences": {
           "sentences": 3263,
@@ -972,52 +439,587 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 315,
-            "fp": 1633,
-            "fn": 107,
-            "tn": 1208,
-            "precision": 0.1617,
-            "recall": 0.7464,
-            "f1": 0.2658,
-            "accuracy": 0.4667,
-            "precisionInterval": [0.146, 0.1787],
-            "recallInterval": [0.7028, 0.7856]
+            "tp": 314,
+            "fp": 1474,
+            "fn": 108,
+            "tn": 1367,
+            "precision": 0.1756,
+            "recall": 0.7441,
+            "f1": 0.2842,
+            "accuracy": 0.5152,
+            "precisionInterval": [0.1587, 0.1939],
+            "recallInterval": [0.7004, 0.7834]
           },
           "judge": {
             "cases": 3263,
             "tp": 304,
-            "fp": 1087,
+            "fp": 900,
             "fn": 118,
-            "tn": 1754,
-            "precision": 0.2185,
+            "tn": 1941,
+            "precision": 0.2525,
             "recall": 0.7204,
-            "f1": 0.3354,
-            "accuracy": 0.6307,
-            "precisionInterval": [0.1976, 0.241],
+            "f1": 0.3739,
+            "accuracy": 0.688,
+            "precisionInterval": [0.2288, 0.2778],
             "recallInterval": [0.6757, 0.7611]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1315,
-              "labelledUnsupported": 107,
+              "sentences": 1475,
+              "labelledUnsupported": 108,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1420,
-              "labelledUnsupported": 226,
-              "judgeSupported": 557,
-              "judgeSupportedButLabelledUnsupported": 11
+              "sentences": 1445,
+              "labelledUnsupported": 235,
+              "judgeSupported": 584,
+              "judgeSupportedButLabelledUnsupported": 10
             },
             "number_mismatch": {
-              "sentences": 293,
-              "labelledUnsupported": 79,
+              "sentences": 237,
+              "labelledUnsupported": 68,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 235,
-              "labelledUnsupported": 10,
+              "sentences": 106,
+              "labelledUnsupported": 11,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            }
+          }
+        }
+      },
+      "claude-sonnet-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 450,
+            "unsupported": {
+              "cases": 450,
+              "tp": 213,
+              "fp": 165,
+              "fn": 12,
+              "tn": 60,
+              "precision": 0.5635,
+              "recall": 0.9467,
+              "f1": 0.7065,
+              "accuracy": 0.6067,
+              "precisionInterval": [0.5131, 0.6126],
+              "recallInterval": [0.9091, 0.9692]
+            },
+            "supported": {
+              "precision": 0.8333,
+              "recall": 0.2667,
+              "f1": 0.404,
+              "precisionInterval": [0.7309, 0.902],
+              "recallInterval": [0.2132, 0.328]
+            },
+            "flaggedShare": 0.84
+          },
+          "QA": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 72,
+              "fp": 45,
+              "fn": 3,
+              "tn": 30,
+              "precision": 0.6154,
+              "recall": 0.96,
+              "f1": 0.75,
+              "accuracy": 0.68,
+              "precisionInterval": [0.5249, 0.6985],
+              "recallInterval": [0.8889, 0.9863]
+            },
+            "supported": {
+              "precision": 0.9091,
+              "recall": 0.4,
+              "f1": 0.5556,
+              "precisionInterval": [0.7643, 0.9686],
+              "recallInterval": [0.2966, 0.5131]
+            },
+            "flaggedShare": 0.78
+          },
+          "Summary": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 66,
+              "fp": 49,
+              "fn": 9,
+              "tn": 26,
+              "precision": 0.5739,
+              "recall": 0.88,
+              "f1": 0.6947,
+              "accuracy": 0.6133,
+              "precisionInterval": [0.4826, 0.6605],
+              "recallInterval": [0.7874, 0.9356]
+            },
+            "supported": {
+              "precision": 0.7429,
+              "recall": 0.3467,
+              "f1": 0.4727,
+              "precisionInterval": [0.5793, 0.8584],
+              "recallInterval": [0.2488, 0.4595]
+            },
+            "flaggedShare": 0.7667
+          },
+          "Data2txt": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 75,
+              "fp": 71,
+              "fn": 0,
+              "tn": 4,
+              "precision": 0.5137,
+              "recall": 1,
+              "f1": 0.6787,
+              "accuracy": 0.5267,
+              "precisionInterval": [0.4333, 0.5934],
+              "recallInterval": [0.9513, 1]
+            },
+            "supported": {
+              "precision": 1,
+              "recall": 0.0533,
+              "f1": 0.1013,
+              "precisionInterval": [0.5101, 1],
+              "recallInterval": [0.0209, 0.1293]
+            },
+            "flaggedShare": 0.9733
+          }
+        },
+        "checksWithCall": 361,
+        "calls": 361,
+        "errors": 5,
+        "errorKinds": {
+          "judge output is not valid JSON": 5
+        },
+        "truncated": 0,
+        "firstBlockNotText": 27,
+        "usageReportedByCheckAnswer": 361,
+        "usageMatchesApi": 361,
+        "inputTokens": 521051,
+        "outputTokens": 100880,
+        "costUSD": 2.0509,
+        "costPer1000ChecksUSD": 4.56,
+        "latencyMs": {
+          "p50": 2474.4,
+          "p95": 4764.6
+        },
+        "latencyMsWithCall": {
+          "p50": 2863.8,
+          "p95": 4982.4
+        },
+        "sentences": {
+          "sentences": 3263,
+          "unlocated": 0,
+          "lexicalMismatches": 0,
+          "lexical": {
+            "cases": 3263,
+            "tp": 314,
+            "fp": 1474,
+            "fn": 108,
+            "tn": 1367,
+            "precision": 0.1756,
+            "recall": 0.7441,
+            "f1": 0.2842,
+            "accuracy": 0.5152,
+            "precisionInterval": [0.1587, 0.1939],
+            "recallInterval": [0.7004, 0.7834]
+          },
+          "judge": {
+            "cases": 3263,
+            "tp": 307,
+            "fp": 933,
+            "fn": 115,
+            "tn": 1908,
+            "precision": 0.2476,
+            "recall": 0.7275,
+            "f1": 0.3694,
+            "accuracy": 0.6788,
+            "precisionInterval": [0.2244, 0.2724],
+            "recallInterval": [0.6831, 0.7678]
+          },
+          "byLexicalReason": {
+            "supported": {
+              "sentences": 1475,
+              "labelledUnsupported": 108,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "low_overlap": {
+              "sentences": 1445,
+              "labelledUnsupported": 235,
+              "judgeSupported": 548,
+              "judgeSupportedButLabelledUnsupported": 7
+            },
+            "number_mismatch": {
+              "sentences": 237,
+              "labelledUnsupported": 68,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "polarity_mismatch": {
+              "sentences": 106,
+              "labelledUnsupported": 11,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            }
+          }
+        }
+      },
+      "claude-opus-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 450,
+            "unsupported": {
+              "cases": 450,
+              "tp": 212,
+              "fp": 165,
+              "fn": 13,
+              "tn": 60,
+              "precision": 0.5623,
+              "recall": 0.9422,
+              "f1": 0.7043,
+              "accuracy": 0.6044,
+              "precisionInterval": [0.5119, 0.6115],
+              "recallInterval": [0.9037, 0.9659]
+            },
+            "supported": {
+              "precision": 0.8219,
+              "recall": 0.2667,
+              "f1": 0.4027,
+              "precisionInterval": [0.7188, 0.8929],
+              "recallInterval": [0.2132, 0.328]
+            },
+            "flaggedShare": 0.8378
+          },
+          "QA": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 71,
+              "fp": 45,
+              "fn": 4,
+              "tn": 30,
+              "precision": 0.6121,
+              "recall": 0.9467,
+              "f1": 0.7435,
+              "accuracy": 0.6733,
+              "precisionInterval": [0.5212, 0.6958],
+              "recallInterval": [0.8707, 0.9791]
+            },
+            "supported": {
+              "precision": 0.8824,
+              "recall": 0.4,
+              "f1": 0.5505,
+              "precisionInterval": [0.7338, 0.9533],
+              "recallInterval": [0.2966, 0.5131]
+            },
+            "flaggedShare": 0.7733
+          },
+          "Summary": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 66,
+              "fp": 49,
+              "fn": 9,
+              "tn": 26,
+              "precision": 0.5739,
+              "recall": 0.88,
+              "f1": 0.6947,
+              "accuracy": 0.6133,
+              "precisionInterval": [0.4826, 0.6605],
+              "recallInterval": [0.7874, 0.9356]
+            },
+            "supported": {
+              "precision": 0.7429,
+              "recall": 0.3467,
+              "f1": 0.4727,
+              "precisionInterval": [0.5793, 0.8584],
+              "recallInterval": [0.2488, 0.4595]
+            },
+            "flaggedShare": 0.7667
+          },
+          "Data2txt": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 75,
+              "fp": 71,
+              "fn": 0,
+              "tn": 4,
+              "precision": 0.5137,
+              "recall": 1,
+              "f1": 0.6787,
+              "accuracy": 0.5267,
+              "precisionInterval": [0.4333, 0.5934],
+              "recallInterval": [0.9513, 1]
+            },
+            "supported": {
+              "precision": 1,
+              "recall": 0.0533,
+              "f1": 0.1013,
+              "precisionInterval": [0.5101, 1],
+              "recallInterval": [0.0209, 0.1293]
+            },
+            "flaggedShare": 0.9733
+          }
+        },
+        "checksWithCall": 361,
+        "calls": 361,
+        "errors": 0,
+        "errorKinds": {},
+        "truncated": 0,
+        "firstBlockNotText": 310,
+        "usageReportedByCheckAnswer": 361,
+        "usageMatchesApi": 361,
+        "inputTokens": 521051,
+        "outputTokens": 189474,
+        "costUSD": 5.8737,
+        "costPer1000ChecksUSD": 13.05,
+        "latencyMs": {
+          "p50": 4358,
+          "p95": 10021.4
+        },
+        "latencyMsWithCall": {
+          "p50": 5044.7,
+          "p95": 10288.3
+        },
+        "sentences": {
+          "sentences": 3263,
+          "unlocated": 0,
+          "lexicalMismatches": 0,
+          "lexical": {
+            "cases": 3263,
+            "tp": 314,
+            "fp": 1474,
+            "fn": 108,
+            "tn": 1367,
+            "precision": 0.1756,
+            "recall": 0.7441,
+            "f1": 0.2842,
+            "accuracy": 0.5152,
+            "precisionInterval": [0.1587, 0.1939],
+            "recallInterval": [0.7004, 0.7834]
+          },
+          "judge": {
+            "cases": 3263,
+            "tp": 306,
+            "fp": 939,
+            "fn": 116,
+            "tn": 1902,
+            "precision": 0.2458,
+            "recall": 0.7251,
+            "f1": 0.3671,
+            "accuracy": 0.6767,
+            "precisionInterval": [0.2227, 0.2705],
+            "recallInterval": [0.6806, 0.7655]
+          },
+          "byLexicalReason": {
+            "supported": {
+              "sentences": 1475,
+              "labelledUnsupported": 108,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "low_overlap": {
+              "sentences": 1445,
+              "labelledUnsupported": 235,
+              "judgeSupported": 543,
+              "judgeSupportedButLabelledUnsupported": 8
+            },
+            "number_mismatch": {
+              "sentences": 237,
+              "labelledUnsupported": 68,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "polarity_mismatch": {
+              "sentences": 106,
+              "labelledUnsupported": 11,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            }
+          }
+        }
+      },
+      "claude-fable-5-1": {
+        "metrics": {
+          "all": {
+            "cases": 450,
+            "unsupported": {
+              "cases": 450,
+              "tp": 211,
+              "fp": 162,
+              "fn": 14,
+              "tn": 63,
+              "precision": 0.5657,
+              "recall": 0.9378,
+              "f1": 0.7057,
+              "accuracy": 0.6089,
+              "precisionInterval": [0.515, 0.6151],
+              "recallInterval": [0.8983, 0.9626]
+            },
+            "supported": {
+              "precision": 0.8182,
+              "recall": 0.28,
+              "f1": 0.4172,
+              "precisionInterval": [0.7176, 0.8885],
+              "recallInterval": [0.2254, 0.342]
+            },
+            "flaggedShare": 0.8289
+          },
+          "QA": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 71,
+              "fp": 44,
+              "fn": 4,
+              "tn": 31,
+              "precision": 0.6174,
+              "recall": 0.9467,
+              "f1": 0.7474,
+              "accuracy": 0.68,
+              "precisionInterval": [0.5261, 0.7011],
+              "recallInterval": [0.8707, 0.9791]
+            },
+            "supported": {
+              "precision": 0.8857,
+              "recall": 0.4133,
+              "f1": 0.5636,
+              "precisionInterval": [0.7405, 0.9546],
+              "recallInterval": [0.3088, 0.5263]
+            },
+            "flaggedShare": 0.7667
+          },
+          "Summary": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 66,
+              "fp": 48,
+              "fn": 9,
+              "tn": 27,
+              "precision": 0.5789,
+              "recall": 0.88,
+              "f1": 0.6984,
+              "accuracy": 0.62,
+              "precisionInterval": [0.4872, 0.6656],
+              "recallInterval": [0.7874, 0.9356]
+            },
+            "supported": {
+              "precision": 0.75,
+              "recall": 0.36,
+              "f1": 0.4865,
+              "precisionInterval": [0.5893, 0.8625],
+              "recallInterval": [0.2606, 0.473]
+            },
+            "flaggedShare": 0.76
+          },
+          "Data2txt": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 74,
+              "fp": 70,
+              "fn": 1,
+              "tn": 5,
+              "precision": 0.5139,
+              "recall": 0.9867,
+              "f1": 0.6758,
+              "accuracy": 0.5267,
+              "precisionInterval": [0.433, 0.5941],
+              "recallInterval": [0.9283, 0.9976]
+            },
+            "supported": {
+              "precision": 0.8333,
+              "recall": 0.0667,
+              "f1": 0.1235,
+              "precisionInterval": [0.4365, 0.9699],
+              "recallInterval": [0.0288, 0.1468]
+            },
+            "flaggedShare": 0.96
+          }
+        },
+        "checksWithCall": 361,
+        "calls": 361,
+        "errors": 1,
+        "errorKinds": {
+          "judge output is not a JSON array": 1
+        },
+        "truncated": 0,
+        "firstBlockNotText": 174,
+        "usageReportedByCheckAnswer": 361,
+        "usageMatchesApi": 361,
+        "inputTokens": 521051,
+        "outputTokens": 183083,
+        "costUSD": 14.3647,
+        "costPer1000ChecksUSD": 31.92,
+        "latencyMs": {
+          "p50": 3399.8,
+          "p95": 14672.6
+        },
+        "latencyMsWithCall": {
+          "p50": 4525.3,
+          "p95": 14857.6
+        },
+        "sentences": {
+          "sentences": 3263,
+          "unlocated": 0,
+          "lexicalMismatches": 0,
+          "lexical": {
+            "cases": 3263,
+            "tp": 314,
+            "fp": 1474,
+            "fn": 108,
+            "tn": 1367,
+            "precision": 0.1756,
+            "recall": 0.7441,
+            "f1": 0.2842,
+            "accuracy": 0.5152,
+            "precisionInterval": [0.1587, 0.1939],
+            "recallInterval": [0.7004, 0.7834]
+          },
+          "judge": {
+            "cases": 3263,
+            "tp": 301,
+            "fp": 822,
+            "fn": 121,
+            "tn": 2019,
+            "precision": 0.268,
+            "recall": 0.7133,
+            "f1": 0.3896,
+            "accuracy": 0.711,
+            "precisionInterval": [0.2429, 0.2947],
+            "recallInterval": [0.6683, 0.7543]
+          },
+          "byLexicalReason": {
+            "supported": {
+              "sentences": 1475,
+              "labelledUnsupported": 108,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "low_overlap": {
+              "sentences": 1445,
+              "labelledUnsupported": 235,
+              "judgeSupported": 665,
+              "judgeSupportedButLabelledUnsupported": 13
+            },
+            "number_mismatch": {
+              "sentences": 237,
+              "labelledUnsupported": 68,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "polarity_mismatch": {
+              "sentences": 106,
+              "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -1026,10 +1028,10 @@
       }
     },
     "lexicalFalseAlarms": {
-      "answers": 186,
-      "onlyLowOverlap": 67,
-      "withNumberMismatch": 53,
-      "withPolarityMismatch": 79
+      "answers": 185,
+      "onlyLowOverlap": 96,
+      "withNumberMismatch": 47,
+      "withPolarityMismatch": 47
     },
     "cases": [
       {
@@ -1727,7 +1729,7 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -2115,13 +2117,13 @@
         "id": "ragtruth-17056",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -2167,13 +2169,13 @@
         "id": "ragtruth-15460",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -2271,13 +2273,13 @@
         "id": "ragtruth-13378",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -2362,13 +2364,13 @@
         "id": "ragtruth-14807",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -2388,13 +2390,13 @@
         "id": "ragtruth-14746",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -2492,13 +2494,13 @@
         "id": "ragtruth-14466",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -2999,13 +3001,13 @@
         "id": "ragtruth-184",
         "task": "Summary",
         "hallucinated": true,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -3155,13 +3157,13 @@
         "id": "ragtruth-2667",
         "task": "Summary",
         "hallucinated": true,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -3287,11 +3289,11 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
-          "claude-fable-5-1": false
+          "claude-fable-5-1": true
         }
       },
       {
@@ -3443,7 +3445,7 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -3519,13 +3521,13 @@
         "id": "ragtruth-444",
         "task": "Summary",
         "hallucinated": true,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -3623,13 +3625,13 @@
         "id": "ragtruth-250",
         "task": "Summary",
         "hallucinated": true,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -4039,13 +4041,13 @@
         "id": "ragtruth-544",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -4184,7 +4186,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -4249,11 +4251,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -4262,7 +4264,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -4340,7 +4342,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -4418,15 +4420,28 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
+        }
+      },
+      {
+        "id": "ragtruth-211",
+        "task": "Summary",
+        "hallucinated": false,
+        "lexicalFlagged": true,
+        "judgeFlagged": {
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
           "claude-sonnet-5-5": false,
           "claude-opus-5-5": false,
           "claude-fable-5-1": false
         }
       },
       {
-        "id": "ragtruth-211",
+        "id": "ragtruth-3917",
         "task": "Summary",
         "hallucinated": false,
         "lexicalFlagged": true,
@@ -4436,19 +4451,6 @@
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
           "claude-fable-5-1": true
-        }
-      },
-      {
-        "id": "ragtruth-3917",
-        "task": "Summary",
-        "hallucinated": false,
-        "lexicalFlagged": false,
-        "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
         }
       },
       {
@@ -4691,11 +4693,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -4832,13 +4834,13 @@
         "id": "ragtruth-1703",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -4871,13 +4873,13 @@
         "id": "ragtruth-249",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -4899,24 +4901,24 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
         "id": "ragtruth-1644",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true,
+          "claude-opus-5-5": true,
+          "claude-fable-5-1": true
         }
       },
       {
@@ -5549,7 +5551,7 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -5861,7 +5863,7 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -5965,11 +5967,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -6082,11 +6084,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -6134,7 +6136,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6173,11 +6175,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -6277,7 +6279,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6511,7 +6513,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6654,7 +6656,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6810,11 +6812,11 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -6888,12 +6890,12 @@
     "file": "benchmarks/fixtures/judge-edge-cases.jsonl",
     "cases": 72,
     "lexical": {
-      "correct": 46,
+      "correct": 47,
       "cases": 72,
-      "accuracy": 0.6389,
-      "accuracyInterval": [0.5235, 0.7402],
+      "accuracy": 0.6528,
+      "accuracyInterval": [0.5376, 0.7525],
       "falseAlarms": 13,
-      "misses": 13,
+      "misses": 12,
       "sentences": {
         "scored": 10,
         "correct": 10,
@@ -6930,9 +6932,9 @@
         },
         "dates": {
           "cases": 5,
-          "correct": 3,
+          "correct": 4,
           "falseAlarms": 1,
-          "misses": 1,
+          "misses": 0,
           "judgeRuled": 0
         },
         "negation": {
@@ -7114,21 +7116,6 @@
           "sentences": [
             {
               "sentence": "The tank holds 3 gallons.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
-          "id": "dates-3",
-          "category": "dates",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "The office reopened on 3 May 2024.",
-          "sentences": [
-            {
-              "sentence": "The office reopened on 3 May 2024.",
               "verdict": "supported",
               "lexicalReason": "supported"
             }
@@ -7413,12 +7400,12 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 52,
+        "correct": 53,
         "cases": 72,
-        "accuracy": 0.7222,
-        "accuracyInterval": [0.6095, 0.8124],
+        "accuracy": 0.7361,
+        "accuracyInterval": [0.6242, 0.8241],
         "falseAlarms": 7,
-        "misses": 13,
+        "misses": 12,
         "sentences": {
           "scored": 10,
           "correct": 10,
@@ -7455,9 +7442,9 @@
           },
           "dates": {
             "cases": 5,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 0,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -7600,23 +7587,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -7891,12 +7861,12 @@
         "errors": 0
       },
       "claude-haiku-5-5": {
-        "correct": 52,
+        "correct": 53,
         "cases": 72,
-        "accuracy": 0.7222,
-        "accuracyInterval": [0.6095, 0.8124],
+        "accuracy": 0.7361,
+        "accuracyInterval": [0.6242, 0.8241],
         "falseAlarms": 7,
-        "misses": 13,
+        "misses": 12,
         "sentences": {
           "scored": 10,
           "correct": 10,
@@ -7933,9 +7903,9 @@
           },
           "dates": {
             "cases": 5,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 0,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -8078,23 +8048,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -8369,12 +8322,12 @@
         "errors": 0
       },
       "claude-sonnet-5-5": {
-        "correct": 51,
+        "correct": 52,
         "cases": 72,
-        "accuracy": 0.7083,
-        "accuracyInterval": [0.5949, 0.8006],
+        "accuracy": 0.7222,
+        "accuracyInterval": [0.6095, 0.8124],
         "falseAlarms": 8,
-        "misses": 13,
+        "misses": 12,
         "sentences": {
           "scored": 10,
           "correct": 10,
@@ -8411,9 +8364,9 @@
           },
           "dates": {
             "cases": 5,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 0,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -8556,23 +8509,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -8864,12 +8800,12 @@
         "errors": 1
       },
       "claude-opus-5-5": {
-        "correct": 52,
+        "correct": 53,
         "cases": 72,
-        "accuracy": 0.7222,
-        "accuracyInterval": [0.6095, 0.8124],
+        "accuracy": 0.7361,
+        "accuracyInterval": [0.6242, 0.8241],
         "falseAlarms": 7,
-        "misses": 13,
+        "misses": 12,
         "sentences": {
           "scored": 10,
           "correct": 10,
@@ -8906,9 +8842,9 @@
           },
           "dates": {
             "cases": 5,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 0,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -9051,23 +8987,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -9342,12 +9261,12 @@
         "errors": 0
       },
       "claude-fable-5-1": {
-        "correct": 52,
+        "correct": 53,
         "cases": 72,
-        "accuracy": 0.7222,
-        "accuracyInterval": [0.6095, 0.8124],
+        "accuracy": 0.7361,
+        "accuracyInterval": [0.6242, 0.8241],
         "falseAlarms": 7,
-        "misses": 13,
+        "misses": 12,
         "sentences": {
           "scored": 10,
           "correct": 10,
@@ -9384,9 +9303,9 @@
           },
           "dates": {
             "cases": 5,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 0,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -9529,23 +9448,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -9825,12 +9727,12 @@
     "file": "benchmarks/fixtures/judge-edge-cases-2.jsonl",
     "cases": 64,
     "lexical": {
-      "correct": 36,
+      "correct": 37,
       "cases": 64,
-      "accuracy": 0.5625,
-      "accuracyInterval": [0.4409, 0.6771],
+      "accuracy": 0.5781,
+      "accuracyInterval": [0.4561, 0.6913],
       "falseAlarms": 14,
-      "misses": 14,
+      "misses": 13,
       "sentences": {
         "scored": 8,
         "correct": 8,
@@ -9944,9 +9846,9 @@
         },
         "non-english": {
           "cases": 3,
-          "correct": 1,
+          "correct": 2,
           "falseAlarms": 1,
-          "misses": 1,
+          "misses": 0,
           "judgeRuled": 0
         },
         "table-or-list": {
@@ -10265,21 +10167,6 @@
           ]
         },
         {
-          "id": "b2-non-english-2",
-          "category": "non-english",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "Der Zug fährt nicht jede Stunde.",
-          "sentences": [
-            {
-              "sentence": "Der Zug fährt nicht jede Stunde.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
           "id": "b2-non-english-3",
           "category": "non-english",
           "expected": "supported",
@@ -10403,12 +10290,12 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 41,
+        "correct": 42,
         "cases": 64,
-        "accuracy": 0.6406,
-        "accuracyInterval": [0.5182, 0.7471],
+        "accuracy": 0.6563,
+        "accuracyInterval": [0.534, 0.7608],
         "falseAlarms": 9,
-        "misses": 14,
+        "misses": 13,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -10522,9 +10409,9 @@
           },
           "non-english": {
             "cases": 3,
-            "correct": 1,
+            "correct": 2,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 0
           },
           "table-or-list": {
@@ -10813,23 +10700,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -10953,12 +10823,12 @@
         "errors": 0
       },
       "claude-haiku-5-5": {
-        "correct": 41,
+        "correct": 42,
         "cases": 64,
-        "accuracy": 0.6406,
-        "accuracyInterval": [0.5182, 0.7471],
+        "accuracy": 0.6563,
+        "accuracyInterval": [0.534, 0.7608],
         "falseAlarms": 9,
-        "misses": 14,
+        "misses": 13,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -11072,9 +10942,9 @@
           },
           "non-english": {
             "cases": 3,
-            "correct": 1,
+            "correct": 2,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 0
           },
           "table-or-list": {
@@ -11363,23 +11233,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -11503,12 +11356,12 @@
         "errors": 0
       },
       "claude-sonnet-5-5": {
-        "correct": 43,
+        "correct": 44,
         "cases": 64,
-        "accuracy": 0.6719,
-        "accuracyInterval": [0.55, 0.7743],
+        "accuracy": 0.6875,
+        "accuracyInterval": [0.5661, 0.7877],
         "falseAlarms": 7,
-        "misses": 14,
+        "misses": 13,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -11622,9 +11475,9 @@
           },
           "non-english": {
             "cases": 3,
-            "correct": 1,
+            "correct": 2,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 0
           },
           "table-or-list": {
@@ -11879,23 +11732,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -12019,12 +11855,12 @@
         "errors": 0
       },
       "claude-opus-5-5": {
-        "correct": 42,
+        "correct": 43,
         "cases": 64,
-        "accuracy": 0.6563,
-        "accuracyInterval": [0.534, 0.7608],
+        "accuracy": 0.6719,
+        "accuracyInterval": [0.55, 0.7743],
         "falseAlarms": 8,
-        "misses": 14,
+        "misses": 13,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -12138,9 +11974,9 @@
           },
           "non-english": {
             "cases": 3,
-            "correct": 1,
+            "correct": 2,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 0
           },
           "table-or-list": {
@@ -12412,23 +12248,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -12552,12 +12371,12 @@
         "errors": 0
       },
       "claude-fable-5-1": {
-        "correct": 42,
+        "correct": 43,
         "cases": 64,
-        "accuracy": 0.6563,
-        "accuracyInterval": [0.534, 0.7608],
+        "accuracy": 0.6719,
+        "accuracyInterval": [0.55, 0.7743],
         "falseAlarms": 8,
-        "misses": 14,
+        "misses": 13,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -12671,9 +12490,9 @@
           },
           "non-english": {
             "cases": 3,
-            "correct": 1,
+            "correct": 2,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 0
           },
           "table-or-list": {
@@ -12945,23 +12764,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -13090,12 +12892,12 @@
     "file": "both batches",
     "cases": 136,
     "lexical": {
-      "correct": 82,
+      "correct": 84,
       "cases": 136,
-      "accuracy": 0.6029,
-      "accuracyInterval": [0.519, 0.6813],
+      "accuracy": 0.6176,
+      "accuracyInterval": [0.5338, 0.695],
       "falseAlarms": 27,
-      "misses": 27,
+      "misses": 25,
       "sentences": {
         "scored": 18,
         "correct": 18,
@@ -13132,9 +12934,9 @@
         },
         "dates": {
           "cases": 8,
-          "correct": 5,
+          "correct": 6,
           "falseAlarms": 2,
-          "misses": 1,
+          "misses": 0,
           "judgeRuled": 0
         },
         "negation": {
@@ -13209,9 +13011,9 @@
         },
         "non-english": {
           "cases": 8,
-          "correct": 3,
+          "correct": 4,
           "falseAlarms": 3,
-          "misses": 2,
+          "misses": 1,
           "judgeRuled": 0
         },
         "table-or-list": {
@@ -13344,21 +13146,6 @@
           "sentences": [
             {
               "sentence": "The tank holds 3 gallons.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
-          "id": "dates-3",
-          "category": "dates",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "The office reopened on 3 May 2024.",
-          "sentences": [
-            {
-              "sentence": "The office reopened on 3 May 2024.",
               "verdict": "supported",
               "lexicalReason": "supported"
             }
@@ -13925,21 +13712,6 @@
           ]
         },
         {
-          "id": "b2-non-english-2",
-          "category": "non-english",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "Der Zug fährt nicht jede Stunde.",
-          "sentences": [
-            {
-              "sentence": "Der Zug fährt nicht jede Stunde.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
           "id": "b2-non-english-3",
           "category": "non-english",
           "expected": "supported",
@@ -14063,12 +13835,12 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 93,
+        "correct": 95,
         "cases": 136,
-        "accuracy": 0.6838,
-        "accuracyInterval": [0.6015, 0.756],
+        "accuracy": 0.6985,
+        "accuracyInterval": [0.6168, 0.7693],
         "falseAlarms": 16,
-        "misses": 27,
+        "misses": 25,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -14105,9 +13877,9 @@
           },
           "dates": {
             "cases": 8,
-            "correct": 6,
+            "correct": 7,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -14182,9 +13954,9 @@
           },
           "non-english": {
             "cases": 8,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 2,
-            "misses": 2,
+            "misses": 1,
             "judgeRuled": 1
           },
           "table-or-list": {
@@ -14278,23 +14050,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -14820,23 +14575,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -14963,12 +14701,12 @@
         "costUSD": 0.0292
       },
       "claude-haiku-5-5": {
-        "correct": 93,
+        "correct": 95,
         "cases": 136,
-        "accuracy": 0.6838,
-        "accuracyInterval": [0.6015, 0.756],
+        "accuracy": 0.6985,
+        "accuracyInterval": [0.6168, 0.7693],
         "falseAlarms": 16,
-        "misses": 27,
+        "misses": 25,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -15005,9 +14743,9 @@
           },
           "dates": {
             "cases": 8,
-            "correct": 6,
+            "correct": 7,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -15082,9 +14820,9 @@
           },
           "non-english": {
             "cases": 8,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 2,
-            "misses": 2,
+            "misses": 1,
             "judgeRuled": 1
           },
           "table-or-list": {
@@ -15178,23 +14916,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -15720,23 +15441,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -15863,12 +15567,12 @@
         "costUSD": 0.0048
       },
       "claude-sonnet-5-5": {
-        "correct": 94,
+        "correct": 96,
         "cases": 136,
-        "accuracy": 0.6912,
-        "accuracyInterval": [0.6092, 0.7627],
+        "accuracy": 0.7059,
+        "accuracyInterval": [0.6245, 0.776],
         "falseAlarms": 15,
-        "misses": 27,
+        "misses": 25,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -15905,9 +15609,9 @@
           },
           "dates": {
             "cases": 8,
-            "correct": 6,
+            "correct": 7,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -15982,9 +15686,9 @@
           },
           "non-english": {
             "cases": 8,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 2,
-            "misses": 2,
+            "misses": 1,
             "judgeRuled": 1
           },
           "table-or-list": {
@@ -16078,23 +15782,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -16603,23 +16290,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -16746,12 +16416,12 @@
         "costUSD": 0.0855
       },
       "claude-opus-5-5": {
-        "correct": 94,
+        "correct": 96,
         "cases": 136,
-        "accuracy": 0.6912,
-        "accuracyInterval": [0.6092, 0.7627],
+        "accuracy": 0.7059,
+        "accuracyInterval": [0.6245, 0.776],
         "falseAlarms": 15,
-        "misses": 27,
+        "misses": 25,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -16788,9 +16458,9 @@
           },
           "dates": {
             "cases": 8,
-            "correct": 6,
+            "correct": 7,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -16865,9 +16535,9 @@
           },
           "non-english": {
             "cases": 8,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 2,
-            "misses": 2,
+            "misses": 1,
             "judgeRuled": 1
           },
           "table-or-list": {
@@ -16961,23 +16631,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -17486,23 +17139,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -17629,12 +17265,12 @@
         "costUSD": 0.179
       },
       "claude-fable-5-1": {
-        "correct": 94,
+        "correct": 96,
         "cases": 136,
-        "accuracy": 0.6912,
-        "accuracyInterval": [0.6092, 0.7627],
+        "accuracy": 0.7059,
+        "accuracyInterval": [0.6245, 0.776],
         "falseAlarms": 15,
-        "misses": 27,
+        "misses": 25,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -17671,9 +17307,9 @@
           },
           "dates": {
             "cases": 8,
-            "correct": 6,
+            "correct": 7,
             "falseAlarms": 1,
-            "misses": 1,
+            "misses": 0,
             "judgeRuled": 1
           },
           "negation": {
@@ -17748,9 +17384,9 @@
           },
           "non-english": {
             "cases": 8,
-            "correct": 4,
+            "correct": 5,
             "falseAlarms": 2,
-            "misses": 2,
+            "misses": 1,
             "judgeRuled": 1
           },
           "table-or-list": {
@@ -17844,23 +17480,6 @@
             "sentences": [
               {
                 "sentence": "The tank holds 3 gallons.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "dates-3",
-            "category": "dates",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The office reopened on 3 May 2024.",
-            "sentences": [
-              {
-                "sentence": "The office reopened on 3 May 2024.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -18369,23 +17988,6 @@
             ]
           },
           {
-            "id": "b2-non-english-2",
-            "category": "non-english",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "Der Zug fährt nicht jede Stunde.",
-            "sentences": [
-              {
-                "sentence": "Der Zug fährt nicht jede Stunde.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
             "id": "b2-non-english-3",
             "category": "non-english",
             "expected": "supported",
@@ -18523,8 +18125,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": false,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 387,
-      "totalCostUSD": 0.8005
+      "totalCalls": 391,
+      "totalCostUSD": 0.8093
     },
     "claude-haiku-5-5": {
       "pricesPerMTok": {
@@ -18540,8 +18142,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 387,
-      "totalCostUSD": 0.1783
+      "totalCalls": 391,
+      "totalCostUSD": 0.1814
     },
     "claude-sonnet-5-5": {
       "pricesPerMTok": {
@@ -18552,8 +18154,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 387,
-      "totalCostUSD": 2.1042
+      "totalCalls": 391,
+      "totalCostUSD": 2.1364
     },
     "claude-opus-5-5": {
       "pricesPerMTok": {
@@ -18564,8 +18166,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 387,
-      "totalCostUSD": 5.9534
+      "totalCalls": 391,
+      "totalCostUSD": 6.0527
     },
     "claude-fable-5-1": {
       "pricesPerMTok": {
@@ -18576,8 +18178,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 387,
-      "totalCostUSD": 14.4851
+      "totalCalls": 391,
+      "totalCostUSD": 14.7734
     }
   }
 }

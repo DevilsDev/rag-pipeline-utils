@@ -143,6 +143,13 @@ function renderVersions() {
     }
   }
 
+  // Hand review of every claim the lexical check flagged
+  const review = (r) => {
+    const l = r && r.lexical;
+    if (!l) return "-";
+    const left = r.flaggedByLexical - l.reviewed;
+    return `${r.flaggedByLexical}: ${l.true_problem} / ${l.false_alarm} / ${l.unclear}${left ? ` (${left} unreviewed)` : ""}`;
+  };
   const citeRows = [];
   for (const id of Object.keys(citations[1].models)) {
     const b = citations[0].models[id];
@@ -156,6 +163,8 @@ function renderVersions() {
       pair(bl.supportedShare, al.supportedShare, pct),
       pair(bl.verifiedShare, al.verifiedShare, pct),
       bj && aj ? pair(bj.supportedShare, aj.supportedShare, pct) : "-",
+      review(b.scifact.review),
+      review(a.scifact.review),
     ]);
   }
 
@@ -184,7 +193,7 @@ function renderVersions() {
     "",
     table(["Checked by", "Accuracy", "False alarms", "Misses"], edgeRows),
     "",
-    "Provider citations on SciFact (`verifyCitations`): the share of cited claims supported, and of answers whose every citation is supported, by the lexical check, then with the model as judge.",
+    'Provider citations on SciFact (`verifyCitations`): the share of cited claims supported, and of answers whose every citation is supported, by the lexical check, then with the model as judge; and every claim the lexical check flagged, hand-reviewed against the criteria in `benchmarks/fixtures/claude-citations-review.json` (flagged: real problems / false alarms / unclear). Of the 3.6 false alarms, 16 are new: the clause rule flags a claim whose subject the source names only in another, positive clause ("varenicline was not more effective than combination NRT" against "Varenicline was more effective than nicotine patch …, but was not more effective than combination NRT"), or whose framing clause ("Based on these data, …") has no negation.',
     "",
     table(
       [
@@ -193,6 +202,8 @@ function renderVersions() {
         "Claims supported",
         "Answers verified",
         "Claims supported, with judge",
+        "Flagged in 3.5.0",
+        "Flagged in 3.6",
       ],
       citeRows,
     ),

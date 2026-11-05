@@ -15,6 +15,13 @@ const { measure } = require("../../../scripts/measure-lexical-checks");
 
 /** Known misses, by case id, with why. Remove an id when a rule covers it. */
 const KNOWN_MISSES = {
+  // Found by the hand review of the 3.6 benchmark run (SciFact citations,
+  // RAGTruth): the clause rule wants every word the claim shares with only
+  // one clause of the source sentence to sit in a clause of the claim's
+  // polarity, so a subject named once, in the source's other clause, or a
+  // claim's framing clause without negation, fails the claim
+  "clause-07": "subject named only in the source's other, positive clause",
+  "clause-08": "the claim's framing clause has no negation",
   // Units: "2 kg" vs "2,000 grams" needs unit conversion; and the reverse
   // miss, a number that matches with a different unit ("2 pounds" against
   // "2 kilograms"), needs units compared too

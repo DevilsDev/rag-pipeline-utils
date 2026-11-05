@@ -75,3 +75,5 @@
 {"id":"ref-g4","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"The kinesin-5 motor slides microtubules apart.","source":"The kinesin-8 motor slides microtubules apart."}
 {"id":"ref-g5","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"Levels of IL-6 rose sharply after surgery.","source":"Levels of IL-8 rose sharply after surgery."}
 {"id":"ref-g6","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"Firmware FW-11 fixes the boot loop on older routers.","source":"The boot loop on older routers is fixed in firmware FW-12, released in spring."}
+{"id":"clause-07","category":"negated clause left out","kind":"false alarm","expected":"supported","claim":"The new drug was not better than the combined therapy.","source":"The new drug was better than placebo, better than the old drug, but was not better than the combined therapy."}
+{"id":"clause-08","category":"negated clause left out","kind":"false alarm","expected":"supported","claim":"Based on these results, the diet does not improve sleep in adults.","source":"In these results the diet does not improve sleep in adults."}
