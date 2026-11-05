@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T01:34:34.099Z",
+  "createdAt": "2026-11-05T01:49:03.043Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "af751dc",
+    "commit": "d0366ab",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -129,7 +129,7 @@
       },
       "latencyMs": {
         "p50": 3.2,
-        "p95": 10.9
+        "p95": 10.7
       }
     },
     "models": {
@@ -246,12 +246,12 @@
         "costUSD": 0.7713,
         "costPer1000ChecksUSD": 1.71,
         "latencyMs": {
-          "p50": 1985.7,
-          "p95": 4434.7
+          "p50": 1984.1,
+          "p95": 4431.6
         },
         "latencyMsWithCall": {
-          "p50": 2442.8,
-          "p95": 4542.8
+          "p50": 2438.4,
+          "p95": 4543.1
         },
         "sentences": {
           "sentences": 3263,
@@ -291,20 +291,20 @@
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1152,
-              "labelledUnsupported": 215,
+              "sentences": 1420,
+              "labelledUnsupported": 226,
               "judgeSupported": 665,
               "judgeSupportedButLabelledUnsupported": 33
             },
             "number_mismatch": {
-              "sentences": 296,
+              "sentences": 293,
               "labelledUnsupported": 79,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 500,
-              "labelledUnsupported": 21,
+              "sentences": 235,
+              "labelledUnsupported": 10,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -424,12 +424,12 @@
         "costUSD": 0.1735,
         "costPer1000ChecksUSD": 0.39,
         "latencyMs": {
-          "p50": 2708.7,
-          "p95": 6367
+          "p50": 2704.4,
+          "p95": 6367.2
         },
         "latencyMsWithCall": {
-          "p50": 3353.8,
-          "p95": 6558.2
+          "p50": 3346.1,
+          "p95": 6556
         },
         "sentences": {
           "sentences": 3263,
@@ -469,20 +469,20 @@
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1210,
-              "labelledUnsupported": 224,
+              "sentences": 1420,
+              "labelledUnsupported": 226,
               "judgeSupported": 489,
               "judgeSupportedButLabelledUnsupported": 8
             },
             "number_mismatch": {
-              "sentences": 296,
+              "sentences": 293,
               "labelledUnsupported": 79,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 442,
-              "labelledUnsupported": 12,
+              "sentences": 235,
+              "labelledUnsupported": 10,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -602,12 +602,12 @@
         "costUSD": 2.0186,
         "costPer1000ChecksUSD": 4.49,
         "latencyMs": {
-          "p50": 2442,
-          "p95": 4569.7
+          "p50": 2441.9,
+          "p95": 4565.1
         },
         "latencyMsWithCall": {
-          "p50": 2873.7,
-          "p95": 4790.3
+          "p50": 2867.8,
+          "p95": 4786.4
         },
         "sentences": {
           "sentences": 3263,
@@ -647,20 +647,20 @@
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1219,
-              "labelledUnsupported": 225,
+              "sentences": 1420,
+              "labelledUnsupported": 226,
               "judgeSupported": 453,
               "judgeSupportedButLabelledUnsupported": 6
             },
             "number_mismatch": {
-              "sentences": 296,
+              "sentences": 293,
               "labelledUnsupported": 79,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 433,
-              "labelledUnsupported": 11,
+              "sentences": 235,
+              "labelledUnsupported": 10,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -778,12 +778,12 @@
         "costUSD": 5.7744,
         "costPer1000ChecksUSD": 12.83,
         "latencyMs": {
-          "p50": 4221.8,
-          "p95": 9769
+          "p50": 4219,
+          "p95": 9763.9
         },
         "latencyMsWithCall": {
-          "p50": 4972.6,
-          "p95": 10288.5
+          "p50": 4968.2,
+          "p95": 10279.9
         },
         "sentences": {
           "sentences": 3263,
@@ -823,20 +823,20 @@
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1222,
-              "labelledUnsupported": 224,
+              "sentences": 1420,
+              "labelledUnsupported": 226,
               "judgeSupported": 441,
               "judgeSupportedButLabelledUnsupported": 5
             },
             "number_mismatch": {
-              "sentences": 296,
+              "sentences": 293,
               "labelledUnsupported": 79,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 430,
-              "labelledUnsupported": 12,
+              "sentences": 235,
+              "labelledUnsupported": 10,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -954,12 +954,12 @@
         "costUSD": 14.0764,
         "costPer1000ChecksUSD": 31.28,
         "latencyMs": {
-          "p50": 3204.7,
-          "p95": 14722.9
+          "p50": 3212.5,
+          "p95": 14719.4
         },
         "latencyMsWithCall": {
-          "p50": 4416.5,
-          "p95": 14869.8
+          "p50": 4413,
+          "p95": 14889.6
         },
         "sentences": {
           "sentences": 3263,
@@ -999,20 +999,20 @@
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1188,
-              "labelledUnsupported": 222,
+              "sentences": 1420,
+              "labelledUnsupported": 226,
               "judgeSupported": 557,
               "judgeSupportedButLabelledUnsupported": 11
             },
             "number_mismatch": {
-              "sentences": 298,
+              "sentences": 293,
               "labelledUnsupported": 79,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 462,
-              "labelledUnsupported": 14,
+              "sentences": 235,
+              "labelledUnsupported": 10,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -6899,97 +6899,113 @@
           "cases": 5,
           "correct": 2,
           "falseAlarms": 3,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "numbers-words-digits": {
           "cases": 5,
           "correct": 5,
           "falseAlarms": 0,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "units-conversions": {
           "cases": 5,
           "correct": 1,
           "falseAlarms": 3,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "percentages-ranges": {
           "cases": 5,
           "correct": 5,
           "falseAlarms": 0,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "dates": {
           "cases": 5,
           "correct": 3,
           "falseAlarms": 1,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "negation": {
           "cases": 6,
           "correct": 5,
           "falseAlarms": 0,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "partial-support": {
           "cases": 4,
           "correct": 3,
           "falseAlarms": 0,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "two-sources": {
           "cases": 4,
           "correct": 2,
           "falseAlarms": 1,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "contradicting-sources": {
           "cases": 4,
           "correct": 2,
           "falseAlarms": 1,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "entity-swap": {
           "cases": 4,
           "correct": 1,
           "falseAlarms": 0,
-          "misses": 3
+          "misses": 3,
+          "judgeRuled": 0
         },
         "hedged": {
           "cases": 4,
           "correct": 2,
           "falseAlarms": 0,
-          "misses": 2
+          "misses": 2,
+          "judgeRuled": 0
         },
         "long-source": {
           "cases": 4,
           "correct": 2,
           "falseAlarms": 1,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         },
         "short-answer": {
           "cases": 4,
           "correct": 3,
           "falseAlarms": 1,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "mixed-multi-sentence": {
           "cases": 4,
           "correct": 4,
           "falseAlarms": 0,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "injection-in-source": {
           "cases": 4,
           "correct": 4,
           "falseAlarms": 0,
-          "misses": 0
+          "misses": 0,
+          "judgeRuled": 0
         },
         "non-english": {
           "cases": 5,
           "correct": 2,
           "falseAlarms": 2,
-          "misses": 1
+          "misses": 1,
+          "judgeRuled": 0
         }
       },
       "failures": [
@@ -7408,97 +7424,113 @@
             "cases": 5,
             "correct": 4,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 4
           },
           "numbers-words-digits": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "units-conversions": {
             "cases": 5,
             "correct": 2,
             "falseAlarms": 2,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "dates": {
             "cases": 5,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "negation": {
             "cases": 6,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "partial-support": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "two-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "contradicting-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "entity-swap": {
             "cases": 4,
             "correct": 1,
             "falseAlarms": 0,
-            "misses": 3
+            "misses": 3,
+            "judgeRuled": 0
           },
           "hedged": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 0,
-            "misses": 2
+            "misses": 2,
+            "judgeRuled": 0
           },
           "long-source": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "short-answer": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "mixed-multi-sentence": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 1
           },
           "injection-in-source": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "non-english": {
             "cases": 5,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           }
         },
         "failures": [
@@ -7873,97 +7905,113 @@
             "cases": 5,
             "correct": 4,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 4
           },
           "numbers-words-digits": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "units-conversions": {
             "cases": 5,
             "correct": 2,
             "falseAlarms": 2,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "dates": {
             "cases": 5,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "negation": {
             "cases": 6,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "partial-support": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "two-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "contradicting-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "entity-swap": {
             "cases": 4,
             "correct": 1,
             "falseAlarms": 0,
-            "misses": 3
+            "misses": 3,
+            "judgeRuled": 0
           },
           "hedged": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 0,
-            "misses": 2
+            "misses": 2,
+            "judgeRuled": 0
           },
           "long-source": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "short-answer": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "mixed-multi-sentence": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 1
           },
           "injection-in-source": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "non-english": {
             "cases": 5,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           }
         },
         "failures": [
@@ -8338,97 +8386,113 @@
             "cases": 5,
             "correct": 4,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 4
           },
           "numbers-words-digits": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "units-conversions": {
             "cases": 5,
             "correct": 2,
             "falseAlarms": 2,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "dates": {
             "cases": 5,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "negation": {
             "cases": 6,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "partial-support": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "two-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "contradicting-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "entity-swap": {
             "cases": 4,
             "correct": 1,
             "falseAlarms": 0,
-            "misses": 3
+            "misses": 3,
+            "judgeRuled": 0
           },
           "hedged": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 0,
-            "misses": 2
+            "misses": 2,
+            "judgeRuled": 0
           },
           "long-source": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "short-answer": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "mixed-multi-sentence": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 1
           },
           "injection-in-source": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "non-english": {
             "cases": 5,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           }
         },
         "failures": [
@@ -8820,97 +8884,113 @@
             "cases": 5,
             "correct": 4,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 4
           },
           "numbers-words-digits": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "units-conversions": {
             "cases": 5,
             "correct": 2,
             "falseAlarms": 2,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "dates": {
             "cases": 5,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "negation": {
             "cases": 6,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "partial-support": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "two-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "contradicting-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "entity-swap": {
             "cases": 4,
             "correct": 1,
             "falseAlarms": 0,
-            "misses": 3
+            "misses": 3,
+            "judgeRuled": 0
           },
           "hedged": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 0,
-            "misses": 2
+            "misses": 2,
+            "judgeRuled": 0
           },
           "long-source": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "short-answer": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "mixed-multi-sentence": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 1
           },
           "injection-in-source": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "non-english": {
             "cases": 5,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           }
         },
         "failures": [
@@ -9285,97 +9365,113 @@
             "cases": 5,
             "correct": 4,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 4
           },
           "numbers-words-digits": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "units-conversions": {
             "cases": 5,
             "correct": 2,
             "falseAlarms": 2,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 5,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 0
           },
           "dates": {
             "cases": 5,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "negation": {
             "cases": 6,
             "correct": 5,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "partial-support": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "two-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "contradicting-sources": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 0
           },
           "entity-swap": {
             "cases": 4,
             "correct": 1,
             "falseAlarms": 0,
-            "misses": 3
+            "misses": 3,
+            "judgeRuled": 0
           },
           "hedged": {
             "cases": 4,
             "correct": 2,
             "falseAlarms": 0,
-            "misses": 2
+            "misses": 2,
+            "judgeRuled": 0
           },
           "long-source": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 0,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           },
           "short-answer": {
             "cases": 4,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "mixed-multi-sentence": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 1
           },
           "injection-in-source": {
             "cases": 4,
             "correct": 4,
             "falseAlarms": 0,
-            "misses": 0
+            "misses": 0,
+            "judgeRuled": 2
           },
           "non-english": {
             "cases": 5,
             "correct": 3,
             "falseAlarms": 1,
-            "misses": 1
+            "misses": 1,
+            "judgeRuled": 1
           }
         },
         "failures": [

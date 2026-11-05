@@ -294,7 +294,7 @@ async function mutationTest(responses, documentsById) {
     r.normalized.claims.forEach((claim) => {
       const passages = claim.citations.flatMap((c) => c.passages);
       if (passages.length === 0) return;
-      pool.push({ r, claim, passages });
+      pool.push({ r, claim: { ...claim, queryId: r.id }, passages });
     });
   });
   const baseline = [];
@@ -314,7 +314,8 @@ async function mutationTest(responses, documentsById) {
     counts[key][1] += 1;
     if (v.verdict !== "supported") counts[key][0] += 1;
     else if (missed[key].length < 5) {
-      missed[key].push({ original: original.text, mutated: claim.text });
+      // The SciFact query id only: claim text quotes CC BY-SA abstracts
+      missed[key].push({ query: original.queryId });
     }
   };
   for (let i = 0; i < supported.length; i++) {
@@ -485,6 +486,7 @@ function scoreEdge(cases, responses, model, overrides = {}) {
       modelCorrectAutomatic: 0,
       lexical: empty(),
       judge: empty(),
+      judgeVerifiedOnly: empty(),
     });
     cat.cases += 1;
     if (correct) cat.modelCorrect += 1;
@@ -502,6 +504,19 @@ function scoreEdge(cases, responses, model, overrides = {}) {
       cat[key][outcome] += 1;
       outcomes[key] = outcome;
     }
+    // The library's own rule: verified or not, uncited sentences aside
+    {
+      const flagged = !r.judge.verified;
+      const outcome = correct
+        ? flagged
+          ? "falseAlarm"
+          : "passed"
+        : flagged
+          ? "caught"
+          : "missed";
+      cat.judgeVerifiedOnly[outcome] += 1;
+      outcomes.judgeVerifiedOnly = outcome;
+    }
     examples.push({
       id: c.id,
       citedClaims: r.lexical.claims.length,
@@ -517,6 +532,7 @@ function scoreEdge(cases, responses, model, overrides = {}) {
       ...(override && { handCheck: override.note }),
       lexical: outcomes.lexical,
       judge: outcomes.judge,
+      judgeVerifiedOnly: outcomes.judgeVerifiedOnly,
       answer: text,
       claims: r.judge.claims.map((k, j) => ({
         text: k.text,
@@ -552,6 +568,12 @@ function scoreEdge(cases, responses, model, overrides = {}) {
       missed: total("judge", "missed"),
       falseAlarm: total("judge", "falseAlarm"),
       passed: total("judge", "passed"),
+    },
+    judgeVerifiedOnly: {
+      caught: total("judgeVerifiedOnly", "caught"),
+      missed: total("judgeVerifiedOnly", "missed"),
+      falseAlarm: total("judgeVerifiedOnly", "falseAlarm"),
+      passed: total("judgeVerifiedOnly", "passed"),
     },
     categories,
     examples,

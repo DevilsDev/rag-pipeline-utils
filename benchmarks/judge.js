@@ -233,7 +233,10 @@ function sentenceAnalysis(rows, sample, model) {
     verdicts.forEach((v, i) => {
       sentences += 1;
       // The lexical run and the judge run's lexical reasons must agree
-      if ((v.lexicalReason !== "supported") !== lexicalSet.has(v.sentence)) {
+      if (
+        (r.lexicalReasons[i] !== "supported") !==
+        lexicalSet.has(v.sentence)
+      ) {
         mismatched += 1;
       }
       if (!ranges[i]) {
@@ -246,7 +249,9 @@ function sentenceAnalysis(rows, sample, model) {
       const cell = (flag) => (gold ? (flag ? "tp" : "fn") : flag ? "fp" : "tn");
       lexical[cell(lexFlag)] += 1;
       judgedCounts[cell(judgeFlag)] += 1;
-      const row = (reasons[v.lexicalReason] = reasons[v.lexicalReason] || {
+      // Why the lexical check failed it, with no model involved
+      const reason = r.lexicalReasons[i];
+      const row = (reasons[reason] = reasons[reason] || {
         sentences: 0,
         labelledUnsupported: 0,
         judgeSupported: 0,
@@ -301,8 +306,10 @@ function scoreEdge(cases, results) {
       correct: 0,
       falseAlarms: 0,
       misses: 0,
+      judgeRuled: 0,
     });
     cat.cases += 1;
+    if (r.verdicts.some((v) => v.decidedBy === "judge")) cat.judgeRuled += 1;
     if (r.verdict === c.expected) cat.correct += 1;
     else {
       const kind = c.expected === "supported" ? "false_alarm" : "miss";

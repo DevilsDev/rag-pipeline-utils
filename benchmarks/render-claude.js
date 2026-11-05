@@ -301,6 +301,15 @@ function renderJudge(report) {
     }
   }
   parts.push(
+    (() => {
+      const inj = models.map(
+        (id) => report.edge.models[id].categories["injection-in-source"],
+      );
+      return inj.every(Boolean)
+        ? `The judge ruled on ${inj.map((c) => c.judgeRuled).join(", ")} of the ${inj[0].cases} \`injection-in-source\` cases (${models.map(nameOf).join(", ")}); the others never reach it.`
+        : "";
+    })(),
+    "",
     "Every edge case that at least one configuration got wrong, with the lexical reason recorded for its sentences:",
     "",
     table(
@@ -353,6 +362,7 @@ function renderClaudeCitations(report) {
         "Supported, + judge",
         "Answers verified, lexical",
         "Answers verified, + judge",
+        "Verified of answers not refused, + judge",
         "Uncited sentences (answers with any)",
         "Temperature",
         "Cost",
@@ -369,6 +379,11 @@ function renderClaudeCitations(report) {
           `${s.judge.supported} (${pct(s.judge.supportedShare)})`,
           `${s.lexical.verifiedAnswers} (${pct(s.lexical.verifiedShare)})`,
           `${s.judge.verifiedAnswers} (${pct(s.judge.verifiedShare)})`,
+          (() => {
+            const answered =
+              s.answers.calls - (s.answers.stopReasons.refusal || 0);
+            return `${s.judge.verifiedAnswers} / ${answered} (${pct(answered ? s.judge.verifiedAnswers / answered : null)})`;
+          })(),
           `${s.answers.uncitedSentences} (${s.answers.answersWithUncitedSentences})`,
           m.temperature === 0 ? "0" : "not sent",
           usd(s.costUSD),
@@ -435,7 +450,12 @@ function renderClaudeCitations(report) {
       }),
     ),
     "",
-    "**Mutations** of the claims the lexical check supports, checked one claim at a time with no API call: caught / applicable. The first row is the same check on the unmutated claims (the share flagged).",
+    (() => {
+      const rates = models.map(
+        (id) => report.models[id].scifact.mutation.unmutatedFlagged.rate,
+      );
+      return `**Mutations** of the claims the lexical check supports, checked one claim at a time with no API call: caught / applicable. The first row is the same check on the unmutated claims: ${pct(Math.min(...rates))} to ${pct(Math.max(...rates))} of each model's cited claims are flagged.`;
+    })(),
     "",
     table(
       ["Change", ...models.map(nameOf)],
@@ -464,7 +484,7 @@ function renderClaudeCitations(report) {
   // Edge cases
   const cats = Object.keys(report.models[models[0]].edge.categories);
   parts.push(
-    `**Edge cases**: ${report.models[models[0]].edge.cases} cases in \`${report.edgeFile}\`, committed before any model saw them. Prompt: the question, then "Answer using only the documents above." A model's answer is correct when it matches the case's patterns, corrected by a hand check where the patterns are wrong (\`benchmarks/fixtures/citation-edge-review.json\`: ${models.reduce((n, id) => n + report.models[id].edge.labelsOverriddenByHand, 0)} labels, all in \`instruction-in-document\`, where the patterns also matched answers that report the injected instruction while refusing it). The library flags an answer when \`verifyCitations\` does not verify it or finds sentences with no citation. Per category: model correct / cases; then, with the judge, caught / missed / false alarm.`,
+    `**Edge cases**: ${report.models[models[0]].edge.cases} cases in \`${report.edgeFile}\`, committed before any model saw them. Prompt: the question, then "Answer using only the documents above." A model's answer is correct when it matches the case's patterns, corrected by a hand check where the patterns are wrong (\`benchmarks/fixtures/citation-edge-review.json\`: ${models.reduce((n, id) => n + report.models[id].edge.labelsOverriddenByHand, 0)} labels, all in \`instruction-in-document\`, where the patterns also matched answers that report the injected instruction while refusing it). Benchmark rule: the library flags an answer when \`verifyCitations\` does not verify it or finds any sentence with no citation (\`verified\` itself ignores uncited sentences). Per category: model correct / cases; then, with the judge, caught / missed / false alarm under that rule. The last row counts by \`verified\` alone.`,
     "",
     table(
       ["Category", ...models.map(nameOf)],
@@ -481,6 +501,13 @@ function renderClaudeCitations(report) {
           ...models.map((id) => {
             const e = report.models[id].edge;
             return `**${e.modelCorrect}/${e.cases}**; ${e.judge.caught} / ${e.judge.missed} / ${e.judge.falseAlarm}`;
+          }),
+        ],
+        [
+          "All, by `verified` alone",
+          ...models.map((id) => {
+            const v = report.models[id].edge.judgeVerifiedOnly;
+            return `${v.caught} / ${v.missed} / ${v.falseAlarm}`;
           }),
         ],
       ],
