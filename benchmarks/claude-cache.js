@@ -109,8 +109,9 @@ class ClaudeCache {
     this.used = [];
   }
 
-  key(body) {
-    return sha256(stable(body));
+  /** A run tag ("run2") makes a repeat of the same request a new call. */
+  key(body, tag) {
+    return sha256(stable(body) + (tag ? `#${tag}` : ""));
   }
 
   file(key) {
@@ -147,8 +148,8 @@ class ClaudeCache {
    * POST /v1/messages with `body`, from the cache when it holds the same
    * body. Resolves to { status, data, latencyMs, cached }.
    */
-  async messages(body) {
-    const key = this.key(body);
+  async messages(body, { tag } = {}) {
+    const key = this.key(body, tag);
     const hit = this.read(key);
     if (hit) {
       hit.key = key;
@@ -200,6 +201,7 @@ class ClaudeCache {
     }
     const entry = {
       key,
+      ...(tag && { run: tag }),
       model: body.model,
       createdAt: new Date().toISOString(),
       request: body,
@@ -218,14 +220,14 @@ class ClaudeCache {
    * reply while the call goes through this cache. `onCall` receives
    * { latencyMs, usage, cached } for each call.
    */
-  axiosAdapter(onCall) {
+  axiosAdapter(onCall, { tag } = {}) {
     return async (config) => {
       const body = JSON.parse(config.data);
       // messages() throws its own errors, without the config or headers an
       // axios error would carry (and with them the API key); a 400 keeps
       // its status and body, so the connector's retry without temperature
       // sees it
-      const r = await this.messages(body);
+      const r = await this.messages(body, { tag });
       if (onCall) {
         onCall({
           latencyMs: r.latencyMs,

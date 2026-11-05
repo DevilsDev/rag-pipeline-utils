@@ -168,4 +168,77 @@ function sampleRagTruth(cases, { perClass = 75, seed = 20261105 } = {}) {
   return out;
 }
 
-module.exports = { loadRagTruth, sampleRagTruth, mulberry32, shuffle };
+/**
+ * HaluEval, qa config (Li et al., EMNLP 2023), as repackaged in
+ * pminervini/HaluEval: 10,000 HotpotQA questions, each with a Wikipedia
+ * knowledge snippet, the right answer and a hallucinated answer that
+ * ChatGPT wrote to be plausible. Apache-2.0 on the card; upstream
+ * RUCAIBox/HaluEval is MIT. Used, not redistributed.
+ */
+const HALUEVAL = {
+  dataset: "HaluEval qa, pminervini/HaluEval",
+  license:
+    "Apache-2.0 (dataset card); upstream RUCAIBox/HaluEval is MIT; used, not redistributed",
+  revision: "12a856119f03975a94509091e8cada3e6be6ead7",
+  file: "qa/data-00000-of-00001.parquet",
+  sha256: "1b7118e6dcc3881e5fc87b77b48d9334f0a24d51073ea9dc05baf5a74814580f",
+};
+
+async function loadHaluEvalQA(dir = DEFAULT_DIR) {
+  const { parquetReadObjects } = await import("hyparquet");
+  const file = path.join(dir, "halueval-qa.parquet");
+  const url = `https://huggingface.co/datasets/pminervini/HaluEval/resolve/${HALUEVAL.revision}/${HALUEVAL.file}`;
+  if (!fs.existsSync(file)) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Download failed (${res.status}): ${url}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (sha256(buffer) !== HALUEVAL.sha256) {
+      throw new Error(`${HALUEVAL.file} does not match its pinned SHA-256`);
+    }
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, buffer);
+  }
+  const buffer = fs.readFileSync(file);
+  if (sha256(buffer) !== HALUEVAL.sha256) {
+    throw new Error(`${file} does not match its pinned SHA-256; delete it`);
+  }
+  const rows = await parquetReadObjects({
+    file: buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    ),
+  });
+  return { source: HALUEVAL, rows };
+}
+
+/**
+ * 2 x `half` cases: a seeded shuffle of the rows; the first `half` give
+ * their right answer (supported), the next `half` their hallucinated
+ * answer (unsupported), so no question appears twice.
+ */
+function sampleHaluEval(rows, { half = 250, seed = 20261107 } = {}) {
+  const order = shuffle(
+    rows.map((r, i) => ({ ...r, index: i })),
+    mulberry32(seed),
+  );
+  const make = (r, hallucinated) => ({
+    id: `halueval-qa-${r.index}`,
+    question: r.question,
+    answer: String(hallucinated ? r.hallucinated_answer : r.right_answer),
+    sources: [{ id: "1", content: r.knowledge }],
+    hallucinated,
+  });
+  return [
+    ...order.slice(0, half).map((r) => make(r, false)),
+    ...order.slice(half, 2 * half).map((r) => make(r, true)),
+  ];
+}
+
+module.exports = {
+  loadRagTruth,
+  sampleRagTruth,
+  loadHaluEvalQA,
+  sampleHaluEval,
+  mulberry32,
+  shuffle,
+};

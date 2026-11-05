@@ -1,0 +1,121 @@
+{
+  "benchmark": "claude-latency",
+  "createdAt": "2026-11-05T03:47:14.045Z",
+  "environment": {
+    "libraryVersion": "3.4.0",
+    "commit": "1654599",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "plan": "benchmarks/fixtures/claude-bench-plan.md",
+  "setup": {
+    "queries": 30,
+    "corpus": 90,
+    "topK": 3,
+    "maxTokens": "AnthropicConnector default",
+    "warmup": 1,
+    "note": "One machine, one network, one date; times include retrieval and the network round trip to api.anthropic.com."
+  },
+  "models": {
+    "claude-haiku-4-5-20251001": {
+      "runs": 30,
+      "firstTokenMs": {
+        "p50": 678,
+        "p95": 933
+      },
+      "totalMs": {
+        "p50": 3006,
+        "p95": 3975
+      },
+      "noFirstToken": 0,
+      "answerCharsP50": 1111,
+      "outputTokensP50": 263,
+      "calls": 31,
+      "costUSD": 0.0796,
+      "date": "2026-11-05"
+    },
+    "claude-haiku-5-5": {
+      "runs": 30,
+      "firstTokenMs": {
+        "p50": 2038,
+        "p95": 2953
+      },
+      "totalMs": {
+        "p50": 3850,
+        "p95": 5439
+      },
+      "noFirstToken": 0,
+      "answerCharsP50": 1196,
+      "outputTokensP50": 744,
+      "calls": 31,
+      "costUSD": 0.0169,
+      "date": "2026-11-05"
+    },
+    "claude-sonnet-5-5": {
+      "runs": 30,
+      "firstTokenMs": {
+        "p50": 1050,
+        "p95": 2066
+      },
+      "totalMs": {
+        "p50": 4730,
+        "p95": 6352
+      },
+      "noFirstToken": 0,
+      "answerCharsP50": 1519,
+      "outputTokensP50": 563,
+      "calls": 31,
+      "costUSD": 0.294,
+      "date": "2026-11-05"
+    },
+    "claude-opus-5-5": {
+      "runs": 30,
+      "firstTokenMs": {
+        "p50": 2840,
+        "p95": 4121
+      },
+      "totalMs": {
+        "p50": 8315,
+        "p95": 10874
+      },
+      "noFirstToken": 3,
+      "answerCharsP50": 1720,
+      "outputTokensP50": 828,
+      "calls": 31,
+      "costUSD": 0.6947,
+      "date": "2026-11-05"
+    },
+    "claude-fable-5-1": {
+      "runs": 30,
+      "firstTokenMs": {
+        "p50": 2732,
+        "p95": 5297
+      },
+      "totalMs": {
+        "p50": 9299,
+        "p95": 14099
+      },
+      "noFirstToken": 7,
+      "answerCharsP50": 1641,
+      "outputTokensP50": 786,
+      "calls": 31,
+      "costUSD": 1.5185,
+      "date": "2026-11-05"
+    }
+  },
+  "runs": [
+    {
+      "createdAt": "2026-11-05T03:15:58.173Z",
+      "models": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-5-5",
+        "claude-fable-5-1"
+      ]
+    },
+    {
+      "createdAt": "2026-11-05T03:47:14.045Z",
+      "models": ["claude-haiku-5-5", "claude-sonnet-5-5"]
+    }
+  ]
+}

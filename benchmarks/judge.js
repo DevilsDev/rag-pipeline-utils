@@ -72,6 +72,12 @@ const SEED = Number(args.seed || 20261105);
 const CONCURRENCY = Number(args.concurrency || 4);
 const MAX_TOKENS = Number(args["max-tokens"] || 2000);
 const EDGE_FILE = path.join(__dirname, "fixtures", "judge-edge-cases.jsonl");
+// The second batch (benchmarks/fixtures/claude-bench-plan.md)
+const EDGE_FILE_2 = path.join(
+  __dirname,
+  "fixtures",
+  "judge-edge-cases-2.jsonl",
+);
 
 const round1 = (x) => Number(x.toFixed(1));
 const latency = (values) => ({
@@ -82,14 +88,15 @@ const latency = (values) => ({
 /** A judge that never answers: checkAnswer keeps its lexical verdicts and reports why. */
 const SILENT_JUDGE = { generate: async () => "[]" };
 
-function makeJudge(cache, model, calls) {
+function makeJudge(cache, model, calls, tag) {
   const judge = new AnthropicConnector({
     apiKey: cache.apiKey || "cached",
     model,
     maxTokens: MAX_TOKENS,
   });
-  judge.client.defaults.adapter = cache.axiosAdapter((call) =>
-    calls.push(call),
+  judge.client.defaults.adapter = cache.axiosAdapter(
+    (call) => calls.push(call),
+    { tag },
   );
   return judge;
 }
@@ -102,14 +109,14 @@ process.on("warning", (w) => {
   if (model) temperatureDropped.add(model);
 });
 
-async function judged(c, cache, model) {
+async function judged(c, cache, model, tag) {
   const calls = [];
   const t0 = performance.now();
   const check = await checkAnswer({
     answer: c.answer,
     sources: c.sources,
     evaluate: false,
-    judge: makeJudge(cache, model, calls),
+    judge: makeJudge(cache, model, calls, tag),
   });
   const wallMs = performance.now() - t0;
   // Latency per check: local work plus the API call as it was measured
@@ -255,8 +262,8 @@ function sentenceAnalysis(rows, sample, model) {
 
 // --- Edge cases ------------------------------------------------------------
 
-function loadEdgeCases() {
-  const text = fs.readFileSync(EDGE_FILE, "utf8");
+function loadEdgeCases(file = EDGE_FILE) {
+  const text = fs.readFileSync(file, "utf8");
   return text
     .split(/\r?\n/)
     .filter((l) => l.trim())
@@ -337,6 +344,8 @@ async function main() {
   const { cases, source } = await loadRagTruth(args["data-dir"]);
   const sample = sampleRagTruth(cases, { perClass: PER_CLASS, seed: SEED });
   const edge = loadEdgeCases();
+  const edge2 = loadEdgeCases(EDGE_FILE_2);
+  const edgeAll = [...edge, ...edge2];
   const lexicalOnly = Boolean(args["lexical-only"]);
   const { apiKey } = lexicalOnly ? { apiKey: null } : liveAnthropic();
   const cache = new ClaudeCache({ apiKey, capUSD: Number(args.cap || 90) });
@@ -372,7 +381,7 @@ async function main() {
     });
   }
   const edgeLexical = [];
-  for (const c of edge) {
+  for (const c of edgeAll) {
     const check = await checkAnswer({
       answer: c.answer,
       sources: c.sources,
@@ -416,7 +425,19 @@ async function main() {
     edge: {
       file: "benchmarks/fixtures/judge-edge-cases.jsonl",
       cases: edge.length,
-      lexical: scoreEdge(edge, edgeLexical),
+      lexical: scoreEdge(edge, edgeLexical.slice(0, edge.length)),
+      models: {},
+    },
+    edge2: {
+      file: "benchmarks/fixtures/judge-edge-cases-2.jsonl",
+      cases: edge2.length,
+      lexical: scoreEdge(edge2, edgeLexical.slice(edge.length)),
+      models: {},
+    },
+    edgeAll: {
+      file: "both batches",
+      cases: edgeAll.length,
+      lexical: scoreEdge(edgeAll, edgeLexical),
       models: {},
     },
     models: {},
@@ -437,7 +458,7 @@ async function main() {
     });
     const ragEntries = cache.used.slice(ragStart);
     const edgeStart = cache.used.length;
-    const edgeResults = await mapLimit(edge, CONCURRENCY, async (c) => {
+    const edgeResults = await mapLimit(edgeAll, CONCURRENCY, async (c) => {
       const r = await judged(c, cache, model);
       return {
         verdict: r.grounded ? "supported" : "unsupported",
@@ -514,13 +535,25 @@ async function main() {
       ),
       sentences: sentenceAnalysis(rows, sample, model),
     };
-    report.edge.models[model] = {
-      ...scoreEdge(edge, edgeResults),
-      calls: edgeResults.reduce((n, r) => n + r.calls, 0),
-      errors: edgeResults.filter((r) => r.error).length,
-      ...usage(edgeEntries),
-      costUSD: cost(edgeEntries),
-    };
+    const edgeSection = (cases, results, entries) => ({
+      ...scoreEdge(cases, results),
+      calls: results.reduce((n, r) => n + r.calls, 0),
+      errors: results.filter((r) => r.error).length,
+      ...(entries && { ...usage(entries), costUSD: cost(entries) }),
+    });
+    report.edge.models[model] = edgeSection(
+      edge,
+      edgeResults.slice(0, edge.length),
+    );
+    report.edge2.models[model] = edgeSection(
+      edge2,
+      edgeResults.slice(edge.length),
+    );
+    report.edgeAll.models[model] = edgeSection(
+      edgeAll,
+      edgeResults,
+      edgeEntries,
+    );
 
     const m = report.ragtruth.models[model].metrics.all.unsupported;
     const e = report.edge.models[model];
@@ -575,8 +608,22 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  // Never print an error object: an HTTP client error can carry the API key
-  console.error(error && error.message ? error.message : "failed");
-  process.exit(1);
-});
+module.exports = {
+  makeJudge,
+  judged,
+  responseMetrics,
+  byTask,
+  latency,
+  temperatureDropped,
+  SILENT_JUDGE,
+  overlapsAny,
+  locate,
+};
+
+if (require.main === module) {
+  main().catch((error) => {
+    // Never print an error object: an HTTP client error can carry the API key
+    console.error(error && error.message ? error.message : "failed");
+    process.exit(1);
+  });
+}

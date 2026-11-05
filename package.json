@@ -99,6 +99,8 @@
     "bench:guardrails": "node benchmarks/guardrails.js",
     "bench:judge": "node benchmarks/judge.js",
     "bench:claude-citations": "node benchmarks/claude-citations.js",
+    "bench:judge-more": "node benchmarks/judge-more.js",
+    "bench:claude-latency": "node benchmarks/claude-latency.js",
     "dev": "node scripts/dev-tools.js menu",
     "dev:health": "node scripts/dev-tools.js health",
     "dev:setup": "node scripts/dev-tools.js setup",

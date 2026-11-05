@@ -77,7 +77,18 @@ const DEFAULT_MODELS = [
   "claude-fable-5-1",
 ];
 const MODELS = args.models ? args.models.split(",") : DEFAULT_MODELS;
-const QUERIES = Number(args.queries || 50);
+// Claims per model (benchmarks/fixtures/claude-bench-plan.md); --queries
+// sets one number for every model
+const QUERIES_FOR = {
+  "claude-haiku-4-5-20251001": 150,
+  "claude-haiku-5-5": 150,
+  "claude-sonnet-5-5": 150,
+  "claude-opus-5-5": 100,
+  "claude-fable-5-1": 100,
+};
+const queriesFor = (model) => Number(args.queries || QUERIES_FOR[model] || 50);
+// Every model is also reported on the first SHARED claims
+const SHARED = 100;
 const SEED = Number(args.seed || 20261105);
 const CONCURRENCY = Number(args.concurrency || 4);
 const DOCS_PER_QUERY = 3;
@@ -88,7 +99,7 @@ const REVIEW_FILE = path.join(
   "claude-citations-review.json",
 );
 const EDGE_FILE = path.join(__dirname, "fixtures", "citation-edge-cases.json");
-const REVIEW_PER_MODEL = 20;
+const REVIEW_PER_MODEL = Infinity; // every flagged claim
 
 const scifactPrompt = (claim) =>
   `A reader asks about this claim: "${claim}"\n\nUsing only the documents above, explain in one short paragraph what they say about the claim.`;
@@ -96,12 +107,12 @@ const edgePrompt = (question) =>
   `${question}\n\nAnswer using only the documents above.`;
 
 /** The seeded sample of claims, each with its three abstracts. */
-function selectCases({ documents, queries, qrels }) {
+function selectCases({ documents, queries, qrels }, count) {
   const bm25 = new BM25Search();
   bm25.index(documents.map((d) => ({ id: d.id, content: d.content })));
   const byId = new Map(documents.map((d) => [d.id, d]));
   const ids = [...queries.keys()].sort((a, b) => Number(a) - Number(b));
-  const picked = shuffle(ids, mulberry32(SEED)).slice(0, QUERIES);
+  const picked = shuffle(ids, mulberry32(SEED)).slice(0, count);
   return picked.map((queryId) => {
     const claim = queries.get(queryId);
     const relevant = [...qrels.get(queryId).keys()]
@@ -131,7 +142,18 @@ function selectCases({ documents, queries, qrels }) {
 
 function loadEdgeCases() {
   const spec = JSON.parse(fs.readFileSync(EDGE_FILE, "utf8"));
-  return spec.cases.map((c) => {
+  // The second batch reuses the first file's refusal pattern and distractors
+  const spec2 = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "fixtures", "citation-edge-cases-2.json"),
+      "utf8",
+    ),
+  );
+  const tagged = [
+    ...spec.cases.map((c) => ({ ...c, batch: 1 })),
+    ...spec2.cases.map((c) => ({ ...c, batch: 2 })),
+  ];
+  return tagged.map((c) => {
     const documents = [
       ...c.documents.map((d) =>
         d.long ? { id: d.id, title: d.title, text: buildLong(d.long) } : d,
@@ -142,6 +164,7 @@ function loadEdgeCases() {
       new RegExp(p === "$refusal" ? spec.refusal : p, c.correct.flags ?? "i");
     return {
       id: c.id,
+      batch: c.batch,
       category: c.category,
       question: edgePrompt(c.question),
       documents,
@@ -314,6 +337,10 @@ async function mutationTest(responses, documentsById) {
     else if (missed[key].length < 5) {
       // The SciFact query id only: claim text quotes CC BY-SA abstracts
       missed[key].push({ query: original.queryId });
+      // Local inspection only (never written to the report): BENCH_DEBUG=1
+      if (process.env.BENCH_DEBUG && key === "negationRemoved") {
+        console.error(`MISSED ${key}: ${original.text}  =>  ${claim.text}`);
+      }
     }
   };
   for (let i = 0; i < supported.length; i++) {
@@ -591,7 +618,10 @@ function usageOf(entries) {
 
 async function main() {
   const data = await loadSciFact(args["data-dir"]);
-  const cases = selectCases(data);
+  const cases = selectCases(
+    data,
+    Math.max(...MODELS.map((m) => queriesFor(m))),
+  );
   const edge = loadEdgeCases();
   const documentsById = new Map(data.documents.map((d) => [d.id, d]));
   if (args["dry-run"]) {
@@ -626,7 +656,8 @@ async function main() {
     environment: environment(),
     dataset: {
       ...data.source,
-      claims: cases.length,
+      claims: Object.fromEntries(MODELS.map((m) => [m, queriesFor(m)])),
+      sharedClaims: SHARED,
       documentsPerClaim: DOCS_PER_QUERY,
       seed: SEED,
       rule: "A seeded sample of SciFact test claims; for each, the abstracts judged relevant to it and BM25's top non-relevant abstracts up to three, in id order.",
@@ -637,6 +668,7 @@ async function main() {
     },
     maxTokens: MAX_TOKENS,
     edgeFile: "benchmarks/fixtures/citation-edge-cases.json",
+    edgeFile2: "benchmarks/fixtures/citation-edge-cases-2.json",
     models: {},
   };
   const reviewRows = [];
@@ -649,8 +681,10 @@ async function main() {
       `${model}: temperature 0 ${temp ? "accepted" : `rejected (${temperature.error})`}`,
     );
     const mainStart = cache.used.length;
-    const responses = await mapLimit(cases, CONCURRENCY, (c) =>
-      answerAndVerify(cache, model, c, temp),
+    const responses = await mapLimit(
+      cases.slice(0, queriesFor(model)),
+      CONCURRENCY,
+      (c) => answerAndVerify(cache, model, c, temp),
     );
     const mainEntries = cache.used.slice(mainStart);
     const edgeStart = cache.used.length;
@@ -726,6 +760,14 @@ async function main() {
             ),
           },
         },
+        // The first SHARED claims, which every model answered
+        shared: {
+          claims: Math.min(SHARED, responses.length),
+          refused: responses.slice(0, SHARED).filter((r) => r.lexical.refused)
+            .length,
+          lexical: summarize(responses.slice(0, SHARED), "lexical"),
+          judge: summarize(responses.slice(0, SHARED), "judge"),
+        },
         lexical: summarize(responses, "lexical"),
         judge: {
           ...summarize(responses, "judge"),
@@ -738,14 +780,26 @@ async function main() {
         review: reviewSummary(sample, review),
         mutation: await mutationTest(responses, documentsById),
       },
-      edge: {
+      edge: scoreEdge(
+        edge.filter((c) => c.batch === 1),
+        edgeResponses.filter((r, i) => edge[i].batch === 1),
+        model,
+        edgeReview.overrides,
+      ),
+      edge2: scoreEdge(
+        edge.filter((c) => c.batch === 2),
+        edgeResponses.filter((r, i) => edge[i].batch === 2),
+        model,
+        edgeReview.overrides,
+      ),
+      edgeAll: {
         ...scoreEdge(edge, edgeResponses, model, edgeReview.overrides),
         usage: usageOf(edgeEntries),
         costUSD: costOfEntries(edgeEntries),
       },
     };
     const s = report.models[model].scifact;
-    const e = report.models[model].edge;
+    const e = report.models[model].edgeAll;
     console.log(
       `  SciFact: ${s.lexical.claims} claims, lexical supported ${s.lexical.supportedShare}, judge ${s.judge.supportedShare}, verified ${s.lexical.verifiedShare}/${s.judge.verifiedShare}; edge model correct ${e.modelCorrect}/${e.cases}, judge caught ${e.judge.caught} missed ${e.judge.missed} false alarms ${e.judge.falseAlarm}; US$${report.models[model].totalCostUSD}; total spend US$${cache.spentUSD().toFixed(4)}`,
     );

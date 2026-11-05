@@ -193,7 +193,12 @@ function renderGuardrails(report) {
   return parts.join("\n").trim();
 }
 
-const { renderJudge, renderClaudeCitations } = require("./render-claude");
+const {
+  renderJudge,
+  renderClaudeCitations,
+  renderJudgeMore,
+  renderLatency,
+} = require("./render-claude");
 
 const RENDERERS = {
   speed: renderSpeed,
@@ -201,6 +206,8 @@ const RENDERERS = {
   guardrails: renderGuardrails,
   judge: renderJudge,
   "claude-citations": renderClaudeCitations,
+  "judge-more": renderJudgeMore,
+  "claude-latency": renderLatency,
 };
 
 function render(content) {

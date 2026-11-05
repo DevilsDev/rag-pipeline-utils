@@ -8,6 +8,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { wilson } = require("./claude-common");
 
 const NAMES = {
   "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
@@ -100,6 +101,74 @@ function judgeIn340(models) {
     ),
     "",
   ];
+}
+
+/** One batch of judge edge cases: per-category table and every failure. */
+function judgeEdgeBlock(edge, models, title) {
+  const cats = Object.keys(edge.lexical.categories);
+  const out = [
+    `**${title}**: ${edge.cases} cases in \`${edge.file}\`, written for this project and committed before any model saw them; each has an expected verdict for the whole answer. Correct / cases per category; a false alarm flags a supported answer, a miss passes an unsupported one.`,
+    "",
+    table(
+      ["Category", "Cases", "lexical only", ...models.map(nameOf)],
+      [
+        ...cats.map((c) => [
+          `\`${c}\``,
+          edge.lexical.categories[c].cases,
+          `${edge.lexical.categories[c].correct}`,
+          ...models.map((id) => `${edge.models[id].categories[c].correct}`),
+        ]),
+        [
+          "**All**",
+          edge.cases,
+          `**${edge.lexical.correct}** (${edge.lexical.falseAlarms} FA, ${edge.lexical.misses} miss)`,
+          ...models.map(
+            (id) =>
+              `**${edge.models[id].correct}** (${edge.models[id].falseAlarms} FA, ${edge.models[id].misses} miss)`,
+          ),
+        ],
+      ],
+    ),
+    "",
+  ];
+  const configs = [
+    ["lexical", edge.lexical],
+    ...models.map((id) => [id, edge.models[id]]),
+  ];
+  const failing = new Map();
+  for (const [key, res] of configs) {
+    for (const fl of res.failures) {
+      if (!failing.has(fl.id)) {
+        failing.set(fl.id, { f: fl, wrong: [], reasons: new Set() });
+      }
+      const entry = failing.get(fl.id);
+      entry.wrong.push(
+        key === "lexical" ? "lexical" : nameOf(key).replace("Claude ", ""),
+      );
+      for (const x of fl.sentences) {
+        if (x.verdict !== "supported" || fl.kind === "miss") {
+          entry.reasons.add(x.lexicalReason);
+        }
+      }
+    }
+  }
+  out.push(
+    `Every case in this batch that at least one configuration got wrong, with the lexical reason recorded for its sentences:`,
+    "",
+    table(
+      ["Case", "Expected", "Answer", "Wrong with", "Kind", "Lexical reason"],
+      [...failing.values()].map(({ f: fl, wrong, reasons }) => [
+        `\`${fl.id}\``,
+        fl.expected,
+        cell(clip(fl.answer, 110)),
+        wrong.length === models.length + 1 ? "all" : wrong.join(", "),
+        fl.kind === "false_alarm" ? "false alarm" : "miss",
+        [...reasons].map((r) => `\`${r}\``).join(", "),
+      ]),
+    ),
+    "",
+  );
+  return out;
 }
 
 function renderJudge(report) {
@@ -281,79 +350,46 @@ function renderJudge(report) {
     "",
   );
 
-  // Edge cases
-  const edge = report.edge;
-  const cats = Object.keys(edge.lexical.categories);
   parts.push(
-    `**Edge cases**: ${edge.cases} cases in \`${edge.file}\`, written for this project and committed before any model saw them; each has an expected verdict for the whole answer. Correct / cases per category; a false alarm flags a supported answer, a miss passes an unsupported one.`,
-    "",
-    table(
-      ["Category", "Cases", "lexical only", ...models.map(nameOf)],
-      [
-        ...cats.map((c) => [
-          `\`${c}\``,
-          edge.lexical.categories[c].cases,
-          `${edge.lexical.categories[c].correct}`,
-          ...models.map((id) => `${edge.models[id].categories[c].correct}`),
-        ]),
-        [
-          "**All**",
-          edge.cases,
-          `**${edge.lexical.correct}** (${edge.lexical.falseAlarms} FA, ${edge.lexical.misses} miss)`,
-          ...models.map(
-            (id) =>
-              `**${edge.models[id].correct}** (${edge.models[id].falseAlarms} FA, ${edge.models[id].misses} miss)`,
-          ),
-        ],
-      ],
-    ),
-    "",
+    ...judgeEdgeBlock(report.edge, models, "Edge cases, first batch"),
+    ...(report.edge2
+      ? judgeEdgeBlock(report.edge2, models, "Edge cases, second batch")
+      : []),
   );
-
-  // Failures: every edge case some configuration got wrong
-  const configs = [
-    ["lexical", edge.lexical],
-    ...models.map((id) => [id, edge.models[id]]),
-  ];
-  const failing = new Map();
-  for (const [key, res] of configs) {
-    for (const f of res.failures) {
-      if (!failing.has(f.id))
-        failing.set(f.id, { f, wrong: [], reasons: new Set() });
-      const entry = failing.get(f.id);
-      entry.wrong.push(
-        key === "lexical" ? "lexical" : nameOf(key).replace("Claude ", ""),
-      );
-      for (const s of f.sentences) {
-        if (s.verdict !== "supported" || f.kind === "miss") {
-          entry.reasons.add(s.lexicalReason);
-        }
-      }
-    }
+  if (report.edgeAll && report.edge2) {
+    const row = (label, section) => [
+      label,
+      section.cases,
+      `${section.lexical.correct} (${section.lexical.falseAlarms} FA, ${section.lexical.misses} miss)`,
+      ...models.map(
+        (id) =>
+          `${section.models[id].correct} (${section.models[id].falseAlarms} FA, ${section.models[id].misses} miss)`,
+      ),
+    ];
+    parts.push(
+      "Edge cases, both batches: correct (false alarms, misses).",
+      "",
+      table(
+        ["Batch", "Cases", "lexical only", ...models.map(nameOf)],
+        [
+          row("First", report.edge),
+          row("Second", report.edge2),
+          row("**Both**", report.edgeAll),
+        ],
+      ),
+      "",
+    );
   }
   parts.push(
     (() => {
+      const section = report.edgeAll || report.edge;
       const inj = models.map(
-        (id) => report.edge.models[id].categories["injection-in-source"],
+        (id) => section.models[id].categories["injection-in-source"],
       );
       return inj.every(Boolean)
-        ? `The judge ruled on ${inj.map((c) => c.judgeRuled).join(", ")} of the ${inj[0].cases} \`injection-in-source\` cases (${models.map(nameOf).join(", ")}); the others never reach it.`
+        ? `The judge ruled on ${inj.map((c) => c.judgeRuled).join(", ")} of the ${inj[0].cases} \`injection-in-source\` cases in both batches (${models.map(nameOf).join(", ")}); the others never reach it.`
         : "";
     })(),
-    "",
-    "Every edge case that at least one configuration got wrong, with the lexical reason recorded for its sentences:",
-    "",
-    table(
-      ["Case", "Expected", "Answer", "Wrong with", "Kind", "Lexical reason"],
-      [...failing.values()].map(({ f, wrong, reasons }) => [
-        `\`${f.id}\``,
-        f.expected,
-        cell(clip(f.answer, 110)),
-        wrong.join(", "),
-        f.kind === "false_alarm" ? "false alarm" : "miss",
-        [...reasons].map((r) => `\`${r}\``).join(", "),
-      ]),
-    ),
     "",
     ...judgeIn340(models),
     `Total cost of this benchmark: ${models
@@ -382,7 +418,13 @@ function renderClaudeCitations(report) {
   const parts = [
     `${measuredLine(report.environment)} API calls made on ${callDates(report.models)}; \`max_tokens\` ${report.maxTokens}.`,
     "",
-    `**SciFact answers**: ${d.claims} claims from ${d.dataset} (${d.license}, revision \`${d.revisions.scifact.slice(0, 7)}\`, seed ${d.seed}), ${d.documentsPerClaim} abstracts each as \`document\` blocks with citations on. Prompt: "${cell(report.prompts.scifact)}". Each model answers, and \`verifyCitations\` checks the answer lexically and with the same model as judge.`,
+    `**SciFact answers**: ${
+      typeof d.claims === "object"
+        ? Object.entries(d.claims)
+            .map(([id, n]) => `${n} claims for ${nameOf(id)}`)
+            .join(", ")
+        : `${d.claims} claims`
+    } (the first claims of one seeded order, so smaller sets are part of larger ones) from ${d.dataset} (${d.license}, revision \`${d.revisions.scifact.slice(0, 7)}\`, seed ${d.seed}), ${d.documentsPerClaim} abstracts each as \`document\` blocks with citations on. Prompt: "${cell(report.prompts.scifact)}". Each model answers, and \`verifyCitations\` checks the answer lexically and with the same model as judge.`,
     "",
     table(
       [
@@ -429,6 +471,35 @@ function renderClaudeCitations(report) {
       })
       .join(", ")}; the judge only rules on \`low_overlap\` claims.`,
     "",
+    ...(models.every((id) => report.models[id].scifact.shared)
+      ? [
+          `All five models on the same first ${report.dataset.sharedClaims} claims:`,
+          "",
+          table(
+            [
+              "Model",
+              "Refused",
+              "Cited claims",
+              "Supported, + judge",
+              "Answers verified, + judge",
+              "Verified of answers not refused",
+            ],
+            models.map((id) => {
+              const x = report.models[id].scifact.shared;
+              const answered = x.claims - x.refused;
+              return [
+                nameOf(id),
+                `${x.refused} / ${x.claims}`,
+                num(x.judge.claims),
+                `${x.judge.supported} (${pct(x.judge.supportedShare)})`,
+                `${x.judge.verifiedAnswers} (${pct(x.judge.verifiedShare)})`,
+                `${x.judge.verifiedAnswers} / ${answered} (${pct(answered ? x.judge.verifiedAnswers / answered : null)})`,
+              ];
+            }),
+          ),
+          "",
+        ]
+      : []),
     "Why the lexical check did not support a claim:",
     "",
     table(
@@ -451,7 +522,7 @@ function renderClaudeCitations(report) {
       }),
     ),
     "",
-    "**Hand review** of the claims the lexical check marked unsupported (up to 20 per model, seeded), against the passages they cite, with criteria committed before the run (`benchmarks/fixtures/claude-citations-review.json`). Precision is true problems over true problems plus false alarms.",
+    "**Hand review** of every claim the lexical check marked unsupported, for every model, against the passages they cite, with criteria committed before the run (`benchmarks/fixtures/claude-citations-review.json`). Precision is true problems over true problems plus false alarms.",
     "",
     table(
       [
@@ -464,19 +535,45 @@ function renderClaudeCitations(report) {
         "Precision (95% CI)",
         "Judge overturned: true problem / false alarm",
       ],
-      models.map((id) => {
-        const r = report.models[id].scifact.review;
-        return [
-          nameOf(id),
-          r.flaggedByLexical,
-          r.lexical.reviewed,
-          r.lexical.true_problem,
-          r.lexical.false_alarm,
-          r.lexical.unclear,
-          `${f3(r.lexical.precision)} (${ci(r.lexical.precisionInterval)})`,
-          `${r.judgeOverturned.true_problem} / ${r.judgeOverturned.false_alarm}`,
-        ];
-      }),
+      models
+        .map((id) => {
+          const r = report.models[id].scifact.review;
+          return [
+            nameOf(id),
+            r.flaggedByLexical,
+            r.lexical.reviewed,
+            r.lexical.true_problem,
+            r.lexical.false_alarm,
+            r.lexical.unclear,
+            `${f3(r.lexical.precision)} (${ci(r.lexical.precisionInterval)})`,
+            `${r.judgeOverturned.true_problem} / ${r.judgeOverturned.false_alarm}`,
+          ];
+        })
+        .concat([
+          (() => {
+            const sum = (k, part = "lexical") =>
+              models.reduce(
+                (n, id) => n + report.models[id].scifact.review[part][k],
+                0,
+              );
+            const tp = sum("true_problem");
+            const fa = sum("false_alarm");
+            return [
+              "**All models**",
+              models.reduce(
+                (n, id) =>
+                  n + report.models[id].scifact.review.flaggedByLexical,
+                0,
+              ),
+              sum("reviewed"),
+              tp,
+              fa,
+              sum("unclear"),
+              `${f3(tp + fa ? tp / (tp + fa) : null)} (${ci(wilson(tp, tp + fa))})`,
+              `${sum("true_problem", "judgeOverturned")} / ${sum("false_alarm", "judgeOverturned")}`,
+            ];
+          })(),
+        ]),
     ),
     "",
     (() => {
@@ -511,37 +608,81 @@ function renderClaudeCitations(report) {
   ];
 
   // Edge cases
-  const cats = Object.keys(report.models[models[0]].edge.categories);
-  parts.push(
-    `**Edge cases**: ${report.models[models[0]].edge.cases} cases in \`${report.edgeFile}\`, committed before any model saw them. Prompt: the question, then "Answer using only the documents above." A model's answer is correct when it matches the case's patterns, corrected by a hand check where the patterns are wrong (\`benchmarks/fixtures/citation-edge-review.json\`: ${models.reduce((n, id) => n + report.models[id].edge.labelsOverriddenByHand, 0)} labels, all in \`instruction-in-document\`, where the patterns also matched answers that report the injected instruction while refusing it). Benchmark rule: the library flags an answer when \`verifyCitations\` does not verify it or finds any sentence with no citation (\`verified\` itself ignores uncited sentences). Per category: model correct / cases; then, with the judge, caught / missed / false alarm under that rule. The last row counts by \`verified\` alone.`,
-    "",
-    table(
+  const edgeTable = (key) => {
+    const cats = Object.keys(report.models[models[0]][key].categories);
+    return table(
       ["Category", ...models.map(nameOf)],
       [
         ...cats.map((c) => [
           `\`${c}\``,
           ...models.map((id) => {
-            const x = report.models[id].edge.categories[c];
+            const x = report.models[id][key].categories[c];
             return `${x.modelCorrect}/${x.cases}; ${x.judge.caught} / ${x.judge.missed} / ${x.judge.falseAlarm}`;
           }),
         ]),
         [
           "**All**",
           ...models.map((id) => {
-            const e = report.models[id].edge;
+            const e = report.models[id][key];
             return `**${e.modelCorrect}/${e.cases}**; ${e.judge.caught} / ${e.judge.missed} / ${e.judge.falseAlarm}`;
           }),
         ],
         [
           "All, by `verified` alone",
           ...models.map((id) => {
-            const v = report.models[id].edge.judgeVerifiedOnly;
+            const v = report.models[id][key].judgeVerifiedOnly;
             return `${v.caught} / ${v.missed} / ${v.falseAlarm}`;
           }),
         ],
       ],
-    ),
+    );
+  };
+  const hasSecond = models.every((id) => report.models[id].edge2);
+  const edgeKey = hasSecond ? "edgeAll" : "edge";
+  parts.push(
+    `**Edge cases**: ${report.models[models[0]].edge.cases} cases in \`${report.edgeFile}\`${hasSecond ? ` and a second batch of ${report.models[models[0]].edge2.cases} in \`${report.edgeFile2}\`` : ""}, each committed before any model saw it. Prompt: the question, then "Answer using only the documents above." A model's answer is correct when it matches the case's patterns, corrected by a hand check where the patterns are wrong (\`benchmarks/fixtures/citation-edge-review.json\`: ${models.reduce((n, id) => n + report.models[id][edgeKey].labelsOverriddenByHand, 0)} labels). Benchmark rule: the library flags an answer when \`verifyCitations\` does not verify it or finds any sentence with no citation (\`verified\` itself ignores uncited sentences). Per category: model correct / cases; then, with the judge, caught / missed / false alarm under that rule. The last row counts by \`verified\` alone.`,
     "",
+    hasSecond ? "First batch:" : "",
+    "",
+    edgeTable("edge"),
+    "",
+    ...(hasSecond
+      ? [
+          "Second batch:",
+          "",
+          edgeTable("edge2"),
+          "",
+          "Both batches:",
+          "",
+          table(
+            ["Rule", ...models.map(nameOf)],
+            [
+              [
+                "Model correct",
+                ...models.map(
+                  (id) =>
+                    `${report.models[id].edgeAll.modelCorrect}/${report.models[id].edgeAll.cases}`,
+                ),
+              ],
+              [
+                "Benchmark rule: caught / missed / false alarm",
+                ...models.map((id) => {
+                  const e = report.models[id].edgeAll.judge;
+                  return `${e.caught} / ${e.missed} / ${e.falseAlarm}`;
+                }),
+              ],
+              [
+                "`verified` alone: caught / missed / false alarm",
+                ...models.map((id) => {
+                  const e = report.models[id].edgeAll.judgeVerifiedOnly;
+                  return `${e.caught} / ${e.missed} / ${e.falseAlarm}`;
+                }),
+              ],
+            ],
+          ),
+          "",
+        ]
+      : []),
   );
 
   // Why each flagged answer was flagged (with the judge)
@@ -557,7 +698,7 @@ function renderClaudeCitations(report) {
   };
   const byCause = {};
   for (const id of models) {
-    for (const e of report.models[id].edge.examples) {
+    for (const e of report.models[id][edgeKey].examples) {
       if (e.judge !== "falseAlarm" && e.judge !== "caught") continue;
       const cause = causeOf(e);
       const slot = (byCause[cause] = byCause[cause] || {
@@ -579,7 +720,7 @@ function renderClaudeCitations(report) {
     }
   }
   const missed = models.flatMap((id) =>
-    report.models[id].edge.examples
+    report.models[id][edgeKey].examples
       .filter((e) => e.judge === "missed")
       .map((e) => `${nameOf(id)} \`${e.id}\``),
   );
@@ -644,4 +785,204 @@ function renderClaudeCitations(report) {
   return parts.join("\n").trim();
 }
 
-module.exports = { renderJudge, renderClaudeCitations };
+// --- judge-more.json -------------------------------------------------------
+
+function metricRow(label, u, extra = []) {
+  return [
+    label,
+    f3(u.precision),
+    f3(u.recall),
+    ci(u.recallInterval),
+    f3(u.f1),
+    counts(u),
+    ...extra,
+  ];
+}
+
+function renderJudgeMore(report) {
+  const parts = [
+    `${measuredLine(report.environment)} API calls made on ${callDates(report.models)}. Sample sizes, seeds and rules were committed before these runs in \`${report.plan}\`.`,
+    "",
+  ];
+  const full = report.ragtruthFull;
+  if (full) {
+    const d = full.dataset;
+    const models = Object.keys(full.models);
+    parts.push(
+      `**RAGTruth, full test split**: all ${num(d.cases)} good-quality test answers, ${num(d.labelledUnsupported)} of them with an annotated hallucination (${pct(d.labelledUnsupported / d.cases)}, the natural rate, not balanced). Same checks and positive class as above.`,
+      "",
+      table(
+        [
+          "Check",
+          "Precision",
+          "Recall",
+          "Recall 95% CI",
+          "F1",
+          "TP / FP / FN / TN",
+          "Judge calls",
+          "Cost per 1,000 checks",
+        ],
+        [
+          metricRow("lexical only", full.lexical.metrics.all.unsupported, [
+            "0",
+            "$0",
+          ]),
+          ...models.map((id) =>
+            metricRow(
+              `+ judge: ${nameOf(id)}`,
+              full.models[id].metrics.all.unsupported,
+              [
+                num(full.models[id].calls),
+                usd(full.models[id].costPer1000ChecksUSD),
+              ],
+            ),
+          ),
+        ],
+      ),
+      "",
+      `By task, full split: F1 (TP / FP / FN / TN). ${[
+        "QA",
+        "Summary",
+        "Data2txt",
+      ]
+        .map(
+          (t) =>
+            `${t}: ${num(d.byTask[t].cases)} answers, ${num(d.byTask[t].labelledUnsupported)} with a hallucination`,
+        )
+        .join("; ")}.`,
+      "",
+      table(
+        [
+          "Check",
+          "QA (MS MARCO)",
+          "Summary (CNN/DM)",
+          "Data-to-text (Yelp JSON)",
+        ],
+        [
+          ["lexical only", full.lexical.metrics],
+          ...models.map((id) => [`+ ${nameOf(id)}`, full.models[id].metrics]),
+        ].map(([label, metrics]) => [
+          label,
+          ...["QA", "Summary", "Data2txt"].map(
+            (t) =>
+              `${f3(metrics[t].unsupported.f1)} (${counts(metrics[t].unsupported)})`,
+          ),
+        ]),
+      ),
+      "",
+    );
+  }
+  const v = report.variance;
+  if (v) {
+    const models = Object.keys(v.models);
+    parts.push(
+      `**Run to run**: the same ${v.subset.size} answers (a seeded subset of the 450-answer sample, 50 per task and label), judged three times by each model. Run 1 is the first run above; runs 2 and 3 are new calls (the cache key carries the run). These models take no temperature, so this is the variation users get.`,
+      "",
+      table(
+        [
+          "Model",
+          "F1, run 1 / 2 / 3",
+          "F1 min–max (mean)",
+          "Answers whose verdict changed",
+          "Sentences whose verdict changed",
+        ],
+        models.map((id) => {
+          const m = v.models[id];
+          return [
+            nameOf(id),
+            m.runs.map((r) => f3(r.f1)).join(" / "),
+            `${f3(m.f1.min)}–${f3(m.f1.max)} (${f3(m.f1.mean)})`,
+            `${m.flips.answersNotUnanimous} of ${m.flips.answers} (${pct(m.flips.answersNotUnanimousShare)})`,
+            `${num(m.flips.sentencesNotUnanimous)} of ${num(m.flips.sentences)} (${pct(m.flips.sentencesNotUnanimousShare)})`,
+          ];
+        }),
+      ),
+      "",
+    );
+  }
+  const h = report.halueval;
+  if (h) {
+    const d = h.dataset;
+    const models = Object.keys(h.models);
+    parts.push(
+      `**HaluEval qa**: ${d.dataset}, revision \`${d.revision.slice(0, 7)}\` (${d.license}). ${num(d.cases)} cases from ${num(d.rows)} rows (seed ${d.seed}): 250 right answers and 250 hallucinated answers, each to a different question, checked against the row's knowledge snippet.`,
+      "",
+      table(
+        [
+          "Check",
+          "Precision",
+          "Recall",
+          "Recall 95% CI",
+          "F1",
+          "TP / FP / FN / TN",
+          "Judge calls",
+          "Cost per 1,000 checks",
+        ],
+        [
+          metricRow("lexical only", h.lexical.metrics.unsupported, ["0", "$0"]),
+          ...models.map((id) =>
+            metricRow(
+              `+ judge: ${nameOf(id)}`,
+              h.models[id].metrics.unsupported,
+              [num(h.models[id].calls), usd(h.models[id].costPer1000ChecksUSD)],
+            ),
+          ),
+        ],
+      ),
+      "",
+    );
+  }
+  parts.push(
+    `Cost of the API calls these results use (including calls reused from the first round): ${Object.entries(
+      report.models,
+    )
+      .map(
+        ([id, m]) => `${nameOf(id)} ${usd(m.costUSD)} (${num(m.calls)} calls)`,
+      )
+      .join(", ")}.`,
+  );
+  return parts.join("\n").trim();
+}
+
+// --- claude-latency.json ---------------------------------------------------
+
+function renderLatency(report) {
+  const s = report.setup;
+  const models = Object.keys(report.models);
+  return [
+    `${measuredLine(report.environment)} ${s.queries} queries per model on ${[...new Set(models.map((id) => report.models[id].date))].join(", ")}, after ${s.warmup} warm-up query. ${s.note}`,
+    "",
+    table(
+      [
+        "Model",
+        "First token p50",
+        "First token p95",
+        "Total p50",
+        "Total p95",
+        "Output tokens p50",
+        "Queries with no text",
+        "Cost of the runs",
+      ],
+      models.map((id) => {
+        const m = report.models[id];
+        return [
+          nameOf(id),
+          ms(m.firstTokenMs.p50),
+          ms(m.firstTokenMs.p95),
+          ms(m.totalMs.p50),
+          ms(m.totalMs.p95),
+          num(m.outputTokensP50),
+          `${m.noFirstToken} of ${m.runs}`,
+          usd(m.costUSD),
+        ];
+      }),
+    ),
+  ].join("\n");
+}
+
+module.exports = {
+  renderJudge,
+  renderClaudeCitations,
+  renderJudgeMore,
+  renderLatency,
+};
