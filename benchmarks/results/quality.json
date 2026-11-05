@@ -1,9 +1,9 @@
 {
   "benchmark": "quality",
-  "createdAt": "2026-11-05T00:41:02.728Z",
+  "createdAt": "2026-11-05T01:12:31.015Z",
   "environment": {
-    "libraryVersion": "3.4.0",
-    "commit": "064f938",
+    "libraryVersion": "3.5.0",
+    "commit": "d0dcf0d",
     "node": "v22.23.4",
     "platform": "linux 7.0.0-1017-azure",
     "runner": "GitHub Actions Linux"
@@ -31,32 +31,32 @@
       "recall10": 0.7876,
       "recall100": 0.8826,
       "mrr10": 0.6326,
-      "indexSeconds": 0.3,
-      "msPerQuery": 2.13
+      "indexSeconds": 0.5,
+      "msPerQuery": 3.81
     },
     "LocalEmbedder + MemoryRetriever": {
       "ndcg10": 0.4698,
       "recall10": 0.6156,
       "recall100": 0.8459,
       "mrr10": 0.4328,
-      "indexSeconds": 0.8,
-      "msPerQuery": 53.89
+      "indexSeconds": 1.4,
+      "msPerQuery": 57.34
     },
     "HybridRetriever (BM25 + LocalEmbedder)": {
       "ndcg10": 0.5636,
       "recall10": 0.7118,
       "recall100": 0.8869,
       "mrr10": 0.5253,
-      "indexSeconds": 1.2,
-      "msPerQuery": 59.76
+      "indexSeconds": 1.9,
+      "msPerQuery": 63.21
     },
     "HashEmbedder + MemoryRetriever": {
       "ndcg10": 0.2328,
       "recall10": 0.3478,
       "recall100": 0.5497,
       "mrr10": 0.2023,
-      "indexSeconds": 0.1,
-      "msPerQuery": 2.8
+      "indexSeconds": 0.2,
+      "msPerQuery": 3.55
     }
   }
 }
