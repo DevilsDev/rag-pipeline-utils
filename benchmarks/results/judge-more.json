@@ -1,9 +1,9 @@
 {
   "benchmark": "judge-more",
-  "createdAt": "2026-11-05T03:59:04.413Z",
+  "createdAt": "2026-11-05T04:11:55.413Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "aef20b1",
+    "commit": "1c1901c",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -175,8 +175,8 @@
         }
       },
       "latencyMs": {
-        "p50": 1.4,
-        "p95": 4.8
+        "p50": 1.5,
+        "p95": 5.3
       }
     },
     "models": {
@@ -286,8 +286,8 @@
         "costUSD": 4.3404,
         "costPer1000ChecksUSD": 1.62,
         "latencyMs": {
-          "p50": 1847.1,
-          "p95": 4671.8
+          "p50": 1847.5,
+          "p95": 4672.7
         }
       },
       "claude-haiku-5-5": {
@@ -396,8 +396,8 @@
         "costUSD": 0.9925,
         "costPer1000ChecksUSD": 0.37,
         "latencyMs": {
-          "p50": 2541.7,
-          "p95": 6363.6
+          "p50": 2541.9,
+          "p95": 6363.8
         }
       },
       "claude-sonnet-5-5": {
@@ -506,8 +506,8 @@
         "costUSD": 11.5229,
         "costPer1000ChecksUSD": 4.31,
         "latencyMs": {
-          "p50": 2387.3,
-          "p95": 4674.2
+          "p50": 2387.2,
+          "p95": 4676.2
         }
       }
     }
@@ -719,7 +719,7 @@
         "costPer1000ChecksUSD": 0.16,
         "latencyMs": {
           "p50": 0.6,
-          "p95": 1243.5
+          "p95": 1243.4
         }
       },
       "claude-haiku-5-5": {
@@ -753,8 +753,8 @@
         "costUSD": 0.015,
         "costPer1000ChecksUSD": 0.03,
         "latencyMs": {
-          "p50": 0.4,
-          "p95": 1812.1
+          "p50": 0.5,
+          "p95": 1813.7
         }
       },
       "claude-sonnet-5-5": {
@@ -788,7 +788,7 @@
         "costUSD": 0.2348,
         "costPer1000ChecksUSD": 0.47,
         "latencyMs": {
-          "p50": 0.4,
+          "p50": 0.6,
           "p95": 2048.9
         }
       }
