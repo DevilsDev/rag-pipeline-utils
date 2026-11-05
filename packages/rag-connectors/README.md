@@ -1,6 +1,6 @@
 # @devilsdev/rag-connectors
 
-Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant and pgvector.
+Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant, pgvector and Pinecone.
 
 Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils), split into packages so you install only what you use. The objects are the same ones the full package exports; versions move in lockstep.
 
@@ -8,7 +8,7 @@ Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev
 npm install @devilsdev/rag-connectors
 ```
 
-Exports: `OpenAIConnector`, `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, `QdrantRetriever`, `PgVectorRetriever`, `createAiSdkAdapter`.
+Exports: `OpenAIConnector`, `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, `QdrantRetriever`, `PineconeRetriever`, `PgVectorRetriever`, `createAiSdkAdapter`.
 
 Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 

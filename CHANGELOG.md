@@ -13,6 +13,20 @@ page.
 
 ### Added
 
+- **`PineconeRetriever`**: a Pinecone serverless index as a vector store,
+  over the REST API with the built-in `fetch` (no client package; on the
+  edge build too). It works with both kinds of index, read from the index
+  description: document indexes (what Pinecone creates now) through the
+  Documents API, and vector indexes through the vectors API; an index that
+  embeds text itself is refused with the reason. It owns a namespace, keeps
+  content and metadata in Pinecone's flat metadata, and waits for its own
+  writes to be indexed before reading, using Pinecone's log sequence
+  numbers, so a query right after `store()` sees them. It has the CLI's
+  `size`, `list` and `removeBySource`, and `.ragrc.json` takes
+  `"name": "pinecone"` (the key only from `PINECONE_API_KEY`). It passes
+  the retriever contract against an eventually consistent in-memory
+  Pinecone of both kinds in CI, and against real indexes of both kinds;
+  `examples/openai-pinecone` uses it instead of its own adapter.
 - **Starter templates: `npm create rag-pipeline`** (the new
   `create-rag-pipeline` package). `--template next` is a Next.js app with
   any AI SDK model wrapped in `groundingMiddleware`; `mastra` is a Mastra

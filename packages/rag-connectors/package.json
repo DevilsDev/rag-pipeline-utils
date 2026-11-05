@@ -1,7 +1,7 @@
 {
   "name": "@devilsdev/rag-connectors",
   "version": "3.5.0",
-  "description": "Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant and pgvector.",
+  "description": "Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant, pgvector and Pinecone.",
   "keywords": [
     "rag",
     "openai",

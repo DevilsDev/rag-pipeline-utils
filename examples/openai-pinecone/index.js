@@ -3,8 +3,9 @@
  * RAG pipeline with OpenAI (embeddings + chat) and Pinecone (vector store).
  *
  * - OpenAIConnector from the library is both the embedder and the llm.
- * - PineconeRetriever below adapts a Pinecone index to the retriever contract
- *   the pipeline expects: retrieve({ query, queryVector, topK, signal }).
+ * - PineconeRetriever from the library stores and searches a Pinecone index
+ *   (REST API, no client package); it waits for its own writes to be
+ *   indexed, so a query right after store() sees them.
  * - createRagPipeline() wires them together; run() returns
  *   { success, query, results, answer, citations, evaluation }.
  *
@@ -19,92 +20,11 @@ const {
   LocalEmbedder,
   MemoryRetriever,
   OpenAIConnector,
+  PineconeRetriever,
 } = require("@devilsdev/rag-pipeline-utils");
 
 const USE_MOCK =
   process.env.USE_MOCK_MODE === "true" || process.argv.includes("--mock");
-
-// =============================================================================
-// Pinecone retriever adapter
-// =============================================================================
-
-/**
- * Retriever backed by a Pinecone index (@pinecone-database/pinecone v5).
- * The index must exist and its dimension must match the embedding model
- * (1536 for text-embedding-3-small).
- */
-class PineconeRetriever {
-  /**
-   * @param {object} [options]
-   * @param {string} [options.apiKey] - Defaults to PINECONE_API_KEY
-   * @param {string} [options.indexName] - Defaults to PINECONE_INDEX_NAME or "rag-pipeline-demo"
-   * @param {object} [options.index] - A ready Pinecone index (skips client creation)
-   */
-  constructor(options = {}) {
-    this.indexName =
-      options.indexName ||
-      process.env.PINECONE_INDEX_NAME ||
-      "rag-pipeline-demo";
-
-    if (options.index) {
-      this.index = options.index;
-      return;
-    }
-
-    const apiKey = options.apiKey || process.env.PINECONE_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        "PINECONE_API_KEY is required. Set it in .env or run with --mock",
-      );
-    }
-    const { Pinecone } = require("@pinecone-database/pinecone");
-    this.index = new Pinecone({ apiKey }).index(this.indexName);
-  }
-
-  /**
-   * Upsert documents. Content is kept in metadata so retrieved matches can be
-   * passed to the llm and used for citations.
-   * @param {Array<{ id: string, vector: number[], content: string, metadata?: object }>} docs
-   */
-  async store(docs) {
-    await this.index.upsert(
-      docs.map((doc) => ({
-        id: doc.id,
-        values: doc.vector,
-        metadata: { ...doc.metadata, content: doc.content },
-      })),
-    );
-  }
-
-  /**
-   * Pinecone upserts are eventually consistent. Wait until the index reports
-   * at least `count` records (or the timeout passes) before querying.
-   */
-  async waitForCount(count, timeoutMs = 15000) {
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-      const stats = await this.index.describeIndexStats();
-      if ((stats.totalRecordCount ?? 0) >= count) return true;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    return false;
-  }
-
-  /** Called by the pipeline with the embedded query. */
-  async retrieve({ queryVector, topK = 3, signal } = {}) {
-    if (signal?.aborted) throw signal.reason;
-    const response = await this.index.query({
-      vector: queryVector,
-      topK,
-      includeMetadata: true,
-    });
-    if (signal?.aborted) throw signal.reason;
-    return (response.matches || []).map((match) => {
-      const { content = "", ...metadata } = match.metadata || {};
-      return { id: match.id, score: match.score, content, metadata };
-    });
-  }
-}
 
 // =============================================================================
 // Mock mode components
@@ -169,7 +89,11 @@ function createComponents() {
   });
   return {
     embedder: openai,
-    retriever: new PineconeRetriever(),
+    // Reads PINECONE_API_KEY; the index must exist, with the embedding
+    // model's dimension (1536 for text-embedding-3-small) and cosine metric
+    retriever: new PineconeRetriever({
+      index: process.env.PINECONE_INDEX_NAME || "rag-pipeline-demo",
+    }),
     llm: openai,
   };
 }
@@ -198,10 +122,6 @@ async function main(components) {
     });
   }
   await retriever.store(vectors);
-  if (retriever.waitForCount) {
-    const ready = await retriever.waitForCount(vectors.length);
-    if (!ready) console.warn("Pinecone index not fully updated yet.");
-  }
   console.log(`Stored ${vectors.length} vectors\n`);
 
   // 2. Query through the pipeline.
