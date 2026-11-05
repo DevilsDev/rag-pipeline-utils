@@ -1,9 +1,9 @@
 {
   "benchmark": "guardrails",
-  "createdAt": "2026-11-05T01:13:00.877Z",
+  "createdAt": "2026-11-05T04:54:07.751Z",
   "environment": {
     "libraryVersion": "3.5.0",
-    "commit": "d0dcf0d",
+    "commit": "2c87f41",
     "node": "v22.23.4",
     "platform": "linux 7.0.0-1017-azure",
     "runner": "GitHub Actions Linux"
@@ -98,7 +98,7 @@
           ],
           "falseAlarms": [],
           "failed": [],
-          "msPerCase": 0.1207
+          "msPerCase": 0.0948
         },
         "deberta-injection": {
           "kind": "injection",
@@ -157,7 +157,7 @@
           ],
           "falseAlarms": [],
           "failed": [],
-          "msPerCase": 48.8534
+          "msPerCase": 45.5259
         }
       }
     },
@@ -243,7 +243,7 @@
           ],
           "falseAlarms": ["jackhhao-0", "jackhhao-139"],
           "failed": [],
-          "msPerCase": 0.2939
+          "msPerCase": 0.2328
         }
       }
     },
@@ -441,7 +441,7 @@
           ],
           "falseAlarms": ["benign-doc-01", "benign-query-03"],
           "failed": [],
-          "msPerCase": 0.225
+          "msPerCase": 0.175
         },
         "deberta-injection": {
           "kind": "injection",
@@ -619,7 +619,7 @@
             "benign-query-05"
           ],
           "failed": [],
-          "msPerCase": 46.45
+          "msPerCase": 44.55
         }
       }
     },
@@ -971,7 +971,7 @@
               }
             }
           },
-          "msPerCase": 0.0619
+          "msPerCase": 0.0602
         }
       }
     }
