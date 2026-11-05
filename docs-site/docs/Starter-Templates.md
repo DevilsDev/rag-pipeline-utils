@@ -5,10 +5,6 @@ description: npm create rag-pipeline scaffolds a working project that answers fr
 
 # Starter templates
 
-:::info[Coming in 3.6.0]
-`create-rag-pipeline` is published with 3.6.0.
-:::
-
 `npm create rag-pipeline` scaffolds a project that answers questions from a folder of documents, cites the passages it used and checks every sentence of the answer against them. Each starter runs before you add an API key, returning the matching passages, so you can try retrieval first.
 
 ```bash

@@ -9,7 +9,18 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.6.0] - 2026-11-05
+
+A minor release with no breaking changes, about getting started and fewer
+false alarms. `npm create rag-pipeline` scaffolds a working app with
+Next.js and the AI SDK, Mastra or Cloudflare Workers. `PineconeRetriever`
+adds Pinecone, on both its document and vector indexes. The main entry
+now works in a deployed Cloudflare Worker: on 3.2.0 to 3.5.0 it failed
+there, so if you deploy to Workers, upgrade. The lexical answer check
+raises fewer false alarms (hand-reviewed on the SciFact citations: 78 to
+43, with every real problem still caught), so grounding verdicts can
+change: re-save the report you compare against with `rag-pipeline eval
+--baseline`. The MCP server is listed in the official MCP Registry.
 
 ### Added
 

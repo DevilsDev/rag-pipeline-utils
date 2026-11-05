@@ -117,7 +117,7 @@ Optional peer dependencies, installed only by projects that use them:
 
 ### Start a project
 
-`npm create rag-pipeline` (coming in 3.6.0) scaffolds a working app that answers from a folder of documents and checks every answer against them: Next.js with the AI SDK, a Mastra agent, or a Cloudflare Worker. It runs before you add an API key, returning the matching passages. See [Starter templates](https://devilsdev.github.io/rag-pipeline-utils/docs/Starter-Templates).
+`npm create rag-pipeline` scaffolds a working app that answers from a folder of documents and checks every answer against them: Next.js with the AI SDK, a Mastra agent, or a Cloudflare Worker. It runs before you add an API key, returning the matching passages. See [Starter templates](https://devilsdev.github.io/rag-pipeline-utils/docs/Starter-Templates).
 
 ```bash
 npm create rag-pipeline@latest my-app -- --template next   # or mastra, workers
@@ -690,7 +690,7 @@ Choose LangChain.js for the widest integration catalogue, Mastra for agents and 
 | `OllamaConnector`    |     ✓      |     ✓      | Local models, no key                                                                                                 |
 | `LocalEmbedder`      |     ✓      |            | Offline TF-IDF, fitted to your corpus                                                                                |
 
-`PgVectorRetriever`, `QdrantRetriever` and `PineconeRetriever` (coming in 3.6.0) store and search documents in PostgreSQL with pgvector, Qdrant and Pinecone ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
+`PgVectorRetriever`, `QdrantRetriever` and `PineconeRetriever` store and search documents in PostgreSQL with pgvector, Qdrant and Pinecone ([vector stores](https://devilsdev.github.io/rag-pipeline-utils/docs/Concepts-Connectors#postgresql-with-pgvector)); `efSearch` trades pgvector query speed for recall. Their ingest speed, query latency and recall, measured in CI, are on the [Benchmarks page](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks).
 
 Vercel AI SDK models (any provider it supports) work as the embedder and LLM through `createAiSdkAdapter`; see [Use with other frameworks](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations).
 

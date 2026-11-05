@@ -78,8 +78,8 @@ A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, span
 
 ## 3. Outward-facing steps (the maintainer's yes first)
 
-- MCP directory listings for `@devilsdev/rag-mcp-server` (its `mcpName` is set; publishing to the MCP registry is a separate step). Moved out of 3.5.0 on 2026-11-05 at the maintainer's decision; not scheduled yet.
-- A Pinecone project and its API key as a repository secret (3.6).
+- MCP directory listings for `@devilsdev/rag-mcp-server` (its `mcpName` is set; publishing to the MCP registry is a separate step). Moved out of 3.5.0 on 2026-11-05 at the maintainer's decision, then done the same day: the official MCP Registry (published by `.github/workflows/mcp-registry.yml` with GitHub OIDC after each release), Glama, and a pull request to awesome-mcp-servers.
+- A Pinecone project and its API key (3.6). Done: the live contract ran on real indexes of both kinds; CI uses an in-memory Pinecone, so no repository secret.
 - The first publish of the starter package and its trusted publisher (3.6).
 - Template gallery submissions (after 3.6).
 

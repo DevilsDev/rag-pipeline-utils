@@ -89,20 +89,21 @@ console.log(result.results[0].id); // "vacation"
 - **Framework integrations:** grounding middleware for any Vercel AI SDK model, Mastra scorers and guardrails, and test matchers for Jest and Vitest.
 - **Guardrails:** prompt-injection detection and PII redaction, with your own detectors and [published precision and recall](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), and ACL filtering before generation.
 - **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry spans with evaluation scores as events (or Langfuse scores).
-- **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant and Pinecone (3.6.0); anything with `embed()` or `generate()` works too.
+- **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant and Pinecone; anything with `embed()` or `generate()` works too.
 - **A CLI:** `init`, `ingest`, `query`, `eval` and `serve` against a local index, offline if you want.
-- **Starter templates** (3.6.0): `npm create rag-pipeline` for Next.js with the AI SDK, Mastra or Cloudflare Workers.
+- **Starter templates:** `npm create rag-pipeline` for Next.js with the AI SDK, Mastra or Cloudflare Workers.
 
 ## Packages
 
-| Package                                                                                        | What it is                                               |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            |
-| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      |
-| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        |
-| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks, about 6 MB installed       |
-| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     |
-| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP) |
+| Package                                                                                        | What it is                                                         |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                                      |
+| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                                |
+| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                                  |
+| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks, about 6 MB installed                 |
+| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction               |
+| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP)           |
+| [`create-rag-pipeline`](https://www.npmjs.com/package/create-rag-pipeline)                     | `npm create rag-pipeline`: starter apps (Next.js, Mastra, Workers) |
 
 ## Learn more
 
