@@ -65,7 +65,7 @@ body:
       options:
         - Pipeline (createRagPipeline, run, streaming)
         - Connectors (OpenAI, Anthropic, Ollama, ...)
-        - Retrievers / vector stores (pgvector, Qdrant, memory)
+        - Retrievers / vector stores (pgvector, Qdrant, Pinecone, Weaviate, memory)
         - Evaluation (eval CLI, runEvaluation, datasets)
         - Guardrails
         - Context packing / model routing / cost
