@@ -17,6 +17,11 @@ const { measure } = require("../../../scripts/measure-lexical-checks");
 const KNOWN_MISSES = {
   // Only exact conversions are made: a month is not a fixed number of days
   "unit-09": "approximate conversion (1 month / 30 days)",
+  // Found by the 3.7 RAGTruth run on the frozen code (Yelp hours); fixed next
+  "time-04": "clock times with one-digit minutes (7:0-23:0)",
+  "time-05": "a number after 'to' read as a time (up to 8 people)",
+  "time-06": "a number after 'at' read as a time (at 11 Main Street)",
+  "unit-10": "a source stating the number but not as that duration",
 };
 
 let results;
