@@ -185,11 +185,9 @@ function anthropicProxy() {
     const headers = { ...req.headers };
     for (const h of ["host", "content-length", "connection"]) delete headers[h];
     // Only the Messages API, and only on api.anthropic.com
-    const target = new URL(req.url, "https://api.anthropic.com");
-    if (
-      target.origin !== "https://api.anthropic.com" ||
-      !target.pathname.startsWith("/v1/messages")
-    ) {
+    // Only the Messages API: the URL is a constant, not built from the request
+    const target = "https://api.anthropic.com/v1/messages";
+    if (new URL(req.url, "http://proxy").pathname !== "/v1/messages") {
       res.writeHead(404, { "content-type": "text/plain" });
       res.end("not proxied");
       return;
