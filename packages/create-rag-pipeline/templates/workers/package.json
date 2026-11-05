@@ -1,0 +1,18 @@
+{
+  "name": "rag-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A RAG API on Cloudflare Workers with @devilsdev/rag-pipeline-utils: in-memory retrieval and streamed answers from Claude.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run --outdir dist"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "LIBRARY_VERSION"
+  },
+  "devDependencies": {
+    "wrangler": "^4.157.0"
+  }
+}

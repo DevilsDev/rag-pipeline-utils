@@ -13,6 +13,16 @@ page.
 
 ### Added
 
+- **Starter templates: `npm create rag-pipeline`** (the new
+  `create-rag-pipeline` package). `--template next` is a Next.js app with
+  any AI SDK model wrapped in `groundingMiddleware`; `mastra` is a Mastra
+  agent with a document-search tool, the groundedness scorer and
+  guardrails; `workers` is a Cloudflare Worker on the `/edge` build, with
+  streaming. Each answers from a folder of documents, returns its sources
+  and a grounding check, and runs without an API key, returning the
+  matching passages. CI scaffolds, builds and runs each one against the
+  current build (`npm run test:templates`); `--live` runs them with Claude.
+
 - **Consumer journeys** (`npm run test:consumer`): eleven developer journeys
   against the packed package and the live Claude API, run before a
   release (they found the API-key leak fixed in 3.5.0).

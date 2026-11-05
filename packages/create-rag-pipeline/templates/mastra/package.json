@@ -1,0 +1,27 @@
+{
+  "name": "rag-mastra",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A Mastra agent that answers from your documents, with @devilsdev/rag-pipeline-utils retrieval, a groundedness scorer and guardrails.",
+  "scripts": {
+    "ask": "node --env-file-if-exists=.env --import tsx src/ask.ts",
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "LIBRARY_VERSION",
+    "@mastra/core": "^1.82.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "mastra": "^1.38.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

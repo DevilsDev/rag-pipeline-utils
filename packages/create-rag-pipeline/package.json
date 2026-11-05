@@ -1,0 +1,45 @@
+{
+  "name": "create-rag-pipeline",
+  "version": "3.5.0",
+  "description": "npm create rag-pipeline: starter projects for @devilsdev/rag-pipeline-utils with Next.js and the AI SDK, Mastra, or Cloudflare Workers.",
+  "keywords": [
+    "rag",
+    "create",
+    "starter",
+    "template",
+    "nextjs",
+    "ai-sdk",
+    "mastra",
+    "cloudflare-workers",
+    "claude"
+  ],
+  "license": "MIT",
+  "author": "Ali Kahwaji",
+  "homepage": "https://devilsdev.github.io/rag-pipeline-utils/docs/Starter-Templates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevilsDev/rag-pipeline-utils.git",
+    "directory": "packages/create-rag-pipeline"
+  },
+  "bugs": {
+    "url": "https://github.com/DevilsDev/rag-pipeline-utils/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "commonjs",
+  "main": "./lib/scaffold.js",
+  "bin": {
+    "create-rag-pipeline": "bin/create-rag-pipeline.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
