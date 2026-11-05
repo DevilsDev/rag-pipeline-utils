@@ -57,7 +57,8 @@ const isPinoPrettyAvailable = () => {
  * or when process.stdout.write has been replaced (pino writes through it then).
  */
 const getDestination = (pretty) => {
-  if (pretty) return undefined;
+  // The edge build aliases pino to a console shim without destination().
+  if (pretty || typeof pino.destination !== 'function') return undefined;
   const stdout = process.stdout;
   if (!stdout || stdout.write !== stdout.constructor.prototype.write) {
     return undefined;
