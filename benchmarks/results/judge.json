@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T02:56:05.866Z",
+  "createdAt": "2026-11-05T03:58:51.896Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "1654599",
+    "commit": "aef20b1",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -128,8 +128,8 @@
         }
       },
       "latencyMs": {
-        "p50": 1.6,
-        "p95": 5.9
+        "p50": 1.5,
+        "p95": 5.8
       }
     },
     "models": {
@@ -247,12 +247,12 @@
         "costUSD": 0.7713,
         "costPer1000ChecksUSD": 1.71,
         "latencyMs": {
-          "p50": 1968,
-          "p95": 4405.7
+          "p50": 1966.8,
+          "p95": 4398.9
         },
         "latencyMsWithCall": {
-          "p50": 2419.1,
-          "p95": 4509.1
+          "p50": 2419.6,
+          "p95": 4501.5
         },
         "sentences": {
           "sentences": 3263,
@@ -426,12 +426,12 @@
         "costUSD": 0.1735,
         "costPer1000ChecksUSD": 0.39,
         "latencyMs": {
-          "p50": 2698.5,
-          "p95": 6363.5
+          "p50": 2699.1,
+          "p95": 6442.7
         },
         "latencyMsWithCall": {
-          "p50": 3328.7,
-          "p95": 6522.2
+          "p50": 3317.4,
+          "p95": 6553.5
         },
         "sentences": {
           "sentences": 3263,
@@ -605,12 +605,12 @@
         "costUSD": 2.0186,
         "costPer1000ChecksUSD": 4.49,
         "latencyMs": {
-          "p50": 2453.5,
-          "p95": 4536.6
+          "p50": 2454.2,
+          "p95": 4533.3
         },
         "latencyMsWithCall": {
-          "p50": 2837.9,
-          "p95": 4794.4
+          "p50": 2838.8,
+          "p95": 4794.5
         },
         "sentences": {
           "sentences": 3263,
@@ -782,12 +782,12 @@
         "costUSD": 5.7744,
         "costPer1000ChecksUSD": 12.83,
         "latencyMs": {
-          "p50": 4217.5,
-          "p95": 9748.4
+          "p50": 4217.6,
+          "p95": 9747.1
         },
         "latencyMsWithCall": {
-          "p50": 4924.2,
-          "p95": 10247.1
+          "p50": 4975.2,
+          "p95": 10246.8
         },
         "sentences": {
           "sentences": 3263,
@@ -959,12 +959,12 @@
         "costUSD": 14.0764,
         "costPer1000ChecksUSD": 31.28,
         "latencyMs": {
-          "p50": 3208.6,
-          "p95": 14664.6
+          "p50": 3208.4,
+          "p95": 14666.6
         },
         "latencyMsWithCall": {
-          "p50": 4407.2,
-          "p95": 14851.5
+          "p50": 4402.9,
+          "p95": 14850.9
         },
         "sentences": {
           "sentences": 3263,
