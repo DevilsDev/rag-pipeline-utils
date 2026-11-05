@@ -143,6 +143,8 @@ async function serve(cmd, args, cwd, env, url, timeoutMs = 120000) {
     env,
     shell: isWin,
     stdio: ["ignore", "pipe", "pipe"],
+    // Its own process group, so stop() reaches the servers npx starts
+    detached: !isWin,
   });
   let log = "";
   child.stdout.on("data", (d) => (log += d));
@@ -152,7 +154,13 @@ async function serve(cmd, args, cwd, env, url, timeoutMs = 120000) {
       spawnSync("taskkill", ["/pid", String(child.pid), "/t", "/f"], {
         stdio: "ignore",
       });
-    } else child.kill("SIGTERM");
+    } else {
+      try {
+        process.kill(-child.pid, "SIGKILL");
+      } catch {
+        // already gone
+      }
+    }
   };
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -395,7 +403,8 @@ async function main() {
       else console.log(`  kept ${dir}`);
     }
   }
-  if (results.some((r) => !r.ok)) process.exit(1);
+  // Exit even if a server's pipes are still open
+  process.exit(results.some((r) => !r.ok) ? 1 : 0);
 }
 
 main().catch((error) => {
