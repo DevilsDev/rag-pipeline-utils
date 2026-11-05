@@ -102,8 +102,9 @@ for (const target of targets) {
               },
             },
           );
+          // Its records are cleared already; say what is left over
           if (!res.ok && res.status !== 404) {
-            throw new Error(`could not delete namespace ${ns}: ${res.status}`);
+            console.warn(`could not delete namespace ${ns}: ${res.status}`);
           }
         }
       });
