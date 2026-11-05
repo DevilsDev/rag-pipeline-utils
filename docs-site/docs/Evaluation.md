@@ -547,6 +547,90 @@ const report = detectHallucinations(cited.citations, { threshold: 0.5 });
 
 With zero retrieved documents, `track()` does not throw; every sentence is reported as unsupported. `retrievedDocs` must be an array.
 
+### Verify the citations a model returns
+
+:::info[Coming in 3.5.0]
+`fromAnthropicCitations`, `fromOpenAIFileCitations` and `verifyCitations` are in 3.5.0.
+:::
+
+When the model cites its own sources (Claude's citations, OpenAI's file search), a citation can point at a real document and still not say what the sentence claims. `verifyCitations()` checks each claim against the passages it cites, with the same word-overlap, number and negation checks as `checkAnswer`, and the optional [LLM judge](#paraphrases-the-optional-llm-judge) for paraphrases.
+
+```javascript no-run
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  fromAnthropicCitations,
+  verifyCitations,
+} from "@devilsdev/rag-pipeline-utils";
+
+const documents = [
+  { id: "handbook", text: handbookText },
+  { id: "remote", text: remotePolicyText },
+];
+const message = await new Anthropic().messages.create({
+  model: "claude-sonnet-5-5",
+  max_tokens: 1024,
+  messages: [
+    {
+      role: "user",
+      content: [
+        ...documents.map((d) => ({
+          type: "document",
+          source: { type: "text", media_type: "text/plain", data: d.text },
+          title: d.id,
+          citations: { enabled: true },
+        })),
+        { type: "text", text: "How many vacation days do employees get?" },
+      ],
+    },
+  ],
+});
+
+const check = await verifyCitations(
+  fromAnthropicCitations(message, { documents }),
+);
+for (const claim of check.claims.filter((c) => c.verdict !== "supported")) {
+  console.warn(claim.text, "->", claim.reason);
+}
+// Sentences the model didn't cite at all: `verified` doesn't cover them
+for (const sentence of check.uncited) console.warn("uncited:", sentence.text);
+```
+
+For OpenAI's Responses API with file search, ask for the search results, because a `file_citation` carries only the file id and a position, not the cited text:
+
+```javascript no-run
+import OpenAI from "openai";
+import {
+  fromOpenAIFileCitations,
+  verifyCitations,
+} from "@devilsdev/rag-pipeline-utils";
+
+const response = await new OpenAI().responses.create({
+  model: "gpt-5.1",
+  input: "How many vacation days do employees get?",
+  tools: [{ type: "file_search", vector_store_ids: [vectorStoreId] }],
+  include: ["file_search_call.results"], // the cited passages
+});
+const check = await verifyCitations(fromOpenAIFileCitations(response));
+```
+
+What the result reports:
+
+- **`verified`**: true only when there is at least one cited claim, every claim is supported and every citation could be checked. It covers what the model cited: an answer with no citations is never verified, and sentences without a citation are listed in `uncited`, not counted against it.
+- **`claims`**: one per cited claim, with `verdict` (`supported`, `unsupported` or `unverifiable`), `lexicalReason` (`supported`, `low_overlap`, `number_mismatch`, `polarity_mismatch` or `unverifiable`), `reason` in words, `decidedBy` (`lexical` or `judge`), `score`, and each citation's `sourceId`, `location`, own `score` and `supports`. A claim is checked against all its cited passages together, so a sentence taking one fact from each of two passages is supported even though neither passage supports it alone.
+- **`uncited`**: sentences with content that no citation covers.
+- **`summary`**: counts of claims by verdict, citations, unverifiable citations and uncited sentences; `skipped` counts citations of other kinds (OpenAI's web and container citations).
+
+How each provider maps:
+
+|                        | Claude                                                                                                                                                               | OpenAI Responses                                                                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claim                  | each cited text block                                                                                                                                                | each sentence from the previous citation's `index` up to this one: OpenAI gives a position after the cited text (a sentence or a paragraph, often shared by several citations), not a span, so the boundary is inferred |
+| Cited text             | `cited_text`, in every citation type                                                                                                                                 | the file search results for the cited `file_id` (any of its chunks may support the claim)                                                                                                                               |
+| `sourceId`             | your `documents[document_index].id` (pass the documents in request order), else the document title, else the index; a search result's `source`; a web result's `url` | `file_id`, with `filename` as the title                                                                                                                                                                                 |
+| Without the cited text | —                                                                                                                                                                    | `unverifiable`, with a reason that names `include: ["file_search_call.results"]`                                                                                                                                        |
+
+Pass a stream's final message (`stream.finalMessage()`, or the completed response). With `{ judge }`, claims that failed for lack of word overlap go to the judge in one call; it may only name a passage the claim cites, and a number or negation mismatch is never overturned.
+
 ---
 
 ## **Dashboards**

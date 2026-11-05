@@ -47,6 +47,11 @@ const { ChunkingEngine } = require('./chunking/chunking-engine');
 const { CitationTracker } = require('./citation/citation-tracker');
 const { checkAnswer, normalizeSources } = require('./grounding/check-answer');
 const {
+  fromAnthropicCitations,
+  fromOpenAIFileCitations,
+  verifyCitations,
+} = require('./grounding/provider-citations');
+const {
   evaluationScores,
   toLangfuseScores,
 } = require('./observability/scores');
@@ -145,6 +150,9 @@ module.exports = {
   // Citation & Grounding
   CitationTracker,
   checkAnswer,
+  fromAnthropicCitations,
+  fromOpenAIFileCitations,
+  verifyCitations,
   evaluationScores,
   toLangfuseScores,
   normalizeSources,

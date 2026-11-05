@@ -12,6 +12,8 @@ module.exports = {
     "/__tests__/utils/",
     "/__tests__/mocks/",
     "/__tests__/e2e/_debug-open-handles.js",
+    // live API tests run only with npm run test:live (they need a key)
+    "/__tests__/live/",
     // git worktrees (e.g. agent checkouts) contain full copies of the tests
     "<rootDir>/.claude/",
   ],

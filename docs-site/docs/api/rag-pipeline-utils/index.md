@@ -154,6 +154,8 @@ RAG Pipeline Utils - TypeScript Definitions
 - [evaluationScores](functions/evaluationScores.md)
 - [evaluationVerdict](functions/evaluationVerdict.md)
 - [extractNumbers](functions/extractNumbers.md)
+- [fromAnthropicCitations](functions/fromAnthropicCitations.md)
+- [fromOpenAIFileCitations](functions/fromOpenAIFileCitations.md)
 - [generateSyntheticDataset](functions/generateSyntheticDataset.md)
 - [groundingMiddleware](functions/groundingMiddleware.md)
 - [loadConfig](functions/loadConfig.md)
@@ -174,6 +176,7 @@ RAG Pipeline Utils - TypeScript Definitions
 - [validateInput](functions/validateInput.md)
 - [validatePlugin](functions/validatePlugin.md)
 - [validateRagrc](functions/validateRagrc.md)
+- [verifyCitations](functions/verifyCitations.md)
 - [withRetry](functions/withRetry.md)
 - [wrapError](functions/wrapError.md)
 

@@ -68,6 +68,17 @@ flagged }`, or PII `spans` scored by overlap) and reports precision,
   attached to the trace and the observation each judges; without a trace
   id they are Langfuse experiment evaluations. `evaluationScores(result)`
   returns them as a plain list. Langfuse is not a dependency.
+- **Verify provider citations.** `fromAnthropicCitations(message, {
+documents })` and `fromOpenAIFileCitations(response)` normalise the
+  citations of a Claude message (every citation type carries
+  `cited_text`) or an OpenAI Responses API response with file search
+  (the passages come from `file_search_call.results`, which need
+  `include: ["file_search_call.results"]`), and `verifyCitations()`
+  checks each claim against the passages it cites with `checkAnswer`'s
+  overlap, number and negation checks and the optional judge, which may
+  only name a passage the claim cites. It reports `verified`, each
+  claim's verdict (`supported`, `unsupported` or `unverifiable`) and
+  reason, each citation's score, and the sentences no citation covers.
 
 ### Changed
 
