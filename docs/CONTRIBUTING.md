@@ -132,7 +132,7 @@ npm test                  # Ensure tests pass
 
 ### **Live API tests**
 
-`npm run test:live` runs `__tests__/live/` against the real Claude API: the connector, streaming, a pipeline run, the LLM judge and provider citations, on Haiku with short outputs (a few cents a run). They are never part of `npm test` or CI, and are skipped without a key. The key comes from `ANTHROPIC_API_KEY`, or from an env file outside the repository, `~/.config/rag-pipeline-utils/live-test.env` (or the path in `RAG_LIVE_ENV`):
+`npm run test:live` runs `__tests__/live/` against the real Claude API: every feature that calls a model. That means the connector (and the `llm` contract tests), streaming and cancellation, pipeline runs, the model router, `CostTracker`, `LLMReranker`, `QueryPlanner`, `AgenticPipeline`, `generateSyntheticDataset`, the LLM judge, provider citations, the AI SDK adapter and `groundingMiddleware` on AI SDK 6 and 7, the CLI (`init --template anthropic`, `ingest`, `query`, `eval`, `generate-dataset`), and one call to each current Claude model with its price. Mostly Haiku with short outputs; under US$0.50 a run. They are never part of `npm test` or CI, and are skipped without a key. The key comes from `ANTHROPIC_API_KEY`, or from an env file outside the repository, `~/.config/rag-pipeline-utils/live-test.env` (or the path in `RAG_LIVE_ENV`):
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-...

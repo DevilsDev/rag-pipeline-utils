@@ -122,6 +122,23 @@ const PRICING = {
     source: 'https://platform.claude.com/docs/en/about-claude/pricing',
     asOf: '2026-11-01',
   },
+  // $0.10 / $0.50 per million input / output tokens, for prompts up to
+  // 100,000 tokens ($0.50 / $2.50 above; this table has one price per model).
+  'claude-haiku-5.5': {
+    input: 0.0001,
+    output: 0.0005,
+    unit: 1000,
+    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    asOf: '2026-11-05',
+  },
+  // $10 / $50 per million input / output tokens.
+  'claude-fable-5.1': {
+    input: 0.01,
+    output: 0.05,
+    unit: 1000,
+    source: 'https://platform.claude.com/docs/en/about-claude/pricing',
+    asOf: '2026-11-05',
+  },
   'cohere-command': {
     input: 0.001,
     output: 0.002,

@@ -195,6 +195,8 @@
     "**/*.{json,md,mdx,yml,yaml,css,scss,html}": "prettier --write --ignore-unknown"
   },
   "devDependencies": {
+    "@ai-sdk/anthropic": "3.0.138",
+    "@ai-sdk/anthropic-v4": "npm:@ai-sdk/anthropic@4.0.97",
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
     "@docusaurus/core": "3.10.2",
