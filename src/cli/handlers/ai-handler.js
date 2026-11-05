@@ -24,9 +24,10 @@ const {
   applyFeedback,
 } = require("../services/feedback.js");
 const { readDocuments } = require("../../loader/document-reader.js");
+const { describeCliError } = require("../shared/cli-errors.js");
 
 function fail(prefix, error) {
-  console.error(`${prefix}: ${error.message}`);
+  console.error(`${prefix}: ${describeCliError(error)}`);
   process.exitCode = 1;
 }
 

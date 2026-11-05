@@ -280,6 +280,9 @@ function missingApiKeyError(provider, envVar) {
     `${provider} API key required. Set ${envVar} or pass the apiKey option.`,
   );
   err.code = 'MISSING_API_KEY';
+  // For callers that word their own message, e.g. the CLI
+  err.provider = provider;
+  err.envVar = envVar;
   return err;
 }
 
@@ -385,6 +388,7 @@ function toConnectorError(err, provider) {
     message = `${provider} request failed: ${err.message}`;
   }
   const error = new Error(message);
+  error.provider = provider;
   if (err.code) error.code = err.code;
   if (response) {
     error.status = response.status;

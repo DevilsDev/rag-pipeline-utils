@@ -6,6 +6,7 @@
 
 const { loadCliConfig } = require("../shared/config-context.js");
 const { ingest } = require("../services/rag-service.js");
+const { reportCliError } = require("../shared/cli-errors.js");
 
 /**
  * @param {object} globalOptions - Global CLI options from program.opts()
@@ -40,8 +41,7 @@ async function handleIngest(globalOptions, inputPath, options = {}) {
       for (const source of summary.sources) console.log(`  ${source}`);
     }
   } catch (error) {
-    console.error(`❌ Ingestion failed: ${error.message}`);
-    process.exitCode = 1;
+    reportCliError("Ingestion failed", error, globalOptions);
   }
 }
 
