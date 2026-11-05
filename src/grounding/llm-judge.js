@@ -327,7 +327,12 @@ async function runJudge({ judge, sentences, docs, allowed }) {
   );
   // Sources are inside the prompt, not in the context argument, so
   // connectors don't wrap them in their own RAG prompt.
-  const raw = await judge.generate(prompt, [], { temperature: 0 });
+  // generateWithUsage (AnthropicConnector) also reports what the call cost
+  const call =
+    typeof judge.generateWithUsage === 'function'
+      ? judge.generateWithUsage
+      : judge.generate;
+  const raw = await call.call(judge, prompt, [], { temperature: 0 });
   result.calls = 1;
   const usage = resultUsage(raw);
   if (usage) result.usage = usage;

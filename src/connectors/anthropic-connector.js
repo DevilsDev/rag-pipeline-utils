@@ -30,6 +30,71 @@ const API_KEY_ENV = 'ANTHROPIC_API_KEY';
  */
 const API_DEFAULT_TEMPERATURE = 1;
 
+/**
+ * Models that answered a request with `temperature` with HTTP 400, learned
+ * at run time and shared by every connector in the process. Current models
+ * (Claude 4.7 and later) accept only the API default, so a temperature
+ * passed by the caller (the LLM judge passes 0) is retried without it.
+ */
+const NO_TEMPERATURE = new Set();
+const warnedTemperature = new Set();
+
+/** An HTTP 400 that is about the `temperature` parameter. */
+function isTemperatureRejection(error) {
+  const response = error && error.response;
+  if (!response || response.status !== 400) return false;
+  const data = response.data;
+  // A streamed request's error body is a stream: assume the rejection
+  if (!data || typeof data.pipe === 'function') return true;
+  const message =
+    (data.error && data.error.message) ||
+    (typeof data === 'string' ? data : '');
+  return /temperature/i.test(message);
+}
+
+function warnTemperatureDropped(model, temperature) {
+  if (warnedTemperature.has(model)) return;
+  warnedTemperature.add(model);
+  process.emitWarning(
+    `${model} does not accept temperature ${temperature}; sent without it (the API default). ` +
+      'Claude 4.7 and later models accept only the default.',
+    { code: 'RAG_ANTHROPIC_TEMPERATURE' },
+  );
+}
+
+/**
+ * The answer text of a Messages API response: every `text` block, joined.
+ * Models that think reply with `thinking` blocks before the text, so the
+ * first block is not always the answer.
+ * @param {Object} data - The response body
+ * @returns {string}
+ */
+function responseText(data) {
+  const blocks = Array.isArray(data && data.content) ? data.content : [];
+  const text = blocks
+    // A block without a type (hand-written mocks) counts as text
+    .filter(
+      (b) =>
+        b &&
+        typeof b.text === 'string' &&
+        (b.type === 'text' || b.type === undefined),
+    )
+    .map((b) => b.text)
+    .join('');
+  if (text) return text;
+  const stop = data && data.stop_reason;
+  const error = new Error(
+    stop === 'refusal'
+      ? 'Claude declined to answer (stop_reason: refusal)'
+      : stop === 'max_tokens'
+        ? 'Claude reached maxTokens before writing an answer (stop_reason: max_tokens); raise maxTokens'
+        : `Claude returned no text (stop_reason: ${stop || 'unknown'})`,
+  );
+  error.code = stop === 'refusal' ? 'MODEL_REFUSED' : 'NO_TEXT';
+  error.stopReason = stop || null;
+  throw error;
+}
+
 const DEFAULT_CONFIG = {
   model: 'claude-sonnet-5-5',
   baseURL: 'https://api.anthropic.com',
@@ -133,7 +198,11 @@ class AnthropicConnector extends BaseConnector {
       messages: [{ role: 'user', content: prompt.user }],
     };
     const temperature = options.temperature ?? this.config.temperature;
-    if (temperature !== undefined && temperature !== API_DEFAULT_TEMPERATURE) {
+    if (
+      temperature !== undefined &&
+      temperature !== API_DEFAULT_TEMPERATURE &&
+      !NO_TEMPERATURE.has(body.model)
+    ) {
       body.temperature = temperature;
     }
     if (prompt.system) body.system = prompt.system;
@@ -147,26 +216,78 @@ class AnthropicConnector extends BaseConnector {
    * @param {Array<Object|string>} [context=[]] - Retrieved documents for RAG
    * @param {Object} [options={}] - Override model, temperature, maxTokens per-call
    * @param {AbortSignal} [options.signal] - Cancels the request
-   * @returns {Promise<string>} The generated text
+   * @returns {Promise<string>} The answer: every text block of the reply,
+   *   joined. Rejects (code MODEL_REFUSED or NO_TEXT) when the reply has no
+   *   text, such as a refusal or a reply that ran out of maxTokens while
+   *   thinking.
    */
   async generate(query, context = [], options = {}) {
+    return (await this.generateWithUsage(query, context, options)).text;
+  }
+
+  /**
+   * Like generate(), with the reply's token usage. The LLM judge uses it so
+   * `check.judge.usage` reports what the judge cost.
+   *
+   * @param {string} query
+   * @param {Array<Object|string>} [context=[]]
+   * @param {Object} [options={}] - As for generate()
+   * @returns {Promise<{text: string, usage: {inputTokens: number, outputTokens: number, totalTokens: number}}>}
+   */
+  async generateWithUsage(query, context = [], options = {}) {
     const { signal } = options;
     throwIfAborted(signal);
     this._requireApiKey();
     const body = this._buildBody(query, context, options);
-    return this.withRetry(
-      async () => {
-        const response = await this.client.post(
-          '/v1/messages',
-          body,
-          signal ? { signal } : undefined,
-        );
-        return response.data.content[0].text;
+    const data = await this._post(body, signal);
+    const text = responseText(data);
+    const u = data.usage || {};
+    const inputTokens =
+      (u.input_tokens || 0) +
+      (u.cache_creation_input_tokens || 0) +
+      (u.cache_read_input_tokens || 0);
+    const outputTokens = u.output_tokens || 0;
+    return {
+      text,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
       },
-      this.config.maxRetries,
-      this.config.retryDelay,
-      { signal },
-    );
+    };
+  }
+
+  /**
+   * POST a Messages request with retries; a model that rejects
+   * `temperature` gets the request again without it.
+   * @private
+   */
+  async _post(body, signal) {
+    const send = (b) =>
+      this.withRetry(
+        async () =>
+          (
+            await this.client.post(
+              '/v1/messages',
+              b,
+              signal ? { signal } : undefined,
+            )
+          ).data,
+        this.config.maxRetries,
+        this.config.retryDelay,
+        { signal },
+      );
+    try {
+      return await send(body);
+    } catch (error) {
+      if (body.temperature === undefined || !isTemperatureRejection(error)) {
+        throw error;
+      }
+      NO_TEMPERATURE.add(body.model);
+      warnTemperatureDropped(body.model, body.temperature);
+      const { temperature: _t, ...rest } = body;
+      return send(rest);
+    }
   }
 
   /**
@@ -182,15 +303,29 @@ class AnthropicConnector extends BaseConnector {
     const { signal } = options;
     throwIfAborted(signal);
     this._requireApiKey();
-    const body = { ...this._buildBody(query, context, options), stream: true };
+    let body = { ...this._buildBody(query, context, options), stream: true };
+    const open = (b) =>
+      raceAbort(
+        this.client.post('/v1/messages', b, {
+          responseType: 'stream',
+          ...signalOptions(signal),
+        }),
+        signal,
+      );
 
-    const response = await raceAbort(
-      this.client.post('/v1/messages', body, {
-        responseType: 'stream',
-        ...signalOptions(signal),
-      }),
-      signal,
-    );
+    let response;
+    try {
+      response = await open(body);
+    } catch (error) {
+      if (body.temperature === undefined || !isTemperatureRejection(error)) {
+        throw error;
+      }
+      NO_TEMPERATURE.add(body.model);
+      warnTemperatureDropped(body.model, body.temperature);
+      const { temperature: _t, ...rest } = body;
+      body = rest;
+      response = await open(body);
+    }
 
     let buffer = '';
 
@@ -246,4 +381,4 @@ class AnthropicConnector extends BaseConnector {
   }
 }
 
-module.exports = { AnthropicConnector, DEFAULT_CONFIG };
+module.exports = { AnthropicConnector, DEFAULT_CONFIG, responseText };

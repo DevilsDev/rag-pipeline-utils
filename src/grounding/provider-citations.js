@@ -66,6 +66,7 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * @property {CitedClaim[]} claims
  * @property {Object<string, number>} skipped - Citations of other kinds, by type
  * @property {boolean} [results] - OpenAI: whether the response had file search results
+ * @property {string|null} [stopReason] - Claude: the message's stop_reason ("refusal" when Claude declined)
  */
 
 /**
@@ -88,12 +89,13 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * What verifyCitations() resolves to.
  *
  * @typedef {Object} CitationVerification
- * @property {boolean} verified - At least one claim, every claim supported and every citation checkable; uncited sentences don't count against it (see `uncited`)
+ * @property {boolean} verified - Not a refusal, at least one claim, every claim supported and every citation checkable; uncited sentences don't count against it (see `uncited`)
  * @property {'anthropic'|'openai'} provider
  * @property {VerifiedClaim[]} claims
  * @property {Array<{text: string, start: number, end: number}>} uncited - Sentences with content that no citation covers
  * @property {{claims: number, supported: number, unsupported: number, unverifiable: number, citations: number, unverifiableCitations: number, uncitedSentences: number}} summary
  * @property {Object<string, number>} skipped
+ * @property {boolean} refused - Claude declined to answer (stop_reason "refusal"); never verified
  * @property {{calls: number, usage?: Object, error?: string}} [judge] - Only with the `judge` option
  */
 
@@ -247,7 +249,13 @@ function fromAnthropicCitations(message, { documents } = {}) {
       claims.push({ text: block.text, start, end: answer.length, citations });
     }
   }
-  return { provider: 'anthropic', answer, claims, skipped };
+  return {
+    provider: 'anthropic',
+    answer,
+    claims,
+    skipped,
+    stopReason: message.stop_reason ?? null,
+  };
 }
 
 /**
@@ -545,10 +553,12 @@ async function verifyCitations(input, { judge } = {}) {
   };
   return {
     verified:
+      input.stopReason !== 'refusal' &&
       out.length > 0 &&
       summary.supported === out.length &&
       unverifiableCitations === 0,
     provider: input.provider,
+    refused: input.stopReason === 'refusal',
     claims: out,
     uncited,
     summary,

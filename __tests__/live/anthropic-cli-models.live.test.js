@@ -15,6 +15,7 @@ const {
   AnthropicConnector,
 } = require("../../src/connectors/anthropic-connector");
 const { CostCalculator } = require("../../src/cost/cost-calculator");
+const { checkAnswer } = require("../../src/grounding/check-answer");
 
 const { apiKey, reason } = liveAnthropic();
 const describeLive = apiKey ? describe : describe.skip;
@@ -125,18 +126,54 @@ const MODELS = [
 
 describeLive("every current Claude model, live", () => {
   test.each(MODELS)(
-    "%s answers through AnthropicConnector and has a price",
+    "%s: answers through AnthropicConnector, has a price, and works as the judge",
     async (model) => {
-      const answer = await new AnthropicConnector({
-        apiKey,
-        model,
-        maxTokens: 50,
-      }).generate("Reply with the single word: ready", []);
-      expect(answer.toLowerCase()).toContain("ready");
+      const llm = new AnthropicConnector({ apiKey, model, maxTokens: 1500 });
+      // A question that makes thinking models think: the answer is not content[0]
+      const answer = await llm.generate(
+        "Is 391 a prime number? Answer yes or no, then one short sentence.",
+        [],
+      );
+      expect(typeof answer).toBe("string");
+      expect(answer.toLowerCase()).toMatch(/\bno\b/);
+
       const calculator = new CostCalculator();
       calculator.on("warning", () => {});
       // A million tokens each way, at the published price
       expect(calculator.estimate(model, 1e6, 1e6).totalCost).toBeGreaterThan(0);
+
+      // The judge passes temperature 0, which current models reject
+      const check = await checkAnswer({
+        answer: "Staff get five weeks off annually.",
+        sources: [
+          {
+            id: "leave",
+            content:
+              "Each worker may take five weeks of paid leave every year.",
+          },
+        ],
+        judge: llm,
+        evaluate: false,
+      });
+      expect(check.judge.error).toBeUndefined();
+      expect(check.judge.calls).toBe(1);
+      expect(check.judge.usage.totalTokens).toBeGreaterThan(0);
+      expect(check.grounded).toBe(true);
     },
   );
+
+  test("the connector's default model works as the judge", async () => {
+    const check = await checkAnswer({
+      answer: "Staff get five weeks off annually.",
+      sources: [
+        {
+          id: "leave",
+          content: "Each worker may take five weeks of paid leave every year.",
+        },
+      ],
+      judge: new AnthropicConnector({ apiKey }),
+      evaluate: false,
+    });
+    expect(check.grounded).toBe(true);
+  });
 });

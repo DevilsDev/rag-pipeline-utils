@@ -90,6 +90,25 @@ documents })` and `fromOpenAIFileCitations(response)` normalise the
 
 ### Fixed
 
+- **`AnthropicConnector` works with current Claude models** (found by the
+  Claude benchmarks, confirmed live):
+  - Claude 4.7 and later reject any temperature but the default with
+    HTTP 400. The LLM judge asks for temperature 0, so `checkAnswer`,
+    `verifyCitations` and the middleware's `judge` failed on Haiku 5.5,
+    Sonnet 5.5 (the connector's default), Opus 5.5 and Fable 5.1. A request
+    a model rejects for `temperature` is now sent again without it, once
+    per model, with a `RAG_ANTHROPIC_TEMPERATURE` warning.
+  - `generate()` returned `content[0].text`, which is `undefined` when the
+    model thinks first (`[thinking, text]`, most replies from Haiku 5.5 and
+    Opus 5.5) and threw a `TypeError` on a refusal. It now returns every
+    text block, and a reply with no text rejects with `code:
+"MODEL_REFUSED"` or `"NO_TEXT"` and a message that says why.
+  - `generateWithUsage(query, context, options)` resolves `{ text, usage
+}`; the judge uses it when an LLM has it, so `check.judge.usage` is
+    filled with Claude. `generate()` still resolves a string.
+- `verifyCitations` reports `refused: true` (and is never `verified`)
+  for a Claude message with `stop_reason: "refusal"`;
+  `fromAnthropicCitations` passes the `stopReason` through.
 - `CostCalculator`, `CostTracker` and `createModelRouter` price Claude
   Haiku 5.5 ($0.10 / $0.50 per million input / output tokens, prompts up
   to 100k tokens) and Claude Fable 5.1 ($10 / $50); they were reported as
