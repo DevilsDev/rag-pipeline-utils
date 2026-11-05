@@ -8,11 +8,15 @@ description: Run createRagPipeline on Cloudflare Workers with the nodejs_compat 
 
 :::note[Version]
 
-Workers support needs 3.2.0 or later: earlier versions load, but Claude and Ollama streaming, `QdrantRetriever` and the optional `openai` and `@opentelemetry/api` packages fail there.
+The main entry needs 3.6.0 or later in a deployed Worker (see the warning below); `@devilsdev/rag-pipeline-utils/edge` works from 3.2.0. Earlier versions load, but Claude and Ollama streaming, `QdrantRetriever` and the optional `openai` and `@opentelemetry/api` packages fail there.
 
 :::
 
-`createRagPipeline` runs on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with the `nodejs_compat` compatibility flag. Every change to the library is checked in workerd, the Workers runtime: CI bundles a probe Worker and the [Cloudflare Worker example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/cloudflare-worker) with Wrangler and runs them ([`test/edge`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/test/edge)).
+`createRagPipeline` runs on [Cloudflare Workers](https://developers.cloudflare.com/workers/) with the `nodejs_compat` compatibility flag. Every change to the library is checked in workerd, the Workers runtime: CI bundles a probe Worker and the [Cloudflare Worker example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/cloudflare-worker) with Wrangler and runs them ([`test/edge`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/test/edge)), also from the packed package installed in a project of its own, as you would install it.
+
+:::warning[3.2.0 to 3.5.0]
+In these versions the main entry fails in a deployed Worker: the Worker doesn't start, and a project without `openai` doesn't bundle. Import `@devilsdev/rag-pipeline-utils/edge` instead (see [Without nodejs_compat](#without-nodejs_compat)), or upgrade to 3.6.0.
+:::
 
 ## Set up
 

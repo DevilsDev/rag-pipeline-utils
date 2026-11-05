@@ -31,7 +31,7 @@
 const { evaluationScores } = require('./scores');
 
 const { version: LIBRARY_VERSION } = require('../../package.json');
-const { loadOptionalPeer } = require('../utils/optional-peer');
+const { missingPeer } = require('../utils/optional-peer');
 
 const TRACER_NAME = '@devilsdev/rag-pipeline-utils';
 
@@ -39,11 +39,17 @@ const TRACER_NAME = '@devilsdev/rag-pipeline-utils';
 const PROVIDERS = new Set(['openai', 'anthropic', 'cohere', 'ollama']);
 
 function loadOtelApi() {
-  return loadOptionalPeer(
-    '@opentelemetry/api',
-    () => require('@opentelemetry/api'), // eslint-disable-line global-require
-    'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api (with @devilsdev/rag-pipeline-utils/edge, pass it: telemetry: { api })',
-  );
+  // Inside a try, so a bundle (Wrangler, esbuild) of a project without the
+  // package still builds; see missingPeer
+  try {
+    return require('@opentelemetry/api'); // eslint-disable-line global-require
+  } catch (error) {
+    throw missingPeer(
+      error,
+      '@opentelemetry/api',
+      'telemetry needs the "@opentelemetry/api" package, an optional peer dependency: npm install @opentelemetry/api (with @devilsdev/rag-pipeline-utils/edge, pass it: telemetry: { api })',
+    );
+  }
 }
 
 /**

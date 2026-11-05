@@ -9,7 +9,7 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@devilsdev/rag-pipeline-utils": "^3.2.0"
+    "@devilsdev/rag-pipeline-utils": "^3.6.0"
   },
   "devDependencies": {
     "wrangler": "^4.156.0"

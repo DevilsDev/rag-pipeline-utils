@@ -7,7 +7,10 @@
  */
 
 const { textChunks } = require("../../../src/connectors/connector-utils");
-const { loadOptionalPeer } = require("../../../src/utils/optional-peer");
+const {
+  loadOptionalPeer,
+  missingPeer,
+} = require("../../../src/utils/optional-peer");
 
 async function collect(iterable) {
   const out = [];
@@ -223,4 +226,51 @@ describe("loadOptionalPeer", () => {
       ),
     ).toThrow(boom);
   });
+});
+
+describe("missingPeer", () => {
+  const notFound = (name) => {
+    const e = new Error(`Cannot find module '${name}'
+Require stack:
+- x.js`);
+    e.code = "MODULE_NOT_FOUND";
+    return e;
+  };
+
+  test("the package itself missing: MISSING_DEPENDENCY with the hint", () => {
+    expect(
+      missingPeer(notFound("openai"), "openai", "npm install openai"),
+    ).toEqual(
+      expect.objectContaining({
+        code: "MISSING_DEPENDENCY",
+        message: "npm install openai",
+      }),
+    );
+  });
+
+  test("anything else is returned as is", () => {
+    const inner = notFound("openai/inner");
+    expect(missingPeer(inner, "openai", "hint")).toBe(inner);
+    const boom = new SyntaxError("Unexpected token");
+    expect(missingPeer(boom, "openai", "hint")).toBe(boom);
+  });
+});
+
+// Bundlers (esbuild, so Wrangler) fail the build on a require() they can't
+// resolve unless it is inside a try block; a Workers project without the
+// optional peers must still bundle (test/edge checks it end to end).
+test.each([
+  ["src/connectors/openai-connector.js", "openai"],
+  ["src/observability/otel.js", "@opentelemetry/api"],
+])("%s requires %s inside a try block", (file, name) => {
+  const source = require("fs").readFileSync(
+    require("path").join(__dirname, "../../..", file),
+    "utf8",
+  );
+  const at = source.indexOf(`require('${name}')`);
+  expect(at).toBeGreaterThan(-1);
+  const before = source.slice(0, at);
+  expect(before.lastIndexOf("try {")).toBeGreaterThan(
+    before.lastIndexOf("function "),
+  );
 });

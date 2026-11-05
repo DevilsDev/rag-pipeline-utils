@@ -46,7 +46,7 @@ for (const file of [library, edgeLibrary]) {
  * Bundle `entry` with Wrangler and return the bundled module's source.
  * Without `nodejs_compat`, Wrangler fails on any Node.js import.
  */
-function bundle(entry, { nodejsCompat = true } = {}) {
+function bundle(entry, { nodejsCompat = true, alias = true } = {}) {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "rag-edge-"));
   const config = path.join(out, "wrangler.toml");
   fs.writeFileSync(
@@ -69,10 +69,14 @@ function bundle(entry, { nodejsCompat = true } = {}) {
       config,
       "--outdir",
       path.join(out, "dist"),
-      "--alias",
-      `@devilsdev/rag-pipeline-utils:${library.replaceAll("\\", "/")}`,
-      "--alias",
-      `@devilsdev/rag-pipeline-utils/edge:${edgeLibrary.replaceAll("\\", "/")}`,
+      ...(alias
+        ? [
+            "--alias",
+            `@devilsdev/rag-pipeline-utils:${library.replaceAll("\\", "/")}`,
+            "--alias",
+            `@devilsdev/rag-pipeline-utils/edge:${edgeLibrary.replaceAll("\\", "/")}`,
+          ]
+        : []),
     ],
     {
       cwd: here,
@@ -348,8 +352,104 @@ const example = bundle(
   }
 }
 
-for (const b of [probe, edgeProbe, example])
+// 4. The example as a project that installed the package from npm: the
+// tarballs (packed from this build) in a project of its own, without the
+// optional peers (openai, @opentelemetry/api), and no alias, so Wrangler
+// resolves the package's exports as it does for users. Steps 1 to 3 alias
+// the package to dist/index.cjs, which hid that the ESM entry fails there.
+const installed = fs.mkdtempSync(path.join(os.tmpdir(), "rag-edge-npm-"));
+{
+  const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+  const run = (args, cwd) =>
+    execFileSync(npm, args, {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: process.platform === "win32",
+    });
+  const pack = (dir) =>
+    path.join(
+      installed,
+      run(
+        [
+          "pack",
+          "--silent",
+          "--ignore-scripts",
+          "--pack-destination",
+          installed,
+        ],
+        dir,
+      )
+        .trim()
+        .split("\n")
+        .pop()
+        .trim(),
+    );
+  const scoped = ["rag-core", "rag-connectors", "rag-eval", "rag-guardrails"];
+  fs.writeFileSync(
+    path.join(installed, "package.json"),
+    JSON.stringify({
+      name: "edge-npm-check",
+      private: true,
+      type: "module",
+      dependencies: { "@devilsdev/rag-pipeline-utils": `file:${pack(root)}` },
+      overrides: Object.fromEntries(
+        scoped.map((d) => [
+          `@devilsdev/${d}`,
+          `file:${pack(path.join(root, "packages", d))}`,
+        ]),
+      ),
+    }),
+  );
+  run(["install", "--no-audit", "--no-fund", "--ignore-scripts"], installed);
+  fs.cpSync(
+    path.join(root, "examples", "cloudflare-worker", "src"),
+    path.join(installed, "src"),
+    { recursive: true },
+  );
+}
+let fromNpm;
+try {
+  fromNpm = bundle(path.join(installed, "src", "worker.js"), { alias: false });
+  report("installed: Wrangler bundles the example from the package", true);
+} catch (error) {
+  report(
+    "installed: Wrangler bundles the example from the package",
+    false,
+    String(error.stderr || error.message)
+      .split("\n")
+      .slice(0, 6)
+      .join(" | "),
+  );
+}
+if (fromNpm) {
+  const mf = await serve(fromNpm, { ANTHROPIC_API_KEY: "test-key" });
+  try {
+    const res = await mf.dispatchFetch(
+      "http://localhost/ask?q=How+many+vacation+days+do+I+get%3F",
+    );
+    const body = await res.json().catch(() => ({}));
+    report(
+      "installed: GET /ask answers from the vacation document",
+      res.status === 200 &&
+        body.sources?.[0]?.id === "vacation" &&
+        /twenty days/i.test(body.answer),
+      JSON.stringify(body).slice(0, 120),
+    );
+  } catch (error) {
+    report(
+      "installed: GET /ask answers from the vacation document",
+      false,
+      String(error.message).split("\n")[0],
+    );
+  } finally {
+    await mf.dispose();
+  }
+}
+
+for (const b of [probe, edgeProbe, example, fromNpm].filter(Boolean))
   fs.rmSync(b.out, { recursive: true, force: true });
+fs.rmSync(installed, { recursive: true, force: true });
 if (failed) {
   console.error(`\n${failed} edge check(s) failed`);
   process.exit(1);

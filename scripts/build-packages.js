@@ -290,6 +290,10 @@ function manifest(pkg, requires) {
     exports: {
       ".": {
         types: "./dist/index.d.ts",
+        // Cloudflare Workers bundlers (Wrangler) bundle the CommonJS build:
+        // index.mjs loads it at runtime with createRequire, which workerd
+        // can't do
+        workerd: "./dist/index.cjs",
         require: "./dist/index.cjs",
         import: "./dist/index.mjs",
       },

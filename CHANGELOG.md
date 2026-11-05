@@ -44,6 +44,19 @@ page.
 
 ### Fixed
 
+- **The main entry in a deployed Cloudflare Worker** (broken since 3.2.0).
+  Installed from npm, `import ... from "@devilsdev/rag-pipeline-utils"`
+  crashed when the Worker started (`index.mjs` loads the CommonJS build
+  with `createRequire`, which workerd can't do), and a project without
+  `openai` or `@opentelemetry/api` failed to bundle. The package now
+  points Wrangler at the CommonJS build (a `workerd` export condition, in
+  the scoped packages too), and those optional peers are required so a
+  bundle without them builds. CI aliased the package to its CommonJS build
+  in a checkout that has both peers, which hid both; `test/edge` now also
+  installs the packed tarballs into a project of its own and runs the
+  example from there. On 3.2.0 to 3.5.0, import
+  `@devilsdev/rag-pipeline-utils/edge` in Workers instead.
+
 - **Fewer lexical false alarms** (found by the Claude benchmarks). On the
   project-written dev cases (`__tests__/fixtures/lexical-checks/`,
   committed before the change), correct claims passing went from 12/37

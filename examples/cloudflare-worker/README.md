@@ -2,7 +2,7 @@
 
 A Cloudflare Worker that answers questions from your documents with `@devilsdev/rag-pipeline-utils`: retrieval in memory with the built-in TF-IDF embedder, answers from Claude, citations, and streaming with time to first token.
 
-> Needs `@devilsdev/rag-pipeline-utils` 3.2.0 or later, which is coming soon.
+> Needs `@devilsdev/rag-pipeline-utils` 3.6.0 or later. On 3.2.0 to 3.5.0, import `@devilsdev/rag-pipeline-utils/edge` in `src/worker.js` instead: the main entry fails in a deployed Worker there.
 
 ## Run it
 

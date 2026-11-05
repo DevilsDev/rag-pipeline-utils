@@ -1,7 +1,7 @@
 'use strict';
 
 const { BaseConnector } = require('./base-connector');
-const { loadOptionalPeer } = require('../utils/optional-peer');
+const { missingPeer } = require('../utils/optional-peer');
 const {
   missingApiKeyError,
   raceAbort,
@@ -39,12 +39,18 @@ const DEFAULT_CONFIG = {
  * @private
  */
 function loadOpenAI() {
-  return loadOptionalPeer(
-    'openai',
-    () => require('openai'), // eslint-disable-line global-require
-    'OpenAIConnector needs the "openai" package, an optional peer ' +
-      'dependency since 3.0.0: npm install openai',
-  );
+  // Inside a try, so a bundle (Wrangler, esbuild) of a project without
+  // openai still builds; see missingPeer
+  try {
+    return require('openai'); // eslint-disable-line global-require
+  } catch (error) {
+    throw missingPeer(
+      error,
+      'openai',
+      'OpenAIConnector needs the "openai" package, an optional peer ' +
+        'dependency since 3.0.0: npm install openai',
+    );
+  }
 }
 
 /**
