@@ -153,6 +153,7 @@ const { MemoryRetriever } = require('./connectors/memory-retriever');
 const { PgVectorRetriever } = require('./retrieval/pgvector-retriever');
 const { QdrantRetriever } = require('./retrieval/qdrant-retriever');
 const { PineconeRetriever } = require('./retrieval/pinecone-retriever');
+const { WeaviateRetriever } = require('./retrieval/weaviate-retriever');
 const { OpenAIConnector } = require('./connectors/openai-connector');
 const { AnthropicConnector } = require('./connectors/anthropic-connector');
 const { CohereConnector } = require('./connectors/cohere-connector');
@@ -337,6 +338,7 @@ module.exports = {
   PgVectorRetriever,
   QdrantRetriever,
   PineconeRetriever,
+  WeaviateRetriever,
   OpenAIConnector,
   AnthropicConnector,
   CohereConnector,

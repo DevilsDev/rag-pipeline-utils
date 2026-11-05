@@ -65,6 +65,43 @@ databaseSuite("QdrantRetriever", "QDRANT_URL", (url) => {
   });
 });
 
+databaseSuite("WeaviateRetriever", "WEAVIATE_URL", (url) => {
+  describe("WeaviateRetriever server", () => {
+    // As for Qdrant: lift jest.setup.js's network block for this suite.
+    let savedDispatcher;
+    beforeAll(() => {
+      const undici = require("undici");
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = true;
+      savedDispatcher = undici.getGlobalDispatcher();
+      undici.setGlobalDispatcher(new undici.Agent());
+    });
+    afterAll(() => {
+      require("undici").setGlobalDispatcher(savedDispatcher);
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = false;
+    });
+    const {
+      WeaviateRetriever,
+    } = require("../../src/retrieval/weaviate-retriever");
+    describeRetrieverContract(
+      "WeaviateRetriever",
+      () =>
+        new WeaviateRetriever({
+          url,
+          collection: `Contract_${randomBytes(4).toString("hex")}`,
+        }),
+      {
+        extended: true,
+        cleanup: async (retriever) => {
+          // retriever.collection: Weaviate's (capitalized) class name.
+          await fetch(`${url}/v1/schema/${retriever.collection}`, {
+            method: "DELETE",
+          });
+        },
+      },
+    );
+  });
+});
+
 describeRetrieverContract("MemoryRetriever", () => {
   const { MemoryRetriever } = require("../../src/connectors/memory-retriever");
   return new MemoryRetriever();
