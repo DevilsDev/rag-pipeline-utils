@@ -15,40 +15,8 @@ const { measure } = require("../../../scripts/measure-lexical-checks");
 
 /** Known misses, by case id, with why. Remove an id when a rule covers it. */
 const KNOWN_MISSES = {
-  // Found by the hand review of the 3.6 benchmark run (SciFact citations,
-  // RAGTruth): the clause rule wants every word the claim shares with only
-  // one clause of the source sentence to sit in a clause of the claim's
-  // polarity, so a subject named once, in the source's other clause, or a
-  // claim's framing clause without negation, fails the claim
-  "clause-07": "subject named only in the source's other, positive clause",
-  "clause-08": "the claim's framing clause has no negation",
-  "clause-10": "the clause's subject is in the source's other clause",
-  // Added for 3.7 before the units work
-  "unit-09":
-    "approximate conversion (1 month / 30 days); only exact ones are made",
-  "unit-g7": "the same number with a different unit passes (weeks / days)",
-  "time-03": "12-hour vs 24-hour times (5 pm / 17:00)",
-  // Units: "2 kg" vs "2,000 grams" needs unit conversion; and the reverse
-  // miss, a number that matches with a different unit ("2 pounds" against
-  // "2 kilograms"), needs units compared too
-  "unit-01": "unit conversion (kg / grams)",
-  "unit-02": "unit conversion (weeks / days)",
-  "unit-03": "unit conversion (km / metres)",
-  "unit-04": "unit conversion and 'one and a half' (minutes / hours)",
-  "unit-05": "'half a year' (months)",
-  "unit-06": "unit conversion (metres / cm)",
-  "unit-g1":
-    "the same number with a different unit passes (pounds / kilograms)",
-  "unit-g3": "the same number with a different unit passes (miles / km)",
-  "unit-g4": "the same number with a different unit passes (hours / minutes)",
-  // Fractions and percentages: "three quarters" is read as 3
-  "frac-01": "'three quarters' vs 75%",
-  "frac-04": "'a quarter' vs 25 percent",
-  "frac-g2": "'half' states no number, so 30% passes",
-  // A footnote marker glued to a year reads as a decimal ("1992.1")
-  "date-04": "footnote marker after a year",
-  // 12-hour vs 24-hour times
-  "time-01": "'9 to 5' vs '9:00 to 17:00'",
+  // Only exact conversions are made: a month is not a fixed number of days
+  "unit-09": "approximate conversion (1 month / 30 days)",
 };
 
 let results;

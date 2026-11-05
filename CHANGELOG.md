@@ -11,6 +11,35 @@ page.
 
 ## [Unreleased]
 
+### Changed
+
+- **Grounding verdicts can change** for `checkAnswer`, `verifyCitations`,
+  `CitationTracker`, `PostGenerationGuard` and the judge's failure
+  classification, because of the fixes below. Re-save the report you pass
+  to `rag-pipeline eval --baseline` after upgrading.
+
+### Fixed
+
+- **Units, fractions and times in the answer check.** A number with a unit
+  is checked as a quantity, converted exactly within its kind (mass,
+  length, durations from seconds to weeks, months and years): "2 kg"
+  matches "2,000 grams" and "90 minutes" matches "one and a half hours",
+  while "2 pounds" no longer passes against "2 kilograms", or "3 weeks"
+  against "3 days". "Three quarters of", "half of" and "a third of" read
+  as 75%, 50% and 33% (a bare "half" is not a number), "5 pm" and "9 to 5"
+  match 17:00 and 9:00 to 17:00 when the source states clock times, and a
+  footnote marker after a year ("1992.1 It ...") no longer hides the year.
+  A month is not converted to days. A quantity in a unit the source doesn't
+  state falls back to the plain number check, as before.
+- **Two false alarms from the 3.6 clause rule:** a clause that continues
+  the first clause's subject ("The drug lowered blood pressure but did not
+  reduce mortality") now supports "The drug did not reduce mortality", and
+  an opening framing clause ("Based on these results, ...") no longer fails
+  a claim whose statement matches.
+  On the project-written dev cases (`__tests__/fixtures/lexical-checks/`,
+  the 3.7 ones committed before the change), correct claims passing went
+  from 32/47 to 46/47 and real mismatches caught from 40/45 to 45/45.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer

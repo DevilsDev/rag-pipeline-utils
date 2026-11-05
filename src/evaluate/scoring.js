@@ -268,6 +268,320 @@ function extractNumbers(text) {
 }
 
 /**
+ * Units a quantity can carry, as [kind, size in the kind's base unit,
+ * unit name]. Conversions are exact only: days, weeks, hours, minutes and
+ * seconds convert among themselves, months and years among themselves (a
+ * month is not a fixed number of days), mass and length within their
+ * kind. Ambiguous abbreviations ("m", "s", "h", "in") are left out.
+ */
+const UNITS = (() => {
+  const table = {};
+  const add = (kind, size, name, words) => {
+    for (const w of words.split(' ')) table[w] = [kind, size, name];
+  };
+  add('mass', 0.001, 'milligram', 'mg milligram milligrams');
+  add('mass', 1, 'gram', 'g gram grams gramme grammes');
+  add('mass', 1000, 'kilogram', 'kg kgs kilogram kilograms kilo kilos');
+  add('mass', 453.59237, 'pound', 'lb lbs pound pounds');
+  add('mass', 28.349523125, 'ounce', 'oz ounce ounces');
+  add(
+    'length',
+    0.001,
+    'millimetre',
+    'mm millimetre millimetres millimeter millimeters',
+  );
+  add(
+    'length',
+    0.01,
+    'centimetre',
+    'cm centimetre centimetres centimeter centimeters',
+  );
+  add('length', 1, 'metre', 'metre metres meter meters');
+  add(
+    'length',
+    1000,
+    'kilometre',
+    'km kilometre kilometres kilometer kilometers',
+  );
+  add('length', 1609.344, 'mile', 'mile miles');
+  add('length', 0.3048, 'foot', 'ft foot feet');
+  add('length', 0.0254, 'inch', 'inch inches');
+  add('duration', 1, 'second', 'sec secs second seconds');
+  add('duration', 60, 'minute', 'min mins minute minutes');
+  add('duration', 3600, 'hour', 'hr hrs hour hours');
+  add('duration', 86400, 'day', 'day days');
+  add('duration', 604800, 'week', 'wk wks week weeks');
+  add('calendar', 1, 'month', 'month months');
+  add('calendar', 12, 'year', 'yr yrs year years');
+  add('percent', 1, 'percent', 'percent');
+  return table;
+})();
+
+/** "half of", "a quarter of", "three quarters of", "two thirds of", as percentages. */
+const FRACTION_WORDS = {
+  half: 50,
+  quarter: 25,
+  quarters: 25,
+  third: 100 / 3,
+  thirds: 100 / 3,
+};
+
+const QUANTITY_TOKEN_RE = /\d+(?:[.,:]\d+)*|\p{L}+|%/gu;
+
+/** A digit token's value ("2,000" is 2000, "1.5" is 1.5); null for clock times and lists. */
+function digitValue(raw) {
+  if (raw.includes(':')) return null;
+  if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw))
+    return Number(raw.replace(/,/g, ''));
+  if (raw.includes(',')) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+const isNumberWord = (w) =>
+  w in NUMBER_WORDS || w in NUMBER_SCALES || w === 'one';
+
+/**
+ * The quantities a text states: a number followed by a unit ("2 kg", "two
+ * weeks", "one and a half hours", "half a year", "10 per cent", "75%"), and
+ * fractions of something ("three quarters of", "half of"), with where they
+ * are in the text, so the plain number check can skip them.
+ *
+ * @param {string} text
+ * @returns {{ items: Array<{ kind: string, value: number, unit: string, number: string, start: number, end: number, words: boolean }>, unitWords: Set<string> }}
+ */
+function quantities(text) {
+  const items = [];
+  const unitWords = new Set();
+  const tokens = [...String(text || '').matchAll(QUANTITY_TOKEN_RE)].map(
+    (m) => ({
+      t: m[0].toLowerCase(),
+      start: m.index,
+      end: m.index + m[0].length,
+    }),
+  );
+  for (const tok of tokens) if (UNITS[tok.t]) unitWords.add(UNITS[tok.t][2]);
+
+  const unitAt = (j) => {
+    const tok = tokens[j];
+    if (!tok) return null;
+    if (tok.t === '%') return [['percent', 1, 'percent'], j];
+    if (tok.t === 'per' && tokens[j + 1] && tokens[j + 1].t === 'cent') {
+      return [['percent', 1, 'percent'], j + 1];
+    }
+    return UNITS[tok.t] ? [UNITS[tok.t], j] : null;
+  };
+  const push = (kind, value, unit, number, from, to, words) =>
+    items.push({
+      kind,
+      value,
+      unit,
+      number: String(number),
+      start: tokens[from].start,
+      end: tokens[to].end,
+      words,
+    });
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i].t;
+    // "half a year", "half an hour"
+    if (
+      t === 'half' &&
+      tokens[i + 1] &&
+      (tokens[i + 1].t === 'a' || tokens[i + 1].t === 'an')
+    ) {
+      const u = unitAt(i + 2);
+      if (u && u[0][0] !== 'percent') {
+        push(u[0][0], 0.5 * u[0][1], u[0][2], 0.5, i, u[1], true);
+        i = u[1];
+        continue;
+      }
+    }
+    // Fractions of something: "half of", "a quarter of", "three quarters of"
+    if (t in FRACTION_WORDS) {
+      const prev = tokens[i - 1] && tokens[i - 1].t;
+      const count =
+        t === 'half'
+          ? 1
+          : prev in NUMBER_WORDS
+            ? NUMBER_WORDS[prev]
+            : prev === 'a' || prev === 'one'
+              ? 1
+              : null;
+      if (count !== null && tokens[i + 1] && tokens[i + 1].t === 'of') {
+        const from = t === 'half' ? i : i - 1;
+        push(
+          'percent',
+          count * FRACTION_WORDS[t],
+          'percent',
+          count * FRACTION_WORDS[t],
+          from,
+          i,
+          true,
+        );
+        items[items.length - 1].fraction = true;
+        if (t === 'third' || t === 'thirds')
+          items[items.length - 1].approx = true;
+        continue;
+      }
+    }
+    // A number, in digits or words, then a unit (with "and a half" between)
+    let value = null;
+    let end = i;
+    let words = false;
+    if (/^\d/.test(t)) {
+      value = digitValue(t);
+    } else if (isNumberWord(t)) {
+      let j = i;
+      const run = [];
+      while (
+        tokens[j] &&
+        (isNumberWord(tokens[j].t) ||
+          (tokens[j].t === 'and' &&
+            tokens[j + 1] &&
+            isNumberWord(tokens[j + 1].t) &&
+            run.length))
+      ) {
+        if (tokens[j].t !== 'and') run.push(tokens[j].t);
+        j++;
+      }
+      if (run.length) {
+        value = parseNumberWords(run);
+        end = j - 1;
+        words = true;
+      }
+    }
+    if (value === null) continue;
+    let next = end + 1;
+    if (
+      tokens[next] &&
+      tokens[next].t === 'and' &&
+      tokens[next + 1] &&
+      tokens[next + 1].t === 'a' &&
+      tokens[next + 2] &&
+      tokens[next + 2].t === 'half'
+    ) {
+      value += 0.5;
+      next += 3;
+    }
+    const u = unitAt(next);
+    if (u) {
+      push(u[0][0], value * u[0][1], u[0][2], value, i, u[1], words);
+      i = u[1];
+    } else {
+      i = end;
+    }
+  }
+  return { items, unitWords };
+}
+
+// The same source is checked against every sentence of an answer: keep the
+// last few sources' quantities
+const docQuantityCache = new Map();
+function docQuantities(text) {
+  const key = String(text || '');
+  let hit = docQuantityCache.get(key);
+  if (!hit) {
+    hit = quantities(key);
+    if (docQuantityCache.size >= 256) docQuantityCache.clear();
+    docQuantityCache.set(key, hit);
+  }
+  return hit;
+}
+
+/** Whether two quantities of one kind are equal (thirds are compared to the nearest point). */
+function sameQuantity(a, b) {
+  const tolerance =
+    a.approx || b.approx
+      ? 1
+      : Math.max(Math.abs(a.value), Math.abs(b.value)) * 1e-9;
+  return Math.abs(a.value - b.value) <= tolerance;
+}
+
+/** Hours of the clock times ("17:00") in a text, each also on a 12-hour clock. */
+function clockHours(text) {
+  const hours24 = new Set();
+  const hours12 = new Set();
+  for (const m of String(text || '').matchAll(
+    /(?<!\d)(\d{1,2}):([0-5]\d)(?!\d)/g,
+  )) {
+    const h = Number(m[1]);
+    if (h > 23) continue;
+    hours24.add(h);
+    hours12.add(h % 12 === 0 ? 12 : h % 12);
+  }
+  return { hours24, hours12 };
+}
+
+/**
+ * Times of day in a claim checked against a source that states clock times:
+ * "5 pm" must be a 17:00 in the source, and a bare hour after "at", "from",
+ * "to" or "until" ("open from 9 to 5") an hour of the source on a 12-hour
+ * clock. Returns the claim's spans it checked and the times it didn't find.
+ */
+function checkClockTimes(claimText, docText) {
+  const spans = [];
+  const matched = [];
+  const missing = [];
+  const { hours24, hours12 } = clockHours(docText);
+  if (hours24.size === 0) return { spans, matched, missing };
+  const tokens = [...String(claimText || '').matchAll(QUANTITY_TOKEN_RE)].map(
+    (m) => ({
+      t: m[0].toLowerCase(),
+      start: m.index,
+      end: m.index + m[0].length,
+    }),
+  );
+  for (let i = 0; i < tokens.length; i++) {
+    if (!/^\d{1,2}$/.test(tokens[i].t)) continue;
+    const h = Number(tokens[i].t);
+    const next = tokens[i + 1] && tokens[i + 1].t;
+    const prev = tokens[i - 1] && tokens[i - 1].t;
+    if ((next === 'am' || next === 'pm') && h >= 1 && h <= 12) {
+      const h24 = (h % 12) + (next === 'pm' ? 12 : 0);
+      const span = [tokens[i].start, tokens[i + 1].end];
+      if (hours24.has(h24)) matched.push(span);
+      else missing.push(`time:${h}${next}`);
+      spans.push(span);
+    } else if (
+      ['at', 'from', 'to', 'until', 'till'].includes(prev) &&
+      h >= 1 &&
+      h <= 12
+    ) {
+      const span = [tokens[i].start, tokens[i].end];
+      if (hours12.has(h) || hours24.has(h)) matched.push(span);
+      else missing.push(`time:${h}`);
+      spans.push(span);
+    }
+  }
+  return { spans, matched, missing };
+}
+
+/** A text with these [start, end) spans blanked out. */
+function withoutSpans(text, spans) {
+  let out = String(text || '');
+  for (const [start, end] of [...spans].sort((a, b) => b[0] - a[0])) {
+    out = out.slice(0, start) + ' '.repeat(end - start) + out.slice(end);
+  }
+  return out;
+}
+
+/**
+ * Footnote markers glued to a year ("published in 1992.1 It enrolled"): the
+ * year, so the source states it. Only year-like numbers, a one- or
+ * two-digit marker, then a capital letter.
+ */
+function footnotedYears(text) {
+  const out = [];
+  for (const m of String(text || '').matchAll(
+    /(?<![\d.])(1[89]\d\d|20\d\d|2100)\.\d{1,2}(?=\s+\p{Lu})/gu,
+  )) {
+    out.push(String(Number(m[1])));
+  }
+  return out;
+}
+
+/**
  * Numeric consistency between a claim and a document: every number the claim
  * states (digits, decimals, percentages or number words) must also appear in
  * the document. Lexical overlap alone would ground "thirty days" against a
@@ -278,21 +592,73 @@ function extractNumbers(text) {
  * @returns {{ consistent: boolean, claimNumbers: string[], missing: string[] }}
  */
 function checkNumericConsistency(claimText, docText) {
-  const claimNumbers = [
-    ...new Set(extractNumbers(withoutReferences(claimText)).values),
+  const claim = withoutReferences(claimText);
+  const docParts = new Set([
+    ...extractNumbers(docText).parts,
+    ...footnotedYears(docText),
+  ]);
+
+  // Quantities with a unit (3.7): "2 kg" is checked as a mass, so it
+  // matches "2,000 grams" and not "2 pounds". A quantity the source states
+  // in no comparable unit falls back to the plain number check, unless it
+  // was written in words ("three quarters of"), which has no plain number.
+  const doc = docQuantities(docText);
+  const spans = [];
+  const matched = [];
+  const missing = [];
+  const claimNumbers = [];
+  for (const q of quantities(claim).items) {
+    const sameKind = doc.items.filter((d) => d.kind === q.kind);
+    const equal = sameKind.filter((d) => sameQuantity(d, q));
+    const found =
+      equal.length > 0 ||
+      // the same number and unit word elsewhere: "20 days" in "20 vacation days"
+      (docParts.has(q.number) && doc.unitWords.has(q.unit));
+    if (sameKind.length === 0 && !q.words && !found) continue;
+    spans.push([q.start, q.end]);
+    // Its words count as supported only when the source states it in
+    // another unit ("90 minutes" for "one and a half hours"); "20 days"
+    // against "twenty days" is left to the overlap, as before
+    const converted = (d) =>
+      d.unit !== q.unit || Boolean(d.fraction) !== Boolean(q.fraction);
+    if (equal.length > 0 && equal.every(converted)) {
+      matched.push([q.start, q.end]);
+    }
+    claimNumbers.push(`${q.kind}:${q.number} ${q.unit}`);
+    if (!found && (sameKind.length > 0 || !q.words))
+      missing.push(`${q.kind}:${q.number} ${q.unit}`);
+  }
+  const clock = checkClockTimes(claim, docText);
+  spans.push(...clock.spans);
+  matched.push(...clock.matched);
+  missing.push(...clock.missing);
+
+  const plain = [
+    ...new Set(extractNumbers(withoutSpans(claim, spans)).values),
     ...claimMonths(claimText).map((m) => `month:${m}`),
     ...identifiers(claimText),
   ];
+  claimNumbers.push(...plain, ...clock.missing);
+  // The words of a quantity or time the source states another way
+  // ("90 minutes" for "one and a half hours"): supported, for the overlap
+  const matchedWords = [
+    ...new Set(matched.flatMap(([a, b]) => tokenize(claim.slice(a, b)))),
+  ];
   if (claimNumbers.length === 0) {
-    return { consistent: true, claimNumbers, missing: [] };
+    return { consistent: true, claimNumbers, missing: [], matchedWords };
   }
   const docNumbers = new Set([
-    ...extractNumbers(docText).parts,
+    ...docParts,
     ...docMonths(docText).map((m) => `month:${m}`),
     ...identifiers(docText),
   ]);
-  const missing = claimNumbers.filter((n) => !docNumbers.has(n));
-  return { consistent: missing.length === 0, claimNumbers, missing };
+  missing.push(...plain.filter((n) => !docNumbers.has(n)));
+  return {
+    consistent: missing.length === 0,
+    claimNumbers,
+    missing,
+    matchedWords,
+  };
 }
 
 /**
@@ -421,6 +787,24 @@ const CLAUSE_BOUNDARY_WORDS = new Set(
   ),
 );
 
+/**
+ * A clause starting with one of these continues the previous clause's
+ * subject ("... but was not better", "... but did not reduce").
+ */
+const ELLIPTICAL_START = new Set(
+  (
+    'not never was were is are be been did does do has have had can could ' +
+    'will would should may might must shall'
+  ).split(' '),
+);
+
+/** An opening claim clause starting with one of these only frames the claim. */
+const FRAMING_WORDS = new Set(
+  'according based in on given as from per under after before during'.split(
+    ' ',
+  ),
+);
+
 /** A sentence's clauses, each as its tokens. */
 function clauseTokens(text) {
   const out = [];
@@ -506,18 +890,31 @@ function checkPolarityConsistency(claimText, docText) {
       contentTokens(tokens.filter((t) => !NEGATION_WORDS.has(t))).map(stem),
     ),
   ];
-  const claimClauses = clauseTokens(claimText)
+  let claimClauses = clauseTokens(claimText)
     .map((tokens) => ({ tokens, words: words(tokens) }))
     .filter((c) => c.words.length > 0);
+  // An opening framing clause ("Based on these results, ...", "According
+  // to the study, ...") states no fact of its own: the clauses after it
+  // decide (3.7)
+  if (
+    claimClauses.length > 1 &&
+    FRAMING_WORDS.has(claimClauses[0].tokens[0]) &&
+    !isNegated(claimClauses[0].tokens)
+  ) {
+    claimClauses = claimClauses.slice(1);
+  }
   const claimNegated = claimClauses.some((c) => isNegated(c.tokens));
   if (claimClauses.length === 0) {
     return { consistent: true, claimNegated, sourceSentence: null };
   }
 
   const sentences = splitSentences(docText).map((sentence) => {
-    const clauses = clauseTokens(sentence).map((tokens) => ({
+    const clauses = clauseTokens(sentence).map((tokens, i) => ({
       negated: isNegated(tokens),
       stems: new Set(tokens.map(stem)),
+      // "... but was not better than Y", "... but did not reduce Y": no
+      // subject of its own, so it continues the first clause's (3.7)
+      continues: i > 0 && ELLIPTICAL_START.has(tokens[0]),
     }));
     const stems = new Set(clauses.flatMap((c) => [...c.stems]));
     return { sentence, clauses, stems };
@@ -533,10 +930,19 @@ function checkPolarityConsistency(claimText, docText) {
    */
   const agrees = (clause, sentence) => {
     const negated = isNegated(clause.tokens);
-    const distinctive = clause.words
+    let distinctive = clause.words
       .map((w) => sentence.clauses.filter((c) => c.stems.has(w)))
       .filter((owners) => owners.length === 1)
       .map((owners) => owners[0]);
+    // A subject named once, in the first clause, also belongs to a later
+    // clause that continues it: when such a clause holds some of the
+    // claim's words, the first clause's words don't decide on their own
+    // ("the drug did not reduce mortality" against "The drug lowered blood
+    // pressure but did not reduce mortality")
+    const first = sentence.clauses[0];
+    if (distinctive.some((c) => c.continues)) {
+      distinctive = distinctive.filter((c) => c !== first);
+    }
     if (distinctive.length > 0) {
       return distinctive.every((c) => c.negated === negated);
     }
@@ -635,22 +1041,21 @@ function computeSupportScore(
   if (claim.length === 0) return 0;
   const docSet = docTokens instanceof Set ? docTokens : new Set(docTokens);
 
+  const { claimText, docText } = options || {};
+  const texts = typeof claimText === 'string' && typeof docText === 'string';
+  const numeric = texts ? checkNumericConsistency(claimText, docText) : null;
+  const restated = new Set(numeric ? numeric.matchedWords : []);
+
   let matched = 0;
   let total = 0;
   for (const token of claim) {
     const weight = idfWeights ? (idfWeights.get(token) ?? 1) : 1;
     total += weight;
-    if (docSet.has(token)) matched += weight;
+    if (docSet.has(token) || restated.has(token)) matched += weight;
   }
   let score = total > 0 ? matched / total : 0;
 
-  const { claimText, docText } = options || {};
-  if (
-    score > 0 &&
-    typeof claimText === 'string' &&
-    typeof docText === 'string'
-  ) {
-    const numeric = checkNumericConsistency(claimText, docText);
+  if (score > 0 && texts) {
     if (!numeric.consistent) {
       const share =
         (numeric.claimNumbers.length - numeric.missing.length) /
