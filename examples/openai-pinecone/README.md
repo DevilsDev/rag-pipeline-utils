@@ -3,8 +3,8 @@
 A RAG pipeline that uses:
 
 - **OpenAI** (`OpenAIConnector` from the library) for embeddings and answers
-- **Pinecone** for vector storage, through a small retriever adapter
-  (`PineconeRetriever` in `index.js`)
+- **Pinecone** for vector storage (`PineconeRetriever` from the library,
+  3.6.0 or later: the REST API, no Pinecone package)
 - **`createRagPipeline`** to wire them together, with citations and
   evaluation
 
@@ -93,9 +93,11 @@ Pipeline completed successfully.
 
 ```javascript
 const openai = new OpenAIConnector({ model: "gpt-4o-mini" }); // reads OPENAI_API_KEY
-const retriever = new PineconeRetriever(); // reads PINECONE_API_KEY
+// From the library; reads PINECONE_API_KEY
+const retriever = new PineconeRetriever({ index: "rag-pipeline-demo" });
 
-// Index: embed each document and upsert it (content kept in metadata)
+// Index: embed each document and upsert it; store() returns once the
+// write is accepted, and queries wait until it is indexed
 await retriever.store([
   { id, vector: await openai.embed(text), content: text },
 ]);

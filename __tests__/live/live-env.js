@@ -48,7 +48,30 @@ function liveAnthropic() {
   return { apiKey, reason: null };
 }
 
+/**
+ * Pinecone for the PineconeRetriever live test: PINECONE_API_KEY and the
+ * index to use (PINECONE_INDEX, its name, or PINECONE_INDEX_HOST), from the
+ * environment or the same env file. The test writes to a namespace of its
+ * own and deletes it; it never creates or deletes an index.
+ * @returns {{ apiKey: string|null, index?: string, host?: string, reason: string|null }}
+ */
+function livePinecone() {
+  const file = readEnvFile(process.env.RAG_LIVE_ENV || DEFAULT_FILE);
+  const get = (k) => process.env[k] || file[k];
+  const apiKey = get("PINECONE_API_KEY");
+  const index = get("PINECONE_INDEX");
+  const host = get("PINECONE_INDEX_HOST");
+  if (!apiKey) return { apiKey: null, reason: "no PINECONE_API_KEY" };
+  if (!index && !host) {
+    return {
+      apiKey: null,
+      reason: "set PINECONE_INDEX (or PINECONE_INDEX_HOST)",
+    };
+  }
+  return { apiKey, index, host, reason: null };
+}
+
 /** The cheapest current model, with small outputs, to keep runs cheap. */
 const MODEL = process.env.LIVE_ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
 
-module.exports = { liveAnthropic, MODEL };
+module.exports = { liveAnthropic, livePinecone, MODEL };

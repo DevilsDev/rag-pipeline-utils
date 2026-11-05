@@ -103,6 +103,7 @@ const { OllamaConnector } = require('./connectors/ollama-connector');
 const { LocalEmbedder } = require('./connectors/local-embedder');
 const { MemoryRetriever } = require('./connectors/memory-retriever');
 const { QdrantRetriever } = require('./retrieval/qdrant-retriever');
+const { PineconeRetriever } = require('./retrieval/pinecone-retriever');
 const { AnthropicConnector } = require('./connectors/anthropic-connector');
 const { CohereConnector } = require('./connectors/cohere-connector');
 
@@ -203,6 +204,7 @@ module.exports = {
   LocalEmbedder,
   MemoryRetriever,
   QdrantRetriever,
+  PineconeRetriever,
   AnthropicConnector,
   CohereConnector,
 

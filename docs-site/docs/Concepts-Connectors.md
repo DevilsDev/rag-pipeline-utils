@@ -26,15 +26,16 @@ defined as a JSON schema in `contracts/`.
 
 ### Retrievers / Vector stores
 
-| Connector                  | Notes                                                                                                                                                                                                                 |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MemoryRetriever`          | In-process cosine-similarity store. Needs a `queryVector` (pass an embedder to the pipeline). Enforces `maxDocuments` (default 100000; `eviction: 'fifo'` drops the oldest) and rejects mismatched vector dimensions. |
-| `FileVectorStore`          | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
-| `HybridRetriever`          | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
-| `GraphRetriever`           | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
-| `PgVectorRetriever`        | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector).                                                                    |
-| `QdrantRetriever`          | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant).                                                                                                                                              |
-| Pinecone, Weaviate, others | Build your own retriever with the [retriever contract](./Plugins); [examples/openai-pinecone](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples/openai-pinecone) adapts a Pinecone index.            |
+| Connector           | Notes                                                                                                                                                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MemoryRetriever`   | In-process cosine-similarity store. Needs a `queryVector` (pass an embedder to the pipeline). Enforces `maxDocuments` (default 100000; `eviction: 'fifo'` drops the oldest) and rejects mismatched vector dimensions. |
+| `FileVectorStore`   | JSON-file vector index with atomic writes, embedder/dimension tracking and per-source re-ingestion. Used by the CLI (`file-store`, `.rag/index.json`).                                                                |
+| `HybridRetriever`   | Combines several retrievers (e.g. vector + `BM25Search`) with Reciprocal Rank Fusion.                                                                                                                                 |
+| `GraphRetriever`    | Knowledge-graph retrieval over extracted entities.                                                                                                                                                                    |
+| `PgVectorRetriever` | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector).                                                                    |
+| `QdrantRetriever`   | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant).                                                                                                                                              |
+| `PineconeRetriever` | A Pinecone serverless index over its REST API, with no client package. See [Pinecone](#pinecone).                                                                                                                     |
+| Weaviate, others    | Build your own retriever with the [retriever contract](./Plugins).                                                                                                                                                    |
 
 ### PostgreSQL with pgvector
 
@@ -145,6 +146,54 @@ In `.ragrc.json`, the URL comes from `config.url` or `QDRANT_URL`, and the API k
 ```
 
 As with pgvector, the CLI's `local` embedder can't be used with it; use `openai`, `ollama` or `cohere`.
+
+### Pinecone
+
+:::info[Coming in 3.6.0]
+`PineconeRetriever` is in 3.6.0.
+:::
+
+`PineconeRetriever` keeps documents in a namespace of a [Pinecone](https://www.pinecone.io) serverless index. It talks to Pinecone's REST API (version 2026-07) with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too.
+
+```javascript no-run
+import {
+  createRagPipeline,
+  OpenAIConnector,
+  PineconeRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const retriever = new PineconeRetriever({
+  index: "docs", // or host: the index host from the console
+  namespace: "rag_documents",
+}); // reads PINECONE_API_KEY
+const embedder = new OpenAIConnector();
+const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
+```
+
+Create the index first, in the console or with Pinecone's API: its dimension is your embedding model's, and use the cosine metric for the scores the other retrievers return. The retriever owns its namespace: `clear()` deletes everything in it.
+
+Pinecone is eventually consistent. Like Qdrant's waited writes, a read waits until this retriever's own writes are indexed: Pinecone returns a log sequence number for each write and, on each query, the highest one it reflects ([data freshness](https://docs.pinecone.io/guides/index-data/check-data-freshness)). It waits up to `freshnessTimeoutMs`; writes from other processes aren't waited for.
+
+Pinecone metadata is flat and limited to 40 KB per record. Each record keeps your id as `rag_id` (ids that Pinecone rejects, such as non-ASCII ones, become a hash), the content as `rag_content`, your metadata as JSON in `rag_metadata`, and `metadata.source` as `rag_source` for `removeBySource`. Results report your original id and metadata.
+
+| Option               | Default            | Description                                                        |
+| -------------------- | ------------------ | ------------------------------------------------------------------ |
+| `apiKey`             | `PINECONE_API_KEY` | Sent as the `Api-Key` header; never included in errors             |
+| `index`              |                    | The index name, resolved to its host on first use                  |
+| `host`               |                    | The index host, instead of `index`                                 |
+| `namespace`          | `rag_documents`    | A namespace this retriever owns                                    |
+| `freshnessTimeoutMs` | `30000`            | How long a read waits for this retriever's writes; `0` to not wait |
+| `cacheKey`           |                    | Cache identity, as for [pgvector](#postgresql-with-pgvector)       |
+
+It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant (against an in-memory Pinecone in CI). In `.ragrc.json`, the index comes from `config.index` (or `config.host`) or `PINECONE_INDEX`, and the API key only from `PINECONE_API_KEY`:
+
+```json
+{
+  "stage": "retriever",
+  "name": "pinecone",
+  "config": { "index": "docs", "namespace": "rag_documents" }
+}
+```
 
 ### LLMs
 

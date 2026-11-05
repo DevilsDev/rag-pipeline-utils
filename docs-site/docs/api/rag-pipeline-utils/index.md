@@ -55,6 +55,7 @@ RAG Pipeline Utils - TypeScript Definitions
 - [OllamaConnector](classes/OllamaConnector.md)
 - [OpenAIConnector](classes/OpenAIConnector.md)
 - [PgVectorRetriever](classes/PgVectorRetriever.md)
+- [PineconeRetriever](classes/PineconeRetriever.md)
 - [PipelineEvaluator](classes/PipelineEvaluator.md)
 - [PluginAnalytics](classes/PluginAnalytics.md)
 - [PluginAnalyticsDashboard](classes/PluginAnalyticsDashboard.md)

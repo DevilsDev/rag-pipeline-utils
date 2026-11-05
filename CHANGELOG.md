@@ -13,6 +13,17 @@ page.
 
 ### Added
 
+- **`PineconeRetriever`**: a Pinecone serverless index as a vector store,
+  over the REST API with the built-in `fetch` (no client package; on the
+  edge build too). It owns a namespace, keeps content and metadata in
+  Pinecone's flat metadata, and waits for its own writes to be indexed
+  before reading, using Pinecone's log sequence numbers, so a query right
+  after `store()` sees them. It has the CLI's `size`, `list` and
+  `removeBySource`, and `.ragrc.json` takes `"name": "pinecone"` (the key
+  only from `PINECONE_API_KEY`). It passes the same retriever contract as
+  pgvector and Qdrant against an eventually consistent in-memory Pinecone
+  in CI; `examples/openai-pinecone` uses it instead of its own adapter.
+
 - **Consumer journeys** (`npm run test:consumer`): eleven developer journeys
   against the packed package and the live Claude API, run before a
   release (they found the API-key leak fixed in 3.5.0).

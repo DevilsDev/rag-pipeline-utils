@@ -11,6 +11,7 @@ const { CohereConnector } = require('../connectors/cohere-connector');
 const { OllamaConnector } = require('../connectors/ollama-connector');
 const { LocalEmbedder } = require('../connectors/local-embedder');
 const { QdrantRetriever } = require('../retrieval/qdrant-retriever');
+const { PineconeRetriever } = require('../retrieval/pinecone-retriever');
 const { PgVectorRetriever } = require('../retrieval/pgvector-retriever');
 const { createAiSdkAdapter } = require('../adapters/ai-sdk');
 
@@ -21,6 +22,7 @@ module.exports = {
   OllamaConnector,
   LocalEmbedder,
   QdrantRetriever,
+  PineconeRetriever,
   PgVectorRetriever,
   createAiSdkAdapter,
 };

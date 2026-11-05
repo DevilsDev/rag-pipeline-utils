@@ -64,6 +64,17 @@ const BUILT_INS = {
         cacheKey: cfg.cacheKey,
       });
     },
+    // The API key comes only from PINECONE_API_KEY, never the config file.
+    pinecone: (cfg) => {
+      const { PineconeRetriever } = require("../retrieval/pinecone-retriever");
+      return new PineconeRetriever({
+        apiKey: process.env.PINECONE_API_KEY,
+        index: cfg.index || process.env.PINECONE_INDEX,
+        host: cfg.host || process.env.PINECONE_INDEX_HOST,
+        namespace: cfg.namespace,
+        cacheKey: cfg.cacheKey,
+      });
+    },
   },
   llm: {
     openai: (cfg) =>
