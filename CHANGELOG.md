@@ -21,6 +21,57 @@ page.
   builds the "Claude API calls behind these numbers" tables on the
   Benchmarks page from those ledgers and the benchmarks' response cache.
 
+### Changed
+
+- **Grounding verdicts can change** for `checkAnswer`, `verifyCitations`,
+  `CitationTracker`, `PostGenerationGuard` and the LLM judge's failure
+  classification, because of the fixes below. Re-save the report you pass
+  to `rag-pipeline eval --baseline` (run once with `--output`) after
+  upgrading, so the regression gate compares like with like.
+
+### Fixed
+
+- **Fewer lexical false alarms** (found by the Claude benchmarks). On the
+  project-written dev cases (`__tests__/fixtures/lexical-checks/`,
+  committed before the change), correct claims passing went from 12/37
+  to 27/37 and real mismatches caught from 23/36 to 32/36 (78 cases now,
+  with the identifier and new-pattern cases added later: 28/40 and 35/39):
+
+  - a negation in a clause the claim leaves out ("binds to the receptor
+    but does not activate it" supports "binds to the receptor") no longer
+    fails the claim;
+  - a sentence with two negated clauses ("the trial was not blinded, and it
+    did not report side effects") is no longer read as positive, and
+    "nunca ... ni" counts once;
+  - reference numbers ("Document 3", "Table 2") are no longer compared as
+    facts, and identifiers ("kinesin-8", "IL-2") are compared whole;
+  - month names and numeric dates match ("12 May 2019" vs "12/05/2019" or
+    "2019-05-12");
+  - German, Spanish and French negation words count;
+  - and mismatches the check used to miss: a negated clause in a sentence
+    whose other clause matches, and a wrong month.
+
+  On the published sets, re-run from the cached Claude responses (see
+  "3.5.0 and 3.6 compared" on the Benchmarks page): RAGTruth sentences
+  wrongly flagged fell from 1,633 to 1,474 (misses 107 to 108), and with a
+  Claude judge by about a quarter, with a few more misses; answer-level
+  scores barely move (RAGTruth F1 0.691 to 0.688, HaluEval precision 0.861
+  to 0.887 with recall 0.544 to 0.536), because an answer stays flagged
+  while any of its sentences is. Hand review of every SciFact citation
+  claim flagged: false alarms 78 to 43 across five models, real problems
+  caught 3 to 3. The first run on the frozen code found identifiers
+  passing with a different number ("IL-2" for "IL-3"); that was fixed, with
+  project-written cases first, and the sets were run once more.
+
+  New false alarms from the clause rule, found by that review: a claim
+  whose subject the source names only in its other, positive clause
+  ("the drug was not better than the combined therapy" against "the drug
+  was better than placebo, but was not better than the combined
+  therapy"), and a claim whose framing clause ("Based on these results,
+  ...") has no negation. Still missed: unit conversion ("2 kg" vs "2,000
+  grams") and the same number with a different unit, "three quarters" vs
+  75%, 12- vs 24-hour times, and a footnote marker glued to a year.
+
 ## [3.5.0] - 2026-11-05
 
 A minor release with no breaking changes, about checks you can measure and

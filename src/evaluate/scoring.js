@@ -278,13 +278,119 @@ function extractNumbers(text) {
  * @returns {{ consistent: boolean, claimNumbers: string[], missing: string[] }}
  */
 function checkNumericConsistency(claimText, docText) {
-  const claimNumbers = [...new Set(extractNumbers(claimText).values)];
+  const claimNumbers = [
+    ...new Set(extractNumbers(withoutReferences(claimText)).values),
+    ...claimMonths(claimText).map((m) => `month:${m}`),
+    ...identifiers(claimText),
+  ];
   if (claimNumbers.length === 0) {
     return { consistent: true, claimNumbers, missing: [] };
   }
-  const docNumbers = new Set(extractNumbers(docText).parts);
+  const docNumbers = new Set([
+    ...extractNumbers(docText).parts,
+    ...docMonths(docText).map((m) => `month:${m}`),
+    ...identifiers(docText),
+  ]);
   const missing = claimNumbers.filter((n) => !docNumbers.has(n));
   return { consistent: missing.length === 0, claimNumbers, missing };
+}
+
+/**
+ * Words after which a number names a part of the material, not a quantity
+ * the source must contain: "Document 3 shows", "according to Table 2",
+ * "Step 2".
+ */
+const REFERENCE_WORDS =
+  'document|documents|doc|docs|source|sources|table|tables|figure|figures|fig|section|sections|step|steps|study|studies|appendix|chapter|page|pages|claim|claims|passage|passages|item|items|reference|ref|part|exhibit|equation|eq|line|row|column|note|footnote|paragraph';
+const REFERENCE_RE = new RegExp(
+  `\\b(${REFERENCE_WORDS})\\.?\\s+\\d+[a-z]?\\b`,
+  'giu',
+);
+/** Identifiers: a number joined by a hyphen to a word (kinesin-8, ZAP-70). */
+const IDENTIFIER_RE = /(\p{L}[\p{L}\p{N}]*)-(\d+)\b/gu;
+
+/**
+ * Identifiers in a text, compared whole and without case ("id:kinesin-8"):
+ * their number isn't a quantity, but "IL-2" and "IL-3" are different things.
+ */
+function identifiers(text) {
+  if (!text || typeof text !== 'string') return [];
+  return [
+    ...new Set(
+      [...text.matchAll(IDENTIFIER_RE)].map((m) => `id:${m[0].toLowerCase()}`),
+    ),
+  ];
+}
+
+/** A claim's text without reference phrases and identifier numbers. */
+function withoutReferences(text) {
+  if (!text || typeof text !== 'string') return text;
+  return text
+    .replace(REFERENCE_RE, ' ')
+    .replace(IDENTIFIER_RE, (_, word) => word);
+}
+
+const MONTHS = [
+  ['january', 'jan'],
+  ['february', 'feb'],
+  ['march', 'mar'],
+  ['april', 'apr'],
+  ['may'],
+  ['june', 'jun'],
+  ['july', 'jul'],
+  ['august', 'aug'],
+  ['september', 'sep', 'sept'],
+  ['october', 'oct'],
+  ['november', 'nov'],
+  ['december', 'dec'],
+];
+const MONTH_OF = new Map(
+  MONTHS.flatMap((names, i) => names.map((n) => [n, i + 1])),
+);
+
+/**
+ * Months named next to a number ("12 May 2019", "May 12", "March 2021"):
+ * the source must state the same month, by name or in a numeric date, so
+ * "12 June 2019" does not pass against "12 May 2019". A month name with no
+ * number beside it ("you may") is not a date.
+ */
+function claimMonths(text) {
+  const words = String(text || '')
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+  const out = [];
+  words.forEach((w, i) => {
+    const m = MONTH_OF.get(w);
+    if (!m) return;
+    const near = [words[i - 1], words[i + 1]].some((x) =>
+      /^\d+$/.test(x || ''),
+    );
+    if (near) out.push(m);
+  });
+  return [...new Set(out)];
+}
+
+/** Months a source states: by name, or in a numeric date (either order). */
+function docMonths(text) {
+  const t = String(text || '');
+  const out = new Set();
+  for (const w of t.toLowerCase().split(/[^\p{L}]+/u)) {
+    const m = MONTH_OF.get(w);
+    if (m) out.add(m);
+  }
+  // 12/05/2019, 05/12/2019, 12.05.2019: either of the first two may be the month
+  for (const [, a, b] of t.matchAll(
+    /\b(\d{1,2})[/.-](\d{1,2})[/.-]\d{2,4}\b/g,
+  )) {
+    for (const v of [Number(a), Number(b)]) if (v >= 1 && v <= 12) out.add(v);
+  }
+  // 2019-05-12
+  for (const [, mm] of t.matchAll(/\b\d{4}-(\d{1,2})-\d{1,2}\b/g)) {
+    const v = Number(mm);
+    if (v >= 1 && v <= 12) out.add(v);
+  }
+  return [...out];
 }
 
 /**
@@ -295,9 +401,52 @@ const NEGATION_WORDS = new Set(
   (
     'not no never none nobody nothing nowhere neither nor cannot without ' +
     'dont doesnt didnt isnt arent wasnt werent wont wouldnt shouldnt ' +
-    'couldnt cant hasnt havent hadnt mustnt neednt'
+    'couldnt cant hasnt havent hadnt mustnt neednt ' +
+    // German, Spanish and French ("no" is Spanish too; "n'" is dropped by
+    // tokenize(), so French relies on "pas", "jamais", "rien", "aucun")
+    'nicht kein keine keinen keinem keiner keines nie niemals ' +
+    'nunca jamás jamas nadie nada tampoco ni ' +
+    'pas jamais rien aucun aucune'
   ).split(' '),
 );
+
+/**
+ * Words that start a new clause for negation scope: a negation in one
+ * clause does not reach the next ("requires X but not Y", "may not use X
+ * and may not park Y"). Punctuation (, ; : and brackets) also ends one.
+ */
+const CLAUSE_BOUNDARY_WORDS = new Set(
+  'but whereas although though while however yet and or except unlike'.split(
+    ' ',
+  ),
+);
+
+/** A sentence's clauses, each as its tokens. */
+function clauseTokens(text) {
+  const out = [];
+  for (const part of String(text || '').split(/[,;:()[\]]+/)) {
+    let current = [];
+    for (const t of tokenize(part)) {
+      if (CLAUSE_BOUNDARY_WORDS.has(t)) {
+        if (current.length) out.push(current);
+        current = [];
+      } else {
+        current.push(t);
+      }
+    }
+    if (current.length) out.push(current);
+  }
+  return out;
+}
+
+/**
+ * A light stem for matching a claim's words to a clause: "activates" and
+ * "activate", "binds" and "bind". Used only to pick the closest clause.
+ */
+const stem = (t) => (t.length > 4 ? t.replace(/(ing|ed|es|s|e)$/, '') : t);
+
+/** Negation words that continue an earlier negation in the clause. */
+const CONTINUING_NEGATIONS = new Set(['nor', 'ni']);
 
 /** Negation words followed by these are not negations ("not only", "no doubt"). */
 const NON_NEGATING_NEXT = {
@@ -318,6 +467,9 @@ function isNegated(tokens) {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (!NEGATION_WORDS.has(t)) continue;
+    // "never X nor Y", "nunca X ni Y": the second word continues the first
+    // negation rather than cancelling it
+    if (CONTINUING_NEGATIONS.has(t) && count > 0) continue;
     if (NON_NEGATING_NEXT[t] && NON_NEGATING_NEXT[t].has(tokens[i + 1])) {
       continue;
     }
@@ -345,42 +497,88 @@ function isNegated(tokens) {
  *   sourceSentence: the closest document sentence the claim was compared with
  */
 function checkPolarityConsistency(claimText, docText) {
-  const claimTokens = tokenize(claimText);
-  const claimNegated = isNegated(claimTokens);
-  const claimWords = [
+  // Negation is scoped to its clause (3.6): "requires X but not Y" negates
+  // Y, not X, and "may not use X and may not park Y" has two negated
+  // clauses, not an even count that reads as positive. Each clause of the
+  // claim is compared with the closest clause of the document.
+  const words = (tokens) => [
     ...new Set(
-      contentTokens(claimTokens.filter((t) => !NEGATION_WORDS.has(t))),
+      contentTokens(tokens.filter((t) => !NEGATION_WORDS.has(t))).map(stem),
     ),
   ];
-  if (claimWords.length === 0) {
+  const claimClauses = clauseTokens(claimText)
+    .map((tokens) => ({ tokens, words: words(tokens) }))
+    .filter((c) => c.words.length > 0);
+  const claimNegated = claimClauses.some((c) => isNegated(c.tokens));
+  if (claimClauses.length === 0) {
     return { consistent: true, claimNegated, sourceSentence: null };
   }
 
-  const candidates = splitSentences(docText)
-    .map((sentence) => {
-      const tokens = tokenize(sentence);
-      const set = new Set(tokens);
-      const support =
-        claimWords.filter((t) => set.has(t)).length / claimWords.length;
-      return { sentence, tokens, support };
-    })
-    .filter((c) => c.support > 0)
-    .sort((a, b) => b.support - a.support);
-  if (candidates.length === 0) {
-    return { consistent: true, claimNegated, sourceSentence: null };
-  }
+  const sentences = splitSentences(docText).map((sentence) => {
+    const clauses = clauseTokens(sentence).map((tokens) => ({
+      negated: isNegated(tokens),
+      stems: new Set(tokens.map(stem)),
+    }));
+    const stems = new Set(clauses.flatMap((c) => [...c.stems]));
+    return { sentence, clauses, stems };
+  });
 
-  // Only the closest sentences: "contractors receive paid vacation" must be
-  // judged by "contractors do not receive paid vacation", not by a sentence
-  // about employees that happens to share "receive paid vacation".
-  const best = candidates[0].support;
-  const compared = candidates.filter((c) => c.support === best);
-  const match = compared.find((c) => isNegated(c.tokens) === claimNegated);
-  return {
-    consistent: Boolean(match),
-    claimNegated,
-    sourceSentence: (match || compared[0]).sentence,
+  /**
+   * Whether one claim clause agrees with one document sentence. The claim's
+   * words that occur in only one clause of the sentence decide: each such
+   * clause must be negated exactly when the claim clause is ("allowed on
+   * Mondays" fails against "allowed on Fridays, whereas it is not allowed
+   * on Mondays", because "Mondays" is only in the negated clause). With no
+   * such word, the closest clause decides.
+   */
+  const agrees = (clause, sentence) => {
+    const negated = isNegated(clause.tokens);
+    const distinctive = clause.words
+      .map((w) => sentence.clauses.filter((c) => c.stems.has(w)))
+      .filter((owners) => owners.length === 1)
+      .map((owners) => owners[0]);
+    if (distinctive.length > 0) {
+      return distinctive.every((c) => c.negated === negated);
+    }
+    const ranked = sentence.clauses
+      .map((c) => ({
+        c,
+        support: clause.words.filter((w) => c.stems.has(w)).length,
+      }))
+      .filter((r) => r.support > 0)
+      .sort((a, b) => b.support - a.support);
+    if (ranked.length === 0) return true;
+    const best = ranked[0].support;
+    return ranked
+      .filter((r) => r.support === best)
+      .some((r) => r.c.negated === negated);
   };
+
+  let consistent = true;
+  let sourceSentence = null;
+  for (const clause of claimClauses) {
+    const candidates = sentences
+      .map((s) => ({
+        ...s,
+        support:
+          clause.words.filter((w) => s.stems.has(w)).length /
+          clause.words.length,
+      }))
+      .filter((s) => s.support > 0)
+      .sort((a, b) => b.support - a.support);
+    if (candidates.length === 0) continue;
+    // Only the closest sentences: "contractors receive paid vacation" must be
+    // judged by "contractors do not receive paid vacation", not by a sentence
+    // about employees that happens to share "receive paid vacation".
+    const best = candidates[0].support;
+    const compared = candidates.filter((s) => s.support === best);
+    const match = compared.find((s) => agrees(clause, s));
+    if (!match) consistent = false;
+    if (sourceSentence === null || !match) {
+      sourceSentence = (match || compared[0]).sentence;
+    }
+  }
+  return { consistent, claimNegated, sourceSentence };
 }
 
 /**
@@ -426,7 +624,14 @@ function computeSupportScore(
   idfWeights = null,
   options = {},
 ) {
-  const claim = [...new Set(contentTokens(claimTokens))];
+  // A reference phrase ("Document 3 shows", "Table 2") names where a claim
+  // comes from, not what it says: leave it out of the words to support.
+  const rawClaim = options && options.claimText;
+  const fromText =
+    typeof rawClaim === 'string' && rawClaim !== withoutReferences(rawClaim)
+      ? tokenize(withoutReferences(rawClaim))
+      : claimTokens;
+  const claim = [...new Set(contentTokens(fromText))];
   if (claim.length === 0) return 0;
   const docSet = docTokens instanceof Set ? docTokens : new Set(docTokens);
 

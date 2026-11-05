@@ -1,9 +1,9 @@
 {
   "benchmark": "claude-citations",
-  "createdAt": "2026-11-05T04:37:02.958Z",
+  "createdAt": "2026-11-05T07:17:02.247Z",
   "environment": {
     "libraryVersion": "3.5.0",
-    "commit": "8b247df",
+    "commit": "fb3d82f",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -76,57 +76,38 @@
           "refused": 0,
           "lexical": {
             "claims": 154,
-            "supported": 141,
-            "unsupported": 13,
-            "unverifiable": 0,
-            "supportedShare": 0.9156,
-            "supportedInterval": [0.8609, 0.95],
-            "byLexicalReason": {
-              "supported": 141,
-              "polarity_mismatch": 7,
-              "low_overlap": 3,
-              "number_mismatch": 3
-            },
-            "verifiedAnswers": 71,
-            "verifiedShare": 0.71,
-            "verifiedInterval": [0.6146, 0.7899]
-          },
-          "judge": {
-            "claims": 154,
             "supported": 144,
             "unsupported": 10,
             "unverifiable": 0,
             "supportedShare": 0.9351,
             "supportedInterval": [0.8846, 0.9643],
             "byLexicalReason": {
-              "supported": 141,
+              "supported": 144,
               "polarity_mismatch": 7,
-              "low_overlap": 3,
-              "number_mismatch": 3
+              "low_overlap": 3
             },
             "verifiedAnswers": 74,
             "verifiedShare": 0.74,
             "verifiedInterval": [0.6463, 0.816]
+          },
+          "judge": {
+            "claims": 154,
+            "supported": 147,
+            "unsupported": 7,
+            "unverifiable": 0,
+            "supportedShare": 0.9545,
+            "supportedInterval": [0.9092, 0.9778],
+            "byLexicalReason": {
+              "supported": 144,
+              "polarity_mismatch": 7,
+              "low_overlap": 3
+            },
+            "verifiedAnswers": 77,
+            "verifiedShare": 0.77,
+            "verifiedInterval": [0.6785, 0.8416]
           }
         },
         "lexical": {
-          "claims": 232,
-          "supported": 213,
-          "unsupported": 19,
-          "unverifiable": 0,
-          "supportedShare": 0.9181,
-          "supportedInterval": [0.8756, 0.9469],
-          "byLexicalReason": {
-            "supported": 213,
-            "polarity_mismatch": 10,
-            "low_overlap": 5,
-            "number_mismatch": 4
-          },
-          "verifiedAnswers": 106,
-          "verifiedShare": 0.7067,
-          "verifiedInterval": [0.6294, 0.7736]
-        },
-        "judge": {
           "claims": 232,
           "supported": 217,
           "unsupported": 15,
@@ -134,14 +115,31 @@
           "supportedShare": 0.9353,
           "supportedInterval": [0.8961, 0.9604],
           "byLexicalReason": {
-            "supported": 213,
-            "polarity_mismatch": 10,
+            "supported": 217,
+            "polarity_mismatch": 9,
             "low_overlap": 5,
-            "number_mismatch": 4
+            "number_mismatch": 1
           },
           "verifiedAnswers": 110,
           "verifiedShare": 0.7333,
-          "verifiedInterval": [0.6574, 0.7976],
+          "verifiedInterval": [0.6574, 0.7976]
+        },
+        "judge": {
+          "claims": 232,
+          "supported": 221,
+          "unsupported": 11,
+          "unverifiable": 0,
+          "supportedShare": 0.9526,
+          "supportedInterval": [0.9171, 0.9733],
+          "byLexicalReason": {
+            "supported": 217,
+            "polarity_mismatch": 9,
+            "low_overlap": 5,
+            "number_mismatch": 1
+          },
+          "verifiedAnswers": 114,
+          "verifiedShare": 0.76,
+          "verifiedInterval": [0.6857, 0.8213],
           "calls": 5,
           "errors": 0
         },
@@ -152,23 +150,23 @@
         },
         "costUSD": 0.4661,
         "review": {
-          "flaggedByLexical": 19,
-          "sampled": 19,
+          "flaggedByLexical": 15,
+          "sampled": 15,
           "lexical": {
-            "reviewed": 19,
+            "reviewed": 15,
             "true_problem": 1,
-            "false_alarm": 17,
-            "unclear": 1,
-            "precision": 0.0556,
-            "precisionInterval": [0.0099, 0.2576]
+            "false_alarm": 14,
+            "unclear": 0,
+            "precision": 0.0667,
+            "precisionInterval": [0.0119, 0.2982]
           },
           "judgeStillUnsupported": {
-            "reviewed": 15,
+            "reviewed": 11,
             "true_problem": 0,
-            "false_alarm": 14,
-            "unclear": 1,
+            "false_alarm": 11,
+            "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2153]
+            "precisionInterval": [0, 0.2588]
           },
           "judgeOverturned": {
             "reviewed": 4,
@@ -179,22 +177,18 @@
             "precisionInterval": [0.0456, 0.6994]
           },
           "sample": [
-            "claude-haiku-4-5-20251001|1379#0",
-            "claude-haiku-4-5-20251001|551#0",
-            "claude-haiku-4-5-20251001|42#0",
+            "claude-haiku-4-5-20251001|516#1",
+            "claude-haiku-4-5-20251001|208#0",
             "claude-haiku-4-5-20251001|1382#0",
             "claude-haiku-4-5-20251001|1282#0",
-            "claude-haiku-4-5-20251001|1021#2",
-            "claude-haiku-4-5-20251001|274#0",
-            "claude-haiku-4-5-20251001|411#1",
-            "claude-haiku-4-5-20251001|1337#0",
-            "claude-haiku-4-5-20251001|517#0",
+            "claude-haiku-4-5-20251001|274#1",
+            "claude-haiku-4-5-20251001|692#0",
             "claude-haiku-4-5-20251001|1104#0",
             "claude-haiku-4-5-20251001|279#0",
-            "claude-haiku-4-5-20251001|587#0",
-            "claude-haiku-4-5-20251001|513#1",
+            "claude-haiku-4-5-20251001|1298#1",
+            "claude-haiku-4-5-20251001|501#0",
+            "claude-haiku-4-5-20251001|70#2",
             "claude-haiku-4-5-20251001|3#0",
-            "claude-haiku-4-5-20251001|1041#0",
             "claude-haiku-4-5-20251001|597#0",
             "claude-haiku-4-5-20251001|521#0",
             "claude-haiku-4-5-20251001|384#0"
@@ -203,46 +197,64 @@
         "mutation": {
           "claimsWithCitedText": 232,
           "unmutatedFlagged": {
-            "caught": 22,
+            "caught": 20,
             "applicable": 232,
-            "rate": 0.0948,
-            "interval": [0.0635, 0.1394]
+            "rate": 0.0862,
+            "interval": [0.0565, 0.1294]
           },
-          "supportedClaims": 210,
+          "supportedClaims": 212,
           "mutations": {
             "number": {
-              "caught": 57,
-              "applicable": 57,
-              "rate": 1,
-              "interval": [0.9369, 1],
-              "missedExamples": []
+              "caught": 55,
+              "applicable": 58,
+              "rate": 0.9483,
+              "interval": [0.8586, 0.9823],
+              "missedExamples": [
+                {
+                  "query": "1337"
+                },
+                {
+                  "query": "517"
+                },
+                {
+                  "query": "587"
+                }
+              ]
             },
             "negationAdded": {
-              "caught": 108,
-              "applicable": 108,
-              "rate": 1,
-              "interval": [0.9657, 1],
-              "missedExamples": []
+              "caught": 110,
+              "applicable": 111,
+              "rate": 0.991,
+              "interval": [0.9507, 0.9984],
+              "missedExamples": [
+                {
+                  "query": "180"
+                }
+              ]
             },
             "negationRemoved": {
-              "caught": 22,
-              "applicable": 22,
-              "rate": 1,
-              "interval": [0.8513, 1],
-              "missedExamples": []
+              "caught": 17,
+              "applicable": 18,
+              "rate": 0.9444,
+              "interval": [0.7424, 0.9901],
+              "missedExamples": [
+                {
+                  "query": "274"
+                }
+              ]
             },
             "swapUnrelated": {
-              "caught": 210,
-              "applicable": 210,
+              "caught": 212,
+              "applicable": 212,
               "rate": 1,
-              "interval": [0.982, 1],
+              "interval": [0.9822, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 204,
-              "applicable": 210,
-              "rate": 0.9714,
-              "interval": [0.9391, 0.9868],
+              "caught": 205,
+              "applicable": 212,
+              "rate": 0.967,
+              "interval": [0.9334, 0.9839],
               "missedExamples": [
                 {
                   "query": "118"
@@ -3290,72 +3302,72 @@
           "refused": 0,
           "lexical": {
             "claims": 333,
-            "supported": 320,
-            "unsupported": 13,
+            "supported": 329,
+            "unsupported": 4,
             "unverifiable": 0,
-            "supportedShare": 0.961,
-            "supportedInterval": [0.9344, 0.977],
+            "supportedShare": 0.988,
+            "supportedInterval": [0.9695, 0.9953],
             "byLexicalReason": {
-              "supported": 320,
-              "polarity_mismatch": 11,
+              "supported": 329,
+              "polarity_mismatch": 2,
               "number_mismatch": 1,
               "low_overlap": 1
             },
-            "verifiedAnswers": 87,
-            "verifiedShare": 0.87,
-            "verifiedInterval": [0.7902, 0.9224]
+            "verifiedAnswers": 95,
+            "verifiedShare": 0.95,
+            "verifiedInterval": [0.8882, 0.9785]
           },
           "judge": {
             "claims": 333,
-            "supported": 320,
-            "unsupported": 13,
+            "supported": 329,
+            "unsupported": 4,
             "unverifiable": 0,
-            "supportedShare": 0.961,
-            "supportedInterval": [0.9344, 0.977],
+            "supportedShare": 0.988,
+            "supportedInterval": [0.9695, 0.9953],
             "byLexicalReason": {
-              "supported": 320,
-              "polarity_mismatch": 11,
+              "supported": 329,
+              "polarity_mismatch": 2,
               "number_mismatch": 1,
               "low_overlap": 1
             },
-            "verifiedAnswers": 87,
-            "verifiedShare": 0.87,
-            "verifiedInterval": [0.7902, 0.9224]
+            "verifiedAnswers": 95,
+            "verifiedShare": 0.95,
+            "verifiedInterval": [0.8882, 0.9785]
           }
         },
         "lexical": {
           "claims": 495,
-          "supported": 479,
-          "unsupported": 16,
+          "supported": 489,
+          "unsupported": 6,
           "unverifiable": 0,
-          "supportedShare": 0.9677,
-          "supportedInterval": [0.9481, 0.98],
+          "supportedShare": 0.9879,
+          "supportedInterval": [0.9738, 0.9944],
           "byLexicalReason": {
-            "supported": 479,
-            "polarity_mismatch": 14,
+            "supported": 489,
+            "polarity_mismatch": 4,
             "number_mismatch": 1,
             "low_overlap": 1
           },
-          "verifiedAnswers": 134,
-          "verifiedShare": 0.8933,
-          "verifiedInterval": [0.8338, 0.9333]
+          "verifiedAnswers": 142,
+          "verifiedShare": 0.9467,
+          "verifiedInterval": [0.8983, 0.9727]
         },
         "judge": {
           "claims": 495,
-          "supported": 479,
-          "unsupported": 16,
+          "supported": 489,
+          "unsupported": 6,
           "unverifiable": 0,
-          "supportedShare": 0.9677,
-          "supportedInterval": [0.9481, 0.98],
+          "supportedShare": 0.9879,
+          "supportedInterval": [0.9738, 0.9944],
           "byLexicalReason": {
-            "supported": 479,
-            "polarity_mismatch": 14,
+            "supported": 489,
+            "polarity_mismatch": 4,
             "number_mismatch": 1,
             "low_overlap": 1
           },
-          "verifiedAnswers": 134,
-          "verifiedShare": 0.8933,
-          "verifiedInterval": [0.8338, 0.9333],
+          "verifiedAnswers": 142,
+          "verifiedShare": 0.9467,
+          "verifiedInterval": [0.8983, 0.9727],
           "calls": 1,
           "errors": 0
         },
@@ -3366,23 +3378,23 @@
         },
         "costUSD": 0.0956,
         "review": {
-          "flaggedByLexical": 16,
-          "sampled": 16,
+          "flaggedByLexical": 6,
+          "sampled": 6,
           "lexical": {
-            "reviewed": 16,
+            "reviewed": 6,
             "true_problem": 1,
-            "false_alarm": 15,
+            "false_alarm": 5,
             "unclear": 0,
-            "precision": 0.0625,
-            "precisionInterval": [0.0111, 0.2833]
+            "precision": 0.1667,
+            "precisionInterval": [0.0301, 0.5635]
           },
           "judgeStillUnsupported": {
-            "reviewed": 16,
+            "reviewed": 6,
             "true_problem": 1,
-            "false_alarm": 15,
+            "false_alarm": 5,
             "unclear": 0,
-            "precision": 0.0625,
-            "precisionInterval": [0.0111, 0.2833]
+            "precision": 0.1667,
+            "precisionInterval": [0.0301, 0.5635]
           },
           "judgeOverturned": {
             "reviewed": 0,
@@ -3393,71 +3405,65 @@
             "precisionInterval": null
           },
           "sample": [
-            "claude-haiku-5-5|870#3",
             "claude-haiku-5-5|516#1",
-            "claude-haiku-5-5|1379#0",
-            "claude-haiku-5-5|551#0",
-            "claude-haiku-5-5|42#1",
-            "claude-haiku-5-5|213#2",
-            "claude-haiku-5-5|560#2",
+            "claude-haiku-5-5|274#0",
             "claude-haiku-5-5|1273#2",
-            "claude-haiku-5-5|185#0",
-            "claude-haiku-5-5|1199#0",
-            "claude-haiku-5-5|1199#1",
             "claude-haiku-5-5|823#1",
-            "claude-haiku-5-5|148#6",
-            "claude-haiku-5-5|70#1",
-            "claude-haiku-5-5|179#0",
+            "claude-haiku-5-5|3#0",
             "claude-haiku-5-5|179#1"
           ]
         },
         "mutation": {
           "claimsWithCitedText": 495,
           "unmutatedFlagged": {
-            "caught": 16,
+            "caught": 6,
             "applicable": 495,
-            "rate": 0.0323,
-            "interval": [0.02, 0.0519]
+            "rate": 0.0121,
+            "interval": [0.0056, 0.0262]
           },
-          "supportedClaims": 479,
+          "supportedClaims": 489,
           "mutations": {
             "number": {
-              "caught": 130,
-              "applicable": 130,
+              "caught": 134,
+              "applicable": 134,
               "rate": 1,
-              "interval": [0.9713, 1],
+              "interval": [0.9721, 1],
               "missedExamples": []
             },
             "negationAdded": {
-              "caught": 186,
-              "applicable": 186,
-              "rate": 1,
-              "interval": [0.9798, 1],
-              "missedExamples": []
-            },
-            "negationRemoved": {
-              "caught": 42,
-              "applicable": 43,
-              "rate": 0.9767,
-              "interval": [0.8794, 0.9959],
+              "caught": 192,
+              "applicable": 193,
+              "rate": 0.9948,
+              "interval": [0.9712, 0.9991],
               "missedExamples": [
                 {
-                  "query": "770"
+                  "query": "1274"
+                }
+              ]
+            },
+            "negationRemoved": {
+              "caught": 40,
+              "applicable": 41,
+              "rate": 0.9756,
+              "interval": [0.874, 0.9957],
+              "missedExamples": [
+                {
+                  "query": "1339"
                 }
               ]
             },
             "swapUnrelated": {
-              "caught": 479,
-              "applicable": 479,
+              "caught": 489,
+              "applicable": 489,
               "rate": 1,
-              "interval": [0.992, 1],
+              "interval": [0.9922, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 464,
-              "applicable": 479,
-              "rate": 0.9687,
-              "interval": [0.949, 0.9809],
+              "caught": 473,
+              "applicable": 489,
+              "rate": 0.9673,
+              "interval": [0.9475, 0.9798],
               "missedExamples": [
                 {
                   "query": "870"
@@ -3469,10 +3475,10 @@
                   "query": "1379"
                 },
                 {
-                  "query": "551"
+                  "query": "261"
                 },
                 {
-                  "query": "118"
+                  "query": "551"
                 }
               ]
             }
@@ -6748,8 +6754,8 @@
         "error": "Claude API 400: `temperature` is deprecated for this model."
       },
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 201,
-      "totalCostUSD": 2.0057,
+      "totalCalls": 202,
+      "totalCostUSD": 2.009,
       "scifact": {
         "answers": {
           "calls": 150,
@@ -6772,189 +6778,205 @@
           "refused": 0,
           "lexical": {
             "claims": 405,
-            "supported": 379,
-            "unsupported": 26,
+            "supported": 390,
+            "unsupported": 15,
             "unverifiable": 0,
-            "supportedShare": 0.9358,
-            "supportedInterval": [0.9076, 0.9558],
+            "supportedShare": 0.963,
+            "supportedInterval": [0.9398, 0.9774],
             "byLexicalReason": {
-              "supported": 379,
-              "polarity_mismatch": 15,
-              "number_mismatch": 10,
-              "low_overlap": 1
+              "supported": 390,
+              "polarity_mismatch": 11,
+              "number_mismatch": 2,
+              "low_overlap": 2
             },
-            "verifiedAnswers": 78,
-            "verifiedShare": 0.78,
-            "verifiedInterval": [0.6893, 0.85]
+            "verifiedAnswers": 87,
+            "verifiedShare": 0.87,
+            "verifiedInterval": [0.7902, 0.9224]
           },
           "judge": {
             "claims": 405,
-            "supported": 379,
-            "unsupported": 26,
+            "supported": 391,
+            "unsupported": 14,
             "unverifiable": 0,
-            "supportedShare": 0.9358,
-            "supportedInterval": [0.9076, 0.9558],
+            "supportedShare": 0.9654,
+            "supportedInterval": [0.9428, 0.9793],
             "byLexicalReason": {
-              "supported": 379,
-              "polarity_mismatch": 15,
-              "number_mismatch": 10,
-              "low_overlap": 1
+              "supported": 390,
+              "polarity_mismatch": 11,
+              "number_mismatch": 2,
+              "low_overlap": 2
             },
-            "verifiedAnswers": 78,
-            "verifiedShare": 0.78,
-            "verifiedInterval": [0.6893, 0.85]
+            "verifiedAnswers": 88,
+            "verifiedShare": 0.88,
+            "verifiedInterval": [0.8019, 0.93]
           }
         },
         "lexical": {
           "claims": 604,
-          "supported": 574,
-          "unsupported": 30,
+          "supported": 584,
+          "unsupported": 20,
           "unverifiable": 0,
-          "supportedShare": 0.9503,
-          "supportedInterval": [0.93, 0.965],
+          "supportedShare": 0.9669,
+          "supportedInterval": [0.9494, 0.9785],
           "byLexicalReason": {
-            "supported": 574,
-            "polarity_mismatch": 17,
-            "number_mismatch": 12,
-            "low_overlap": 1
+            "supported": 584,
+            "polarity_mismatch": 14,
+            "number_mismatch": 4,
+            "low_overlap": 2
           },
-          "verifiedAnswers": 124,
-          "verifiedShare": 0.8267,
-          "verifiedInterval": [0.7581, 0.8789]
+          "verifiedAnswers": 133,
+          "verifiedShare": 0.8867,
+          "verifiedInterval": [0.826, 0.928]
         },
         "judge": {
           "claims": 604,
-          "supported": 574,
-          "unsupported": 30,
+          "supported": 585,
+          "unsupported": 19,
           "unverifiable": 0,
-          "supportedShare": 0.9503,
-          "supportedInterval": [0.93, 0.965],
+          "supportedShare": 0.9685,
+          "supportedInterval": [0.9514, 0.9798],
           "byLexicalReason": {
-            "supported": 574,
-            "polarity_mismatch": 17,
-            "number_mismatch": 12,
-            "low_overlap": 1
+            "supported": 584,
+            "polarity_mismatch": 14,
+            "number_mismatch": 4,
+            "low_overlap": 2
           },
-          "verifiedAnswers": 124,
-          "verifiedShare": 0.8267,
-          "verifiedInterval": [0.7581, 0.8789],
-          "calls": 1,
+          "verifiedAnswers": 134,
+          "verifiedShare": 0.8933,
+          "verifiedInterval": [0.8338, 0.9333],
+          "calls": 2,
           "errors": 1
         },
         "usage": {
-          "calls": 151,
-          "inputTokens": 481711,
-          "outputTokens": 67685
+          "calls": 152,
+          "inputTokens": 482843,
+          "outputTokens": 67781
         },
-        "costUSD": 1.6403,
+        "costUSD": 1.6435,
         "review": {
-          "flaggedByLexical": 30,
-          "sampled": 30,
+          "flaggedByLexical": 20,
+          "sampled": 20,
           "lexical": {
-            "reviewed": 30,
+            "reviewed": 20,
             "true_problem": 1,
-            "false_alarm": 27,
-            "unclear": 2,
-            "precision": 0.0357,
-            "precisionInterval": [0.0063, 0.1771]
+            "false_alarm": 18,
+            "unclear": 1,
+            "precision": 0.0526,
+            "precisionInterval": [0.0094, 0.2464]
           },
           "judgeStillUnsupported": {
-            "reviewed": 30,
+            "reviewed": 19,
             "true_problem": 1,
-            "false_alarm": 27,
-            "unclear": 2,
-            "precision": 0.0357,
-            "precisionInterval": [0.0063, 0.1771]
+            "false_alarm": 17,
+            "unclear": 1,
+            "precision": 0.0556,
+            "precisionInterval": [0.0099, 0.2576]
           },
           "judgeOverturned": {
-            "reviewed": 0,
+            "reviewed": 1,
             "true_problem": 0,
-            "false_alarm": 0,
+            "false_alarm": 1,
             "unclear": 0,
-            "precision": null,
-            "precisionInterval": null
+            "precision": 0,
+            "precisionInterval": [0, 0.7935]
           },
           "sample": [
-            "claude-sonnet-5-5|870#4",
-            "claude-sonnet-5-5|516#0",
-            "claude-sonnet-5-5|641#0",
+            "claude-sonnet-5-5|870#3",
             "claude-sonnet-5-5|525#0",
             "claude-sonnet-5-5|834#2",
             "claude-sonnet-5-5|261#0",
             "claude-sonnet-5-5|261#2",
-            "claude-sonnet-5-5|261#7",
-            "claude-sonnet-5-5|551#0",
-            "claude-sonnet-5-5|42#1",
-            "claude-sonnet-5-5|439#0",
-            "claude-sonnet-5-5|904#0",
-            "claude-sonnet-5-5|1337#0",
+            "claude-sonnet-5-5|261#3",
+            "claude-sonnet-5-5|274#0",
             "claude-sonnet-5-5|185#0",
-            "claude-sonnet-5-5|967#0",
+            "claude-sonnet-5-5|124#0",
             "claude-sonnet-5-5|967#1",
-            "claude-sonnet-5-5|1130#3",
-            "claude-sonnet-5-5|729#0",
             "claude-sonnet-5-5|770#0",
             "claude-sonnet-5-5|770#4",
             "claude-sonnet-5-5|1199#0",
-            "claude-sonnet-5-5|1199#1",
             "claude-sonnet-5-5|823#3",
             "claude-sonnet-5-5|1395#4",
-            "claude-sonnet-5-5|362#0",
-            "claude-sonnet-5-5|971#3",
-            "claude-sonnet-5-5|513#2",
             "claude-sonnet-5-5|70#1",
+            "claude-sonnet-5-5|3#0",
             "claude-sonnet-5-5|179#0",
+            "claude-sonnet-5-5|179#2",
             "claude-sonnet-5-5|597#4"
           ]
         },
         "mutation": {
           "claimsWithCitedText": 604,
           "unmutatedFlagged": {
-            "caught": 36,
+            "caught": 25,
             "applicable": 604,
-            "rate": 0.0596,
-            "interval": [0.0434, 0.0814]
+            "rate": 0.0414,
+            "interval": [0.0282, 0.0604]
           },
-          "supportedClaims": 568,
+          "supportedClaims": 579,
           "mutations": {
             "number": {
               "caught": 153,
-              "applicable": 153,
-              "rate": 1,
-              "interval": [0.9755, 1],
-              "missedExamples": []
+              "applicable": 161,
+              "rate": 0.9503,
+              "interval": [0.905, 0.9746],
+              "missedExamples": [
+                {
+                  "query": "516"
+                },
+                {
+                  "query": "641"
+                },
+                {
+                  "query": "439"
+                },
+                {
+                  "query": "904"
+                },
+                {
+                  "query": "1337"
+                }
+              ]
             },
             "negationAdded": {
-              "caught": 229,
-              "applicable": 229,
-              "rate": 1,
-              "interval": [0.9835, 1],
-              "missedExamples": []
+              "caught": 235,
+              "applicable": 236,
+              "rate": 0.9958,
+              "interval": [0.9764, 0.9993],
+              "missedExamples": [
+                {
+                  "query": "516"
+                }
+              ]
             },
             "negationRemoved": {
-              "caught": 48,
-              "applicable": 49,
-              "rate": 0.9796,
-              "interval": [0.8931, 0.9964],
+              "caught": 44,
+              "applicable": 46,
+              "rate": 0.9565,
+              "interval": [0.8547, 0.988],
               "missedExamples": [
                 {
                   "query": "1163"
+                },
+                {
+                  "query": "971"
                 }
               ]
             },
             "swapUnrelated": {
-              "caught": 568,
-              "applicable": 568,
+              "caught": 579,
+              "applicable": 579,
               "rate": 1,
-              "interval": [0.9933, 1],
+              "interval": [0.9934, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 555,
-              "applicable": 568,
-              "rate": 0.9771,
-              "interval": [0.9612, 0.9866],
+              "caught": 562,
+              "applicable": 579,
+              "rate": 0.9706,
+              "interval": [0.9535, 0.9816],
               "missedExamples": [
+                {
+                  "query": "516"
+                },
                 {
                   "query": "1379"
                 },
@@ -6963,9 +6985,6 @@
                 },
                 {
                   "query": "118"
-                },
-                {
-                  "query": "674"
                 },
                 {
                   "query": "674"
@@ -10265,64 +10284,64 @@
           "refused": 28,
           "lexical": {
             "claims": 329,
-            "supported": 319,
-            "unsupported": 10,
+            "supported": 326,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.9696,
-            "supportedInterval": [0.945, 0.9834],
+            "supportedShare": 0.9909,
+            "supportedInterval": [0.9735, 0.9969],
             "byLexicalReason": {
-              "supported": 319,
-              "polarity_mismatch": 10
+              "supported": 326,
+              "polarity_mismatch": 3
             },
-            "verifiedAnswers": 62,
-            "verifiedShare": 0.62,
-            "verifiedInterval": [0.5221, 0.709]
+            "verifiedAnswers": 69,
+            "verifiedShare": 0.69,
+            "verifiedInterval": [0.5937, 0.7722]
           },
           "judge": {
             "claims": 329,
-            "supported": 319,
-            "unsupported": 10,
+            "supported": 326,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.9696,
-            "supportedInterval": [0.945, 0.9834],
+            "supportedShare": 0.9909,
+            "supportedInterval": [0.9735, 0.9969],
             "byLexicalReason": {
-              "supported": 319,
-              "polarity_mismatch": 10
+              "supported": 326,
+              "polarity_mismatch": 3
             },
-            "verifiedAnswers": 62,
-            "verifiedShare": 0.62,
-            "verifiedInterval": [0.5221, 0.709]
+            "verifiedAnswers": 69,
+            "verifiedShare": 0.69,
+            "verifiedInterval": [0.5937, 0.7722]
           }
         },
         "lexical": {
           "claims": 329,
-          "supported": 319,
-          "unsupported": 10,
+          "supported": 326,
+          "unsupported": 3,
           "unverifiable": 0,
-          "supportedShare": 0.9696,
-          "supportedInterval": [0.945, 0.9834],
+          "supportedShare": 0.9909,
+          "supportedInterval": [0.9735, 0.9969],
           "byLexicalReason": {
-            "supported": 319,
-            "polarity_mismatch": 10
+            "supported": 326,
+            "polarity_mismatch": 3
           },
-          "verifiedAnswers": 62,
-          "verifiedShare": 0.62,
-          "verifiedInterval": [0.5221, 0.709]
+          "verifiedAnswers": 69,
+          "verifiedShare": 0.69,
+          "verifiedInterval": [0.5937, 0.7722]
         },
         "judge": {
           "claims": 329,
-          "supported": 319,
-          "unsupported": 10,
+          "supported": 326,
+          "unsupported": 3,
           "unverifiable": 0,
-          "supportedShare": 0.9696,
-          "supportedInterval": [0.945, 0.9834],
+          "supportedShare": 0.9909,
+          "supportedInterval": [0.9735, 0.9969],
           "byLexicalReason": {
-            "supported": 319,
-            "polarity_mismatch": 10
+            "supported": 326,
+            "polarity_mismatch": 3
           },
-          "verifiedAnswers": 62,
-          "verifiedShare": 0.62,
-          "verifiedInterval": [0.5221, 0.709],
+          "verifiedAnswers": 69,
+          "verifiedShare": 0.69,
+          "verifiedInterval": [0.5937, 0.7722],
           "calls": 0,
           "errors": 0
         },
@@ -10333,23 +10352,23 @@
         },
         "costUSD": 2.0393,
         "review": {
-          "flaggedByLexical": 10,
-          "sampled": 10,
+          "flaggedByLexical": 3,
+          "sampled": 3,
           "lexical": {
-            "reviewed": 10,
+            "reviewed": 3,
             "true_problem": 0,
-            "false_alarm": 10,
+            "false_alarm": 3,
             "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2775]
+            "precisionInterval": [0, 0.5615]
           },
           "judgeStillUnsupported": {
-            "reviewed": 10,
+            "reviewed": 3,
             "true_problem": 0,
-            "false_alarm": 10,
+            "false_alarm": 3,
             "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2775]
+            "precisionInterval": [0, 0.5615]
           },
           "judgeOverturned": {
             "reviewed": 0,
@@ -10360,40 +10379,33 @@
             "precisionInterval": null
           },
           "sample": [
-            "claude-opus-5-5|1379#2",
-            "claude-opus-5-5|213#3",
-            "claude-opus-5-5|560#3",
-            "claude-opus-5-5|411#4",
-            "claude-opus-5-5|185#0",
             "claude-opus-5-5|660#2",
-            "claude-opus-5-5|124#5",
             "claude-opus-5-5|770#1",
-            "claude-opus-5-5|1199#1",
             "claude-opus-5-5|386#4"
           ]
         },
         "mutation": {
           "claimsWithCitedText": 329,
           "unmutatedFlagged": {
-            "caught": 10,
+            "caught": 3,
             "applicable": 329,
-            "rate": 0.0304,
-            "interval": [0.0166, 0.055]
+            "rate": 0.0091,
+            "interval": [0.0031, 0.0265]
           },
-          "supportedClaims": 319,
+          "supportedClaims": 326,
           "mutations": {
             "number": {
-              "caught": 93,
-              "applicable": 93,
+              "caught": 96,
+              "applicable": 96,
               "rate": 1,
-              "interval": [0.9603, 1],
+              "interval": [0.9615, 1],
               "missedExamples": []
             },
             "negationAdded": {
-              "caught": 122,
-              "applicable": 122,
+              "caught": 124,
+              "applicable": 124,
               "rate": 1,
-              "interval": [0.9695, 1],
+              "interval": [0.97, 1],
               "missedExamples": []
             },
             "negationRemoved": {
@@ -10408,18 +10420,21 @@
               ]
             },
             "swapUnrelated": {
-              "caught": 319,
-              "applicable": 319,
+              "caught": 326,
+              "applicable": 326,
               "rate": 1,
-              "interval": [0.9881, 1],
+              "interval": [0.9884, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 312,
-              "applicable": 319,
-              "rate": 0.9781,
-              "interval": [0.9554, 0.9893],
+              "caught": 318,
+              "applicable": 326,
+              "rate": 0.9755,
+              "interval": [0.9523, 0.9875],
               "missedExamples": [
+                {
+                  "query": "261"
+                },
                 {
                   "query": "674"
                 },
@@ -10431,9 +10446,6 @@
                 },
                 {
                   "query": "971"
-                },
-                {
-                  "query": "148"
                 }
               ]
             }
@@ -13724,64 +13736,64 @@
           "refused": 32,
           "lexical": {
             "claims": 313,
-            "supported": 304,
-            "unsupported": 9,
+            "supported": 310,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.9712,
-            "supportedInterval": [0.9463, 0.9848],
+            "supportedShare": 0.9904,
+            "supportedInterval": [0.9722, 0.9967],
             "byLexicalReason": {
-              "supported": 304,
-              "polarity_mismatch": 9
+              "supported": 310,
+              "polarity_mismatch": 3
             },
-            "verifiedAnswers": 59,
-            "verifiedShare": 0.59,
-            "verifiedInterval": [0.492, 0.6813]
+            "verifiedAnswers": 65,
+            "verifiedShare": 0.65,
+            "verifiedInterval": [0.5525, 0.7364]
           },
           "judge": {
             "claims": 313,
-            "supported": 304,
-            "unsupported": 9,
+            "supported": 310,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.9712,
-            "supportedInterval": [0.9463, 0.9848],
+            "supportedShare": 0.9904,
+            "supportedInterval": [0.9722, 0.9967],
             "byLexicalReason": {
-              "supported": 304,
-              "polarity_mismatch": 9
+              "supported": 310,
+              "polarity_mismatch": 3
             },
-            "verifiedAnswers": 59,
-            "verifiedShare": 0.59,
-            "verifiedInterval": [0.492, 0.6813]
+            "verifiedAnswers": 65,
+            "verifiedShare": 0.65,
+            "verifiedInterval": [0.5525, 0.7364]
           }
         },
         "lexical": {
           "claims": 313,
-          "supported": 304,
-          "unsupported": 9,
+          "supported": 310,
+          "unsupported": 3,
           "unverifiable": 0,
-          "supportedShare": 0.9712,
-          "supportedInterval": [0.9463, 0.9848],
+          "supportedShare": 0.9904,
+          "supportedInterval": [0.9722, 0.9967],
           "byLexicalReason": {
-            "supported": 304,
-            "polarity_mismatch": 9
+            "supported": 310,
+            "polarity_mismatch": 3
           },
-          "verifiedAnswers": 59,
-          "verifiedShare": 0.59,
-          "verifiedInterval": [0.492, 0.6813]
+          "verifiedAnswers": 65,
+          "verifiedShare": 0.65,
+          "verifiedInterval": [0.5525, 0.7364]
         },
         "judge": {
           "claims": 313,
-          "supported": 304,
-          "unsupported": 9,
+          "supported": 310,
+          "unsupported": 3,
           "unverifiable": 0,
-          "supportedShare": 0.9712,
-          "supportedInterval": [0.9463, 0.9848],
+          "supportedShare": 0.9904,
+          "supportedInterval": [0.9722, 0.9967],
           "byLexicalReason": {
-            "supported": 304,
-            "polarity_mismatch": 9
+            "supported": 310,
+            "polarity_mismatch": 3
           },
-          "verifiedAnswers": 59,
-          "verifiedShare": 0.59,
-          "verifiedInterval": [0.492, 0.6813],
+          "verifiedAnswers": 65,
+          "verifiedShare": 0.65,
+          "verifiedInterval": [0.5525, 0.7364],
           "calls": 0,
           "errors": 0
         },
@@ -13792,23 +13804,23 @@
         },
         "costUSD": 5.3183,
         "review": {
-          "flaggedByLexical": 9,
-          "sampled": 9,
+          "flaggedByLexical": 3,
+          "sampled": 3,
           "lexical": {
-            "reviewed": 9,
+            "reviewed": 3,
             "true_problem": 0,
-            "false_alarm": 9,
+            "false_alarm": 3,
             "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2992]
+            "precisionInterval": [0, 0.5615]
           },
           "judgeStillUnsupported": {
-            "reviewed": 9,
+            "reviewed": 3,
             "true_problem": 0,
-            "false_alarm": 9,
+            "false_alarm": 3,
             "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2992]
+            "precisionInterval": [0, 0.5615]
           },
           "judgeOverturned": {
             "reviewed": 0,
@@ -13819,67 +13831,58 @@
             "precisionInterval": null
           },
           "sample": [
-            "claude-fable-5-1|870#5",
             "claude-fable-5-1|516#1",
-            "claude-fable-5-1|641#0",
-            "claude-fable-5-1|1379#2",
-            "claude-fable-5-1|261#0",
-            "claude-fable-5-1|274#1",
-            "claude-fable-5-1|185#0",
-            "claude-fable-5-1|443#0",
+            "claude-fable-5-1|551#2",
             "claude-fable-5-1|386#4"
           ]
         },
         "mutation": {
           "claimsWithCitedText": 313,
           "unmutatedFlagged": {
-            "caught": 9,
+            "caught": 3,
             "applicable": 313,
-            "rate": 0.0288,
-            "interval": [0.0152, 0.0537]
+            "rate": 0.0096,
+            "interval": [0.0033, 0.0278]
           },
-          "supportedClaims": 304,
+          "supportedClaims": 310,
           "mutations": {
             "number": {
-              "caught": 101,
-              "applicable": 101,
+              "caught": 105,
+              "applicable": 105,
               "rate": 1,
-              "interval": [0.9634, 1],
+              "interval": [0.9647, 1],
               "missedExamples": []
             },
             "negationAdded": {
-              "caught": 154,
-              "applicable": 154,
+              "caught": 155,
+              "applicable": 155,
               "rate": 1,
-              "interval": [0.9757, 1],
+              "interval": [0.9758, 1],
               "missedExamples": []
             },
             "negationRemoved": {
-              "caught": 27,
-              "applicable": 29,
-              "rate": 0.931,
-              "interval": [0.7804, 0.9809],
+              "caught": 33,
+              "applicable": 34,
+              "rate": 0.9706,
+              "interval": [0.8508, 0.9948],
               "missedExamples": [
-                {
-                  "query": "770"
-                },
                 {
                   "query": "1163"
                 }
               ]
             },
             "swapUnrelated": {
-              "caught": 304,
-              "applicable": 304,
+              "caught": 310,
+              "applicable": 310,
               "rate": 1,
-              "interval": [0.9875, 1],
+              "interval": [0.9878, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 299,
-              "applicable": 304,
-              "rate": 0.9836,
-              "interval": [0.9621, 0.993],
+              "caught": 305,
+              "applicable": 310,
+              "rate": 0.9839,
+              "interval": [0.9628, 0.9931],
               "missedExamples": [
                 {
                   "query": "674"
