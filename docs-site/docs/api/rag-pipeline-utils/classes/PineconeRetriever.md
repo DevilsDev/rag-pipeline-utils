@@ -6,8 +6,9 @@ mdx:
 # Class: PineconeRetriever
 
 Retriever on a Pinecone serverless index over its REST API, with no
-client package. The index must exist; its dimension and metric (cosine
-for the scores the other retrievers return) are set when it is created.
+client package. The index must exist, with a dense vector of your
+embedding model's dimension; use the cosine metric for the scores the
+other retrievers return.
 
 ## Constructors
 
@@ -19,16 +20,18 @@ new PineconeRetriever(options?): PineconeRetriever;
 
 #### Parameters
 
-| Parameter                     | Type                                                                                                                                                                    | Description                                                                    |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `options?`                    | \{ `apiKey?`: `string`; `cacheKey?`: `string`; `fetch?`: `Function`; `freshnessTimeoutMs?`: `number`; `host?`: `string`; `index?`: `string`; `namespace?`: `string`; \} | -                                                                              |
-| `options.apiKey?`             | `string`                                                                                                                                                                | Defaults to PINECONE_API_KEY                                                   |
-| `options.cacheKey?`           | `string`                                                                                                                                                                | Cache identity; change it when the index changes                               |
-| `options.fetch?`              | `Function`                                                                                                                                                              | fetch implementation (defaults to the global)                                  |
-| `options.freshnessTimeoutMs?` | `number`                                                                                                                                                                | How long a read waits for this retriever's writes to be indexed; 0 to not wait |
-| `options.host?`               | `string`                                                                                                                                                                | The index host (from the console or describe_index); or give `index`           |
-| `options.index?`              | `string`                                                                                                                                                                | The index name, resolved to its host on first use                              |
-| `options.namespace?`          | `string`                                                                                                                                                                | A namespace this retriever owns                                                |
+| Parameter                     | Type                                                                                                                                                                                                                                                | Description                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `options?`                    | \{ `api?`: `"documents"` \| `"auto"` \| `"vectors"`; `apiKey?`: `string`; `cacheKey?`: `string`; `fetch?`: `Function`; `freshnessTimeoutMs?`: `number`; `host?`: `string`; `index?`: `string`; `namespace?`: `string`; `vectorField?`: `string`; \} | -                                                                                        |
+| `options.api?`                | `"documents"` \| `"auto"` \| `"vectors"`                                                                                                                                                                                                            | Document index (Documents API) or vector index; auto reads it from the index description |
+| `options.apiKey?`             | `string`                                                                                                                                                                                                                                            | Defaults to PINECONE_API_KEY                                                             |
+| `options.cacheKey?`           | `string`                                                                                                                                                                                                                                            | Cache identity; change it when the index changes                                         |
+| `options.fetch?`              | `Function`                                                                                                                                                                                                                                          | fetch implementation (defaults to the global)                                            |
+| `options.freshnessTimeoutMs?` | `number`                                                                                                                                                                                                                                            | How long a read waits for this retriever's writes to be indexed; 0 to not wait           |
+| `options.host?`               | `string`                                                                                                                                                                                                                                            | The index host (from the console), instead of or with `index`                            |
+| `options.index?`              | `string`                                                                                                                                                                                                                                            | The index name, described on first use                                                   |
+| `options.namespace?`          | `string`                                                                                                                                                                                                                                            | A namespace this retriever owns                                                          |
+| `options.vectorField?`        | `string`                                                                                                                                                                                                                                            | The document index's dense_vector field (default: the schema's)                          |
 
 #### Returns
 
@@ -51,7 +54,7 @@ new PineconeRetriever(options?): PineconeRetriever;
 clear(): Promise<void>;
 ```
 
-Deletes every record in this retriever's namespace.
+Deletes every document this retriever stored in its namespace.
 
 #### Returns
 
@@ -172,7 +175,7 @@ size(): Promise<number>;
 
 `Promise`\<`number`\>
 
-The records in this retriever's namespace
+The documents this retriever stored
 
 ---
 

@@ -170,22 +170,32 @@ const embedder = new OpenAIConnector();
 const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
 ```
 
-Create the index first, in the console or with Pinecone's API: its dimension is your embedding model's, and use the cosine metric for the scores the other retrievers return. The retriever owns its namespace: `clear()` deletes everything in it.
+It works with both kinds of Pinecone index, and reads which one from the index description on first use:
 
-Pinecone is eventually consistent. Like Qdrant's waited writes, a read waits until this retriever's own writes are indexed: Pinecone returns a log sequence number for each write and, on each query, the highest one it reflects ([data freshness](https://docs.pinecone.io/guides/index-data/check-data-freshness)). It waits up to `freshnessTimeoutMs`; writes from other processes aren't waited for.
+| Index                                                                    | API it uses                                                      |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| A document index with a `dense_vector` field (what Pinecone creates now) | The Documents API; your vectors go in that field (`vectorField`) |
+| A vector index (created with a dimension and metric)                     | The vectors API (`/vectors/upsert`, `/query`)                    |
+| An index that embeds text itself (integrated embedding)                  | Refused: it has no field for your vectors                        |
 
-Pinecone metadata is flat and limited to 40 KB per record. Each record keeps your id as `rag_id` (ids that Pinecone rejects, such as non-ASCII ones, become a hash), the content as `rag_content`, your metadata as JSON in `rag_metadata`, and `metadata.source` as `rag_source` for `removeBySource`. Results report your original id and metadata.
+Create the index first: a dense vector of your embedding model's dimension, with the cosine metric for the scores the other retrievers return. The retriever owns its namespace: `clear()` deletes everything it stored there.
+
+Pinecone is eventually consistent. Like Qdrant's waited writes, a read waits until this retriever's own writes are indexed: Pinecone returns a log sequence number for each write and, on each search, the highest one it reflects ([data freshness](https://docs.pinecone.io/guides/index-data/check-data-freshness)). It waits up to `freshnessTimeoutMs`; writes from other processes aren't waited for. On a document index, `list()` and `size()` search too, so they reflect your writes for up to 10,000 documents; beyond that they page through a fetch that can lag by seconds.
+
+Pinecone metadata is flat. Each record keeps your id as `rag_id` (ids that Pinecone rejects, such as non-ASCII ones, become a hash), the content as `rag_content`, your metadata as JSON in `rag_metadata`, and `metadata.source` as `rag_source` for `removeBySource`. Results report your original id and metadata.
 
 | Option               | Default            | Description                                                        |
 | -------------------- | ------------------ | ------------------------------------------------------------------ |
 | `apiKey`             | `PINECONE_API_KEY` | Sent as the `Api-Key` header; never included in errors             |
-| `index`              |                    | The index name, resolved to its host on first use                  |
-| `host`               |                    | The index host, instead of `index`                                 |
+| `index`              |                    | The index name                                                     |
+| `host`               |                    | The index host, instead of or with `index`                         |
 | `namespace`          | `rag_documents`    | A namespace this retriever owns                                    |
+| `api`                | `auto`             | `documents` or `vectors` to skip reading the index description     |
+| `vectorField`        | the schema's       | A document index's `dense_vector` field                            |
 | `freshnessTimeoutMs` | `30000`            | How long a read waits for this retriever's writes; `0` to not wait |
 | `cacheKey`           |                    | Cache identity, as for [pgvector](#postgresql-with-pgvector)       |
 
-It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant (against an in-memory Pinecone in CI). In `.ragrc.json`, the index comes from `config.index` (or `config.host`) or `PINECONE_INDEX`, and the API key only from `PINECONE_API_KEY`:
+It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant: in CI against an eventually consistent in-memory Pinecone of both kinds, and before a release against real indexes of both kinds (`npm run test:live`). In `.ragrc.json`, the index comes from `config.index` (or `config.host`) or `PINECONE_INDEX`, and the API key only from `PINECONE_API_KEY`:
 
 ```json
 {

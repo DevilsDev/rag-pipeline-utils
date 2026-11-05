@@ -2,12 +2,19 @@
 
 /**
  * An in-memory Pinecone serverless index behind a fetch function, for
- * PineconeRetriever's tests: upsert, query (cosine), delete (ids, deleteAll,
- * a metadata $eq/$exists filter), list and fetch, the dimension check, the
- * API-key check, and eventual consistency. Writes get increasing log
- * sequence numbers (x-pinecone-request-lsn); reads see the index as of
- * `indexed` (x-pinecone-max-indexed-lsn), which catches up one write per
- * read when `lag` is on, so a reader that doesn't wait sees stale data.
+ * PineconeRetriever's tests, as API version 2026-07 serves it:
+ *
+ * - kind "documents": a document index with a dense_vector field
+ *   (`embedding`), through the Documents API;
+ * - kind "vectors": a vector index, through the vectors API;
+ * - kind "integrated": a document index that embeds text itself.
+ *
+ * Plus the control plane (describe one index, list indexes), the dimension
+ * and API-key checks, and eventual consistency: writes get increasing log
+ * sequence numbers (x-pinecone-request-lsn; a document index's delete_all
+ * gets none, as on Pinecone), and searches see the index as of `indexed`
+ * (x-pinecone-max-indexed-lsn), which catches up one write per search when
+ * `lag` is on, so a reader that doesn't wait sees stale data.
  */
 
 function fakePinecone({
@@ -15,29 +22,13 @@ function fakePinecone({
   dimension = 4,
   host = "https://idx-abc.svc.test.pinecone.io",
   indexName = "docs",
+  kind = "documents",
   lag = true,
 } = {}) {
   const log = []; // { lsn, namespace, op, ... }
   let indexed = 0;
   const calls = [];
-
-  const state = (namespace) => {
-    const records = new Map();
-    for (const entry of log) {
-      if (entry.lsn > indexed || entry.namespace !== namespace) continue;
-      if (entry.op === "upsert") {
-        for (const v of entry.vectors) records.set(v.id, v);
-      } else if (entry.op === "deleteAll") records.clear();
-      else if (entry.op === "deleteIds") {
-        for (const id of entry.ids) records.delete(id);
-      } else if (entry.op === "deleteFilter") {
-        for (const [id, v] of records) {
-          if (matches(v.metadata, entry.filter)) records.delete(id);
-        }
-      }
-    }
-    return records;
-  };
+  const FIELD = "embedding";
 
   const matches = (metadata = {}, filter = {}) =>
     Object.entries(filter).every(([key, cond]) => {
@@ -45,6 +36,25 @@ function fakePinecone({
       if ("$exists" in cond) return key in metadata === cond.$exists;
       throw new Error(`fake: unsupported filter ${JSON.stringify(cond)}`);
     });
+
+  // Records: { id, values, metadata }
+  const state = (namespace, upTo = indexed) => {
+    const records = new Map();
+    for (const entry of log) {
+      if (entry.lsn > upTo || entry.namespace !== namespace) continue;
+      if (entry.op === "upsert") {
+        for (const r of entry.records) records.set(r.id, r);
+      } else if (entry.op === "deleteAll") records.clear();
+      else if (entry.op === "deleteIds") {
+        for (const id of entry.ids) records.delete(id);
+      } else if (entry.op === "deleteFilter") {
+        for (const [id, r] of records) {
+          if (matches(r.metadata, entry.filter)) records.delete(id);
+        }
+      }
+    }
+    return records;
+  };
 
   const cosine = (a, b) => {
     let dot = 0;
@@ -63,96 +73,124 @@ function fakePinecone({
       status,
       headers: { "content-type": "application/json", ...headers },
     });
+  const error = (status, message) =>
+    json(status, { error: { code: "INVALID_ARGUMENT", message }, status });
 
-  const write = (entry) => {
+  const write = (entry, { lsn: withLsn = true } = {}) => {
     const lsn = log.length + 1;
     log.push({ lsn, ...entry });
     if (!lag) indexed = lsn;
-    return { "x-pinecone-request-lsn": String(lsn) };
+    return withLsn ? { "x-pinecone-request-lsn": String(lsn) } : {};
   };
-
   const read = () => {
     if (lag && indexed < log.length) indexed += 1;
     return { "x-pinecone-max-indexed-lsn": String(indexed) };
   };
+  const hasNamespace = (namespace) =>
+    log.some((e) => e.namespace === namespace);
 
-  async function fetch(url, init = {}) {
-    const u = new URL(url);
-    const method = init.method || "GET";
-    const body = init.body ? JSON.parse(init.body) : undefined;
-    calls.push({ method, url: u.href, body, headers: init.headers });
-    if (init.signal && init.signal.aborted) {
-      const e = new Error("This operation was aborted");
-      e.name = "AbortError";
-      throw e;
+  const description = () => {
+    const base = {
+      name: indexName,
+      host: host.replace("https://", ""),
+      status: { ready: true, state: "Ready" },
+      deletion_protection: "disabled",
+    };
+    if (kind === "vectors") {
+      // As 2026-07 describes a vector index: an implicit schema
+      return {
+        ...base,
+        schema: {
+          fields: {
+            _sparse_values: { type: "sparse_vector" },
+            _values: { type: "dense_vector", dimension, metric: "cosine" },
+          },
+        },
+      };
     }
-    if (init.headers["Api-Key"] !== apiKey) {
-      return json(401, {
-        error: { code: "UNAUTHENTICATED", message: "Invalid API Key" },
-      });
+    if (kind === "integrated") {
+      return {
+        ...base,
+        schema: {
+          fields: {
+            chunk_text: {
+              type: "string",
+              embed: { model: "llama-text-embed-v2", dimension: 1024 },
+            },
+          },
+        },
+      };
     }
-    if (u.origin === "https://api.pinecone.io") {
-      if (method === "GET" && u.pathname === `/indexes/${indexName}`) {
-        return json(200, {
-          name: indexName,
-          host: host.replace("https://", ""),
-          status: { ready: true },
-        });
-      }
-      return json(404, {
-        error: { code: "NOT_FOUND", message: "Index not found" },
-      });
-    }
-    if (u.origin !== host) return json(404, { message: "unknown host" });
+    return {
+      ...base,
+      schema: {
+        fields: {
+          [FIELD]: { type: "dense_vector", dimension, metric: "cosine" },
+        },
+      },
+    };
+  };
 
+  const checkDimension = (values) =>
+    values.length !== dimension
+      ? error(
+          400,
+          `Vector dimension ${values.length} does not match the dimension of the index ${dimension}`,
+        )
+      : null;
+
+  function vectorsApi(method, u, body) {
     const namespace =
       (body && body.namespace) ?? u.searchParams.get("namespace") ?? "";
     switch (`${method} ${u.pathname}`) {
       case "POST /vectors/upsert": {
         for (const v of body.vectors) {
-          if (v.values.length !== dimension) {
-            return json(400, {
-              code: 3,
-              message: `Vector dimension ${v.values.length} does not match the dimension of the index ${dimension}`,
-            });
-          }
+          const bad = checkDimension(v.values);
+          if (bad) return bad;
           for (const value of Object.values(v.metadata || {})) {
             if (
               value !== null &&
               typeof value === "object" &&
               !Array.isArray(value)
             ) {
-              return json(400, {
-                code: 3,
-                message:
-                  "Metadata value must be a string, number, boolean or list of strings",
-              });
+              return error(
+                400,
+                "Metadata value must be a string, number, boolean or list of strings",
+              );
             }
           }
         }
         return json(
           200,
           { upsertedCount: body.vectors.length },
-          write({ namespace, op: "upsert", vectors: body.vectors }),
+          write({
+            namespace,
+            op: "upsert",
+            records: body.vectors.map((v) => ({
+              id: v.id,
+              values: v.values,
+              metadata: v.metadata || {},
+            })),
+          }),
         );
       }
       case "POST /query": {
         const headers = read();
-        const matched = [...state(namespace).values()]
-          .map((v) => ({
-            id: v.id,
-            score: cosine(v.values, body.vector),
-            ...(body.includeMetadata && { metadata: v.metadata }),
+        const found = [...state(namespace).values()]
+          .filter((r) => !body.filter || matches(r.metadata, body.filter))
+          .map((r) => ({
+            id: r.id,
+            score: cosine(r.values, body.vector),
+            ...(body.includeMetadata && { metadata: r.metadata }),
           }))
           .sort((a, b) => b.score - a.score)
           .slice(0, body.topK);
-        return json(200, { matches: matched, namespace }, headers);
+        return json(200, { matches: found, namespace }, headers);
       }
       case "POST /vectors/delete": {
         if (body.deleteAll) {
-          if (!log.some((e) => e.namespace === namespace)) {
-            return json(404, { code: 5, message: "Namespace not found" });
-          }
+          if (!hasNamespace(namespace))
+            return error(404, "Namespace not found");
           return json(200, {}, write({ namespace, op: "deleteAll" }));
         }
         if (body.ids)
@@ -171,9 +209,8 @@ function fakePinecone({
         const ids = [...state(namespace).keys()].sort();
         const limit = Number(u.searchParams.get("limit") || 100);
         const start = Number(u.searchParams.get("paginationToken") || 0);
-        const page = ids.slice(start, start + limit);
         return json(200, {
-          vectors: page.map((id) => ({ id })),
+          vectors: ids.slice(start, start + limit).map((id) => ({ id })),
           ...(start + limit < ids.length && {
             pagination: { next: String(start + limit) },
           }),
@@ -189,11 +226,154 @@ function fakePinecone({
         return json(200, { vectors, namespace });
       }
       default:
+        if (u.pathname.startsWith("/namespaces/")) {
+          return error(
+            400,
+            "This index has no document schema; use the vectors API",
+          );
+        }
         return json(404, { message: `fake: no route ${method} ${u.pathname}` });
     }
   }
 
-  return { fetch, calls, host, indexName, apiKey, log };
+  function documentsApi(method, u, body) {
+    const m =
+      /^\/namespaces\/([^/]+)\/documents\/(upsert|search|delete|fetch)$/.exec(
+        u.pathname,
+      );
+    if (!m || method !== "POST") {
+      if (u.pathname.startsWith("/vectors/") || u.pathname === "/query") {
+        return error(
+          400,
+          "This index has a document schema, so writes must go through the documents API.",
+        );
+      }
+      return json(404, { message: `fake: no route ${method} ${u.pathname}` });
+    }
+    const namespace = decodeURIComponent(m[1]);
+    const pick = (r) => {
+      const fields = { _id: r.id, [FIELD]: r.values, ...r.metadata };
+      const wanted = body.include_fields;
+      if (!wanted || wanted.includes("*")) return fields;
+      return Object.fromEntries(
+        Object.entries(fields).filter(
+          ([k]) => k === "_id" || wanted.includes(k),
+        ),
+      );
+    };
+    switch (m[2]) {
+      case "upsert": {
+        const records = [];
+        for (const doc of body.documents) {
+          const { _id, [FIELD]: values, ...metadata } = doc;
+          if (!values) return error(400, `document ${_id} has no ${FIELD}`);
+          const bad = checkDimension(values);
+          if (bad) return bad;
+          records.push({ id: _id, values, metadata });
+        }
+        return json(
+          202,
+          { upserted_count: records.length },
+          write({ namespace, op: "upsert", records }),
+        );
+      }
+      case "search": {
+        if (!hasNamespace(namespace)) return error(404, "Namespace not found");
+        const headers = read();
+        const [clause] = body.score_by;
+        if (clause.type !== "dense_vector" || clause.fields[0] !== FIELD) {
+          return error(400, `unknown dense_vector field ${clause.fields[0]}`);
+        }
+        const found = [...state(namespace).values()]
+          .filter((r) => !body.filter || matches(r.metadata, body.filter))
+          .map((r) => ({ ...pick(r), _score: cosine(r.values, clause.values) }))
+          .sort((a, b) => b._score - a._score)
+          .slice(0, body.top_k);
+        return json(200, { matches: found, namespace }, headers);
+      }
+      case "delete": {
+        if (body.delete_all)
+          return json(
+            202,
+            {},
+            write({ namespace, op: "deleteAll" }, { lsn: false }),
+          );
+        if (body.ids)
+          return json(
+            202,
+            {},
+            write({ namespace, op: "deleteIds", ids: body.ids }),
+          );
+        return json(
+          202,
+          { matched_records: 0 },
+          write({ namespace, op: "deleteFilter", filter: body.filter }),
+        );
+      }
+      case "fetch": {
+        const records = state(namespace);
+        if (body.ids) {
+          const documents = {};
+          for (const id of body.ids)
+            if (records.has(id)) documents[id] = pick(records.get(id));
+          return json(200, { documents, namespace });
+        }
+        const all = [...records.values()]
+          .filter((r) => matches(r.metadata, body.filter))
+          .sort((a, b) => (a.id < b.id ? -1 : 1));
+        const start = Number(body.pagination_token || 0);
+        const limit = body.limit || 100;
+        const page = all.slice(start, start + limit);
+        return json(200, {
+          documents: Object.fromEntries(page.map((r) => [r.id, pick(r)])),
+          ...(start + limit < all.length && {
+            pagination: { next: String(start + limit) },
+          }),
+          namespace,
+        });
+      }
+      default:
+        return json(404, {});
+    }
+  }
+
+  async function fetch(url, init = {}) {
+    const u = new URL(url);
+    const method = init.method || "GET";
+    const body = init.body ? JSON.parse(init.body) : undefined;
+    calls.push({ method, url: u.href, body, headers: init.headers });
+    if (init.signal && init.signal.aborted) {
+      const e = new Error("This operation was aborted");
+      e.name = "AbortError";
+      throw e;
+    }
+    if (init.headers["Api-Key"] !== apiKey) {
+      return json(401, {
+        error: { code: "UNAUTHENTICATED", message: "Invalid API Key" },
+      });
+    }
+    if (u.origin === "https://api.pinecone.io") {
+      if (method === "GET" && u.pathname === `/indexes/${indexName}`)
+        return json(200, description());
+      if (method === "GET" && u.pathname === "/indexes") {
+        return json(200, {
+          indexes: [
+            description(),
+            { name: "other", host: "other.svc.test.pinecone.io", dimension: 8 },
+          ],
+        });
+      }
+      return json(404, {
+        error: { code: "NOT_FOUND", message: "Index not found" },
+      });
+    }
+    if (u.origin !== host) return json(404, { message: "unknown host" });
+    return kind === "vectors"
+      ? vectorsApi(method, u, body)
+      : documentsApi(method, u, body);
+  }
+
+  return { fetch, calls, host, indexName, apiKey, log, field: FIELD };
 }
 
 module.exports = { fakePinecone };
