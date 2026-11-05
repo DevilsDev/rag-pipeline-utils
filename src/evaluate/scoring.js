@@ -478,16 +478,18 @@ function quantities(text) {
 // The same source is checked against every sentence of an answer: keep the
 // last few sources' quantities
 const docQuantityCache = new Map();
-function docQuantities(text) {
+const claimQuantityCache = new Map();
+function cachedQuantities(cache, text) {
   const key = String(text || '');
-  let hit = docQuantityCache.get(key);
+  let hit = cache.get(key);
   if (!hit) {
     hit = quantities(key);
-    if (docQuantityCache.size >= 256) docQuantityCache.clear();
-    docQuantityCache.set(key, hit);
+    if (cache.size >= 256) cache.clear();
+    cache.set(key, hit);
   }
   return hit;
 }
+const docQuantities = (text) => cachedQuantities(docQuantityCache, text);
 
 /** Whether two quantities of one kind are equal (thirds are compared to the nearest point). */
 function sameQuantity(a, b) {
@@ -503,7 +505,8 @@ function clockHours(text) {
   const hours24 = new Set();
   const hours12 = new Set();
   for (const m of String(text || '').matchAll(
-    /(?<!\d)(\d{1,2}):([0-5]\d)(?!\d)/g,
+    // one-digit minutes too ("7:0-23:0", as some listings write hours)
+    /(?<!\d)(\d{1,2}):([0-5]?\d)(?!\d)/g,
   )) {
     const h = Number(m[1]);
     if (h > 23) continue;
@@ -546,7 +549,9 @@ function checkClockTimes(claimText, docText) {
     } else if (
       ['at', 'from', 'to', 'until', 'till'].includes(prev) &&
       h >= 1 &&
-      h <= 12
+      h <= 12 &&
+      // "open from 9 to 5.", not "up to 8 people" or "at 11 Main Street"
+      endsTime(claimText, tokens[i].end, next)
     ) {
       const span = [tokens[i].start, tokens[i].end];
       if (hours12.has(h) || hours24.has(h)) matched.push(span);
@@ -555,6 +560,22 @@ function checkClockTimes(claimText, docText) {
     }
   }
   return { spans, matched, missing };
+}
+
+/** Words that can follow a bare hour in a time ("from 9 to 5", "at 6 on Fridays"). */
+const AFTER_HOUR = new Set(
+  'to until till and or on every each daily sharp then'.split(' '),
+);
+
+/** Whether a bare hour ends here: the text ends, punctuation follows, or a range word. */
+function endsTime(text, end, next) {
+  if (
+    next === undefined ||
+    /^\s*[.,;:!?)]/.test(String(text).slice(end, end + 3))
+  ) {
+    return true;
+  }
+  return AFTER_HOUR.has(next);
 }
 
 /** A text with these [start, end) spans blanked out. */
@@ -607,13 +628,17 @@ function checkNumericConsistency(claimText, docText) {
   const matched = [];
   const missing = [];
   const claimNumbers = [];
-  for (const q of quantities(claim).items) {
+  for (const q of cachedQuantities(claimQuantityCache, claim).items) {
     const sameKind = doc.items.filter((d) => d.kind === q.kind);
     const equal = sameKind.filter((d) => sameQuantity(d, q));
     const found =
       equal.length > 0 ||
-      // the same number and unit word elsewhere: "20 days" in "20 vacation days"
-      (docParts.has(q.number) && doc.unitWords.has(q.unit));
+      // the number with the same unit word elsewhere ("20 days" in "20
+      // vacation days"), or with no other unit of this kind ("seven days a
+      // week" against a source with "7:00")
+      (docParts.has(q.number) &&
+        (doc.unitWords.has(q.unit) ||
+          !sameKind.some((d) => d.number === q.number)));
     if (sameKind.length === 0 && !q.words && !found) continue;
     spans.push([q.start, q.end]);
     // Its words count as supported only when the source states it in
@@ -1041,21 +1066,31 @@ function computeSupportScore(
   if (claim.length === 0) return 0;
   const docSet = docTokens instanceof Set ? docTokens : new Set(docTokens);
 
-  const { claimText, docText } = options || {};
-  const texts = typeof claimText === 'string' && typeof docText === 'string';
-  const numeric = texts ? checkNumericConsistency(claimText, docText) : null;
-  const restated = new Set(numeric ? numeric.matchedWords : []);
-
   let matched = 0;
   let total = 0;
+  const unmatched = [];
   for (const token of claim) {
     const weight = idfWeights ? (idfWeights.get(token) ?? 1) : 1;
     total += weight;
-    if (docSet.has(token) || restated.has(token)) matched += weight;
+    if (docSet.has(token)) matched += weight;
+    else unmatched.push([token, weight]);
+  }
+  // No word in common: nothing to check (the number and polarity checks
+  // run only on documents that share some words with the claim)
+  if (matched === 0) return 0;
+
+  const { claimText, docText } = options || {};
+  const texts = typeof claimText === 'string' && typeof docText === 'string';
+  const numeric = texts ? checkNumericConsistency(claimText, docText) : null;
+  if (numeric && numeric.matchedWords.length) {
+    const restated = new Set(numeric.matchedWords);
+    for (const [token, weight] of unmatched) {
+      if (restated.has(token)) matched += weight;
+    }
   }
   let score = total > 0 ? matched / total : 0;
 
-  if (score > 0 && texts) {
+  if (texts) {
     if (!numeric.consistent) {
       const share =
         (numeric.claimNumbers.length - numeric.missing.length) /

@@ -93,4 +93,4 @@
 {"id":"time-04","category":"times of day","kind":"false alarm","expected":"supported","claim":"The cafe is open from 7 am to 11 pm.","source":"Hours: Monday 7:0-23:0, Tuesday 7:0-23:0."}
 {"id":"time-05","category":"times of day","kind":"false alarm","expected":"supported","claim":"The bar seats up to 8 people.","source":"The bar opens at 17:00 and seats 8 people."}
 {"id":"time-06","category":"times of day","kind":"false alarm","expected":"supported","claim":"The shop is located at 11 Main Street.","source":"The shop at 11 Main Street opens at 9:00."}
-{"id":"unit-10","category":"units","kind":"false alarm","expected":"supported","claim":"The shop is open seven days a week.","source":"Open Monday to Sunday, 7:00 to 22:00, with a 30 minutes break at noon."}
+{"id":"unit-10","category":"units","kind":"false alarm","expected":"supported","claim":"The shop is open seven days a week.","source":"The shop is open every day of the week from 7:00, closing for a 30 minutes break at noon."}
