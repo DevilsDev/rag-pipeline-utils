@@ -83,7 +83,7 @@ const latency = (values) => ({
 /** A judge that never answers: checkAnswer keeps its lexical verdicts and reports why. */
 const SILENT_JUDGE = { generate: async () => "[]" };
 
-function makeJudge(cache, model, omitTemperature, calls) {
+function makeJudge(cache, model, adapterOptions, calls) {
   const judge = new AnthropicConnector({
     apiKey: cache.apiKey || "cached",
     model,
@@ -91,7 +91,7 @@ function makeJudge(cache, model, omitTemperature, calls) {
   });
   judge.client.defaults.adapter = cache.axiosAdapter(
     (call) => calls.push(call),
-    { omitTemperature },
+    adapterOptions,
   );
   return judge;
 }
@@ -113,7 +113,7 @@ async function shippedJudge(cache, model) {
         },
       ],
       evaluate: false,
-      judge: makeJudge(cache, model, false, calls),
+      judge: makeJudge(cache, model, {}, calls),
     });
     return { works: true, omitTemperature: false };
   } catch (error) {
@@ -125,14 +125,14 @@ async function shippedJudge(cache, model) {
   }
 }
 
-async function judged(c, cache, model, omitTemperature) {
+async function judged(c, cache, model, adapterOptions) {
   const calls = [];
   const t0 = performance.now();
   const check = await checkAnswer({
     answer: c.answer,
     sources: c.sources,
     evaluate: false,
-    judge: makeJudge(cache, model, omitTemperature, calls),
+    judge: makeJudge(cache, model, adapterOptions, calls),
   });
   const wallMs = performance.now() - t0;
   // Latency per check: local work plus the API call as it was measured
@@ -374,6 +374,15 @@ async function main() {
       hallucinated: c.hallucinated,
       lexical: { grounded: check.grounded, unsupported: check.unsupported },
       lexicalMs: performance.now() - t0,
+      // Why each sentence failed, with no model involved
+      lexicalReasons: (
+        await checkAnswer({
+          answer: c.answer,
+          sources: c.sources,
+          evaluate: false,
+          judge: SILENT_JUDGE,
+        })
+      ).judge.verdicts.map((v) => v.lexicalReason),
       judge: {},
     });
   }
@@ -436,10 +445,43 @@ async function main() {
       `${model}: shipped judge ${shipped.works ? "works" : `fails (${shipped.error})`}`,
     );
 
+    // As shipped (with temperature removed where the model needs it):
+    // the connector reads content[0].text
+    const shippedOptions = { omitTemperature: omit };
+    const shippedRag = await mapLimit(rows, CONCURRENCY, (row, i) =>
+      judged(sample[i], cache, model, shippedOptions),
+    );
+    const shippedEdge = await mapLimit(edge, CONCURRENCY, async (c) => {
+      const r = await judged(c, cache, model, shippedOptions);
+      return {
+        verdict: r.grounded ? "supported" : "unsupported",
+        verdicts: r.verdicts,
+      };
+    });
+    const shippedScore = scoreEdge(edge, shippedEdge);
+    const asShipped = {
+      noTextReplies: shippedRag.filter(
+        (r) => r.error === "judge returned no text",
+      ).length,
+      calls: shippedRag.reduce((n, r) => n + r.calls, 0),
+      metrics: responseMetrics(
+        rows.map((r, i) => ({ ...r, flagged: !shippedRag[i].grounded })),
+        (r) => r.flagged,
+      ),
+      edge: {
+        correct: shippedScore.correct,
+        cases: shippedScore.cases,
+        falseAlarms: shippedScore.falseAlarms,
+        misses: shippedScore.misses,
+      },
+    };
+
+    // Measured: the same replies with the text block first
+    const options = { omitTemperature: omit, textFirst: true };
     let done = 0;
     const ragStart = cache.used.length;
     await mapLimit(rows, CONCURRENCY, async (row, i) => {
-      row.judge[model] = await judged(sample[i], cache, model, omit);
+      row.judge[model] = await judged(sample[i], cache, model, options);
       done += 1;
       if (done % 50 === 0) {
         console.log(
@@ -450,7 +492,7 @@ async function main() {
     const ragEntries = cache.used.slice(ragStart);
     const edgeStart = cache.used.length;
     const edgeResults = await mapLimit(edge, CONCURRENCY, async (c) => {
-      const r = await judged(c, cache, model, omit);
+      const r = await judged(c, cache, model, options);
       return {
         verdict: r.grounded ? "supported" : "unsupported",
         verdicts: r.verdicts,
@@ -459,7 +501,13 @@ async function main() {
       };
     });
     const edgeEntries = cache.used.slice(edgeStart);
-    const allEntries = cache.used.slice(start);
+    // Each response once: the as-shipped and measured passes share them
+    const seen = new Set();
+    const allEntries = cache.used.slice(start).filter((e) => {
+      if (seen.has(e.key)) return false;
+      seen.add(e.key);
+      return true;
+    });
 
     const usage = (entries) => {
       const u = { calls: entries.length, inputTokens: 0, outputTokens: 0 };
@@ -490,6 +538,9 @@ async function main() {
       requestChange: omit
         ? "temperature removed from the connector's request body"
         : null,
+      responseChange:
+        "text blocks moved before other blocks in the reply the connector parses",
+      asShipped,
       callDates: (() => {
         const dates = allEntries.map((e) => e.createdAt.slice(0, 10)).sort();
         return dates.length ? [dates[0], dates[dates.length - 1]] : null;
@@ -530,6 +581,30 @@ async function main() {
     console.log(
       `  RAGTruth P ${m.precision} R ${m.recall} F1 ${m.f1} (TP ${m.tp} FP ${m.fp} FN ${m.fn} TN ${m.tn}); edge ${e.correct}/${e.cases}; US$${report.models[model].totalCostUSD}; total spend US$${cache.spentUSD().toFixed(4)}`,
     );
+  }
+
+  // The clean answers the lexical check flags: could a judge clear them?
+  // Only low_overlap sentences go to the judge, so an answer with any
+  // number or negation mismatch stays flagged whatever the judge says.
+  {
+    const flaggedClean = rows.filter(
+      (r) => !r.hallucinated && !r.lexical.grounded,
+    );
+    const reasonsOf = (r) =>
+      new Set(r.lexicalReasons.filter((x) => x !== "supported"));
+    report.ragtruth.lexicalFalseAlarms = {
+      answers: flaggedClean.length,
+      onlyLowOverlap: flaggedClean.filter((r) => {
+        const s = reasonsOf(r);
+        return s.size === 1 && s.has("low_overlap");
+      }).length,
+      withNumberMismatch: flaggedClean.filter((r) =>
+        reasonsOf(r).has("number_mismatch"),
+      ).length,
+      withPolarityMismatch: flaggedClean.filter((r) =>
+        reasonsOf(r).has("polarity_mismatch"),
+      ).length,
+    };
   }
 
   report.ragtruth.cases = rows.map((r) => ({

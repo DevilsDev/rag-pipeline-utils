@@ -7,5 +7,159 @@
   },
   "sampling": "For each model, every claim marked unsupported by the lexical check; if there are more than 20, a seeded sample of 20 (seed 20261105). Keys are <model>|<SciFact query id>#<claim index>.",
   "reviewer": "Claude (Opus 5.5), as the agent that ran the benchmark; to be re-checked by the lead engineer before publication.",
-  "reviews": {}
+  "reviews": {
+    "claude-haiku-4-5-20251001|1379#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-haiku-4-5-20251001|551#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-haiku-4-5-20251001|42#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-haiku-4-5-20251001|1382#0": {
+      "label": "false_alarm",
+      "note": "The passage says PKCζ deficiency promotes the reprogramming and PKCζ represses the enzymes; the claim's '(not PKCζ itself)' adds a negation the passage implies but doesn't state in those words."
+    },
+    "claude-haiku-4-5-20251001|1282#0": {
+      "label": "false_alarm",
+      "note": "Faithful paraphrase with too little word overlap (the judge supported it)."
+    },
+    "claude-haiku-4-5-20251001|1021#2": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-haiku-4-5-20251001|274#0": {
+      "label": "unclear",
+      "note": "The passage gives P = .11 and 95% CI 0.93-2.07; 'not statistically significant' is the usual reading but is not stated."
+    },
+    "claude-haiku-4-5-20251001|411#1": {
+      "label": "false_alarm",
+      "note": "The claim joins two passage sentences faithfully; it is compared with one of them for negation."
+    },
+    "claude-haiku-5-5|870#3": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. ('inverse associations for none')"
+    },
+    "claude-haiku-5-5|516#1": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-haiku-5-5|1379#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-haiku-5-5|551#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-haiku-5-5|42#1": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-haiku-5-5|213#2": {
+      "label": "false_alarm",
+      "note": "A fragment of the cited sentence, which the passage states."
+    },
+    "claude-haiku-5-5|560#2": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim fragment)"
+    },
+    "claude-haiku-5-5|1273#2": {
+      "label": "false_alarm",
+      "note": "Faithful; the 8 of 'kinesin-8' is read as a number the cited sentence doesn't contain."
+    },
+    "claude-sonnet-5-5|870#4": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-sonnet-5-5|516#0": {
+      "label": "false_alarm",
+      "note": "Faithful; the claim says 'Document N', and N is read as a number the passage doesn't contain."
+    },
+    "claude-sonnet-5-5|641#0": {
+      "label": "false_alarm",
+      "note": "Faithful; the claim says 'Document N', and N is read as a number the passage doesn't contain."
+    },
+    "claude-sonnet-5-5|525#0": {
+      "label": "false_alarm",
+      "note": "Faithful paraphrase; 'without' counts as a negation and the passage's 'in the absence of' does not."
+    },
+    "claude-sonnet-5-5|834#2": {
+      "label": "false_alarm",
+      "note": "'were unable to' paraphrases 'were not able to'; 'unable' is not a negation word."
+    },
+    "claude-sonnet-5-5|261#0": {
+      "label": "false_alarm",
+      "note": "Faithful summary of the two cited sentences, introduced by 'The documents support the claim:'."
+    },
+    "claude-sonnet-5-5|261#2": {
+      "label": "false_alarm",
+      "note": "The claim joins two passage sentences faithfully; it is compared with one of them for negation."
+    },
+    "claude-sonnet-5-5|261#7": {
+      "label": "false_alarm",
+      "note": "A fragment of the cited sentence, which the passage states. ('most likely')"
+    },
+    "claude-sonnet-5-5|551#0": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-sonnet-5-5|42#1": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails."
+    },
+    "claude-sonnet-5-5|439#0": {
+      "label": "false_alarm",
+      "note": "Faithful; the claim says 'Document N', and N is read as a number the passage doesn't contain."
+    },
+    "claude-sonnet-5-5|904#0": {
+      "label": "false_alarm",
+      "note": "Faithful; the claim says 'Document N', and N is read as a number the passage doesn't contain."
+    },
+    "claude-opus-5-5|1379#2": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim fragment)"
+    },
+    "claude-opus-5-5|213#3": {
+      "label": "false_alarm",
+      "note": "A fragment of the cited sentence, which the passage states."
+    },
+    "claude-opus-5-5|560#3": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim fragment)"
+    },
+    "claude-opus-5-5|411#4": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-fable-5-1|870#5": {
+      "label": "false_alarm",
+      "note": "The claim states what the passage says; the passage sentence also has a negated clause the claim leaves out, so the negation check fails. (verbatim quote)"
+    },
+    "claude-fable-5-1|516#1": {
+      "label": "false_alarm",
+      "note": "A fragment of the cited sentence, which the passage states."
+    },
+    "claude-fable-5-1|641#0": {
+      "label": "false_alarm",
+      "note": "The claim joins two passage sentences faithfully; it is compared with one of them for negation."
+    },
+    "claude-fable-5-1|1379#2": {
+      "label": "false_alarm",
+      "note": "Claim and passage are both negated, but the passage sentence has two negations, which the check reads as positive."
+    },
+    "claude-fable-5-1|261#0": {
+      "label": "false_alarm",
+      "note": "The claim joins two passage sentences faithfully; it is compared with one of them for negation."
+    },
+    "claude-fable-5-1|274#1": {
+      "label": "false_alarm",
+      "note": "The claim joins two passage sentences faithfully; it is compared with one of them for negation."
+    }
+  },
+  "reviewedOn": "2026-11-05"
 }

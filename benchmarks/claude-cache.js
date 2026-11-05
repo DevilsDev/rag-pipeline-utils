@@ -151,6 +151,7 @@ class ClaudeCache {
     const key = this.key(body);
     const hit = this.read(key);
     if (hit) {
+      hit.key = key;
       this.used.push(hit);
       return { ...hit.http, cached: true };
     }
@@ -166,26 +167,39 @@ class ClaudeCache {
         `Spend cap reached: US$${spent.toFixed(4)} of US$${this.capUSD}`,
       );
     }
-    const started = Date.now();
+    // Network failures, 429 and 5xx are retried with backoff; the latency
+    // recorded is that of the attempt that succeeded.
     let res;
-    try {
-      res = await fetch(`${API}/v1/messages`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": this.apiKey,
-          "anthropic-version": API_VERSION,
-        },
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      // fetch errors don't carry the request headers, but keep only the message
-      throw apiError(null, null, error.message);
+    let data;
+    let latencyMs;
+    for (let attempt = 0; ; attempt++) {
+      const started = Date.now();
+      let failure = null;
+      try {
+        res = await fetch(`${API}/v1/messages`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-api-key": this.apiKey,
+            "anthropic-version": API_VERSION,
+          },
+          body: JSON.stringify(body),
+        });
+        data = await res.json().catch(() => null);
+        latencyMs = Date.now() - started;
+        if (!res.ok) failure = apiError(res.status, data, res.statusText);
+      } catch (error) {
+        // fetch errors don't carry the request headers; keep only the message
+        failure = apiError(null, null, error.message);
+      }
+      if (!failure) break;
+      const status = failure.response && failure.response.status;
+      const retryable = !status || status === 429 || status >= 500;
+      if (!retryable || attempt >= 4) throw failure;
+      await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
     }
-    const data = await res.json().catch(() => null);
-    const latencyMs = Date.now() - started;
-    if (!res.ok) throw apiError(res.status, data, res.statusText);
     const entry = {
+      key,
       model: body.model,
       createdAt: new Date().toISOString(),
       request: body,
@@ -204,12 +218,12 @@ class ClaudeCache {
    * reply while the call goes through this cache. `onCall` receives
    * { latencyMs, usage, cached } for each call.
    */
-  axiosAdapter(onCall, { omitTemperature = false } = {}) {
+  axiosAdapter(onCall, { omitTemperature = false, textFirst = false } = {}) {
     return async (config) => {
       const body = JSON.parse(config.data);
       // Workaround, not a fix: AnthropicConnector sends the judge's
-      // temperature 0, which Claude Sonnet 5.5, Opus 5.5 and Fable 5.1
-      // reject with a 400. The rest of the body is the connector's own.
+      // temperature 0, which Claude Haiku 5.5, Sonnet 5.5, Opus 5.5 and
+      // Fable 5.1 reject with a 400. The rest of the body is the connector's own.
       if (omitTemperature) delete body.temperature;
       // messages() throws its own errors, without the config or headers an
       // axios error would carry (and with them the API key)
@@ -224,8 +238,18 @@ class ClaudeCache {
           cached: r.cached,
         });
       }
+      // Workaround, not a fix: AnthropicConnector.generate() returns
+      // content[0].text, and models that think by default put a thinking
+      // block first, so the connector returns undefined. With textFirst the
+      // connector gets the same blocks with the text blocks first.
+      let data = r.data;
+      if (textFirst && Array.isArray(data.content)) {
+        const text = data.content.filter((b) => b.type === "text");
+        const other = data.content.filter((b) => b.type !== "text");
+        data = { ...data, content: [...text, ...other] };
+      }
       return {
-        data: r.data,
+        data,
         status: r.status,
         statusText: "OK",
         headers: {},

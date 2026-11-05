@@ -53,6 +53,7 @@ const {
   AnthropicConnector,
 } = require("../src/connectors/anthropic-connector.js");
 const { BM25Search } = require("../src/index.js");
+const { extractNumbers } = require("../src/evaluate/scoring.js");
 const { liveAnthropic } = require("../__tests__/live/live-env.js");
 const { loadSciFact } = require("./scifact");
 const { mulberry32, shuffle } = require("./judge-datasets");
@@ -198,7 +199,7 @@ function makeJudge(cache, model, omitTemperature, sink) {
   });
   judge.client.defaults.adapter = cache.axiosAdapter(
     (call) => sink.push(call),
-    { omitTemperature },
+    { omitTemperature, textFirst: true },
   );
   return judge;
 }
@@ -228,7 +229,9 @@ async function answerAndVerify(cache, model, c, temperature) {
 
 // --- Mutations -------------------------------------------------------------
 
-const NUMBER = /\d+(?:\.\d+)?/;
+// A standalone number, as the library reads one: not part of a name such
+// as "CD4" or "Th17" (changing those changes an entity, not a number)
+const NUMBER = /(?<![\p{L}\p{N}.])\d+(?:\.\d+)?(?![\p{L}\p{N}])/u;
 const AUX =
   /\b(is|are|was|were|can|could|does|did|do|has|have|had|may|might|will|would|should)\b/i;
 const NEGATION = /\b(not|no|never|cannot)\b|n't\b/i;
@@ -236,15 +239,12 @@ const NEGATION = /\b(not|no|never|cannot)\b|n't\b/i;
 function changeNumber(text, passages) {
   const m = NUMBER.exec(text);
   if (!m) return null;
-  const haystack = passages.join("\n");
+  const inPassages = new Set(extractNumbers(passages.join("\n")).parts);
   const decimals = (m[0].split(".")[1] || "").length;
   const step = decimals ? 10 ** -decimals : 1;
   for (let k = 1; k < 50; k++) {
     const candidate = (Number(m[0]) + k * step).toFixed(decimals);
-    const present = new RegExp(
-      `(^|[^\\d.])${candidate.replace(".", "\\.")}(?![\\d])`,
-    ).test(haystack);
-    if (!present) {
+    if (!inPassages.has(String(Number(candidate)))) {
       return (
         text.slice(0, m.index) + candidate + text.slice(m.index + m[0].length)
       );
@@ -307,18 +307,30 @@ async function mutationTest(responses, documentsById) {
     swapUnrelated: [0, 0],
     swapSameRequest: [0, 0],
   };
-  const tally = async (key, claim) => {
+  const missed = Object.fromEntries(Object.keys(counts).map((k) => [k, []]));
+  const tally = async (key, claim, original) => {
     if (!claim) return;
     const v = await verifyOne(claim);
     counts[key][1] += 1;
     if (v.verdict !== "supported") counts[key][0] += 1;
+    else if (missed[key].length < 5) {
+      missed[key].push({ original: original.text, mutated: claim.text });
+    }
   };
   for (let i = 0; i < supported.length; i++) {
     const p = supported[i];
     const withText = (text) => (text ? { ...p.claim, text } : null);
-    await tally("number", withText(changeNumber(p.claim.text, p.passages)));
-    await tally("negationAdded", withText(addNegation(p.claim.text)));
-    await tally("negationRemoved", withText(removeNegation(p.claim.text)));
+    await tally(
+      "number",
+      withText(changeNumber(p.claim.text, p.passages)),
+      p.claim,
+    );
+    await tally("negationAdded", withText(addNegation(p.claim.text)), p.claim);
+    await tally(
+      "negationRemoved",
+      withText(removeNegation(p.claim.text)),
+      p.claim,
+    );
 
     // Another response's claim: a different SciFact claim and documents
     const cited = new Set(p.claim.citations.map((c) => c.sourceId));
@@ -331,24 +343,32 @@ async function mutationTest(responses, documentsById) {
       other = q;
     }
     if (other) {
-      await tally("swapUnrelated", {
-        ...p.claim,
-        citations: p.claim.citations.map((c) => ({
-          ...c,
-          passages: other.passages,
-        })),
-      });
+      await tally(
+        "swapUnrelated",
+        {
+          ...p.claim,
+          citations: p.claim.citations.map((c) => ({
+            ...c,
+            passages: other.passages,
+          })),
+        },
+        p.claim,
+      );
     }
     // Another abstract of the same request, which this claim does not cite
     const sibling = p.r.case.documents.find((d) => !cited.has(d.id));
     if (sibling) {
-      await tally("swapSameRequest", {
-        ...p.claim,
-        citations: p.claim.citations.map((c) => ({
-          ...c,
-          passages: [documentsById.get(sibling.id).text],
-        })),
-      });
+      await tally(
+        "swapSameRequest",
+        {
+          ...p.claim,
+          citations: p.claim.citations.map((c) => ({
+            ...c,
+            passages: [documentsById.get(sibling.id).text],
+          })),
+        },
+        p.claim,
+      );
     }
   }
   return {
@@ -359,7 +379,10 @@ async function mutationTest(responses, documentsById) {
     ),
     supportedClaims: supported.length,
     mutations: Object.fromEntries(
-      Object.entries(counts).map(([k, [caught, n]]) => [k, rate(caught, n)]),
+      Object.entries(counts).map(([k, [caught, n]]) => [
+        k,
+        { ...rate(caught, n), missedExamples: missed[k] },
+      ]),
     ),
   };
 }
@@ -441,24 +464,31 @@ function reviewSummary({ flagged, sampled }, review) {
 
 const flaggedBy = (v) => !v.verified || v.summary.uncitedSentences > 0;
 
-function scoreEdge(cases, responses) {
+function scoreEdge(cases, responses, model, overrides = {}) {
   const categories = {};
   const examples = [];
   const empty = () => ({ caught: 0, missed: 0, falseAlarm: 0, passed: 0 });
+  let overridden = 0;
   cases.forEach((c, i) => {
     const r = responses[i];
     const text = r.normalized.answer;
-    const correct =
+    const automatic =
       c.mustMatch.every((p) => p.test(text)) &&
       !c.mustNotMatch.some((p) => p.test(text));
+    // The hand check (benchmarks/fixtures/citation-edge-review.json) wins
+    const override = overrides[`${model}|${c.id}`];
+    const correct = override ? override.modelCorrect : automatic;
+    if (override && override.modelCorrect !== automatic) overridden += 1;
     const cat = (categories[c.category] = categories[c.category] || {
       cases: 0,
       modelCorrect: 0,
+      modelCorrectAutomatic: 0,
       lexical: empty(),
       judge: empty(),
     });
     cat.cases += 1;
     if (correct) cat.modelCorrect += 1;
+    if (automatic) cat.modelCorrectAutomatic += 1;
     const outcomes = {};
     for (const key of ["lexical", "judge"]) {
       const flagged = flaggedBy(r[key]);
@@ -474,8 +504,17 @@ function scoreEdge(cases, responses) {
     }
     examples.push({
       id: c.id,
+      citedClaims: r.lexical.claims.length,
+      unsupportedClaims: r.lexical.claims.filter(
+        (k) => k.verdict !== "supported",
+      ).length,
+      unsupportedClaimsJudge: r.judge.claims.filter(
+        (k) => k.verdict !== "supported",
+      ).length,
       category: c.category,
       modelCorrect: correct,
+      modelCorrectAutomatic: automatic,
+      ...(override && { handCheck: override.note }),
       lexical: outcomes.lexical,
       judge: outcomes.judge,
       answer: text,
@@ -497,6 +536,11 @@ function scoreEdge(cases, responses) {
       (n, c) => n + c.modelCorrect,
       0,
     ),
+    modelCorrectAutomatic: Object.values(categories).reduce(
+      (n, c) => n + c.modelCorrectAutomatic,
+      0,
+    ),
+    labelsOverriddenByHand: overridden,
     lexical: {
       caught: total("lexical", "caught"),
       missed: total("lexical", "missed"),
@@ -546,6 +590,12 @@ async function main() {
   const { apiKey } = liveAnthropic();
   const cache = new ClaudeCache({ apiKey, capUSD: Number(args.cap || 90) });
   const review = JSON.parse(fs.readFileSync(REVIEW_FILE, "utf8"));
+  const edgeReview = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "fixtures", "citation-edge-review.json"),
+      "utf8",
+    ),
+  );
   console.log(
     `${cases.length} SciFact claims, ${DOCS_PER_QUERY} abstracts each; ${edge.length} edge cases`,
   );
@@ -658,6 +708,10 @@ async function main() {
         judge: {
           ...summarize(responses, "judge"),
           calls: judgeCalls.length,
+          // Replies the shipped connector reads as empty (a thinking block first)
+          repliesWithThinkingFirst: judgeCalls.filter(
+            (k) => k.firstBlock && k.firstBlock !== "text",
+          ).length,
           errors: responses.filter((r) => r.judge.judge && r.judge.judge.error)
             .length,
         },
@@ -667,7 +721,7 @@ async function main() {
         mutation: await mutationTest(responses, documentsById),
       },
       edge: {
-        ...scoreEdge(edge, edgeResponses),
+        ...scoreEdge(edge, edgeResponses, model, edgeReview.overrides),
         usage: usageOf(edgeEntries),
         costUSD: costOfEntries(edgeEntries),
       },
