@@ -141,6 +141,10 @@ LIVE_TESTS_UNTIL=2026-11-13T23:59:59+13:00   # optional: the key isn't used afte
 
 Never commit a key; `LIVE_ANTHROPIC_MODEL` picks another model.
 
+`npm run test:consumer` runs the consumer journeys: it packs the package as `npm publish` would, installs it into fresh projects outside the repository, and runs eleven developer journeys (the README quick start in ESM, CommonJS and strict TypeScript, the Anthropic SDK with the answer checks, the AI SDK middleware, guardrails, the CLI, streaming and routing, telemetry, the MCP server, and the error experience) against the live API, with the same key. Run it before a release; about US$0.15 a run. `--only A,C` runs some journeys, `--reuse-pack` skips the rebuild.
+
+**A record of every Claude call.** The live suite and the consumer journeys log each call's model, tokens, status and latency (never content or the key) to `~/.config/rag-pipeline-utils/live-ledger.jsonl` and `consumer-ledger.jsonl`; the Claude benchmarks keep their responses in `benchmarks/.data/claude-cache/` (gitignored: they contain dataset text). `npm run claude:usage` turns all three into `benchmarks/results/claude-usage.json` and the "Claude API calls behind these numbers" tables on the Benchmarks page. Keep a dated copy of the raw cache and ledgers outside the repository after a round of testing (for example `~/rag-pipeline-utils-data/claude-api/<date>/`); the tables can then be rebuilt from it with `--cache` and `--ledgers`.
+
 ### **Emergency Fixes**
 
 ```bash

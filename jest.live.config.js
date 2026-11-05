@@ -6,6 +6,8 @@
 module.exports = {
   testEnvironment: "node",
   testMatch: ["<rootDir>/__tests__/live/**/*.live.test.js"],
+  // Logs every Claude call's usage (no content) for the usage report
+  setupFiles: ["<rootDir>/__tests__/live/usage-ledger.js"],
   transform: { "^.+\\.js$": "babel-jest" },
   modulePathIgnorePatterns: ["<rootDir>/.claude/", "<rootDir>/packages/"],
 };

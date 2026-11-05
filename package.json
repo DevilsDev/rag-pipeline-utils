@@ -46,6 +46,7 @@
   "scripts": {
     "build": "node scripts/build-packages.js --bundles && node scripts/build.js && node scripts/generate-types.js && node scripts/build-packages.js --types && node scripts/check-type-exports.js",
     "test:packages": "node scripts/test-packages.js",
+    "test:consumer": "node scripts/consumer-journeys.js",
     "prepack": "npm run build && node scripts/pin-readme-assets.js",
     "postpack": "node scripts/pin-readme-assets.js --restore",
     "docs:validate": "node scripts/validate-docs-examples.js",
@@ -101,6 +102,7 @@
     "bench:claude-citations": "node benchmarks/claude-citations.js",
     "bench:judge-more": "node benchmarks/judge-more.js",
     "bench:claude-latency": "node benchmarks/claude-latency.js",
+    "claude:usage": "node scripts/claude-usage-report.js && node benchmarks/render.js",
     "dev": "node scripts/dev-tools.js menu",
     "dev:health": "node scripts/dev-tools.js health",
     "dev:setup": "node scripts/dev-tools.js setup",

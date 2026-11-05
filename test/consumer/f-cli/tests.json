@@ -1,0 +1,14 @@
+[
+  {
+    "id": "vacation-days",
+    "prompt": "How many paid vacation days do full-time employees get?",
+    "expected": "Full-time employees receive twenty days of paid vacation per year.",
+    "sourceIds": ["docs/vacation.md"]
+  },
+  {
+    "id": "remote-days",
+    "prompt": "How many days per week can I work remotely?",
+    "expected": "Remote work is allowed two days per week with manager approval.",
+    "sourceIds": ["docs/remote.md"]
+  }
+]
