@@ -1,9 +1,9 @@
 {
   "benchmark": "claude-latency",
-  "createdAt": "2026-11-05T03:47:14.045Z",
+  "createdAt": "2026-11-05T04:37:55.079Z",
   "environment": {
-    "libraryVersion": "3.4.0",
-    "commit": "1654599",
+    "libraryVersion": "3.5.0",
+    "commit": "8b247df",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -21,101 +21,87 @@
     "claude-haiku-4-5-20251001": {
       "runs": 30,
       "firstTokenMs": {
-        "p50": 678,
-        "p95": 933
+        "p50": 617,
+        "p95": 796
       },
       "totalMs": {
-        "p50": 3006,
-        "p95": 3975
+        "p50": 3085,
+        "p95": 4362
       },
       "noFirstToken": 0,
-      "answerCharsP50": 1111,
-      "outputTokensP50": 263,
+      "answerCharsP50": 1088,
+      "outputTokensP50": 256,
       "calls": 31,
-      "costUSD": 0.0796,
+      "costUSD": 0.0802,
       "date": "2026-11-05"
     },
     "claude-haiku-5-5": {
       "runs": 30,
       "firstTokenMs": {
-        "p50": 2038,
-        "p95": 2953
+        "p50": 1940,
+        "p95": 2715
       },
       "totalMs": {
-        "p50": 3850,
-        "p95": 5439
+        "p50": 3593,
+        "p95": 5670
       },
       "noFirstToken": 0,
-      "answerCharsP50": 1196,
-      "outputTokensP50": 744,
+      "answerCharsP50": 1205,
+      "outputTokensP50": 662,
       "calls": 31,
-      "costUSD": 0.0169,
+      "costUSD": 0.0171,
       "date": "2026-11-05"
     },
     "claude-sonnet-5-5": {
       "runs": 30,
       "firstTokenMs": {
-        "p50": 1050,
-        "p95": 2066
+        "p50": 954,
+        "p95": 1491
       },
       "totalMs": {
-        "p50": 4730,
-        "p95": 6352
+        "p50": 4705,
+        "p95": 5904
       },
       "noFirstToken": 0,
-      "answerCharsP50": 1519,
-      "outputTokensP50": 563,
+      "answerCharsP50": 1592,
+      "outputTokensP50": 573,
       "calls": 31,
-      "costUSD": 0.294,
+      "costUSD": 0.2931,
       "date": "2026-11-05"
     },
     "claude-opus-5-5": {
       "runs": 30,
       "firstTokenMs": {
-        "p50": 2840,
-        "p95": 4121
+        "p50": 2971,
+        "p95": 4206
       },
       "totalMs": {
-        "p50": 8315,
-        "p95": 10874
+        "p50": 7815,
+        "p95": 11257
       },
       "noFirstToken": 3,
-      "answerCharsP50": 1720,
-      "outputTokensP50": 828,
+      "answerCharsP50": 1840,
+      "outputTokensP50": 808,
       "calls": 31,
-      "costUSD": 0.6947,
+      "costUSD": 0.706,
       "date": "2026-11-05"
     },
     "claude-fable-5-1": {
       "runs": 30,
       "firstTokenMs": {
-        "p50": 2732,
-        "p95": 5297
+        "p50": 2774,
+        "p95": 6109
       },
       "totalMs": {
-        "p50": 9299,
-        "p95": 14099
+        "p50": 6338,
+        "p95": 14167
       },
-      "noFirstToken": 7,
-      "answerCharsP50": 1641,
-      "outputTokensP50": 786,
+      "noFirstToken": 10,
+      "answerCharsP50": 1298,
+      "outputTokensP50": 713,
       "calls": 31,
-      "costUSD": 1.5185,
+      "costUSD": 1.4926,
       "date": "2026-11-05"
     }
-  },
-  "runs": [
-    {
-      "createdAt": "2026-11-05T03:15:58.173Z",
-      "models": [
-        "claude-haiku-4-5-20251001",
-        "claude-opus-5-5",
-        "claude-fable-5-1"
-      ]
-    },
-    {
-      "createdAt": "2026-11-05T03:47:14.045Z",
-      "models": ["claude-haiku-5-5", "claude-sonnet-5-5"]
-    }
-  ]
+  }
 }

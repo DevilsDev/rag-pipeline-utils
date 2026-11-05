@@ -1,9 +1,9 @@
 {
   "benchmark": "claude-citations",
-  "createdAt": "2026-11-05T04:12:39.661Z",
+  "createdAt": "2026-11-05T04:37:02.958Z",
   "environment": {
-    "libraryVersion": "3.4.0",
-    "commit": "1c1901c",
+    "libraryVersion": "3.5.0",
+    "commit": "8b247df",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
