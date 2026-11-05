@@ -281,6 +281,7 @@ function checkNumericConsistency(claimText, docText) {
   const claimNumbers = [
     ...new Set(extractNumbers(withoutReferences(claimText)).values),
     ...claimMonths(claimText).map((m) => `month:${m}`),
+    ...identifiers(claimText),
   ];
   if (claimNumbers.length === 0) {
     return { consistent: true, claimNumbers, missing: [] };
@@ -288,6 +289,7 @@ function checkNumericConsistency(claimText, docText) {
   const docNumbers = new Set([
     ...extractNumbers(docText).parts,
     ...docMonths(docText).map((m) => `month:${m}`),
+    ...identifiers(docText),
   ]);
   const missing = claimNumbers.filter((n) => !docNumbers.has(n));
   return { consistent: missing.length === 0, claimNumbers, missing };
@@ -306,6 +308,19 @@ const REFERENCE_RE = new RegExp(
 );
 /** Identifiers: a number joined by a hyphen to a word (kinesin-8, ZAP-70). */
 const IDENTIFIER_RE = /(\p{L}[\p{L}\p{N}]*)-(\d+)\b/gu;
+
+/**
+ * Identifiers in a text, compared whole and without case ("id:kinesin-8"):
+ * their number isn't a quantity, but "IL-2" and "IL-3" are different things.
+ */
+function identifiers(text) {
+  if (!text || typeof text !== 'string') return [];
+  return [
+    ...new Set(
+      [...text.matchAll(IDENTIFIER_RE)].map((m) => `id:${m[0].toLowerCase()}`),
+    ),
+  ];
+}
 
 /** A claim's text without reference phrases and identifier numbers. */
 function withoutReferences(text) {
