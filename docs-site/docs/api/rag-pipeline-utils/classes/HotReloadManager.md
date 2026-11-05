@@ -11,7 +11,7 @@ Manages file watching and hot reloading of plugins and configuration.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -33,7 +33,7 @@ new HotReloadManager(options?): HotReloadManager;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

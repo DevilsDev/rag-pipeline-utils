@@ -22,7 +22,7 @@ app.post("/api/query", handler);
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -49,7 +49,7 @@ new StreamRouter(options?): StreamRouter;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

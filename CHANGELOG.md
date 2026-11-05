@@ -27,6 +27,35 @@ x-api-key` instead of `Request failed with status code 401`. Found by
   the consumer journeys. `OpenAIConnector` uses the OpenAI SDK, whose
   errors don't carry the key.
 
+### Fixed
+
+- **TypeScript with `@types/node` 25 or later.** The generated
+  declarations said `extends EventEmitter<[never]>` (48 files), which
+  `@types/node` 25+ rejects (TS2344), so a strict project without
+  `skipLibCheck` didn't compile. They now say `extends EventEmitter`, and
+  the pack smoke test also compiles against the latest `@types/node`.
+- **`CostTracker` estimates input tokens from everything the model reads**
+  (the query, the retrieved passages and the prompt around them) when a
+  result carries no usage; it counted only the query, about 25 times too
+  few on a three-passage run. `result.cost.tokensEstimated` says when the
+  counts are estimated, and `result.cost.requestedModel` gives the model
+  the run asked for next to `model`, the price-table entry
+  (`claude-haiku-4-5` is priced as `claude-haiku-4.5`).
+- A strict `GuardrailsPipeline` block says why: `error` is
+  `"Post-generation guard flagged output: PII detected (email): 1
+occurrence(s); ..."` (the same start as before, then the guard's issues,
+  which name kinds and counts, never the PII).
+
+### Documentation
+
+- The README's LLM quick start starts with Claude (`AnthropicConnector`
+  with `LocalEmbedder`, since Anthropic has no embeddings API), then
+  OpenAI; the guardrails use case says that `strict: true` blocks rather
+  than redacts; the Usage page explains the optional result fields in
+  TypeScript; the middleware example defines its retriever and embedder;
+  Observability gives a local in-memory setup and which OpenTelemetry
+  line has the logs API. From the consumer journeys.
+
 ### Added
 
 - **Pluggable guard detectors.** `PreRetrievalGuard`, `RetrievalGuard`

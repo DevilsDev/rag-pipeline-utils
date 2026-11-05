@@ -14,7 +14,7 @@ document text, and embedding calls run with bounded concurrency.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -39,7 +39,7 @@ new EmbeddingReranker(embedder, options?): EmbeddingReranker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

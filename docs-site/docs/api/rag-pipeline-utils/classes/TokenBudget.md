@@ -24,7 +24,7 @@ if (status.allowed) budget.record(2000, 0.1);
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -50,7 +50,7 @@ new TokenBudget(options?): TokenBudget;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

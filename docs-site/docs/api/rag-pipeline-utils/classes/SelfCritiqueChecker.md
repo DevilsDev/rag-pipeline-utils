@@ -10,7 +10,7 @@ Uses CitationTracker (lazy-loaded) to compute groundedness and detect hallucinat
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -33,7 +33,7 @@ new SelfCritiqueChecker(options?): SelfCritiqueChecker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

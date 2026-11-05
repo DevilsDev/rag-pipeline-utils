@@ -18,7 +18,7 @@ const result = evaluator.evaluate({ query: 'What is RAG?', answer: '...', result
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -46,7 +46,7 @@ Create a new PipelineEvaluator.
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -156,7 +156,7 @@ console.log(tracker.getSummary());
 console.log(PRICING_METADATA.asOf, PRICING_METADATA.verified); // built-in prices are unverified
 ```
 
-When the budget is exceeded, `run()` throws an error with `code: 'BUDGET_EXCEEDED'`. Token counts are estimated from text length when the result carries no usage data. Pass `calculatorOptions: { pricing }` to use your own prices.
+When the budget is exceeded, `run()` throws an error with `code: 'BUDGET_EXCEEDED'`. Token counts are estimated from text length when the result carries no usage data: the query, the retrieved passages and the prompt around them (from 3.5.0; before, only the query was counted), and `result.cost.tokensEstimated` is `true`. `result.cost.model` is the price-table entry used and `result.cost.requestedModel` the model the run asked for. Pass `calculatorOptions: { pricing }` to use your own prices.
 
 ---
 

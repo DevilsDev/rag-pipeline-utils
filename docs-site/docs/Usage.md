@@ -102,7 +102,7 @@ if (response.success) {
 }
 ```
 
-`run()` resolves `{ success: false, error }` instead of throwing when a stage fails, times out or is aborted.
+`run()` resolves `{ success: false, error }` instead of throwing when a stage fails, times out or is aborted. In TypeScript, `answer`, `results`, `citations` and `evaluation` are optional on `PipelineRunResult` for that reason: check `result.success` first, or read them as `result.results?.[0]`.
 
 ### **Advanced Configuration Examples**
 

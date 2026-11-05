@@ -10,7 +10,7 @@ Implements the reranker contract: rerank(query, documents, options).
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -34,7 +34,7 @@ new ScoringReranker(options?): ScoringReranker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

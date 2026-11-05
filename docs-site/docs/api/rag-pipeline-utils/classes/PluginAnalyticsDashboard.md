@@ -7,7 +7,7 @@ mdx:
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -29,7 +29,7 @@ new PluginAnalyticsDashboard(_options?): PluginAnalyticsDashboard;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

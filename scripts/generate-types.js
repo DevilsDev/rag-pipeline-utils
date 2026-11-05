@@ -550,6 +550,25 @@ function appendGeneratedDeclarations() {
     { stdio: "inherit" },
   );
 
+  // tsc declares a JS class that extends EventEmitter as
+  // `extends EventEmitter<[never]>`, which @types/node 25 and later reject
+  // (TS2344: '[never]' does not satisfy 'EventMap'). Plain EventEmitter is
+  // what the source means, and every @types/node accepts it.
+  const walk = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = path.join(dir, e.name);
+      return e.isDirectory() ? walk(p) : p.endsWith(".d.ts") ? [p] : [];
+    });
+  for (const file of walk(typesDir)) {
+    const text = fs.readFileSync(file, "utf8");
+    if (text.includes("EventEmitter<[never]>")) {
+      fs.writeFileSync(
+        file,
+        text.replaceAll("EventEmitter<[never]>", "EventEmitter"),
+      );
+    }
+  }
+
   const lines = missing.map((name) => {
     const { imported, modulePath } = exportSources.get(name);
     const from = `./types/${modulePath.replace(/^\.\//, "")}`;

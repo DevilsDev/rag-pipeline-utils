@@ -42,7 +42,7 @@ const all = await se.embedAll(documents);
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -65,7 +65,7 @@ new StreamingEmbedder(embedder, options?): StreamingEmbedder;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

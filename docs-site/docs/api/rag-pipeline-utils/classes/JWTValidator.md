@@ -9,7 +9,7 @@ JWT Validator with hardened security
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -31,7 +31,7 @@ new JWTValidator(options?): JWTValidator;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

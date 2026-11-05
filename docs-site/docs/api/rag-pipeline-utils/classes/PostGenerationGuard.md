@@ -11,7 +11,7 @@ Sanitizes output by redacting detected PII.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -42,7 +42,7 @@ new PostGenerationGuard(options?): PostGenerationGuard;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

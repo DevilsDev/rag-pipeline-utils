@@ -10,7 +10,7 @@ Emits a 'tracked' event when citation analysis completes.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -35,7 +35,7 @@ new CitationTracker(options?): CitationTracker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

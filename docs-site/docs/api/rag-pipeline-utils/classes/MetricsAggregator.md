@@ -9,7 +9,7 @@ Collects and aggregates pipeline metrics into dashboard-ready snapshots.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -31,7 +31,7 @@ new MetricsAggregator(options?): MetricsAggregator;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

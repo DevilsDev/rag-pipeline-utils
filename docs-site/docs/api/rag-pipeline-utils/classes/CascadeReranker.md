@@ -11,7 +11,7 @@ rerank(query, documents, options).
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -34,7 +34,7 @@ new CascadeReranker(rerankers?, options?): CascadeReranker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -9,7 +9,7 @@ Batch Processor Class
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -31,7 +31,7 @@ new BatchProcessor(options?): BatchProcessor;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

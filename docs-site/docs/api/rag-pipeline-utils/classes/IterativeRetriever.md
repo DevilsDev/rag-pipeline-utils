@@ -10,7 +10,7 @@ Continues until coverage threshold is met or maxIterations is reached.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -35,7 +35,7 @@ new IterativeRetriever(options?): IterativeRetriever;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

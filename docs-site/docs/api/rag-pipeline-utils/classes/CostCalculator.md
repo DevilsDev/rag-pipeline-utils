@@ -17,7 +17,7 @@ console.log(cost.totalCost); // 0.015
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -41,7 +41,7 @@ new CostCalculator(options?): CostCalculator;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 
