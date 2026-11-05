@@ -1,0 +1,66 @@
+name: MCP Registry
+
+# Publishes packages/rag-mcp-server/server.json to the official MCP Registry
+# as io.github.DevilsDev/rag-mcp-server. The org namespace needs GitHub
+# OIDC from this repository (the interactive mcp-publisher login only
+# covers a personal namespace). Runs after a successful Release, once the
+# npm package carrying the same version (and its mcpName) is published, and
+# by hand. Skipped when that version is already in the registry.
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC for the registry's io.github.DevilsDev namespace
+    env:
+      PUBLISHER_VERSION: "1.8.7"
+      # sha256 of mcp-publisher_linux_amd64.tar.gz from the release's checksums file
+      PUBLISHER_SHA256: "00b21004149a4ce66f0782508ae4a2bce67d1bea395a8da0bd8028159fb59579"
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install mcp-publisher (pinned, checksum verified)
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v${PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher --help > /dev/null
+
+      - name: Skip when this version is already published
+        id: check
+        run: |
+          name=$(node -p "require('./packages/rag-mcp-server/server.json').name")
+          version=$(node -p "require('./packages/rag-mcp-server/server.json').version")
+          url="https://registry.modelcontextprotocol.io/v0.1/servers/$(node -p "encodeURIComponent('$name')")/versions/$version"
+          if curl -fsS "$url" > /dev/null 2>&1; then
+            echo "$name@$version is already in the registry"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          # The registry checks the npm package's mcpName, so that version must be on npm
+          npm view "@devilsdev/rag-mcp-server@$version" mcpName
+
+      - name: Publish
+        if: steps.check.outputs.skip != 'true'
+        working-directory: packages/rag-mcp-server
+        run: |
+          ../../mcp-publisher login github-oidc
+          ../../mcp-publisher publish
