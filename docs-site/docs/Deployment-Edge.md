@@ -14,7 +14,7 @@ description: The /edge entry runs without Node.js APIs, on Vercel Edge Functions
 
 On Node.js, and on Workers with `nodejs_compat` ([Cloudflare Workers](./Deployment-Cloudflare-Workers.md)), use the main entry: it has everything.
 
-CI runs `/edge` in workerd with no Node.js compatibility, which has fewer APIs than Vercel's Edge runtime. It checks the result against the Node.js build: cache keys and Qdrant point ids hash the same in both ([`test/edge`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/test/edge)).
+CI runs `/edge` in workerd with no Node.js compatibility, which has fewer APIs than Vercel's Edge runtime. It checks the result against the Node.js build: cache keys, Qdrant point ids and Pinecone record ids hash the same in both, and `QdrantRetriever` and `PineconeRetriever` store, retrieve, list and delete against fake Qdrant and Pinecone APIs, from the packed package installed in a project of its own ([`test/edge`](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/test/edge)).
 
 :::note[Vercel recommends Node.js]
 
@@ -64,15 +64,15 @@ On Workers without `nodejs_compat`, use `env.ANTHROPIC_API_KEY`: there is no `pr
 
 ## What's in it
 
-| Area           | Exports                                                                                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pipeline       | `createRagPipeline` with streaming, `timeout`, `signal`, `cache`, citations, evaluation and `telemetry`; `packContext`                                     |
-| Models         | `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `createAiSdkAdapter` (any AI SDK provider, including OpenAI), `createModelRouter`              |
-| Retrieval      | `MemoryRetriever`, `QdrantRetriever`, `LocalEmbedder`, `HybridRetriever`, `BM25Search`, `reciprocalRankFusion`, the rerankers, `MemoryCache`, `RedisCache` |
-| Grounding      | `checkAnswer`, `CitationTracker`, `detectHallucinations`, source mapping                                                                                   |
-| Guardrails     | `detectInjection`, `GuardrailsPipeline` and its guards                                                                                                     |
-| Evaluation     | The scoring functions, `PipelineEvaluator`, `runEvaluation`, `compareConfigurations`, reports                                                              |
-| Agentic, costs | `AgenticPipeline` and its parts, `CostCalculator`, `CostTracker`, `TokenBudget`                                                                            |
+| Area           | Exports                                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipeline       | `createRagPipeline` with streaming, `timeout`, `signal`, `cache`, citations, evaluation and `telemetry`; `packContext`                                                          |
+| Models         | `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `createAiSdkAdapter` (any AI SDK provider, including OpenAI), `createModelRouter`                                   |
+| Retrieval      | `MemoryRetriever`, `QdrantRetriever`, `PineconeRetriever`, `LocalEmbedder`, `HybridRetriever`, `BM25Search`, `reciprocalRankFusion`, the rerankers, `MemoryCache`, `RedisCache` |
+| Grounding      | `checkAnswer`, `CitationTracker`, `detectHallucinations`, source mapping                                                                                                        |
+| Guardrails     | `detectInjection`, `GuardrailsPipeline` and its guards                                                                                                                          |
+| Evaluation     | The scoring functions, `PipelineEvaluator`, `runEvaluation`, `compareConfigurations`, reports                                                                                   |
+| Agentic, costs | `AgenticPipeline` and its parts, `CostCalculator`, `CostTracker`, `TokenBudget`                                                                                                 |
 
 It has the same types as the main entry. The bundle is about 140 KB compressed.
 
