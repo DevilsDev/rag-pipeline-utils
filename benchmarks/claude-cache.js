@@ -218,15 +218,13 @@ class ClaudeCache {
    * reply while the call goes through this cache. `onCall` receives
    * { latencyMs, usage, cached } for each call.
    */
-  axiosAdapter(onCall, { omitTemperature = false, textFirst = false } = {}) {
+  axiosAdapter(onCall) {
     return async (config) => {
       const body = JSON.parse(config.data);
-      // Workaround, not a fix: AnthropicConnector sends the judge's
-      // temperature 0, which Claude Haiku 5.5, Sonnet 5.5, Opus 5.5 and
-      // Fable 5.1 reject with a 400. The rest of the body is the connector's own.
-      if (omitTemperature) delete body.temperature;
       // messages() throws its own errors, without the config or headers an
-      // axios error would carry (and with them the API key)
+      // axios error would carry (and with them the API key); a 400 keeps
+      // its status and body, so the connector's retry without temperature
+      // sees it
       const r = await this.messages(body);
       if (onCall) {
         onCall({
@@ -238,18 +236,8 @@ class ClaudeCache {
           cached: r.cached,
         });
       }
-      // Workaround, not a fix: AnthropicConnector.generate() returns
-      // content[0].text, and models that think by default put a thinking
-      // block first, so the connector returns undefined. With textFirst the
-      // connector gets the same blocks with the text blocks first.
-      let data = r.data;
-      if (textFirst && Array.isArray(data.content)) {
-        const text = data.content.filter((b) => b.type === "text");
-        const other = data.content.filter((b) => b.type !== "text");
-        data = { ...data, content: [...text, ...other] };
-      }
       return {
-        data,
+        data: r.data,
         status: r.status,
         statusText: "OK",
         headers: {},

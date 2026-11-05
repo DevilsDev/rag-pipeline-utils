@@ -29,9 +29,10 @@
  *    (not verified, or sentences without a citation) and passes a correct
  *    one.
  *
- * Models that reject `temperature` (see the report's `temperature`) get the
- * request without it; the others get temperature 0. The judge goes through
- * AnthropicConnector as in benchmarks/judge.js, with the same workaround.
+ * The answer requests are this script's own: models that reject
+ * `temperature` (see the report's `temperature`) get them without it, the
+ * others get temperature 0. The judge is AnthropicConnector, unchanged, as
+ * in benchmarks/judge.js.
  *
  *   node benchmarks/claude-citations.js [--models=a,b] [--queries=50]
  *     [--seed=20261105] [--concurrency=4] [--cap=90] [--data-dir=dir]
@@ -191,16 +192,13 @@ async function acceptsTemperature(cache, model) {
   }
 }
 
-function makeJudge(cache, model, omitTemperature, sink) {
+function makeJudge(cache, model, sink) {
   const judge = new AnthropicConnector({
     apiKey: cache.apiKey || "cached",
     model,
     maxTokens: 2000,
   });
-  judge.client.defaults.adapter = cache.axiosAdapter(
-    (call) => sink.push(call),
-    { omitTemperature, textFirst: true },
-  );
+  judge.client.defaults.adapter = cache.axiosAdapter((call) => sink.push(call));
   return judge;
 }
 
@@ -213,7 +211,7 @@ async function answerAndVerify(cache, model, c, temperature) {
   const lexical = await verifyCitations(normalized);
   const sink = [];
   const judge = await verifyCitations(normalized, {
-    judge: makeJudge(cache, model, !temperature, sink),
+    judge: makeJudge(cache, model, sink),
   });
   return {
     id: c.id,
@@ -700,6 +698,8 @@ async function main() {
             acc[r.stopReason] = (acc[r.stopReason] || 0) + 1;
             return acc;
           }, {}),
+          // verifyCitations reports a refusal (3.5.0)
+          refused: responses.filter((r) => r.lexical.refused).length,
           withoutCitations: responses.filter(
             (r) => r.normalized.claims.length === 0,
           ).length,
@@ -730,10 +730,6 @@ async function main() {
         judge: {
           ...summarize(responses, "judge"),
           calls: judgeCalls.length,
-          // Replies the shipped connector reads as empty (a thinking block first)
-          repliesWithThinkingFirst: judgeCalls.filter(
-            (k) => k.firstBlock && k.firstBlock !== "text",
-          ).length,
           errors: responses.filter((r) => r.judge.judge && r.judge.judge.error)
             .length,
         },

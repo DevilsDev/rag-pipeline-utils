@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T01:52:13.882Z",
+  "createdAt": "2026-11-05T02:40:17.472Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "6c08981",
+    "commit": "a92edb1",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -128,8 +128,8 @@
         }
       },
       "latencyMs": {
-        "p50": 2.9,
-        "p95": 8.1
+        "p50": 1.8,
+        "p95": 5.3
       }
     },
     "models": {
@@ -240,18 +240,19 @@
         },
         "truncated": 0,
         "firstBlockNotText": 0,
-        "usageReportedByCheckAnswer": 0,
+        "usageReportedByCheckAnswer": 357,
+        "usageMatchesApi": 357,
         "inputTokens": 378642,
         "outputTokens": 78530,
         "costUSD": 0.7713,
         "costPer1000ChecksUSD": 1.71,
         "latencyMs": {
-          "p50": 1974.5,
-          "p95": 4410
+          "p50": 1984.7,
+          "p95": 4416
         },
         "latencyMsWithCall": {
-          "p50": 2427.1,
-          "p95": 4516.6
+          "p50": 2424.9,
+          "p95": 4509.1
         },
         "sentences": {
           "sentences": 3263,
@@ -418,18 +419,19 @@
         },
         "truncated": 0,
         "firstBlockNotText": 336,
-        "usageReportedByCheckAnswer": 0,
+        "usageReportedByCheckAnswer": 357,
+        "usageMatchesApi": 357,
         "inputTokens": 515897,
         "outputTokens": 243890,
         "costUSD": 0.1735,
         "costPer1000ChecksUSD": 0.39,
         "latencyMs": {
-          "p50": 2703.5,
-          "p95": 6376.5
+          "p50": 2698.7,
+          "p95": 6450.2
         },
         "latencyMsWithCall": {
-          "p50": 3354.7,
-          "p95": 6559.1
+          "p50": 3329.8,
+          "p95": 6578.8
         },
         "sentences": {
           "sentences": 3263,
@@ -596,18 +598,19 @@
         },
         "truncated": 0,
         "firstBlockNotText": 25,
-        "usageReportedByCheckAnswer": 0,
+        "usageReportedByCheckAnswer": 357,
+        "usageMatchesApi": 357,
         "inputTokens": 515897,
         "outputTokens": 98684,
         "costUSD": 2.0186,
         "costPer1000ChecksUSD": 4.49,
         "latencyMs": {
-          "p50": 2441.6,
-          "p95": 4567.8
+          "p50": 2454,
+          "p95": 4533.8
         },
         "latencyMsWithCall": {
-          "p50": 2869.1,
-          "p95": 4793.2
+          "p50": 2838.4,
+          "p95": 4794.3
         },
         "sentences": {
           "sentences": 3263,
@@ -772,18 +775,19 @@
         "errorKinds": {},
         "truncated": 0,
         "firstBlockNotText": 304,
-        "usageReportedByCheckAnswer": 0,
+        "usageReportedByCheckAnswer": 357,
+        "usageMatchesApi": 357,
         "inputTokens": 515897,
         "outputTokens": 185540,
         "costUSD": 5.7744,
         "costPer1000ChecksUSD": 12.83,
         "latencyMs": {
-          "p50": 4200,
-          "p95": 9759.1
+          "p50": 4221.2,
+          "p95": 9746.1
         },
         "latencyMsWithCall": {
-          "p50": 4947.3,
-          "p95": 10270.7
+          "p50": 4975.5,
+          "p95": 10248
         },
         "sentences": {
           "sentences": 3263,
@@ -948,18 +952,19 @@
         "errorKinds": {},
         "truncated": 0,
         "firstBlockNotText": 170,
-        "usageReportedByCheckAnswer": 0,
+        "usageReportedByCheckAnswer": 357,
+        "usageMatchesApi": 357,
         "inputTokens": 515897,
         "outputTokens": 178349,
         "costUSD": 14.0764,
         "costPer1000ChecksUSD": 31.28,
         "latencyMs": {
-          "p50": 3201.6,
-          "p95": 14696.2
+          "p50": 3227.3,
+          "p95": 14664.3
         },
         "latencyMsWithCall": {
-          "p50": 4391.3,
-          "p95": 14868.4
+          "p50": 4422.2,
+          "p95": 14851.7
         },
         "sentences": {
           "sentences": 3263,
@@ -9839,48 +9844,10 @@
         "cacheRead": 0.1
       },
       "pricesChecked": "2026-11-05",
-      "shippedJudge": {
-        "works": true,
-        "omitTemperature": false
-      },
-      "requestChange": null,
-      "responseChange": "text blocks moved before other blocks in the reply the connector parses",
-      "asShipped": {
-        "noTextReplies": 0,
-        "calls": 357,
-        "metrics": {
-          "unsupported": {
-            "cases": 450,
-            "tp": 213,
-            "fp": 164,
-            "fn": 12,
-            "tn": 61,
-            "precision": 0.565,
-            "recall": 0.9467,
-            "f1": 0.7076,
-            "accuracy": 0.6089,
-            "precisionInterval": [0.5145, 0.6141],
-            "recallInterval": [0.9091, 0.9692]
-          },
-          "supported": {
-            "precision": 0.8356,
-            "recall": 0.2711,
-            "f1": 0.4094,
-            "precisionInterval": [0.7343, 0.9034],
-            "recallInterval": [0.2172, 0.3327]
-          },
-          "flaggedShare": 0.8378
-        },
-        "edge": {
-          "correct": 52,
-          "cases": 72,
-          "falseAlarms": 7,
-          "misses": 13
-        }
-      },
+      "temperatureDropped": false,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 373,
-      "totalCostUSD": 0.7859
+      "totalCalls": 372,
+      "totalCostUSD": 0.7853
     },
     "claude-haiku-5-5": {
       "pricesPerMTok": {
@@ -9894,46 +9861,7 @@
         }
       },
       "pricesChecked": "2026-11-05",
-      "shippedJudge": {
-        "works": false,
-        "error": "Claude API 400: `temperature` is deprecated for this model.",
-        "omitTemperature": true
-      },
-      "requestChange": "temperature removed from the connector's request body",
-      "responseChange": "text blocks moved before other blocks in the reply the connector parses",
-      "asShipped": {
-        "noTextReplies": 336,
-        "calls": 357,
-        "metrics": {
-          "unsupported": {
-            "cases": 450,
-            "tp": 216,
-            "fp": 183,
-            "fn": 9,
-            "tn": 42,
-            "precision": 0.5414,
-            "recall": 0.96,
-            "f1": 0.6923,
-            "accuracy": 0.5733,
-            "precisionInterval": [0.4923, 0.5896],
-            "recallInterval": [0.9257, 0.9788]
-          },
-          "supported": {
-            "precision": 0.8235,
-            "recall": 0.1867,
-            "f1": 0.3043,
-            "precisionInterval": [0.6975, 0.9043],
-            "recallInterval": [0.1412, 0.2427]
-          },
-          "flaggedShare": 0.8867
-        },
-        "edge": {
-          "correct": 48,
-          "cases": 72,
-          "falseAlarms": 11,
-          "misses": 13
-        }
-      },
+      "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
       "totalCalls": 372,
       "totalCostUSD": 0.1758
@@ -9945,46 +9873,7 @@
         "cacheRead": 0.1
       },
       "pricesChecked": "2026-11-05",
-      "shippedJudge": {
-        "works": false,
-        "error": "Claude API 400: `temperature` is deprecated for this model.",
-        "omitTemperature": true
-      },
-      "requestChange": "temperature removed from the connector's request body",
-      "responseChange": "text blocks moved before other blocks in the reply the connector parses",
-      "asShipped": {
-        "noTextReplies": 25,
-        "calls": 357,
-        "metrics": {
-          "unsupported": {
-            "cases": 450,
-            "tp": 214,
-            "fp": 173,
-            "fn": 11,
-            "tn": 52,
-            "precision": 0.553,
-            "recall": 0.9511,
-            "f1": 0.6993,
-            "accuracy": 0.5911,
-            "precisionInterval": [0.5032, 0.6017],
-            "recallInterval": [0.9146, 0.9725]
-          },
-          "supported": {
-            "precision": 0.8254,
-            "recall": 0.2311,
-            "f1": 0.3611,
-            "precisionInterval": [0.7138, 0.8996],
-            "recallInterval": [0.1808, 0.2904]
-          },
-          "flaggedShare": 0.86
-        },
-        "edge": {
-          "correct": 51,
-          "cases": 72,
-          "falseAlarms": 8,
-          "misses": 13
-        }
-      },
+      "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
       "totalCalls": 372,
       "totalCostUSD": 2.0582
@@ -9996,46 +9885,7 @@
         "cacheRead": 0.2
       },
       "pricesChecked": "2026-11-05",
-      "shippedJudge": {
-        "works": false,
-        "error": "Claude API 400: `temperature` is deprecated for this model.",
-        "omitTemperature": true
-      },
-      "requestChange": "temperature removed from the connector's request body",
-      "responseChange": "text blocks moved before other blocks in the reply the connector parses",
-      "asShipped": {
-        "noTextReplies": 304,
-        "calls": 357,
-        "metrics": {
-          "unsupported": {
-            "cases": 450,
-            "tp": 216,
-            "fp": 182,
-            "fn": 9,
-            "tn": 43,
-            "precision": 0.5427,
-            "recall": 0.96,
-            "f1": 0.6934,
-            "accuracy": 0.5756,
-            "precisionInterval": [0.4936, 0.591],
-            "recallInterval": [0.9257, 0.9788]
-          },
-          "supported": {
-            "precision": 0.8269,
-            "recall": 0.1911,
-            "f1": 0.3105,
-            "precisionInterval": [0.7027, 0.9062],
-            "recallInterval": [0.1451, 0.2475]
-          },
-          "flaggedShare": 0.8844
-        },
-        "edge": {
-          "correct": 51,
-          "cases": 72,
-          "falseAlarms": 8,
-          "misses": 13
-        }
-      },
+      "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
       "totalCalls": 372,
       "totalCostUSD": 5.8581
@@ -10047,46 +9897,7 @@
         "cacheRead": 0.25
       },
       "pricesChecked": "2026-11-05",
-      "shippedJudge": {
-        "works": false,
-        "error": "Claude API 400: `temperature` is deprecated for this model.",
-        "omitTemperature": true
-      },
-      "requestChange": "temperature removed from the connector's request body",
-      "responseChange": "text blocks moved before other blocks in the reply the connector parses",
-      "asShipped": {
-        "noTextReplies": 170,
-        "calls": 357,
-        "metrics": {
-          "unsupported": {
-            "cases": 450,
-            "tp": 215,
-            "fp": 170,
-            "fn": 10,
-            "tn": 55,
-            "precision": 0.5584,
-            "recall": 0.9556,
-            "f1": 0.7049,
-            "accuracy": 0.6,
-            "precisionInterval": [0.5085, 0.6072],
-            "recallInterval": [0.9201, 0.9757]
-          },
-          "supported": {
-            "precision": 0.8462,
-            "recall": 0.2444,
-            "f1": 0.3793,
-            "precisionInterval": [0.7394, 0.9142],
-            "recallInterval": [0.1929, 0.3046]
-          },
-          "flaggedShare": 0.8556
-        },
-        "edge": {
-          "correct": 52,
-          "cases": 72,
-          "falseAlarms": 7,
-          "misses": 13
-        }
-      },
+      "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
       "totalCalls": 372,
       "totalCostUSD": 14.2641

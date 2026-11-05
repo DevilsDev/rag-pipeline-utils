@@ -6,6 +6,9 @@
 
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+
 const NAMES = {
   "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
   "claude-haiku-5-5": "Claude Haiku 5.5",
@@ -61,6 +64,44 @@ function callDates(models) {
 
 // --- judge.json ------------------------------------------------------------
 
+/**
+ * What the judge did in 3.4.0, before the connector fixes: kept in
+ * benchmarks/results/judge-3.4.0.json as history.
+ */
+function judgeIn340(models) {
+  const file = path.join(__dirname, "results", "judge-3.4.0.json");
+  if (!fs.existsSync(file)) return [];
+  const h = JSON.parse(fs.readFileSync(file, "utf8"));
+  const ids = models.filter((id) => h.models[id]);
+  return [
+    `**Judge in 3.4.0.** This benchmark found two bugs in \`AnthropicConnector\`, fixed in 3.5.0: it sent the judge's \`temperature: 0\`, which four of these models reject with a 400, and it read \`content[0].text\`, which is a \`thinking\` block when the model thinks first, so the judge got no text and kept every sentence unsupported. What the 3.4.0 connector did on the same cases and replies (measured on ${h.measuredAt.slice(0, 10)}; F1 and edge cases with \`temperature\` removed, so the requests could run):`,
+    "",
+    table(
+      [
+        "Model",
+        "Request with temperature 0",
+        "Replies with no text for the connector",
+        "F1",
+        "Edge cases correct",
+      ],
+      ids.map((id) => {
+        const m = h.models[id];
+        const s = m.asShipped;
+        return [
+          nameOf(id),
+          m.shippedJudge.works
+            ? "accepted"
+            : "400: `temperature` is deprecated",
+          `${num(s.noTextReplies)} of ${num(s.calls)}`,
+          f3(s.metrics.unsupported.f1),
+          `${s.edge.correct} / ${s.edge.cases}`,
+        ];
+      }),
+    ),
+    "",
+  ];
+}
+
 function renderJudge(report) {
   const rt = report.ragtruth;
   const d = rt.dataset;
@@ -68,30 +109,14 @@ function renderJudge(report) {
   const parts = [
     `${measuredLine(report.environment)} API calls made on ${callDates(report.models)}; judge \`maxTokens\` ${report.settings.judgeMaxTokens}.`,
     "",
-    `**Does the shipped judge run on each model?** Not on four of the five. The judge calls \`generate(prompt, [], { temperature: 0 })\` and \`AnthropicConnector\` sends that temperature, which those models reject. With \`temperature\` removed, the connector then reads \`content[0].text\`, and a model that thinks first puts a \`thinking\` block there: the judge gets no text and keeps every sentence unsupported. To measure the models, the benchmark removed \`temperature\` from the request and handed the connector the same reply with its text block first; nothing else changed. The as-shipped columns show what the connector does today, with only \`temperature\` removed.`,
-    "",
-    table(
-      [
-        "Model",
-        "Model id",
-        "Shipped judge",
-        "Replies with no text for the connector",
-        "F1, as shipped",
-        "Edge cases correct, as shipped",
-      ],
-      models.map((id) => {
-        const m = report.models[id];
-        const s = m.asShipped;
-        return [
-          nameOf(id),
-          `\`${id}\``,
-          m.shippedJudge.works ? "works" : "400: `temperature` is deprecated",
-          `${num(s.noTextReplies)} of ${num(s.calls)}`,
-          f3(s.metrics.unsupported.f1),
-          `${s.edge.correct} / ${s.edge.cases}`,
-        ];
-      }),
-    ),
+    (() => {
+      const dropped = models.filter(
+        (id) => report.models[id].temperatureDropped,
+      );
+      return dropped.length
+        ? `The judge asks for temperature 0; ${dropped.map(nameOf).join(", ")} reject it, and \`AnthropicConnector\` sent those requests again without it.`
+        : "";
+    })(),
     "",
     `**RAGTruth**: ${d.dataset}, revision \`${d.revision.slice(0, 7)}\` (${d.license}). Sample: ${num(d.sample.size)} of ${num(d.cases)} test answers, ${d.sample.perTaskAndLabel} with and ${d.sample.perTaskAndLabel} without an annotated hallucination for each of the three tasks (seed ${d.sample.seed}). An answer counts as flagged when \`checkAnswer\` finds any unsupported sentence; the positive class is an answer with a hallucination.`,
     "",
@@ -143,7 +168,7 @@ function renderJudge(report) {
       ],
     ),
     "",
-    `Judge rows are measured with both workarounds above. Latency is per check, including the API call; with a judge, checks with no sentence to send make no call. Cost uses the published per-token prices of ${report.models[models[0]]?.pricesChecked || "the run date"}.`,
+    `Latency is per check, including the API call; with a judge, checks with no sentence to send make no call. Cost uses the published per-token prices of ${report.models[models[0]]?.pricesChecked || "the run date"}.`,
     "",
     ...(rt.lexicalFalseAlarms
       ? [
@@ -240,13 +265,19 @@ function renderJudge(report) {
         bits.push(`${m.truncated} replies cut off at \`maxTokens\``);
       if (m.firstBlockNotText)
         bits.push(
-          `${m.firstBlockNotText} replies that start with a thinking block (read through the workaround)`,
+          `${m.firstBlockNotText} replies that start with a thinking block (the connector reads the text after it)`,
         );
       return bits.length ? `${nameOf(id)}: ${bits.join(", ")}` : null;
     })
     .filter(Boolean);
   parts.push(
-    `Judge replies: ${errs.length ? `${errs.join("; ")}.` : "every reply parsed."} \`checkAnswer\`'s \`judge.usage\` was empty on every check, because \`AnthropicConnector.generate()\` returns only the text; the token counts here come from the API responses.`,
+    `Judge replies: ${errs.length ? `${errs.join("; ")}.` : "every reply parsed."} ${
+      models.every(
+        (id) => rt.models[id].usageMatchesApi === rt.models[id].checksWithCall,
+      )
+        ? "`check.judge.usage` was filled on every check with a judge call and matched the API's token counts."
+        : `\`check.judge.usage\` matched the API's token counts on ${models.map((id) => `${num(rt.models[id].usageMatchesApi)} of ${num(rt.models[id].checksWithCall)}`).join(", ")} checks with a call (${models.map(nameOf).join(", ")}).`
+    }`,
     "",
   );
 
@@ -324,6 +355,7 @@ function renderJudge(report) {
       ]),
     ),
     "",
+    ...judgeIn340(models),
     `Total cost of this benchmark: ${models
       .map(
         (id) =>
@@ -355,7 +387,7 @@ function renderClaudeCitations(report) {
     table(
       [
         "Model",
-        "Refused (`stop_reason: refusal`)",
+        "Refused (`refused`)",
         "Answers without citations",
         "Cited claims",
         "Supported, lexical",
@@ -372,7 +404,7 @@ function renderClaudeCitations(report) {
         const s = m.scifact;
         return [
           nameOf(id),
-          `${s.answers.stopReasons.refusal || 0} / ${s.answers.calls}`,
+          `${s.answers.refused} / ${s.answers.calls}`,
           `${s.answers.withoutCitations} / ${s.answers.calls}`,
           num(s.lexical.claims),
           `${s.lexical.supported} (${pct(s.lexical.supportedShare)})`,
@@ -380,8 +412,7 @@ function renderClaudeCitations(report) {
           `${s.lexical.verifiedAnswers} (${pct(s.lexical.verifiedShare)})`,
           `${s.judge.verifiedAnswers} (${pct(s.judge.verifiedShare)})`,
           (() => {
-            const answered =
-              s.answers.calls - (s.answers.stopReasons.refusal || 0);
+            const answered = s.answers.calls - s.answers.refused;
             return `${s.judge.verifiedAnswers} / ${answered} (${pct(answered ? s.judge.verifiedAnswers / answered : null)})`;
           })(),
           `${s.answers.uncitedSentences} (${s.answers.answersWithUncitedSentences})`,
@@ -391,14 +422,12 @@ function renderClaudeCitations(report) {
       }),
     ),
     "",
-    `A refused answer has no text and no citations, so it is never verified; \`fromAnthropicCitations\` does not report the refusal itself. Judge calls: ${models
+    `A refused answer has no text and no citations; \`verifyCitations\` reports it as \`refused: true\` and never verifies it. Judge calls: ${models
       .map((id) => {
         const j = report.models[id].scifact.judge;
         return `${nameOf(id)} ${j.calls}`;
       })
-      .join(
-        ", ",
-      )}; it can only overturn \`low_overlap\` claims, and the connector got its replies with the text block first (as in the judge benchmark).`,
+      .join(", ")}; the judge only rules on \`low_overlap\` claims.`,
     "",
     "Why the lexical check did not support a claim:",
     "",

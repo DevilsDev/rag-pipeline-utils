@@ -18,11 +18,10 @@
  * lexically, checkAnswer({ answer, sources }), and with
  * checkAnswer({ answer, sources, judge: new AnthropicConnector({ apiKey, model, maxTokens }) }).
  *
- * One change is made to the connector's request, recorded per model in the
- * report: AnthropicConnector sends the judge's `temperature: 0`, which some
- * models reject with a 400 (see the report's `shippedJudge`). For those
- * models the benchmark removes `temperature` from the request body; the
- * rest of the request and the parsing of the reply are the library's own.
+ * The connector is used unchanged. Models that reject the judge's
+ * `temperature: 0` answer the first request with a 400, and the connector
+ * retries without it (3.5.0); the report records which models did. What the
+ * judge did in 3.4.0 is kept in benchmarks/results/judge-3.4.0.json.
  *
  * Neither the library nor the judge prompt was tuned on RAGTruth, on any
  * other public set, or on the edge cases.
@@ -83,56 +82,34 @@ const latency = (values) => ({
 /** A judge that never answers: checkAnswer keeps its lexical verdicts and reports why. */
 const SILENT_JUDGE = { generate: async () => "[]" };
 
-function makeJudge(cache, model, adapterOptions, calls) {
+function makeJudge(cache, model, calls) {
   const judge = new AnthropicConnector({
     apiKey: cache.apiKey || "cached",
     model,
     maxTokens: MAX_TOKENS,
   });
-  judge.client.defaults.adapter = cache.axiosAdapter(
-    (call) => calls.push(call),
-    adapterOptions,
+  judge.client.defaults.adapter = cache.axiosAdapter((call) =>
+    calls.push(call),
   );
   return judge;
 }
 
-/**
- * Does the shipped judge work on this model? One small check through the
- * connector as shipped; a 400 about temperature means the benchmark must
- * remove it.
- */
-async function shippedJudge(cache, model) {
-  const calls = [];
-  try {
-    await checkAnswer({
-      answer: "Staff get five weeks off annually.",
-      sources: [
-        {
-          id: "leave",
-          content: "Each worker may take five weeks of paid leave every year.",
-        },
-      ],
-      evaluate: false,
-      judge: makeJudge(cache, model, {}, calls),
-    });
-    return { works: true, omitTemperature: false };
-  } catch (error) {
-    const status = error.response && error.response.status;
-    if (status === 400 && /temperature/i.test(error.message)) {
-      return { works: false, error: error.message, omitTemperature: true };
-    }
-    throw error;
-  }
-}
+/** Models the connector retried without temperature (its warning). */
+const temperatureDropped = new Set();
+process.on("warning", (w) => {
+  if (w.code !== "RAG_ANTHROPIC_TEMPERATURE") return;
+  const model = MODELS.find((m) => w.message.startsWith(`${m} `));
+  if (model) temperatureDropped.add(model);
+});
 
-async function judged(c, cache, model, adapterOptions) {
+async function judged(c, cache, model) {
   const calls = [];
   const t0 = performance.now();
   const check = await checkAnswer({
     answer: c.answer,
     sources: c.sources,
     evaluate: false,
-    judge: makeJudge(cache, model, adapterOptions, calls),
+    judge: makeJudge(cache, model, calls),
   });
   const wallMs = performance.now() - t0;
   // Latency per check: local work plus the API call as it was measured
@@ -146,6 +123,7 @@ async function judged(c, cache, model, adapterOptions) {
     calls: check.judge.calls,
     error: check.judge.error || null,
     usageReported: Boolean(check.judge.usage),
+    reportedUsage: check.judge.usage || null,
     usage: calls[0] ? calls[0].usage : null,
     stopReason: calls[0] ? calls[0].stopReason : null,
     firstBlock: calls[0] ? calls[0].firstBlock : null,
@@ -446,49 +424,10 @@ async function main() {
 
   for (const model of lexicalOnly ? [] : MODELS) {
     const start = cache.used.length;
-    const shipped = await shippedJudge(cache, model);
-    const omit = shipped.omitTemperature;
-    console.log(
-      `${model}: shipped judge ${shipped.works ? "works" : `fails (${shipped.error})`}`,
-    );
-
-    // As shipped (with temperature removed where the model needs it):
-    // the connector reads content[0].text
-    const shippedOptions = { omitTemperature: omit };
-    const shippedRag = await mapLimit(rows, CONCURRENCY, (row, i) =>
-      judged(sample[i], cache, model, shippedOptions),
-    );
-    const shippedEdge = await mapLimit(edge, CONCURRENCY, async (c) => {
-      const r = await judged(c, cache, model, shippedOptions);
-      return {
-        verdict: r.grounded ? "supported" : "unsupported",
-        verdicts: r.verdicts,
-      };
-    });
-    const shippedScore = scoreEdge(edge, shippedEdge);
-    const asShipped = {
-      noTextReplies: shippedRag.filter(
-        (r) => r.error === "judge returned no text",
-      ).length,
-      calls: shippedRag.reduce((n, r) => n + r.calls, 0),
-      metrics: responseMetrics(
-        rows.map((r, i) => ({ ...r, flagged: !shippedRag[i].grounded })),
-        (r) => r.flagged,
-      ),
-      edge: {
-        correct: shippedScore.correct,
-        cases: shippedScore.cases,
-        falseAlarms: shippedScore.falseAlarms,
-        misses: shippedScore.misses,
-      },
-    };
-
-    // Measured: the same replies with the text block first
-    const options = { omitTemperature: omit, textFirst: true };
     let done = 0;
     const ragStart = cache.used.length;
     await mapLimit(rows, CONCURRENCY, async (row, i) => {
-      row.judge[model] = await judged(sample[i], cache, model, options);
+      row.judge[model] = await judged(sample[i], cache, model);
       done += 1;
       if (done % 50 === 0) {
         console.log(
@@ -499,7 +438,7 @@ async function main() {
     const ragEntries = cache.used.slice(ragStart);
     const edgeStart = cache.used.length;
     const edgeResults = await mapLimit(edge, CONCURRENCY, async (c) => {
-      const r = await judged(c, cache, model, options);
+      const r = await judged(c, cache, model);
       return {
         verdict: r.grounded ? "supported" : "unsupported",
         verdicts: r.verdicts,
@@ -508,13 +447,7 @@ async function main() {
       };
     });
     const edgeEntries = cache.used.slice(edgeStart);
-    // Each response once: the as-shipped and measured passes share them
-    const seen = new Set();
-    const allEntries = cache.used.slice(start).filter((e) => {
-      if (seen.has(e.key)) return false;
-      seen.add(e.key);
-      return true;
-    });
+    const allEntries = cache.used.slice(start);
 
     const usage = (entries) => {
       const u = { calls: entries.length, inputTokens: 0, outputTokens: 0 };
@@ -541,13 +474,8 @@ async function main() {
     report.models[model] = {
       pricesPerMTok: PRICES[model],
       pricesChecked: "2026-11-05",
-      shippedJudge: shipped,
-      requestChange: omit
-        ? "temperature removed from the connector's request body"
-        : null,
-      responseChange:
-        "text blocks moved before other blocks in the reply the connector parses",
-      asShipped,
+      // The connector got a 400 for temperature 0 and retried without it
+      temperatureDropped: temperatureDropped.has(model),
       callDates: (() => {
         const dates = allEntries.map((e) => e.createdAt.slice(0, 10)).sort();
         return dates.length ? [dates[0], dates[dates.length - 1]] : null;
@@ -566,6 +494,17 @@ async function main() {
         (r) => r.firstBlock && r.firstBlock !== "text",
       ).length,
       usageReportedByCheckAnswer: results.filter((r) => r.usageReported).length,
+      // check.judge.usage against the API's usage for the same call
+      usageMatchesApi: results.filter(
+        (r) =>
+          r.reportedUsage &&
+          r.usage &&
+          r.reportedUsage.outputTokens === r.usage.output_tokens &&
+          r.reportedUsage.inputTokens ===
+            (r.usage.input_tokens || 0) +
+              (r.usage.cache_creation_input_tokens || 0) +
+              (r.usage.cache_read_input_tokens || 0),
+      ).length,
       ...ragUsage,
       costUSD: ragCost,
       costPer1000ChecksUSD: Number(((ragCost / rows.length) * 1000).toFixed(2)),

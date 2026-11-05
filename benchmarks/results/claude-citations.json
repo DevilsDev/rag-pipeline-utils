@@ -1,9 +1,9 @@
 {
   "benchmark": "claude-citations",
-  "createdAt": "2026-11-05T01:52:51.820Z",
+  "createdAt": "2026-11-05T02:40:47.202Z",
   "environment": {
     "libraryVersion": "3.4.0",
-    "commit": "6c08981",
+    "commit": "a92edb1",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -52,6 +52,7 @@
           "stopReasons": {
             "end_turn": 50
           },
+          "refused": 0,
           "withoutCitations": 5,
           "skippedCitations": 0,
           "uncitedSentences": 84,
@@ -94,7 +95,6 @@
           "verifiedShare": 0.76,
           "verifiedInterval": [0.6259, 0.857],
           "calls": 1,
-          "repliesWithThinkingFirst": 0,
           "errors": 0
         },
         "usage": {
@@ -920,6 +920,7 @@
           "stopReasons": {
             "end_turn": 50
           },
+          "refused": 0,
           "withoutCitations": 0,
           "skippedCitations": 0,
           "uncitedSentences": 167,
@@ -962,7 +963,6 @@
           "verifiedShare": 0.84,
           "verifiedInterval": [0.7149, 0.9166],
           "calls": 0,
-          "repliesWithThinkingFirst": 0,
           "errors": 0
         },
         "usage": {
@@ -1838,6 +1838,7 @@
           "stopReasons": {
             "end_turn": 50
           },
+          "refused": 0,
           "withoutCitations": 0,
           "skippedCitations": 0,
           "uncitedSentences": 196,
@@ -1880,7 +1881,6 @@
           "verifiedShare": 0.8,
           "verifiedInterval": [0.6696, 0.8876],
           "calls": 0,
-          "repliesWithThinkingFirst": 0,
           "errors": 0
         },
         "usage": {
@@ -2760,6 +2760,7 @@
             "end_turn": 36,
             "refusal": 14
           },
+          "refused": 14,
           "withoutCitations": 14,
           "skippedCitations": 0,
           "uncitedSentences": 121,
@@ -2800,7 +2801,6 @@
           "verifiedShare": 0.64,
           "verifiedInterval": [0.5014, 0.7586],
           "calls": 0,
-          "repliesWithThinkingFirst": 0,
           "errors": 0
         },
         "usage": {
@@ -3680,6 +3680,7 @@
             "end_turn": 32,
             "refusal": 18
           },
+          "refused": 18,
           "withoutCitations": 18,
           "skippedCitations": 0,
           "uncitedSentences": 78,
@@ -3720,7 +3721,6 @@
           "verifiedShare": 0.52,
           "verifiedInterval": [0.3851, 0.652],
           "calls": 0,
-          "repliesWithThinkingFirst": 0,
           "errors": 0
         },
         "usage": {
