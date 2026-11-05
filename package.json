@@ -115,6 +115,7 @@
     "tests:ci": "jest --maxWorkers=50% --reporters=default --json --outputFile=test-results-current.json",
     "test:unit": "jest __tests__/unit",
     "test:integration": "jest __tests__/integration",
+    "test:live": "jest --config jest.live.config.js --runInBand",
     "test:simple": "jest --maxWorkers=1 --no-coverage",
     "verify:pack": "node scripts/verify-npm-pack.js",
     "smoke:pack": "node scripts/smoke-test-pack.js",

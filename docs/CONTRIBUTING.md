@@ -130,6 +130,17 @@ npm run lint:fix          # Auto-fix issues
 npm test                  # Ensure tests pass
 ```
 
+### **Live API tests**
+
+`npm run test:live` runs `__tests__/live/` against the real Claude API: the connector, streaming, a pipeline run, the LLM judge and provider citations, on Haiku with short outputs (a few cents a run). They are never part of `npm test` or CI, and are skipped without a key. The key comes from `ANTHROPIC_API_KEY`, or from an env file outside the repository, `~/.config/rag-pipeline-utils/live-test.env` (or the path in `RAG_LIVE_ENV`):
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...
+LIVE_TESTS_UNTIL=2026-11-13T23:59:59+13:00   # optional: the key isn't used after this
+```
+
+Never commit a key; `LIVE_ANTHROPIC_MODEL` picks another model.
+
 ### **Emergency Fixes**
 
 ```bash
