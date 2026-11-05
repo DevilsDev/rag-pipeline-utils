@@ -71,3 +71,7 @@
 {"id":"plain-g4","category":"plain checks (must not change)","kind":"guard","expected":"unsupported","claim":"Contractors receive paid vacation.","source":"Employees receive paid vacation. Contractors do not receive paid vacation."}
 {"id":"plain-g5","category":"plain checks (must not change)","kind":"guard","expected":"supported","claim":"Remote work requires manager approval.","source":"Remote work is allowed two days per week and requires manager approval."}
 {"id":"plain-g6","category":"plain checks (must not change)","kind":"guard","expected":"unsupported","claim":"The response rate was 4.5%.","source":"The response rate rose to 45% this year."}
+{"id":"ref-07","category":"reference numbers","kind":"false alarm","expected":"supported","claim":"Firmware FW-12 fixes the boot loop on older routers.","source":"The boot loop on older routers is fixed in firmware fw-12, released in spring."}
+{"id":"ref-g4","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"The kinesin-5 motor slides microtubules apart.","source":"The kinesin-8 motor slides microtubules apart."}
+{"id":"ref-g5","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"Levels of IL-6 rose sharply after surgery.","source":"Levels of IL-8 rose sharply after surgery."}
+{"id":"ref-g6","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"Firmware FW-11 fixes the boot loop on older routers.","source":"The boot loop on older routers is fixed in firmware FW-12, released in spring."}
