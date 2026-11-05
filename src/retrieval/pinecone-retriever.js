@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Retriever on Pinecone, through its REST API with the built-in fetch: no
@@ -32,12 +32,12 @@
  * no cache identity unless you give it a `cacheKey`.
  */
 
-const crypto = require("crypto");
-const { throwIfAborted } = require("../connectors/connector-utils");
+const crypto = require('crypto');
+const { throwIfAborted } = require('../connectors/connector-utils');
 
-const API_VERSION = "2026-07";
-const CONTROL_PLANE = "https://api.pinecone.io";
-const DEFAULT_NAMESPACE = "rag_documents";
+const API_VERSION = '2026-07';
+const CONTROL_PLANE = 'https://api.pinecone.io';
+const DEFAULT_NAMESPACE = 'rag_documents';
 const UPSERT_BATCH = 100;
 // Pinecone embeds at most 96 documents per request
 const EMBED_UPSERT_BATCH = 96;
@@ -48,25 +48,25 @@ const PAGE = 100;
 const SEARCH_MAX = 10000;
 // Pinecone ids: 1 to 512 printable ASCII characters
 const PLAIN_ID = /^[\x20-\x7e]{1,512}$/;
-const FIELDS = ["rag_id", "rag_content", "rag_metadata"];
+const FIELDS = ['rag_id', 'rag_content', 'rag_metadata'];
 // Every record this class wrote, and nothing else
 const OURS = { rag_id: { $exists: true } };
 // What list() and size() search an index that embeds text with: any text
 // works, since top_k covers every record and the filter picks this class's
-const PROBE_QUERY = "document";
+const PROBE_QUERY = 'document';
 
 /** The record id for a document id: itself when Pinecone accepts it. */
 function recordId(id) {
   const s = String(id);
   if (PLAIN_ID.test(s)) return s;
-  return `rag-${crypto.createHash("sha256").update(s).digest("hex")}`;
+  return `rag-${crypto.createHash('sha256').update(s).digest('hex')}`;
 }
 
 function checkVector(vector, id) {
   if (!Array.isArray(vector) || vector.length === 0) {
     throw new Error(`PineconeRetriever: document "${id}" has no vector`);
   }
-  if (!vector.every((x) => typeof x === "number" && Number.isFinite(x))) {
+  if (!vector.every((x) => typeof x === 'number' && Number.isFinite(x))) {
     throw new Error(
       `PineconeRetriever: document "${id}" has a vector with a non-finite value`,
     );
@@ -84,7 +84,7 @@ function fromFields(fields, fallbackId) {
   }
   return {
     id: m.rag_id !== undefined ? String(m.rag_id) : fallbackId,
-    content: m.rag_content || "",
+    content: m.rag_content || '',
     metadata,
   };
 }
@@ -92,7 +92,7 @@ function fromFields(fields, fallbackId) {
 function normalizeHost(host) {
   // Trailing slashes off with a loop (a regex here can backtrack)
   let h = String(host);
-  while (h.endsWith("/")) h = h.slice(0, -1);
+  while (h.endsWith('/')) h = h.slice(0, -1);
   return /^https?:\/\//.test(h) ? h : `https://${h}`;
 }
 
@@ -121,13 +121,13 @@ class PineconeRetriever {
    */
   constructor(options = {}) {
     const {
-      apiKey = typeof process !== "undefined" && process.env
+      apiKey = typeof process !== 'undefined' && process.env
         ? process.env.PINECONE_API_KEY
         : undefined,
       host,
       index,
       namespace = DEFAULT_NAMESPACE,
-      api = "auto",
+      api = 'auto',
       vectorField,
       textField,
       freshnessTimeoutMs = 30000,
@@ -136,34 +136,34 @@ class PineconeRetriever {
     } = options;
     if (!apiKey) {
       throw new Error(
-        "PineconeRetriever needs an API key: pass apiKey or set PINECONE_API_KEY",
+        'PineconeRetriever needs an API key: pass apiKey or set PINECONE_API_KEY',
       );
     }
     if (!host && !index) {
       throw new Error(
-        "PineconeRetriever needs the index: pass index (its name) or host (the index host)",
+        'PineconeRetriever needs the index: pass index (its name) or host (the index host)',
       );
     }
-    if (typeof namespace !== "string") {
-      throw new Error("PineconeRetriever: namespace must be a string");
+    if (typeof namespace !== 'string') {
+      throw new Error('PineconeRetriever: namespace must be a string');
     }
-    if (!["auto", "documents", "vectors"].includes(api)) {
+    if (!['auto', 'documents', 'vectors'].includes(api)) {
       throw new Error(
         'PineconeRetriever: api must be "auto", "documents" or "vectors"',
       );
     }
     if (vectorField && textField) {
       throw new Error(
-        "PineconeRetriever: pass vectorField (your vectors) or textField (Pinecone embeds the text), not both",
+        'PineconeRetriever: pass vectorField (your vectors) or textField (Pinecone embeds the text), not both',
       );
     }
-    if (textField && api === "vectors") {
+    if (textField && api === 'vectors') {
       throw new Error(
         'PineconeRetriever: textField needs a document index (api "documents" or "auto")',
       );
     }
-    if (typeof fetchImpl !== "function") {
-      throw new Error("PineconeRetriever needs fetch (Node.js 18 or later)");
+    if (typeof fetchImpl !== 'function') {
+      throw new Error('PineconeRetriever needs fetch (Node.js 18 or later)');
     }
     this.index = index;
     this.namespace = namespace;
@@ -191,7 +191,7 @@ class PineconeRetriever {
    * @returns {string|null}
    */
   getCacheKey(role) {
-    if (role !== "retriever" || !this.cacheKey) return null;
+    if (role !== 'retriever' || !this.cacheKey) return null;
     return `pinecone|${this._host || this.index}|${this.namespace}|${this.cacheKey}`;
   }
 
@@ -202,11 +202,11 @@ class PineconeRetriever {
   async _call(url, method, body, signal) {
     throwIfAborted(signal);
     const headers = {
-      "Api-Key": this._apiKey,
-      "X-Pinecone-Api-Version": API_VERSION,
-      accept: "application/json",
+      'Api-Key': this._apiKey,
+      'X-Pinecone-Api-Version': API_VERSION,
+      accept: 'application/json',
     };
-    if (body !== undefined) headers["content-type"] = "application/json";
+    if (body !== undefined) headers['content-type'] = 'application/json';
     let res;
     try {
       res = await this._fetch(url, {
@@ -250,7 +250,7 @@ class PineconeRetriever {
 
   /** True on a document index that embeds text itself. @private */
   get _integrated() {
-    return this._api === "documents" && Boolean(this._textField);
+    return this._api === 'documents' && Boolean(this._textField);
   }
 
   /**
@@ -262,13 +262,13 @@ class PineconeRetriever {
   _resolve(signal) {
     if (this._host && this._textField) {
       // A text field is only on a document index
-      this._api = "documents";
+      this._api = 'documents';
       return Promise.resolve();
     }
     if (
       this._host &&
-      this._api !== "auto" &&
-      (this._api === "vectors" || this._vectorField)
+      this._api !== 'auto' &&
+      (this._api === 'vectors' || this._vectorField)
     ) {
       return Promise.resolve();
     }
@@ -287,7 +287,7 @@ class PineconeRetriever {
     if (this.index) {
       ({ json: info } = await this._call(
         `${CONTROL_PLANE}/indexes/${encodeURIComponent(this.index)}`,
-        "GET",
+        'GET',
         undefined,
         signal,
       ));
@@ -295,11 +295,11 @@ class PineconeRetriever {
       // Only the host: find the index it belongs to
       const { json } = await this._call(
         `${CONTROL_PLANE}/indexes`,
-        "GET",
+        'GET',
         undefined,
         signal,
       );
-      const host = this._host.replace(/^https?:\/\//, "");
+      const host = this._host.replace(/^https?:\/\//, '');
       info = (json.indexes || []).find((i) => i.host === host);
       if (!info) {
         throw new Error(
@@ -318,26 +318,26 @@ class PineconeRetriever {
     // A vector index describes itself with an implicit schema (`_values`,
     // `_sparse_values`); a document index's fields are named by its owner
     const named = fields
-      ? Object.entries(fields).filter(([name]) => !name.startsWith("_"))
+      ? Object.entries(fields).filter(([name]) => !name.startsWith('_'))
       : [];
-    const denseFields = named.filter(([, f]) => f && f.type === "dense_vector");
+    const denseFields = named.filter(([, f]) => f && f.type === 'dense_vector');
     // Integrated embedding: a string field Pinecone embeds itself
     const textFields = named.filter(
-      ([, f]) => f && f.type === "string" && f.embed,
+      ([, f]) => f && f.type === 'string' && f.embed,
     );
-    if (this._api === "auto") {
-      this._api = named.length > 0 ? "documents" : "vectors";
+    if (this._api === 'auto') {
+      this._api = named.length > 0 ? 'documents' : 'vectors';
     }
     if (this._textField) {
       if (
-        this._api !== "documents" ||
+        this._api !== 'documents' ||
         !textFields.some(([name]) => name === this._textField)
       ) {
         throw new Error(
           `PineconeRetriever: index "${info.name}" has no text field named "${this._textField}" that it embeds`,
         );
       }
-    } else if (this._api === "documents") {
+    } else if (this._api === 'documents') {
       const field = this._vectorField
         ? denseFields.find(([name]) => name === this._vectorField)
         : denseFields[0];
@@ -348,7 +348,7 @@ class PineconeRetriever {
       }
       if (!field) {
         throw new Error(
-          `PineconeRetriever: index "${info.name}" has no dense_vector field${this._vectorField ? ` named "${this._vectorField}"` : ""}`,
+          `PineconeRetriever: index "${info.name}" has no dense_vector field${this._vectorField ? ` named "${this._vectorField}"` : ''}`,
         );
       }
       this._vectorField = field[0];
@@ -369,7 +369,7 @@ class PineconeRetriever {
       signal,
     );
     if (write) {
-      const lsn = Number(result.headers.get("x-pinecone-request-lsn"));
+      const lsn = Number(result.headers.get('x-pinecone-request-lsn'));
       if (Number.isFinite(lsn) && lsn > this._writeLsn) this._writeLsn = lsn;
     }
     return result;
@@ -377,7 +377,7 @@ class PineconeRetriever {
 
   /** The Documents API path for this namespace. @private */
   _docs(action) {
-    const ns = encodeURIComponent(this.namespace || "__default__");
+    const ns = encodeURIComponent(this.namespace || '__default__');
     return `/namespaces/${ns}/documents/${action}`;
   }
 
@@ -390,16 +390,16 @@ class PineconeRetriever {
    */
   async _search(query, topK, signal, filter) {
     await this._resolve(signal);
-    const documents = this._api === "documents";
+    const documents = this._api === 'documents';
     const [path, body] = documents
       ? [
-          this._docs("search"),
+          this._docs('search'),
           {
             score_by: [
               this._integrated
-                ? { type: "embed", fields: [this._textField], query }
+                ? { type: 'embed', fields: [this._textField], query }
                 : {
-                    type: "dense_vector",
+                    type: 'dense_vector',
                     fields: [this._vectorField],
                     values: query,
                   },
@@ -410,7 +410,7 @@ class PineconeRetriever {
           },
         ]
       : [
-          "/query",
+          '/query',
           {
             vector: query,
             topK,
@@ -424,13 +424,13 @@ class PineconeRetriever {
       let json;
       let headers;
       try {
-        ({ json, headers } = await this._data("POST", path, body, { signal }));
+        ({ json, headers } = await this._data('POST', path, body, { signal }));
       } catch (err) {
         // A namespace nothing was written to yet
         if (err.status === 404) return [];
         throw err;
       }
-      const header = headers.get("x-pinecone-max-indexed-lsn");
+      const header = headers.get('x-pinecone-max-indexed-lsn');
       // No writes to wait for, an index that doesn't report LSNs, caught
       // up, or out of time
       const fresh =
@@ -478,7 +478,7 @@ class PineconeRetriever {
    */
   async store(docs) {
     if (!Array.isArray(docs)) {
-      throw new Error("PineconeRetriever.store() takes an array");
+      throw new Error('PineconeRetriever.store() takes an array');
     }
     if (docs.length === 0) return;
     await this._resolve();
@@ -487,9 +487,9 @@ class PineconeRetriever {
     let dimensions = null;
     const records = docs.map((doc) => {
       const id = doc && doc.id;
-      if (typeof id !== "string" || id.length === 0) {
+      if (typeof id !== 'string' || id.length === 0) {
         throw new Error(
-          "PineconeRetriever.store(): every document needs a string id",
+          'PineconeRetriever.store(): every document needs a string id',
         );
       }
       checkVector(doc.vector, id);
@@ -510,7 +510,7 @@ class PineconeRetriever {
         values: doc.vector,
         fields: {
           rag_id: id,
-          rag_content: doc.content || "",
+          rag_content: doc.content || '',
           rag_metadata: JSON.stringify(metadata),
           ...(metadata.source !== undefined &&
             metadata.source !== null && {
@@ -521,10 +521,10 @@ class PineconeRetriever {
     });
     for (let i = 0; i < records.length; i += UPSERT_BATCH) {
       const batch = records.slice(i, i + UPSERT_BATCH);
-      if (this._api === "documents") {
+      if (this._api === 'documents') {
         await this._data(
-          "POST",
-          this._docs("upsert"),
+          'POST',
+          this._docs('upsert'),
           {
             documents: batch.map((r) => ({
               _id: r.id,
@@ -536,8 +536,8 @@ class PineconeRetriever {
         );
       } else {
         await this._data(
-          "POST",
-          "/vectors/upsert",
+          'POST',
+          '/vectors/upsert',
           {
             vectors: batch.map((r) => ({
               id: r.id,
@@ -557,14 +557,14 @@ class PineconeRetriever {
   async _storeText(docs) {
     const records = docs.map((doc) => {
       const id = doc && doc.id;
-      if (typeof id !== "string" || id.length === 0) {
+      if (typeof id !== 'string' || id.length === 0) {
         throw new Error(
-          "PineconeRetriever.store(): every document needs a string id",
+          'PineconeRetriever.store(): every document needs a string id',
         );
       }
       // Pinecone needs the text on every document, and one failed embed
       // fails the whole request
-      if (typeof doc.content !== "string" || doc.content.trim() === "") {
+      if (typeof doc.content !== 'string' || doc.content.trim() === '') {
         throw new Error(
           `PineconeRetriever.store(): document "${id}" has no content for Pinecone to embed (the index embeds ${this._textField})`,
         );
@@ -589,8 +589,8 @@ class PineconeRetriever {
     const send = async () => {
       if (batch.length === 0) return;
       await this._data(
-        "POST",
-        this._docs("upsert"),
+        'POST',
+        this._docs('upsert'),
         { documents: batch },
         { write: true },
       );
@@ -625,19 +625,19 @@ class PineconeRetriever {
   async retrieve(request, k = 10) {
     let input = request || {};
     if (Array.isArray(request)) input = { queryVector: request };
-    else if (typeof request === "string") input = { query: request };
+    else if (typeof request === 'string') input = { query: request };
     const { query, queryVector, topK = k, signal } = input;
     if (!Number.isInteger(topK) || topK < 1) {
       throw new Error(
-        "PineconeRetriever.retrieve(): topK must be a positive integer",
+        'PineconeRetriever.retrieve(): topK must be a positive integer',
       );
     }
     throwIfAborted(signal);
     // Which input it searches with depends on the index kind
     await this._resolve(signal);
     if (!this._integrated) {
-      checkVector(queryVector, "query");
-    } else if (typeof query !== "string" || query.trim() === "") {
+      checkVector(queryVector, 'query');
+    } else if (typeof query !== 'string' || query.trim() === '') {
       throw new Error(
         `PineconeRetriever.retrieve(): the index embeds text itself (integrated embedding, field ${this._textField}), so it needs the query text: pass { query }`,
       );
@@ -663,14 +663,14 @@ class PineconeRetriever {
   async _delete(body) {
     await this._resolve();
     try {
-      if (this._api === "documents") {
-        await this._data("POST", this._docs("delete"), body.documents, {
+      if (this._api === 'documents') {
+        await this._data('POST', this._docs('delete'), body.documents, {
           write: true,
         });
       } else {
         await this._data(
-          "POST",
-          "/vectors/delete",
+          'POST',
+          '/vectors/delete',
           { namespace: this.namespace, ...body.vectors },
           { write: true },
         );
@@ -723,7 +723,7 @@ class PineconeRetriever {
   async list({ limit } = {}) {
     await this._resolve();
     await this._waitForWrites();
-    return this._api === "documents"
+    return this._api === 'documents'
       ? this._listDocuments(limit)
       : this._listVectors(limit);
   }
@@ -755,7 +755,7 @@ class PineconeRetriever {
     do {
       let json;
       try {
-        ({ json } = await this._data("POST", this._docs("fetch"), {
+        ({ json } = await this._data('POST', this._docs('fetch'), {
           filter: OURS,
           include_fields: FIELDS,
           limit: limit ? Math.min(PAGE, limit - out.length) : PAGE,
@@ -782,10 +782,10 @@ class PineconeRetriever {
         namespace: this.namespace,
         limit: String(PAGE),
       });
-      if (token) params.set("paginationToken", token);
+      if (token) params.set('paginationToken', token);
       let json;
       try {
-        ({ json } = await this._data("GET", `/vectors/list?${params}`));
+        ({ json } = await this._data('GET', `/vectors/list?${params}`));
       } catch (err) {
         if (err.status === 404) break;
         throw err;
@@ -797,8 +797,8 @@ class PineconeRetriever {
     const out = [];
     for (let i = 0; i < wanted.length; i += PAGE) {
       const params = new URLSearchParams({ namespace: this.namespace });
-      for (const id of wanted.slice(i, i + PAGE)) params.append("ids", id);
-      const { json } = await this._data("GET", `/vectors/fetch?${params}`);
+      for (const id of wanted.slice(i, i + PAGE)) params.append('ids', id);
+      const { json } = await this._data('GET', `/vectors/fetch?${params}`);
       for (const id of wanted.slice(i, i + PAGE)) {
         const record = json.vectors && json.vectors[id];
         if (record) out.push(fromFields(record.metadata, id));
