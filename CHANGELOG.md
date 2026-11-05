@@ -21,6 +21,36 @@ page.
   builds the "Claude API calls behind these numbers" tables on the
   Benchmarks page from those ledgers and the benchmarks' response cache.
 
+### Changed
+
+- **Grounding verdicts can change** for `checkAnswer`, `verifyCitations`,
+  `CitationTracker`, `PostGenerationGuard` and the LLM judge's failure
+  classification, because of the fixes below. Re-save the report you pass
+  to `rag-pipeline eval --baseline` (run once with `--output`) after
+  upgrading, so the regression gate compares like with like.
+
+### Fixed
+
+- **Fewer lexical false alarms** (found by the Claude benchmarks). On 73
+  project-written dev cases (`__tests__/fixtures/lexical-checks/`,
+  committed before the change), correct claims passing went from 12/37 to
+  27/37 and real mismatches caught from 23/36 to 32/36:
+  - a negation in a clause the claim leaves out ("X does not cause Y, but
+    it activates Z" supports "X activates Z") no longer fails the claim;
+  - a sentence with two negated clauses ("the trial was not blinded, and it
+    did not report side effects") is no longer read as positive, and
+    "nunca ... ni" counts once;
+  - reference numbers ("Document 3", "Table 2", "kinesin-8") are no longer
+    compared as facts;
+  - month names and numeric dates match ("12 May 2019" vs "12/05/2019" or
+    "2019-05-12");
+  - German, Spanish and French negation words count;
+  - and mismatches the check used to miss: a negated clause in a sentence
+    whose other clause matches, and a wrong month.
+    Still missed: unit conversion ("2 kg" vs "2,000 grams") and the same
+    number with a different unit, "three quarters" vs 75%, 12- vs 24-hour
+    times, and a footnote marker glued to a year.
+
 ## [3.5.0] - 2026-11-05
 
 A minor release with no breaking changes, about checks you can measure and
