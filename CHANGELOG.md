@@ -11,6 +11,22 @@ page.
 
 ## [Unreleased]
 
+### Security
+
+- **Connector errors no longer carry the API key.** `AnthropicConnector`,
+  `CohereConnector` and `OllamaConnector` rethrew axios errors, which keep
+  the request config, headers included: `console.error(err)` or a logger
+  that serializes errors printed the key (`x-api-key` or the bearer token)
+  for any failed call, such as a wrong key, an unknown model or a network
+  error, including from `checkAnswer({ judge })`. Errors are now plain
+  `Error`s with `status`, `code` and `response: { status, statusText,
+headers, data }` and no request config; a streamed request's error body
+  is read and the stream dropped. The message now includes the API's own
+  explanation: `Anthropic API error 401: authentication_error: invalid
+x-api-key` instead of `Request failed with status code 401`. Found by
+  the consumer journeys. `OpenAIConnector` uses the OpenAI SDK, whose
+  errors don't carry the key.
+
 ### Added
 
 - **Pluggable guard detectors.** `PreRetrievalGuard`, `RetrievalGuard`

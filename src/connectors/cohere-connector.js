@@ -6,6 +6,7 @@ const loadAxios = () => require('axios'); // eslint-disable-line global-require
 const { componentCacheKey } = require('../cache/component-keys');
 const { BaseConnector } = require('./base-connector');
 const {
+  cleanAxiosErrors,
   missingApiKeyError,
   resolveApiKey,
   throwIfAborted,
@@ -78,6 +79,8 @@ class CohereConnector extends BaseConnector {
         'Content-Type': 'application/json',
       },
     });
+    // Errors must not carry the request config (and the API key) to callers
+    cleanAxiosErrors(this.client, 'Cohere');
   }
 
   /**
