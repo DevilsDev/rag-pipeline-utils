@@ -10,7 +10,7 @@ Extends EventEmitter to emit 'chunk' events after each chunking operation.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -40,7 +40,7 @@ Create a ChunkingEngine instance.
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Methods
 

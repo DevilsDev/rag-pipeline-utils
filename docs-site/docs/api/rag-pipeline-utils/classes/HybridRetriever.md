@@ -10,7 +10,7 @@ fuses their results with weighted reciprocal rank fusion.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -33,7 +33,7 @@ new HybridRetriever(retrievers?, options?): HybridRetriever;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

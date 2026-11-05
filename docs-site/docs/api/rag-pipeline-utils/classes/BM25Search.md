@@ -10,7 +10,7 @@ search(query) returns them scored by term frequency and rarity.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -32,7 +32,7 @@ new BM25Search(options?): BM25Search;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -12,7 +12,7 @@ dates, measurements, URLs, emails, and technical terms.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -35,7 +35,7 @@ new EntityExtractor(options?): EntityExtractor;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

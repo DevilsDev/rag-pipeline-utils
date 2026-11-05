@@ -21,7 +21,7 @@ const result = await server.handleToolUse("my_tool", { query: "What is X?" });
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -46,7 +46,7 @@ new MCPServer(options?): MCPServer;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

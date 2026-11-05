@@ -9,7 +9,7 @@ Execution tracer that wraps pipelines to capture run traces
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -36,7 +36,7 @@ Create a new ExecutionTracer
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

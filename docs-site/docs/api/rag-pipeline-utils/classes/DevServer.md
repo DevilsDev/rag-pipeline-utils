@@ -11,7 +11,7 @@ Integrates hot reloading with a development workflow
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -33,7 +33,7 @@ new DevServer(options?): DevServer;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

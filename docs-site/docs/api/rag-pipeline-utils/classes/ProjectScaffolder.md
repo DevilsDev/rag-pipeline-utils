@@ -21,7 +21,7 @@ console.log(result.files); // list of created files
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -45,7 +45,7 @@ new ProjectScaffolder(options?): ProjectScaffolder;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -12,7 +12,7 @@ to rank and retrieve relevant documents from a corpus.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -39,7 +39,7 @@ new GraphRetriever(options?): GraphRetriever;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

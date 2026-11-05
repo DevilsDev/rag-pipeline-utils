@@ -23,7 +23,7 @@ console.log(tracker.getSummary());
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -50,7 +50,7 @@ new CostTracker(options?): CostTracker;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

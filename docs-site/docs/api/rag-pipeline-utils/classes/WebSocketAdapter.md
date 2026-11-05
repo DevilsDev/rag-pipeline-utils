@@ -21,7 +21,7 @@ await adapter.stream(asyncTokenGenerator, ws);
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -46,7 +46,7 @@ new WebSocketAdapter(options?): WebSocketAdapter;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

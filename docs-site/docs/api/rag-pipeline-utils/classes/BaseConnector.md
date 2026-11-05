@@ -10,7 +10,7 @@ Provides connection lifecycle, health checking, and retry logic.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Extended by
 
@@ -42,7 +42,7 @@ new BaseConnector(options?): BaseConnector;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

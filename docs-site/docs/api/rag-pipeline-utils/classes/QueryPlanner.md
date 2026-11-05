@@ -19,7 +19,7 @@ sub-queries (strictly validated, heuristic fallback).
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -43,7 +43,7 @@ new QueryPlanner(options?): QueryPlanner;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

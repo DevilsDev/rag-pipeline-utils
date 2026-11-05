@@ -5,14 +5,9 @@ mdx:
 
 # Class: GuardrailsPipeline
 
-Pipeline wrapper that applies all three guardrail layers (pre-retrieval,
-retrieval, and post-generation) around an existing RAG pipeline. In strict
-mode, any guard failure aborts the pipeline; otherwise issues are collected
-as warnings and execution continues.
-
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -39,7 +34,7 @@ new GuardrailsPipeline(pipeline, options?): GuardrailsPipeline;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

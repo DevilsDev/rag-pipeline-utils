@@ -12,7 +12,7 @@ supporting traversal, pattern-based querying, and adjacency lookups.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -34,7 +34,7 @@ new KnowledgeGraph(options?): KnowledgeGraph;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -9,7 +9,7 @@ Trace inspector that analyzes execution traces produced by ExecutionTracer
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -33,7 +33,7 @@ Create a new TraceInspector
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

@@ -9,7 +9,7 @@ Connection Pool Manager Class
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -31,7 +31,7 @@ new ConnectionPoolManager(options?): ConnectionPoolManager;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

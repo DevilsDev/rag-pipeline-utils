@@ -11,7 +11,7 @@ violations, and input length constraints.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -42,7 +42,7 @@ new PreRetrievalGuard(options?): PreRetrievalGuard;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

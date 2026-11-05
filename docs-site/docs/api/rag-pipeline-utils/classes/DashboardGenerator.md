@@ -9,7 +9,7 @@ Generates standalone HTML dashboards from pipeline metrics snapshots.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -31,7 +31,7 @@ new DashboardGenerator(options?): DashboardGenerator;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

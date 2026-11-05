@@ -11,7 +11,7 @@ Phase 2 - Execute: build DAG of retrieve -> merge -> (critique ->) generate
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -43,7 +43,7 @@ new AgenticPipeline(options?): AgenticPipeline;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

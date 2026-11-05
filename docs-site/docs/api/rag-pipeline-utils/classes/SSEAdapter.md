@@ -20,7 +20,7 @@ await adapter.stream(asyncTokenGenerator, res);
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -45,7 +45,7 @@ new SSEAdapter(options?): SSEAdapter;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 

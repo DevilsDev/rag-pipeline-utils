@@ -11,7 +11,7 @@ retrieval and generation stages of the pipeline.
 
 ## Extends
 
-- `EventEmitter`\<\[`never`\]\>
+- `EventEmitter`
 
 ## Constructors
 
@@ -42,7 +42,7 @@ new RetrievalGuard(options?): RetrievalGuard;
 
 #### Overrides
 
-`EventEmitter<[never]>.constructor`
+`EventEmitter.constructor`
 
 ## Properties
 
