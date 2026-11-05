@@ -1,0 +1,11 @@
+{
+  "about": "Hand review of the claims verifyCitations() marked unsupported in benchmarks/claude-citations.js. The criteria were written and committed before any Claude response was generated or read. Each claim is judged against the passages it cites (cited_text), not against the whole document.",
+  "criteria": {
+    "true_problem": "The claim states something its cited passages do not say: a fact, number, direction of effect, scope or certainty that the passages don't contain or contradict, or content that comes from another document or from the model's own knowledge.",
+    "false_alarm": "The cited passages do say what the claim says, in other words (paraphrase, synonym, abbreviation, a summary of the passage that adds nothing), or the claim adds only framing with no factual content (\"The documents say that\", \"According to the study,\").",
+    "unclear": "A reader with the passages cannot decide either way (for example, a domain inference that a specialist might accept)."
+  },
+  "sampling": "Every claim marked unsupported by the lexical check; if there are more than 60, a seeded sample of 60 (seed 20261105).",
+  "reviewer": "Claude (Opus 5.5), as the agent that ran the benchmark; to be re-checked by the lead engineer before publication.",
+  "reviews": {}
+}

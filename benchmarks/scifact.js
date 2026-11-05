@@ -78,10 +78,12 @@ async function loadSciFact(dir = path.join(__dirname, ".data", "scifact")) {
     ensureFile(dir, "test.tsv"),
   ]);
 
-  // BEIR indexes title and text together
+  // BEIR indexes title and text together; claude-citations.js uses them apart
   const documents = corpus.map((row) => ({
     id: String(row._id),
     content: `${row.title || ""} ${row.text || ""}`.trim(),
+    title: row.title || "",
+    text: row.text || "",
   }));
 
   const qrels = new Map();
