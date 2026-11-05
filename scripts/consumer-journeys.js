@@ -319,6 +319,9 @@ function check(journey, ctx) {
       detail = mask(error.message);
     }
     const known = journey.known && journey.known[name];
+    if (ok && known) {
+      detail = `${detail ? detail + "; " : ""}known failure no longer reproduces (${known})`;
+    }
     outcomes.push({ name, ok, detail, known: !ok && known ? known : null });
   }
   return outcomes;

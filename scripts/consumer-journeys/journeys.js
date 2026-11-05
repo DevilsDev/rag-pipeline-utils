@@ -298,7 +298,7 @@ const JOURNEYS = [
     steps: [{ name: "run", args: ["index.mjs"], key: true }],
     known: {
       "judge on the default model (claude-sonnet-5-5) works":
-        "library bug, fixed in #191: the judge sends temperature 0, which Claude 4.7+ models reject with HTTP 400",
+        "library bug before eadc146 (fixed in #191): the judge sends temperature 0, which Claude 4.7+ models reject with HTTP 400",
     },
     checks: [
       [
