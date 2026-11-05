@@ -184,8 +184,18 @@ function anthropicProxy() {
     for await (const c of req) chunks.push(c);
     const headers = { ...req.headers };
     for (const h of ["host", "content-length", "connection"]) delete headers[h];
+    // Only the Messages API, and only on api.anthropic.com
+    const target = new URL(req.url, "https://api.anthropic.com");
+    if (
+      target.origin !== "https://api.anthropic.com" ||
+      !target.pathname.startsWith("/v1/messages")
+    ) {
+      res.writeHead(404, { "content-type": "text/plain" });
+      res.end("not proxied");
+      return;
+    }
     try {
-      const r = await fetch(`https://api.anthropic.com${req.url}`, {
+      const r = await fetch(target, {
         method: req.method,
         headers,
         body: chunks.length ? Buffer.concat(chunks) : undefined,
@@ -202,8 +212,9 @@ function anthropicProxy() {
       res.writeHead(r.status, out);
       res.end(Buffer.from(await r.arrayBuffer()));
     } catch (error) {
-      res.writeHead(502);
-      res.end(String(error.message));
+      console.error(`proxy: ${mask(error.message)}`);
+      res.writeHead(502, { "content-type": "text/plain" });
+      res.end("proxy error");
     }
   });
   return new Promise((resolve) =>

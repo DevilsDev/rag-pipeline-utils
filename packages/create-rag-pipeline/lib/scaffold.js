@@ -30,14 +30,20 @@ const RENAME = { _gitignore: ".gitignore" };
 
 const LIBRARY = "@devilsdev/rag-pipeline-utils";
 
+const isSeparator = (c) => c === "-" || c === "." || c === "_";
+
 /** A valid npm package name from a directory name. */
 function packageName(dir) {
   const name = path
     .basename(path.resolve(dir))
     .toLowerCase()
-    .replace(/[^a-z0-9-._~]+/g, "-")
-    .replace(/^[-._]+|[-._]+$/g, "");
-  return name || "rag-app";
+    .replace(/[^a-z0-9-._~]+/g, "-");
+  // Trim separators from both ends (a loop, not a regex: no backtracking)
+  let start = 0;
+  let end = name.length;
+  while (start < end && isSeparator(name[start])) start++;
+  while (end > start && isSeparator(name[end - 1])) end--;
+  return name.slice(start, end) || "rag-app";
 }
 
 function isEmptyDir(dir) {
