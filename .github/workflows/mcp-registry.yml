@@ -20,7 +20,7 @@ jobs:
   publish:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write # GitHub OIDC for the registry's io.github.DevilsDev namespace
@@ -55,8 +55,19 @@ jobs:
             echo "$name@$version is already in the registry"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
-          # The registry checks the npm package's mcpName, so that version must be on npm
-          npm view "@devilsdev/rag-mcp-server@$version" mcpName
+          # The registry checks the npm package's mcpName, so that version must
+          # be on npm. Right after a release it can take a few minutes to
+          # appear, so wait up to 10 minutes for it
+          for attempt in $(seq 1 20); do
+            if mcp=$(npm view "@devilsdev/rag-mcp-server@$version" mcpName 2>/dev/null) && [ -n "$mcp" ]; then
+              echo "@devilsdev/rag-mcp-server@$version is on npm (mcpName $mcp)"
+              exit 0
+            fi
+            echo "Waiting for @devilsdev/rag-mcp-server@$version on npm ($attempt/20)"
+            sleep 30
+          done
+          echo "::error::@devilsdev/rag-mcp-server@$version did not appear on npm within 10 minutes"
+          exit 1
 
       - name: Publish
         if: steps.check.outputs.skip != 'true'
