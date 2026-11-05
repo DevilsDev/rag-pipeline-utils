@@ -338,7 +338,115 @@ async function* readerChunks(stream) {
   }
 }
 
+/**
+ * An axios error without what it carries from the request. axios errors
+ * keep the request config, headers included, so logging or serializing one
+ * prints the API key. This copies what callers and the retry logic use
+ * (the response status, headers and body, and the network error code)
+ * into a plain Error, and puts the API's own explanation in the message:
+ * "Anthropic API error 401: authentication_error: invalid x-api-key".
+ *
+ * @param {*} err
+ * @param {string} provider - Name for the message, e.g. "Anthropic"
+ * @returns {*} A clean Error for an axios error; anything else unchanged
+ */
+function toConnectorError(err, provider) {
+  if (!err || typeof err !== 'object' || err.isAxiosError !== true) {
+    return err;
+  }
+  if (isAbortError(err)) {
+    const aborted = new Error('The operation was aborted');
+    aborted.name = 'AbortError';
+    aborted.code = 'ABORT_ERR';
+    return aborted;
+  }
+  const response = err.response;
+  let message;
+  if (response) {
+    const data = response.data;
+    const apiError =
+      data && typeof data === 'object' && typeof data.pipe !== 'function'
+        ? data.error
+        : undefined;
+    let detail = '';
+    if (apiError && typeof apiError === 'object') {
+      detail = [apiError.type, apiError.message].filter(Boolean).join(': ');
+    } else if (typeof apiError === 'string') {
+      detail = apiError;
+    } else if (
+      data &&
+      typeof data === 'object' &&
+      typeof data.message === 'string'
+    ) {
+      detail = data.message;
+    }
+    message = `${provider} API error ${response.status}${detail ? `: ${detail}` : ''}`;
+  } else {
+    message = `${provider} request failed: ${err.message}`;
+  }
+  const error = new Error(message);
+  if (err.code) error.code = err.code;
+  if (response) {
+    error.status = response.status;
+    // A new object: axios's response links back to the request config
+    error.response = {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      data: response.data,
+    };
+  }
+  return error;
+}
+
+/**
+ * Read a streamed error body (responseType 'stream') into its parsed JSON
+ * or text, up to 64 KB. The stream itself must not be kept: it links back
+ * to the request, headers included.
+ * @private
+ */
+async function readErrorBody(stream) {
+  const chunks = [];
+  let size = 0;
+  try {
+    for await (const chunk of stream) {
+      size += chunk.length;
+      if (size > 65536) break;
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    }
+  } catch {
+    // Keep what was read
+  } finally {
+    if (typeof stream.destroy === 'function') stream.destroy();
+  }
+  const text = Buffer.concat(chunks).toString('utf8');
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text || undefined;
+  }
+}
+
+/**
+ * Make every error from an axios client a toConnectorError() one.
+ * @param {Object} client - From axios.create()
+ * @param {string} provider
+ * @returns {Object} The client
+ */
+function cleanAxiosErrors(client, provider) {
+  client.interceptors.response.use(undefined, async (err) => {
+    const data = err && err.response && err.response.data;
+    if (data && typeof data.pipe === 'function') {
+      err.response.data = await readErrorBody(data);
+    }
+    throw toConnectorError(err, provider);
+  });
+  return client;
+}
+
 module.exports = {
+  toConnectorError,
+  cleanAxiosErrors,
   textChunks,
   createAbortError,
   isAbortError,

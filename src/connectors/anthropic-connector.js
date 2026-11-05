@@ -5,6 +5,7 @@
 const loadAxios = () => require('axios'); // eslint-disable-line global-require
 const { BaseConnector } = require('./base-connector');
 const {
+  cleanAxiosErrors,
   missingApiKeyError,
   raceAbort,
   resolveApiKey,
@@ -160,6 +161,8 @@ class AnthropicConnector extends BaseConnector {
         'content-type': 'application/json',
       },
     });
+    // Errors must not carry the request config (and the API key) to callers
+    cleanAxiosErrors(this.client, 'Anthropic');
   }
 
   /**

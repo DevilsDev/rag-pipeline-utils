@@ -5,6 +5,7 @@
 const loadAxios = () => require('axios'); // eslint-disable-line global-require
 const { BaseConnector } = require('./base-connector');
 const {
+  cleanAxiosErrors,
   raceAbort,
   signalOptions,
   textChunks,
@@ -76,6 +77,8 @@ class OllamaConnector extends BaseConnector {
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
     });
+    // Errors must not carry the request config (and the API key) to callers
+    cleanAxiosErrors(this.client, 'Ollama');
   }
 
   /**
