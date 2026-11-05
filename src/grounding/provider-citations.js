@@ -102,9 +102,13 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
 /** Sentences of `text` with their offsets (the splitSentences rule). */
 function sentencesWithOffsets(text) {
   const out = [];
-  const re = /[^]*?(?:[.!?](?=\s)|$)/g;
+  // A sentence ends at . ! or ? before whitespace, or at a line break: a
+  // heading or a line like "APPROVED BY HR" is its own sentence, not part
+  // of the cited sentence after it
+  const re = /[^]*?(?:[.!?](?=\s)|(?=\n)|$)/g;
   let m;
   let from = 0;
+  while (from < text.length && /\s/.test(text[from])) from++;
   while (from < text.length) {
     re.lastIndex = from;
     m = re.exec(text);
