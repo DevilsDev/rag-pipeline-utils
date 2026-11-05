@@ -1,9 +1,9 @@
 {
   "benchmark": "judge-more",
-  "createdAt": "2026-11-05T04:11:55.413Z",
+  "createdAt": "2026-11-05T04:34:31.706Z",
   "environment": {
-    "libraryVersion": "3.4.0",
-    "commit": "1c1901c",
+    "libraryVersion": "3.5.0",
+    "commit": "8b247df",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -175,8 +175,8 @@
         }
       },
       "latencyMs": {
-        "p50": 1.5,
-        "p95": 5.3
+        "p50": 1.4,
+        "p95": 5
       }
     },
     "models": {
@@ -286,8 +286,8 @@
         "costUSD": 4.3404,
         "costPer1000ChecksUSD": 1.62,
         "latencyMs": {
-          "p50": 1847.5,
-          "p95": 4672.7
+          "p50": 1842.7,
+          "p95": 4669.1
         }
       },
       "claude-haiku-5-5": {
@@ -396,8 +396,8 @@
         "costUSD": 0.9925,
         "costPer1000ChecksUSD": 0.37,
         "latencyMs": {
-          "p50": 2541.9,
-          "p95": 6363.8
+          "p50": 2540.6,
+          "p95": 6360.5
         }
       },
       "claude-sonnet-5-5": {
@@ -506,8 +506,8 @@
         "costUSD": 11.5229,
         "costPer1000ChecksUSD": 4.31,
         "latencyMs": {
-          "p50": 2387.2,
-          "p95": 4676.2
+          "p50": 2386.6,
+          "p95": 4675.1
         }
       }
     }
@@ -718,8 +718,8 @@
         "costUSD": 0.0788,
         "costPer1000ChecksUSD": 0.16,
         "latencyMs": {
-          "p50": 0.6,
-          "p95": 1243.4
+          "p50": 0.5,
+          "p95": 1243.2
         }
       },
       "claude-haiku-5-5": {
@@ -753,8 +753,8 @@
         "costUSD": 0.015,
         "costPer1000ChecksUSD": 0.03,
         "latencyMs": {
-          "p50": 0.5,
-          "p95": 1813.7
+          "p50": 0.6,
+          "p95": 1812.6
         }
       },
       "claude-sonnet-5-5": {
@@ -788,8 +788,8 @@
         "costUSD": 0.2348,
         "costPer1000ChecksUSD": 0.47,
         "latencyMs": {
-          "p50": 0.6,
-          "p95": 2048.9
+          "p50": 0.5,
+          "p95": 2048.8
         }
       }
     }

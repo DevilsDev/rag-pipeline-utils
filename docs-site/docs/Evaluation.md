@@ -552,10 +552,6 @@ With zero retrieved documents, `track()` does not throw; every sentence is repor
 
 ### Verify the citations a model returns
 
-:::info[Coming in 3.5.0]
-`fromAnthropicCitations`, `fromOpenAIFileCitations` and `verifyCitations` are in 3.5.0.
-:::
-
 When the model cites its own sources (Claude's citations, OpenAI's file search), a citation can point at a real document and still not say what the sentence claims. `verifyCitations()` checks each claim against the passages it cites, with the same word-overlap, number and negation checks as `checkAnswer`, and the optional [LLM judge](#paraphrases-the-optional-llm-judge) for paraphrases.
 
 ```javascript no-run

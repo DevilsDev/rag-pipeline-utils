@@ -271,10 +271,6 @@ Model answers vary from run to run. Run the same configuration a few times to se
 
 ## `eval-guardrails`
 
-:::info[Coming in 3.5.0]
-`eval-guardrails` is in 3.5.0.
-:::
-
 Measures injection and PII detectors on labelled cases: precision, recall and F1 per detector, with the confusion counts (TP, FP, FN, TN) and a 95% interval. It exits `1` when a detector throws or a `--min` is not met, so it can gate a CI job. It needs no `.ragrc.json`.
 
 ```bash

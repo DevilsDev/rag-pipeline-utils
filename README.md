@@ -84,11 +84,11 @@ console.log(result.results[0].id); // "vacation"
 
 ## What's in it
 
-- **Citations and grounding:** per-sentence sources and a groundedness score, with numeric and negation checks. An optional LLM judge rules on paraphrases.
+- **Citations and grounding:** per-sentence sources and a groundedness score, with numeric and negation checks. An optional LLM judge rules on paraphrases, and `verifyCitations()` checks the citations Claude and OpenAI return.
 - **Evaluation in CI:** `rag-pipeline eval` scores a test set and fails the build when answers regress; [rag-eval-action](https://github.com/DevilsDev/rag-eval-action) comments on pull requests.
 - **Framework integrations:** grounding middleware for any Vercel AI SDK model, Mastra scorers and guardrails, and test matchers for Jest and Vitest.
-- **Guardrails:** prompt-injection detection, ACL filtering before generation, and PII redaction.
-- **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching and OpenTelemetry spans.
+- **Guardrails:** prompt-injection detection and PII redaction, with your own detectors and [published precision and recall](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), and ACL filtering before generation.
+- **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry spans with evaluation scores as events (or Langfuse scores).
 - **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector and Qdrant; anything with `embed()` or `generate()` works too.
 - **A CLI:** `init`, `ingest`, `query`, `eval` and `serve` against a local index, offline if you want.
 

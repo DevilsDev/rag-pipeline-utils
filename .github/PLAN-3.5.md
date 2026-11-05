@@ -78,7 +78,7 @@ A detector is `{ name, detect(text, context) -> { flagged, score?, labels?, span
 
 ## 3. Outward-facing steps (the maintainer's yes first)
 
-- MCP directory listings for `@devilsdev/rag-mcp-server` (its `mcpName` is set; publishing to the MCP registry is a separate step).
+- MCP directory listings for `@devilsdev/rag-mcp-server` (its `mcpName` is set; publishing to the MCP registry is a separate step). Moved out of 3.5.0 on 2026-11-05 at the maintainer's decision; not scheduled yet.
 - A Pinecone project and its API key as a repository secret (3.6).
 - The first publish of the starter package and its trusted publisher (3.6).
 - Template gallery submissions (after 3.6).

@@ -12,7 +12,8 @@ from 3.4.0 `@devilsdev/rag-mcp-server`, which are released together with the mai
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 3.4.x   | :white_check_mark:                                           |
+| 3.5.x   | :white_check_mark:                                           |
+| 3.4.x   | Security fixes for 30 days after the 3.5.0 release, then :x: |
 | 3.3.x   | Security fixes for 30 days after the 3.4.0 release, then :x: |
 | 3.2.x   | Security fixes for 30 days after the 3.3.0 release, then :x: |
 | 3.1.x   | Security fixes for 30 days after the 3.2.0 release, then :x: |
