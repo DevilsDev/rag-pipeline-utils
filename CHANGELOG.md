@@ -24,6 +24,24 @@ page.
   including non-ASCII and multi-block ones), must equal the Node.js build's.
   No library change was needed.
 
+### Changed
+
+- **The CLI says which API key is missing or refused, in one line.**
+  Without a key, `query`, `run`, `ingest`, `eval` and `generate-dataset`
+  print `no Anthropic API key. Set ANTHROPIC_API_KEY and run the command
+again.` (they suggested the `apiKey` option, which is for library code).
+  With a refused key they print `Anthropic rejected the API key (401
+authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
+  the same for OpenAI (`OPENAI_API_KEY`) and Cohere (`COHERE_API_KEY`).
+  The part of the key OpenAI echoes in its 401 is redacted. `eval` and
+  `generate-dataset` say it once, instead of a failure per case or a skip
+  reason per chunk, and `generate-dataset` then writes no empty file.
+  An error no command handles prints one line instead of a stack trace;
+  `--verbose` adds the stack, with keys redacted. The library's own
+  messages are unchanged; key errors now also carry `provider` (and
+  `envVar` when the key is missing), and OpenAIConnector's HTTP errors
+  carry `provider` and `envVar`.
+
 ### Fixed
 
 - **Packaging: package.json in the form npm publishes.** At the 3.6.0

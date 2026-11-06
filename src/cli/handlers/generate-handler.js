@@ -13,6 +13,8 @@ const path = require("path");
 const { loadCliConfig } = require("../shared/config-context.js");
 const { loadComponents } = require("../services/rag-service.js");
 const { generateSyntheticDataset } = require("../../evaluate/synthetic.js");
+const { instrumentComponents } = require("../services/instrument.js");
+const { reportCliError, isKeyError } = require("../shared/cli-errors.js");
 
 async function handleGenerateDataset(globalOptions, options = {}) {
   try {
@@ -53,8 +55,12 @@ async function handleGenerateDataset(globalOptions, options = {}) {
 
     const quiet = Boolean(globalOptions.quiet);
     let written = 0;
-    const dataset = await generateSyntheticDataset(documents, {
+    // Each llm failure becomes a skip reason; keep the error itself too
+    const { components: watched, captured } = instrumentComponents({
       llm: components.llm,
+    });
+    const dataset = await generateSyntheticDataset(documents, {
+      llm: watched.llm,
       count,
       perDocument: options.perDocument || 1,
       ...(options.minFaithfulness !== undefined && {
@@ -69,6 +75,16 @@ async function handleGenerateDataset(globalOptions, options = {}) {
       },
     });
     if (!quiet && process.stderr.isTTY) process.stderr.write("\n");
+
+    // A missing or refused key fails every chunk: say so once, write nothing
+    if (dataset.cases.length === 0 && isKeyError(captured.error)) {
+      reportCliError(
+        "Generating the dataset failed",
+        captured.error,
+        globalOptions,
+      );
+      return;
+    }
 
     fs.writeFileSync(output, `${JSON.stringify(dataset.cases, null, 2)}\n`);
 
@@ -95,8 +111,7 @@ async function handleGenerateDataset(globalOptions, options = {}) {
         'Review them: fix or delete wrong ones and set "reviewed": true.',
     );
   } catch (error) {
-    console.error(`❌ Generating the dataset failed: ${error.message}`);
-    process.exitCode = 1;
+    reportCliError("Generating the dataset failed", error, globalOptions);
   }
 }
 

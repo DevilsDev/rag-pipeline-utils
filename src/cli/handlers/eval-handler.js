@@ -14,6 +14,7 @@ const path = require("path");
 const { loadCliConfig } = require("../shared/config-context.js");
 const { createPipeline } = require("../services/rag-service.js");
 const { validateDataset } = require("../../evaluate/dataset.js");
+const { reportCliError, isKeyError } = require("../shared/cli-errors.js");
 const {
   runEvaluation,
   compareConfigurations,
@@ -120,7 +121,7 @@ async function handleEval(globalOptions, datasetPath, options = {}) {
     }
 
     const { config, configDir } = loadCliConfig(globalOptions);
-    const { pipeline } = createPipeline({ config, configDir });
+    const { pipeline, captured } = createPipeline({ config, configDir });
     const quiet = Boolean(globalOptions.quiet) || Boolean(options.json);
     let done = 0;
     const report = await runEvaluation(checked.cases, pipeline, {
@@ -135,6 +136,16 @@ async function handleEval(globalOptions, datasetPath, options = {}) {
       },
     });
     if (!quiet && process.stderr.isTTY) process.stderr.write("\n");
+
+    // A missing or refused key fails every case the same way: say so once
+    const keyError = captured.error;
+    if (
+      isKeyError(keyError) &&
+      report.cases.some((c) => !c.success && c.error === keyError.message)
+    ) {
+      reportCliError("Evaluation failed", keyError, globalOptions);
+      return;
+    }
 
     const comparison = baseline
       ? await compareConfigurations(null, {
@@ -193,8 +204,7 @@ async function handleEval(globalOptions, datasetPath, options = {}) {
     }
     if (!verdict.passed) process.exitCode = 1;
   } catch (error) {
-    console.error(`❌ Evaluation failed: ${error.message}`);
-    process.exitCode = 1;
+    reportCliError("Evaluation failed", error, globalOptions);
   }
 }
 
