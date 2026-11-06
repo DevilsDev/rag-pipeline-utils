@@ -89,7 +89,13 @@ function checkText({ channel, text, source }) {
   if (!source || !String(source).trim()) problems.push("no source text");
   if (problems.length) return problems;
 
-  const length = channel === "bluesky" ? graphemes(text) : [...text].length;
+  // Mastodon counts every link as 23 characters, whatever its length
+  const length =
+    channel === "bluesky"
+      ? graphemes(text)
+      : channel === "mastodon"
+        ? [...text.replace(/https?:\/\/\S+/g, "x".repeat(23))].length
+        : [...text].length;
   if (length > LIMITS[channel]) {
     problems.push(`${length} characters, over ${channel}'s ${LIMITS[channel]}`);
   }

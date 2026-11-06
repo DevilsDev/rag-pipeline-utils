@@ -1,0 +1,6 @@
+{
+  "key": "intro-2026-11",
+  "channel": "mastodon",
+  "sources": ["README.md", "promotion/queue/intro-2026-11.json"],
+  "text": "Your RAG chatbot just told someone they get thirty vacation days. The handbook it retrieved says twenty. Nothing crashed, and no test failed.\n\nI built rag-pipeline-utils, an open-source Node.js library that checks every sentence of an answer against its sources (numbers and negation included) with no model calls. It also builds the pipeline, tests answers in Jest and Vitest, and fails CI when they get worse.\n\nThe introduction:\nhttps://dev.to/devildev/meet-rag-pipeline-utils-rag-for-nodejs-that-tells-you-when-your-llm-is-making-things-up-4o3n\n\n#NodeJS #JavaScript #RAG #OpenSource #LLM"
+}
