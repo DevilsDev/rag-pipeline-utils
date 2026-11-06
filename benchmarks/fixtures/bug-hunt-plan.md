@@ -16,13 +16,14 @@ That is at least $26, so the per-hunt caps are as given:
 | 1. ACL and cache leakage       | $3  | $0.30    | 3 Sonnet batches of 10 corpora, ~1.5k in / 8k out each   |
 | 2. Independent security review | $6  | $1.50    | ~6 Opus requests, ~25k in / 4k out each, plus follow-ups |
 | 3. Metamorphic testing         | $2  | $1.00    | 16 Sonnet batches of 25 sets, ~1.5k in / 6k out each     |
-| 4. Docs claims                 | $4  | $3.60    | ~45 pages, one Sonnet request each, ~10k in / 6k out     |
+| 4. Docs claims                 | $8  | $3.60    | ~45 pages, one Sonnet request each, ~10k in / 6k out     |
 | 5. Live end-to-end             | $7  | $0.30    | Haiku 5.5 on a small corpus, a few hundred short calls   |
 | 6. Adversarial guardrails      | $4  | $0.40    | ~6 Sonnet batches                                        |
 
-A hunt whose estimate exceeds its cap stops and asks first. Hunt 4 is close
-to its cap: it processes pages in order and stops at the cap, reporting the
-pages it didn't reach.
+A hunt whose estimate exceeds its cap stops and asks first. Amended before
+any generation, at the maintainer's request: hunt 4's cap raised from $4 to
+$8 so it covers every page; hunt 3 adds sentence-splitter transforms; hunt 5
+measures the connector's temperature retry.
 
 ## Rules
 
@@ -68,7 +69,10 @@ pages it didn't reach.
    ids; split a source at a sentence boundary; curly vs straight quotes,
    NBSP, CRLF, zero-width characters, full-width digits; trailing
    whitespace; sources as strings, `{ id, content }`, LangChain Documents and
-   LlamaIndex nodes. Every set also through each entry point (require and
+   LlamaIndex nodes. Sentence-splitter transforms (added): no space after a
+   period ("days.Remote work"), abbreviations ("e.g.", "U.S.", "approx."),
+   decimals ("2.5 days"), list items without final punctuation; a changed
+   verdict is a finding. Every set also through each entry point (require and
    import of the main package, `/edge`, and `@devilsdev/rag-eval` from
    `packages/`), asserting identical results.
 4. **Docs claims.** For each docs-site page (not the generated `api/` pages)
@@ -85,7 +89,11 @@ pages it didn't reach.
    priced model per class; `packContext`'s token estimate against the
    token-counting endpoint (used only after confirming in Anthropic's docs
    that it isn't billed); `verifyCitations` on real Citations responses.
-   Live results are leads; each bug still needs an offline failing test
+   The temperature retry (added): for `claude-sonnet-5-5` and
+   `claude-haiku-5-5` through `AnthropicConnector`, requests per
+   `generate()` call and the latency the 400-then-retry adds; if every call
+   pays a failed request, it is a wrong-result/performance finding. Live
+   results are leads; each bug still needs an offline failing test
    (from a recorded response).
 6. **Adversarial guardrails.** Indirect prompt injections in retrieved
    documents (homoglyphs, base64, HTML comments, markdown links, other
