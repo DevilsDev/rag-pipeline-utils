@@ -149,6 +149,36 @@ describe("plugin installation", () => {
       expect(result.scan.counts.high).toBe(1);
     });
 
+    // Regression (CodeQL js/prototype-polluting-assignment): "__proto__"
+    // passed the stage check and the config write then set
+    // Object.prototype.<name>.
+    test.each(["__proto__", "constructor", "toString"])(
+      "rejects the stage %j from a plugin's package.json",
+      async (stage) => {
+        const tgz = path.join(dir, "evil.tgz");
+        fs.writeFileSync(
+          tgz,
+          makeTgz({
+            ...GOOD_LLM,
+            "package/package.json": JSON.stringify({
+              name: "rag-evil",
+              version: "1.0.0",
+              main: "lib/index.js",
+              ragPipeline: { stage, name: "polluted" },
+            }),
+          }),
+        );
+
+        await expect(
+          installPlugin({ source: tgz, configPath }),
+        ).rejects.toThrow(/Unknown or missing stage/);
+        expect({}.polluted).toBeUndefined();
+        expect(Object.prototype.hasOwnProperty.call(Object, "polluted")).toBe(
+          false,
+        );
+      },
+    );
+
     test("rejects a module missing the stage's methods", async () => {
       const file = path.join(dir, "bad.js");
       fs.writeFileSync(file, "module.exports = { notGenerate() {} };");

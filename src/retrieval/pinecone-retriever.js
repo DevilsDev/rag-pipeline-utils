@@ -636,9 +636,11 @@ class PineconeRetriever {
    * @returns {Promise<Array<{ id: string, score: number, content: string, metadata: Object }>>}
    */
   async retrieve(request, k = 10) {
-    let input = request || {};
+    /** @type {{ query?: string, queryVector?: number[], topK?: number, signal?: AbortSignal }} */
+    let input;
     if (Array.isArray(request)) input = { queryVector: request };
     else if (typeof request === 'string') input = { query: request };
+    else input = request || {};
     const { query, queryVector, topK = k, signal } = input;
     if (!Number.isInteger(topK) || topK < 1) {
       throw new Error(

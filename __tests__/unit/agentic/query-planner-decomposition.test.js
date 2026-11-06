@@ -146,6 +146,28 @@ describe("QueryPlanner heuristic decomposition", () => {
       "general",
     );
   });
+
+  test.each([
+    ["a ; b ;; c", ["a", "b", "c"]],
+    [" ; ; What is RAG", ["What is RAG"]],
+    ["What is RAG,,;", ["What is RAG"]],
+  ])("splits on semicolons with any spacing: %j", (query, expected) => {
+    expect(texts(planner.plan(query))).toEqual(expected);
+  });
+
+  // Regression (CodeQL js/polynomial-redos): the ";", conjunction and "vs"
+  // patterns tried every split of a run of spaces; 4,000 spaces took 21 s.
+  test.each([
+    ["spaces", `a${" ".repeat(200000)}b`],
+    ["spaces before vs", `a${" ".repeat(200000)}vs b`],
+    ["spaces before and how", `a${" ".repeat(200000)}and how b`],
+    ["commas", `a${",".repeat(200000)}b`],
+    ["spaced semicolons", `a${" ;".repeat(100000)}b`],
+  ])("plans a long run of %s in linear time", (_label, query) => {
+    const start = Date.now();
+    planner.plan(query);
+    expect(Date.now() - start).toBeLessThan(1000);
+  });
 });
 
 describe("QueryPlanner with an llm", () => {

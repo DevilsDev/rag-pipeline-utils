@@ -663,7 +663,7 @@ class PluginAnalytics {
 
     try {
       await doFetch(
-        `${this._config.registryUrl.replace(/\/+$/, '')}/analytics`,
+        `${this._config.registryUrl.replace(/(?<!\/)\/+$/, '')}/analytics`,
         {
           method: 'POST',
           headers: {

@@ -57,6 +57,24 @@ updates:
           - "husky"
           - "lint-staged"
 
+  # Base images are pinned by digest; keep the digests current
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - "/examples/fastify-rag-demo"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 3
+    labels:
+      - "docker"
+      - "automated"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+
   # Enable security updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"

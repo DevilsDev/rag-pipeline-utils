@@ -86,7 +86,7 @@ class QdrantRetriever {
     if (typeof fetchImpl !== 'function') {
       throw new Error('QdrantRetriever needs fetch (Node.js 18 or later)');
     }
-    this.url = String(url).replace(/\/+$/, '');
+    this.url = String(url).replace(/(?<!\/)\/+$/, '');
     this.collection = collection;
     this.dimensions = dimensions;
     this.createCollection = createCollection;

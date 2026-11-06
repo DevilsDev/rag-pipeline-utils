@@ -9,6 +9,48 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Security
+
+- **`QueryPlanner` no longer slows to a halt on long runs of spaces.** Its
+  clause patterns (the `;` and "and how" boundaries, and the "vs" and
+  comparison patterns) tried every way to split a run of whitespace:
+  4,000 spaces took 21 seconds, and the time grew with the cube of the
+  length. Whitespace runs are now read as one space and the patterns can
+  split a run only one way, so 200,000 characters of any shape plan in
+  well under a second. `QueryPlanner` is exported from the main entry and
+  `/edge` and is given user queries, so a long query could tie up a
+  server. Found by CodeQL (`js/polynomial-redos`).
+- **`rag-pipeline plugin install` rejects `"stage": "__proto__"`.** A
+  plugin whose `package.json` set its stage to `__proto__` (or
+  `constructor`) passed the stage check, and registering it wrote to
+  `Object.prototype` in the CLI process. Only the stage names the
+  installer knows are accepted now.
+- **`rag-pipeline config set` ignores a `__proto__` key inside the value.**
+  The key path was checked, but `config set pipeline
+'{"__proto__": {...}}'` merged into `Object.prototype`.
+
+### Fixed
+
+- **Backslashes in the `eval` Markdown report are escaped,** so an error
+  message with `\|` no longer splits a table cell.
+- `QdrantRetriever` and the plugin hub strip trailing slashes from a URL in
+  linear time.
+
+### Internal
+
+- Docker base images are pinned by digest, and Dependabot keeps the
+  digests current; the development image no longer installs an unused
+  `nodemon`.
+- The Security and Supply Chain workflows are read-only by default; only
+  the jobs that upload results or sign get `security-events` or
+  `id-token`.
+- The changelog script runs `git add` without a shell, and `dev-tools`
+  clean handles every `*` in a pattern.
+- JSDoc types match the 3.7 code (the TypeScript check of the JSDoc is
+  back below 3.6.0's warning count).
+
 ## [3.7.0] - 2026-11-06
 
 A minor release with no breaking changes, about more vector stores and

@@ -610,7 +610,10 @@ function footnotedYears(text) {
  *
  * @param {string} claimText
  * @param {string} docText
- * @returns {{ consistent: boolean, claimNumbers: string[], missing: string[] }}
+ * @returns {{ consistent: boolean, claimNumbers: string[], missing: string[], matchedWords: string[] }}
+ *   `matchedWords`: the words of a claim quantity or time the source states
+ *   another way ("90 minutes" for "one and a half hours"); computeSupportScore
+ *   counts them as matched
  */
 function checkNumericConsistency(claimText, docText) {
   const claim = withoutReferences(claimText);
@@ -1068,6 +1071,7 @@ function computeSupportScore(
 
   let matched = 0;
   let total = 0;
+  /** @type {Array<[string, number]>} */
   const unmatched = [];
   for (const token of claim) {
     const weight = idfWeights ? (idfWeights.get(token) ?? 1) : 1;

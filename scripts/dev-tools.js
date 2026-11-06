@@ -286,7 +286,7 @@ class DeveloperTools {
       try {
         if (target.includes("*")) {
           // Handle glob patterns
-          const pattern = target.replace("*", "");
+          const pattern = target.replaceAll("*", "");
           const files = fs
             .readdirSync(this.rootDir)
             .filter((file) => file.includes(pattern));
