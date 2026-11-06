@@ -25,6 +25,20 @@ On 3.8.0 and earlier, a sentence that leaves out a restricting clause of its sou
 
 Leaving out a clause is fine when the clause contrasts, and not when it restricts. A contrasting clause (but, whereas, while, however) states something else, so leaving it out leaves a narrower claim that is still true: "The drug reduced blood pressure in adults" is supported by "The drug reduced blood pressure in adults, but not in children under twelve". A restricting clause limits the statement itself: an approval ("with manager approval"), a condition ("only if", "if", "unless", "provided", "subject to", "as long as"), a waiting period ("after 90 days of service"), an eligibility rule ("for employees with at least one year of service") or an exception ("except contractors"). Leaving it out makes the claim broader than the source, so from 3.9.0 "Remote work is allowed two days per week" is not supported by "Remote work is allowed two days per week with manager approval" (`lexicalReason: "condition_mismatch"`, which the [judge](#paraphrases-the-optional-llm-judge) never overturns). The condition counts as kept when any of its words appear in the sentence or anywhere else in the answer, so "Remote work is allowed two days per week. Remote work requires manager approval." is grounded. The check reads only the source sentence closest to the claim, and only the part of it the claim comes from: "Remote work is allowed two days per week, and the office is open on weekends" has no restriction on remote work.
 
+Some phrases look like conditions and restrict nothing, so leaving them out is fine: "even if", "if any", "if applicable", "if necessary", "if needed", "if need be" and "if possible" (when they close their clause), an "If not," or "If so," that points back at the previous sentence, and legal boilerplate: "except as required by law", "except as permitted by law", "to the extent permitted by law" and "as required by applicable law". "Customer data is never shared with third parties" is supported by "Customer data is never shared with third parties except as required by law". A source scraped without a space between sentences ("...at reception.Visitors may park ... if they show a badge") is read as two sentences, so one doesn't take the other's condition.
+
+The check catches restrictions that are left out, not other changes of meaning that keep the source's words. These still pass the lexical check (miss rates from the [loophole hunt](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/loophole-hunt-findings.md), about 30 generated cases per category):
+
+- **Role swap** (100% missed): who does what to whom ("the employee reimburses the company" from "the company reimburses the employee").
+- **Attribution** (100%): a claim stated as fact where the source attributes it ("according to the survey", "the company claims").
+- **Scope** (93%): "all" for "some", "every site" for "the main site".
+- **Comparison direction** (93%): "lower" for "higher", "before" for "after".
+- **Modality** (93%): "must" for "may", "will" for "could".
+- **Time bounds** (93%): "within 30 days" for "after 30 days", "since 2019" for "until 2019".
+- **Hedges** (90%): a claim stated as fact where the source says "may" or "is thought to".
+
+They pass the word-overlap test, so the [judge](#paraphrases-the-optional-llm-judge), which only rules on sentences that fail for low overlap, doesn't see them either.
+
 From 3.7.0 a number with a unit is checked as a quantity, converted exactly within its kind ("2 kg" matches "2,000 grams", "2 pounds" doesn't match "2 kilograms"; a month is not converted to days), "three quarters of" reads as 75%, and "5 pm" matches 17:00 when the source states clock times. It does not handle ordinals, a lone "one", differently split decimals, units it doesn't know (currencies, temperatures), or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
 
 ### Paraphrases: the optional LLM judge

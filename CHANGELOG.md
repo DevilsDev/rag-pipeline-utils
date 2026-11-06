@@ -27,8 +27,13 @@ page.
   `CitationTracker`, faithfulness, context recall and `verifyCitations`
   apply it, with the new `lexicalReason` `condition_mismatch`, which the
   judge never overturns. Contrasting clauses ("..., but not in children")
-  can still be left out, as since 3.6.0. Verdicts can change: re-save the
-  report you pass to `rag-pipeline eval --baseline`.
+  can still be left out, as since 3.6.0. Phrases that restrict nothing
+  don't count as conditions: "even if", "if any", "if applicable", "if
+  necessary", "if needed", "if need be", "if possible", an "If not," or
+  "If so," that points back at the previous sentence, and legal boilerplate ("except as required by
+  law", "to the extent permitted by law"); a source with no space between
+  sentences is read as separate sentences for this check. Verdicts can
+  change: re-save the report you pass to `rag-pipeline eval --baseline`.
 
 ## [3.8.0] - 2026-11-06
 

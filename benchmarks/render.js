@@ -374,6 +374,89 @@ function renderConditionDropped(report) {
   ].join("\n");
 }
 
+/** The condition check's follow-up after the public-set reruns (3.9). */
+function renderConditionFollowup(report) {
+  const pct = (x) => `${(x * 100).toFixed(1)}%`;
+  const versions = ["3.8.0", "3.9 before fix", "3.9 after fix"];
+  const sets = Object.keys(report.publicSets["3.8.0"]).filter(
+    (k) => !k.startsWith("SciFact"),
+  );
+  const scifact = Object.keys(report.publicSets["3.8.0"]).filter((k) =>
+    k.startsWith("SciFact"),
+  );
+  const pretty = (k) =>
+    k
+      .replace("claude-haiku-4-5-20251001", "Claude Haiku 4.5")
+      .replace(
+        /claude-(\w+)-(\d)-(\d)/,
+        (_, n, a, b) => `Claude ${n[0].toUpperCase()}${n.slice(1)} ${a}.${b}`,
+      );
+  const labels = {
+    "lexical-after": "Lexical",
+    "claude-haiku-5-5-after": "Judge Claude Haiku 5.5",
+    "claude-sonnet-5-5-after": "Judge Claude Sonnet 5.5",
+  };
+  return [
+    'The false alarms the public sets showed on 3.9 ("if necessary", an "If not," that points back at the previous sentence, and sources with no space between sentences) were first observed on those sets, on RAGTruth. The fix was written against new dev cases, not cases from the public sets, and the public sets were rerun once after it. Legal boilerplate ("except as required by law" and similar) became non-restricting by a decision taken after the test split above showed 4 of 4 false alarms on it, so the test-split rows after the fix are not a held-out measure; all of their change (4 fewer false alarms) is those four cases. The fix removes 1 of the 3 false alarms the condition check added on the RAGTruth sample, 3 of 17 on the full split, 1 of 1 on HaluEval and none of those on SciFact. Known causes of the rest, left alone because they were found on the public sets: a clause cut at the full stop of an abbreviation ("if the U.S." read as "if the U"), and structured sources (JSON records with review text) read as one sentence, so an "if" in the review text restricts the facts of the record. Positive class: the answer is hallucinated (unsupported); "clean" is the number of answers labelled correct.',
+    "",
+    table(
+      [
+        "Set",
+        "Clean / hallucinated",
+        ...versions.map((v) => `FP, ${v}`),
+        ...versions.map((v) => `Precision / F1, ${v}`),
+      ],
+      sets.map((k) => {
+        const m = versions.map((v) => report.publicSets[v][k]);
+        return [
+          pretty(k),
+          `${num(m[0].clean)} / ${num(m[0].hallucinated)}`,
+          ...m.map((x) => num(x.fp)),
+          ...m.map((x) => `${pct(x.precision)} / ${pct(x.f1)}`),
+        ];
+      }),
+    ),
+    "",
+    `SciFact (no unsupported labels; claims flagged, lower is better): ${scifact
+      .map((k) => {
+        const m = versions.map((v) => report.publicSets[v][k]);
+        const model = pretty(k.match(/\((.*)\)/)[1]);
+        return `${model} ${m.map((x) => x.flagged).join(" / ")} of ${num(m[0].claims)}`;
+      })
+      .join("; ")} (3.8.0 / 3.9 before / after the fix).`,
+    "",
+    "**Condition-dropped benchmark after the fix:**",
+    "",
+    table(
+      [
+        "Run",
+        "Split",
+        "Precision",
+        "Recall",
+        "F1",
+        "Non-restricting flagged",
+        "Of which legal boilerplate",
+      ],
+      Object.entries(report.conditionDropped).flatMap(([key, splits]) =>
+        ["test", "dev"].flatMap((split) =>
+          ["before", "after"].map((when) => {
+            const r = splits[split][when];
+            return [
+              `${labels[key]}, 3.9 ${when} the fix`,
+              split,
+              pct(r.precision),
+              pct(r.recall),
+              pct(r.f1),
+              `${r.nonRestricting.flagged}/${r.nonRestricting.n}`,
+              `${r.exceptAsRequiredByLaw.flagged}/${r.exceptAsRequiredByLaw.n}`,
+            ];
+          }),
+        ),
+      ),
+    ),
+  ].join("\n");
+}
+
 const RENDERERS = {
   speed: renderSpeed,
   quality: renderQuality,
@@ -384,6 +467,7 @@ const RENDERERS = {
   "claude-latency": renderLatency,
   "claude-usage": renderClaudeUsage,
   "condition-dropped": renderConditionDropped,
+  "condition-followup": renderConditionFollowup,
 };
 
 function render(content) {

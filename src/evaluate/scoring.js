@@ -1030,8 +1030,11 @@ const RESTRICTING_MARKERS = [
   /\bwith\b(?:\s+[\w'’-]+){0,4}?\s+(?:approval|permission|consent|sign-?off|authori[sz]ation)\b/g,
   /\bonly\s+(?:if|when)\b/g,
   // not "even if" (concessive) or "if any", "if applicable" (no condition on
-  // the statement): the condition-dropped dev split (3.9)
-  /(?<!\beven\s)\bif\b(?!\s+(?:any|applicable)\b)/g,
+  // the statement): the condition-dropped dev split (3.9). Not "if
+  // necessary", "if needed", "if possible" closing their clause, or an
+  // anaphoric "if not," / "if so," (it points back at another sentence):
+  // first seen as false alarms on RAGTruth, fixed on new dev cases
+  /(?<!\beven\s)\bif\b(?!\s+(?:any|applicable)\b)(?!\s+(?:necessary|needed|need\s+be|possible)\s*(?:[,;:.!?)]|$|\s(?:and|or|but)\b))(?!\s+(?:not|so)\s*,)/g,
   /\bunless\b/g,
   /\bprovided(?:\s+that)?\b/g,
   /\bsubject\s+to\b/g,
@@ -1041,7 +1044,9 @@ const RESTRICTING_MARKERS = [
     'g',
   ),
   /\bfor\s+(?:[\w'’-]+\s+){1,3}?(?=(?:who|with|whose)\b)/g,
-  /\bexcept\b/g,
+  // legal boilerplate ("except as required by law") restricts nothing the
+  // reader can act on (3.9)
+  /\bexcept\b(?!\s+(?:as|where)\s+(?:required|permitted)\s+by\s+(?:applicable\s+)?law\b)/g,
 ];
 
 /** Words that only mark a restriction, not what it requires. */
@@ -1074,6 +1079,9 @@ const MARKER_WORDS = new Set([
  */
 const STATEMENT_BOUNDARY =
   /\s*;\s*|,\s+and\s+|,?\s+\b(?:but|whereas|while|however)\b\s+/i;
+
+/** A sentence end with no space after it: "per week.If you need". */
+const MISSING_SPACE_BOUNDARY = /(?<=[a-z]{2}[.!?])(?=[A-Z])/;
 
 /** Where a restricting clause ends: punctuation or a coordinator. */
 const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/i;
@@ -1148,7 +1156,11 @@ function restrictingClauses(statement) {
  * the document), so a condition restated from the same source still counts
  * and a word from a sentence about something else doesn't. Contrasting
  * clauses ("but not in children") may be left out, as the polarity check
- * allows since 3.6.
+ * allows since 3.6. Phrases that restrict nothing are not restrictions:
+ * "even if", "if any", "if applicable", "if necessary", "if needed", "if
+ * need be", "if possible", an anaphoric "If not," or "If so,", and "except
+ * as required (or permitted) by law". A source with no space after a
+ * sentence's full stop ("per week.If you need") is split there too.
  *
  * @param {string} claimText
  * @param {string} docText
@@ -1180,7 +1192,12 @@ function checkConditionConsistency(claimText, docText, answerText) {
       : [];
   const answerWords = new Set([...claimWords, ...restating]);
 
+  // Sources scraped without a space between sentences ("...per week.If you
+  // need") would lend one sentence the next one's restriction: split there
+  // too, after a word of two or more lowercase letters so "U.S." and "e.g."
+  // stay whole (first seen on RAGTruth, fixed on new dev cases)
   const candidates = splitSentences(docText)
+    .flatMap((s) => s.split(MISSING_SPACE_BOUNDARY))
     .map((sentence) => {
       const words = new Set(conditionWords(sentence));
       const shared = [...claimWords].filter((w) => words.has(w)).length;

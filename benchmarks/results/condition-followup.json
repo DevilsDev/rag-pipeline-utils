@@ -1,0 +1,531 @@
+{
+  "generatedAt": "2026-11-06T13:08:15.202Z",
+  "environment": {
+    "libraryVersion": "3.8.0",
+    "commit": "53ca1f3",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "note": "Follow-up to the 3.9 condition check after the public-set reruns (Phase D). The false alarms behind it (\"if necessary\", an anaphoric \"If not,\", sources with no space between sentences) were first observed on the public sets (RAGTruth); the fix was written against new dev cases, not cases from those sets (__tests__/unit/evaluate/condition-consistency.test.js), and the public sets were rerun once after it. Legal boilerplate (\"except as required by law\" and similar) was made non-restricting by a maintainer decision taken after the condition-dropped test split showed 4 of 4 false alarms on it, so the test-split rows after the fix are not a held-out measure; all of their change is those four cases. Known causes of the remaining public-set false alarms, left alone because they were found on those sets: a clause cut at an abbreviation (\"if the U.S.\" read as \"if the U\") and structured sources (JSON records with review text) read as one sentence. Every judge call was a cache hit (no new API spend).",
+  "publicSets": {
+    "3.8.0": {
+      "RAGTruth sample (450 answers), lexical": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 215,
+        "fp": 184,
+        "precision": 0.5388,
+        "recall": 0.9556,
+        "f1": 0.6891
+      },
+      "RAGTruth full test split, lexical": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 912,
+        "fp": 1346,
+        "precision": 0.4039,
+        "recall": 0.9671,
+        "f1": 0.5698
+      },
+      "HaluEval QA (500), lexical": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 134,
+        "fp": 17,
+        "precision": 0.8874,
+        "recall": 0.536,
+        "f1": 0.6683
+      },
+      "RAGTruth sample, judge claude-haiku-4-5-20251001": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 209,
+        "fp": 154,
+        "precision": 0.5758,
+        "recall": 0.9289,
+        "f1": 0.7109
+      },
+      "RAGTruth sample, judge claude-haiku-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 166,
+        "precision": 0.5608,
+        "recall": 0.9422,
+        "f1": 0.7032
+      },
+      "RAGTruth sample, judge claude-sonnet-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 213,
+        "fp": 164,
+        "precision": 0.565,
+        "recall": 0.9467,
+        "f1": 0.7076
+      },
+      "RAGTruth sample, judge claude-opus-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 164,
+        "precision": 0.5638,
+        "recall": 0.9422,
+        "f1": 0.7055
+      },
+      "RAGTruth sample, judge claude-fable-5-1": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 211,
+        "fp": 161,
+        "precision": 0.5672,
+        "recall": 0.9378,
+        "f1": 0.7069
+      },
+      "SciFact claims flagged, lexical (claude-haiku-4-5-20251001)": {
+        "flagged": 12,
+        "claims": 232
+      },
+      "SciFact claims flagged, lexical (claude-haiku-5-5)": {
+        "flagged": 5,
+        "claims": 495
+      },
+      "SciFact claims flagged, lexical (claude-sonnet-5-5)": {
+        "flagged": 16,
+        "claims": 604
+      },
+      "SciFact claims flagged, lexical (claude-opus-5-5)": {
+        "flagged": 3,
+        "claims": 329
+      },
+      "SciFact claims flagged, lexical (claude-fable-5-1)": {
+        "flagged": 3,
+        "claims": 313
+      }
+    },
+    "3.9 before fix": {
+      "RAGTruth sample (450 answers), lexical": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 215,
+        "fp": 187,
+        "precision": 0.5348,
+        "recall": 0.9556,
+        "f1": 0.6858
+      },
+      "RAGTruth full test split, lexical": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 912,
+        "fp": 1363,
+        "precision": 0.4009,
+        "recall": 0.9671,
+        "f1": 0.5668
+      },
+      "HaluEval QA (500), lexical": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 134,
+        "fp": 18,
+        "precision": 0.8816,
+        "recall": 0.536,
+        "f1": 0.6667
+      },
+      "RAGTruth sample, judge claude-haiku-4-5-20251001": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 209,
+        "fp": 157,
+        "precision": 0.571,
+        "recall": 0.9289,
+        "f1": 0.7073
+      },
+      "RAGTruth sample, judge claude-haiku-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 169,
+        "precision": 0.5564,
+        "recall": 0.9422,
+        "f1": 0.6997
+      },
+      "RAGTruth sample, judge claude-sonnet-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 213,
+        "fp": 167,
+        "precision": 0.5605,
+        "recall": 0.9467,
+        "f1": 0.7041
+      },
+      "RAGTruth sample, judge claude-opus-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 167,
+        "precision": 0.5594,
+        "recall": 0.9422,
+        "f1": 0.702
+      },
+      "RAGTruth sample, judge claude-fable-5-1": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 211,
+        "fp": 164,
+        "precision": 0.5627,
+        "recall": 0.9378,
+        "f1": 0.7033
+      },
+      "SciFact claims flagged, lexical (claude-haiku-4-5-20251001)": {
+        "flagged": 12,
+        "claims": 232
+      },
+      "SciFact claims flagged, lexical (claude-haiku-5-5)": {
+        "flagged": 6,
+        "claims": 495
+      },
+      "SciFact claims flagged, lexical (claude-sonnet-5-5)": {
+        "flagged": 17,
+        "claims": 604
+      },
+      "SciFact claims flagged, lexical (claude-opus-5-5)": {
+        "flagged": 6,
+        "claims": 329
+      },
+      "SciFact claims flagged, lexical (claude-fable-5-1)": {
+        "flagged": 4,
+        "claims": 313
+      }
+    },
+    "3.9 after fix": {
+      "RAGTruth sample (450 answers), lexical": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 215,
+        "fp": 186,
+        "precision": 0.5362,
+        "recall": 0.9556,
+        "f1": 0.6869
+      },
+      "RAGTruth full test split, lexical": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 912,
+        "fp": 1360,
+        "precision": 0.4014,
+        "recall": 0.9671,
+        "f1": 0.5673
+      },
+      "HaluEval QA (500), lexical": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 134,
+        "fp": 17,
+        "precision": 0.8874,
+        "recall": 0.536,
+        "f1": 0.6683
+      },
+      "RAGTruth sample, judge claude-haiku-4-5-20251001": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 209,
+        "fp": 156,
+        "precision": 0.5726,
+        "recall": 0.9289,
+        "f1": 0.7085
+      },
+      "RAGTruth sample, judge claude-haiku-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 168,
+        "precision": 0.5579,
+        "recall": 0.9422,
+        "f1": 0.7008
+      },
+      "RAGTruth sample, judge claude-sonnet-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 213,
+        "fp": 166,
+        "precision": 0.562,
+        "recall": 0.9467,
+        "f1": 0.7053
+      },
+      "RAGTruth sample, judge claude-opus-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 212,
+        "fp": 166,
+        "precision": 0.5608,
+        "recall": 0.9422,
+        "f1": 0.7032
+      },
+      "RAGTruth sample, judge claude-fable-5-1": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 211,
+        "fp": 163,
+        "precision": 0.5642,
+        "recall": 0.9378,
+        "f1": 0.7045
+      },
+      "SciFact claims flagged, lexical (claude-haiku-4-5-20251001)": {
+        "flagged": 12,
+        "claims": 232
+      },
+      "SciFact claims flagged, lexical (claude-haiku-5-5)": {
+        "flagged": 6,
+        "claims": 495
+      },
+      "SciFact claims flagged, lexical (claude-sonnet-5-5)": {
+        "flagged": 17,
+        "claims": 604
+      },
+      "SciFact claims flagged, lexical (claude-opus-5-5)": {
+        "flagged": 6,
+        "claims": 329
+      },
+      "SciFact claims flagged, lexical (claude-fable-5-1)": {
+        "flagged": 4,
+        "claims": 313
+      }
+    }
+  },
+  "conditionDropped": {
+    "lexical-after": {
+      "test": {
+        "before": {
+          "precision": 0.8295,
+          "recall": 0.869,
+          "f1": 0.8488,
+          "tp": 73,
+          "fp": 15,
+          "fn": 11,
+          "tn": 71,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 4,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 4
+          }
+        },
+        "after": {
+          "precision": 0.869,
+          "recall": 0.869,
+          "f1": 0.869,
+          "tp": 73,
+          "fp": 11,
+          "fn": 11,
+          "tn": 75,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "before": {
+          "precision": 0.8252,
+          "recall": 0.9341,
+          "f1": 0.8763,
+          "tp": 85,
+          "fp": 18,
+          "fn": 6,
+          "tn": 70,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 3,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 2
+          }
+        },
+        "after": {
+          "precision": 0.8416,
+          "recall": 0.9341,
+          "f1": 0.8854,
+          "tp": 85,
+          "fp": 16,
+          "fn": 6,
+          "tn": 72,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 1,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
+    },
+    "claude-haiku-5-5-after": {
+      "test": {
+        "before": {
+          "precision": 0.8902,
+          "recall": 0.869,
+          "f1": 0.8795,
+          "tp": 73,
+          "fp": 9,
+          "fn": 11,
+          "tn": 77,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 4,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 4
+          }
+        },
+        "after": {
+          "precision": 0.9359,
+          "recall": 0.869,
+          "f1": 0.9012,
+          "tp": 73,
+          "fp": 5,
+          "fn": 11,
+          "tn": 81,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "before": {
+          "precision": 0.8416,
+          "recall": 0.9341,
+          "f1": 0.8854,
+          "tp": 85,
+          "fp": 16,
+          "fn": 6,
+          "tn": 72,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 2,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 2
+          }
+        },
+        "after": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
+    },
+    "claude-sonnet-5-5-after": {
+      "test": {
+        "before": {
+          "precision": 0.8902,
+          "recall": 0.869,
+          "f1": 0.8795,
+          "tp": 73,
+          "fp": 9,
+          "fn": 11,
+          "tn": 77,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 4,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 4
+          }
+        },
+        "after": {
+          "precision": 0.9359,
+          "recall": 0.869,
+          "f1": 0.9012,
+          "tp": 73,
+          "fp": 5,
+          "fn": 11,
+          "tn": 81,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "before": {
+          "precision": 0.8416,
+          "recall": 0.9341,
+          "f1": 0.8854,
+          "tp": 85,
+          "fp": 16,
+          "fn": 6,
+          "tn": 72,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 2,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 2
+          }
+        },
+        "after": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
+    }
+  }
+}

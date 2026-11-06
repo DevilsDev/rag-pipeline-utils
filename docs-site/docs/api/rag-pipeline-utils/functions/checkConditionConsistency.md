@@ -21,10 +21,17 @@ that hold the claim's words (a sentence is split at and, but, whereas,
 while, however and semicolons, not at commas), each restricting clause
 ("with ... approval", "only if", "if", "unless", "provided", "subject to",
 "as long as", "after <number> <unit>", "for <people> who/with ...",
-"except") must be kept: at least one of its content words must appear in
-the claim or elsewhere in the answer, so a condition restated in another
-sentence still counts. Contrasting clauses ("but not in children") may be
-left out, as the polarity check allows since 3.6.
+"except") must be kept: at least one of its distinctive words (see
+restrictingClauses) must appear in the claim, or in another sentence of
+the answer that this document supports (most of its content words are in
+the document), so a condition restated from the same source still counts
+and a word from a sentence about something else doesn't. Contrasting
+clauses ("but not in children") may be left out, as the polarity check
+allows since 3.6. Phrases that restrict nothing are not restrictions:
+"even if", "if any", "if applicable", "if necessary", "if needed", "if
+need be", "if possible", an anaphoric "If not," or "If so,", and "except
+as required (or permitted) by law". A source with no space after a
+sentence's full stop ("per week.If you need") is split there too.
 
 ## Parameters
 

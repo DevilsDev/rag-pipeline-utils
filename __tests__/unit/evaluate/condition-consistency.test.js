@@ -291,3 +291,110 @@ describe("from the condition-dropped dev split", () => {
     );
   });
 });
+
+// Patterns first seen as false alarms on the public sets (RAGTruth, Phase D
+// of the 3.9 checks); these dev cases were written for the fix, not copied
+// from those sets
+describe("non-restricting phrases and sources without sentence spaces", () => {
+  test.each([
+    [
+      "if necessary, between commas",
+      "The technician will replace the filter during the annual service.",
+      "The technician will replace the filter, if necessary, during the annual service.",
+    ],
+    [
+      "if needed, closing the sentence",
+      "Staff can call the on-call engineer after hours.",
+      "Staff can call the on-call engineer after hours if needed.",
+    ],
+    [
+      "if possible, before and",
+      "Guests should bring a printed ticket and arrive early.",
+      "Guests should bring a printed ticket if possible and arrive early.",
+    ],
+    [
+      "anaphoric If not,",
+      "If no referral is needed, you can book the appointment online.",
+      "Ask the clinic whether a referral is needed. If not, you can book the appointment online.",
+    ],
+    [
+      "anaphoric If so,",
+      "Swollen batteries must be taken to a recycling point.",
+      "Check whether the battery is swollen. If so, it must be taken to a recycling point.",
+    ],
+    [
+      "if need be",
+      "The team will work on Saturday to finish the audit.",
+      "The team will work on Saturday, if need be, to finish the audit.",
+    ],
+    [
+      "missing space before the next sentence's restriction",
+      "Visitors must sign in at reception.",
+      "Visitors must sign in at reception.Visitors may park in the staff car park if they show a badge.",
+    ],
+    [
+      "missing space, If at the start of the next sentence",
+      "The library opens at eight on weekdays.",
+      "The library opens at eight on weekdays.If you need a study room, book it online.",
+    ],
+    [
+      "except as required by law",
+      "Customer data is never shared with third parties.",
+      "Customer data is never shared with third parties except as required by law.",
+    ],
+    [
+      "except as permitted by law",
+      "Recordings are deleted after 30 days.",
+      "Recordings are deleted after 30 days, except as permitted by law.",
+    ],
+    [
+      "to the extent permitted by law",
+      "The supplier is not liable for indirect losses.",
+      "To the extent permitted by law, the supplier is not liable for indirect losses.",
+    ],
+    [
+      "as required by applicable law",
+      "The clinic keeps patient records for seven years.",
+      "The clinic keeps patient records for seven years, as required by applicable law.",
+    ],
+  ])("%s is not a dropped condition", (_name, claim, source) => {
+    expect(checkConditionConsistency(claim, source).consistent).toBe(true);
+  });
+
+  test.each([
+    [
+      "if necessary + noun is a real condition",
+      "The grant is paid in June.",
+      "The grant is paid in June if necessary documents are filed by May.",
+      "if necessary documents are filed by May",
+    ],
+    [
+      "If not + words is a real condition",
+      "The invoice incurs a 5% fee.",
+      "If not paid by Friday, the invoice incurs a 5% fee.",
+      "If not paid by Friday",
+    ],
+    [
+      "if so + words is a real condition",
+      "The hearing is held in private.",
+      "The hearing is held in private if so ordered by the judge.",
+      "if so ordered by the judge",
+    ],
+    [
+      "a restriction in its own sentence after a missing space",
+      "Refunds are issued at the counter.",
+      "Payments are accepted by card.Refunds are issued at the counter only if the receipt is shown.",
+      "only if the receipt is shown",
+    ],
+    [
+      "except for an item, not the law",
+      "Refunds are issued within 14 days.",
+      "Refunds are issued within 14 days except for sale items.",
+      "except for sale items",
+    ],
+  ])("%s", (_name, claim, source, missing) => {
+    expect(checkConditionConsistency(claim, source)).toEqual(
+      expect.objectContaining({ consistent: false, missing: [missing] }),
+    );
+  });
+});
