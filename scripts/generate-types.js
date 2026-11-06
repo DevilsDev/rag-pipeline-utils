@@ -463,22 +463,30 @@ fs.writeFileSync(
 
 /**
  * The rag matchers as they appear on \`expect(received)\`. Add them to your
- * test runner's types once, in a .d.ts file:
+ * test runner's types once, in a .d.ts file. Vitest:
  *
- *   // Vitest
- *   import "vitest";
- *   import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
- *   declare module "vitest" {
- *     interface Matchers<R, T> extends RagMatchers<R> {}
- *   }
+ * \`\`\`ts
+ * import "vitest";
+ * import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
  *
- *   // Jest
- *   import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
- *   declare global {
- *     namespace jest {
- *       interface Matchers<R> extends RagMatchers<R> {}
- *     }
+ * declare module "vitest" {
+ *   interface Matchers<R, T> extends RagMatchers<R> {}
+ * }
+ * \`\`\`
+ *
+ * Jest:
+ *
+ * \`\`\`ts
+ * import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
+ *
+ * declare global {
+ *   namespace jest {
+ *     interface Matchers<R> extends RagMatchers<R> {}
  *   }
+ * }
+ *
+ * export {};
+ * \`\`\`
  */
 export interface RagMatchers<R = unknown> {
   /**

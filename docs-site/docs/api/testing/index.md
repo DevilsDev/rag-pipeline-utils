@@ -14,6 +14,10 @@ mdx:
 - [EchoLLM](classes/EchoLLM.md)
 - [HashEmbedder](classes/HashEmbedder.md)
 
+## Interfaces
+
+- [RagMatchers](interfaces/RagMatchers.md)
+
 ## Variables
 
 - [fixtures](variables/fixtures.md)
