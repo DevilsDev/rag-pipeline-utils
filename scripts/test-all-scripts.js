@@ -43,9 +43,9 @@ const SCRIPTS_TO_TEST = [
     tests: [
       { args: "--help", expectSuccess: true, description: "Help output" },
       {
-        args: "--version=v1.0.0 --dry-run --skip-git",
+        args: "3.6.0 --stdout --force",
         expectSuccess: true,
-        description: "Dry-run with skip-git",
+        description: "Print a draft without writing it",
       },
     ],
   },

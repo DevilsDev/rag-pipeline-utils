@@ -127,6 +127,19 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
   against an in-memory Weaviate in the unit tests and against Weaviate
   1.40.4 in the CI vector-store job, with pgvector and Qdrant.
 
+- **A draft blog post for every release.** Publishing a GitHub release
+  runs `.github/workflows/release-blog.yml`. It drafts the post from the
+  version's CHANGELOG section, or `release-notes/v<version>.md` when that
+  exists, and opens a pull request from `blog/v<version>` for review. A
+  patch gets a shorter post. It skips prereleases and any version that
+  already has a post, so hand-written posts are kept, and the workflow
+  can also be run by hand with a version. `scripts/generate-release-note.js`
+  (`npm run release:tag`) is rewritten to do the drafting. The old script
+  needed a config file that no longer exists, built the post from commit
+  messages and pushed to `main`. The new one writes valid Docusaurus MDX:
+  braces and `<` outside code are escaped, and relative links point at the
+  release tag on GitHub.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer
