@@ -1,0 +1,359 @@
+{
+  "generatedAt": "2026-11-06T11:31:22.510Z",
+  "environment": {
+    "libraryVersion": "3.8.0",
+    "commit": "06620bc",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "plan": "benchmarks/fixtures/loophole-hunt-plan.md",
+  "generator": "claude-sonnet-5-5",
+  "confirmer": "claude-haiku-5-5",
+  "note": "claude-sonnet-5-5 and claude-haiku-5-5 reject temperature; both ran at their defaults",
+  "n": 319,
+  "perCategory": {
+    "quantifier-scope": {
+      "generated": 39,
+      "changedConfirmed": 30,
+      "controlsConfirmed": 7,
+      "disagreements": 2,
+      "checkAnswer": {
+        "missed": 28,
+        "missRate": 0.9333333333333333,
+        "falseAlarms": 6,
+        "falseAlarmRate": 0.8571428571428571
+      },
+      "citationTracker": {
+        "missed": 28,
+        "missRate": 0.9333333333333333,
+        "falseAlarms": 6,
+        "falseAlarmRate": 0.8571428571428571
+      },
+      "faithfulness": {
+        "missed": 29,
+        "missRate": 0.9666666666666667,
+        "falseAlarms": 4,
+        "falseAlarmRate": 0.5714285714285714
+      },
+      "examples": [
+        {
+          "id": "lh-quantifier-scope-1-01",
+          "source": "Full-time employees who have completed 90 days of service are eligible for the company dental plan.",
+          "claim": "All employees who have completed 90 days of service are eligible for the company dental plan."
+        },
+        {
+          "id": "lh-quantifier-scope-1-02",
+          "source": "Either party may terminate this agreement by giving 30 days' written notice to the other party.",
+          "claim": "Only the client may terminate this agreement by giving 30 days' written notice to the other party."
+        },
+        {
+          "id": "lh-quantifier-scope-1-03",
+          "source": "Most adults with mild hypertension can bring their blood pressure down with lifestyle changes alone.",
+          "claim": "All adults with mild hypertension can bring their blood pressure down with lifestyle changes alone."
+        }
+      ]
+    },
+    "modality": {
+      "generated": 40,
+      "changedConfirmed": 28,
+      "controlsConfirmed": 9,
+      "disagreements": 3,
+      "checkAnswer": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 3,
+        "falseAlarmRate": 0.3333333333333333
+      },
+      "citationTracker": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 3,
+        "falseAlarmRate": 0.3333333333333333
+      },
+      "faithfulness": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2222222222222222
+      },
+      "examples": [
+        {
+          "id": "lh-modality-1-01",
+          "source": "Employees may work remotely up to two days per week with manager approval.",
+          "claim": "Employees must work remotely two days per week with manager approval."
+        },
+        {
+          "id": "lh-modality-1-02",
+          "source": "The Buyer may terminate this Agreement by giving 30 days' written notice to the Seller.",
+          "claim": "The Buyer must terminate this Agreement by giving 30 days' written notice to the Seller."
+        },
+        {
+          "id": "lh-modality-1-03",
+          "source": "Adults with a mild headache can take ibuprofen 200 mg every six hours, but should not exceed 1,200 mg in a day.",
+          "claim": "Adults with a mild headache are required to take ibuprofen 200 mg every six hours, and must not exceed 1,200 mg in a day."
+        }
+      ]
+    },
+    "time-bounds": {
+      "generated": 40,
+      "changedConfirmed": 28,
+      "controlsConfirmed": 7,
+      "disagreements": 5,
+      "checkAnswer": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 5,
+        "falseAlarmRate": 0.7142857142857143
+      },
+      "citationTracker": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 5,
+        "falseAlarmRate": 0.7142857142857143
+      },
+      "faithfulness": {
+        "missed": 26,
+        "missRate": 0.9285714285714286,
+        "falseAlarms": 3,
+        "falseAlarmRate": 0.42857142857142855
+      },
+      "examples": [
+        {
+          "id": "lh-time-bounds-1-01",
+          "source": "Accrued leave days may be carried over into the next calendar year, but they must be used by March 31.",
+          "claim": "Accrued leave days carried over into the next calendar year may be used whenever the employee chooses."
+        },
+        {
+          "id": "lh-time-bounds-1-02",
+          "source": "The deposit is refundable if the tenant gives written notice at least 30 days before the lease start date.",
+          "claim": "The deposit is refundable if the tenant gives written notice at least 30 days after the lease start date."
+        },
+        {
+          "id": "lh-time-bounds-1-03",
+          "source": "Take the antibiotic twice daily for 7 days, and finish the full course even if your symptoms improve sooner.",
+          "claim": "Take the antibiotic twice daily for as long as needed, even after your symptoms improve."
+        }
+      ]
+    },
+    "hedge-removed": {
+      "generated": 40,
+      "changedConfirmed": 29,
+      "controlsConfirmed": 10,
+      "disagreements": 1,
+      "checkAnswer": {
+        "missed": 26,
+        "missRate": 0.896551724137931,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2
+      },
+      "citationTracker": {
+        "missed": 26,
+        "missRate": 0.896551724137931,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2
+      },
+      "faithfulness": {
+        "missed": 26,
+        "missRate": 0.896551724137931,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2
+      },
+      "examples": [
+        {
+          "id": "lh-hedge-removed-1-01",
+          "source": "Absences of up to three consecutive days generally do not require a doctor's note.",
+          "claim": "Absences of up to three consecutive days do not require a doctor's note."
+        },
+        {
+          "id": "lh-hedge-removed-1-02",
+          "source": "The contractor will complete the basement renovation in approximately 12 weeks from the start date.",
+          "claim": "The contractor will complete the basement renovation in 12 weeks from the start date."
+        },
+        {
+          "id": "lh-hedge-removed-1-03",
+          "source": "Ibuprofen typically begins to relieve pain within 30 to 60 minutes of being taken.",
+          "claim": "Ibuprofen begins to relieve pain within 30 to 60 minutes of being taken."
+        }
+      ]
+    },
+    "comparison-direction": {
+      "generated": 40,
+      "changedConfirmed": 30,
+      "controlsConfirmed": 9,
+      "disagreements": 1,
+      "checkAnswer": {
+        "missed": 28,
+        "missRate": 0.9333333333333333,
+        "falseAlarms": 7,
+        "falseAlarmRate": 0.7777777777777778
+      },
+      "citationTracker": {
+        "missed": 28,
+        "missRate": 0.9333333333333333,
+        "falseAlarms": 7,
+        "falseAlarmRate": 0.7777777777777778
+      },
+      "faithfulness": {
+        "missed": 28,
+        "missRate": 0.9333333333333333,
+        "falseAlarms": 6,
+        "falseAlarmRate": 0.6666666666666666
+      },
+      "examples": [
+        {
+          "id": "lh-comparison-direction-1-01",
+          "source": "Employees must give at least 14 days' notice before taking annual leave of more than five consecutive days.",
+          "claim": "Employees must give at most 14 days' notice before taking annual leave of more than five consecutive days."
+        },
+        {
+          "id": "lh-comparison-direction-1-03",
+          "source": "Adults should get at least 150 minutes of moderate aerobic activity each week.",
+          "claim": "Adults should get at most 150 minutes of moderate aerobic activity each week."
+        },
+        {
+          "id": "lh-comparison-direction-1-04",
+          "source": "The battery retains more than 80% of its original capacity after 500 charge cycles.",
+          "claim": "The battery retains less than 80% of its original capacity after 500 charge cycles."
+        }
+      ]
+    },
+    "role-swap": {
+      "generated": 40,
+      "changedConfirmed": 30,
+      "controlsConfirmed": 9,
+      "disagreements": 1,
+      "checkAnswer": {
+        "missed": 30,
+        "missRate": 1,
+        "falseAlarms": 5,
+        "falseAlarmRate": 0.5555555555555556
+      },
+      "citationTracker": {
+        "missed": 30,
+        "missRate": 1,
+        "falseAlarms": 5,
+        "falseAlarmRate": 0.5555555555555556
+      },
+      "faithfulness": {
+        "missed": 30,
+        "missRate": 1,
+        "falseAlarms": 4,
+        "falseAlarmRate": 0.4444444444444444
+      },
+      "examples": [
+        {
+          "id": "lh-role-swap-1-01",
+          "source": "The employer must reimburse the employee for approved travel expenses within 30 days of receiving the expense report.",
+          "claim": "The employee must reimburse the employer for approved travel expenses within 30 days of receiving the expense report."
+        },
+        {
+          "id": "lh-role-swap-1-02",
+          "source": "The contractor shall deliver the completed work to the client by 1 March, and the client shall pay 40% of the fee upon delivery.",
+          "claim": "The client shall deliver the completed work to the contractor by 1 March, and the contractor shall pay 40% of the fee upon delivery."
+        },
+        {
+          "id": "lh-role-swap-1-03",
+          "source": "The doctor should inform the caregiver of any dosage change at least 24 hours before it takes effect.",
+          "claim": "The caregiver should inform the doctor of any dosage change at least 24 hours before it takes effect."
+        }
+      ]
+    },
+    "exception-dropped": {
+      "generated": 40,
+      "changedConfirmed": 28,
+      "controlsConfirmed": 10,
+      "disagreements": 2,
+      "checkAnswer": {
+        "missed": 9,
+        "missRate": 0.32142857142857145,
+        "falseAlarms": 3,
+        "falseAlarmRate": 0.3
+      },
+      "citationTracker": {
+        "missed": 9,
+        "missRate": 0.32142857142857145,
+        "falseAlarms": 3,
+        "falseAlarmRate": 0.3
+      },
+      "faithfulness": {
+        "missed": 9,
+        "missRate": 0.32142857142857145,
+        "falseAlarms": 1,
+        "falseAlarmRate": 0.1
+      },
+      "examples": [
+        {
+          "id": "lh-exception-dropped-1-06",
+          "source": "Liability for damages is capped at $50,000 for all claims, except those arising from gross negligence or willful misconduct.",
+          "claim": "Liability for damages is capped at $50,000 for all claims, except those arising from willful misconduct."
+        },
+        {
+          "id": "lh-exception-dropped-1-12",
+          "source": "Gift cards can be used on all items except clearance items and other gift cards.",
+          "claim": "Gift cards can be used on all items except clearance items."
+        },
+        {
+          "id": "lh-exception-dropped-1-13",
+          "source": "Departing employees must return all company equipment, including laptops, badges, and phones, except the ergonomic chair, which they may keep.",
+          "claim": "Departing employees must return all company equipment, including laptops, badges, phones, and the ergonomic chair."
+        }
+      ]
+    },
+    "attribution-dropped": {
+      "generated": 40,
+      "changedConfirmed": 29,
+      "controlsConfirmed": 10,
+      "disagreements": 1,
+      "checkAnswer": {
+        "missed": 29,
+        "missRate": 1,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2
+      },
+      "citationTracker": {
+        "missed": 29,
+        "missRate": 1,
+        "falseAlarms": 2,
+        "falseAlarmRate": 0.2
+      },
+      "faithfulness": {
+        "missed": 29,
+        "missRate": 1,
+        "falseAlarms": 1,
+        "falseAlarmRate": 0.1
+      },
+      "examples": [
+        {
+          "id": "lh-attribution-dropped-1-01",
+          "source": "According to the HR memo, the attendance policy will be revised in January, pending board approval.",
+          "claim": "The attendance policy will be revised in January."
+        },
+        {
+          "id": "lh-attribution-dropped-1-02",
+          "source": "The landlord states that the deposit was returned on March 3, though the tenant disputes ever receiving it.",
+          "claim": "The deposit was returned on March 3."
+        },
+        {
+          "id": "lh-attribution-dropped-1-03",
+          "source": "A small trial suggests that aspirin may lower the risk of preeclampsia in high-risk pregnancies.",
+          "claim": "Aspirin lowers the risk of preeclampsia in high-risk pregnancies."
+        }
+      ]
+    }
+  },
+  "spend": {
+    "claude-sonnet-5-5": {
+      "calls": 16,
+      "inputTokens": 5710,
+      "outputTokens": 59823,
+      "costUSD": 0.6096
+    },
+    "claude-haiku-5-5": {
+      "calls": 319,
+      "inputTokens": 47127,
+      "outputTokens": 3118,
+      "costUSD": 0.0063
+    }
+  }
+}
