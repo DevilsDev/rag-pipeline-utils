@@ -64,15 +64,15 @@ On Workers without `nodejs_compat`, use `env.ANTHROPIC_API_KEY`: there is no `pr
 
 ## What's in it
 
-| Area           | Exports                                                                                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pipeline       | `createRagPipeline` with streaming, `timeout`, `signal`, `cache`, citations, evaluation and `telemetry`; `packContext`                                                                                       |
-| Models         | `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `createAiSdkAdapter` (any AI SDK provider, including OpenAI), `createModelRouter`                                                                |
-| Retrieval      | `MemoryRetriever`, `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` (3.7.0), `LocalEmbedder`, `HybridRetriever`, `BM25Search`, `reciprocalRankFusion`, the rerankers, `MemoryCache`, `RedisCache` |
-| Grounding      | `checkAnswer`, `CitationTracker`, `detectHallucinations`, source mapping                                                                                                                                     |
-| Guardrails     | `detectInjection`, `GuardrailsPipeline` and its guards                                                                                                                                                       |
-| Evaluation     | The scoring functions, `PipelineEvaluator`, `runEvaluation`, `compareConfigurations`, reports                                                                                                                |
-| Agentic, costs | `AgenticPipeline` and its parts, `CostCalculator`, `CostTracker`, `TokenBudget`                                                                                                                              |
+| Area           | Exports                                                                                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipeline       | `createRagPipeline` with streaming, `timeout`, `signal`, `cache`, citations, evaluation and `telemetry`; `packContext`                                                                               |
+| Models         | `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `createAiSdkAdapter` (any AI SDK provider, including OpenAI), `createModelRouter`                                                        |
+| Retrieval      | `MemoryRetriever`, `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever`, `LocalEmbedder`, `HybridRetriever`, `BM25Search`, `reciprocalRankFusion`, the rerankers, `MemoryCache`, `RedisCache` |
+| Grounding      | `checkAnswer`, `CitationTracker`, `detectHallucinations`, source mapping                                                                                                                             |
+| Guardrails     | `detectInjection`, `GuardrailsPipeline` and its guards                                                                                                                                               |
+| Evaluation     | The scoring functions, `PipelineEvaluator`, `runEvaluation`, `compareConfigurations`, reports                                                                                                        |
+| Agentic, costs | `AgenticPipeline` and its parts, `CostCalculator`, `CostTracker`, `TokenBudget`                                                                                                                      |
 
 It has the same types as the main entry. The bundle is about 140 KB compressed.
 

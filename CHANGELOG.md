@@ -9,9 +9,66 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.7.0] - 2026-11-06
+
+A minor release with no breaking changes, about more vector stores and
+fewer wrong verdicts. `WeaviateRetriever` adds Weaviate, and
+`PineconeRetriever` now works on indexes that embed text themselves, so a
+pipeline, and the CLI's `ingest`, need no embedder there. The answer check
+reads numbers with units as quantities ("2 kg" matches "2,000 grams",
+"2 pounds" no longer passes against "2 kilograms"), fractions as
+percentages and 12-hour times against clock times, and drops two false
+alarms 3.6 added; grounding verdicts can change, so re-save the report
+you compare against with `rag-pipeline eval --baseline`. The CLI says in
+one line which API key is missing or refused. A DAG run with a timeout no
+longer keeps the process alive, and the logger writes synchronously
+without a process `exit` listener.
 
 ### Added
+
+- **`WeaviateRetriever`**: a Weaviate collection as a vector store, over
+  the REST and GraphQL APIs with the built-in `fetch` (no client package;
+  on the edge build too). The first `store()` creates the collection for
+  vectors you provide (`vectorizer: "none"`, cosine distance), or adds the
+  properties it needs to one created elsewhere. Document ids become the
+  same UUIDs `QdrantRetriever` uses, with the original id kept as
+  `rag_id`; metadata is kept as JSON and `metadata.source` as an
+  exact-match property for `removeBySource`. Scores are cosine similarity
+  (1 minus Weaviate's distance). Batch imports that Weaviate answers with
+  per-object errors fail with the reason, and a batch of another vector
+  size is rejected before it is sent. It has the CLI's `size`, `list` and
+  `removeBySource`, only touches objects it wrote, and `.ragrc.json` takes
+  `"name": "weaviate"` (the URL from `config.url` or `WEAVIATE_URL`, the
+  key only from `WEAVIATE_API_KEY`). It passes the retriever contract
+  against an in-memory Weaviate in the unit tests and against Weaviate
+  1.40.4 in the CI vector-store job, with pgvector and Qdrant.
+
+- **`PineconeRetriever` on indexes that embed text themselves** (integrated
+  embedding, such as the console's quick-start index with `chunk_text` and
+  `llama-text-embed-v2`), which 3.6.0 refused. The retriever finds the
+  embedded text field in the index description (or takes `textField`),
+  sends each document's `content` in it, and searches by the query text
+  with the Documents API's `embed` scoring, so documents need no vector
+  and a pipeline needs no embedder: `createRagPipeline` passes the query
+  text to the retriever when there is none. A request with only a vector,
+  or a document without content, is refused with the reason before
+  anything is sent. Upserts go in batches of up to 96 documents and under
+  2 MB, Pinecone's limits for embedded fields. Freshness waits, `list`,
+  `size`, `clear` and `removeBySource` work as on the other index kinds.
+  An index with both a `dense_vector` field and an embedded text field
+  still gets your vectors unless you pass `textField`. The retriever
+  passes a text version of the retriever contract against the in-memory
+  Pinecone (with a bag-of-words "model") and against a real
+  integrated-embedding index (`npm run test:live`), and `.ragrc.json`
+  takes `textField`.
+
+- **The CLI with no embedder, on a retriever that embeds text itself.**
+  When the retriever's `embedsText()` resolves `true` (`PineconeRetriever`
+  on an integrated-embedding index), `.ragrc.json` needs no embedder
+  stage: `rag-pipeline ingest` stores the chunks' text without computing
+  vectors, `query`, `run`, `eval`, `ai search` and `ai benchmark` send the
+  question's text, and `doctor` doesn't report a missing embedder. Other
+  retrievers still need an embedder, with the same error as before.
 
 - **Vector stores in workerd.** The edge check (`test/edge`) now runs
   `QdrantRetriever` and `PineconeRetriever` in the Workers runtime, from
@@ -23,6 +80,19 @@ page.
   The results, and the ids sent to each store (sha256 of the document ids,
   including non-ASCII and multi-block ones), must equal the Node.js build's.
   No library change was needed.
+
+- **A draft blog post for every release.** Publishing a GitHub release
+  runs `.github/workflows/release-blog.yml`. It drafts the post from the
+  version's CHANGELOG section, or `release-notes/v<version>.md` when that
+  exists, and opens a pull request from `blog/v<version>` for review. A
+  patch gets a shorter post. It skips prereleases and any version that
+  already has a post, so hand-written posts are kept, and the workflow
+  can also be run by hand with a version. `scripts/generate-release-note.js`
+  (`npm run release:tag`) is rewritten to do the drafting. The old script
+  needed a config file that no longer exists, built the post from commit
+  messages and pushed to `main`. The new one writes valid Docusaurus MDX:
+  braces and `<` outside code are escaped, and relative links point at the
+  release tag on GitHub.
 
 ### Changed
 
@@ -64,6 +134,7 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
   pending after the run finished, holding the process open for up to the
   full timeout (60 seconds by default in `AgenticPipeline`). The timer is
   now cleared when the run settles.
+
 - **The logger adds no process `exit` listener.** It now writes JSON to
   stdout synchronously instead of through pino's asynchronous stream, which
   registered an `exit` flush hook for every copy of the module; under Jest
@@ -82,6 +153,7 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
   footnote marker after a year ("1992.1 It ...") no longer hides the year.
   A month is not converted to days. A quantity in a unit the source doesn't
   state falls back to the plain number check, as before.
+
 - **Two false alarms from the 3.6 clause rule:** a clause that continues
   the first clause's subject ("The drug lowered blood pressure but did not
   reduce mortality") now supports "The drug did not reduce mortality", and
@@ -109,62 +181,6 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
 - The test suite exits on its own: no forced worker exit, no
   `MaxListenersExceededWarning`, and no fake-timer warnings from the plugin
   hub tests.
-
-- **`WeaviateRetriever`**: a Weaviate collection as a vector store, over
-  the REST and GraphQL APIs with the built-in `fetch` (no client package;
-  on the edge build too). The first `store()` creates the collection for
-  vectors you provide (`vectorizer: "none"`, cosine distance), or adds the
-  properties it needs to one created elsewhere. Document ids become the
-  same UUIDs `QdrantRetriever` uses, with the original id kept as
-  `rag_id`; metadata is kept as JSON and `metadata.source` as an
-  exact-match property for `removeBySource`. Scores are cosine similarity
-  (1 minus Weaviate's distance). Batch imports that Weaviate answers with
-  per-object errors fail with the reason, and a batch of another vector
-  size is rejected before it is sent. It has the CLI's `size`, `list` and
-  `removeBySource`, only touches objects it wrote, and `.ragrc.json` takes
-  `"name": "weaviate"` (the URL from `config.url` or `WEAVIATE_URL`, the
-  key only from `WEAVIATE_API_KEY`). It passes the retriever contract
-  against an in-memory Weaviate in the unit tests and against Weaviate
-  1.40.4 in the CI vector-store job, with pgvector and Qdrant.
-
-- **A draft blog post for every release.** Publishing a GitHub release
-  runs `.github/workflows/release-blog.yml`. It drafts the post from the
-  version's CHANGELOG section, or `release-notes/v<version>.md` when that
-  exists, and opens a pull request from `blog/v<version>` for review. A
-  patch gets a shorter post. It skips prereleases and any version that
-  already has a post, so hand-written posts are kept, and the workflow
-  can also be run by hand with a version. `scripts/generate-release-note.js`
-  (`npm run release:tag`) is rewritten to do the drafting. The old script
-  needed a config file that no longer exists, built the post from commit
-  messages and pushed to `main`. The new one writes valid Docusaurus MDX:
-  braces and `<` outside code are escaped, and relative links point at the
-  release tag on GitHub.
-
-- **`PineconeRetriever` on indexes that embed text themselves** (integrated
-  embedding, such as the console's quick-start index with `chunk_text` and
-  `llama-text-embed-v2`), which 3.6.0 refused. The retriever finds the
-  embedded text field in the index description (or takes `textField`),
-  sends each document's `content` in it, and searches by the query text
-  with the Documents API's `embed` scoring, so documents need no vector
-  and a pipeline needs no embedder: `createRagPipeline` passes the query
-  text to the retriever when there is none. A request with only a vector,
-  or a document without content, is refused with the reason before
-  anything is sent. Upserts go in batches of up to 96 documents and under
-  2 MB, Pinecone's limits for embedded fields. Freshness waits, `list`,
-  `size`, `clear` and `removeBySource` work as on the other index kinds.
-  An index with both a `dense_vector` field and an embedded text field
-  still gets your vectors unless you pass `textField`. The retriever
-  passes a text version of the retriever contract against the in-memory
-  Pinecone (with a bag-of-words "model") and against a real
-  integrated-embedding index (`npm run test:live`), and `.ragrc.json`
-  takes `textField`.
-- **The CLI with no embedder, on a retriever that embeds text itself.**
-  When the retriever's `embedsText()` resolves `true` (`PineconeRetriever`
-  on an integrated-embedding index), `.ragrc.json` needs no embedder
-  stage: `rag-pipeline ingest` stores the chunks' text without computing
-  vectors, `query`, `run`, `eval`, `ai search` and `ai benchmark` send the
-  question's text, and `doctor` doesn't report a missing embedder. Other
-  retrievers still need an embedder, with the same error as before.
 
 ## [3.6.0] - 2026-11-05
 

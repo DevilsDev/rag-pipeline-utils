@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-guardrails",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "description": "Guardrails for RAG: prompt-injection detection and pre-retrieval, retrieval and post-generation guards.",
   "keywords": [
     "rag",
@@ -42,6 +42,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@devilsdev/rag-core": "3.6.0"
+    "@devilsdev/rag-core": "3.7.0"
   }
 }
