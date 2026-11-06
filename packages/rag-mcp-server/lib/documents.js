@@ -57,15 +57,93 @@ function decodeEntities(text) {
  * produced by decoding is dropped too.
  */
 function plainText(html) {
-  return decodeEntities(html.replace(/<[^>]*>/g, " ")).replace(/[<>]/g, " ");
+  return decodeEntities(stripTags(html)).replace(/[<>]/g, " ");
+}
+
+// The scans below find each closer with indexOf or a one-pass search
+// instead of a lazy regex, so they take time linear in the length of the
+// text even when openers have no closer.
+
+/** Each `<...>` replaced by a space; a `<` with no `>` after it is kept. */
+function stripTags(html) {
+  let out = "";
+  let pos = 0;
+  for (;;) {
+    const open = html.indexOf("<", pos);
+    if (open === -1) break;
+    const close = html.indexOf(">", open + 1);
+    if (close === -1) break;
+    out += html.slice(pos, open) + " ";
+    pos = close + 1;
+  }
+  return out + html.slice(pos);
+}
+
+/** Each `<!-- ... -->` replaced by a space. */
+function stripComments(html) {
+  let out = "";
+  let pos = 0;
+  for (;;) {
+    const open = html.indexOf("<!--", pos);
+    if (open === -1) break;
+    const close = html.indexOf("-->", open + 4);
+    if (close === -1) break;
+    out += html.slice(pos, open) + " ";
+    pos = close + 3;
+  }
+  return out + html.slice(pos);
+}
+
+const HIDDEN_CLOSERS = {
+  script: /<\/script\s*>/gi,
+  style: /<\/style\s*>/gi,
+  noscript: /<\/noscript\s*>/gi,
+  template: /<\/template\s*>/gi,
+};
+
+/** Each script, style, noscript or template element replaced by a space. */
+function stripHidden(html) {
+  const opener = /<(script|style|noscript|template)\b/gi;
+  const unclosed = new Set();
+  let out = "";
+  let pos = 0;
+  let open;
+  while ((open = opener.exec(html)) !== null) {
+    const name = open[1].toLowerCase();
+    if (unclosed.has(name)) continue;
+    const closer = HIDDEN_CLOSERS[name];
+    closer.lastIndex = opener.lastIndex;
+    const close = closer.exec(html);
+    if (close === null) {
+      // No closer after this opener, so none after a later one either.
+      unclosed.add(name);
+      continue;
+    }
+    out += html.slice(pos, open.index) + " ";
+    pos = closer.lastIndex;
+    opener.lastIndex = pos;
+  }
+  return out + html.slice(pos);
+}
+
+/** The text between the first `<body ...>` and the last `</body>`, or null. */
+function bodyOf(html) {
+  const open = /<body/i.exec(html);
+  if (open === null) return null;
+  const start = html.indexOf(">", open.index + 5);
+  if (start === -1) return null;
+  const closer = /<\/body>/gi;
+  closer.lastIndex = start + 1;
+  let end = -1;
+  let close;
+  while ((close = closer.exec(html)) !== null) end = close.index;
+  return end === -1 ? null : html.slice(start + 1, end);
 }
 
 /** Visible text of an HTML document: no head, scripts, styles or tags. */
 function htmlText(html) {
-  const body = /<body[^>]*>([\s\S]*)<\/body>/i.exec(html);
-  const text = (body ? body[1] : html)
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<(script|style|noscript|template)\b[\s\S]*?<\/\1\s*>/gi, " ");
+  const body = bodyOf(html);
+  const text = stripHidden(stripComments(body ?? html));
   return plainText(text).replace(/\s+/g, " ").trim();
 }
 

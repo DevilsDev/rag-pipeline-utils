@@ -9,6 +9,25 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [3.8.1] - Unreleased
+
+A patch release with security fixes.
+
+### Security
+
+- Fixed an access-control issue in `MemoryRetriever`, `FileVectorStore`
+  and `BM25Search`.
+- Fixed a signature-verification issue in `PluginSignatureVerifier`.
+- Fixed an issue in how `DevServer` applies its default options.
+- Fixed a request-validation issue in `DevServer`.
+- Fixed an issue in how `DevServer` recognises loopback host names.
+- Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s HTML
+  indexing.
+- Fixed an access-control issue in how `RetrievalGuard` reads user
+  permissions.
+- Fixed an access-control issue in how `RetrievalGuard` reads document
+  restrictions.
+
 ## [3.8.0] - 2026-11-06
 
 A minor release with no breaking changes, about testing RAG in TypeScript.

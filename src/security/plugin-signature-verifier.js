@@ -95,6 +95,26 @@ function rawToKeyObject(raw) {
 }
 
 /**
+ * Throw when a parsed manifest has a `__proto__` key at any depth.
+ * Canonicalization copies keys into plain objects, where assigning
+ * `__proto__` doesn't create an ordinary property.
+ * @param {any} value
+ */
+function rejectReservedKeys(value) {
+  if (value === null || typeof value !== 'object') return;
+  if (Array.isArray(value)) {
+    value.forEach(rejectReservedKeys);
+    return;
+  }
+  for (const key of Object.keys(value)) {
+    if (key === '__proto__') {
+      throw new Error(`Invalid manifest: reserved key "${key}"`);
+    }
+    rejectReservedKeys(value[key]);
+  }
+}
+
+/**
  * Compute the content digest of a plugin.
  *
  * The digest is `sha256-<hex>` of the lines `<relativePath>\0<sha256 of
@@ -319,7 +339,9 @@ class PluginSignatureVerifier {
    * @private
    */
   _verifyContentDigest(canonicalManifest, content) {
-    const declared = canonicalManifest.contentDigest;
+    const declared = Object.hasOwn(canonicalManifest, 'contentDigest')
+      ? canonicalManifest.contentDigest
+      : undefined;
     const hasContent =
       content &&
       ((Array.isArray(content.files) && content.files.length > 0) ||
@@ -382,6 +404,7 @@ class PluginSignatureVerifier {
   _canonicalizeManifest(manifest) {
     // Remove signature-related fields and sort keys
     const canonical = JSON.parse(JSON.stringify(manifest));
+    rejectReservedKeys(canonical);
     delete canonical.signature;
     delete canonical.signerId;
     delete canonical.signedAt;

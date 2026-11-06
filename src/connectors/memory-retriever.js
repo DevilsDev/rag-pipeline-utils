@@ -3,6 +3,7 @@ const { randomBytes } = require('crypto');
 
 const { BaseConnector } = require('./base-connector');
 const { throwIfAborted } = require('./connector-utils');
+const { accessFields } = require('../retrieval/access-fields');
 
 /**
  * Default configuration for the in-memory retriever.
@@ -110,6 +111,7 @@ class MemoryRetriever extends BaseConnector {
         vector: doc.vector,
         metadata: doc.metadata || {},
         content: doc.content || '',
+        ...accessFields(doc),
       });
     }
     if (vectors.length > 0) this.dimensions = dimensions;
@@ -181,6 +183,7 @@ class MemoryRetriever extends BaseConnector {
         score,
         metadata: doc.metadata,
         content: doc.content,
+        ...accessFields(doc),
       });
     }
 
