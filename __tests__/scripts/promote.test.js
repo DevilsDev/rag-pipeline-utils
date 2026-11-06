@@ -125,12 +125,32 @@ describe("channels", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  /** A fake dev.to: lists `articles`, answers POSTs from `posts` in order. */
+  function fakeDevto({ articles = [], posts = [] } = {}) {
+    const sent = [];
+    const fetchImpl = jest.fn(async (url, init = {}) => {
+      if (url.includes("/articles/me/all"))
+        return { status: 200, json: async () => articles };
+      sent.push(JSON.parse(init.body));
+      const next = posts.shift() || { status: 201, url: "https://dev.to/x/y" };
+      if (next.status === 201 && next.alsoCreates)
+        articles.push({ title: sent.at(-1).article.title, url: next.url });
+      return {
+        status: next.status,
+        json: async () => ({ url: next.url }),
+        text: async () => '{"error":"Internal Server Error"}',
+      };
+    });
+    return { fetchImpl, sent };
+  }
+  const devtoOpts = (fetchImpl) => ({
+    env: { DEVTO_API_KEY: "test" },
+    fetchImpl,
+    sleep: async () => {},
+  });
+
   test("dev.to gets at most four tags and the canonical URL", async () => {
-    let sent;
-    const fetchImpl = async (_url, init) => {
-      sent = JSON.parse(init.body);
-      return { status: 201, json: async () => ({ url: "https://dev.to/x/y" }) };
-    };
+    const { fetchImpl, sent } = fakeDevto();
     const url = await postDevto(
       {
         title: "T",
@@ -138,14 +158,74 @@ describe("channels", () => {
         tags: ["a", "b", "c", "d", "e"],
         canonicalUrl: "https://devilsdev.github.io/x",
       },
-      { env: { DEVTO_API_KEY: "test" }, fetchImpl },
+      devtoOpts(fetchImpl),
     );
     expect(url).toBe("https://dev.to/x/y");
-    expect(sent.article).toMatchObject({
+    expect(sent[0].article).toMatchObject({
       published: true,
       tags: ["a", "b", "c", "d"],
       canonical_url: "https://devilsdev.github.io/x",
     });
+  });
+
+  test("dev.to: an article with the same title is never posted again", async () => {
+    const { fetchImpl, sent } = fakeDevto({
+      articles: [{ title: "T", url: "https://dev.to/x/already" }],
+    });
+    expect(
+      await postDevto({ title: "T", body: "B" }, devtoOpts(fetchImpl)),
+    ).toBe("https://dev.to/x/already");
+    expect(sent).toHaveLength(0);
+  });
+
+  test("dev.to: a 500 that still created the article is found, not reposted", async () => {
+    const articles = [];
+    const { fetchImpl, sent } = fakeDevto({
+      articles,
+      posts: [{ status: 500 }],
+    });
+    // the 500 created it anyway
+    fetchImpl.mockImplementationOnce(async () => ({
+      status: 200,
+      json: async () => [],
+    }));
+    const original = fetchImpl.getMockImplementation();
+    let posted = false;
+    fetchImpl.mockImplementation(async (url, init) => {
+      if (!url.includes("/articles/me/all") && !posted) {
+        posted = true;
+        articles.push({ title: "T", url: "https://dev.to/x/created" });
+      }
+      return original(url, init);
+    });
+    expect(
+      await postDevto({ title: "T", body: "B" }, devtoOpts(fetchImpl)),
+    ).toBe("https://dev.to/x/created");
+    expect(sent).toHaveLength(1);
+  });
+
+  test("dev.to: retries a 500, then gives up after three", async () => {
+    const ok = fakeDevto({
+      posts: [{ status: 500 }, { status: 201, url: "https://dev.to/x/2nd" }],
+    });
+    expect(
+      await postDevto({ title: "T", body: "B" }, devtoOpts(ok.fetchImpl)),
+    ).toBe("https://dev.to/x/2nd");
+    const down = fakeDevto({
+      posts: [{ status: 500 }, { status: 500 }, { status: 500 }],
+    });
+    await expect(
+      postDevto({ title: "T", body: "B" }, devtoOpts(down.fetchImpl)),
+    ).rejects.toThrow(/dev.to failed: 500/);
+    expect(down.sent).toHaveLength(3);
+  });
+
+  test("dev.to: a 4xx is not retried", async () => {
+    const { fetchImpl, sent } = fakeDevto({ posts: [{ status: 422 }] });
+    await expect(
+      postDevto({ title: "T", body: "B" }, devtoOpts(fetchImpl)),
+    ).rejects.toThrow(/dev.to failed: 422/);
+    expect(sent).toHaveLength(1);
   });
 });
 
@@ -380,5 +460,17 @@ describe("post.js --skip-links", () => {
     fs.rmSync(dir, { recursive: true, force: true });
     expect(code).toBe(0);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe("ledger", () => {
+  const { alreadyPosted } = require("../../scripts/promote/channels");
+  test("a dry run never creates the ledger issue", () => {
+    const run = jest.fn((args) => {
+      if (args.includes("search/issues")) return JSON.stringify({ items: [] });
+      throw new Error(`unexpected gh ${args.join(" ")}`);
+    });
+    expect(alreadyPosted("k-1", "devto", { run, create: false })).toBe(false);
+    expect(run).toHaveBeenCalledTimes(1);
   });
 });

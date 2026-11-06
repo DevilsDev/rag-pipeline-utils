@@ -22,7 +22,9 @@ page.
   No one reviews the posts, so every one passes checks first: each number
   must appear in the files it came from, links must be https on an allowed
   host and live, the text must fit the channel, and a post recorded in the
-  "Automated promotion log" issue is never published twice.
+  "Automated promotion log" issue is never published twice. dev.to can answer 500 and still create the
+  article, so a retry first looks for one with the same title or
+  canonical URL.
 - **Dependency cleanup: `npm audit` findings in development tooling fell
   from 64 to 14, and none is high.** Eight OpenTelemetry SDK packages
   (`sdk-node`, `auto-instrumentations-node`, the Jaeger, Prometheus and
