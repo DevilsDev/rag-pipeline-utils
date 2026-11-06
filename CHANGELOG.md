@@ -13,6 +13,65 @@ page.
 
 ### Added
 
+- **Vector stores in workerd.** The edge check (`test/edge`) now runs
+  `QdrantRetriever` and `PineconeRetriever` in the Workers runtime, from
+  the packed package installed in a project of its own, on the main entry
+  (with `nodejs_compat`) and on `/edge` (without): store, retrieve, list,
+  size, delete, `removeBySource` and `clear`, against stateful fake Qdrant
+  and Pinecone APIs (Pinecone's document and vector indexes, with its log
+  sequence numbers, so the retriever's wait for its own writes runs too).
+  The results, and the ids sent to each store (sha256 of the document ids,
+  including non-ASCII and multi-block ones), must equal the Node.js build's.
+  No library change was needed.
+
+### Changed
+
+- **The CLI says which API key is missing or refused, in one line.**
+  Without a key, `query`, `run`, `ingest`, `eval` and `generate-dataset`
+  print `no Anthropic API key. Set ANTHROPIC_API_KEY and run the command
+again.` (they suggested the `apiKey` option, which is for library code).
+  With a refused key they print `Anthropic rejected the API key (401
+authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
+  the same for OpenAI (`OPENAI_API_KEY`) and Cohere (`COHERE_API_KEY`).
+  The part of the key OpenAI echoes in its 401 is redacted. `eval` and
+  `generate-dataset` say it once, instead of a failure per case or a skip
+  reason per chunk, and `generate-dataset` then writes no empty file.
+  An error no command handles prints one line instead of a stack trace;
+  `--verbose` adds the stack, with keys redacted. The library's own
+  messages are unchanged; key errors now also carry `provider` (and
+  `envVar` when the key is missing), and OpenAIConnector's HTTP errors
+  carry `provider` and `envVar`.
+
+### Fixed
+
+- **Packaging: package.json in the form npm publishes.** At the 3.6.0
+  publish npm auto-corrected the root package.json (the `rag-pipeline`
+  bin path `./bin/cli.js`, and the plain https `repository.url`) and the
+  scoped packages' (the repository URL, copied from the root by
+  `scripts/build-packages.js`). The bin path is now `bin/cli.js` and the
+  repository URL `git+https://github.com/DevilsDev/rag-pipeline-utils.git`,
+  so `npm publish` has nothing to correct in any of the seven packages. A
+  test runs `npm pkg fix` on each published package.json and fails if it
+  would change anything.
+
+- **DAG timeouts no longer keep the process alive.** A `DAGEngine` run (and
+  so `AgenticPipeline`, which runs one) with a `timeout` left its timer
+  pending after the run finished, holding the process open for up to the
+  full timeout (60 seconds by default in `AgenticPipeline`). The timer is
+  now cleared when the run settles.
+- **The logger adds no process `exit` listener.** It now writes JSON to
+  stdout synchronously instead of through pino's asynchronous stream, which
+  registered an `exit` flush hook for every copy of the module; under Jest
+  (a fresh copy per test file) these piled up into
+  `MaxListenersExceededWarning`. Lines are also no longer lost on
+  `process.exit()`. Pretty printing (`LOG_PRETTY=true`) is unchanged.
+
+### Internal
+
+- The test suite exits on its own: no forced worker exit, no
+  `MaxListenersExceededWarning`, and no fake-timer warnings from the plugin
+  hub tests.
+
 - **`WeaviateRetriever`**: a Weaviate collection as a vector store, over
   the REST and GraphQL APIs with the built-in `fetch` (no client package;
   on the edge build too). The first `store()` creates the collection for

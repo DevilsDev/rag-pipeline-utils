@@ -14,6 +14,7 @@ const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
 const { readDataset } = require("./eval-handler.js");
+const { reportCliError } = require("../shared/cli-errors.js");
 const {
   evaluateDetectors,
   validateDetectorCases,
@@ -124,8 +125,7 @@ async function handleEvalGuardrails(globalOptions, casesPath, options = {}) {
     }
     if (!verdict.passed) process.exitCode = 1;
   } catch (error) {
-    console.error(`❌ Guardrail evaluation failed: ${error.message}`);
-    process.exitCode = 1;
+    reportCliError("Guardrail evaluation failed", error, globalOptions);
   }
 }
 
