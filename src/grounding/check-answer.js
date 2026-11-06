@@ -106,7 +106,7 @@ function normalizeSources(sources) {
  * @property {'supported'|'unsupported'} verdict - The combined verdict
  * @property {string|null} sourceId - Id of the supporting source, when supported
  * @property {string} reason - Why, in words (the judge's reason when it decided)
- * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'no_sources'} lexicalReason
+ * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'condition_mismatch'|'no_sources'} lexicalReason
  *   - What the lexical check found. Only `low_overlap` sentences go to the judge
  * @property {'lexical'|'judge'} decidedBy
  */

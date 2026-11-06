@@ -115,6 +115,7 @@ class CitationTracker extends EventEmitter {
         maxCitations: this.config.maxCitationsPerSentence,
         threshold: this.config.similarityThreshold,
         idfWeights,
+        answerText: answer,
       });
 
       return {

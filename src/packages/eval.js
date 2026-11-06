@@ -13,6 +13,7 @@ const {
   computeROUGE,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
   extractNumbers,
 } = require('../evaluate/scoring');
 const { computeFaithfulness } = require('../evaluate/faithfulness');
@@ -54,6 +55,7 @@ module.exports = {
   computeROUGE,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
   extractNumbers,
   computeFaithfulness,
   computeSemanticSimilarity,

@@ -3,7 +3,7 @@
 /**
  * Opt-in LLM judge for checkAnswer: rules on sentences the lexical check
  * failed for lack of word overlap (correct paraphrases), never on sentences
- * that failed a number or negation check.
+ * that failed a number, negation or condition check.
  *
  * Every rule here fails closed: anything the judge says that is not a clear,
  * well-formed "supported" naming a real source keeps the sentence
@@ -16,6 +16,7 @@ const {
   computeSupportScore,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
   extractNumbers,
   isNegated,
 } = require('../evaluate/scoring');
@@ -28,12 +29,13 @@ const REASONS = {
   lowOverlap: 'low_overlap',
   numberMismatch: 'number_mismatch',
   polarityMismatch: 'polarity_mismatch',
+  conditionMismatch: 'condition_mismatch',
   noSources: 'no_sources',
 };
 
 /**
  * Why a sentence the lexical check did not ground failed. A sentence only
- * "failed because of" numbers or negation when some source supports its
+ * "failed because of" numbers, negation or a dropped condition when some source supports its
  * words (plain overlap at or above the threshold) and then fails that
  * check; a sentence stating numbers that no source contains also counts as
  * a number mismatch. Everything else failed for lack of overlap.
@@ -42,14 +44,17 @@ const REASONS = {
  * @param {Array<{content: string}>} docs
  * @param {Map<string, number>|null} idfWeights
  * @param {number} threshold
+ * @param {string} [answerText] - The whole answer, for conditions restated
+ *   in another sentence
  * @returns {string} one of REASONS (never 'supported')
  */
-function classifyFailure(sentence, docs, idfWeights, threshold) {
+function classifyFailure(sentence, docs, idfWeights, threshold, answerText) {
   if (docs.length === 0) return REASONS.noSources;
   const tokens = tokenize(sentence);
 
   let numberMismatch = false;
   let polarityMismatch = false;
+  let conditionMismatch = false;
   for (const doc of docs) {
     const docSet = new Set(tokenize(doc.content));
     const overlap = computeSupportScore(tokens, docSet, idfWeights);
@@ -59,6 +64,11 @@ function classifyFailure(sentence, docs, idfWeights, threshold) {
     }
     if (!checkPolarityConsistency(sentence, doc.content).consistent) {
       polarityMismatch = true;
+    }
+    if (
+      !checkConditionConsistency(sentence, doc.content, answerText).consistent
+    ) {
+      conditionMismatch = true;
     }
   }
 
@@ -70,6 +80,7 @@ function classifyFailure(sentence, docs, idfWeights, threshold) {
 
   if (numberMismatch) return REASONS.numberMismatch;
   if (polarityMismatch) return REASONS.polarityMismatch;
+  if (conditionMismatch) return REASONS.conditionMismatch;
   return REASONS.lowOverlap;
 }
 
@@ -87,6 +98,7 @@ function lexicalReasons(sentences, docs, allowed) {
   const idfWeights = DEFAULT_CONFIG.useIDFWeighting
     ? buildIDFWeights(docs)
     : null;
+  const answerText = sentences.map((s) => s.text).join(' ');
   return sentences.map((s, i) =>
     s.classification === 'grounded'
       ? REASONS.supported
@@ -95,6 +107,7 @@ function lexicalReasons(sentences, docs, allowed) {
           allowed ? docs.filter((d) => allowed[i].includes(d.id)) : docs,
           idfWeights,
           DEFAULT_CONFIG.similarityThreshold,
+          answerText,
         ),
   );
 }
@@ -276,6 +289,8 @@ const REASON_TEXT = {
     'states a number its source does not contain; the judge is not asked',
   [REASONS.polarityMismatch]:
     'negated where its source is not, or the reverse; the judge is not asked',
+  [REASONS.conditionMismatch]:
+    'leaves out a condition its source states (an approval, exception or eligibility rule); the judge is not asked',
   [REASONS.noSources]: 'no sources to check against',
 };
 
@@ -397,6 +412,18 @@ async function runJudge({ judge, sentences, docs, allowed }) {
       entry.decidedBy = 'lexical';
       entry.lexicalReason = REASONS.polarityMismatch;
       entry.reason = `judge said supported, but the negation does not match source "${ruling.source}"; kept unsupported`;
+      return;
+    }
+    // A dropped condition (an approval, exception or eligibility rule) is
+    // never overturned either
+    const answerText = verdicts.map((v) => v.sentence).join(' ');
+    if (
+      !checkConditionConsistency(entry.sentence, doc.content, answerText)
+        .consistent
+    ) {
+      entry.decidedBy = 'lexical';
+      entry.lexicalReason = REASONS.conditionMismatch;
+      entry.reason = `judge said supported, but the sentence leaves out a condition of source "${ruling.source}"; kept unsupported`;
       return;
     }
     entry.verdict = 'supported';

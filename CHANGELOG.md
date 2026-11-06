@@ -9,6 +9,27 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **The answer check catches a condition left out.** A sentence that keeps
+  every noun and number of its source but drops a restricting clause
+  claims more than the source does: "Remote work is allowed two days per
+  week" against "Remote work is allowed two days per week with manager
+  approval", the docs homepage's own example, was grounded. Thanks to the
+  reader who reported it. `checkConditionConsistency()` (exported next to
+  `checkPolarityConsistency()`) finds the restricting clauses of the closest
+  source sentence (an approval, "only if", "if", "unless", "provided",
+  "subject to", "as long as", "after 90 days", "for employees with ...",
+  "except"), and a sentence that keeps none of a clause's words, in itself
+  or anywhere else in the answer, is not grounded. `checkAnswer`,
+  `CitationTracker`, faithfulness, context recall and `verifyCitations`
+  apply it, with the new `lexicalReason` `condition_mismatch`, which the
+  judge never overturns. Contrasting clauses ("..., but not in children")
+  can still be left out, as since 3.6.0. Verdicts can change: re-save the
+  report you pass to `rag-pipeline eval --baseline`.
+
 ## [3.8.0] - 2026-11-06
 
 A minor release with no breaking changes, about testing RAG in TypeScript.

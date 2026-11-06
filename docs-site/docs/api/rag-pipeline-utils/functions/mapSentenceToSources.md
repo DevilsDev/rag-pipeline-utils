@@ -14,14 +14,15 @@ sentence each document supports (see computeSupportScore).
 
 ## Parameters
 
-| Parameter               | Type                                                                                                 | Description                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `sentence`              | `string`                                                                                             | The sentence to map                          |
-| `docs`                  | `object`[]                                                                                           | Source documents                             |
-| `options?`              | \{ `idfWeights?`: `Map`\<`string`, `number`\>; `maxCitations?`: `number`; `threshold?`: `number`; \} | Configuration options                        |
-| `options.idfWeights?`   | `Map`\<`string`, `number`\>                                                                          | Optional IDF weights for weighted similarity |
-| `options.maxCitations?` | `number`                                                                                             | Maximum number of citations to return        |
-| `options.threshold?`    | `number`                                                                                             | Minimum similarity threshold                 |
+| Parameter               | Type                                                                                                                          | Description                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `sentence`              | `string`                                                                                                                      | The sentence to map                                                                                  |
+| `docs`                  | `object`[]                                                                                                                    | Source documents                                                                                     |
+| `options?`              | \{ `answerText?`: `string`; `idfWeights?`: `Map`\<`string`, `number`\>; `maxCitations?`: `number`; `threshold?`: `number`; \} | Configuration options                                                                                |
+| `options.answerText?`   | `string`                                                                                                                      | The whole answer the sentence comes from: a condition it restates in another sentence counts as kept |
+| `options.idfWeights?`   | `Map`\<`string`, `number`\>                                                                                                   | Optional IDF weights for weighted similarity                                                         |
+| `options.maxCitations?` | `number`                                                                                                                      | Maximum number of citations to return                                                                |
+| `options.threshold?`    | `number`                                                                                                                      | Minimum similarity threshold                                                                         |
 
 ## Returns
 

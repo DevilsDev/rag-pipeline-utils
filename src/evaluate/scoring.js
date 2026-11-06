@@ -1016,11 +1016,181 @@ function checkPolarityConsistency(claimText, docText) {
 }
 
 /**
+ * Markers that open a restricting clause: a condition, an approval, an
+ * exception or an eligibility rule. Dropping one broadens what the claim
+ * grants ("allowed two days per week" from "... with manager approval").
+ * Contrasting markers (but, whereas, while, however) are not here: dropping
+ * a contrasting clause leaves a narrower claim that is still true. For
+ * "for <people> who/with ...", the restriction starts at who/with: the
+ * people are who it applies to.
+ */
+const NUMBER_WORD =
+  '(?:\\d[\\d,.]*|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirty|sixty|ninety)';
+const RESTRICTING_MARKERS = [
+  /\bwith\b(?:\s+[\w'’-]+){0,4}?\s+(?:approval|permission|consent|sign-?off|authori[sz]ation)\b/g,
+  /\bonly\s+(?:if|when)\b/g,
+  /\bif\b/g,
+  /\bunless\b/g,
+  /\bprovided(?:\s+that)?\b/g,
+  /\bsubject\s+to\b/g,
+  /\bas\s+long\s+as\b/g,
+  new RegExp(
+    `\\bafter\\s+${NUMBER_WORD}\\s+(?:hours?|days?|weeks?|months?|years?)\\b`,
+    'g',
+  ),
+  /\bfor\s+(?:[\w'’-]+\s+){1,3}?(?=(?:who|with|whose)\b)/g,
+  /\bexcept\b/g,
+];
+
+/** Words that only mark a restriction, not what it requires. */
+const MARKER_WORDS = new Set([
+  'with',
+  'only',
+  'if',
+  'when',
+  'unless',
+  'provided',
+  'that',
+  'subject',
+  'to',
+  'as',
+  'long',
+  'after',
+  'for',
+  'who',
+  'whose',
+  'except',
+]);
+
+/**
+ * Coordinators that join independent statements: a restriction in one of
+ * them does not restrict the other ("..., and the office is open on
+ * weekends"). Commas are not here, so "If approved, ..." and "..., subject
+ * to approval" stay with their statement.
+ */
+const STATEMENT_BOUNDARY =
+  /\s*;\s*|,?\s+\b(?:and|but|whereas|while|however)\b\s+/i;
+
+/** Where a restricting clause ends: punctuation or a coordinator. */
+const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/i;
+
+/** Light stemming for matching a restriction: approval/approves/approve. */
+const conditionStem = (t) => {
+  const s = stem(t.replace(/['’]s$/, ''));
+  return s.length > 5 ? s.replace(/al$/, '') : s;
+};
+const conditionWords = (text) =>
+  contentTokens(tokenize(text))
+    .filter((t) => !MARKER_WORDS.has(t))
+    .map(conditionStem);
+
+/**
+ * The restricting clauses of one statement, each with its content words.
+ * @param {string} statement
+ * @returns {Array<{text: string, words: string[]}>}
+ */
+function restrictingClauses(statement) {
+  const lower = statement.toLowerCase();
+  const found = [];
+  for (const marker of RESTRICTING_MARKERS) {
+    marker.lastIndex = 0;
+    let m;
+    while ((m = marker.exec(lower)) !== null) {
+      const matchEnd = m.index + m[0].length;
+      const start = m[0].startsWith('for ') ? matchEnd : m.index;
+      // "with ... approval" ends at its match; the others run to the end of
+      // their clause
+      const rest = lower.slice(matchEnd);
+      const until = rest.search(CLAUSE_END);
+      const end = m[0].startsWith('with ')
+        ? matchEnd
+        : matchEnd + (until < 0 ? rest.length : until);
+      if (found.some((f) => start >= f.start && start < f.end)) continue;
+      const text = statement.slice(start, end).trim();
+      const words = conditionWords(text);
+      if (words.length > 0) found.push({ start, end, text, words });
+    }
+  }
+  return found.map(({ text, words }) => ({ text, words }));
+}
+
+/**
+ * Condition consistency between a claim and a document. A claim that keeps
+ * every noun and number of its source but drops a restriction on it grants
+ * more than the source does: "Remote work is allowed two days per week"
+ * from "Remote work is allowed two days per week with manager approval".
+ * Word overlap passes it, so it is checked here (3.9).
+ *
+ * The claim is compared with the document sentence that shares most of its
+ * content words (any of them, on a tie). In the statements of that sentence
+ * that hold the claim's words (a sentence is split at and, but, whereas,
+ * while, however and semicolons, not at commas), each restricting clause
+ * ("with ... approval", "only if", "if", "unless", "provided", "subject to",
+ * "as long as", "after <number> <unit>", "for <people> who/with ...",
+ * "except") must be kept: at least one of its content words must appear in
+ * the claim or elsewhere in the answer, so a condition restated in another
+ * sentence still counts. Contrasting clauses ("but not in children") may be
+ * left out, as the polarity check allows since 3.6.
+ *
+ * @param {string} claimText
+ * @param {string} docText
+ * @param {string} [answerText] - The whole answer; defaults to the claim
+ * @returns {{ consistent: boolean, missing: string[], sourceSentence: string|null }}
+ *   missing: the restricting clauses the claim leaves out
+ */
+function checkConditionConsistency(claimText, docText, answerText) {
+  const claimWords = new Set(conditionWords(claimText));
+  if (claimWords.size === 0) {
+    return { consistent: true, missing: [], sourceSentence: null };
+  }
+  const answerWords = new Set([
+    ...claimWords,
+    ...(typeof answerText === 'string' ? conditionWords(answerText) : []),
+  ]);
+
+  const candidates = splitSentences(docText)
+    .map((sentence) => {
+      const words = new Set(conditionWords(sentence));
+      const shared = [...claimWords].filter((w) => words.has(w)).length;
+      return { sentence, shared };
+    })
+    .filter((s) => s.shared > 0)
+    .sort((a, b) => b.shared - a.shared);
+  if (candidates.length === 0) {
+    return { consistent: true, missing: [], sourceSentence: null };
+  }
+  const best = candidates[0].shared;
+  let first = null;
+  for (const { sentence } of candidates.filter((s) => s.shared === best)) {
+    const missing = sentence
+      .split(STATEMENT_BOUNDARY)
+      .filter((statement) =>
+        conditionWords(statement).some((w) => claimWords.has(w)),
+      )
+      .flatMap(restrictingClauses)
+      .filter((clause) => !clause.words.some((w) => answerWords.has(w)))
+      .map((clause) => clause.text);
+    if (missing.length === 0) {
+      return { consistent: true, missing: [], sourceSentence: sentence };
+    }
+    if (!first) first = { consistent: false, missing, sourceSentence: sentence };
+  }
+  return first;
+}
+
+/**
  * Multiplier applied to the support score when a claim's polarity
  * contradicts the document (see checkPolarityConsistency). It keeps the
  * score below 0.4, under the default 0.5 support threshold.
  */
 const POLARITY_MISMATCH_FACTOR = 0.4;
+
+/**
+ * Multiplier applied to the support score when a claim leaves out a
+ * restricting clause of its source (see checkConditionConsistency). It keeps
+ * the score below 0.4, under the default 0.5 support threshold.
+ */
+const CONDITION_MISMATCH_FACTOR = 0.4;
 
 /**
  * Multiplier applied to the support score when a claim states numbers the
@@ -1044,12 +1214,17 @@ const NUMERIC_MISMATCH_FACTOR = 0.4;
  * Polarity consistency: with the same texts, a claim that is negated where
  * the document is not, or the reverse (see checkPolarityConsistency), has its
  * score multiplied by POLARITY_MISMATCH_FACTOR (0.4).
+ * Condition consistency: a claim that leaves out a restricting clause of its
+ * source, and doesn't restate it elsewhere in `options.answerText` (see
+ * checkConditionConsistency), has its score multiplied by
+ * CONDITION_MISMATCH_FACTOR (0.4).
  *
  * @param {string[]} claimTokens - Tokens of the sentence/claim/query
  * @param {string[]|Set<string>} docTokens - Tokens of the document
  * @param {Map<string, number>|null} [idfWeights] - Optional token weights
- * @param {{ claimText?: string, docText?: string }} [options] - Raw texts
- *   enabling the numeric and polarity consistency checks
+ * @param {{ claimText?: string, docText?: string, answerText?: string }} [options] - Raw texts
+ *   enabling the numeric, polarity and condition consistency checks;
+ *   `answerText` is the whole answer the claim comes from
  * @returns {number} Support score between 0 and 1
  */
 function computeSupportScore(
@@ -1104,6 +1279,12 @@ function computeSupportScore(
     if (!checkPolarityConsistency(claimText, docText).consistent) {
       score *= POLARITY_MISMATCH_FACTOR;
     }
+    if (
+      !checkConditionConsistency(claimText, docText, options.answerText)
+        .consistent
+    ) {
+      score *= CONDITION_MISMATCH_FACTOR;
+    }
   }
   return score;
 }
@@ -1114,6 +1295,8 @@ module.exports = {
   computeSupportScore,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
+  CONDITION_MISMATCH_FACTOR,
   isNegated,
   extractNumbers,
   NUMERIC_MISMATCH_FACTOR,

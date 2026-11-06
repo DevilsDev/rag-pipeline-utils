@@ -41,10 +41,17 @@ function buildIDFWeights(docs) {
  * @param {number} [options.maxCitations=3] - Maximum number of citations to return
  * @param {number} [options.threshold=0.5] - Minimum similarity threshold
  * @param {Map<string, number>|null} [options.idfWeights=null] - Optional IDF weights for weighted similarity
+ * @param {string} [options.answerText] - The whole answer the sentence comes
+ *   from: a condition it restates in another sentence counts as kept
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
  */
 function mapSentenceToSources(sentence, docs, options = {}) {
-  const { maxCitations = 3, threshold = 0.5, idfWeights = null } = options;
+  const {
+    maxCitations = 3,
+    threshold = 0.5,
+    idfWeights = null,
+    answerText,
+  } = options;
 
   const sentenceTokens = tokenize(sentence);
   if (!sentenceTokens.length) return [];
@@ -62,6 +69,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
     const score = computeSupportScore(sentenceTokens, docSet, idfWeights, {
       claimText: sentence,
       docText,
+      answerText,
     });
     const matched = [...new Set(sentenceTokens)].filter((t) => docSet.has(t));
 

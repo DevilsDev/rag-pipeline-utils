@@ -77,7 +77,7 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * @property {number} start
  * @property {number} end
  * @property {'supported'|'unsupported'|'unverifiable'} verdict
- * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'unverifiable'} lexicalReason
+ * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'condition_mismatch'|'unverifiable'} lexicalReason
  * @property {string} reason - Why, in words
  * @property {'lexical'|'judge'} decidedBy
  * @property {number|null} score - Support of the claim by all its cited passages together, 0..1
@@ -411,6 +411,8 @@ const REASON_TEXT = {
   [REASONS.numberMismatch]: 'the numbers do not match the cited passages',
   [REASONS.polarityMismatch]:
     'the cited passages say the opposite (negation does not match)',
+  [REASONS.conditionMismatch]:
+    'the claim leaves out a condition the cited passages state',
   unverifiable: 'no cited text to check',
 };
 
@@ -452,6 +454,9 @@ async function verifyCitations(input, { judge } = {}) {
     : null;
   const byId = new Map(passageDocs.map((d) => [d.id, d]));
 
+  // The cited answer as a whole: a condition one claim restates in another
+  // counts as kept
+  const answerText = input.claims.map((c) => c.text).join(' ');
   const score = (text, contents) =>
     contents.length === 0
       ? 0
@@ -459,7 +464,7 @@ async function verifyCitations(input, { judge } = {}) {
           tokenize(text),
           new Set(tokenize(contents.join('\n'))),
           idfWeights,
-          { claimText: text, docText: contents.join('\n') },
+          { claimText: text, docText: contents.join('\n'), answerText },
         );
 
   const claims = input.claims.map((claim, ci) => {

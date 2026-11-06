@@ -113,6 +113,7 @@ function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
       const similarity = computeSupportScore(claimTokens, docTokens, null, {
         claimText: claim,
         docText: docContent,
+        answerText: referenceAnswer,
       });
 
       if (similarity > bestScore) {
