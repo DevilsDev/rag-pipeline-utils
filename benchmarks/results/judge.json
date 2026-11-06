@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T07:12:59.259Z",
+  "createdAt": "2026-11-05T23:43:39.920Z",
   "environment": {
-    "libraryVersion": "3.5.0",
-    "commit": "fb3d82f",
+    "libraryVersion": "3.6.0",
+    "commit": "b16d317",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -35,48 +35,48 @@
           "unsupported": {
             "cases": 450,
             "tp": 215,
-            "fp": 185,
+            "fp": 184,
             "fn": 10,
-            "tn": 40,
-            "precision": 0.5375,
+            "tn": 41,
+            "precision": 0.5388,
             "recall": 0.9556,
-            "f1": 0.688,
-            "accuracy": 0.5667,
-            "precisionInterval": [0.4885, 0.5858],
+            "f1": 0.6891,
+            "accuracy": 0.5689,
+            "precisionInterval": [0.4898, 0.5872],
             "recallInterval": [0.9201, 0.9757]
           },
           "supported": {
-            "precision": 0.8,
-            "recall": 0.1778,
-            "f1": 0.2909,
-            "precisionInterval": [0.6696, 0.8876],
-            "recallInterval": [0.1334, 0.233]
+            "precision": 0.8039,
+            "recall": 0.1822,
+            "f1": 0.2971,
+            "precisionInterval": [0.6754, 0.8898],
+            "recallInterval": [0.1373, 0.2379]
           },
-          "flaggedShare": 0.8889
+          "flaggedShare": 0.8867
         },
         "QA": {
           "cases": 150,
           "unsupported": {
             "cases": 150,
             "tp": 73,
-            "fp": 52,
+            "fp": 51,
             "fn": 2,
-            "tn": 23,
-            "precision": 0.584,
+            "tn": 24,
+            "precision": 0.5887,
             "recall": 0.9733,
-            "f1": 0.73,
-            "accuracy": 0.64,
-            "precisionInterval": [0.4963, 0.6666],
+            "f1": 0.7337,
+            "accuracy": 0.6467,
+            "precisionInterval": [0.5007, 0.6714],
             "recallInterval": [0.9079, 0.9927]
           },
           "supported": {
-            "precision": 0.92,
-            "recall": 0.3067,
-            "f1": 0.46,
-            "precisionInterval": [0.7503, 0.9778],
-            "recallInterval": [0.2139, 0.4183]
+            "precision": 0.9231,
+            "recall": 0.32,
+            "f1": 0.4752,
+            "precisionInterval": [0.7586, 0.9786],
+            "recallInterval": [0.2254, 0.4321]
           },
-          "flaggedShare": 0.8333
+          "flaggedShare": 0.8267
         },
         "Summary": {
           "cases": 150,
@@ -128,8 +128,8 @@
         }
       },
       "latencyMs": {
-        "p50": 4.5,
-        "p95": 13.8
+        "p50": 9.5,
+        "p95": 27.2
       }
     },
     "models": {
@@ -139,49 +139,49 @@
             "cases": 450,
             "unsupported": {
               "cases": 450,
-              "tp": 210,
-              "fp": 155,
-              "fn": 15,
-              "tn": 70,
-              "precision": 0.5753,
-              "recall": 0.9333,
-              "f1": 0.7119,
+              "tp": 209,
+              "fp": 154,
+              "fn": 16,
+              "tn": 71,
+              "precision": 0.5758,
+              "recall": 0.9289,
+              "f1": 0.7109,
               "accuracy": 0.6222,
-              "precisionInterval": [0.5241, 0.625],
-              "recallInterval": [0.8929, 0.9592]
+              "precisionInterval": [0.5244, 0.6255],
+              "recallInterval": [0.8876, 0.9558]
             },
             "supported": {
-              "precision": 0.8235,
-              "recall": 0.3111,
-              "f1": 0.4516,
-              "precisionInterval": [0.729, 0.89],
-              "recallInterval": [0.2542, 0.3743]
+              "precision": 0.8161,
+              "recall": 0.3156,
+              "f1": 0.4551,
+              "precisionInterval": [0.7219, 0.8835],
+              "recallInterval": [0.2584, 0.3789]
             },
-            "flaggedShare": 0.8111
+            "flaggedShare": 0.8067
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 70,
-              "fp": 44,
+              "fp": 43,
               "fn": 5,
-              "tn": 31,
-              "precision": 0.614,
+              "tn": 32,
+              "precision": 0.6195,
               "recall": 0.9333,
-              "f1": 0.7407,
-              "accuracy": 0.6733,
-              "precisionInterval": [0.5223, 0.6983],
+              "f1": 0.7447,
+              "accuracy": 0.68,
+              "precisionInterval": [0.5274, 0.7037],
               "recallInterval": [0.8532, 0.9712]
             },
             "supported": {
-              "precision": 0.8611,
-              "recall": 0.4133,
-              "f1": 0.5586,
-              "precisionInterval": [0.7134, 0.9392],
-              "recallInterval": [0.3088, 0.5263]
+              "precision": 0.8649,
+              "recall": 0.4267,
+              "f1": 0.5714,
+              "precisionInterval": [0.7202, 0.9409],
+              "recallInterval": [0.321, 0.5395]
             },
-            "flaggedShare": 0.76
+            "flaggedShare": 0.7533
           },
           "Summary": {
             "cases": 150,
@@ -211,25 +211,25 @@
             "cases": 150,
             "unsupported": {
               "cases": 150,
-              "tp": 74,
+              "tp": 73,
               "fp": 67,
-              "fn": 1,
+              "fn": 2,
               "tn": 8,
-              "precision": 0.5248,
-              "recall": 0.9867,
-              "f1": 0.6852,
-              "accuracy": 0.5467,
-              "precisionInterval": [0.4428, 0.6055],
-              "recallInterval": [0.9283, 0.9976]
+              "precision": 0.5214,
+              "recall": 0.9733,
+              "f1": 0.6791,
+              "accuracy": 0.54,
+              "precisionInterval": [0.4392, 0.6025],
+              "recallInterval": [0.9079, 0.9927]
             },
             "supported": {
-              "precision": 0.8889,
+              "precision": 0.8,
               "recall": 0.1067,
-              "f1": 0.1905,
-              "precisionInterval": [0.565, 0.9801],
+              "f1": 0.1882,
+              "precisionInterval": [0.4902, 0.9433],
               "recallInterval": [0.055, 0.1966]
             },
-            "flaggedShare": 0.94
+            "flaggedShare": 0.9333
           }
         },
         "checksWithCall": 361,
@@ -242,17 +242,17 @@
         "firstBlockNotText": 0,
         "usageReportedByCheckAnswer": 361,
         "usageMatchesApi": 361,
-        "inputTokens": 382363,
-        "outputTokens": 79544,
-        "costUSD": 0.7801,
-        "costPer1000ChecksUSD": 1.73,
+        "inputTokens": 382518,
+        "outputTokens": 79798,
+        "costUSD": 0.7815,
+        "costPer1000ChecksUSD": 1.74,
         "latencyMs": {
-          "p50": 2009.5,
-          "p95": 4498.4
+          "p50": 2090.7,
+          "p95": 4669.1
         },
         "latencyMsWithCall": {
-          "p50": 2447.6,
-          "p95": 4642.2
+          "p50": 2503.8,
+          "p95": 4855.3
         },
         "sentences": {
           "sentences": 3263,
@@ -260,51 +260,51 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 314,
-            "fp": 1474,
-            "fn": 108,
-            "tn": 1367,
-            "precision": 0.1756,
-            "recall": 0.7441,
-            "f1": 0.2842,
-            "accuracy": 0.5152,
-            "precisionInterval": [0.1587, 0.1939],
-            "recallInterval": [0.7004, 0.7834]
+            "tp": 313,
+            "fp": 1467,
+            "fn": 109,
+            "tn": 1374,
+            "precision": 0.1758,
+            "recall": 0.7417,
+            "f1": 0.2843,
+            "accuracy": 0.517,
+            "precisionInterval": [0.1589, 0.1942],
+            "recallInterval": [0.6979, 0.7812]
           },
           "judge": {
             "cases": 3263,
             "tp": 270,
-            "fp": 716,
+            "fp": 709,
             "fn": 152,
-            "tn": 2125,
-            "precision": 0.2738,
+            "tn": 2132,
+            "precision": 0.2758,
             "recall": 0.6398,
-            "f1": 0.3835,
-            "accuracy": 0.734,
-            "precisionInterval": [0.2469, 0.3025],
+            "f1": 0.3854,
+            "accuracy": 0.7361,
+            "precisionInterval": [0.2487, 0.3046],
             "recallInterval": [0.5929, 0.6842]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1475,
-              "labelledUnsupported": 108,
+              "sentences": 1483,
+              "labelledUnsupported": 109,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1445,
-              "labelledUnsupported": 235,
-              "judgeSupported": 802,
-              "judgeSupportedButLabelledUnsupported": 44
+              "sentences": 1448,
+              "labelledUnsupported": 236,
+              "judgeSupported": 801,
+              "judgeSupportedButLabelledUnsupported": 43
             },
             "number_mismatch": {
-              "sentences": 237,
-              "labelledUnsupported": 68,
+              "sentences": 228,
+              "labelledUnsupported": 66,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 106,
+              "sentences": 104,
               "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
@@ -319,48 +319,48 @@
             "unsupported": {
               "cases": 450,
               "tp": 212,
-              "fp": 167,
+              "fp": 166,
               "fn": 13,
-              "tn": 58,
-              "precision": 0.5594,
+              "tn": 59,
+              "precision": 0.5608,
               "recall": 0.9422,
-              "f1": 0.702,
-              "accuracy": 0.6,
-              "precisionInterval": [0.509, 0.6085],
+              "f1": 0.7032,
+              "accuracy": 0.6022,
+              "precisionInterval": [0.5105, 0.61],
               "recallInterval": [0.9037, 0.9659]
             },
             "supported": {
-              "precision": 0.8169,
-              "recall": 0.2578,
-              "f1": 0.3919,
-              "precisionInterval": [0.7115, 0.8898],
-              "recallInterval": [0.205, 0.3187]
+              "precision": 0.8194,
+              "recall": 0.2622,
+              "f1": 0.3973,
+              "precisionInterval": [0.7152, 0.8913],
+              "recallInterval": [0.2091, 0.3233]
             },
-            "flaggedShare": 0.8422
+            "flaggedShare": 0.84
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 71,
-              "fp": 46,
+              "fp": 45,
               "fn": 4,
-              "tn": 29,
-              "precision": 0.6068,
+              "tn": 30,
+              "precision": 0.6121,
               "recall": 0.9467,
-              "f1": 0.7396,
-              "accuracy": 0.6667,
-              "precisionInterval": [0.5163, 0.6906],
+              "f1": 0.7435,
+              "accuracy": 0.6733,
+              "precisionInterval": [0.5212, 0.6958],
               "recallInterval": [0.8707, 0.9791]
             },
             "supported": {
-              "precision": 0.8788,
-              "recall": 0.3867,
-              "f1": 0.537,
-              "precisionInterval": [0.7267, 0.9518],
-              "recallInterval": [0.2846, 0.4998]
+              "precision": 0.8824,
+              "recall": 0.4,
+              "f1": 0.5505,
+              "precisionInterval": [0.7338, 0.9533],
+              "recallInterval": [0.2966, 0.5131]
             },
-            "flaggedShare": 0.78
+            "flaggedShare": 0.7733
           },
           "Summary": {
             "cases": 150,
@@ -421,17 +421,17 @@
         "firstBlockNotText": 340,
         "usageReportedByCheckAnswer": 361,
         "usageMatchesApi": 361,
-        "inputTokens": 521051,
-        "outputTokens": 248996,
-        "costUSD": 0.1766,
+        "inputTokens": 521264,
+        "outputTokens": 250059,
+        "costUSD": 0.1772,
         "costPer1000ChecksUSD": 0.39,
         "latencyMs": {
-          "p50": 2770,
-          "p95": 6454.4
+          "p50": 2783.3,
+          "p95": 6467.1
         },
         "latencyMsWithCall": {
-          "p50": 3442.8,
-          "p95": 6557.5
+          "p50": 3456.7,
+          "p95": 6589.2
         },
         "sentences": {
           "sentences": 3263,
@@ -439,51 +439,51 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 314,
-            "fp": 1474,
-            "fn": 108,
-            "tn": 1367,
-            "precision": 0.1756,
-            "recall": 0.7441,
-            "f1": 0.2842,
-            "accuracy": 0.5152,
-            "precisionInterval": [0.1587, 0.1939],
-            "recallInterval": [0.7004, 0.7834]
+            "tp": 313,
+            "fp": 1467,
+            "fn": 109,
+            "tn": 1374,
+            "precision": 0.1758,
+            "recall": 0.7417,
+            "f1": 0.2843,
+            "accuracy": 0.517,
+            "precisionInterval": [0.1589, 0.1942],
+            "recallInterval": [0.6979, 0.7812]
           },
           "judge": {
             "cases": 3263,
-            "tp": 304,
-            "fp": 900,
-            "fn": 118,
-            "tn": 1941,
-            "precision": 0.2525,
-            "recall": 0.7204,
-            "f1": 0.3739,
-            "accuracy": 0.688,
-            "precisionInterval": [0.2288, 0.2778],
-            "recallInterval": [0.6757, 0.7611]
+            "tp": 303,
+            "fp": 895,
+            "fn": 119,
+            "tn": 1946,
+            "precision": 0.2529,
+            "recall": 0.718,
+            "f1": 0.3741,
+            "accuracy": 0.6892,
+            "precisionInterval": [0.2291, 0.2783],
+            "recallInterval": [0.6733, 0.7588]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1475,
-              "labelledUnsupported": 108,
+              "sentences": 1483,
+              "labelledUnsupported": 109,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1445,
-              "labelledUnsupported": 235,
-              "judgeSupported": 584,
+              "sentences": 1448,
+              "labelledUnsupported": 236,
+              "judgeSupported": 582,
               "judgeSupportedButLabelledUnsupported": 10
             },
             "number_mismatch": {
-              "sentences": 237,
-              "labelledUnsupported": 68,
+              "sentences": 228,
+              "labelledUnsupported": 66,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 106,
+              "sentences": 104,
               "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
@@ -498,48 +498,48 @@
             "unsupported": {
               "cases": 450,
               "tp": 213,
-              "fp": 165,
+              "fp": 164,
               "fn": 12,
-              "tn": 60,
-              "precision": 0.5635,
+              "tn": 61,
+              "precision": 0.565,
               "recall": 0.9467,
-              "f1": 0.7065,
-              "accuracy": 0.6067,
-              "precisionInterval": [0.5131, 0.6126],
+              "f1": 0.7076,
+              "accuracy": 0.6089,
+              "precisionInterval": [0.5145, 0.6141],
               "recallInterval": [0.9091, 0.9692]
             },
             "supported": {
-              "precision": 0.8333,
-              "recall": 0.2667,
-              "f1": 0.404,
-              "precisionInterval": [0.7309, 0.902],
-              "recallInterval": [0.2132, 0.328]
+              "precision": 0.8356,
+              "recall": 0.2711,
+              "f1": 0.4094,
+              "precisionInterval": [0.7343, 0.9034],
+              "recallInterval": [0.2172, 0.3327]
             },
-            "flaggedShare": 0.84
+            "flaggedShare": 0.8378
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 72,
-              "fp": 45,
+              "fp": 44,
               "fn": 3,
-              "tn": 30,
-              "precision": 0.6154,
+              "tn": 31,
+              "precision": 0.6207,
               "recall": 0.96,
-              "f1": 0.75,
-              "accuracy": 0.68,
-              "precisionInterval": [0.5249, 0.6985],
+              "f1": 0.7539,
+              "accuracy": 0.6867,
+              "precisionInterval": [0.5299, 0.7038],
               "recallInterval": [0.8889, 0.9863]
             },
             "supported": {
-              "precision": 0.9091,
-              "recall": 0.4,
-              "f1": 0.5556,
-              "precisionInterval": [0.7643, 0.9686],
-              "recallInterval": [0.2966, 0.5131]
+              "precision": 0.9118,
+              "recall": 0.4133,
+              "f1": 0.5688,
+              "precisionInterval": [0.7704, 0.9695],
+              "recallInterval": [0.3088, 0.5263]
             },
-            "flaggedShare": 0.78
+            "flaggedShare": 0.7733
           },
           "Summary": {
             "cases": 150,
@@ -597,20 +597,20 @@
           "judge output is not valid JSON": 5
         },
         "truncated": 0,
-        "firstBlockNotText": 27,
+        "firstBlockNotText": 28,
         "usageReportedByCheckAnswer": 361,
         "usageMatchesApi": 361,
-        "inputTokens": 521051,
-        "outputTokens": 100880,
-        "costUSD": 2.0509,
-        "costPer1000ChecksUSD": 4.56,
+        "inputTokens": 521264,
+        "outputTokens": 101721,
+        "costUSD": 2.0597,
+        "costPer1000ChecksUSD": 4.58,
         "latencyMs": {
-          "p50": 2474.4,
-          "p95": 4764.6
+          "p50": 2484.9,
+          "p95": 4801.9
         },
         "latencyMsWithCall": {
-          "p50": 2863.8,
-          "p95": 4982.4
+          "p50": 2857,
+          "p95": 5005.6
         },
         "sentences": {
           "sentences": 3263,
@@ -618,51 +618,51 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 314,
-            "fp": 1474,
-            "fn": 108,
-            "tn": 1367,
-            "precision": 0.1756,
-            "recall": 0.7441,
-            "f1": 0.2842,
-            "accuracy": 0.5152,
-            "precisionInterval": [0.1587, 0.1939],
-            "recallInterval": [0.7004, 0.7834]
+            "tp": 313,
+            "fp": 1467,
+            "fn": 109,
+            "tn": 1374,
+            "precision": 0.1758,
+            "recall": 0.7417,
+            "f1": 0.2843,
+            "accuracy": 0.517,
+            "precisionInterval": [0.1589, 0.1942],
+            "recallInterval": [0.6979, 0.7812]
           },
           "judge": {
             "cases": 3263,
             "tp": 307,
-            "fp": 933,
+            "fp": 924,
             "fn": 115,
-            "tn": 1908,
-            "precision": 0.2476,
+            "tn": 1917,
+            "precision": 0.2494,
             "recall": 0.7275,
-            "f1": 0.3694,
-            "accuracy": 0.6788,
-            "precisionInterval": [0.2244, 0.2724],
+            "f1": 0.3714,
+            "accuracy": 0.6816,
+            "precisionInterval": [0.226, 0.2743],
             "recallInterval": [0.6831, 0.7678]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1475,
-              "labelledUnsupported": 108,
+              "sentences": 1483,
+              "labelledUnsupported": 109,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1445,
-              "labelledUnsupported": 235,
-              "judgeSupported": 548,
-              "judgeSupportedButLabelledUnsupported": 7
+              "sentences": 1448,
+              "labelledUnsupported": 236,
+              "judgeSupported": 549,
+              "judgeSupportedButLabelledUnsupported": 6
             },
             "number_mismatch": {
-              "sentences": 237,
-              "labelledUnsupported": 68,
+              "sentences": 228,
+              "labelledUnsupported": 66,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 106,
+              "sentences": 104,
               "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
@@ -677,48 +677,48 @@
             "unsupported": {
               "cases": 450,
               "tp": 212,
-              "fp": 165,
+              "fp": 164,
               "fn": 13,
-              "tn": 60,
-              "precision": 0.5623,
+              "tn": 61,
+              "precision": 0.5638,
               "recall": 0.9422,
-              "f1": 0.7043,
-              "accuracy": 0.6044,
-              "precisionInterval": [0.5119, 0.6115],
+              "f1": 0.7055,
+              "accuracy": 0.6067,
+              "precisionInterval": [0.5133, 0.6131],
               "recallInterval": [0.9037, 0.9659]
             },
             "supported": {
-              "precision": 0.8219,
-              "recall": 0.2667,
-              "f1": 0.4027,
-              "precisionInterval": [0.7188, 0.8929],
-              "recallInterval": [0.2132, 0.328]
+              "precision": 0.8243,
+              "recall": 0.2711,
+              "f1": 0.408,
+              "precisionInterval": [0.7223, 0.8944],
+              "recallInterval": [0.2172, 0.3327]
             },
-            "flaggedShare": 0.8378
+            "flaggedShare": 0.8356
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 71,
-              "fp": 45,
+              "fp": 44,
               "fn": 4,
-              "tn": 30,
-              "precision": 0.6121,
+              "tn": 31,
+              "precision": 0.6174,
               "recall": 0.9467,
-              "f1": 0.7435,
-              "accuracy": 0.6733,
-              "precisionInterval": [0.5212, 0.6958],
+              "f1": 0.7474,
+              "accuracy": 0.68,
+              "precisionInterval": [0.5261, 0.7011],
               "recallInterval": [0.8707, 0.9791]
             },
             "supported": {
-              "precision": 0.8824,
-              "recall": 0.4,
-              "f1": 0.5505,
-              "precisionInterval": [0.7338, 0.9533],
-              "recallInterval": [0.2966, 0.5131]
+              "precision": 0.8857,
+              "recall": 0.4133,
+              "f1": 0.5636,
+              "precisionInterval": [0.7405, 0.9546],
+              "recallInterval": [0.3088, 0.5263]
             },
-            "flaggedShare": 0.7733
+            "flaggedShare": 0.7667
           },
           "Summary": {
             "cases": 150,
@@ -777,17 +777,17 @@
         "firstBlockNotText": 310,
         "usageReportedByCheckAnswer": 361,
         "usageMatchesApi": 361,
-        "inputTokens": 521051,
-        "outputTokens": 189474,
-        "costUSD": 5.8737,
-        "costPer1000ChecksUSD": 13.05,
+        "inputTokens": 521264,
+        "outputTokens": 189531,
+        "costUSD": 5.8757,
+        "costPer1000ChecksUSD": 13.06,
         "latencyMs": {
-          "p50": 4358,
-          "p95": 10021.4
+          "p50": 4397.1,
+          "p95": 9874.8
         },
         "latencyMsWithCall": {
-          "p50": 5044.7,
-          "p95": 10288.3
+          "p50": 5117.8,
+          "p95": 10263.8
         },
         "sentences": {
           "sentences": 3263,
@@ -795,51 +795,51 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 314,
-            "fp": 1474,
-            "fn": 108,
-            "tn": 1367,
-            "precision": 0.1756,
-            "recall": 0.7441,
-            "f1": 0.2842,
-            "accuracy": 0.5152,
-            "precisionInterval": [0.1587, 0.1939],
-            "recallInterval": [0.7004, 0.7834]
+            "tp": 313,
+            "fp": 1467,
+            "fn": 109,
+            "tn": 1374,
+            "precision": 0.1758,
+            "recall": 0.7417,
+            "f1": 0.2843,
+            "accuracy": 0.517,
+            "precisionInterval": [0.1589, 0.1942],
+            "recallInterval": [0.6979, 0.7812]
           },
           "judge": {
             "cases": 3263,
             "tp": 306,
-            "fp": 939,
+            "fp": 930,
             "fn": 116,
-            "tn": 1902,
-            "precision": 0.2458,
+            "tn": 1911,
+            "precision": 0.2476,
             "recall": 0.7251,
-            "f1": 0.3671,
-            "accuracy": 0.6767,
-            "precisionInterval": [0.2227, 0.2705],
+            "f1": 0.3691,
+            "accuracy": 0.6794,
+            "precisionInterval": [0.2243, 0.2724],
             "recallInterval": [0.6806, 0.7655]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1475,
-              "labelledUnsupported": 108,
+              "sentences": 1483,
+              "labelledUnsupported": 109,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1445,
-              "labelledUnsupported": 235,
-              "judgeSupported": 543,
-              "judgeSupportedButLabelledUnsupported": 8
+              "sentences": 1448,
+              "labelledUnsupported": 236,
+              "judgeSupported": 544,
+              "judgeSupportedButLabelledUnsupported": 7
             },
             "number_mismatch": {
-              "sentences": 237,
-              "labelledUnsupported": 68,
+              "sentences": 228,
+              "labelledUnsupported": 66,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 106,
+              "sentences": 104,
               "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
@@ -854,48 +854,48 @@
             "unsupported": {
               "cases": 450,
               "tp": 211,
-              "fp": 162,
+              "fp": 161,
               "fn": 14,
-              "tn": 63,
-              "precision": 0.5657,
+              "tn": 64,
+              "precision": 0.5672,
               "recall": 0.9378,
-              "f1": 0.7057,
-              "accuracy": 0.6089,
-              "precisionInterval": [0.515, 0.6151],
+              "f1": 0.7069,
+              "accuracy": 0.6111,
+              "precisionInterval": [0.5164, 0.6166],
               "recallInterval": [0.8983, 0.9626]
             },
             "supported": {
-              "precision": 0.8182,
-              "recall": 0.28,
-              "f1": 0.4172,
-              "precisionInterval": [0.7176, 0.8885],
-              "recallInterval": [0.2254, 0.342]
+              "precision": 0.8205,
+              "recall": 0.2844,
+              "f1": 0.4224,
+              "precisionInterval": [0.721, 0.89],
+              "recallInterval": [0.2295, 0.3466]
             },
-            "flaggedShare": 0.8289
+            "flaggedShare": 0.8267
           },
           "QA": {
             "cases": 150,
             "unsupported": {
               "cases": 150,
               "tp": 71,
-              "fp": 44,
+              "fp": 43,
               "fn": 4,
-              "tn": 31,
-              "precision": 0.6174,
+              "tn": 32,
+              "precision": 0.6228,
               "recall": 0.9467,
-              "f1": 0.7474,
-              "accuracy": 0.68,
-              "precisionInterval": [0.5261, 0.7011],
+              "f1": 0.7513,
+              "accuracy": 0.6867,
+              "precisionInterval": [0.5312, 0.7064],
               "recallInterval": [0.8707, 0.9791]
             },
             "supported": {
-              "precision": 0.8857,
-              "recall": 0.4133,
-              "f1": 0.5636,
-              "precisionInterval": [0.7405, 0.9546],
-              "recallInterval": [0.3088, 0.5263]
+              "precision": 0.8889,
+              "recall": 0.4267,
+              "f1": 0.5766,
+              "precisionInterval": [0.7468, 0.9559],
+              "recallInterval": [0.321, 0.5395]
             },
-            "flaggedShare": 0.7667
+            "flaggedShare": 0.76
           },
           "Summary": {
             "cases": 150,
@@ -956,17 +956,17 @@
         "firstBlockNotText": 174,
         "usageReportedByCheckAnswer": 361,
         "usageMatchesApi": 361,
-        "inputTokens": 521051,
-        "outputTokens": 183083,
-        "costUSD": 14.3647,
-        "costPer1000ChecksUSD": 31.92,
+        "inputTokens": 521264,
+        "outputTokens": 183818,
+        "costUSD": 14.4035,
+        "costPer1000ChecksUSD": 32.01,
         "latencyMs": {
-          "p50": 3399.8,
-          "p95": 14672.6
+          "p50": 3461,
+          "p95": 14687.5
         },
         "latencyMsWithCall": {
-          "p50": 4525.3,
-          "p95": 14857.6
+          "p50": 4441.5,
+          "p95": 15161.4
         },
         "sentences": {
           "sentences": 3263,
@@ -974,51 +974,51 @@
           "lexicalMismatches": 0,
           "lexical": {
             "cases": 3263,
-            "tp": 314,
-            "fp": 1474,
-            "fn": 108,
-            "tn": 1367,
-            "precision": 0.1756,
-            "recall": 0.7441,
-            "f1": 0.2842,
-            "accuracy": 0.5152,
-            "precisionInterval": [0.1587, 0.1939],
-            "recallInterval": [0.7004, 0.7834]
+            "tp": 313,
+            "fp": 1467,
+            "fn": 109,
+            "tn": 1374,
+            "precision": 0.1758,
+            "recall": 0.7417,
+            "f1": 0.2843,
+            "accuracy": 0.517,
+            "precisionInterval": [0.1589, 0.1942],
+            "recallInterval": [0.6979, 0.7812]
           },
           "judge": {
             "cases": 3263,
             "tp": 301,
-            "fp": 822,
+            "fp": 813,
             "fn": 121,
-            "tn": 2019,
-            "precision": 0.268,
+            "tn": 2028,
+            "precision": 0.2702,
             "recall": 0.7133,
-            "f1": 0.3896,
-            "accuracy": 0.711,
-            "precisionInterval": [0.2429, 0.2947],
+            "f1": 0.3919,
+            "accuracy": 0.7138,
+            "precisionInterval": [0.2449, 0.297],
             "recallInterval": [0.6683, 0.7543]
           },
           "byLexicalReason": {
             "supported": {
-              "sentences": 1475,
-              "labelledUnsupported": 108,
+              "sentences": 1483,
+              "labelledUnsupported": 109,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "low_overlap": {
-              "sentences": 1445,
-              "labelledUnsupported": 235,
-              "judgeSupported": 665,
-              "judgeSupportedButLabelledUnsupported": 13
+              "sentences": 1448,
+              "labelledUnsupported": 236,
+              "judgeSupported": 666,
+              "judgeSupportedButLabelledUnsupported": 12
             },
             "number_mismatch": {
-              "sentences": 237,
-              "labelledUnsupported": 68,
+              "sentences": 228,
+              "labelledUnsupported": 66,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 106,
+              "sentences": 104,
               "labelledUnsupported": 11,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
@@ -1028,10 +1028,10 @@
       }
     },
     "lexicalFalseAlarms": {
-      "answers": 185,
-      "onlyLowOverlap": 96,
-      "withNumberMismatch": 47,
-      "withPolarityMismatch": 47
+      "answers": 184,
+      "onlyLowOverlap": 99,
+      "withNumberMismatch": 42,
+      "withPolarityMismatch": 46
     },
     "cases": [
       {
@@ -2169,13 +2169,13 @@
         "id": "ragtruth-15460",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false,
+          "claude-opus-5-5": false,
+          "claude-fable-5-1": false
         }
       },
       {
@@ -5733,7 +5733,7 @@
         "hallucinated": true,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6487,7 +6487,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6513,7 +6513,7 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
           "claude-sonnet-5-5": true,
           "claude-opus-5-5": true,
@@ -6890,11 +6890,11 @@
     "file": "benchmarks/fixtures/judge-edge-cases.jsonl",
     "cases": 72,
     "lexical": {
-      "correct": 47,
+      "correct": 49,
       "cases": 72,
-      "accuracy": 0.6528,
-      "accuracyInterval": [0.5376, 0.7525],
-      "falseAlarms": 13,
+      "accuracy": 0.6806,
+      "accuracyInterval": [0.5661, 0.7767],
+      "falseAlarms": 11,
       "misses": 12,
       "sentences": {
         "scored": 10,
@@ -6918,8 +6918,8 @@
         },
         "units-conversions": {
           "cases": 5,
-          "correct": 1,
-          "falseAlarms": 3,
+          "correct": 3,
+          "falseAlarms": 1,
           "misses": 1,
           "judgeRuled": 0
         },
@@ -7062,36 +7062,6 @@
           ]
         },
         {
-          "id": "units-1",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The warranty lasts 14 days from delivery.",
-          "sentences": [
-            {
-              "sentence": "The warranty lasts 14 days from delivery.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
-          "id": "units-2",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The trail is 5,000 metres long.",
-          "sentences": [
-            {
-              "sentence": "The trail is 5,000 metres long.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
           "id": "units-3",
           "category": "units-conversions",
           "expected": "supported",
@@ -7400,11 +7370,11 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 53,
+        "correct": 55,
         "cases": 72,
-        "accuracy": 0.7361,
-        "accuracyInterval": [0.6242, 0.8241],
-        "falseAlarms": 7,
+        "accuracy": 0.7639,
+        "accuracyInterval": [0.654, 0.847],
+        "falseAlarms": 5,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -7428,8 +7398,8 @@
           },
           "units-conversions": {
             "cases": 5,
-            "correct": 2,
-            "falseAlarms": 2,
+            "correct": 4,
+            "falseAlarms": 0,
             "misses": 1,
             "judgeRuled": 1
           },
@@ -7459,7 +7429,7 @@
             "correct": 3,
             "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 4,
@@ -7540,40 +7510,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -7857,15 +7793,15 @@
             ]
           }
         ],
-        "calls": 15,
+        "calls": 16,
         "errors": 0
       },
       "claude-haiku-5-5": {
-        "correct": 53,
+        "correct": 55,
         "cases": 72,
-        "accuracy": 0.7361,
-        "accuracyInterval": [0.6242, 0.8241],
-        "falseAlarms": 7,
+        "accuracy": 0.7639,
+        "accuracyInterval": [0.654, 0.847],
+        "falseAlarms": 5,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -7889,8 +7825,8 @@
           },
           "units-conversions": {
             "cases": 5,
-            "correct": 2,
-            "falseAlarms": 2,
+            "correct": 4,
+            "falseAlarms": 0,
             "misses": 1,
             "judgeRuled": 1
           },
@@ -7920,7 +7856,7 @@
             "correct": 3,
             "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 4,
@@ -8001,40 +7937,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -8318,15 +8220,15 @@
             ]
           }
         ],
-        "calls": 15,
+        "calls": 16,
         "errors": 0
       },
       "claude-sonnet-5-5": {
-        "correct": 52,
+        "correct": 54,
         "cases": 72,
-        "accuracy": 0.7222,
-        "accuracyInterval": [0.6095, 0.8124],
-        "falseAlarms": 8,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.6391, 0.8356],
+        "falseAlarms": 6,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -8350,8 +8252,8 @@
           },
           "units-conversions": {
             "cases": 5,
-            "correct": 2,
-            "falseAlarms": 2,
+            "correct": 4,
+            "falseAlarms": 0,
             "misses": 1,
             "judgeRuled": 1
           },
@@ -8381,7 +8283,7 @@
             "correct": 3,
             "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 4,
@@ -8462,40 +8364,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -8796,15 +8664,15 @@
             ]
           }
         ],
-        "calls": 15,
+        "calls": 16,
         "errors": 1
       },
       "claude-opus-5-5": {
-        "correct": 53,
+        "correct": 55,
         "cases": 72,
-        "accuracy": 0.7361,
-        "accuracyInterval": [0.6242, 0.8241],
-        "falseAlarms": 7,
+        "accuracy": 0.7639,
+        "accuracyInterval": [0.654, 0.847],
+        "falseAlarms": 5,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -8828,8 +8696,8 @@
           },
           "units-conversions": {
             "cases": 5,
-            "correct": 2,
-            "falseAlarms": 2,
+            "correct": 4,
+            "falseAlarms": 0,
             "misses": 1,
             "judgeRuled": 1
           },
@@ -8859,7 +8727,7 @@
             "correct": 3,
             "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 4,
@@ -8940,40 +8808,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -9257,15 +9091,15 @@
             ]
           }
         ],
-        "calls": 15,
+        "calls": 16,
         "errors": 0
       },
       "claude-fable-5-1": {
-        "correct": 53,
+        "correct": 55,
         "cases": 72,
-        "accuracy": 0.7361,
-        "accuracyInterval": [0.6242, 0.8241],
-        "falseAlarms": 7,
+        "accuracy": 0.7639,
+        "accuracyInterval": [0.654, 0.847],
+        "falseAlarms": 5,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -9289,8 +9123,8 @@
           },
           "units-conversions": {
             "cases": 5,
-            "correct": 2,
-            "falseAlarms": 2,
+            "correct": 4,
+            "falseAlarms": 0,
             "misses": 1,
             "judgeRuled": 1
           },
@@ -9320,7 +9154,7 @@
             "correct": 3,
             "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 4,
@@ -9401,40 +9235,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -9718,7 +9518,7 @@
             ]
           }
         ],
-        "calls": 15,
+        "calls": 16,
         "errors": 0
       }
     }
@@ -9727,12 +9527,12 @@
     "file": "benchmarks/fixtures/judge-edge-cases-2.jsonl",
     "cases": 64,
     "lexical": {
-      "correct": 37,
+      "correct": 42,
       "cases": 64,
-      "accuracy": 0.5781,
-      "accuracyInterval": [0.4561, 0.6913],
-      "falseAlarms": 14,
-      "misses": 13,
+      "accuracy": 0.6563,
+      "accuracyInterval": [0.534, 0.7608],
+      "falseAlarms": 10,
+      "misses": 12,
       "sentences": {
         "scored": 8,
         "correct": 8,
@@ -9755,15 +9555,15 @@
         },
         "units-conversions": {
           "cases": 3,
-          "correct": 0,
-          "falseAlarms": 2,
-          "misses": 1,
+          "correct": 3,
+          "falseAlarms": 0,
+          "misses": 0,
           "judgeRuled": 0
         },
         "percentages-ranges": {
           "cases": 3,
-          "correct": 2,
-          "falseAlarms": 1,
+          "correct": 3,
+          "falseAlarms": 0,
           "misses": 0,
           "judgeRuled": 0
         },
@@ -9853,8 +9653,8 @@
         },
         "table-or-list": {
           "cases": 4,
-          "correct": 2,
-          "falseAlarms": 1,
+          "correct": 3,
+          "falseAlarms": 0,
           "misses": 1,
           "judgeRuled": 0
         },
@@ -9923,66 +9723,6 @@
               "sentence": "The orchestra has eighty-two musicians.",
               "verdict": "unsupported",
               "lexicalReason": "low_overlap"
-            }
-          ]
-        },
-        {
-          "id": "b2-units-1",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The parcel weighs 2 kg.",
-          "sentences": [
-            {
-              "sentence": "The parcel weighs 2 kg.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
-          "id": "b2-units-2",
-          "category": "units-conversions",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "The parcel weighs 2 pounds.",
-          "sentences": [
-            {
-              "sentence": "The parcel weighs 2 pounds.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
-          "id": "b2-units-3",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The course lasts half a year.",
-          "sentences": [
-            {
-              "sentence": "The course lasts half a year.",
-              "verdict": "unsupported",
-              "lexicalReason": "low_overlap"
-            }
-          ]
-        },
-        {
-          "id": "b2-percent-1",
-          "category": "percentages-ranges",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "Three quarters of members voted yes.",
-          "sentences": [
-            {
-              "sentence": "Three quarters of members voted yes.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
             }
           ]
         },
@@ -10197,21 +9937,6 @@
           ]
         },
         {
-          "id": "b2-table-3",
-          "category": "table-or-list",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-          "sentences": [
-            {
-              "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
           "id": "b2-quote-2",
           "category": "quoted-speech",
           "expected": "unsupported",
@@ -10290,12 +10015,12 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 42,
+        "correct": 46,
         "cases": 64,
-        "accuracy": 0.6563,
-        "accuracyInterval": [0.534, 0.7608],
-        "falseAlarms": 9,
-        "misses": 13,
+        "accuracy": 0.7188,
+        "accuracyInterval": [0.5987, 0.8141],
+        "falseAlarms": 6,
+        "misses": 12,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -10318,15 +10043,15 @@
           },
           "units-conversions": {
             "cases": 3,
-            "correct": 1,
-            "falseAlarms": 1,
-            "misses": 1,
-            "judgeRuled": 1
+            "correct": 3,
+            "falseAlarms": 0,
+            "misses": 0,
+            "judgeRuled": 0
           },
           "percentages-ranges": {
             "cases": 3,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -10416,10 +10141,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -10444,57 +10169,6 @@
           }
         },
         "failures": [
-          {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
           {
             "id": "b2-dates-1",
             "category": "dates",
@@ -10734,23 +10408,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -10823,12 +10480,12 @@
         "errors": 0
       },
       "claude-haiku-5-5": {
-        "correct": 42,
+        "correct": 46,
         "cases": 64,
-        "accuracy": 0.6563,
-        "accuracyInterval": [0.534, 0.7608],
-        "falseAlarms": 9,
-        "misses": 13,
+        "accuracy": 0.7188,
+        "accuracyInterval": [0.5987, 0.8141],
+        "falseAlarms": 6,
+        "misses": 12,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -10851,15 +10508,15 @@
           },
           "units-conversions": {
             "cases": 3,
-            "correct": 1,
-            "falseAlarms": 1,
-            "misses": 1,
-            "judgeRuled": 1
+            "correct": 3,
+            "falseAlarms": 0,
+            "misses": 0,
+            "judgeRuled": 0
           },
           "percentages-ranges": {
             "cases": 3,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -10949,10 +10606,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -10977,57 +10634,6 @@
           }
         },
         "failures": [
-          {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
           {
             "id": "b2-dates-1",
             "category": "dates",
@@ -11267,23 +10873,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -11356,12 +10945,12 @@
         "errors": 0
       },
       "claude-sonnet-5-5": {
-        "correct": 44,
+        "correct": 48,
         "cases": 64,
-        "accuracy": 0.6875,
-        "accuracyInterval": [0.5661, 0.7877],
-        "falseAlarms": 7,
-        "misses": 13,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.6318, 0.8399],
+        "falseAlarms": 4,
+        "misses": 12,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -11384,15 +10973,15 @@
           },
           "units-conversions": {
             "cases": 3,
-            "correct": 1,
-            "falseAlarms": 1,
-            "misses": 1,
-            "judgeRuled": 1
+            "correct": 3,
+            "falseAlarms": 0,
+            "misses": 0,
+            "judgeRuled": 0
           },
           "percentages-ranges": {
             "cases": 3,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -11482,10 +11071,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -11510,57 +11099,6 @@
           }
         },
         "failures": [
-          {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
           {
             "id": "b2-dates-1",
             "category": "dates",
@@ -11766,23 +11304,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -11855,12 +11376,12 @@
         "errors": 0
       },
       "claude-opus-5-5": {
-        "correct": 43,
+        "correct": 47,
         "cases": 64,
-        "accuracy": 0.6719,
-        "accuracyInterval": [0.55, 0.7743],
-        "falseAlarms": 8,
-        "misses": 13,
+        "accuracy": 0.7344,
+        "accuracyInterval": [0.6152, 0.827],
+        "falseAlarms": 5,
+        "misses": 12,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -11883,15 +11404,15 @@
           },
           "units-conversions": {
             "cases": 3,
-            "correct": 1,
-            "falseAlarms": 1,
-            "misses": 1,
-            "judgeRuled": 1
+            "correct": 3,
+            "falseAlarms": 0,
+            "misses": 0,
+            "judgeRuled": 0
           },
           "percentages-ranges": {
             "cases": 3,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -11981,10 +11502,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -12009,57 +11530,6 @@
           }
         },
         "failures": [
-          {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
           {
             "id": "b2-dates-1",
             "category": "dates",
@@ -12282,23 +11752,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -12371,12 +11824,12 @@
         "errors": 0
       },
       "claude-fable-5-1": {
-        "correct": 43,
+        "correct": 47,
         "cases": 64,
-        "accuracy": 0.6719,
-        "accuracyInterval": [0.55, 0.7743],
-        "falseAlarms": 8,
-        "misses": 13,
+        "accuracy": 0.7344,
+        "accuracyInterval": [0.6152, 0.827],
+        "falseAlarms": 5,
+        "misses": 12,
         "sentences": {
           "scored": 8,
           "correct": 8,
@@ -12399,15 +11852,15 @@
           },
           "units-conversions": {
             "cases": 3,
-            "correct": 1,
-            "falseAlarms": 1,
-            "misses": 1,
-            "judgeRuled": 1
+            "correct": 3,
+            "falseAlarms": 0,
+            "misses": 0,
+            "judgeRuled": 0
           },
           "percentages-ranges": {
             "cases": 3,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -12497,10 +11950,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -12525,57 +11978,6 @@
           }
         },
         "failures": [
-          {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
           {
             "id": "b2-dates-1",
             "category": "dates",
@@ -12798,23 +12200,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -12892,12 +12277,12 @@
     "file": "both batches",
     "cases": 136,
     "lexical": {
-      "correct": 84,
+      "correct": 91,
       "cases": 136,
-      "accuracy": 0.6176,
-      "accuracyInterval": [0.5338, 0.695],
-      "falseAlarms": 27,
-      "misses": 25,
+      "accuracy": 0.6691,
+      "accuracyInterval": [0.5863, 0.7426],
+      "falseAlarms": 21,
+      "misses": 24,
       "sentences": {
         "scored": 18,
         "correct": 18,
@@ -12920,15 +12305,15 @@
         },
         "units-conversions": {
           "cases": 8,
-          "correct": 1,
-          "falseAlarms": 5,
-          "misses": 2,
+          "correct": 6,
+          "falseAlarms": 1,
+          "misses": 1,
           "judgeRuled": 0
         },
         "percentages-ranges": {
           "cases": 8,
-          "correct": 7,
-          "falseAlarms": 1,
+          "correct": 8,
+          "falseAlarms": 0,
           "misses": 0,
           "judgeRuled": 0
         },
@@ -13018,8 +12403,8 @@
         },
         "table-or-list": {
           "cases": 4,
-          "correct": 2,
-          "falseAlarms": 1,
+          "correct": 3,
+          "falseAlarms": 0,
           "misses": 1,
           "judgeRuled": 0
         },
@@ -13088,36 +12473,6 @@
               "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
               "verdict": "unsupported",
               "lexicalReason": "low_overlap"
-            }
-          ]
-        },
-        {
-          "id": "units-1",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The warranty lasts 14 days from delivery.",
-          "sentences": [
-            {
-              "sentence": "The warranty lasts 14 days from delivery.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
-          "id": "units-2",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The trail is 5,000 metres long.",
-          "sentences": [
-            {
-              "sentence": "The trail is 5,000 metres long.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
             }
           ]
         },
@@ -13472,66 +12827,6 @@
           ]
         },
         {
-          "id": "b2-units-1",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The parcel weighs 2 kg.",
-          "sentences": [
-            {
-              "sentence": "The parcel weighs 2 kg.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
-          "id": "b2-units-2",
-          "category": "units-conversions",
-          "expected": "unsupported",
-          "got": "supported",
-          "kind": "miss",
-          "answer": "The parcel weighs 2 pounds.",
-          "sentences": [
-            {
-              "sentence": "The parcel weighs 2 pounds.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            }
-          ]
-        },
-        {
-          "id": "b2-units-3",
-          "category": "units-conversions",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "The course lasts half a year.",
-          "sentences": [
-            {
-              "sentence": "The course lasts half a year.",
-              "verdict": "unsupported",
-              "lexicalReason": "low_overlap"
-            }
-          ]
-        },
-        {
-          "id": "b2-percent-1",
-          "category": "percentages-ranges",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "Three quarters of members voted yes.",
-          "sentences": [
-            {
-              "sentence": "Three quarters of members voted yes.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
           "id": "b2-dates-1",
           "category": "dates",
           "expected": "supported",
@@ -13742,21 +13037,6 @@
           ]
         },
         {
-          "id": "b2-table-3",
-          "category": "table-or-list",
-          "expected": "supported",
-          "got": "unsupported",
-          "kind": "false_alarm",
-          "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-          "sentences": [
-            {
-              "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-              "verdict": "unsupported",
-              "lexicalReason": "number_mismatch"
-            }
-          ]
-        },
-        {
           "id": "b2-quote-2",
           "category": "quoted-speech",
           "expected": "unsupported",
@@ -13835,12 +13115,12 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 95,
+        "correct": 101,
         "cases": 136,
-        "accuracy": 0.6985,
-        "accuracyInterval": [0.6168, 0.7693],
-        "falseAlarms": 16,
-        "misses": 25,
+        "accuracy": 0.7426,
+        "accuracyInterval": [0.6632, 0.8087],
+        "falseAlarms": 11,
+        "misses": 24,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -13863,15 +13143,15 @@
           },
           "units-conversions": {
             "cases": 8,
-            "correct": 3,
-            "falseAlarms": 3,
-            "misses": 2,
-            "judgeRuled": 2
+            "correct": 7,
+            "falseAlarms": 0,
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -13894,7 +13174,7 @@
             "correct": 4,
             "falseAlarms": 0,
             "misses": 3,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 7,
@@ -13961,10 +13241,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -14003,40 +13283,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -14320,57 +13566,6 @@
             ]
           },
           {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-dates-1",
             "category": "dates",
             "expected": "supported",
@@ -14609,23 +13804,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -14694,19 +13872,19 @@
             ]
           }
         ],
-        "calls": 30,
+        "calls": 31,
         "errors": 0,
-        "inputTokens": 20603,
-        "outputTokens": 1729,
-        "costUSD": 0.0292
+        "inputTokens": 20946,
+        "outputTokens": 1792,
+        "costUSD": 0.0299
       },
       "claude-haiku-5-5": {
-        "correct": 95,
+        "correct": 101,
         "cases": 136,
-        "accuracy": 0.6985,
-        "accuracyInterval": [0.6168, 0.7693],
-        "falseAlarms": 16,
-        "misses": 25,
+        "accuracy": 0.7426,
+        "accuracyInterval": [0.6632, 0.8087],
+        "falseAlarms": 11,
+        "misses": 24,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -14729,15 +13907,15 @@
           },
           "units-conversions": {
             "cases": 8,
-            "correct": 3,
-            "falseAlarms": 3,
-            "misses": 2,
-            "judgeRuled": 2
+            "correct": 7,
+            "falseAlarms": 0,
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -14760,7 +13938,7 @@
             "correct": 4,
             "falseAlarms": 0,
             "misses": 3,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 7,
@@ -14827,10 +14005,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -14869,40 +14047,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -15186,57 +14330,6 @@
             ]
           },
           {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-dates-1",
             "category": "dates",
             "expected": "supported",
@@ -15475,23 +14568,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -15560,19 +14636,19 @@
             ]
           }
         ],
-        "calls": 30,
+        "calls": 31,
         "errors": 0,
-        "inputTokens": 29405,
-        "outputTokens": 3727,
-        "costUSD": 0.0048
+        "inputTokens": 29873,
+        "outputTokens": 3789,
+        "costUSD": 0.0049
       },
       "claude-sonnet-5-5": {
-        "correct": 96,
+        "correct": 102,
         "cases": 136,
-        "accuracy": 0.7059,
-        "accuracyInterval": [0.6245, 0.776],
-        "falseAlarms": 15,
-        "misses": 25,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.671, 0.8152],
+        "falseAlarms": 10,
+        "misses": 24,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -15595,15 +14671,15 @@
           },
           "units-conversions": {
             "cases": 8,
-            "correct": 3,
-            "falseAlarms": 3,
-            "misses": 2,
-            "judgeRuled": 2
+            "correct": 7,
+            "falseAlarms": 0,
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -15626,7 +14702,7 @@
             "correct": 4,
             "falseAlarms": 0,
             "misses": 3,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 7,
@@ -15693,10 +14769,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -15735,40 +14811,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -16069,57 +15111,6 @@
             ]
           },
           {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-dates-1",
             "category": "dates",
             "expected": "supported",
@@ -16324,23 +15315,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -16409,19 +15383,19 @@
             ]
           }
         ],
-        "calls": 30,
+        "calls": 31,
         "errors": 1,
-        "inputTokens": 29405,
-        "outputTokens": 2671,
-        "costUSD": 0.0855
+        "inputTokens": 29873,
+        "outputTokens": 2744,
+        "costUSD": 0.0872
       },
       "claude-opus-5-5": {
-        "correct": 96,
+        "correct": 102,
         "cases": 136,
-        "accuracy": 0.7059,
-        "accuracyInterval": [0.6245, 0.776],
-        "falseAlarms": 15,
-        "misses": 25,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.671, 0.8152],
+        "falseAlarms": 10,
+        "misses": 24,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -16444,15 +15418,15 @@
           },
           "units-conversions": {
             "cases": 8,
-            "correct": 3,
-            "falseAlarms": 3,
-            "misses": 2,
-            "judgeRuled": 2
+            "correct": 7,
+            "falseAlarms": 0,
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -16475,7 +15449,7 @@
             "correct": 4,
             "falseAlarms": 0,
             "misses": 3,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 7,
@@ -16542,10 +15516,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -16584,40 +15558,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -16901,57 +15841,6 @@
             ]
           },
           {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-dates-1",
             "category": "dates",
             "expected": "supported",
@@ -17173,23 +16062,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -17258,19 +16130,19 @@
             ]
           }
         ],
-        "calls": 30,
+        "calls": 31,
         "errors": 0,
-        "inputTokens": 29405,
-        "outputTokens": 3071,
-        "costUSD": 0.179
+        "inputTokens": 29873,
+        "outputTokens": 3153,
+        "costUSD": 0.1826
       },
       "claude-fable-5-1": {
-        "correct": 96,
+        "correct": 102,
         "cases": 136,
-        "accuracy": 0.7059,
-        "accuracyInterval": [0.6245, 0.776],
-        "falseAlarms": 15,
-        "misses": 25,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.671, 0.8152],
+        "falseAlarms": 10,
+        "misses": 24,
         "sentences": {
           "scored": 18,
           "correct": 18,
@@ -17293,15 +16165,15 @@
           },
           "units-conversions": {
             "cases": 8,
-            "correct": 3,
-            "falseAlarms": 3,
-            "misses": 2,
-            "judgeRuled": 2
+            "correct": 7,
+            "falseAlarms": 0,
+            "misses": 1,
+            "judgeRuled": 1
           },
           "percentages-ranges": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
             "judgeRuled": 0
           },
@@ -17324,7 +16196,7 @@
             "correct": 4,
             "falseAlarms": 0,
             "misses": 3,
-            "judgeRuled": 1
+            "judgeRuled": 2
           },
           "two-sources": {
             "cases": 7,
@@ -17391,10 +16263,10 @@
           },
           "table-or-list": {
             "cases": 4,
-            "correct": 2,
-            "falseAlarms": 1,
+            "correct": 3,
+            "falseAlarms": 0,
             "misses": 1,
-            "judgeRuled": 0
+            "judgeRuled": 1
           },
           "quoted-speech": {
             "cases": 4,
@@ -17433,40 +16305,6 @@
                 "lexicalReason": "polarity_mismatch",
                 "decidedBy": "lexical",
                 "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
-            "id": "units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The warranty lasts 14 days from delivery.",
-            "sentences": [
-              {
-                "sentence": "The warranty lasts 14 days from delivery.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "units-2",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The trail is 5,000 metres long.",
-            "sentences": [
-              {
-                "sentence": "The trail is 5,000 metres long.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
               }
             ]
           },
@@ -17750,57 +16588,6 @@
             ]
           },
           {
-            "id": "b2-units-1",
-            "category": "units-conversions",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "The parcel weighs 2 kg.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 kg.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
-            "id": "b2-units-2",
-            "category": "units-conversions",
-            "expected": "unsupported",
-            "got": "supported",
-            "kind": "miss",
-            "answer": "The parcel weighs 2 pounds.",
-            "sentences": [
-              {
-                "sentence": "The parcel weighs 2 pounds.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              }
-            ]
-          },
-          {
-            "id": "b2-percent-1",
-            "category": "percentages-ranges",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Three quarters of members voted yes.",
-            "sentences": [
-              {
-                "sentence": "Three quarters of members voted yes.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-dates-1",
             "category": "dates",
             "expected": "supported",
@@ -18022,23 +16809,6 @@
             ]
           },
           {
-            "id": "b2-table-3",
-            "category": "table-or-list",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-            "sentences": [
-              {
-                "sentence": "Opening hours are 9 to 5 on weekdays and 10 to 2 on Saturdays.",
-                "verdict": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "decidedBy": "lexical",
-                "reason": "states a number its source does not contain; the judge is not asked"
-              }
-            ]
-          },
-          {
             "id": "b2-quote-2",
             "category": "quoted-speech",
             "expected": "unsupported",
@@ -18107,11 +16877,11 @@
             ]
           }
         ],
-        "calls": 30,
+        "calls": 31,
         "errors": 0,
-        "inputTokens": 29405,
-        "outputTokens": 2293,
-        "costUSD": 0.4087
+        "inputTokens": 29873,
+        "outputTokens": 2377,
+        "costUSD": 0.4176
       }
     }
   },
@@ -18125,8 +16895,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": false,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 391,
-      "totalCostUSD": 0.8093
+      "totalCalls": 392,
+      "totalCostUSD": 0.8114
     },
     "claude-haiku-5-5": {
       "pricesPerMTok": {
@@ -18142,8 +16912,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 391,
-      "totalCostUSD": 0.1814
+      "totalCalls": 392,
+      "totalCostUSD": 0.182
     },
     "claude-sonnet-5-5": {
       "pricesPerMTok": {
@@ -18154,8 +16924,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 391,
-      "totalCostUSD": 2.1364
+      "totalCalls": 392,
+      "totalCostUSD": 2.1469
     },
     "claude-opus-5-5": {
       "pricesPerMTok": {
@@ -18166,8 +16936,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 391,
-      "totalCostUSD": 6.0527
+      "totalCalls": 392,
+      "totalCostUSD": 6.0582
     },
     "claude-fable-5-1": {
       "pricesPerMTok": {
@@ -18178,8 +16948,8 @@
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 391,
-      "totalCostUSD": 14.7734
+      "totalCalls": 392,
+      "totalCostUSD": 14.8211
     }
   }
 }

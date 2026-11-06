@@ -77,3 +77,20 @@
 {"id":"ref-g6","category":"reference numbers","kind":"guard","expected":"unsupported","claim":"Firmware FW-11 fixes the boot loop on older routers.","source":"The boot loop on older routers is fixed in firmware FW-12, released in spring."}
 {"id":"clause-07","category":"negated clause left out","kind":"false alarm","expected":"supported","claim":"The new drug was not better than the combined therapy.","source":"The new drug was better than placebo, better than the old drug, but was not better than the combined therapy."}
 {"id":"clause-08","category":"negated clause left out","kind":"false alarm","expected":"supported","claim":"Based on these results, the diet does not improve sleep in adults.","source":"In these results the diet does not improve sleep in adults."}
+{"id":"unit-07","category":"units","kind":"false alarm","expected":"supported","claim":"Employees get 20 days of paid vacation.","source":"Employees get twenty days of paid vacation."}
+{"id":"unit-08","category":"units","kind":"false alarm","expected":"supported","claim":"The break is 5 min long.","source":"The break is 5 minutes long."}
+{"id":"unit-09","category":"units","kind":"false alarm","expected":"supported","claim":"The trial ran for 1 month.","source":"The trial ran for 30 days."}
+{"id":"unit-g6","category":"units","kind":"guard","expected":"unsupported","claim":"The parcel weighs 3 kg.","source":"The parcel weighs 2,000 grams."}
+{"id":"unit-g7","category":"units","kind":"guard","expected":"unsupported","claim":"The course takes 3 weeks.","source":"The course takes 3 days."}
+{"id":"frac-06","category":"fractions and percentages","kind":"false alarm","expected":"supported","claim":"Sales fell in the second half.","source":"Sales fell by 40% in the second half."}
+{"id":"frac-07","category":"fractions and percentages","kind":"false alarm","expected":"supported","claim":"Half a year later, the office reopened.","source":"Six months later, the office reopened."}
+{"id":"time-03","category":"times of day","kind":"false alarm","expected":"supported","claim":"The shop closes at 5 pm.","source":"The shop closes at 17:00."}
+{"id":"time-g2","category":"times of day","kind":"guard","expected":"unsupported","claim":"The shop closes at 6.","source":"The shop closes at 17:00."}
+{"id":"clause-09","category":"negated clause left out","kind":"guard","expected":"unsupported","claim":"The drug reduced mortality.","source":"The drug lowered blood pressure but did not reduce mortality."}
+{"id":"clause-10","category":"negated clause left out","kind":"false alarm","expected":"supported","claim":"The drug did not reduce mortality.","source":"The drug lowered blood pressure but did not reduce mortality."}
+{"id":"clause-g6","category":"negated clause left out","kind":"guard","expected":"unsupported","claim":"According to the study, the drug works.","source":"The study found the drug does not work."}
+{"id":"date-g4","category":"dates","kind":"guard","expected":"unsupported","claim":"The study was published in 1993.","source":"The study was published in 1992.1 It enrolled adults over sixty."}
+{"id":"time-04","category":"times of day","kind":"false alarm","expected":"supported","claim":"The cafe is open from 7 am to 11 pm.","source":"Hours: Monday 7:0-23:0, Tuesday 7:0-23:0."}
+{"id":"time-05","category":"times of day","kind":"false alarm","expected":"supported","claim":"The bar seats up to 8 people.","source":"The bar opens at 17:00 and seats 8 people."}
+{"id":"time-06","category":"times of day","kind":"false alarm","expected":"supported","claim":"The shop is located at 11 Main Street.","source":"The shop at 11 Main Street opens at 9:00."}
+{"id":"unit-10","category":"units","kind":"false alarm","expected":"supported","claim":"The shop is open seven days a week.","source":"The shop is open every day of the week from 7:00, closing for a 30 minutes break at noon."}

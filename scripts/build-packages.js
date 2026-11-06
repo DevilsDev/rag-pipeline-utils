@@ -54,8 +54,16 @@ const PACKAGES = [
     name: "@devilsdev/rag-connectors",
     entry: "packages/connectors.js",
     description:
-      "Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant, pgvector and Pinecone.",
-    keywords: ["rag", "openai", "anthropic", "ollama", "qdrant", "pgvector"],
+      "Embedders, LLMs and vector stores for @devilsdev/rag-core: OpenAI, Anthropic, Cohere, Ollama, the AI SDK, Qdrant, pgvector, Pinecone and Weaviate.",
+    keywords: [
+      "rag",
+      "openai",
+      "anthropic",
+      "ollama",
+      "qdrant",
+      "pgvector",
+      "weaviate",
+    ],
   },
   {
     name: "@devilsdev/rag-eval",

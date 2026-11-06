@@ -48,36 +48,60 @@ const isPinoPrettyAvailable = () => {
 };
 
 /**
+ * Destination for JSON output. pino's default stdout stream is asynchronous
+ * and registers a process 'exit' listener to flush on exit; every fresh copy
+ * of the module (bundlers, Jest's per-file registries) adds another one, and
+ * after ten Node prints MaxListenersExceededWarning. A synchronous stdout
+ * destination needs no exit hook and cannot lose lines on process.exit().
+ * Returns undefined (pino's own default) when pretty printing uses a transport
+ * or when process.stdout.write has been replaced (pino writes through it then).
+ */
+const getDestination = (pretty) => {
+  // The edge build aliases pino to a console shim without destination().
+  if (pretty || typeof pino.destination !== 'function') return undefined;
+  const stdout = process.stdout;
+  if (!stdout || stdout.write !== stdout.constructor.prototype.write) {
+    return undefined;
+  }
+  return pino.destination({ dest: stdout.fd || 1, sync: true });
+};
+
+const prettyPrint = shouldUsePrettyPrint();
+
+/**
  * Create a structured JSON logger instance with correlation IDs and enterprise features.
  * Supports distributed tracing, tenant isolation, and security audit logging.
  */
-const baseLogger = pino({
-  name: 'rag-pipeline-utils',
-  level: getLogLevel(),
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    },
-    log: (object) => {
-      // Add correlation ID if available
-      if (object.correlationId) {
-        object.correlationId = object.correlationId;
-      }
-      return object;
-    },
-  },
-  // Pretty print in development or when LOG_PRETTY=true
-  ...(shouldUsePrettyPrint() && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
+const baseLogger = pino(
+  {
+    name: 'rag-pipeline-utils',
+    level: getLogLevel(),
+    formatters: {
+      level: (label) => {
+        return { level: label };
+      },
+      log: (object) => {
+        // Add correlation ID if available
+        if (object.correlationId) {
+          object.correlationId = object.correlationId;
+        }
+        return object;
       },
     },
-  }),
-});
+    // Pretty print in development or when LOG_PRETTY=true
+    ...(prettyPrint && {
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss',
+          ignore: 'pid,hostname',
+        },
+      },
+    }),
+  },
+  getDestination(prettyPrint),
+);
 
 /**
  * Coerce the meta argument into an object. Callers often pass

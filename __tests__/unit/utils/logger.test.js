@@ -43,3 +43,16 @@ describe("StructuredLogger meta handling", () => {
     expect(calls[0].data.correlationId).toBeDefined();
   });
 });
+
+describe("logger destination", () => {
+  test("loading the logger adds no process exit listener", () => {
+    // pino's default async stdout stream registers an 'exit' flush hook per
+    // module copy; Jest reloads the module for every test file, so those
+    // hooks piled up past MaxListeners. The sync destination needs none.
+    const before = process.listenerCount("exit");
+    jest.isolateModules(() => {
+      require("../../../src/utils/logger");
+    });
+    expect(process.listenerCount("exit")).toBe(before);
+  });
+});

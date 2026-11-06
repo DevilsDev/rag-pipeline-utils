@@ -65,6 +65,64 @@ databaseSuite("QdrantRetriever", "QDRANT_URL", (url) => {
   });
 });
 
+databaseSuite("WeaviateRetriever", "WEAVIATE_URL", (url) => {
+  describe("WeaviateRetriever server", () => {
+    // As for Qdrant: lift jest.setup.js's network block for this suite.
+    let savedDispatcher;
+    beforeAll(() => {
+      const undici = require("undici");
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = true;
+      savedDispatcher = undici.getGlobalDispatcher();
+      undici.setGlobalDispatcher(new undici.Agent());
+    });
+    afterAll(() => {
+      require("undici").setGlobalDispatcher(savedDispatcher);
+      globalThis.__ALLOW_LOOPBACK_HTTP__ = false;
+    });
+    const {
+      WeaviateRetriever,
+    } = require("../../src/retrieval/weaviate-retriever");
+    describeRetrieverContract(
+      "WeaviateRetriever",
+      () =>
+        new WeaviateRetriever({
+          url,
+          collection: `Contract_${randomBytes(4).toString("hex")}`,
+        }),
+      {
+        extended: true,
+        cleanup: async (retriever) => {
+          // retriever.collection: Weaviate's (capitalized) class name.
+          await fetch(`${url}/v1/schema/${retriever.collection}`, {
+            method: "DELETE",
+          });
+        },
+      },
+    );
+
+    // delete(ids) is a batch delete with ContainsAny, outside the contract.
+    it("WeaviateRetriever: delete() removes documents by id", async () => {
+      const { DOCS } = require("../utils/retriever-contract");
+      const retriever = new WeaviateRetriever({
+        url,
+        collection: `Contract_${randomBytes(4).toString("hex")}`,
+      });
+      try {
+        await retriever.store(DOCS);
+        await retriever.delete([DOCS[0].id, "not-stored"]);
+        expect(await retriever.size()).toBe(2);
+        expect((await retriever.list()).map((d) => d.id).sort()).toEqual(
+          [DOCS[1].id, DOCS[2].id].sort(),
+        );
+      } finally {
+        await fetch(`${url}/v1/schema/${retriever.collection}`, {
+          method: "DELETE",
+        });
+      }
+    });
+  });
+});
+
 describeRetrieverContract("MemoryRetriever", () => {
   const { MemoryRetriever } = require("../../src/connectors/memory-retriever");
   return new MemoryRetriever();

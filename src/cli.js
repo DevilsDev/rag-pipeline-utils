@@ -1,6 +1,7 @@
 const { Command } = require('commander');
 const { EnhancedCLI } = require('./cli/enhanced-cli-commands');
 const pkg = require('../package.json');
+const { describeCliError, redact } = require('./cli/shared/cli-errors');
 
 function buildProgram() {
   const enhancedCLI = new EnhancedCLI();
@@ -14,4 +15,9 @@ async function run(argv = process.argv) {
   await program.parseAsync(argv);
 }
 
-module.exports = { buildProgram, run };
+module.exports = {
+  buildProgram,
+  run,
+  describeCliError,
+  redactCliText: redact,
+};

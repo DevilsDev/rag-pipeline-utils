@@ -39,7 +39,7 @@
     "./cli": "./bin/cli.js"
   },
   "bin": {
-    "rag-pipeline": "./bin/cli.js"
+    "rag-pipeline": "bin/cli.js"
   },
   "engines": {
     "node": ">=22"
@@ -141,7 +141,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DevilsDev/rag-pipeline-utils.git"
+    "url": "git+https://github.com/DevilsDev/rag-pipeline-utils.git"
   },
   "keywords": [
     "rag",
@@ -199,7 +199,7 @@
   "lint-staged": {
     "src/**/*.{js,ts,jsx,tsx}": "eslint --fix",
     "{__tests__,scripts,bin,docs-site,examples,contracts}/**/*.{js,jsx,ts,tsx,mjs,cjs}": "prettier --write --ignore-unknown",
-    "*.{js,mjs,cjs}": "prettier --write --ignore-unknown",
+    "./*.{js,mjs,cjs}": "prettier --write --ignore-unknown",
     "**/*.{json,md,mdx,yml,yaml,css,scss,html}": "prettier --write --ignore-unknown"
   },
   "devDependencies": {

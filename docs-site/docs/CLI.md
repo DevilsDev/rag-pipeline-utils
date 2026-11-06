@@ -63,13 +63,13 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
 
 1. **Built-in components** (`rag-pipeline info --plugins` lists them):
 
-   | Stage     | Names                                        | Notes                                                                                                                                                                                                                                                                                                                |
-   | --------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | loader    | `auto`                                       | Picks a loader per file extension                                                                                                                                                                                                                                                                                    |
-   | embedder  | `local`, `openai`, `ollama`, `cohere`        | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                           |
-   | retriever | `file-store`, `memory`, `pgvector`, `qdrant` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant) |
-   | llm       | `openai`, `anthropic`, `ollama`, `router`    | Optional; for `router` see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                         |
-   | reranker  | `scoring`                                    | Optional                                                                                                                                                                                                                                                                                                             |
+   | Stage     | Names                                                    | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+   | --------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | loader    | `auto`                                                   | Picks a loader per file extension                                                                                                                                                                                                                                                                                                                                                                                                       |
+   | embedder  | `local`, `openai`, `ollama`, `cohere`                    | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                                                                                                                                              |
+   | retriever | `file-store`, `memory`, `pgvector`, `qdrant`, `weaviate` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant); `weaviate` (3.7.0) reads `WEAVIATE_URL` and `WEAVIATE_API_KEY`, see [Weaviate](./Concepts-Connectors.md#weaviate) |
+   | llm       | `openai`, `anthropic`, `ollama`, `router`                | Optional; for `router` see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                                                                                                                                            |
+   | reranker  | `scoring`                                                | Optional                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 2. **Custom plugins** declared under `plugins`, as module paths relative to the config file. The module may export a class (constructed with the entry's `config`) or an object:
 
@@ -125,13 +125,24 @@ The `router` llm sends each query to the cheapest model suited to it ([how it de
 | Option            | Description                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------ |
 | `--config <path>` | Config file (default `.ragrc.json`). Relative paths in it resolve from its directory |
-| `--verbose`       | Extra output (e.g. the files `ingest` read)                                          |
+| `--verbose`       | Extra output (e.g. the files `ingest` read, and the stack trace of a failure)        |
 | `--no-color`      | Disable colored output                                                               |
 | `--dry-run`       | Show what `init`, `ingest`, `query` or `run` would do without doing it               |
 | `--quiet`         | `query` prints only the answer (or the passages), no status lines                    |
 | `-v, --version`   | Print the version                                                                    |
 
-Commands exit with status `1` on failure and print the error on stderr.
+Commands exit with status `1` on failure and print the error on stderr, in
+one line (`--verbose` adds the stack trace). A missing or refused API key
+names the provider, the variable to set and what the API said, and never
+prints the key:
+
+```text
+❌ Query failed: no Anthropic API key. Set ANTHROPIC_API_KEY and run the command again.
+❌ Query failed: Anthropic rejected the API key (401 authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.
+```
+
+`ingest`, `eval` and `generate-dataset` say the same, once, for the
+embedder or llm whose key is missing or refused.
 
 ---
 

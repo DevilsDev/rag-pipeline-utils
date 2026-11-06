@@ -12,6 +12,7 @@
 const { loadCliConfig } = require("../shared/config-context.js");
 const { query } = require("../services/rag-service.js");
 const { CostCalculator } = require("../../cost/cost-calculator.js");
+const { reportCliError } = require("../shared/cli-errors.js");
 
 const STAGES = ["embed", "retrieve", "rerank", "generate"];
 
@@ -238,8 +239,7 @@ async function handleQuery(globalOptions, question, options = {}) {
     if (options.trace) printTrace(result);
     if (options.stats) printStats(stats);
   } catch (error) {
-    console.error(`❌ Query failed: ${error.message}`);
-    process.exitCode = 1;
+    reportCliError("Query failed", error, globalOptions);
   }
 }
 

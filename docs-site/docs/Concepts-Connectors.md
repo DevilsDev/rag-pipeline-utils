@@ -35,7 +35,8 @@ defined as a JSON schema in `contracts/`.
 | `PgVectorRetriever` | PostgreSQL with pgvector: cosine similarity, upserts in one transaction, an HNSW index. See [PostgreSQL with pgvector](#postgresql-with-pgvector).                                                                    |
 | `QdrantRetriever`   | Qdrant over its REST API, with no client package. See [Qdrant](#qdrant).                                                                                                                                              |
 | `PineconeRetriever` | A Pinecone serverless index over its REST API, with no client package. See [Pinecone](#pinecone).                                                                                                                     |
-| Weaviate, others    | Build your own retriever with the [retriever contract](./Plugins).                                                                                                                                                    |
+| `WeaviateRetriever` | Weaviate over its REST and GraphQL APIs, with no client package. See [Weaviate](#weaviate).                                                                                                                           |
+| Others              | Build your own retriever with the [retriever contract](./Plugins).                                                                                                                                                    |
 
 ### PostgreSQL with pgvector
 
@@ -200,6 +201,57 @@ It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and p
   "config": { "index": "docs", "namespace": "rag_documents" }
 }
 ```
+
+### Weaviate
+
+:::info[Coming in 3.7.0]
+`WeaviateRetriever` is in 3.7.0.
+:::
+
+`WeaviateRetriever` keeps documents in a [Weaviate](https://weaviate.io) collection. It talks to Weaviate's REST and GraphQL APIs with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too. It's written against the Weaviate 1.39 and 1.40 APIs (the same for the endpoints it uses) and tested against Weaviate 1.40.4.
+
+```javascript no-run
+import {
+  createRagPipeline,
+  OpenAIConnector,
+  WeaviateRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const retriever = new WeaviateRetriever({
+  url: process.env.WEAVIATE_URL, // default http://localhost:8080
+  apiKey: process.env.WEAVIATE_API_KEY, // Weaviate Cloud
+  collection: "RagDocuments",
+});
+const embedder = new OpenAIConnector();
+const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
+```
+
+The first `store()` creates the collection for vectors you provide (`vectorizer: "none"`, an HNSW index with cosine distance), unless you pass `createCollection: false`. On a collection created elsewhere, it adds the properties it needs and leaves the rest alone. It uses the collection's single unnamed vector, so a collection made with named vectors only (what Weaviate 1.40's auto-schema creates) doesn't work with it: let the retriever create its collection. `score` is 1 minus Weaviate's cosine distance, the cosine similarity the other retrievers return. Writes are searchable as soon as `store()` returns, unless the server runs with asynchronous indexing (`ASYNC_INDEXING`).
+
+Weaviate object ids must be UUIDs. Each document's id becomes the same UUID `QdrantRetriever` derives from it, and the original id is kept in the `rag_id` property, alongside `content`. Weaviate properties need a schema, so your metadata is kept as JSON in `rag_metadata`, and `metadata.source` is copied to `rag_source` (exact match) for `removeBySource`. Results report your original id and metadata. Queries, `clear()`, `size()` and `list()` only touch objects that have a `rag_id`, so a collection can hold other data too.
+
+Weaviate keeps no vector size in its schema, so the retriever reads it from a stored object (or takes `dimensions`) and rejects a batch of another size before sending it.
+
+| Option             | Default                 | Description                                                                               |
+| ------------------ | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `url`              | `http://localhost:8080` | Weaviate's REST endpoint, without `/v1`                                                   |
+| `apiKey`           |                         | Sent as `Authorization: Bearer`; never included in errors                                 |
+| `collection`       | `RagDocuments`          | A letter, then letters, digits and `_`; the first letter is upper-cased, as Weaviate does |
+| `dimensions`       | the collection's        | The vector size to expect                                                                 |
+| `createCollection` | `true`                  | Create the collection (or add its missing properties) on the first `store()`              |
+| `cacheKey`         |                         | Cache identity, as for [pgvector](#postgresql-with-pgvector)                              |
+
+It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant against a real Weaviate in CI. It isn't cached unless you set `cacheKey`, and the run's `AbortSignal` cancels the HTTP request. In `.ragrc.json`, the URL comes from `config.url` or `WEAVIATE_URL`, and the API key only from `WEAVIATE_API_KEY`:
+
+```json
+{
+  "stage": "retriever",
+  "name": "weaviate",
+  "config": { "collection": "RagDocuments" }
+}
+```
+
+As with pgvector, the CLI's `local` embedder can't be used with it; use `openai`, `ollama` or `cohere`.
 
 ### LLMs
 

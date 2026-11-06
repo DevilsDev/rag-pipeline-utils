@@ -8,12 +8,12 @@ description: Install only what you use. @devilsdev/rag-core, rag-connectors, rag
 
 `@devilsdev/rag-pipeline-utils` is made of four packages. Install the full package for everything, or only the parts you use:
 
-| Package                     | What it has                                                                                                                                                  | Installs        |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- |
-| `@devilsdev/rag-core`       | `createRagPipeline`, `MemoryRetriever`, hybrid search, the rerankers, caches, `CostCalculator`, `CostTracker`, `createModelRouter`                           | ajv, pino       |
-| `@devilsdev/rag-connectors` | `OpenAIConnector`, `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, `QdrantRetriever`, `PgVectorRetriever`, `createAiSdkAdapter` | rag-core, axios |
-| `@devilsdev/rag-eval`       | The evaluation metrics, datasets and reports, `evaluateRagDataset`, `checkAnswer`, `CitationTracker`, hallucination detection                                | rag-core        |
-| `@devilsdev/rag-guardrails` | `detectInjection`, `GuardrailsPipeline` and the pre-retrieval, retrieval and post-generation guards                                                          | rag-core        |
+| Package                     | What it has                                                                                                                                                                       | Installs        |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `@devilsdev/rag-core`       | `createRagPipeline`, `MemoryRetriever`, hybrid search, the rerankers, caches, `CostCalculator`, `CostTracker`, `createModelRouter`                                                | ajv, pino       |
+| `@devilsdev/rag-connectors` | `OpenAIConnector`, `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, `QdrantRetriever`, `PgVectorRetriever`, `WeaviateRetriever`, `createAiSdkAdapter` | rag-core, axios |
+| `@devilsdev/rag-eval`       | The evaluation metrics, datasets and reports, `evaluateRagDataset`, `checkAnswer`, `CitationTracker`, hallucination detection                                                     | rag-core        |
+| `@devilsdev/rag-guardrails` | `detectInjection`, `GuardrailsPipeline` and the pre-retrieval, retrieval and post-generation guards                                                                               | rag-core        |
 
 Evaluating answers from another framework needs only `rag-eval`, about 6 MB installed. All four together are about 10 MB. The full package, at about 33 MB, adds the document loaders, `.ragrc.json` configuration, the CLI and the rest.
 
