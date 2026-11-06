@@ -114,7 +114,11 @@ function findExistingPost(blogDir, version) {
  * @returns {{date:string|null, body:string}|null}
  */
 function extractChangelogSection(md, version) {
-  const v = parseVersion(version).version.replace(/\./g, "\\.");
+  // Every regex metacharacter escaped, not just the dots
+  const v = parseVersion(version).version.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&",
+  );
   const lines = md.replace(/\r\n/g, "\n").split("\n");
   const head = new RegExp(`^## \\[v?${v}\\](.*)$`);
   const start = lines.findIndex((l) => head.test(l));
@@ -221,7 +225,13 @@ function toMdxSafe(md, opts) {
   let prose = [];
   const flush = () => {
     if (!prose.length) return;
-    const text = prose.join("\n").replace(/<!--[\s\S]*?-->/g, "");
+    // Drop HTML comments until none is left (one pass can leave "<!--" from
+    // nested or overlapping ones); escapeLine then escapes any stray "<"
+    let text = prose.join("\n");
+    for (let prev = null; prev !== text; ) {
+      prev = text;
+      text = text.replace(/<!--[\s\S]*?-->/g, "");
+    }
     for (const l of text.split("\n")) out.push(escapeLine(l, opts));
     prose = [];
   };
