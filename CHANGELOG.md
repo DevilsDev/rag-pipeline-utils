@@ -9,7 +9,16 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.8.0] - 2026-11-06
+
+A minor release with no breaking changes, about testing RAG in TypeScript.
+`@devilsdev/rag-pipeline-utils/testing` now exports `RagMatchers`, so
+`toBeGroundedIn`, `toCite` and `toContainNoPII` compile on Vitest's and
+Jest's `expect`, with wrong arguments reported as type errors; until now
+they didn't compile in TypeScript. A new guide, "Testing RAG in TypeScript",
+builds a project around them from a runnable example. Releases now announce
+themselves on GitHub Discussions, dev.to, Bluesky and Mastodon, and the
+development dependencies lost 237 packages and 50 audit findings.
 
 ### Added
 
