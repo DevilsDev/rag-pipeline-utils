@@ -136,3 +136,13 @@ optimization:
 case-study:
   label: "Case study"
   permalink: /blog/tags/case-study
+
+testing:
+  label: Testing
+  permalink: /blog/tags/testing
+  description: Testing RAG code and answers
+
+typescript:
+  label: TypeScript
+  permalink: /blog/tags/typescript
+  description: Using the library from TypeScript
