@@ -7,7 +7,11 @@
  * - kind "documents": a document index with a dense_vector field
  *   (`embedding`), through the Documents API;
  * - kind "vectors": a vector index, through the vectors API;
- * - kind "integrated": a document index that embeds text itself.
+ * - kind "integrated": a document index that embeds text itself (field
+ *   `chunk_text`, as the console's quick start creates), with a
+ *   deterministic bag-of-words "model": each word hashed into one of 64
+ *   dimensions, so texts sharing words score high. Up to 96 documents per
+ *   upsert, as on Pinecone; searches score by `{ type: "embed" }`.
  *
  * Plus the control plane (describe one index, list indexes), the dimension
  * and API-key checks, and eventual consistency: writes get increasing log
@@ -28,7 +32,26 @@ function fakePinecone({
   const log = []; // { lsn, namespace, op, ... }
   let indexed = 0;
   const calls = [];
-  const FIELD = "embedding";
+  const integrated = kind === "integrated";
+  const FIELD = integrated ? "chunk_text" : "embedding";
+  const EMBED_DIMENSION = 64;
+  const MAX_EMBED_BATCH = 96;
+  let embedded = 0; // texts "embedded", documents and queries
+
+  // The integrated index's "model": bag of words, normalized
+  const embed = (text) => {
+    embedded += 1;
+    const v = new Array(EMBED_DIMENSION).fill(0);
+    for (const word of String(text)
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)) {
+      if (!word) continue;
+      let h = 0;
+      for (const ch of word) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      v[h % EMBED_DIMENSION] += 1;
+    }
+    return v;
+  };
 
   const matches = (metadata = {}, filter = {}) =>
     Object.entries(filter).every(([key, cond]) => {
@@ -65,7 +88,7 @@ function fakePinecone({
       na += a[i] * a[i];
       nb += b[i] * b[i];
     }
-    return dot / Math.sqrt(na * nb);
+    return na * nb === 0 ? 0 : dot / Math.sqrt(na * nb);
   };
 
   const json = (status, body, headers = {}) =>
@@ -108,14 +131,26 @@ function fakePinecone({
         },
       };
     }
-    if (kind === "integrated") {
+    if (integrated) {
+      // As 2026-07 describes the console's quick-start index (abridged)
       return {
         ...base,
         schema: {
           fields: {
+            title: {
+              type: "string",
+              full_text_search: { language: "en" },
+              store_text: true,
+            },
             chunk_text: {
               type: "string",
-              embed: { model: "llama-text-embed-v2", dimension: 1024 },
+              full_text_search: { language: "en" },
+              embed: {
+                model: "llama-text-embed-v2",
+                dimension: 1024,
+                metric: "cosine",
+              },
+              store_text: true,
             },
           },
         },
@@ -252,7 +287,10 @@ function fakePinecone({
     }
     const namespace = decodeURIComponent(m[1]);
     const pick = (r) => {
-      const fields = { _id: r.id, [FIELD]: r.values, ...r.metadata };
+      // An integrated index returns the text it stored, not the vector
+      const fields = integrated
+        ? { _id: r.id, ...r.metadata }
+        : { _id: r.id, [FIELD]: r.values, ...r.metadata };
       const wanted = body.include_fields;
       if (!wanted || wanted.includes("*")) return fields;
       return Object.fromEntries(
@@ -264,6 +302,29 @@ function fakePinecone({
     switch (m[2]) {
       case "upsert": {
         const records = [];
+        if (integrated) {
+          if (body.documents.length > MAX_EMBED_BATCH) {
+            return error(
+              400,
+              `At most ${MAX_EMBED_BATCH} documents per request when the schema embeds`,
+            );
+          }
+          for (const doc of body.documents) {
+            const { _id, ...metadata } = doc;
+            if (typeof doc[FIELD] !== "string" || !doc[FIELD]) {
+              return error(400, `document ${_id} has no ${FIELD}`);
+            }
+            if (doc.embedding || doc.values) {
+              return error(400, `document ${_id} has an unknown vector field`);
+            }
+            records.push({ id: _id, values: embed(doc[FIELD]), metadata });
+          }
+          return json(
+            202,
+            { upserted_count: records.length },
+            write({ namespace, op: "upsert", records }),
+          );
+        }
         for (const doc of body.documents) {
           const { _id, [FIELD]: values, ...metadata } = doc;
           if (!values) return error(400, `document ${_id} has no ${FIELD}`);
@@ -281,12 +342,20 @@ function fakePinecone({
         if (!hasNamespace(namespace)) return error(404, "Namespace not found");
         const headers = read();
         const [clause] = body.score_by;
-        if (clause.type !== "dense_vector" || clause.fields[0] !== FIELD) {
-          return error(400, `unknown dense_vector field ${clause.fields[0]}`);
+        const type = integrated ? "embed" : "dense_vector";
+        if (clause.type !== type || clause.fields[0] !== FIELD) {
+          return error(
+            400,
+            `unknown ${clause.type} field ${clause.fields && clause.fields[0]}`,
+          );
         }
+        if (integrated && (typeof clause.query !== "string" || !clause.query)) {
+          return error(400, "embed needs a query");
+        }
+        const vector = integrated ? embed(clause.query) : clause.values;
         const found = [...state(namespace).values()]
           .filter((r) => !body.filter || matches(r.metadata, body.filter))
-          .map((r) => ({ ...pick(r), _score: cosine(r.values, clause.values) }))
+          .map((r) => ({ ...pick(r), _score: cosine(r.values, vector) }))
           .sort((a, b) => b._score - a._score)
           .slice(0, body.top_k);
         return json(200, { matches: found, namespace }, headers);
@@ -373,7 +442,16 @@ function fakePinecone({
       : documentsApi(method, u, body);
   }
 
-  return { fetch, calls, host, indexName, apiKey, log, field: FIELD };
+  return {
+    fetch,
+    calls,
+    host,
+    indexName,
+    apiKey,
+    log,
+    field: FIELD,
+    embedded: () => embedded,
+  };
 }
 
 module.exports = { fakePinecone };

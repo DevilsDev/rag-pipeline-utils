@@ -63,13 +63,13 @@ Each pipeline entry is `{ "stage", "name", "config"? }`. `config` is passed to t
 
 1. **Built-in components** (`rag-pipeline info --plugins` lists them):
 
-   | Stage     | Names                                                    | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-   | --------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | loader    | `auto`                                                   | Picks a loader per file extension                                                                                                                                                                                                                                                                                                                                                                                                       |
-   | embedder  | `local`, `openai`, `ollama`, `cohere`                    | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                                                                                                                                              |
-   | retriever | `file-store`, `memory`, `pgvector`, `qdrant`, `weaviate` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant); `weaviate` (3.7.0) reads `WEAVIATE_URL` and `WEAVIATE_API_KEY`, see [Weaviate](./Concepts-Connectors.md#weaviate) |
-   | llm       | `openai`, `anthropic`, `ollama`, `router`                | Optional; for `router` see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                                                                                                                                            |
-   | reranker  | `scoring`                                                | Optional                                                                                                                                                                                                                                                                                                                                                                                                                                |
+   | Stage     | Names                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+   | --------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | loader    | `auto`                                                               | Picks a loader per file extension                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+   | embedder  | `local`, `openai`, `ollama`, `cohere`                                | `local` is TF-IDF, offline                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+   | retriever | `file-store`, `memory`, `pgvector`, `qdrant`, `weaviate`, `pinecone` | `file-store` persists to `config.path` (relative to the config file); `pgvector` reads its connection string from `DATABASE_URL`, see [PostgreSQL with pgvector](./Concepts-Connectors.md#postgresql-with-pgvector); `qdrant` reads `QDRANT_URL` and `QDRANT_API_KEY`, see [Qdrant](./Concepts-Connectors.md#qdrant); `weaviate` (3.7.0) reads `WEAVIATE_URL` and `WEAVIATE_API_KEY`, see [Weaviate](./Concepts-Connectors.md#weaviate); `pinecone` reads `PINECONE_API_KEY` and `PINECONE_INDEX` (or `PINECONE_INDEX_HOST`), see [Pinecone](./Concepts-Connectors.md#pinecone) |
+   | llm       | `openai`, `anthropic`, `ollama`, `router`                            | Optional; for `router` see [Routing between models](#routing-between-models)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+   | reranker  | `scoring`                                                            | Optional                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 2. **Custom plugins** declared under `plugins`, as module paths relative to the config file. The module may export a class (constructed with the entry's `config`) or an object:
 
@@ -189,10 +189,35 @@ rag-pipeline ingest ./docs --rebuild
 - Supported files: `.md`, `.markdown`, `.html`, `.htm`, `.csv`, `.txt`.
 - Chunks are stored as `<source path>#<chunk number>`; ingesting a file again replaces its previous chunks.
 - The index records which embedder built it. Changing the embedder requires `--rebuild`, which discards the index first.
+- With a retriever that embeds text itself, the pipeline needs no embedder: `ingest` stores the chunks' text and computes no vectors, and `query` sends the question's text. See [No embedder](#no-embedder-a-retriever-that-embeds-text).
 
 | Option      | Description                                 |
 | ----------- | ------------------------------------------- |
 | `--rebuild` | Discard the existing index before ingesting |
+
+### No embedder: a retriever that embeds text
+
+:::info[Coming in 3.7.0]
+On 3.6.0, every command that embeds needs an embedder stage.
+:::
+
+A Pinecone index with integrated embedding, such as the console's quick-start index, embeds text itself. With `pinecone` as the retriever on such an index, leave the embedder out of `.ragrc.json`:
+
+```json
+{
+  "pipeline": [
+    { "stage": "loader", "name": "auto" },
+    {
+      "stage": "retriever",
+      "name": "pinecone",
+      "config": { "index": "quickstart" }
+    },
+    { "stage": "llm", "name": "anthropic" }
+  ]
+}
+```
+
+`ingest` then stores each chunk's text and Pinecone embeds it; `query`, `run`, `eval`, `ai search` and `ai benchmark` send the question's text, and `doctor` doesn't report a missing embedder. The CLI asks the retriever: a retriever whose `embedsText()` method resolves `true` needs no embedder (`PineconeRetriever` reads it from the index description). Every other retriever, and `pinecone` on an index without integrated embedding, still needs an embedder and stops with "No embedder configured" as before. If you do configure an embedder, the CLI uses it and the retriever ignores the vectors, so leave it out.
 
 **Scale.** `file-store` is a single JSON file loaded into memory and searched linearly, meant for local use up to tens of thousands of chunks. As a reference point, 300 files (about 3,000 chunks) with the `local` embedder index in about 3 seconds and produce a 5 MB index. The `local` embedder is fitted to the whole corpus, so every `ingest` re-embeds everything already in the index.
 

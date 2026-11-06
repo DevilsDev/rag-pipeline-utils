@@ -173,9 +173,43 @@ It works with both kinds of Pinecone index, and reads which one from the index d
 | ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
 | A document index with a `dense_vector` field (what Pinecone creates now) | The Documents API; your vectors go in that field (`vectorField`) |
 | A vector index (created with a dimension and metric)                     | The vectors API (`/vectors/upsert`, `/query`)                    |
-| An index that embeds text itself (integrated embedding)                  | Refused: it has no field for your vectors                        |
+| An index that embeds text itself (integrated embedding)                  | The Documents API; Pinecone embeds the text field (`textField`)  |
 
-Create the index first: a dense vector of your embedding model's dimension, with the cosine metric for the scores the other retrievers return. The retriever owns its namespace: `clear()` deletes everything it stored there.
+Create the index first: a dense vector of your embedding model's dimension, or a text field Pinecone embeds, with the cosine metric for the scores the other retrievers return. The retriever owns its namespace: `clear()` deletes everything it stored there.
+
+#### Indexes that embed text (integrated embedding)
+
+:::info[Coming in 3.7.0]
+`PineconeRetriever` works on indexes that embed text themselves. On 3.6.0 it refuses them.
+:::
+
+An index created with an embedding model, such as the console's quick-start index (a `chunk_text` field embedded with `llama-text-embed-v2`), embeds text itself. The retriever finds that field in the index description: a string field with `embed`. There, `store()` sends each document's `content` in that field and Pinecone embeds it. Documents need no `vector`, and any vector they carry is ignored. `retrieve()` searches by the query text, which Pinecone embeds with the same model. So a pipeline on such an index needs no embedder:
+
+```javascript no-run
+import {
+  createRagPipeline,
+  AnthropicConnector,
+  PineconeRetriever,
+} from "@devilsdev/rag-pipeline-utils";
+
+const retriever = new PineconeRetriever({ index: "quickstart" });
+await retriever.store([
+  { id: "vacation#0", content: "Employees get twenty days of paid vacation." },
+]);
+
+// No embedder: the pipeline passes the query text to the retriever
+const pipeline = createRagPipeline({
+  retriever,
+  llm: new AnthropicConnector(),
+});
+const { answer } = await pipeline.run({ query: "How much paid vacation?" });
+```
+
+Without an embedder, `createRagPipeline` calls `retrieve({ query, queryVector: undefined, topK })`, and the retriever uses `query`. If you do pass an embedder, the pipeline still embeds the query, and the retriever ignores that vector, so leave the embedder out. Calling the retriever directly, pass `{ query }` or the text itself (`retrieve("How much paid vacation?", 5)`). A request with only a vector is refused with the reason. A document without `content` is refused before anything is sent, because Pinecone fails a whole request when one document has no text to embed. Upserts go in batches of up to 96 documents, and under Pinecone's 2 MB a request.
+
+An index with both a `dense_vector` field and an embedded text field gets your vectors, as on 3.6.0; pass `textField` to use the text field instead. `list()` and `size()` search too, with a fixed query text, so each call embeds a few tokens.
+
+`embedsText()` resolves `true` on such an index (it reads the description). The CLI checks it: with `"name": "pinecone"` on an index that embeds text, `.ragrc.json` needs no embedder stage, `rag-pipeline ingest` stores the chunks' text without computing vectors, and `query` sends the question's text ([CLI: no embedder](./CLI.md#no-embedder-a-retriever-that-embeds-text)).
 
 Pinecone is eventually consistent. Like Qdrant's waited writes, a read waits until this retriever's own writes are indexed: Pinecone returns a log sequence number for each write and, on each search, the highest one it reflects ([data freshness](https://docs.pinecone.io/guides/index-data/check-data-freshness)). It waits up to `freshnessTimeoutMs`; writes from other processes aren't waited for. On a document index, `list()` and `size()` search too, so they reflect your writes for up to 10,000 documents; beyond that they page through a fetch that can lag by seconds.
 
@@ -189,10 +223,11 @@ Pinecone metadata is flat. Each record keeps your id as `rag_id` (ids that Pinec
 | `namespace`          | `rag_documents`    | A namespace this retriever owns                                    |
 | `api`                | `auto`             | `documents` or `vectors` to skip reading the index description     |
 | `vectorField`        | the schema's       | A document index's `dense_vector` field                            |
+| `textField`          | the schema's       | A document index's text field that Pinecone embeds                 |
 | `freshnessTimeoutMs` | `30000`            | How long a read waits for this retriever's writes; `0` to not wait |
 | `cacheKey`           |                    | Cache identity, as for [pgvector](#postgresql-with-pgvector)       |
 
-It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant: in CI against an eventually consistent in-memory Pinecone of both kinds, and before a release against real indexes of both kinds (`npm run test:live`). In `.ragrc.json`, the index comes from `config.index` (or `config.host`) or `PINECONE_INDEX`, and the API key only from `PINECONE_API_KEY`:
+It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and passes the same retriever contract as pgvector and Qdrant: in CI against an eventually consistent in-memory Pinecone of all three kinds, and before a release against real indexes (`npm run test:live`); on an index that embeds text, it passes the same checks with text queries. In `.ragrc.json`, the index comes from `config.index` (or `config.host`) or `PINECONE_INDEX`, and the API key only from `PINECONE_API_KEY`:
 
 ```json
 {

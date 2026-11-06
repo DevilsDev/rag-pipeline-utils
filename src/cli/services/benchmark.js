@@ -120,12 +120,15 @@ async function runBenchmark({
   const resultCounts = [];
   for (let run = 0; run < runs; run++) {
     for (const question of queries) {
-      const embedded = await timed(() => embedQuery(embedder, question));
-      samples.embed.push(embedded.ms);
+      // No embedder: the retriever embeds the query text itself
+      const embedded = embedder
+        ? await timed(() => embedQuery(embedder, question))
+        : null;
+      if (embedded) samples.embed.push(embedded.ms);
       const retrieved = await timed(() =>
         retriever.retrieve({
           query: question,
-          queryVector: embedded.value,
+          queryVector: embedded ? embedded.value : undefined,
           topK,
         }),
       );
@@ -146,7 +149,7 @@ async function runBenchmark({
   }
 
   const stages = {
-    embed: summarize(samples.embed),
+    ...(embedder && { embed: summarize(samples.embed) }),
     retrieve: summarize(samples.retrieve),
     ...(reranker && { rerank: summarize(samples.rerank) }),
     ...(samples.firstToken.length && {

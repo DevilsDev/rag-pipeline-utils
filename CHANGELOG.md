@@ -140,6 +140,32 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
   braces and `<` outside code are escaped, and relative links point at the
   release tag on GitHub.
 
+- **`PineconeRetriever` on indexes that embed text themselves** (integrated
+  embedding, such as the console's quick-start index with `chunk_text` and
+  `llama-text-embed-v2`), which 3.6.0 refused. The retriever finds the
+  embedded text field in the index description (or takes `textField`),
+  sends each document's `content` in it, and searches by the query text
+  with the Documents API's `embed` scoring, so documents need no vector
+  and a pipeline needs no embedder: `createRagPipeline` passes the query
+  text to the retriever when there is none. A request with only a vector,
+  or a document without content, is refused with the reason before
+  anything is sent. Upserts go in batches of up to 96 documents and under
+  2 MB, Pinecone's limits for embedded fields. Freshness waits, `list`,
+  `size`, `clear` and `removeBySource` work as on the other index kinds.
+  An index with both a `dense_vector` field and an embedded text field
+  still gets your vectors unless you pass `textField`. The retriever
+  passes a text version of the retriever contract against the in-memory
+  Pinecone (with a bag-of-words "model") and against a real
+  integrated-embedding index (`npm run test:live`), and `.ragrc.json`
+  takes `textField`.
+- **The CLI with no embedder, on a retriever that embeds text itself.**
+  When the retriever's `embedsText()` resolves `true` (`PineconeRetriever`
+  on an integrated-embedding index), `.ragrc.json` needs no embedder
+  stage: `rag-pipeline ingest` stores the chunks' text without computing
+  vectors, `query`, `run`, `eval`, `ai search` and `ai benchmark` send the
+  question's text, and `doctor` doesn't report a missing embedder. Other
+  retrievers still need an embedder, with the same error as before.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer
