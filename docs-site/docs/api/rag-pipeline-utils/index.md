@@ -77,6 +77,7 @@ RAG Pipeline Utils - TypeScript Definitions
 - [TemplateRegistry](classes/TemplateRegistry.md)
 - [TokenBudget](classes/TokenBudget.md)
 - [TraceInspector](classes/TraceInspector.md)
+- [WeaviateRetriever](classes/WeaviateRetriever.md)
 - [WebSocketAdapter](classes/WebSocketAdapter.md)
 
 ## Interfaces

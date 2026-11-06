@@ -72,6 +72,23 @@ authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
   `MaxListenersExceededWarning`, and no fake-timer warnings from the plugin
   hub tests.
 
+- **`WeaviateRetriever`**: a Weaviate collection as a vector store, over
+  the REST and GraphQL APIs with the built-in `fetch` (no client package;
+  on the edge build too). The first `store()` creates the collection for
+  vectors you provide (`vectorizer: "none"`, cosine distance), or adds the
+  properties it needs to one created elsewhere. Document ids become the
+  same UUIDs `QdrantRetriever` uses, with the original id kept as
+  `rag_id`; metadata is kept as JSON and `metadata.source` as an
+  exact-match property for `removeBySource`. Scores are cosine similarity
+  (1 minus Weaviate's distance). Batch imports that Weaviate answers with
+  per-object errors fail with the reason, and a batch of another vector
+  size is rejected before it is sent. It has the CLI's `size`, `list` and
+  `removeBySource`, only touches objects it wrote, and `.ragrc.json` takes
+  `"name": "weaviate"` (the URL from `config.url` or `WEAVIATE_URL`, the
+  key only from `WEAVIATE_API_KEY`). It passes the retriever contract
+  against an in-memory Weaviate in the unit tests and against Weaviate
+  1.40.4 in the CI vector-store job, with pgvector and Qdrant.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer
