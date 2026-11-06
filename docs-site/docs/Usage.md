@@ -53,7 +53,7 @@ COHERE_API_KEY=your_cohere_api_key
 
 ### **Basic Pipeline Setup**
 
-`createRagPipeline` takes component instances (or names registered on `pluginRegistry`) for the stages `loader`, `embedder`, `retriever`, `llm` and `reranker`, plus an optional `registry`. It returns `{ run, cleanup }`.
+`createRagPipeline` takes component instances (or names registered on `pluginRegistry`) for the stages `loader`, `embedder`, `retriever`, `llm` and `reranker`, plus an optional `registry`. It returns `{ run, cleanup, cacheStats }`; `cacheStats()` returns the cache's hits and misses per layer, or `null` without the `cache` option.
 
 ```javascript
 const {
@@ -157,7 +157,7 @@ For an index that persists to disk, use `FileVectorStore` as the retriever (see 
 
 ### **Indexing Documents**
 
-The pipeline object only exposes `run()` and `cleanup()`; there is no separate ingest method. Index documents by embedding them and calling your retriever's `store()` (as in the example above), or use the CLI's `rag-pipeline ingest <path>`, which loads, embeds and stores files into a local `FileVectorStore` index.
+The pipeline object only exposes `run()`, `cleanup()` and `cacheStats()`; there is no separate ingest method. Index documents by embedding them and calling your retriever's `store()` (as in the example above), or use the CLI's `rag-pipeline ingest <path>`, which loads, embeds and stores files into a local `FileVectorStore` index.
 
 ### **Querying & Response Generation**
 

@@ -50,6 +50,14 @@ page.
   Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't; a blank line, and
   the line break around a list item or heading, do. The sentences returned
   are still the original text.
+- `packContext` keeps the top document's first word when the budget is
+  too small for one word beside the wrapper, as documented; it was
+  dropped.
+- `FileVectorStore` rejects a query vector of the wrong length when the
+  index has no embedder info too; it scored every document 0.
+- Docs: the `checkNumericConsistency` examples show its actual output, the
+  Usage page lists `cacheStats()`, and the built-in PII check is described
+  as finding US phone numbers, which is all it finds.
 
 ## [3.8.0] - 2026-11-06
 

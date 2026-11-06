@@ -7,7 +7,9 @@
  * one that fits is kept; one that doesn't is skipped, and later, shorter
  * documents may still fit. The top document is always included: when it
  * alone exceeds the budget it is cut at a word boundary, so a small budget
- * never leaves the model with no context. Inputs are never modified; a cut
+ * never leaves the model with no context; when the budget is too small for
+ * even one word beside the wrapper, the first word is kept and `tokens` is
+ * above `maxTokens`. Inputs are never modified; a cut
  * document is a copy marked `metadata.truncated: true`.
  */
 
@@ -30,6 +32,11 @@ function documentText(doc) {
 function documentId(doc, index) {
   if (doc && typeof doc === 'object' && doc.id != null) return doc.id;
   return index;
+}
+
+/** The first word of text, or '' when it has none. */
+function firstWord(text) {
+  return text.trimStart().split(/\s/)[0];
 }
 
 /**
@@ -72,7 +79,7 @@ function cutToFit(text, budget, countTokens) {
  * @param {object} options
  * @param {number} options.maxTokens - Token budget for the documents
  * @param {(text: string) => number} [options.countTokens] - Token counter (default: about four characters per token)
- * @param {boolean} [options.truncate=true] - Cut the top document to fit when it alone exceeds the budget
+ * @param {boolean} [options.truncate=true] - Cut the top document to fit when it alone exceeds the budget (to its first word when the budget is smaller than one word and the wrapper)
  * @returns {{ documents: Array<object|string>, tokens: number, maxTokens: number, kept: Array<string|number>, dropped: Array<string|number>, truncated: Array<string|number> }}
  */
 function packContext(documents, options = {}) {
@@ -104,11 +111,15 @@ function packContext(documents, options = {}) {
       return;
     }
     if (index === 0 && truncate) {
-      const text = cutToFit(
-        documentText(doc),
-        Math.max(0, maxTokens - overhead),
-        countTokens,
-      );
+      // When not even one word fits beside the wrapper, keep the first word:
+      // the top document is always included, and tokens then exceeds
+      // maxTokens by what that word and the wrapper cost
+      const text =
+        cutToFit(
+          documentText(doc),
+          Math.max(0, maxTokens - overhead),
+          countTokens,
+        ) || firstWord(documentText(doc));
       if (text) {
         const copy =
           typeof doc === 'string'

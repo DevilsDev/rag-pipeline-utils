@@ -191,10 +191,10 @@ const {
 } = require("@devilsdev/rag-pipeline-utils");
 
 checkNumericConsistency("Returns within thirty days", "Returns within 30 days");
-// { consistent: true, claimNumbers: ["30"], missing: [] }  ("thirty" equals "30")
+// { consistent: true, claimNumbers: ["duration:30 day"], missing: [], matchedWords: [] }  ("thirty" equals "30")
 
 checkNumericConsistency("Returns within 45 days", "Returns within 30 days");
-// { consistent: false, claimNumbers: ["45"], missing: ["45"] }
+// { consistent: false, claimNumbers: ["duration:45 day"], missing: ["duration:45 day"], matchedWords: [] }
 
 extractNumbers("20 items, 3.5% and twenty");
 // { values: ["20", "3.5", "20"], parts: [...] }

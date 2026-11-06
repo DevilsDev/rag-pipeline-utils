@@ -182,6 +182,19 @@ class FileVectorStore {
           'current embedder.',
       );
     }
+    // Without embedder info (an index written by store() alone), compare
+    // with the stored vectors themselves
+    if (!(info && info.dimensions)) {
+      const [first] = Object.values(this.load().documents);
+      const stored = first && vectorLength(first.vector);
+      if (stored && stored !== queryVector.length) {
+        throw new Error(
+          `Query vector has ${queryVector.length} dimensions but the index ` +
+            `holds ${stored}-dimension vectors. Use the same embedder for ` +
+            'queries and documents.',
+        );
+      }
+    }
 
     const queryMagnitude = Math.sqrt(
       queryVector.reduce((sum, x) => sum + x * x, 0),
@@ -219,10 +232,15 @@ function encodeVector(vector) {
   return vector.map(round);
 }
 
+/** Dimension of a stored vector (dense array or sparse { n, ... }). */
+function vectorLength(stored) {
+  return Array.isArray(stored) ? stored.length : stored.n;
+}
+
 /** Cosine similarity between a dense query and a stored (dense or sparse) vector. */
 function cosine(query, magQuery, stored) {
   const sparse = !Array.isArray(stored);
-  const length = sparse ? stored.n : stored.length;
+  const length = vectorLength(stored);
   if (query.length !== length) return 0;
 
   let dot = 0;

@@ -41,33 +41,49 @@ describe("bug hunt: docs claims", () => {
   });
 
   // API-Reference.md: checkNumericConsistency("It takes twenty days.",
-  // "Processing takes 20 days.") // { consistent: true, claimNumbers: ["20"], missing: [] }
+  // "Processing takes 20 days.") // { consistent: true, claimNumbers:
+  // ["duration:20 day"], missing: [], matchedWords: [] } (corrected in 3.9)
   test("BH-9: checkNumericConsistency matches the API Reference example", () => {
     expect(
       checkNumericConsistency(
         "It takes twenty days.",
         "Processing takes 20 days.",
       ),
-    ).toEqual({ consistent: true, claimNumbers: ["20"], missing: [] });
+    ).toEqual({
+      consistent: true,
+      claimNumbers: ["duration:20 day"],
+      missing: [],
+      matchedWords: [],
+    });
   });
 
   // Evaluation.md: checkNumericConsistency("Returns within 45 days",
-  // "Returns within 30 days") // { consistent: false, claimNumbers: ["45"], missing: ["45"] }
+  // "Returns within 30 days") // { consistent: false, claimNumbers:
+  // ["duration:45 day"], missing: ["duration:45 day"], matchedWords: [] }
   test("BH-9: checkNumericConsistency matches the Evaluation example", () => {
     expect(
       checkNumericConsistency(
         "Returns within 45 days",
         "Returns within 30 days",
       ),
-    ).toEqual({ consistent: false, claimNumbers: ["45"], missing: ["45"] });
+    ).toEqual({
+      consistent: false,
+      claimNumbers: ["duration:45 day"],
+      missing: ["duration:45 day"],
+      matchedWords: [],
+    });
   });
 
-  // Usage.md: "It returns `{ run, cleanup }`." and "The pipeline object only
-  // exposes `run()` and `cleanup()`".
-  test("BH-10: createRagPipeline returns only run and cleanup, as Usage.md says", async () => {
+  // Usage.md: "It returns `{ run, cleanup, cacheStats }`" and "The pipeline
+  // object only exposes `run()`, `cleanup()` and `cacheStats()`" (corrected in 3.9)
+  test("BH-10: createRagPipeline returns run, cleanup and cacheStats, as Usage.md says", async () => {
     const { embedder, retriever, llm } = await createTestPipeline();
     const pipeline = createRagPipeline({ embedder, retriever, llm });
-    expect(Object.keys(pipeline).sort()).toEqual(["cleanup", "run"]);
+    expect(Object.keys(pipeline).sort()).toEqual([
+      "cacheStats",
+      "cleanup",
+      "run",
+    ]);
   });
 
   // Plugins.md, Troubleshooting.md: "`MemoryRetriever` and `FileVectorStore`
@@ -87,15 +103,28 @@ describe("bug hunt: docs claims", () => {
 });
 
 describe("bug hunt: guardrails", () => {
-  // Concepts-Guardrails.md, Security.md, Testing.md, Integrations.md: the
-  // built-in PII check finds "phone numbers" (SSNs are qualified as US; phone
-  // numbers are not).
-  test.each([
-    "Call me on +64 21 123 4567.",
-    "Ring +44 20 7946 0958 after five.",
-    "Our Sydney office is on (02) 9374 4000.",
-  ])("BH-11: patternPIIDetector finds the phone number in %s", async (text) => {
-    const r = await patternPIIDetector().detect(text);
+  // The docs said the built-in PII check finds "phone numbers"; it finds US
+  // 10-digit ones only, which the docs now say (corrected in 3.9)
+  test("BH-11: the docs qualify the PII check's phone numbers as US", () => {
+    const docs = path.join(__dirname, "..", "..", "docs-site", "docs");
+    for (const page of [
+      "Concepts-Guardrails.md",
+      "Integrations.md",
+      "Security.md",
+      "Security-Capabilities.md",
+      "Testing.md",
+      "Testing-RAG-TypeScript.md",
+    ]) {
+      const text = fs.readFileSync(path.join(docs, page), "utf8");
+      const line = text
+        .split("\n")
+        .find((l) => /PII|\bpii\b/.test(l) && /phone/i.test(l));
+      expect([page, line && /US phone/.test(line)]).toEqual([page, true]);
+    }
+  });
+
+  test("BH-11: patternPIIDetector finds a US phone number", async () => {
+    const r = await patternPIIDetector().detect("Call 555-123-4567 today.");
     expect(r.labels).toContain("phone");
   });
 });

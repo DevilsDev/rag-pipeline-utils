@@ -242,10 +242,14 @@ function packContext(
 ```
 
 - Documents keep their order. Each one that fits is kept; one that doesn't is skipped, and later, shorter documents may still fit.
-- The top document is always included. When it alone exceeds the budget it is cut at a word boundary (with `truncate: false` it is dropped instead), so a small budget never leaves the model with no context.
+- The top document is always included. When it alone exceeds the budget it is cut at a word boundary (with `truncate: false` it is dropped instead), so a small budget never leaves the model with no context. When the budget is too small for even one word beside the wrapper, the first word is kept and `tokens` is above `maxTokens`.
 - A cut document is a copy marked `metadata.truncated: true`; the documents you pass in are never modified, so cached retrieval results stay whole.
 - The budget covers the documents and the `<document index="n">` wrapper the built-in connectors put around each one. The system prompt, the instructions around the documents and the question come on top.
 - For exact counts, pass your model's tokenizer as `countTokens`.
+
+:::info[Coming in 3.9.0]
+On 3.8.0 and earlier, a budget smaller than one word and the wrapper drops the top document too.
+:::
 
 ```javascript
 const result = await pipeline.run({
@@ -448,8 +452,9 @@ Claim support also checks numbers: a sentence whose numbers (digits, decimals, p
 extractNumbers(text: string): { values: string[]; parts: string[] }
 checkNumericConsistency(claimText: string, docText: string): {
   consistent: boolean;
-  claimNumbers: string[];
+  claimNumbers: string[]; // each quantity as "kind:value unit", e.g. "duration:20 day"
   missing: string[];
+  matchedWords: string[]; // claim words the source states another way ("90 minutes" for "one and a half hours")
 }
 ```
 
@@ -457,7 +462,7 @@ checkNumericConsistency(claimText: string, docText: string): {
 import { checkNumericConsistency } from "@devilsdev/rag-pipeline-utils";
 
 checkNumericConsistency("It takes twenty days.", "Processing takes 20 days.");
-// { consistent: true, claimNumbers: ["20"], missing: [] }
+// { consistent: true, claimNumbers: ["duration:20 day"], missing: [], matchedWords: [] }
 ```
 
 ### checkPolarityConsistency

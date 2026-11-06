@@ -17,13 +17,13 @@ instructions around the documents and the question come on top.
 
 ## Parameters
 
-| Parameter              | Type                                                                                       | Description                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `documents`            | (`string` \| `object`)[]                                                                   | Ranked documents, best first                                 |
-| `options?`             | \{ `countTokens?`: (`text`) => `number`; `maxTokens`: `number`; `truncate?`: `boolean`; \} | -                                                            |
-| `options.countTokens?` | (`text`) => `number`                                                                       | Token counter (default: about four characters per token)     |
-| `options.maxTokens`    | `number`                                                                                   | Token budget for the documents                               |
-| `options.truncate?`    | `boolean`                                                                                  | Cut the top document to fit when it alone exceeds the budget |
+| Parameter              | Type                                                                                       | Description                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `documents`            | (`string` \| `object`)[]                                                                   | Ranked documents, best first                                                                                                              |
+| `options?`             | \{ `countTokens?`: (`text`) => `number`; `maxTokens`: `number`; `truncate?`: `boolean`; \} | -                                                                                                                                         |
+| `options.countTokens?` | (`text`) => `number`                                                                       | Token counter (default: about four characters per token)                                                                                  |
+| `options.maxTokens`    | `number`                                                                                   | Token budget for the documents                                                                                                            |
+| `options.truncate?`    | `boolean`                                                                                  | Cut the top document to fit when it alone exceeds the budget (to its first word when the budget is smaller than one word and the wrapper) |
 
 ## Returns
 

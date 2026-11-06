@@ -927,7 +927,7 @@ Runs between retrieval and generation: `GuardrailsPipeline` passes the retrieval
 
 Checks the generated answer:
 
-- **PII detection**: email addresses, phone numbers, Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
+- **PII detection**: email addresses, US phone numbers (10 digits, such as 555-123-4567), Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
 - **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus numeric-consistency and polarity checks; paraphrase and units are not checked), against `groundednessThreshold` (default 0.3).
 - **Length validation**: `minResponseLength` / `maxResponseLength` (characters).
 
