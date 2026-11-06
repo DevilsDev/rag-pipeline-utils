@@ -11,7 +11,30 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Vector stores in workerd.** The edge check (`test/edge`) now runs
+  `QdrantRetriever` and `PineconeRetriever` in the Workers runtime, from
+  the packed package installed in a project of its own, on the main entry
+  (with `nodejs_compat`) and on `/edge` (without): store, retrieve, list,
+  size, delete, `removeBySource` and `clear`, against stateful fake Qdrant
+  and Pinecone APIs (Pinecone's document and vector indexes, with its log
+  sequence numbers, so the retriever's wait for its own writes runs too).
+  The results, and the ids sent to each store (sha256 of the document ids,
+  including non-ASCII and multi-block ones), must equal the Node.js build's.
+  No library change was needed.
+
 ### Fixed
+
+- **Packaging: package.json in the form npm publishes.** At the 3.6.0
+  publish npm auto-corrected the root package.json (the `rag-pipeline`
+  bin path `./bin/cli.js`, and the plain https `repository.url`) and the
+  scoped packages' (the repository URL, copied from the root by
+  `scripts/build-packages.js`). The bin path is now `bin/cli.js` and the
+  repository URL `git+https://github.com/DevilsDev/rag-pipeline-utils.git`,
+  so `npm publish` has nothing to correct in any of the seven packages. A
+  test runs `npm pkg fix` on each published package.json and fails if it
+  would change anything.
 
 - **DAG timeouts no longer keep the process alive.** A `DAGEngine` run (and
   so `AgenticPipeline`, which runs one) with a `timeout` left its timer
