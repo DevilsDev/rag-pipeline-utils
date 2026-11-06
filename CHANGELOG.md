@@ -9,6 +9,24 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [Unreleased]
+
+### Internal
+
+- **Dependency cleanup: `npm audit` findings in development tooling fell
+  from 64 to 14, and none is high.** Eight OpenTelemetry SDK packages
+  (`sdk-node`, `auto-instrumentations-node`, the Jaeger, Prometheus and
+  OTLP exporters, `resources`, `sdk-metrics`, `semantic-conventions`)
+  were dev dependencies of three modules nothing loads
+  (`src/observability/telemetry.js`, `audit-logger.js` and
+  `security-monitor.js`); the modules and the packages are removed, 237
+  packages in all. `eslint-plugin-storybook` is removed too (no stories).
+  The library's own OpenTelemetry support (`@opentelemetry/api`, an
+  optional peer) is unchanged. The 14 left have no fix upstream:
+  `deepmerge` (latest is vulnerable) through Jest and Docusaurus, and
+  `minimatch` 10 inside TypeDoc, which crashes with 11. What you install
+  from npm had none before and has none now.
+
 ## [3.7.1] - 2026-11-06
 
 A patch release with no breaking changes: security fixes from a review of
