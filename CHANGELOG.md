@@ -9,7 +9,27 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.7.1] - 2026-11-06
+
+A patch release with no breaking changes: security fixes from a review of
+every open code-scanning alert. `QueryPlanner` could take minutes on a
+query with a long run of spaces; it now plans 200,000 characters in well
+under a second. `rag-pipeline plugin install` and `rag-pipeline config set`
+no longer let a crafted `__proto__` key write to `Object.prototype`. The
+npm page has a new README.
+
+### Changed
+
+- **A new README on npm,** written for developers meeting the library for
+  the first time: what it catches, two runnable examples, and what else is
+  in the box.
+
+### Fixed
+
+- **Backslashes in the `eval` Markdown report are escaped,** so an error
+  message with `\|` no longer splits a table cell.
+- `QdrantRetriever` and the plugin hub strip trailing slashes from a URL in
+  linear time.
 
 ### Security
 
@@ -28,15 +48,9 @@ page.
   `Object.prototype` in the CLI process. Only the stage names the
   installer knows are accepted now.
 - **`rag-pipeline config set` ignores a `__proto__` key inside the value.**
-  The key path was checked, but `config set pipeline
-'{"__proto__": {...}}'` merged into `Object.prototype`.
-
-### Fixed
-
-- **Backslashes in the `eval` Markdown report are escaped,** so an error
-  message with `\|` no longer splits a table cell.
-- `QdrantRetriever` and the plugin hub strip trailing slashes from a URL in
-  linear time.
+  The key path was checked, but a value such as `{"__proto__": {}}`
+  was merged into `Object.prototype`. The merge also
+  recurses only into the config's own objects now.
 
 ### Internal
 

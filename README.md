@@ -12,41 +12,49 @@
 
 # rag-pipeline-utils
 
-**Retrieval-augmented generation for Node.js, with answers you can check.** Build a pipeline in one call, then check every answer against its sources: which sentences are supported, with numbers and negation checked, and no model calls needed.
+**RAG for Node.js that tells you when your LLM is making things up.**
+
+Your chatbot just told someone they get _thirty_ vacation days. The handbook says twenty. This library catches that: it checks every sentence of an answer against the sources it was given, numbers and "not"s included, with no extra model calls. It also builds the pipeline for you, if you want one.
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils
 ```
 
-Node.js 22 or later. CommonJS, ESM and TypeScript declarations included.
+Node.js 22+. CommonJS, ESM and TypeScript types out of the box.
 
-## Check an answer
+## Catch the made-up bits
 
-From this library's pipeline, or from LangChain, Mastra, the AI SDK or LlamaIndex: pass the answer and the sources it was given.
+Bring an answer from anywhere: this library, LangChain, Mastra, the AI SDK or LlamaIndex. Pass it in with the sources it was given:
 
 ```js
 import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
 
 const check = await checkAnswer({
-  answer: "Full-time employees receive thirty days of paid vacation per year.",
+  answer:
+    "Full-time employees receive thirty days of paid vacation per year. " +
+    "Remote work is allowed two days per week.",
   sources: [
     {
       pageContent:
         "Full-time employees receive twenty days of paid vacation per year.",
-      metadata: { source: "handbook.md" },
+    },
+    {
+      pageContent:
+        "Remote work is allowed two days per week with manager approval.",
     },
   ],
 });
 
 console.log(check.grounded); // false
-console.log(check.unsupported.length); // 1
+console.log(check.groundedness); // 0.5
+console.log(check.unsupported); // ["Full-time employees receive thirty days of paid vacation per year."]
 ```
 
-[Try it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) with an answer of your own. No install or API key.
+That runs locally, with no API key and nothing sent anywhere. Worried about paraphrases? Add `judge` and your LLM gets asked about the sentences that failed on wording alone, and nothing else. [Try it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) with an answer of your own.
 
-## Build a pipeline
+## A pipeline in a dozen lines
 
-This runs offline, with the built-in TF-IDF embedder and an in-memory store. Add an LLM, such as `OpenAIConnector` or any AI SDK model, to generate answers.
+No API key needed for this one either: a built-in TF-IDF embedder and an in-memory store. Swap in OpenAI, Anthropic, Ollama or any AI SDK model when you're ready.
 
 ```js
 import {
@@ -56,15 +64,8 @@ import {
 } from "@devilsdev/rag-pipeline-utils";
 
 const docs = [
-  {
-    id: "vacation",
-    content:
-      "Full-time employees receive twenty days of paid vacation per year.",
-  },
-  {
-    id: "remote",
-    content: "Remote work is allowed two days per week with manager approval.",
-  },
+  { id: "vacation", content: "Full-time employees get twenty vacation days." },
+  { id: "remote", content: "Remote work is allowed two days per week." },
 ];
 
 const embedder = new LocalEmbedder();
@@ -75,41 +76,46 @@ await retriever.store(
 );
 
 const pipeline = createRagPipeline({ embedder, retriever });
-const result = await pipeline.run({
-  query: "How many vacation days do I get?",
-});
+const result = await pipeline.run({ query: "How many vacation days?" });
 
 console.log(result.results[0].id); // "vacation"
 ```
 
-## What's in it
+Rather start from a working app? `npm create rag-pipeline@latest` scaffolds one for Next.js with the AI SDK, Mastra, or Cloudflare Workers.
 
-- **Citations and grounding:** per-sentence sources and a groundedness score, with numeric and negation checks. An optional LLM judge rules on paraphrases, and `verifyCitations()` checks the citations Claude and OpenAI return.
-- **Evaluation in CI:** `rag-pipeline eval` scores a test set and fails the build when answers regress; [rag-eval-action](https://github.com/DevilsDev/rag-eval-action) comments on pull requests.
-- **Framework integrations:** grounding middleware for any Vercel AI SDK model, Mastra scorers and guardrails, and test matchers for Jest and Vitest.
-- **Guardrails:** prompt-injection detection and PII redaction, with your own detectors and [published precision and recall](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), and ACL filtering before generation.
-- **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry spans with evaluation scores as events (or Langfuse scores).
-- **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant, Pinecone and Weaviate; anything with `embed()` or `generate()` works too.
-- **A CLI:** `init`, `ingest`, `query`, `eval` and `serve` against a local index, offline if you want.
-- **Starter templates:** `npm create rag-pipeline` for Next.js with the AI SDK, Mastra or Cloudflare Workers.
+## Why people reach for it
 
-## Packages
+- **Grounding you can see.** Per-sentence citations and a groundedness score, with numbers, units, dates and negation actually checked. `verifyCitations()` double-checks the citations Claude and OpenAI hand back.
+- **Regressions fail the build.** `rag-pipeline eval` scores a test set in CI and goes red when answers get worse. [rag-eval-action](https://github.com/DevilsDev/rag-eval-action) posts the results on your pull request.
+- **Plays well with your stack.** Grounding middleware for any Vercel AI SDK model, Mastra scorers and guardrails, Jest and Vitest matchers.
+- **Guardrails with receipts.** Prompt-injection detection and PII redaction with [published precision and recall](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), plus ACL filtering before anything reaches the model.
+- **Ready for production.** Hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry (or Langfuse) traces with the scores attached.
+- **Connectors included.** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant, Pinecone and Weaviate. Anything with an `embed()` or `generate()` method works too.
+- **A real CLI.** `init`, `ingest`, `query`, `eval` and `serve`, against a local index, offline if you like.
+- **Runs at the edge.** A `/edge` build for Cloudflare Workers, Vercel Edge and Deno.
+- **Talk to it from Claude.** `@devilsdev/rag-mcp-server` lets Claude search a folder of your docs and check its own answers.
 
-| Package                                                                                        | What it is                                                         |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                                      |
-| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                                |
-| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                                  |
-| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks, about 6 MB installed                 |
-| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction               |
-| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP)           |
-| [`create-rag-pipeline`](https://www.npmjs.com/package/create-rag-pipeline)                     | `npm create rag-pipeline`: starter apps (Next.js, Mastra, Workers) |
+## Take only what you need
 
-## Learn more
+The main package has everything. The smaller ones are there if install size matters:
 
-- [Use cases with runnable code](https://github.com/DevilsDev/rag-pipeline-utils#use-cases), most of them on StackBlitz
-- [Documentation](https://devilsdev.github.io/rag-pipeline-utils/): guides, API reference and the [CLI](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI)
+| Package                                                                                        | What you get                                             |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            |
+| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      |
+| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        |
+| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks, about 6 MB installed       |
+| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     |
+| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP) |
+| [`create-rag-pipeline`](https://www.npmjs.com/package/create-rag-pipeline)                     | `npm create rag-pipeline`: Next.js, Mastra or Workers    |
+
+## Go further
+
+- [Use cases with runnable code](https://github.com/DevilsDev/rag-pipeline-utils#use-cases), most of them one click away on StackBlitz
+- [Docs](https://devilsdev.github.io/rag-pipeline-utils/): guides, the API reference and the [CLI](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI)
 - [How it compares](https://devilsdev.github.io/rag-pipeline-utils/docs/Comparison) with LangChain.js, Mastra and the AI SDK
-- [Examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) and [changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)
+- [Examples](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples) and the [changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)
 
-Published from GitHub Actions with npm provenance. Report vulnerabilities as described in [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md). [MIT](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE) licensed.
+Found a bug or have an idea? [Open an issue](https://github.com/DevilsDev/rag-pipeline-utils/issues). A star on [GitHub](https://github.com/DevilsDev/rag-pipeline-utils) helps other devs find it.
+
+Published from GitHub Actions with npm provenance. Security reports: see [SECURITY.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SECURITY.md). [MIT](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE) licensed.
