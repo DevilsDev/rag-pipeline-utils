@@ -141,7 +141,9 @@ function caseLines(input) {
 }
 
 const mdCell = (text) =>
-  String(text).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+  String(text)
+    .replace(/[\\|]/g, '\\$&')
+    .replace(/\r?\n/g, ' ');
 
 function renderMarkdown(input, verdict, title) {
   const { report, comparison } = input;

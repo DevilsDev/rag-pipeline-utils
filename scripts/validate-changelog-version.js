@@ -6,7 +6,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 // __filename and __dirname are available as global variables in CommonJS
 
@@ -36,7 +36,7 @@ if (normalized !== changelog) {
 
   // Auto-stage if in git project (Husky compatibility)
   try {
-    execSync(`git add ${changelogPath}`);
+    execFileSync("git", ["add", changelogPath]);
     console.log("CHANGELOG.md staged after correction");
     // eslint-disable-line no-console
   } catch {

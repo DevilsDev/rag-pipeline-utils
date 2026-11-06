@@ -80,17 +80,25 @@ const CLAUSE_STARTERS = [
 
 const STARTER_ALT = CLAUSE_STARTERS.join('|');
 
-/** ", and how ...", " and what ...", " or is ...", " as well as why ..." */
+/**
+ * ", and how ...", " and what ...", " or is ...", " as well as why ...".
+ * It starts only where a whitespace run starts, and the optional comma is
+ * one group, so a run of spaces splits one way: `\s*,?\s+` was cubic in the
+ * run's length.
+ */
 const CONJUNCTION_BOUNDARY = new RegExp(
-  `\\s*,?\\s+(?:and|or|as well as|and also|but)\\s+(?=(?:${STARTER_ALT})\\b)`,
+  `(?<![\\s,])(?:\\s*,)?\\s+(?:and|or|as well as|and also|but)\\s+(?=(?:${STARTER_ALT})\\b)`,
   'i',
 );
 
 /**
  * Explicit boundaries: "?" / "!" followed by more text, "." followed by a
- * capitalised word (so "e.g. salt" stays whole), and ";".
+ * capitalised word (so "e.g. salt" stays whole), and ";". The ";" branch
+ * starts only where a whitespace run starts (or right after a previous
+ * match), so a long run of spaces is scanned once, not once per space.
  */
-const PUNCTUATION_BOUNDARY = /(?<=[?!])\s+(?=\S)|(?<=\.)\s+(?=[A-Z])|\s*;\s*/;
+const PUNCTUATION_BOUNDARY =
+  /(?<=[?!])\s+(?=\S)|(?<=\.)\s+(?=[A-Z])|(?<!\s)\s*;\s*|(?<=\s);\s*/;
 /** Abbreviations whose period does not end a sentence. */
 const ABBREVIATION_END =
   /\b(?:e\.g|i\.e|etc|vs|cf|approx|mr|mrs|ms|dr|st|no)\.$/i;
@@ -256,7 +264,7 @@ class QueryPlanner extends EventEmitter {
     const tidy = (s) =>
       s
         .trim()
-        .replace(/^[,;]+\s*|[,;]+$/g, '')
+        .replace(/^[,;]+\s*|(?<![,;])[,;]+$/g, '')
         .trim();
 
     let clauses = [];
@@ -329,12 +337,16 @@ class QueryPlanner extends EventEmitter {
    * @private
    */
   _heuristicPlan(trimmed) {
-    const complexity = this._computeComplexity(trimmed);
-    const items = this._decompose(trimmed, complexity);
+    // One space per whitespace run: several patterns here (the "vs" and
+    // comparison ones) try every split of a long run of spaces, so a query
+    // of spaces would otherwise take quadratic or worse time.
+    const text = trimmed.replace(/\s+/g, ' ');
+    const complexity = this._computeComplexity(text);
+    const items = this._decompose(text, complexity);
     if (items.length === 0) {
       items.push({
         subQuery: trimmed,
-        strategy: this._detectStrategy(trimmed),
+        strategy: this._detectStrategy(text),
       });
     }
     return this._finalize(items, complexity, trimmed, 'heuristic');

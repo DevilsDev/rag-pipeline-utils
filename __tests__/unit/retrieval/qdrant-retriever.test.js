@@ -54,7 +54,8 @@ describe("QdrantRetriever", () => {
       { status: 200, json: { result: {} } },
       { status: 200, json: { result: {} } },
     ]);
-    const retriever = new QdrantRetriever({ url: "http://q:6333/", fetch });
+    const retriever = new QdrantRetriever({ url: "http://q:6333//", fetch });
+    expect(retriever.url).toBe("http://q:6333");
     await retriever.store([
       {
         id: "a.md#0",

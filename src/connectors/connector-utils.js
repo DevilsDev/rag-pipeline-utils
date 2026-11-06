@@ -276,14 +276,14 @@ function resolveApiKey(options, envVar) {
  * @returns {Error}
  */
 function missingApiKeyError(provider, envVar) {
-  const err = new Error(
-    `${provider} API key required. Set ${envVar} or pass the apiKey option.`,
+  return Object.assign(
+    new Error(
+      `${provider} API key required. Set ${envVar} or pass the apiKey option.`,
+    ),
+    // provider and envVar: for callers that word their own message, e.g.
+    // the CLI
+    { code: 'MISSING_API_KEY', provider, envVar },
   );
-  err.code = 'MISSING_API_KEY';
-  // For callers that word their own message, e.g. the CLI
-  err.provider = provider;
-  err.envVar = envVar;
-  return err;
 }
 
 /**
@@ -387,7 +387,10 @@ function toConnectorError(err, provider) {
   } else {
     message = `${provider} request failed: ${err.message}`;
   }
-  const error = new Error(message);
+  const error =
+    /** @type {Error & { provider?: string, code?: string, status?: number, response?: Object }} */ (
+      new Error(message)
+    );
   error.provider = provider;
   if (err.code) error.code = err.code;
   if (response) {

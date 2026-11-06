@@ -106,12 +106,14 @@ describe("renderEvaluationReport", () => {
     report.cases[1] = {
       ...report.cases[1],
       success: false,
-      error: "bad | pipe\nnew line",
+      error: "bad | pipe\nnew line, C:\\dir\\| odd",
       scores: {},
     };
     report.summary.failed = 1;
     const md = renderEvaluationReport({ report });
-    expect(md).toContain("failed: bad \\| pipe new line");
+    // a backslash is escaped too, so "\|" can't turn an escaped pipe back
+    // into a cell border
+    expect(md).toContain("failed: bad \\| pipe new line, C:\\\\dir\\\\\\| odd");
   });
 
   it("renders a standalone, escaped HTML page", async () => {

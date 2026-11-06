@@ -25,6 +25,10 @@ source that says "twenty days".
 
 `object`
 
+`matchedWords`: the words of a claim quantity or time the source states
+another way ("90 minutes" for "one and a half hours"); computeSupportScore
+counts them as matched
+
 ### claimNumbers
 
 ```ts
@@ -35,6 +39,12 @@ claimNumbers: string[];
 
 ```ts
 consistent: boolean;
+```
+
+### matchedWords
+
+```ts
+matchedWords: string[];
 ```
 
 ### missing

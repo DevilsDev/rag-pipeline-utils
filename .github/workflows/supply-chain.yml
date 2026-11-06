@@ -9,11 +9,9 @@ on:
     - cron: "0 4 * * 1" # Weekly on Monday at 4 AM UTC
   workflow_dispatch:
 
+# Read-only by default; the jobs that upload results or sign ask for more
 permissions:
   contents: read
-  security-events: write
-  actions: read
-  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

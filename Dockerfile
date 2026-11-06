@@ -13,7 +13,7 @@
 # ================================
 # Stage 1: Base Dependencies
 # ================================
-FROM node:22-alpine AS base
+FROM node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 AS base
 
 # Install security updates and required packages
 RUN apk update && apk upgrade && \
@@ -72,9 +72,6 @@ FROM deps AS development
 
 # Copy source code
 COPY . .
-
-# Install development tools
-RUN npm install -g nodemon
 
 # Set development environment
 ENV NODE_ENV=development

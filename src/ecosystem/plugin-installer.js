@@ -169,7 +169,9 @@ async function installPlugin(params) {
       : {};
     const stage = params.stage || manifest.ragPipeline?.stage;
     const name = params.name || manifest.ragPipeline?.name;
-    if (!STAGE_METHODS[stage]) {
+    // Own keys only: "__proto__" or "constructor" would pass an `in` or
+    // truthiness check and then write into Object.prototype below.
+    if (typeof stage !== 'string' || !Object.hasOwn(STAGE_METHODS, stage)) {
       throw new Error(
         `Unknown or missing stage. Pass --stage (${Object.keys(STAGE_METHODS).join(', ')}) or set "ragPipeline.stage" in package.json.`,
       );
