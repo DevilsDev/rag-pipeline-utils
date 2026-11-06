@@ -24,6 +24,18 @@ page.
   including non-ASCII and multi-block ones), must equal the Node.js build's.
   No library change was needed.
 
+### Fixed
+
+- **Packaging: package.json in the form npm publishes.** At the 3.6.0
+  publish npm auto-corrected the root package.json (the `rag-pipeline`
+  bin path `./bin/cli.js`, and the plain https `repository.url`) and the
+  scoped packages' (the repository URL, copied from the root by
+  `scripts/build-packages.js`). The bin path is now `bin/cli.js` and the
+  repository URL `git+https://github.com/DevilsDev/rag-pipeline-utils.git`,
+  so `npm publish` has nothing to correct in any of the seven packages. A
+  test runs `npm pkg fix` on each published package.json and fails if it
+  would change anything.
+
 ## [3.6.0] - 2026-11-05
 
 A minor release with no breaking changes, about getting started and fewer
