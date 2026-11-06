@@ -66,22 +66,22 @@ The [example](https://github.com/DevilsDev/rag-pipeline-utils/tree/main/examples
 
 These run in workerd in CI:
 
-| Feature                                                                                  | Notes                                                                 |
-| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `createRagPipeline`: retrieval, reranking, generation, streaming, `timeout` and `signal` |                                                                       |
-| Citations and evaluation (`citations`, `evaluate`)                                       |                                                                       |
-| `maxContextTokens` and `packContext`                                                     |                                                                       |
-| `cache: true`                                                                            | The in-memory cache lasts as long as the isolate, not across isolates |
-| `MemoryRetriever`, `LocalEmbedder`                                                       | Index documents bundled with the Worker, or loaded at startup         |
-| `QdrantRetriever`                                                                        | Uses `fetch`                                                          |
-| `AnthropicConnector`, `OllamaConnector`                                                  | Including streaming                                                   |
-| `OpenAIConnector`                                                                        | Add `openai` to the Worker's dependencies, as on Node.js              |
-| `telemetry`                                                                              | Add `@opentelemetry/api` and a tracer provider that works in Workers  |
-| Guardrails (`detectInjection`, `GuardrailsPipeline`), `ChunkingEngine`                   |                                                                       |
+| Feature                                                                                  | Notes                                                                              |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `createRagPipeline`: retrieval, reranking, generation, streaming, `timeout` and `signal` |                                                                                    |
+| Citations and evaluation (`citations`, `evaluate`)                                       |                                                                                    |
+| `maxContextTokens` and `packContext`                                                     |                                                                                    |
+| `cache: true`                                                                            | The in-memory cache lasts as long as the isolate, not across isolates              |
+| `MemoryRetriever`, `LocalEmbedder`                                                       | Index documents bundled with the Worker, or loaded at startup                      |
+| `QdrantRetriever`, `PineconeRetriever`                                                   | Use `fetch`: store, retrieve, list, size and delete, on the main entry and `/edge` |
+| `AnthropicConnector`, `OllamaConnector`                                                  | Including streaming                                                                |
+| `OpenAIConnector`                                                                        | Add `openai` to the Worker's dependencies, as on Node.js                           |
+| `telemetry`                                                                              | Add `@opentelemetry/api` and a tracer provider that works in Workers               |
+| Guardrails (`detectInjection`, `GuardrailsPipeline`), `ChunkingEngine`                   |                                                                                    |
 
 ## What doesn't
 
-- **Files.** Workers have no persistent disk: `FileVectorStore` can only use the runtime's temporary in-memory file system, which does not outlive the request. Use `MemoryRetriever` with bundled data, or a database: `QdrantRetriever` over HTTP. `PgVectorRetriever` needs the `pg` package and a TCP connection to PostgreSQL; the CI check doesn't cover it.
+- **Files.** Workers have no persistent disk: `FileVectorStore` can only use the runtime's temporary in-memory file system, which does not outlive the request. Use `MemoryRetriever` with bundled data, or a database over HTTP: `QdrantRetriever` or `PineconeRetriever`. `PgVectorRetriever` needs the `pg` package and a TCP connection to PostgreSQL; the CI check doesn't cover it.
 - **The CLI, `DevServer`, hot reload and the plugin sandbox** (`isolated-vm` is a native module) are for Node.js only.
 - **Timing.** Workers advance their clocks only when the Worker does I/O, so `timing.firstTokenMs` and `totalMs` reflect network waits, not CPU time. Run [`ai benchmark`](./CLI.md#ai-benchmark) on Node.js for CPU-bound timings.
 

@@ -288,12 +288,22 @@ class ExecutionScheduler {
    */
   async executeWithTimeout(runFn, timeout) {
     if (timeout && timeout > 0) {
-      await Promise.race([
-        runFn(),
-        new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Execution timeout')), timeout);
-        }),
-      ]);
+      // Clear the timer once the run settles; a pending timer would keep the
+      // process alive for the full timeout after a fast run.
+      let timer;
+      try {
+        await Promise.race([
+          runFn(),
+          new Promise((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error('Execution timeout')),
+              timeout,
+            );
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
     } else {
       await runFn();
     }
