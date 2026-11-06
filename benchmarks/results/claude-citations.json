@@ -1,9 +1,9 @@
 {
   "benchmark": "claude-citations",
-  "createdAt": "2026-11-05T07:17:02.247Z",
+  "createdAt": "2026-11-05T23:47:59.849Z",
   "environment": {
-    "libraryVersion": "3.5.0",
-    "commit": "fb3d82f",
+    "libraryVersion": "3.6.0",
+    "commit": "b16d317",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -52,8 +52,8 @@
         "accepted": true
       },
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 208,
-      "totalCostUSD": 0.5965,
+      "totalCalls": 209,
+      "totalCostUSD": 0.5971,
       "scifact": {
         "answers": {
           "calls": 150,
@@ -76,70 +76,68 @@
           "refused": 0,
           "lexical": {
             "claims": 154,
-            "supported": 144,
-            "unsupported": 10,
+            "supported": 146,
+            "unsupported": 8,
             "unverifiable": 0,
-            "supportedShare": 0.9351,
-            "supportedInterval": [0.8846, 0.9643],
+            "supportedShare": 0.9481,
+            "supportedInterval": [0.9008, 0.9734],
             "byLexicalReason": {
-              "supported": 144,
-              "polarity_mismatch": 7,
+              "supported": 146,
+              "polarity_mismatch": 5,
               "low_overlap": 3
             },
-            "verifiedAnswers": 74,
-            "verifiedShare": 0.74,
-            "verifiedInterval": [0.6463, 0.816]
+            "verifiedAnswers": 76,
+            "verifiedShare": 0.76,
+            "verifiedInterval": [0.6677, 0.8331]
           },
           "judge": {
             "claims": 154,
-            "supported": 147,
-            "unsupported": 7,
+            "supported": 149,
+            "unsupported": 5,
             "unverifiable": 0,
-            "supportedShare": 0.9545,
-            "supportedInterval": [0.9092, 0.9778],
+            "supportedShare": 0.9675,
+            "supportedInterval": [0.9263, 0.9861],
             "byLexicalReason": {
-              "supported": 144,
-              "polarity_mismatch": 7,
+              "supported": 146,
+              "polarity_mismatch": 5,
               "low_overlap": 3
             },
-            "verifiedAnswers": 77,
-            "verifiedShare": 0.77,
-            "verifiedInterval": [0.6785, 0.8416]
+            "verifiedAnswers": 79,
+            "verifiedShare": 0.79,
+            "verifiedInterval": [0.7002, 0.8583]
           }
         },
         "lexical": {
           "claims": 232,
-          "supported": 217,
-          "unsupported": 15,
+          "supported": 220,
+          "unsupported": 12,
           "unverifiable": 0,
-          "supportedShare": 0.9353,
-          "supportedInterval": [0.8961, 0.9604],
+          "supportedShare": 0.9483,
+          "supportedInterval": [0.9118, 0.9702],
           "byLexicalReason": {
-            "supported": 217,
-            "polarity_mismatch": 9,
-            "low_overlap": 5,
-            "number_mismatch": 1
+            "supported": 220,
+            "polarity_mismatch": 7,
+            "low_overlap": 5
           },
-          "verifiedAnswers": 110,
-          "verifiedShare": 0.7333,
-          "verifiedInterval": [0.6574, 0.7976]
+          "verifiedAnswers": 113,
+          "verifiedShare": 0.7533,
+          "verifiedInterval": [0.6786, 0.8154]
         },
         "judge": {
           "claims": 232,
-          "supported": 221,
-          "unsupported": 11,
+          "supported": 224,
+          "unsupported": 8,
           "unverifiable": 0,
-          "supportedShare": 0.9526,
-          "supportedInterval": [0.9171, 0.9733],
+          "supportedShare": 0.9655,
+          "supportedInterval": [0.9334, 0.9824],
           "byLexicalReason": {
-            "supported": 217,
-            "polarity_mismatch": 9,
-            "low_overlap": 5,
-            "number_mismatch": 1
+            "supported": 220,
+            "polarity_mismatch": 7,
+            "low_overlap": 5
           },
-          "verifiedAnswers": 114,
-          "verifiedShare": 0.76,
-          "verifiedInterval": [0.6857, 0.8213],
+          "verifiedAnswers": 117,
+          "verifiedShare": 0.78,
+          "verifiedInterval": [0.7072, 0.8388],
           "calls": 5,
           "errors": 0
         },
@@ -150,23 +148,23 @@
         },
         "costUSD": 0.4661,
         "review": {
-          "flaggedByLexical": 15,
-          "sampled": 15,
+          "flaggedByLexical": 12,
+          "sampled": 12,
           "lexical": {
-            "reviewed": 15,
+            "reviewed": 12,
             "true_problem": 1,
-            "false_alarm": 14,
-            "unclear": 0,
-            "precision": 0.0667,
-            "precisionInterval": [0.0119, 0.2982]
-          },
-          "judgeStillUnsupported": {
-            "reviewed": 11,
-            "true_problem": 0,
             "false_alarm": 11,
             "unclear": 0,
+            "precision": 0.0833,
+            "precisionInterval": [0.0149, 0.3539]
+          },
+          "judgeStillUnsupported": {
+            "reviewed": 8,
+            "true_problem": 0,
+            "false_alarm": 8,
+            "unclear": 0,
             "precision": 0,
-            "precisionInterval": [0, 0.2588]
+            "precisionInterval": [0, 0.3244]
           },
           "judgeOverturned": {
             "reviewed": 4,
@@ -181,15 +179,12 @@
             "claude-haiku-4-5-20251001|208#0",
             "claude-haiku-4-5-20251001|1382#0",
             "claude-haiku-4-5-20251001|1282#0",
-            "claude-haiku-4-5-20251001|274#1",
             "claude-haiku-4-5-20251001|692#0",
             "claude-haiku-4-5-20251001|1104#0",
             "claude-haiku-4-5-20251001|279#0",
-            "claude-haiku-4-5-20251001|1298#1",
             "claude-haiku-4-5-20251001|501#0",
             "claude-haiku-4-5-20251001|70#2",
             "claude-haiku-4-5-20251001|3#0",
-            "claude-haiku-4-5-20251001|597#0",
             "claude-haiku-4-5-20251001|521#0",
             "claude-haiku-4-5-20251001|384#0"
           ]
@@ -197,18 +192,18 @@
         "mutation": {
           "claimsWithCitedText": 232,
           "unmutatedFlagged": {
-            "caught": 20,
+            "caught": 17,
             "applicable": 232,
-            "rate": 0.0862,
-            "interval": [0.0565, 0.1294]
+            "rate": 0.0733,
+            "interval": [0.0462, 0.1142]
           },
-          "supportedClaims": 212,
+          "supportedClaims": 215,
           "mutations": {
             "number": {
-              "caught": 55,
-              "applicable": 58,
-              "rate": 0.9483,
-              "interval": [0.8586, 0.9823],
+              "caught": 57,
+              "applicable": 60,
+              "rate": 0.95,
+              "interval": [0.863, 0.9829],
               "missedExamples": [
                 {
                   "query": "1337"
@@ -233,10 +228,10 @@
               ]
             },
             "negationRemoved": {
-              "caught": 17,
-              "applicable": 18,
-              "rate": 0.9444,
-              "interval": [0.7424, 0.9901],
+              "caught": 19,
+              "applicable": 20,
+              "rate": 0.95,
+              "interval": [0.7639, 0.9911],
               "missedExamples": [
                 {
                   "query": "274"
@@ -244,17 +239,17 @@
               ]
             },
             "swapUnrelated": {
-              "caught": 212,
-              "applicable": 212,
+              "caught": 215,
+              "applicable": 215,
               "rate": 1,
-              "interval": [0.9822, 1],
+              "interval": [0.9824, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 205,
-              "applicable": 212,
-              "rate": 0.967,
-              "interval": [0.9334, 0.9839],
+              "caught": 208,
+              "applicable": 215,
+              "rate": 0.9674,
+              "interval": [0.9343, 0.9841],
               "missedExamples": [
                 {
                   "query": "118"
@@ -975,14 +970,14 @@
         "judge": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 8,
-          "passed": 19
+          "falseAlarm": 7,
+          "passed": 20
         },
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 4,
-          "passed": 23
+          "falseAlarm": 3,
+          "passed": 24
         },
         "categories": {
           "answer-not-in-documents": {
@@ -1182,14 +1177,14 @@
             "judge": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             },
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -1838,20 +1833,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
-            "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judge": "passed",
+            "judgeVerifiedOnly": "passed",
             "answer": "Parking at the station is free for the first two hours.",
             "claims": [
               {
                 "text": "Parking at the station is free for the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -1873,14 +1868,14 @@
         "judge": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 14,
-          "passed": 34
+          "falseAlarm": 13,
+          "passed": 35
         },
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 8,
-          "passed": 40
+          "falseAlarm": 7,
+          "passed": 41
         },
         "categories": {
           "answer-not-in-documents": {
@@ -2080,14 +2075,14 @@
             "judge": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             },
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -3232,20 +3227,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
-            "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judge": "passed",
+            "judgeVerifiedOnly": "passed",
             "answer": "Parking at the station is free for the first two hours.",
             "claims": [
               {
                 "text": "Parking at the station is free for the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -3253,11 +3248,11 @@
           }
         ],
         "usage": {
-          "calls": 52,
-          "inputTokens": 116996,
-          "outputTokens": 2678
+          "calls": 53,
+          "inputTokens": 117313,
+          "outputTokens": 2729
         },
-        "costUSD": 0.1304
+        "costUSD": 0.131
       }
     },
     "claude-haiku-5-5": {
@@ -3278,8 +3273,8 @@
         "error": "Claude API 400: `temperature` is deprecated for this model."
       },
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 199,
-      "totalCostUSD": 0.1138,
+      "totalCalls": 200,
+      "totalCostUSD": 0.1139,
       "scifact": {
         "answers": {
           "calls": 150,
@@ -3302,72 +3297,72 @@
           "refused": 0,
           "lexical": {
             "claims": 333,
-            "supported": 329,
-            "unsupported": 4,
+            "supported": 330,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.988,
-            "supportedInterval": [0.9695, 0.9953],
+            "supportedShare": 0.991,
+            "supportedInterval": [0.9739, 0.9969],
             "byLexicalReason": {
-              "supported": 329,
-              "polarity_mismatch": 2,
+              "supported": 330,
+              "polarity_mismatch": 1,
               "number_mismatch": 1,
               "low_overlap": 1
             },
-            "verifiedAnswers": 95,
-            "verifiedShare": 0.95,
-            "verifiedInterval": [0.8882, 0.9785]
+            "verifiedAnswers": 96,
+            "verifiedShare": 0.96,
+            "verifiedInterval": [0.9016, 0.9843]
           },
           "judge": {
             "claims": 333,
-            "supported": 329,
-            "unsupported": 4,
+            "supported": 330,
+            "unsupported": 3,
             "unverifiable": 0,
-            "supportedShare": 0.988,
-            "supportedInterval": [0.9695, 0.9953],
+            "supportedShare": 0.991,
+            "supportedInterval": [0.9739, 0.9969],
             "byLexicalReason": {
-              "supported": 329,
-              "polarity_mismatch": 2,
+              "supported": 330,
+              "polarity_mismatch": 1,
               "number_mismatch": 1,
               "low_overlap": 1
             },
-            "verifiedAnswers": 95,
-            "verifiedShare": 0.95,
-            "verifiedInterval": [0.8882, 0.9785]
+            "verifiedAnswers": 96,
+            "verifiedShare": 0.96,
+            "verifiedInterval": [0.9016, 0.9843]
           }
         },
         "lexical": {
           "claims": 495,
-          "supported": 489,
-          "unsupported": 6,
+          "supported": 490,
+          "unsupported": 5,
           "unverifiable": 0,
-          "supportedShare": 0.9879,
-          "supportedInterval": [0.9738, 0.9944],
+          "supportedShare": 0.9899,
+          "supportedInterval": [0.9766, 0.9957],
           "byLexicalReason": {
-            "supported": 489,
-            "polarity_mismatch": 4,
+            "supported": 490,
+            "polarity_mismatch": 3,
             "number_mismatch": 1,
             "low_overlap": 1
           },
-          "verifiedAnswers": 142,
-          "verifiedShare": 0.9467,
-          "verifiedInterval": [0.8983, 0.9727]
+          "verifiedAnswers": 143,
+          "verifiedShare": 0.9533,
+          "verifiedInterval": [0.9068, 0.9772]
         },
         "judge": {
           "claims": 495,
-          "supported": 489,
-          "unsupported": 6,
+          "supported": 490,
+          "unsupported": 5,
           "unverifiable": 0,
-          "supportedShare": 0.9879,
-          "supportedInterval": [0.9738, 0.9944],
+          "supportedShare": 0.9899,
+          "supportedInterval": [0.9766, 0.9957],
           "byLexicalReason": {
-            "supported": 489,
-            "polarity_mismatch": 4,
+            "supported": 490,
+            "polarity_mismatch": 3,
             "number_mismatch": 1,
             "low_overlap": 1
           },
-          "verifiedAnswers": 142,
-          "verifiedShare": 0.9467,
-          "verifiedInterval": [0.8983, 0.9727],
+          "verifiedAnswers": 143,
+          "verifiedShare": 0.9533,
+          "verifiedInterval": [0.9068, 0.9772],
           "calls": 1,
           "errors": 0
         },
@@ -3378,23 +3373,23 @@
         },
         "costUSD": 0.0956,
         "review": {
-          "flaggedByLexical": 6,
-          "sampled": 6,
+          "flaggedByLexical": 5,
+          "sampled": 5,
           "lexical": {
-            "reviewed": 6,
+            "reviewed": 5,
             "true_problem": 1,
-            "false_alarm": 5,
+            "false_alarm": 4,
             "unclear": 0,
-            "precision": 0.1667,
-            "precisionInterval": [0.0301, 0.5635]
+            "precision": 0.2,
+            "precisionInterval": [0.0362, 0.6245]
           },
           "judgeStillUnsupported": {
-            "reviewed": 6,
+            "reviewed": 5,
             "true_problem": 1,
-            "false_alarm": 5,
+            "false_alarm": 4,
             "unclear": 0,
-            "precision": 0.1667,
-            "precisionInterval": [0.0301, 0.5635]
+            "precision": 0.2,
+            "precisionInterval": [0.0362, 0.6245]
           },
           "judgeOverturned": {
             "reviewed": 0,
@@ -3406,7 +3401,6 @@
           },
           "sample": [
             "claude-haiku-5-5|516#1",
-            "claude-haiku-5-5|274#0",
             "claude-haiku-5-5|1273#2",
             "claude-haiku-5-5|823#1",
             "claude-haiku-5-5|3#0",
@@ -3416,18 +3410,18 @@
         "mutation": {
           "claimsWithCitedText": 495,
           "unmutatedFlagged": {
-            "caught": 6,
+            "caught": 5,
             "applicable": 495,
-            "rate": 0.0121,
-            "interval": [0.0056, 0.0262]
+            "rate": 0.0101,
+            "interval": [0.0043, 0.0234]
           },
-          "supportedClaims": 489,
+          "supportedClaims": 490,
           "mutations": {
             "number": {
-              "caught": 134,
-              "applicable": 134,
+              "caught": 135,
+              "applicable": 135,
               "rate": 1,
-              "interval": [0.9721, 1],
+              "interval": [0.9723, 1],
               "missedExamples": []
             },
             "negationAdded": {
@@ -3443,27 +3437,30 @@
             },
             "negationRemoved": {
               "caught": 40,
-              "applicable": 41,
-              "rate": 0.9756,
-              "interval": [0.874, 0.9957],
+              "applicable": 42,
+              "rate": 0.9524,
+              "interval": [0.8421, 0.9868],
               "missedExamples": [
+                {
+                  "query": "1379"
+                },
                 {
                   "query": "1339"
                 }
               ]
             },
             "swapUnrelated": {
-              "caught": 489,
-              "applicable": 489,
+              "caught": 490,
+              "applicable": 490,
               "rate": 1,
               "interval": [0.9922, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 473,
-              "applicable": 489,
+              "caught": 474,
+              "applicable": 490,
               "rate": 0.9673,
-              "interval": [0.9475, 0.9798],
+              "interval": [0.9476, 0.9798],
               "missedExamples": [
                 {
                   "query": "870"
@@ -4243,8 +4240,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 2,
-          "passed": 25
+          "falseAlarm": 1,
+          "passed": 26
         },
         "categories": {
           "answer-not-in-documents": {
@@ -4450,8 +4447,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -5180,20 +5177,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Parking at the station is free only for a limited time. The station parking is free during the first two hours. The document doesn't say what the charge is after that.",
             "claims": [
               {
                 "text": "The station parking is free during the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -5224,8 +5221,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 5,
-          "passed": 43
+          "falseAlarm": 4,
+          "passed": 44
         },
         "categories": {
           "answer-not-in-documents": {
@@ -5431,8 +5428,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -6710,20 +6707,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Parking at the station is free only for a limited time. The station parking is free during the first two hours. The document doesn't say what the charge is after that.",
             "claims": [
               {
                 "text": "The station parking is free during the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -6734,11 +6731,11 @@
           }
         ],
         "usage": {
-          "calls": 48,
-          "inputTokens": 148030,
-          "outputTokens": 6759
+          "calls": 49,
+          "inputTokens": 148457,
+          "outputTokens": 6880
         },
-        "costUSD": 0.0182
+        "costUSD": 0.0183
       }
     },
     "claude-sonnet-5-5": {
@@ -6754,8 +6751,8 @@
         "error": "Claude API 400: `temperature` is deprecated for this model."
       },
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 202,
-      "totalCostUSD": 2.009,
+      "totalCalls": 203,
+      "totalCostUSD": 2.0104,
       "scifact": {
         "answers": {
           "calls": 150,
@@ -6778,72 +6775,72 @@
           "refused": 0,
           "lexical": {
             "claims": 405,
-            "supported": 390,
-            "unsupported": 15,
+            "supported": 392,
+            "unsupported": 13,
             "unverifiable": 0,
-            "supportedShare": 0.963,
-            "supportedInterval": [0.9398, 0.9774],
+            "supportedShare": 0.9679,
+            "supportedInterval": [0.9459, 0.9811],
             "byLexicalReason": {
-              "supported": 390,
-              "polarity_mismatch": 11,
+              "supported": 392,
+              "polarity_mismatch": 9,
               "number_mismatch": 2,
               "low_overlap": 2
             },
-            "verifiedAnswers": 87,
-            "verifiedShare": 0.87,
-            "verifiedInterval": [0.7902, 0.9224]
+            "verifiedAnswers": 89,
+            "verifiedShare": 0.89,
+            "verifiedInterval": [0.8137, 0.9375]
           },
           "judge": {
             "claims": 405,
-            "supported": 391,
-            "unsupported": 14,
+            "supported": 393,
+            "unsupported": 12,
             "unverifiable": 0,
-            "supportedShare": 0.9654,
-            "supportedInterval": [0.9428, 0.9793],
+            "supportedShare": 0.9704,
+            "supportedInterval": [0.9489, 0.983],
             "byLexicalReason": {
-              "supported": 390,
-              "polarity_mismatch": 11,
+              "supported": 392,
+              "polarity_mismatch": 9,
               "number_mismatch": 2,
               "low_overlap": 2
             },
-            "verifiedAnswers": 88,
-            "verifiedShare": 0.88,
-            "verifiedInterval": [0.8019, 0.93]
+            "verifiedAnswers": 90,
+            "verifiedShare": 0.9,
+            "verifiedInterval": [0.8256, 0.9448]
           }
         },
         "lexical": {
           "claims": 604,
-          "supported": 584,
-          "unsupported": 20,
+          "supported": 588,
+          "unsupported": 16,
           "unverifiable": 0,
-          "supportedShare": 0.9669,
-          "supportedInterval": [0.9494, 0.9785],
+          "supportedShare": 0.9735,
+          "supportedInterval": [0.9574, 0.9836],
           "byLexicalReason": {
-            "supported": 584,
-            "polarity_mismatch": 14,
-            "number_mismatch": 4,
+            "supported": 588,
+            "polarity_mismatch": 11,
+            "number_mismatch": 3,
             "low_overlap": 2
           },
-          "verifiedAnswers": 133,
-          "verifiedShare": 0.8867,
-          "verifiedInterval": [0.826, 0.928]
+          "verifiedAnswers": 136,
+          "verifiedShare": 0.9067,
+          "verifiedInterval": [0.8494, 0.9436]
         },
         "judge": {
           "claims": 604,
-          "supported": 585,
-          "unsupported": 19,
+          "supported": 589,
+          "unsupported": 15,
           "unverifiable": 0,
-          "supportedShare": 0.9685,
-          "supportedInterval": [0.9514, 0.9798],
+          "supportedShare": 0.9752,
+          "supportedInterval": [0.9594, 0.9849],
           "byLexicalReason": {
-            "supported": 584,
-            "polarity_mismatch": 14,
-            "number_mismatch": 4,
+            "supported": 588,
+            "polarity_mismatch": 11,
+            "number_mismatch": 3,
             "low_overlap": 2
           },
-          "verifiedAnswers": 134,
-          "verifiedShare": 0.8933,
-          "verifiedInterval": [0.8338, 0.9333],
+          "verifiedAnswers": 137,
+          "verifiedShare": 0.9133,
+          "verifiedInterval": [0.8574, 0.9487],
           "calls": 2,
           "errors": 1
         },
@@ -6854,23 +6851,23 @@
         },
         "costUSD": 1.6435,
         "review": {
-          "flaggedByLexical": 20,
-          "sampled": 20,
+          "flaggedByLexical": 16,
+          "sampled": 16,
           "lexical": {
-            "reviewed": 20,
+            "reviewed": 16,
             "true_problem": 1,
-            "false_alarm": 18,
+            "false_alarm": 14,
             "unclear": 1,
-            "precision": 0.0526,
-            "precisionInterval": [0.0094, 0.2464]
+            "precision": 0.0667,
+            "precisionInterval": [0.0119, 0.2982]
           },
           "judgeStillUnsupported": {
-            "reviewed": 19,
+            "reviewed": 15,
             "true_problem": 1,
-            "false_alarm": 17,
+            "false_alarm": 13,
             "unclear": 1,
-            "precision": 0.0556,
-            "precisionInterval": [0.0099, 0.2576]
+            "precision": 0.0714,
+            "precisionInterval": [0.0127, 0.3147]
           },
           "judgeOverturned": {
             "reviewed": 1,
@@ -6881,13 +6878,11 @@
             "precisionInterval": [0, 0.7935]
           },
           "sample": [
-            "claude-sonnet-5-5|870#3",
             "claude-sonnet-5-5|525#0",
             "claude-sonnet-5-5|834#2",
             "claude-sonnet-5-5|261#0",
             "claude-sonnet-5-5|261#2",
             "claude-sonnet-5-5|261#3",
-            "claude-sonnet-5-5|274#0",
             "claude-sonnet-5-5|185#0",
             "claude-sonnet-5-5|124#0",
             "claude-sonnet-5-5|967#1",
@@ -6898,26 +6893,24 @@
             "claude-sonnet-5-5|1395#4",
             "claude-sonnet-5-5|70#1",
             "claude-sonnet-5-5|3#0",
-            "claude-sonnet-5-5|179#0",
-            "claude-sonnet-5-5|179#2",
-            "claude-sonnet-5-5|597#4"
+            "claude-sonnet-5-5|179#0"
           ]
         },
         "mutation": {
           "claimsWithCitedText": 604,
           "unmutatedFlagged": {
-            "caught": 25,
+            "caught": 21,
             "applicable": 604,
-            "rate": 0.0414,
-            "interval": [0.0282, 0.0604]
+            "rate": 0.0348,
+            "interval": [0.0229, 0.0526]
           },
-          "supportedClaims": 579,
+          "supportedClaims": 583,
           "mutations": {
             "number": {
-              "caught": 153,
-              "applicable": 161,
-              "rate": 0.9503,
-              "interval": [0.905, 0.9746],
+              "caught": 156,
+              "applicable": 164,
+              "rate": 0.9512,
+              "interval": [0.9067, 0.9751],
               "missedExamples": [
                 {
                   "query": "516"
@@ -6948,10 +6941,10 @@
               ]
             },
             "negationRemoved": {
-              "caught": 44,
-              "applicable": 46,
-              "rate": 0.9565,
-              "interval": [0.8547, 0.988],
+              "caught": 47,
+              "applicable": 49,
+              "rate": 0.9592,
+              "interval": [0.8629, 0.9887],
               "missedExamples": [
                 {
                   "query": "1163"
@@ -6962,17 +6955,17 @@
               ]
             },
             "swapUnrelated": {
-              "caught": 579,
-              "applicable": 579,
+              "caught": 583,
+              "applicable": 583,
               "rate": 1,
-              "interval": [0.9934, 1],
+              "interval": [0.9935, 1],
               "missedExamples": []
             },
             "swapSameRequest": {
-              "caught": 562,
-              "applicable": 579,
-              "rate": 0.9706,
-              "interval": [0.9535, 0.9816],
+              "caught": 566,
+              "applicable": 583,
+              "rate": 0.9708,
+              "interval": [0.9538, 0.9817],
               "missedExamples": [
                 {
                   "query": "516"
@@ -7752,8 +7745,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 3,
-          "passed": 24
+          "falseAlarm": 2,
+          "passed": 25
         },
         "categories": {
           "answer-not-in-documents": {
@@ -7959,8 +7952,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -8687,20 +8680,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Yes, but only for a limited time. The station parking is free for the first two hours. The document doesn't say what happens after that, so I can't tell you the rates beyond those two hours.",
             "claims": [
               {
                 "text": "The station parking is free for the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -8731,8 +8724,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 7,
-          "passed": 41
+          "falseAlarm": 6,
+          "passed": 42
         },
         "categories": {
           "answer-not-in-documents": {
@@ -8938,8 +8931,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 1,
-              "passed": 2
+              "falseAlarm": 0,
+              "passed": 3
             }
           }
         },
@@ -10215,20 +10208,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Yes, but only for a limited time. The station parking is free for the first two hours. The document doesn't say what happens after that, so I can't tell you the rates beyond those two hours.",
             "claims": [
               {
                 "text": "The station parking is free for the first two hours.",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -10239,11 +10232,11 @@
           }
         ],
         "usage": {
-          "calls": 50,
-          "inputTokens": 152891,
-          "outputTokens": 5968
+          "calls": 51,
+          "inputTokens": 153318,
+          "outputTokens": 6028
         },
-        "costUSD": 0.3655
+        "costUSD": 0.3669
       }
     },
     "claude-opus-5-5": {
@@ -10409,11 +10402,14 @@
               "missedExamples": []
             },
             "negationRemoved": {
-              "caught": 31,
+              "caught": 30,
               "applicable": 32,
-              "rate": 0.9688,
-              "interval": [0.8426, 0.9945],
+              "rate": 0.9375,
+              "interval": [0.7985, 0.9827],
               "missedExamples": [
+                {
+                  "query": "1379"
+                },
                 {
                   "query": "1163"
                 }
@@ -13711,8 +13707,8 @@
         "error": "Claude API 400: `temperature` is deprecated for this model."
       },
       "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 148,
-      "totalCostUSD": 7.0432,
+      "totalCalls": 149,
+      "totalCostUSD": 7.0509,
       "scifact": {
         "answers": {
           "calls": 100,
@@ -14663,8 +14659,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 3,
-          "passed": 24
+          "falseAlarm": 2,
+          "passed": 25
         },
         "categories": {
           "answer-not-in-documents": {
@@ -14870,8 +14866,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 2,
-              "passed": 1
+              "falseAlarm": 1,
+              "passed": 2
             }
           }
         },
@@ -15575,20 +15571,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Yes, but only for a limited time. According to the document, the station parking is free for the first two hours. The document does not specify what the charges are after that initial period.",
             "claims": [
               {
                 "text": "the station parking is free for the first two hours",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -15619,8 +15615,8 @@
         "judgeVerifiedOnly": {
           "caught": 0,
           "missed": 0,
-          "falseAlarm": 6,
-          "passed": 42
+          "falseAlarm": 5,
+          "passed": 43
         },
         "categories": {
           "answer-not-in-documents": {
@@ -15826,8 +15822,8 @@
             "judgeVerifiedOnly": {
               "caught": 0,
               "missed": 0,
-              "falseAlarm": 2,
-              "passed": 1
+              "falseAlarm": 1,
+              "passed": 2
             }
           }
         },
@@ -17081,20 +17077,20 @@
             "id": "b2-other-language-3",
             "citedClaims": 1,
             "unsupportedClaims": 1,
-            "unsupportedClaimsJudge": 1,
+            "unsupportedClaimsJudge": 0,
             "category": "other-language-document",
             "modelCorrect": true,
             "modelCorrectAutomatic": true,
             "lexical": "falseAlarm",
             "judge": "falseAlarm",
-            "judgeVerifiedOnly": "falseAlarm",
+            "judgeVerifiedOnly": "passed",
             "answer": "Yes, but only for a limited time. According to the document, the station parking is free for the first two hours. The document does not specify what the charges are after that initial period.",
             "claims": [
               {
                 "text": "the station parking is free for the first two hours",
                 "lexical": "unsupported",
-                "lexicalReason": "number_mismatch",
-                "judge": "unsupported",
+                "lexicalReason": "low_overlap",
+                "judge": "supported",
                 "cites": ["fr"]
               }
             ],
@@ -17105,11 +17101,11 @@
           }
         ],
         "usage": {
-          "calls": 48,
-          "inputTokens": 148030,
-          "outputTokens": 4892
+          "calls": 49,
+          "inputTokens": 148456,
+          "outputTokens": 4960
         },
-        "costUSD": 1.7249
+        "costUSD": 1.7326
       }
     }
   }
