@@ -115,8 +115,10 @@ describe("Plugin Security and Isolation", () => {
       const memoryHogPlugin = {
         async generate(prompt, options = {}) {
           try {
-            // Attempt to consume excessive memory
-            const largeArray = new Array(100000000).fill("memory-hog");
+            // Ask for more than an array can hold. This used to fill a
+            // 100M-element array: ~800 MB that took 40-100 s and left the
+            // worker too slow to exit, so Jest force-killed it.
+            const largeArray = new Array(2 ** 32).fill("memory-hog");
             return `Memory consumption: ${largeArray.length}`;
           } catch (error) {
             return "Memory limit enforced";

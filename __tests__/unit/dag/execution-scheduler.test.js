@@ -364,6 +364,21 @@ describe("ExecutionScheduler", () => {
 
       expect(mockFn).toHaveBeenCalled();
     });
+
+    it("clears its timer once the run settles", async () => {
+      const clear = jest.spyOn(global, "clearTimeout");
+      try {
+        await scheduler.executeWithTimeout(async () => "result", 60000);
+        await expect(
+          scheduler.executeWithTimeout(async () => {
+            throw new Error("boom");
+          }, 60000),
+        ).rejects.toThrow("boom");
+        expect(clear).toHaveBeenCalledTimes(2);
+      } finally {
+        clear.mockRestore();
+      }
+    });
   });
 
   describe("scheduleExecution", () => {
