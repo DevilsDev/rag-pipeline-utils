@@ -32,35 +32,72 @@ async function ok(res, what) {
   throw new Error(`${what} failed: ${res.status} ${body.slice(0, 300)}`);
 }
 
+/** The account's article with this title or canonical URL, if any. */
+async function findDevtoArticle({ title, canonicalUrl }, { env, fetchImpl }) {
+  const res = await fetchImpl(
+    "https://dev.to/api/articles/me/all?per_page=1000",
+    {
+      headers: {
+        "api-key": env.DEVTO_API_KEY,
+        Accept: "application/vnd.forem.api-v1+json",
+      },
+    },
+  );
+  const articles = await ok(res, "dev.to articles");
+  return articles.find(
+    (a) =>
+      a.title === title || (canonicalUrl && a.canonical_url === canonicalUrl),
+  );
+}
+
 /**
  * dev.to article. `canonicalUrl` points search engines at the original.
+ * dev.to sometimes answers 500 and still creates the article, so a retry
+ * first looks for it: the same title or canonical URL is never posted twice.
  * @returns {Promise<string>} the article URL
  */
 async function postDevto(
   { title, body, tags = [], canonicalUrl, description },
-  { env = process.env, fetchImpl = fetch } = {},
+  {
+    env = process.env,
+    fetchImpl = fetch,
+    sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+  } = {},
 ) {
   need(env, "DEVTO_API_KEY");
-  const res = await fetchImpl("https://dev.to/api/articles", {
-    method: "POST",
-    headers: {
-      "api-key": env.DEVTO_API_KEY,
-      "Content-Type": "application/json",
-      Accept: "application/vnd.forem.api-v1+json",
-    },
-    body: JSON.stringify({
-      article: {
-        title,
-        body_markdown: body,
-        published: true,
-        tags: tags.slice(0, 4),
-        ...(canonicalUrl ? { canonical_url: canonicalUrl } : {}),
-        ...(description ? { description } : {}),
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await sleep(15000 * attempt);
+    const existing = await findDevtoArticle(
+      { title, canonicalUrl },
+      { env, fetchImpl },
+    );
+    if (existing) return existing.url;
+    const res = await fetchImpl("https://dev.to/api/articles", {
+      method: "POST",
+      headers: {
+        "api-key": env.DEVTO_API_KEY,
+        "Content-Type": "application/json",
+        Accept: "application/vnd.forem.api-v1+json",
       },
-    }),
-  });
-  const data = await ok(res, "dev.to");
-  return data.url;
+      body: JSON.stringify({
+        article: {
+          title,
+          body_markdown: body,
+          published: true,
+          tags: tags.slice(0, 4),
+          ...(canonicalUrl ? { canonical_url: canonicalUrl } : {}),
+          ...(description ? { description } : {}),
+        },
+      }),
+    });
+    if (res.status < 500) {
+      const data = await ok(res, "dev.to");
+      return data.url;
+    }
+    lastError = await ok(res, "dev.to").catch((err) => err);
+  }
+  throw lastError;
 }
 
 /** Bluesky link facets: byte offsets of each URL in the UTF-8 text. */
@@ -196,7 +233,7 @@ const LEDGER_TITLE = "Automated promotion log";
 
 // REST only: the cloud GitHub proxy that routines go through blocks GraphQL,
 // and `gh issue list/view` use GraphQL.
-function ledgerIssue({ run = gh } = {}) {
+function ledgerIssue({ run = gh, create = true } = {}) {
   const found = JSON.parse(
     run([
       "api",
@@ -208,6 +245,7 @@ function ledgerIssue({ run = gh } = {}) {
     ]),
   ).items.find((i) => i.title === LEDGER_TITLE);
   if (found) return found.number;
+  if (!create) return null;
   const created = JSON.parse(
     run(
       ["api", `repos/${REPO}/issues`, "--input", "-"],
@@ -220,8 +258,10 @@ function ledgerIssue({ run = gh } = {}) {
   return created.number;
 }
 
-function alreadyPosted(key, channel, { run = gh } = {}) {
-  const number = ledgerIssue({ run });
+function alreadyPosted(key, channel, { run = gh, create = true } = {}) {
+  // a dry run reads the ledger but never creates it
+  const number = ledgerIssue({ run, create });
+  if (number === null) return false;
   const firstLines = run([
     "api",
     "--paginate",

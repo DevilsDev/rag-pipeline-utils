@@ -82,7 +82,7 @@ async function main(argv, deps = {}) {
   }
 
   const run = deps.run;
-  if (channels.alreadyPosted(key, channel, { run })) {
+  if (channels.alreadyPosted(key, channel, { run, create: !dryRun })) {
     log(`= ${key} ${channel}: already published, skipped`);
     return 0;
   }
