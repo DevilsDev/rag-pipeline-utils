@@ -474,3 +474,20 @@ describe("ledger", () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("Mastodon length", () => {
+  test("a link counts as 23 characters, as Mastodon counts it", () => {
+    const link = `https://dev.to/devildev/${"a".repeat(200)}`;
+    const text = `${"x".repeat(470)} ${link}`; // 470 + 1 + 23 = 494
+    expect(checkText({ channel: "mastodon", text, source: SOURCE })).toEqual(
+      [],
+    );
+    expect(
+      checkText({
+        channel: "mastodon",
+        text: `${"x".repeat(480)} ${link}`,
+        source: SOURCE,
+      }),
+    ).toEqual(["504 characters, over mastodon's 500"]);
+  });
+});

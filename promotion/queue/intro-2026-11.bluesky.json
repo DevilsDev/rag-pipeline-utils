@@ -1,0 +1,6 @@
+{
+  "key": "intro-2026-11",
+  "channel": "bluesky",
+  "sources": ["README.md", "promotion/queue/intro-2026-11.json"],
+  "text": "Your RAG app says thirty vacation days. The handbook says twenty. Nothing crashed.\n\nrag-pipeline-utils checks every answer against its sources, no model calls. Open source, Node.js:\n\nhttps://dev.to/devildev/meet-rag-pipeline-utils-rag-for-nodejs-that-tells-you-when-your-llm-is-making-things-up-4o3n"
+}
