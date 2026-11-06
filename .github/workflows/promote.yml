@@ -1,0 +1,96 @@
+name: Promote
+
+# Automated promotion, with no one reviewing posts:
+# - a published release announces itself (Discussions, dev.to, Bluesky,
+#   Mastodon) from its release notes and blog post (release-posts.js);
+# - a post the monthly Claude routine commits to promotion/queue/ is
+#   published.
+# Every post passes scripts/promote/guards.js first (numbers from the
+# source, allowed and live links, length, no hype words) and is recorded in
+# the "Automated promotion log" issue, which also stops repeats. A channel
+# without its secret is skipped. To stop everything, disable this workflow.
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths: ["promotion/queue/**.json"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to announce (for example v3.7.1); empty publishes the queue"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: promote
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish posts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+      discussions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+      BLUESKY_HANDLE: ${{ vars.BLUESKY_HANDLE }}
+      BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+      MASTODON_INSTANCE: ${{ vars.MASTODON_INSTANCE }}
+      MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+
+      - name: Build the posts
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/posts"
+          if [ -n "$TAG" ]; then
+            node scripts/promote/release-posts.js "$TAG" "$RUNNER_TEMP/posts"
+          fi
+          if [ -d promotion/queue ]; then
+            find promotion/queue -name '*.json' -exec cp {} "$RUNNER_TEMP/posts/" \;
+          fi
+          ls "$RUNNER_TEMP/posts"
+
+      - name: Publish
+        run: |
+          failed=0
+          for spec in "$RUNNER_TEMP"/posts/*.json; do
+            [ -e "$spec" ] || continue
+            # the blog post can still be deploying when a release is
+            # published: a failed check is retried for up to ten minutes
+            for attempt in 1 2 3 4 5 6; do
+              set +e
+              node scripts/promote/post.js "$spec"
+              code=$?
+              set -e
+              [ "$code" -ne 2 ] && break
+              [ "$attempt" -lt 6 ] && sleep 120
+            done
+            # 0 published or already published, 3 channel not configured
+            if [ "$code" -ne 0 ] && [ "$code" -ne 3 ]; then
+              echo "::error::$(basename "$spec") was not published (exit $code)"
+              failed=1
+            fi
+          done
+          exit $failed

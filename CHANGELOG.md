@@ -13,6 +13,16 @@ page.
 
 ### Internal
 
+- **Automated promotion** (`promotion/`, `scripts/promote/`, the Promote
+  workflow). A published release announces itself in GitHub Discussions,
+  on dev.to (the blog post, with its canonical URL), Bluesky and Mastodon,
+  built from the release notes and blog post. A monthly Claude routine
+  writes one dev.to article into `promotion/queue/` and the workflow
+  publishes it; another records a monthly growth review on a GitHub issue.
+  No one reviews the posts, so every one passes checks first: each number
+  must appear in the files it came from, links must be https on an allowed
+  host and live, the text must fit the channel, and a post recorded in the
+  "Automated promotion log" issue is never published twice.
 - **Dependency cleanup: `npm audit` findings in development tooling fell
   from 64 to 14, and none is high.** Eight OpenTelemetry SDK packages
   (`sdk-node`, `auto-instrumentations-node`, the Jaeger, Prometheus and
