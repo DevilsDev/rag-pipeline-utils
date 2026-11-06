@@ -222,3 +222,72 @@ describe("the check through the public API", () => {
     expect(rag.checkConditionConsistency).toBe(checkConditionConsistency);
   });
 });
+
+// Changes made from the condition-dropped benchmark's dev split
+// (benchmarks/fixtures/condition-dropped-plan.md), before the test split ran
+describe("from the condition-dropped dev split", () => {
+  test("a restriction word the main statement also uses doesn't show it was kept", () => {
+    expect(
+      checkConditionConsistency(
+        "Employees must report a workplace injury to their supervisor within 24 hours.",
+        "Employees must report a workplace injury to their supervisor within 24 hours if the injury requires medical treatment beyond basic first aid.",
+      ).consistent,
+    ).toBe(false);
+  });
+
+  test("a word in another sentence counts only when this source supports that sentence", () => {
+    const source =
+      "Employees may attend one external conference per year, subject to budget availability.";
+    const claim = "Employees may attend one external conference per year.";
+    // from another source: doesn't restate the proviso
+    expect(
+      checkConditionConsistency(
+        claim,
+        source,
+        `The annual budget review takes place in November. ${claim}`,
+      ).consistent,
+    ).toBe(false);
+    // from this source: does
+    expect(
+      checkConditionConsistency(
+        claim,
+        source,
+        `${claim} Attendance is subject to budget availability.`,
+      ).consistent,
+    ).toBe(true);
+  });
+
+  test.each([
+    [
+      "even if",
+      "Refunds are issued within 10 days even if the item was opened.",
+    ],
+    [
+      "if any",
+      "Patients should report all side effects, if any, to their physician within 48 hours.",
+    ],
+    [
+      "if applicable",
+      "Refunds are issued within 10 business days, less any restocking fee, if applicable.",
+    ],
+  ])("%s does not restrict the statement", (_name, source) => {
+    const claim = source
+      .replace(/,? (?:even if|if any|if applicable)[^,.]*,?/, "")
+      .replace(/\s+\./, ".");
+    expect(checkConditionConsistency(claim, source).consistent).toBe(true);
+  });
+
+  test("a coordinator inside the restriction keeps it whole", () => {
+    expect(
+      checkConditionConsistency(
+        "Employees may work remotely up to three days per week.",
+        "Employees may work remotely up to three days per week with manager and HR approval.",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        consistent: false,
+        missing: ["with manager and HR approval"],
+      }),
+    );
+  });
+});

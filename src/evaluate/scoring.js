@@ -1029,7 +1029,9 @@ const NUMBER_WORD =
 const RESTRICTING_MARKERS = [
   /\bwith\b(?:\s+[\w'’-]+){0,4}?\s+(?:approval|permission|consent|sign-?off|authori[sz]ation)\b/g,
   /\bonly\s+(?:if|when)\b/g,
-  /\bif\b/g,
+  // not "even if" (concessive) or "if any", "if applicable" (no condition on
+  // the statement): the condition-dropped dev split (3.9)
+  /(?<!\beven\s)\bif\b(?!\s+(?:any|applicable)\b)/g,
   /\bunless\b/g,
   /\bprovided(?:\s+that)?\b/g,
   /\bsubject\s+to\b/g,
@@ -1065,11 +1067,13 @@ const MARKER_WORDS = new Set([
 /**
  * Coordinators that join independent statements: a restriction in one of
  * them does not restrict the other ("..., and the office is open on
- * weekends"). Commas are not here, so "If approved, ..." and "..., subject
- * to approval" stay with their statement.
+ * weekends"). Commas alone are not here, so "If approved, ..." and "...,
+ * subject to approval" stay with their statement. "and" needs a comma before
+ * it, so "with manager and HR approval" stays one restriction (the
+ * condition-dropped dev split, 3.9).
  */
 const STATEMENT_BOUNDARY =
-  /\s*;\s*|,?\s+\b(?:and|but|whereas|while|however)\b\s+/i;
+  /\s*;\s*|,\s+and\s+|,?\s+\b(?:but|whereas|while|however)\b\s+/i;
 
 /** Where a restricting clause ends: punctuation or a coordinator. */
 const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/i;
@@ -1085,7 +1089,12 @@ const conditionWords = (text) =>
     .map(conditionStem);
 
 /**
- * The restricting clauses of one statement, each with its content words.
+ * The restricting clauses of one statement, each with its distinctive
+ * content words: those the rest of the statement doesn't also use. A word
+ * the restriction shares with the main statement ("... a workplace injury
+ * ... if the injury requires treatment") is in the claim either way, so it
+ * can't show the restriction was kept. A clause with no distinctive word
+ * keeps all its words.
  * @param {string} statement
  * @returns {Array<{text: string, words: string[]}>}
  */
@@ -1111,7 +1120,13 @@ function restrictingClauses(statement) {
       if (words.length > 0) found.push({ start, end, text, words });
     }
   }
-  return found.map(({ text, words }) => ({ text, words }));
+  return found.map(({ start, end, text, words }) => {
+    const elsewhere = new Set(
+      conditionWords(statement.slice(0, start) + ' ' + statement.slice(end)),
+    );
+    const distinctive = words.filter((w) => !elsewhere.has(w));
+    return { text, words: distinctive.length > 0 ? distinctive : words };
+  });
 }
 
 /**
@@ -1127,10 +1142,13 @@ function restrictingClauses(statement) {
  * while, however and semicolons, not at commas), each restricting clause
  * ("with ... approval", "only if", "if", "unless", "provided", "subject to",
  * "as long as", "after <number> <unit>", "for <people> who/with ...",
- * "except") must be kept: at least one of its content words must appear in
- * the claim or elsewhere in the answer, so a condition restated in another
- * sentence still counts. Contrasting clauses ("but not in children") may be
- * left out, as the polarity check allows since 3.6.
+ * "except") must be kept: at least one of its distinctive words (see
+ * restrictingClauses) must appear in the claim, or in another sentence of
+ * the answer that this document supports (most of its content words are in
+ * the document), so a condition restated from the same source still counts
+ * and a word from a sentence about something else doesn't. Contrasting
+ * clauses ("but not in children") may be left out, as the polarity check
+ * allows since 3.6.
  *
  * @param {string} claimText
  * @param {string} docText
@@ -1143,10 +1161,24 @@ function checkConditionConsistency(claimText, docText, answerText) {
   if (claimWords.size === 0) {
     return { consistent: true, missing: [], sourceSentence: null };
   }
-  const answerWords = new Set([
-    ...claimWords,
-    ...(typeof answerText === 'string' ? conditionWords(answerText) : []),
-  ]);
+  // Other sentences of the answer count only when this document supports
+  // them: "Remote work requires manager approval." restates the source's
+  // approval; "Your manager sets the team schedule." (from another source)
+  // does not
+  const docWords = new Set(conditionWords(docText));
+  const restating =
+    typeof answerText === 'string'
+      ? splitSentences(answerText)
+          .map(conditionWords)
+          .filter(
+            (words) =>
+              words.length > 0 &&
+              words.filter((w) => docWords.has(w)).length / words.length >=
+                0.5,
+          )
+          .flat()
+      : [];
+  const answerWords = new Set([...claimWords, ...restating]);
 
   const candidates = splitSentences(docText)
     .map((sentence) => {
