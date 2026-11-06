@@ -74,10 +74,12 @@ async function handleConfigSet(globalOptions, key, value) {
       for (const k of Object.keys(source)) {
         // JSON.parse keeps "__proto__" as an own key of the value
         if (forbidden.has(k)) continue;
+        // Recurse only into the config's own objects, never an inherited one
         if (
           source[k] &&
           typeof source[k] === "object" &&
           !Array.isArray(source[k]) &&
+          Object.hasOwn(target, k) &&
           target[k] &&
           typeof target[k] === "object"
         ) {
