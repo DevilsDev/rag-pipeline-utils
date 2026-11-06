@@ -297,6 +297,83 @@ function renderClaudeUsage(report) {
   ].join("\n");
 }
 
+/** The condition-dropped benchmark (3.9; condition-dropped-plan.md). */
+function renderConditionDropped(report) {
+  const pct = (x) =>
+    x === null || x === undefined ? "-" : `${(x * 100).toFixed(1)}%`;
+  const runs = [
+    ["lexical-before", "Lexical, 3.8.0"],
+    ["lexical-after", "Lexical, 3.9"],
+    ["claude-haiku-5-5-before", "Judge Claude Haiku 5.5, 3.8.0"],
+    ["claude-haiku-5-5-after", "Judge Claude Haiku 5.5, 3.9"],
+    ["claude-sonnet-5-5-before", "Judge Claude Sonnet 5.5, 3.8.0"],
+    ["claude-sonnet-5-5-after", "Judge Claude Sonnet 5.5, 3.9"],
+  ].filter(([key]) => report.runs[key]);
+  const groups = Object.keys(report.runs["lexical-after"].test.perStratum);
+  const flagged = (key, split, stratum) => {
+    const s = report.runs[key] && report.runs[key][split].perStratum[stratum];
+    return s ? `${s.flagged}/${s.n}` : "-";
+  };
+  const sub = (key, split) => {
+    const s =
+      report.runs[key] &&
+      report.runs[key][split].perSubLabel["except-as-required-by-law"];
+    return s ? `${s.flagged}/${s.n}` : "-";
+  };
+  return [
+    `${num(report.n.all)} cases (${num(report.n.dev)} dev, ${num(report.n.test)} test), written by Claude Sonnet 5.5 and split by seed ${report.seed}; labels are the generator's and still need human review. Positive class: the claim leaves out a restriction (unsupported). Run ${report.generatedAt.slice(0, 10)}.`,
+    "",
+    "**Test split.** The 3.9 code was frozen, and committed, before the test split ran.",
+    "",
+    table(
+      ["Run", "Precision", "Recall", "F1", "TP / FP / FN / TN"],
+      runs.map(([key, label]) => {
+        const t = report.runs[key].test;
+        return [
+          label,
+          pct(t.precision),
+          pct(t.recall),
+          pct(t.f1),
+          `${t.tp} / ${t.fp} / ${t.fn} / ${t.tn}`,
+        ];
+      }),
+    ),
+    "",
+    "**Flagged per group, test split** (a positive group should be flagged, a control group not):",
+    "",
+    table(
+      [
+        "Group",
+        "Expected",
+        "Lexical, 3.8.0",
+        "Lexical, 3.9",
+        "Judge Haiku 5.5, 3.9",
+        "Judge Sonnet 5.5, 3.9",
+      ],
+      [
+        ...groups.map((g) => [
+          `\`${g}\``,
+          report.runs["lexical-after"].test.perStratum[g].expected,
+          flagged("lexical-before", "test", g),
+          flagged("lexical-after", "test", g),
+          flagged("claude-haiku-5-5-after", "test", g),
+          flagged("claude-sonnet-5-5-after", "test", g),
+        ]),
+        [
+          "of which `except-as-required-by-law`",
+          "supported",
+          sub("lexical-before", "test"),
+          sub("lexical-after", "test"),
+          sub("claude-haiku-5-5-after", "test"),
+          sub("claude-sonnet-5-5-after", "test"),
+        ],
+      ],
+    ),
+    "",
+    `Dev split, lexical: F1 ${pct(report.runs["lexical-before"].dev.f1)} on 3.8.0, ${pct(report.runs["lexical-after"].dev.f1)} on 3.9. The dev split informed four changes before the test split ran: a restriction word the main statement also uses doesn't count as keeping it; another sentence of the answer restates a restriction only when the same source supports it; "even if", "if any" and "if applicable" aren't conditions; and "and" splits statements only after a comma.`,
+  ].join("\n");
+}
+
 const RENDERERS = {
   speed: renderSpeed,
   quality: renderQuality,
@@ -306,6 +383,7 @@ const RENDERERS = {
   "judge-more": renderJudgeMore,
   "claude-latency": renderLatency,
   "claude-usage": renderClaudeUsage,
+  "condition-dropped": renderConditionDropped,
 };
 
 function render(content) {
