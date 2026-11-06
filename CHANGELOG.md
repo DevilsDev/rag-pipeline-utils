@@ -11,7 +11,28 @@ page.
 
 ## [Unreleased]
 
+### Added
+
+- **Typed matchers for TypeScript.** `@devilsdev/rag-pipeline-utils/testing`
+  exports `RagMatchers`, the signatures of `toBeGroundedIn`, `toCite` and
+  `toContainNoPII` on `expect`. Add them to Vitest's or Jest's `Matchers`
+  in a declaration file and the matchers compile, with wrong arguments
+  reported as type errors. Before, `expect(result).toBeGroundedIn()` didn't
+  compile in TypeScript, and the declaration the Testing page suggested
+  failed under Vitest 5 ("All declarations of 'Assertion' must have
+  identical type parameters").
+- **A "Testing RAG in TypeScript" guide**, built from
+  `examples/testing-typescript`: Vitest with typed matchers, catching a
+  wrong number with `checkAnswer`, and a test set scored by
+  `rag-pipeline eval` in CI. A test keeps the guide's code identical to the
+  example and runs the example's tests; consumer journey K installs the
+  packed package with the latest Vitest and TypeScript and type-checks,
+  tests and evaluates the example.
+
 ### Internal
+
+- Automated dev.to posts are rejected if they contain `{{` or `{%`, which
+  dev.to reads as Liquid.
 
 - **Automated promotion** (`promotion/`, `scripts/promote/`, the Promote
   workflow). A published release announces itself in GitHub Discussions,

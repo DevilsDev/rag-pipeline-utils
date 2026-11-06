@@ -119,20 +119,32 @@ expected the answer to be grounded in the 1 source(s), but 1 of 2 sentence(s) ar
 
 The checks are deterministic, so a test fails or passes the same way every run. Like `checkAnswer`, they compare words, so a correct paraphrase can fail `toBeGroundedIn`; assert on answers from `EchoLLM`, fixtures, or recorded model output you've reviewed.
 
-For TypeScript, declare the matchers once:
+### Matchers in TypeScript
 
-```ts
-// vitest.d.ts (for Jest, augment jest.Matchers<R> instead)
+The package exports the matchers' signatures as `RagMatchers`. Add them to your test runner's types once, in a declaration file, so `expect(result).toBeGroundedIn()` compiles and a wrong argument is a type error:
+
+```ts title="rag-matchers.d.ts (Vitest)"
 import "vitest";
+import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
 
 declare module "vitest" {
-  interface Assertion<T = any> {
-    toBeGroundedIn(sources?: unknown[], options?: { threshold?: number }): T;
-    toCite(ids: string | string[], sources?: unknown[]): T;
-    toContainNoPII(options?: { patterns?: Record<string, RegExp> }): T;
-  }
+  interface Matchers<R, T> extends RagMatchers<R> {}
 }
 ```
+
+```ts title="rag-matchers.d.ts (Jest)"
+import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
+
+declare global {
+  namespace jest {
+    interface Matchers<R> extends RagMatchers<R> {}
+  }
+}
+
+export {};
+```
+
+[Testing RAG in TypeScript](./Testing-RAG-TypeScript.md) walks through a whole project: Vitest, these types, answer checks and a test set in CI.
 
 ## Contract tests for your plugins
 

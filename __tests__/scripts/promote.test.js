@@ -491,3 +491,15 @@ describe("Mastodon length", () => {
     ).toEqual(["504 characters, over mastodon's 500"]);
   });
 });
+
+describe("dev.to Liquid", () => {
+  test("{{ or {% in a dev.to post is rejected; other channels don't care", () => {
+    const text = "Use ${{ secrets.KEY }} in the workflow";
+    expect(checkText({ channel: "devto", text, source: SOURCE })).toContain(
+      "Liquid syntax ({{ or {%) in a dev.to post",
+    );
+    expect(checkText({ channel: "mastodon", text, source: SOURCE })).toEqual(
+      [],
+    );
+  });
+});

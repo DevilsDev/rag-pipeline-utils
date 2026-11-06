@@ -44,6 +44,7 @@ const sidebars = {
         "Config-Builder",
         "Integrations",
         "Testing",
+        "Testing-RAG-TypeScript",
         "Caching",
         "API-Reference",
         "Examples",
