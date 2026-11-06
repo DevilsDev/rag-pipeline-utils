@@ -6,7 +6,7 @@
  * channel. The promotion routines write a post spec and call this; they
  * never call a channel directly.
  *
- *   node scripts/promote/post.js <spec.json> [--dry-run]
+ *   node scripts/promote/post.js <spec.json> [--dry-run [--skip-links]]
  *
  * spec: {
  *   "key": "release-v3.7.1",          // one post per key and channel
@@ -46,6 +46,9 @@ async function main(argv, deps = {}) {
   const log = deps.log || console.log;
   const specPath = argv.find((a) => !a.startsWith("--"));
   const dryRun = argv.includes("--dry-run");
+  // for a routine's dry run, where the network may not reach every host;
+  // the Promote workflow checks the links before publishing
+  const skipLinks = dryRun && argv.includes("--skip-links");
   if (!specPath) throw new Error("usage: post.js <spec.json> [--dry-run]");
   const spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
   const { key, channel } = spec;
@@ -68,7 +71,7 @@ async function main(argv, deps = {}) {
         })
       : []),
   ];
-  if (!problems.length) {
+  if (!problems.length && !skipLinks) {
     problems.push(
       ...(await checkLinks(`${text}\n${spec.canonicalUrl || ""}`, deps)),
     );

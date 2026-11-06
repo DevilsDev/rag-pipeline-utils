@@ -350,3 +350,35 @@ describe("release-posts", () => {
     expect(text).toMatch(/word…\n\nhttps:\/\/github\.com\/x$/);
   });
 });
+
+describe("post.js --skip-links", () => {
+  test("a dry run with --skip-links makes no network request", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "promote-"));
+    const file = path.join(dir, "spec.json");
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        key: "article-2026-11",
+        channel: "mastodon",
+        sources: ["CHANGELOG.md#3.7.1"],
+        text: "3.7.1 https://github.com/DevilsDev/rag-pipeline-utils",
+      }),
+    );
+    const fetchImpl = jest.fn();
+    const run = jest.fn((args) =>
+      args.includes("search/issues")
+        ? JSON.stringify({
+            items: [{ number: 1, title: "Automated promotion log" }],
+          })
+        : "",
+    );
+    const code = await main([file, "--dry-run", "--skip-links"], {
+      run,
+      fetchImpl,
+      log: () => {},
+    });
+    fs.rmSync(dir, { recursive: true, force: true });
+    expect(code).toBe(0);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});

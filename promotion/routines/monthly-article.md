@@ -67,7 +67,9 @@ At most four tags, lower case, letters and digits only.
 
 ## Check before committing
 
-Run `node scripts/promote/post.js promotion/queue/article-<YYYY-MM>.json --dry-run`.
+Run `node scripts/promote/post.js promotion/queue/article-<YYYY-MM>.json --dry-run --skip-links`
+(the links are checked again by the workflow before publishing; this
+session's network may not reach every host).
 It must print `checks passed`. If it lists problems, fix the article (cut an
 unsupported number, add the file it came from to `sources`, fix a link) and
 run it again. After three failed attempts, don't commit: add a comment

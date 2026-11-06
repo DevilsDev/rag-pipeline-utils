@@ -7,7 +7,9 @@ publicly; the review is a comment on a GitHub issue.
 ## Steps
 
 1. Run `node scripts/promote/growth.js --markdown`. Those numbers are the
-   review; never change or estimate them.
+   review; never change or estimate them. If it fails (for example the
+   network blocks api.npmjs.org), still do steps 2 to 5, but the comment
+   is `[routine-failure] growth-review` and the error, with no numbers.
 2. Find the "Monthly growth log" issue (REST only, the GraphQL API is
    blocked here):
    `gh api -X GET search/issues -f q='repo:DevilsDev/rag-pipeline-utils type:issue in:title "Monthly growth log"'`.
