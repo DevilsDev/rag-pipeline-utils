@@ -14,6 +14,12 @@ The grounding metrics (citations, faithfulness, context precision and recall, gr
 - **Threshold 0.5.** A sentence counts as supported when its score reaches the per-sentence threshold, now `0.5` by default (it was `0.3`). This applies to `CitationTracker.similarityThreshold`, `PipelineEvaluator`'s `threshold` and the `threshold` option of faithfulness, recall and the hallucination detector. Aggregate thresholds (`groundednessThreshold`, `approvalThreshold`) are unchanged.
 - **Numeric consistency.** A sentence whose numbers (digits, decimals, percentages, number words) do not appear in the source scores below 0.4 and is not grounded. "20" and "twenty" are treated as equal, so "thirty days" is not supported by "twenty days" while "20 days" is.
 - **Tokenizer.** Non-ASCII letters are kept (`Política` no longer becomes `poltica`), and words are split on newlines and hyphens. This also affects BM25, BLEU/ROUGE and the scoring reranker.
+- **Text normalisation (3.9).** Before tokenizing, splitting into sentences and the number, negation and condition checks, text is normalised: zero-width characters, soft hyphens and other invisible format characters are removed, and full-width digits and letters and no-break spaces become plain ones (Unicode NFKC). Text extracted from PDFs and web pages then reads like typed text: "Annual leave" with a zero-width space (U+200B) inside "Annual" supports "Annual leave", and "４５" matches "45".
+- **Sentences (3.9).** A sentence ends at `.`, `!` or `?` followed by a space, or directly by a capital after a lowercase word ("works.Wireless"). A full stop before a lowercase word ("10 a.m. and", "the U.S. government") or after a title or Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't end one. A blank line, and the line break before or after a list item or heading, do, so list items without full stops are separate sentences; a single line break inside a paragraph doesn't. The sentences reported (`citations`, `unsupported`) are the original text.
+
+:::info[Coming in 3.9.0]
+On 3.8.0 and earlier, text isn't normalised, every full stop before a space ends a sentence, and list lines without full stops are one sentence.
+:::
 
 ### Known limitations
 

@@ -99,7 +99,11 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * @property {{calls: number, usage?: Object, error?: string}} [judge] - Only with the `judge` option
  */
 
-/** Sentences of `text` with their offsets (the splitSentences rule). */
+/**
+ * Sentences of `text` with their offsets: a sentence ends at . ! or ?
+ * before whitespace, or at any line break (stricter about lines than
+ * splitSentences, so a heading is never part of the cited sentence).
+ */
 function sentencesWithOffsets(text) {
   const out = [];
   // A sentence ends at . ! or ? before whitespace, or at a line break: a

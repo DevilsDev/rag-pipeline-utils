@@ -5,6 +5,8 @@
  * Author: Ali Kahwaji
  */
 
+const { normalizeText, normalizeWithOffsets } = require('./normalize-text');
+
 /**
  * Tokenize a string by words
  * @param {string} text
@@ -13,8 +15,9 @@
 function tokenize(text) {
   // Unicode-aware: keep letters/digits in any script, drop apostrophes so
   // "don't" stays one token, and treat every other character (including
-  // newlines and hyphens) as a separator.
-  return String(text)
+  // newlines and hyphens) as a separator. Normalised first, so a
+  // zero-width space doesn't split a word and full-width digits are digits.
+  return normalizeText(text)
     .toLowerCase()
     .replace(/['’]/g, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
@@ -87,14 +90,116 @@ function scoreAnswer(_actual, _expected) {
   };
 }
 
+/** A sentence end: `.`, `!` or `?`, closing quotes or brackets, then space. */
+const SENTENCE_END = /[.!?]["'’”)\]]*\s+/gu;
+
 /**
- * Split text into sentences on sentence-ending punctuation
+ * A sentence end with no space after it: "works.Wireless", "$65.Alcohol"
+ * (BH-3). Two letters or digits before it, so "U.S.Army" and "e.g.The"
+ * stay whole.
+ */
+const UNSPACED_END = /(?<=[\p{L}\p{N}]{2}[.!?])(?=\p{Lu})/gu;
+
+/** A line that starts a list item or heading: "- ", "* ", "• ", "2. ", "3) ", "# ". */
+const LIST_ITEM = /^[ \t]*(?:[-*•‣◦▪]|\d{1,3}[.)]|#{1,6})[ \t]/u;
+
+/**
+ * Words whose full stop doesn't end a sentence even before a capital:
+ * titles ("Dr. Lee") and Latin abbreviations ("e.g. Paris"). Before a
+ * lowercase word no full stop ends a sentence ("10 a.m. and", "the U.S.
+ * government"), so these are only the ones commonly followed by a capital.
+ */
+const ABBREVIATIONS = new Set([
+  'mr',
+  'mrs',
+  'ms',
+  'dr',
+  'prof',
+  'sr',
+  'jr',
+  'st',
+  'vs',
+  'e.g',
+  'i.e',
+  'cf',
+]);
+
+/**
+ * Where each sentence of a normalised text starts, after the first.
+ * @param {string} text - normalised text
+ * @returns {number[]}
+ */
+function sentenceStarts(text) {
+  const starts = new Set();
+  for (const match of text.matchAll(SENTENCE_END)) {
+    const end = match.index + match[0].length;
+    if (end >= text.length) continue;
+    if (text[match.index] === '.') {
+      if (/\p{Ll}/u.test(text[end])) continue;
+      // Look back a few characters only, so long texts split in linear time
+      const from = Math.max(0, match.index - 12);
+      const before = text.slice(from, match.index);
+      // The number of a list item: "1. Annual leave"
+      const listNumber =
+        from === 0 ? /(?:^|\n)[ \t]*\d{1,3}$/ : /\n[ \t]*\d{1,3}$/;
+      if (listNumber.test(before)) continue;
+      const word = /[\p{L}.]*$/u.exec(before)[0];
+      if (ABBREVIATIONS.has(word.toLowerCase())) continue;
+    }
+    starts.add(end);
+  }
+  for (const match of text.matchAll(UNSPACED_END)) starts.add(match.index);
+
+  // Lines: a blank line ends a sentence, and so does the line break before
+  // or after a list item or heading, whose lines often have no full stop
+  // (BH-4). A single line break inside a paragraph doesn't, so hard-wrapped
+  // text stays whole.
+  const lines = text.split('\n');
+  let at = 0;
+  for (let i = 0; i < lines.length - 1; i++) {
+    at += lines[i].length + 1;
+    const next = lines[i + 1];
+    if (
+      lines[i].trim() === '' ||
+      next.trim() === '' ||
+      LIST_ITEM.test(lines[i]) ||
+      LIST_ITEM.test(next)
+    ) {
+      starts.add(at);
+    }
+  }
+  return [...starts].sort((a, b) => a - b);
+}
+
+/**
+ * Split text into sentences. Boundaries are found on the normalised text
+ * (see normalize-text.js), so zero-width characters, no-break spaces and
+ * full-width punctuation don't move them; the sentences returned are the
+ * original text, trimmed.
+ *
+ * A sentence ends at `.`, `!` or `?` followed by a space, or directly by a
+ * capital after a lowercase word ("works.Wireless"); a full stop before a
+ * lowercase word ("10 a.m. and") or after a title or Latin abbreviation
+ * ("Dr. Lee", "e.g. Paris") doesn't end one. A blank line, and the line
+ * break around a list item or heading, end one too.
+ *
  * @param {string} text
  * @returns {string[]}
  */
 function splitSentences(text) {
   if (!text || typeof text !== 'string') return [];
-  return text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+  const normalised = normalizeWithOffsets(text);
+  const cuts = sentenceStarts(normalised.text).map(
+    (i) => normalised.offsets[i],
+  );
+  const sentences = [];
+  let from = 0;
+  for (const cut of [...cuts, text.length]) {
+    const sentence = text.slice(from, cut).trim();
+    if (normalizeText(sentence).trim().length > 0) sentences.push(sentence);
+    from = cut;
+  }
+  return sentences;
 }
 
 /**
@@ -616,6 +721,8 @@ function footnotedYears(text) {
  *   counts them as matched
  */
 function checkNumericConsistency(claimText, docText) {
+  claimText = normalizeText(claimText);
+  docText = normalizeText(docText);
   const claim = withoutReferences(claimText);
   const docParts = new Set([
     ...extractNumbers(docText).parts,
@@ -909,6 +1016,8 @@ function isNegated(tokens) {
  *   sourceSentence: the closest document sentence the claim was compared with
  */
 function checkPolarityConsistency(claimText, docText) {
+  claimText = normalizeText(claimText);
+  docText = normalizeText(docText);
   // Negation is scoped to its clause (3.6): "requires X but not Y" negates
   // Y, not X, and "may not use X and may not park Y" has two negated
   // clauses, not an even count that reads as positive. Each clause of the
@@ -1080,9 +1189,6 @@ const MARKER_WORDS = new Set([
 const STATEMENT_BOUNDARY =
   /\s*;\s*|,\s+and\s+|,?\s+\b(?:but|whereas|while|however)\b\s+/i;
 
-/** A sentence end with no space after it: "per week.If you need". */
-const MISSING_SPACE_BOUNDARY = /(?<=[a-z]{2}[.!?])(?=[A-Z])/;
-
 /** Where a restricting clause ends: punctuation or a coordinator. */
 const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/i;
 
@@ -1169,6 +1275,9 @@ function restrictingClauses(statement) {
  *   missing: the restricting clauses the claim leaves out
  */
 function checkConditionConsistency(claimText, docText, answerText) {
+  claimText = normalizeText(claimText);
+  docText = normalizeText(docText);
+  if (typeof answerText === 'string') answerText = normalizeText(answerText);
   const claimWords = new Set(conditionWords(claimText));
   if (claimWords.size === 0) {
     return { consistent: true, missing: [], sourceSentence: null };
@@ -1192,12 +1301,11 @@ function checkConditionConsistency(claimText, docText, answerText) {
       : [];
   const answerWords = new Set([...claimWords, ...restating]);
 
-  // Sources scraped without a space between sentences ("...per week.If you
-  // need") would lend one sentence the next one's restriction: split there
-  // too, after a word of two or more lowercase letters so "U.S." and "e.g."
-  // stay whole (first seen on RAGTruth, fixed on new dev cases)
+  // splitSentences also splits a source scraped without a space between
+  // sentences ("...per week.If you need"), which would otherwise lend one
+  // sentence the next one's restriction (first seen on RAGTruth, fixed on
+  // new dev cases)
   const candidates = splitSentences(docText)
-    .flatMap((s) => s.split(MISSING_SPACE_BOUNDARY))
     .map((sentence) => {
       const words = new Set(conditionWords(sentence));
       const shared = [...claimWords].filter((w) => words.has(w)).length;

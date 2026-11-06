@@ -35,6 +35,22 @@ page.
   sentences is read as separate sentences for this check. Verdicts can
   change: re-save the report you pass to `rag-pipeline eval --baseline`.
 
+### Fixed
+
+- **Text from PDFs and web pages reads like typed text.** Tokenizing,
+  sentence splitting and the number, negation and condition checks share
+  one normalisation: zero-width characters, soft hyphens and other format
+  characters are removed, and full-width digits and letters and no-break
+  spaces become plain ones (NFKC). A source word with a zero-width space
+  inside no longer fails to support the sentence that quotes it, and
+  "４５" matches "45".
+- **Sentences end where a reader would end them.** A full stop followed
+  directly by a capital ("works.Wireless") ends a sentence; one before a
+  lowercase word ("10 a.m. and", "the U.S. government") or after a title or
+  Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't; a blank line, and
+  the line break around a list item or heading, do. The sentences returned
+  are still the original text.
+
 ## [3.8.0] - 2026-11-06
 
 A minor release with no breaking changes, about testing RAG in TypeScript.
