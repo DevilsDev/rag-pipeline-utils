@@ -18,13 +18,13 @@ This document outlines the changes made during the script refactoring initiative
 
 ### **Enhanced Scripts**
 
-| Script                     | Version | Key Improvements                                      |
-| -------------------------- | ------- | ----------------------------------------------------- |
-| `roadmap-sync.js`          | 2.0.0   | CLI args, dry-run, rate limiting, retry logic         |
-| `manage-labels.js`         | 2.0.0   | Consolidated functionality, dry-run, enhanced CLI     |
-| `generate-release-note.js` | 3.0.0   | CLI args, dry-run, retry logic, better error handling |
-| `ci-runner.js`             | 2.0.0   | Enhanced logging, dry-run, selective task execution   |
-| `restore-git-hooks.js`     | 2.0.0   | Logging integration, dry-run support                  |
+| Script                     | Version | Key Improvements                                    |
+| -------------------------- | ------- | --------------------------------------------------- |
+| `roadmap-sync.js`          | 2.0.0   | CLI args, dry-run, rate limiting, retry logic       |
+| `manage-labels.js`         | 2.0.0   | Consolidated functionality, dry-run, enhanced CLI   |
+| `generate-release-note.js` | 3.7.0   | Drafts the release blog post from the CHANGELOG     |
+| `ci-runner.js`             | 2.0.0   | Enhanced logging, dry-run, selective task execution |
+| `restore-git-hooks.js`     | 2.0.0   | Logging integration, dry-run support                |
 
 ## 🛠️ **New Infrastructure**
 
@@ -48,7 +48,7 @@ All scripts that modify external state now support `--dry-run`:
 ```bash
 node scripts/roadmap-sync.js --dry-run
 node scripts/manage-labels.js --dry-run --action=sync
-node scripts/generate-release-note.js --version=v1.2.3 --dry-run
+node scripts/generate-release-note.js 1.2.3 --stdout
 ```
 
 ### **Enhanced CLI**
@@ -100,14 +100,14 @@ node scripts/manage-labels.js --roadmap-only
 ### **Release Notes**
 
 ```bash
-# Generate release notes
-node scripts/generate-release-note.js --version=v1.2.3
+# Draft the release blog post into docs-site/blog (skipped if one exists)
+node scripts/generate-release-note.js 1.2.3
 
-# Blog post only
-node scripts/generate-release-note.js --version=v1.2.3 --blog-only
+# Print it instead of writing it
+node scripts/generate-release-note.js 1.2.3 --stdout
 
-# Skip git operations
-node scripts/generate-release-note.js --version=v1.2.3 --skip-git
+# Write it elsewhere, even if a post exists
+node scripts/generate-release-note.js 1.2.3 --out /tmp/drafts --force
 ```
 
 ### **CI Pipeline**

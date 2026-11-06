@@ -1,0 +1,140 @@
+name: Release Blog Draft
+
+# Drafts the release's blog post and opens a pull request with it, so the
+# maintainer reviews and edits it before it goes live. Nothing is pushed to
+# main.
+#
+# The draft comes from the version's CHANGELOG.md section and, if present,
+# release-notes/v<version>.md (scripts/generate-release-note.js). Every
+# release gets one, patches too (a shorter post). Skipped when:
+#   - the release is a prerelease (on the release trigger),
+#   - a post for the version already exists in docs-site/blog (by slug or
+#     file name), so hand-written posts are never overwritten,
+#   - the blog/v<version> branch already exists (a re-run).
+#
+# Pull requests opened with GITHUB_TOKEN don't trigger other workflows, so
+# CI and the docs build don't run on the draft until a person pushes a
+# commit to it or closes and reopens it.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to draft the post for, e.g. 3.7.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-blog-${{ github.event.release.tag_name || inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    name: Draft the release post
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the blog/v<version> branch
+      pull-requests: write # open the pull request
+    defaults:
+      run:
+        # Explicit bash adds -o pipefail, so `| tee` doesn't hide a failure.
+        shell: bash
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
+        with:
+          egress-policy: audit
+
+      # On a release event the default ref is the tag; the draft branches
+      # from the default branch instead.
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+
+      - name: Resolve the version
+        id: version
+        env:
+          RAW_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+        run: |
+          version="${RAW_VERSION#v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Not a release version: '$RAW_VERSION' (expected x.y.z or vx.y.z)"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "branch=blog/v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Skip when the draft branch exists
+        id: branch
+        env:
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null; then
+            echo "$BRANCH already exists: the draft was opened before" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Draft the post
+        id: draft
+        if: steps.branch.outputs.exists != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node scripts/generate-release-note.js "$VERSION" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Format the post
+        if: steps.draft.outputs.skipped == 'false'
+        env:
+          POST: ${{ steps.draft.outputs.path }}
+        run: |
+          prettier_version=$(node -p "require('./package-lock.json').packages['node_modules/prettier'].version")
+          npx --yes "prettier@$prettier_version" --write -- "$POST"
+
+      - name: Open the pull request
+        if: steps.draft.outputs.skipped == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+          POST: ${{ steps.draft.outputs.path }}
+          BASE: ${{ github.event.repository.default_branch }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add -- "$POST"
+          git commit -m "docs(blog): draft the v$VERSION release post"
+          git push origin "$BRANCH"
+
+          changelog="[CHANGELOG]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$BASE/CHANGELOG.md)"
+          notes="release-notes/v$VERSION.md"
+          if [ -f "$notes" ]; then source="the $changelog section and \`$notes\`"; else source="the $changelog section"; fi
+          # The heredoc's lines are flush left once YAML strips the indent.
+          cat > "$RUNNER_TEMP/pr-body.md" <<EOF
+          A draft of the v$VERSION release post, generated from $source by \`scripts/generate-release-note.js\` ([run]($RUN_URL)).
+
+          Before merging:
+
+          - [ ] Give it a real title (the part after "RAG Pipeline Utils v…:") and tags.
+          - [ ] Rewrite the intro for readers, cut what doesn't matter to them, add examples.
+          - [ ] Check that links and code blocks render (\`npm run docs:build\`).
+
+          Checks don't start on a pull request opened by GitHub Actions: push a commit or close and reopen it to run them.
+          EOF
+          gh pr create --base "$BASE" --head "$BRANCH" \
+            --title "docs(blog): v$VERSION release post (draft)" \
+            --body-file "$RUNNER_TEMP/pr-body.md" | tee -a "$GITHUB_STEP_SUMMARY"

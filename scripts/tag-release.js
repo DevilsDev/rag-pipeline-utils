@@ -1,12 +1,14 @@
 /**
  * Version: 2.0.0
- * Description: Tags release, updates changelog, optionally opens blog preview
+ * Description: Drafts the release blog post (scripts/generate-release-note.js),
+ * optionally opens it for review, then commits and tags. Releases normally
+ * use .github/workflows/release-blog.yml instead, which opens a pull request.
  * Author: Ali Kahwaji
  */
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execFileSync, spawnSync } = require("child_process");
 const readline = require("readline");
 
 const VERSION = process.argv[2];
@@ -18,30 +20,30 @@ if (!VERSION) {
   process.exit(1);
 }
 
-const tag = `v${VERSION}`;
-const blogPath = path.join("docs-site", "blog");
+const { generate, parseVersion } = require("./generate-release-note.js");
+// Throws on anything but x.y.z / vx.y.z, so the tag is always plain.
+const tag = `v${parseVersion(VERSION).version}`;
 
-// Step 1: Run changelog injection
-execSync(`node scripts/generate-release-note.js ${VERSION}`, {
-  stdio: "inherit",
-});
+// Step 1: Draft the blog post from the CHANGELOG (skipped if one exists)
+const result = generate({ version: VERSION });
+const file = result.skipped ? null : path.relative(process.cwd(), result.path);
 
-// Step 2: Find generated blog file
-const date = new Date().toISOString().split("T")[0];
-const file = path.join(blogPath, `${date}-release-${tag}.md`);
-
-if (!fs.existsSync(file)) {
-  console.error(`❌ Blog post not generated: ${file}`);
+// Step 2: Check the draft was written
+if (!file || !fs.existsSync(file)) {
+  console.error(`❌ Blog post not generated: ${result.reason || file}`);
   // eslint-disable-line no-console
   process.exit(1);
 }
 
 // Step 3: Preview if enabled
 if (PREVIEW) {
-  const editor = process.env.EDITOR || "code"; // fallback to VS Code
-  try {
-    execSync(`${editor} ${file}`, { stdio: "inherit" });
-  } catch (err) {
+  // EDITOR may carry flags ("code --wait"); run it without a shell, with the
+  // file as its own argument.
+  const [editor, ...editorArgs] = (process.env.EDITOR || "code")
+    .trim()
+    .split(/\s+/); // fallback to VS Code
+  const opened = spawnSync(editor, [...editorArgs, file], { stdio: "inherit" });
+  if (opened.error || opened.status !== 0) {
     console.warn("⚠️ Failed to open in editor. Please review manually:", file);
     // eslint-disable-line no-console
   }
@@ -65,10 +67,13 @@ if (PREVIEW) {
 
 // Final tagging + push
 function finalizeRelease() {
-  execSync(`git add CHANGELOG.md ${file}`);
-  execSync(`git commit -m "release: v${VERSION}"`);
-  execSync(`git tag ${tag}`);
-  execSync("git push && git push --tags");
+  // Argument arrays, no shell: the file name and tag are never parsed by one.
+  const git = (...args) => execFileSync("git", args, { stdio: "inherit" });
+  git("add", "--", "CHANGELOG.md", file);
+  git("commit", "-m", `release: ${tag}`);
+  git("tag", tag);
+  git("push");
+  git("push", "--tags");
   console.log(`🎉 Release ${tag} published and blog post staged!`);
   // eslint-disable-line no-console
 }

@@ -411,7 +411,14 @@ async function query({
       ...(stream && { stream: true }),
     },
   });
-  if (result && result.success === false) throw new Error(result.error);
+  if (result && result.success === false) {
+    // Rethrow the stage's own error (provider, status, the API's detail)
+    // when it is what failed the run, not a timeout or an abort
+    const cause = captured.error;
+    throw cause && cause.message === result.error
+      ? cause
+      : new Error(result.error);
+  }
 
   if (stream) {
     let answer = "";
@@ -457,17 +464,19 @@ async function query({
  * @param {object} params
  * @param {object} params.config
  * @param {string} params.configDir
- * @returns {{ pipeline: object, hasLlm: boolean }}
+ * @returns {{ pipeline: object, hasLlm: boolean, captured: { error: * } }}
+ *   `captured.error` is the last error a stage threw (see instrument.js)
  */
 function createPipeline({ config, configDir }) {
-  const c = loadComponents({ config, configDir });
+  const loaded = loadComponents({ config, configDir });
+  const { components: c, captured } = instrumentComponents(loaded);
   const pipeline = createRagPipeline({
     embedder: c.embedder,
     retriever: c.retriever,
     llm: c.llm,
     reranker: c.reranker,
   });
-  return { pipeline, hasLlm: Boolean(c.llm) };
+  return { pipeline, hasLlm: Boolean(loaded.llm), captured };
 }
 
 module.exports = {

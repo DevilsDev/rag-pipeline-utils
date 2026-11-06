@@ -1,8 +1,9 @@
 /**
- * The 3.5.0 vs 3.6 comparison on the docs page: the same benchmarks, the
- * same cases and the same cached Claude responses, before and after 3.6
- * changed the lexical checks. Reads benchmarks/results/<name>-3.5.0.json
- * (the reports as published with 3.5.0) and benchmarks/results/<name>.json.
+ * A version-to-version comparison on the docs page: the same benchmarks,
+ * the same cases and the same cached Claude responses, before and after a
+ * release changed the lexical checks. Reads benchmarks/results/<name>-<from>.json
+ * (the reports as published with that version) and <name>-<to>.json, or
+ * <name>.json for the current reports.
  * Used by benchmarks/render.js.
  */
 
@@ -33,9 +34,12 @@ const f3 = (x) => (typeof x === "number" ? x.toFixed(3) : "-");
 const pct = (x) => (typeof x === "number" ? `${(x * 100).toFixed(1)}%` : "-");
 const pair = (a, b, fmt = f3) => `${fmt(a)} → ${fmt(b)}`;
 
-function load(name) {
-  const before = path.join(resultsDir, `${name}-3.5.0.json`);
-  const after = path.join(resultsDir, `${name}.json`);
+function load(name, from, to) {
+  const before = path.join(resultsDir, `${name}-${from}.json`);
+  const after = path.join(
+    resultsDir,
+    to ? `${name}-${to}.json` : `${name}.json`,
+  );
   if (!fs.existsSync(before) || !fs.existsSync(after)) return null;
   return [before, after].map((f) => JSON.parse(fs.readFileSync(f, "utf8")));
 }
@@ -60,10 +64,15 @@ function setRows(label, cases, before, after) {
   return rows;
 }
 
-function renderVersions() {
-  const judge = load("judge");
-  const more = load("judge-more");
-  const citations = load("claude-citations");
+/**
+ * @param {{ from: string, to?: string, label: string, citationNote?: string }} options
+ *   from: the earlier version; to: the later one's kept reports (omit for
+ *   the current reports); label: how the later version is named in the text
+ */
+function renderVersions({ from, to, label, citationNote = "" }) {
+  const judge = load("judge", from, to);
+  const more = load("judge-more", from, to);
+  const citations = load("claude-citations", from, to);
   if (!judge || !more || !citations) return null;
   const commit = judge[1].environment.commit;
 
@@ -169,7 +178,7 @@ function renderVersions() {
   }
 
   return [
-    `Each cell is 3.5.0 → 3.6 (commit \`${commit}\`): the same cases and the same Claude responses, replayed from the response cache, so only the checks changed. A judge only rules on the sentences the lexical check flags, so a judge row changes only through the sentences whose lexical verdict changed; those that newly needed a ruling were new Claude calls.`,
+    `Each cell is ${from} → ${label} (commit \`${commit}\`): the same cases and the same Claude responses, replayed from the response cache, so only the checks changed. A judge only rules on the sentences the lexical check flags, so a judge row changes only through the sentences whose lexical verdict changed; those that newly needed a ruling were new Claude calls.`,
     "",
     "Flagging answers with a hallucination (precision, recall and F1 for the unsupported class, and the share of answers flagged):",
     "",
@@ -189,11 +198,12 @@ function renderVersions() {
     "",
     table(["Lexical verdict", "Sentences", "Labelled unsupported"], reasonRows),
     "",
-    `The project's edge cases (${ea.cases}, written for the 3.5.0 benchmarks): accuracy, false alarms (a correct claim flagged) and misses (a wrong claim passed). The 3.6 changes target categories these cases found, so they are not an independent measure; the published sets above are.`,
+    `The project's edge cases (${ea.cases}, written for the 3.5.0 benchmarks): accuracy, false alarms (a correct claim flagged) and misses (a wrong claim passed). The changes target categories these cases found, so they are not an independent measure; the published sets above are.`,
     "",
     table(["Checked by", "Accuracy", "False alarms", "Misses"], edgeRows),
     "",
-    'Provider citations on SciFact (`verifyCitations`): the share of cited claims supported, and of answers whose every citation is supported, by the lexical check, then with the model as judge; and every claim the lexical check flagged, hand-reviewed against the criteria in `benchmarks/fixtures/claude-citations-review.json` (flagged: real problems / false alarms / unclear). Of the 3.6 false alarms, 16 are new: the clause rule flags a claim whose subject the source names only in another, positive clause ("varenicline was not more effective than combination NRT" against "Varenicline was more effective than nicotine patch …, but was not more effective than combination NRT"), or whose framing clause ("Based on these data, …") has no negation.',
+    "Provider citations on SciFact (`verifyCitations`): the share of cited claims supported, and of answers whose every citation is supported, by the lexical check, then with the model as judge; and every claim the lexical check flagged, hand-reviewed against the criteria in `benchmarks/fixtures/claude-citations-review.json` (flagged: real problems / false alarms / unclear)." +
+      citationNote,
     "",
     table(
       [
@@ -202,8 +212,8 @@ function renderVersions() {
         "Claims supported",
         "Answers verified",
         "Claims supported, with judge",
-        "Flagged in 3.5.0",
-        "Flagged in 3.6",
+        `Flagged in ${from}`,
+        `Flagged in ${label}`,
       ],
       citeRows,
     ),

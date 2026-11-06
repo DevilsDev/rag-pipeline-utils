@@ -190,6 +190,32 @@ Before releasing a new version:
 - [ ] Push tag: `git push origin v2.3.0`
 - [ ] Publish to npm: `npm publish`
 - [ ] Create GitHub release with changelog
+- [ ] Review the release blog post's draft pull request (see below)
+
+### Release blog post
+
+Publishing a GitHub release runs `.github/workflows/release-blog.yml`. It
+drafts the post for that version, patches included, and opens a pull request
+from `blog/v<version>`. Nothing reaches `main` until that pull request is
+reviewed and merged.
+
+- The draft comes from the version's CHANGELOG.md section, or from
+  `release-notes/v<version>.md` when that exists. A patch post is shorter:
+  the intro, the install command and a "What changed" list.
+- It is written by `scripts/generate-release-note.js` (`npm run release:tag`
+  runs it locally for the `package.json` version). The output is Docusaurus
+  MDX: braces and `<` outside code are escaped, and relative links point at
+  the release tag on GitHub.
+- The workflow skips prereleases, versions that already have a post in
+  `docs-site/blog` (matched by slug or file name, so a hand-written post is
+  never replaced) and versions whose `blog/v<version>` branch exists.
+- To draft one by hand, run the workflow from the Actions tab with a
+  version, or `node scripts/generate-release-note.js <version> --stdout`.
+- GitHub doesn't run other workflows on a pull request opened with
+  `GITHUB_TOKEN`. Push a commit to the draft, or close and reopen it, to run
+  CI and the docs build.
+- Before merging, give the post a title after "RAG Pipeline Utils vX.Y:",
+  set its tags and rewrite the intro.
 
 ### Scoped packages
 

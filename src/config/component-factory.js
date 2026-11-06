@@ -64,6 +64,18 @@ const BUILT_INS = {
         cacheKey: cfg.cacheKey,
       });
     },
+    // The API key comes only from WEAVIATE_API_KEY, never the config file.
+    weaviate: (cfg) => {
+      const { WeaviateRetriever } = require("../retrieval/weaviate-retriever");
+      return new WeaviateRetriever({
+        url: cfg.url || process.env.WEAVIATE_URL || "http://localhost:8080",
+        apiKey: process.env.WEAVIATE_API_KEY,
+        collection: cfg.collection,
+        dimensions: cfg.dimensions,
+        createCollection: cfg.createCollection,
+        cacheKey: cfg.cacheKey,
+      });
+    },
     // The API key comes only from PINECONE_API_KEY, never the config file.
     pinecone: (cfg) => {
       const { PineconeRetriever } = require("../retrieval/pinecone-retriever");

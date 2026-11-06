@@ -17,11 +17,11 @@ This document outlines manual test points for validating roadmap automation, doc
 
 ## 2. 🧭 CLI + Manual Utilities
 
-| ✅ Task                          | Command                                             | Notes                               |
-| -------------------------------- | --------------------------------------------------- | ----------------------------------- |
-| Create roadmap issues manually   | `node scripts/create-roadmap-issues.js`             | Creates GitHub Issues               |
-| Ensure labels via CLI            | `node scripts/ensure-roadmap-labels.js`             | Must succeed with idempotency       |
-| Generate changelog and preview   | `npm run release:tag`                               | Prompt for tag + generate CHANGELOG |
+| ✅ Task                          | Command                                             | Notes                         |
+| -------------------------------- | --------------------------------------------------- | ----------------------------- |
+| Create roadmap issues manually   | `node scripts/create-roadmap-issues.js`             | Creates GitHub Issues         |
+| Ensure labels via CLI            | `node scripts/ensure-roadmap-labels.js`             | Must succeed with idempotency |
+| Draft the release blog post      | `npm run release:tag`                               | Drafts it from the CHANGELOG  |
 | Preview auto-generated blog post | Preview `.md` file in `/docs-site/blog` before push |
 
 ---
@@ -82,7 +82,7 @@ node scripts/create-roadmap-issues.js
 # Ensure roadmap labels
 node scripts/ensure-roadmap-labels.js
 
-# Trigger changelog + blog post flow
+# Draft the release blog post from the CHANGELOG
 npm run release:tag
 
 # Build and deploy docs

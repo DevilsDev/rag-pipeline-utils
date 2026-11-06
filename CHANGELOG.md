@@ -13,6 +13,133 @@ page.
 
 ### Added
 
+- **Vector stores in workerd.** The edge check (`test/edge`) now runs
+  `QdrantRetriever` and `PineconeRetriever` in the Workers runtime, from
+  the packed package installed in a project of its own, on the main entry
+  (with `nodejs_compat`) and on `/edge` (without): store, retrieve, list,
+  size, delete, `removeBySource` and `clear`, against stateful fake Qdrant
+  and Pinecone APIs (Pinecone's document and vector indexes, with its log
+  sequence numbers, so the retriever's wait for its own writes runs too).
+  The results, and the ids sent to each store (sha256 of the document ids,
+  including non-ASCII and multi-block ones), must equal the Node.js build's.
+  No library change was needed.
+
+### Changed
+
+- **The CLI says which API key is missing or refused, in one line.**
+  Without a key, `query`, `run`, `ingest`, `eval` and `generate-dataset`
+  print `no Anthropic API key. Set ANTHROPIC_API_KEY and run the command
+again.` (they suggested the `apiKey` option, which is for library code).
+  With a refused key they print `Anthropic rejected the API key (401
+authentication_error: invalid x-api-key). Check ANTHROPIC_API_KEY.`, and
+  the same for OpenAI (`OPENAI_API_KEY`) and Cohere (`COHERE_API_KEY`).
+  The part of the key OpenAI echoes in its 401 is redacted. `eval` and
+  `generate-dataset` say it once, instead of a failure per case or a skip
+  reason per chunk, and `generate-dataset` then writes no empty file.
+  An error no command handles prints one line instead of a stack trace;
+  `--verbose` adds the stack, with keys redacted. The library's own
+  messages are unchanged; key errors now also carry `provider` (and
+  `envVar` when the key is missing), and OpenAIConnector's HTTP errors
+  carry `provider` and `envVar`.
+
+- **Grounding verdicts can change** for `checkAnswer`, `verifyCitations`,
+  `CitationTracker`, `PostGenerationGuard` and the judge's failure
+  classification, because of the fixes below. Re-save the report you pass
+  to `rag-pipeline eval --baseline` after upgrading.
+
+### Fixed
+
+- **Packaging: package.json in the form npm publishes.** At the 3.6.0
+  publish npm auto-corrected the root package.json (the `rag-pipeline`
+  bin path `./bin/cli.js`, and the plain https `repository.url`) and the
+  scoped packages' (the repository URL, copied from the root by
+  `scripts/build-packages.js`). The bin path is now `bin/cli.js` and the
+  repository URL `git+https://github.com/DevilsDev/rag-pipeline-utils.git`,
+  so `npm publish` has nothing to correct in any of the seven packages. A
+  test runs `npm pkg fix` on each published package.json and fails if it
+  would change anything.
+
+- **DAG timeouts no longer keep the process alive.** A `DAGEngine` run (and
+  so `AgenticPipeline`, which runs one) with a `timeout` left its timer
+  pending after the run finished, holding the process open for up to the
+  full timeout (60 seconds by default in `AgenticPipeline`). The timer is
+  now cleared when the run settles.
+- **The logger adds no process `exit` listener.** It now writes JSON to
+  stdout synchronously instead of through pino's asynchronous stream, which
+  registered an `exit` flush hook for every copy of the module; under Jest
+  (a fresh copy per test file) these piled up into
+  `MaxListenersExceededWarning`. Lines are also no longer lost on
+  `process.exit()`. Pretty printing (`LOG_PRETTY=true`) is unchanged.
+
+- **Units, fractions and times in the answer check.** A number with a unit
+  is checked as a quantity, converted exactly within its kind (mass,
+  length, durations from seconds to weeks, months and years): "2 kg"
+  matches "2,000 grams" and "90 minutes" matches "one and a half hours",
+  while "2 pounds" no longer passes against "2 kilograms", or "3 weeks"
+  against "3 days". "Three quarters of", "half of" and "a third of" read
+  as 75%, 50% and 33% (a bare "half" is not a number), "5 pm" and "9 to 5"
+  match 17:00 and 9:00 to 17:00 when the source states clock times, and a
+  footnote marker after a year ("1992.1 It ...") no longer hides the year.
+  A month is not converted to days. A quantity in a unit the source doesn't
+  state falls back to the plain number check, as before.
+- **Two false alarms from the 3.6 clause rule:** a clause that continues
+  the first clause's subject ("The drug lowered blood pressure but did not
+  reduce mortality") now supports "The drug did not reduce mortality", and
+  an opening framing clause ("Based on these results, ...") no longer fails
+  a claim whose statement matches.
+  On the project-written dev cases (`__tests__/fixtures/lexical-checks/`,
+  the 3.7 ones committed before the change), correct claims passing went
+  from 32/47 to 46/47 and real mismatches caught from 40/45 to 45/45 (51
+  cases now, with the regression cases added later: 50/51 and 45/45).
+
+  On the published sets, re-run from the cached Claude responses (see
+  "3.6.0 and 3.7 compared" on the Benchmarks page): every SciFact citation
+  claim the check flagged was already hand-reviewed, false alarms went from
+  43 to 35 across five models with the 3 real problems still caught, and the
+  citation benchmark's number mutations are caught as before. RAGTruth
+  sentences wrongly flagged went from 1,474 to 1,467 and misses from 108 to
+  109; HaluEval doesn't change. The first run on the frozen code found three
+  regressions in Yelp answers (hours written "7:0-23:0", "up to 8 people"
+  and "at 11 W ..." read as times, "seven days a week" as a duration the
+  source doesn't state); they were fixed, with project-written cases first,
+  and the sets were run once more.
+
+### Internal
+
+- The test suite exits on its own: no forced worker exit, no
+  `MaxListenersExceededWarning`, and no fake-timer warnings from the plugin
+  hub tests.
+
+- **`WeaviateRetriever`**: a Weaviate collection as a vector store, over
+  the REST and GraphQL APIs with the built-in `fetch` (no client package;
+  on the edge build too). The first `store()` creates the collection for
+  vectors you provide (`vectorizer: "none"`, cosine distance), or adds the
+  properties it needs to one created elsewhere. Document ids become the
+  same UUIDs `QdrantRetriever` uses, with the original id kept as
+  `rag_id`; metadata is kept as JSON and `metadata.source` as an
+  exact-match property for `removeBySource`. Scores are cosine similarity
+  (1 minus Weaviate's distance). Batch imports that Weaviate answers with
+  per-object errors fail with the reason, and a batch of another vector
+  size is rejected before it is sent. It has the CLI's `size`, `list` and
+  `removeBySource`, only touches objects it wrote, and `.ragrc.json` takes
+  `"name": "weaviate"` (the URL from `config.url` or `WEAVIATE_URL`, the
+  key only from `WEAVIATE_API_KEY`). It passes the retriever contract
+  against an in-memory Weaviate in the unit tests and against Weaviate
+  1.40.4 in the CI vector-store job, with pgvector and Qdrant.
+
+- **A draft blog post for every release.** Publishing a GitHub release
+  runs `.github/workflows/release-blog.yml`. It drafts the post from the
+  version's CHANGELOG section, or `release-notes/v<version>.md` when that
+  exists, and opens a pull request from `blog/v<version>` for review. A
+  patch gets a shorter post. It skips prereleases and any version that
+  already has a post, so hand-written posts are kept, and the workflow
+  can also be run by hand with a version. `scripts/generate-release-note.js`
+  (`npm run release:tag`) is rewritten to do the drafting. The old script
+  needed a config file that no longer exists, built the post from commit
+  messages and pushed to `main`. The new one writes valid Docusaurus MDX:
+  braces and `<` outside code are escaped, and relative links point at the
+  release tag on GitHub.
+
 - **`PineconeRetriever` on indexes that embed text themselves** (integrated
   embedding, such as the console's quick-start index with `chunk_text` and
   `llama-text-embed-v2`), which 3.6.0 refused. The retriever finds the

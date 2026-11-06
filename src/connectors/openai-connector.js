@@ -169,7 +169,27 @@ class OpenAIConnector extends BaseConnector {
   _request(signal, fn) {
     return this.withRetry(fn, this.config.maxRetries, this.config.retryDelay, {
       signal,
+    }).catch((err) => {
+      throw this._tagError(err);
     });
+  }
+
+  /**
+   * Name the provider on an HTTP error from the SDK, as the axios-based
+   * connectors do, so a caller such as the CLI can say which key was refused.
+   * A custom baseURL never reads OPENAI_API_KEY, so it gets no envVar.
+   * @private
+   */
+  _tagError(err) {
+    if (err && typeof err === 'object' && typeof err.status === 'number') {
+      if (!err.provider) {
+        err.provider = this.config.baseURL
+          ? 'The OpenAI-compatible API'
+          : 'OpenAI';
+      }
+      if (!this.config.baseURL && !err.envVar) err.envVar = API_KEY_ENV;
+    }
+    return err;
   }
 
   /**
@@ -219,19 +239,24 @@ class OpenAIConnector extends BaseConnector {
     const client = this._getClient();
     const messages = this._buildMessages(query, context);
 
-    const stream = await raceAbort(
-      client.chat.completions.create(
-        {
-          model: options.model || this.config.model,
-          messages,
-          temperature: options.temperature ?? this.config.temperature,
-          max_tokens: options.maxTokens ?? this.config.maxTokens,
-          stream: true,
-        },
-        signal ? { signal } : undefined,
-      ),
-      signal,
-    );
+    let stream;
+    try {
+      stream = await raceAbort(
+        client.chat.completions.create(
+          {
+            model: options.model || this.config.model,
+            messages,
+            temperature: options.temperature ?? this.config.temperature,
+            max_tokens: options.maxTokens ?? this.config.maxTokens,
+            stream: true,
+          },
+          signal ? { signal } : undefined,
+        ),
+        signal,
+      );
+    } catch (err) {
+      throw this._tagError(err);
+    }
 
     for await (const chunk of stream) {
       throwIfAborted(signal);
