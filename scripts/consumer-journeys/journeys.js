@@ -1120,6 +1120,65 @@ const JOURNEYS = [
       ],
     ],
   },
+  {
+    id: "K",
+    title:
+      "The Testing RAG in TypeScript guide: Vitest, typed matchers, tsc, eval",
+    dir: "k-testing-typescript",
+    source: "examples/testing-typescript",
+    type: "module",
+    install: ["main", "vitest", "typescript", "@types/node"],
+    steps: [
+      { name: "tsc", npx: ["tsc", "--noEmit"] },
+      { name: "vitest", npx: ["vitest", "run"] },
+      { name: "ingest", npx: ["rag-pipeline", "ingest", "docs"] },
+      {
+        name: "eval",
+        npx: [
+          "rag-pipeline",
+          "eval",
+          "eval/tests.json",
+          "--min",
+          "sourceRecall=1",
+        ],
+      },
+    ],
+    checks: [
+      [
+        "tsc --noEmit passes (strict, skipLibCheck: false, typed matchers)",
+        (c) => {
+          const s = step(c, "tsc");
+          return (
+            s.code === 0 ||
+            (s.stdout + s.stderr).trim().split("\n").slice(0, 6).join(" | ")
+          );
+        },
+      ],
+      [
+        "vitest run passes both tests",
+        (c) => {
+          const s = step(c, "vitest");
+          const out = s.stdout + s.stderr;
+          return (
+            (s.code === 0 && /Tests\s+2 passed/.test(out)) ||
+            out.trim().split("\n").slice(-8).join(" | ")
+          );
+        },
+      ],
+      [
+        "rag-pipeline eval passes with sourceRecall 1.000",
+        (c) => {
+          const s = step(c, "eval");
+          return (
+            (step(c, "ingest").code === 0 &&
+              s.code === 0 &&
+              /sourceRecall\s+1\.000/.test(s.stdout)) ||
+            (s.stdout + s.stderr).trim().split("\n").slice(-6).join(" | ")
+          );
+        },
+      ],
+    ],
+  },
 ];
 
 module.exports = {

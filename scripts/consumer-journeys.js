@@ -258,8 +258,19 @@ function runJourney(journey, tarballs) {
   say(ls.stdout);
 
   // 3. The developer's code
-  const src = path.join(ROOT, "test", "consumer", journey.dir);
-  fs.cpSync(src, workDir, { recursive: true });
+  // `source`: a folder elsewhere in the repo (an example), copied without
+  // its package.json and lockfile, which the install above already replaced
+  const src = journey.source
+    ? path.join(ROOT, journey.source)
+    : path.join(ROOT, "test", "consumer", journey.dir);
+  fs.cpSync(src, workDir, {
+    recursive: true,
+    filter: (p) =>
+      !journey.source ||
+      !["package.json", "package-lock.json", "node_modules"].includes(
+        path.basename(p),
+      ),
+  });
 
   // 4. Run it
   for (const step of journey.steps) {

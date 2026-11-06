@@ -1,0 +1,25 @@
+{
+  "name": "rag-pipeline-testing-typescript",
+  "version": "1.0.0",
+  "description": "Testing RAG answers in TypeScript with Vitest and @devilsdev/rag-pipeline-utils: the code of the Testing RAG in TypeScript guide",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "ingest": "rag-pipeline ingest docs",
+    "eval": "rag-pipeline eval eval/tests.json --min sourceRecall=1"
+  },
+  "dependencies": {
+    "@devilsdev/rag-pipeline-utils": "^3.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^7.0.0",
+    "vitest": "^5.1.0"
+  },
+  "license": "MIT"
+}

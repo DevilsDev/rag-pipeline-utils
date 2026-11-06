@@ -453,9 +453,46 @@ fs.writeFileSync(
   path.join(distDir, "experimental.d.ts"),
   'export * from "./types/experimental";\n',
 );
+// The matchers' signatures as they appear on `expect(...)`, for TypeScript
+// projects to add to Vitest's or Jest's Matchers (see Testing.md,
+// "Matchers in TypeScript"). Without it, `expect(x).toBeGroundedIn()` doesn't
+// compile.
 fs.writeFileSync(
   path.join(distDir, "testing.d.ts"),
-  'export * from "./types/testing";\n',
+  `export * from "./types/testing";
+
+/**
+ * The rag matchers as they appear on \`expect(received)\`. Add them to your
+ * test runner's types once, in a .d.ts file:
+ *
+ *   // Vitest
+ *   import "vitest";
+ *   import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
+ *   declare module "vitest" {
+ *     interface Matchers<R, T> extends RagMatchers<R> {}
+ *   }
+ *
+ *   // Jest
+ *   import type { RagMatchers } from "@devilsdev/rag-pipeline-utils/testing";
+ *   declare global {
+ *     namespace jest {
+ *       interface Matchers<R> extends RagMatchers<R> {}
+ *     }
+ *   }
+ */
+export interface RagMatchers<R = unknown> {
+  /**
+   * Every sentence of the answer is supported by the sources: its content
+   * words, numbers and negation match a source. \`sources\` defaults to the
+   * run() result's \`results\`.
+   */
+  toBeGroundedIn(sources?: unknown[], options?: { threshold?: number }): R;
+  /** The answer cites each of the given source ids. */
+  toCite(ids: string | string[], sources?: unknown[]): R;
+  /** No email, phone, US SSN or card number appears in the value. */
+  toContainNoPII(options?: { patterns?: Record<string, RegExp> }): R;
+}
+`,
 );
 // ./edge exports a subset of the main entry, the same declarations.
 const edgeNames = Object.keys(require("../src/edge.js"));

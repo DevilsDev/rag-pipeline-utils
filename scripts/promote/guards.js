@@ -99,6 +99,11 @@ function checkText({ channel, text, source }) {
   if (length > LIMITS[channel]) {
     problems.push(`${length} characters, over ${channel}'s ${LIMITS[channel]}`);
   }
+  // dev.to renders Liquid: {{ }} or {% %} in an article can fail the post
+  // (500) or vanish from it
+  if (channel === "devto" && /{{|{%/.test(text)) {
+    problems.push("Liquid syntax ({{ or {%) in a dev.to post");
+  }
   for (const re of BANNED) {
     if (re.test(text)) problems.push(`banned phrase: ${re}`);
   }

@@ -43,6 +43,8 @@ write to pass them honestly, never to get around them.
   examples/use-cases, a README example or a docs page), not written fresh.
 - Links only to github.com, npmjs.com, devilsdev.github.io, stackblitz.com
   or dev.to, all https. End with a link to the docs page the article draws on.
+- No `{{` or `{%` anywhere (dev.to reads them as Liquid tags): leave out
+  GitHub Actions snippets with `${{ … }}`, or describe them in words.
 - No hype ("revolutionary", "game-changing", "blazing"), no invented users,
   benchmarks or testimonials, no placeholders.
 
