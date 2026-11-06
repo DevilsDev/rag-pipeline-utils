@@ -25,8 +25,6 @@ module.exports = {
     sourceType: "script",
   },
 
-  plugins: ["storybook"],
-
   ignorePatterns: [
     "node_modules",
     "docs-site",
