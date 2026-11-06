@@ -137,7 +137,8 @@
     "telemetry:init": "node -e \"require('./src/observability/telemetry').initializeTelemetry()\"",
     "security:monitor": "node -e \"require('./src/observability/security-monitor').initializeSecurityMonitoring()\"",
     "audit:compliance": "node -e \"require('./src/observability/audit-logger').initializeAuditLogging()\"",
-    "version": "node scripts/sync-package-versions.js && git add package.json package-lock.json packages/*/package.json"
+    "version": "node scripts/sync-package-versions.js && git add package.json package-lock.json packages/*/package.json",
+    "test:bug-hunt": "jest --config jest.bughunt.config.js"
   },
   "repository": {
     "type": "git",

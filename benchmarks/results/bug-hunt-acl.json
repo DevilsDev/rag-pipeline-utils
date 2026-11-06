@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-11-06T12:06:34.570Z",
+  "environment": {
+    "libraryVersion": "3.8.0",
+    "commit": "f86afb7",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "corpora": 30,
+  "documents": 232,
+  "checks": 48600,
+  "violations": 0,
+  "errors": [],
+  "spend": {},
+  "violationPaths": []
+}
