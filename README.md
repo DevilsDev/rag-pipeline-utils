@@ -89,7 +89,7 @@ console.log(result.results[0].id); // "vacation"
 - **Framework integrations:** grounding middleware for any Vercel AI SDK model, Mastra scorers and guardrails, and test matchers for Jest and Vitest.
 - **Guardrails:** prompt-injection detection and PII redaction, with your own detectors and [published precision and recall](https://devilsdev.github.io/rag-pipeline-utils/docs/Benchmarks#guardrail-accuracy), and ACL filtering before generation.
 - **Production behaviour:** hybrid search, reranking, token budgets, timeouts and cancellation, retries, caching, and OpenTelemetry spans with evaluation scores as events (or Langfuse scores).
-- **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant, Pinecone and Weaviate (3.7.0); anything with `embed()` or `generate()` works too.
+- **Connectors:** OpenAI, Anthropic, Cohere, Ollama, pgvector, Qdrant, Pinecone and Weaviate; anything with `embed()` or `generate()` works too.
 - **A CLI:** `init`, `ingest`, `query`, `eval` and `serve` against a local index, offline if you want.
 - **Starter templates:** `npm create rag-pipeline` for Next.js with the AI SDK, Mastra or Cloudflare Workers.
 

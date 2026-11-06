@@ -179,10 +179,6 @@ Create the index first: a dense vector of your embedding model's dimension, or a
 
 #### Indexes that embed text (integrated embedding)
 
-:::info[Coming in 3.7.0]
-`PineconeRetriever` works on indexes that embed text themselves. On 3.6.0 it refuses them.
-:::
-
 An index created with an embedding model, such as the console's quick-start index (a `chunk_text` field embedded with `llama-text-embed-v2`), embeds text itself. The retriever finds that field in the index description: a string field with `embed`. There, `store()` sends each document's `content` in that field and Pinecone embeds it. Documents need no `vector`, and any vector they carry is ignored. `retrieve()` searches by the query text, which Pinecone embeds with the same model. So a pipeline on such an index needs no embedder:
 
 ```javascript no-run
@@ -238,10 +234,6 @@ It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and p
 ```
 
 ### Weaviate
-
-:::info[Coming in 3.7.0]
-`WeaviateRetriever` is in 3.7.0.
-:::
 
 `WeaviateRetriever` keeps documents in a [Weaviate](https://weaviate.io) collection. It talks to Weaviate's REST and GraphQL APIs with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too. It's written against the Weaviate 1.39 and 1.40 APIs (the same for the endpoints it uses) and tested against Weaviate 1.40.4.
 
