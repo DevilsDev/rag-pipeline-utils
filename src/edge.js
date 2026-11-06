@@ -104,6 +104,7 @@ const { LocalEmbedder } = require('./connectors/local-embedder');
 const { MemoryRetriever } = require('./connectors/memory-retriever');
 const { QdrantRetriever } = require('./retrieval/qdrant-retriever');
 const { PineconeRetriever } = require('./retrieval/pinecone-retriever');
+const { WeaviateRetriever } = require('./retrieval/weaviate-retriever');
 const { AnthropicConnector } = require('./connectors/anthropic-connector');
 const { CohereConnector } = require('./connectors/cohere-connector');
 
@@ -205,6 +206,7 @@ module.exports = {
   MemoryRetriever,
   QdrantRetriever,
   PineconeRetriever,
+  WeaviateRetriever,
   AnthropicConnector,
   CohereConnector,
 

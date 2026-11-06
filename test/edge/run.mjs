@@ -6,7 +6,10 @@
  * The main entry runs with nodejs_compat; /edge runs without it, where no
  * Node.js API exists (stricter than Vercel Edge, which has process.env,
  * Buffer and events). Outbound requests are answered by fake Anthropic,
- * Ollama, OpenAI and Qdrant APIs.
+ * Ollama, OpenAI, Qdrant and Pinecone APIs. Steps 4 and 5 install the
+ * packed package in a project of their own and bundle it without the
+ * alias: the Cloudflare Worker example, then QdrantRetriever and
+ * PineconeRetriever on both entries, compared with Node.js.
  *
  *   npm install && npm test      (in test/edge)
  *
@@ -19,6 +22,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { Miniflare, Response } from "miniflare";
+import {
+  PINECONE_DOCS_INDEX,
+  PINECONE_KEY,
+  PINECONE_VECTORS_HOST,
+  vectorStoreChecks,
+} from "./vector-stores.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
@@ -110,8 +119,158 @@ function chunked(text, size = 7) {
 // Qdrant point ids the Workers stored, to compare with the Node build's.
 const storedPointIds = [];
 
+const cosine = (a, b) => {
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  return dot / Math.sqrt(na * nb);
+};
+
+/**
+ * A stateful Qdrant for the collections named stores_<run>, for
+ * QdrantRetriever's store, retrieve, list, size and deletes. `upserted`
+ * keeps the point ids each collection was sent.
+ */
+const qdrant = new Map();
+function fakeQdrant(method, name, rest, body) {
+  const json = (result, status = 200) =>
+    new Response(
+      JSON.stringify(
+        status === 200
+          ? { result, status: "ok" }
+          : { status: { error: result } },
+      ),
+      { status, headers: { "content-type": "application/json" } },
+    );
+  const c = qdrant.get(name);
+  const route = `${method} ${rest}`;
+  if (route === "PUT ") {
+    qdrant.set(name, {
+      points: new Map(),
+      upserted: [],
+      vectors: body.vectors,
+    });
+    return json(true);
+  }
+  if (!c) return json(`Collection \`${name}\` doesn't exist!`, 404);
+  const mine = (p) =>
+    p.payload.rag_id !== undefined && p.payload.rag_id !== null;
+  const ours = () => [...c.points.values()].filter(mine);
+  switch (route) {
+    case "GET ":
+      return json({ status: "green", config: { params: c.vectors } });
+    case "PUT index":
+      return json({ status: "completed" });
+    case "PUT points":
+      for (const p of body.points) {
+        c.points.set(p.id, p);
+        c.upserted.push(p.id);
+      }
+      return json({ status: "completed" });
+    case "POST points/query":
+      return json({
+        points: ours()
+          .map((p) => ({
+            id: p.id,
+            score: cosine(p.vector, body.query),
+            payload: p.payload,
+          }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, body.limit),
+      });
+    case "POST points/count":
+      return json({ count: ours().length });
+    case "POST points/scroll":
+      return json({
+        points: ours()
+          .slice(0, body.limit)
+          .map((p) => ({ id: p.id, payload: p.payload })),
+        next_page_offset: null,
+      });
+    case "POST points/delete": {
+      const source = body.filter?.must?.[0]?.match?.value;
+      for (const p of ours()) {
+        if (
+          (body.points && body.points.includes(p.id)) ||
+          (source !== undefined && p.payload.metadata?.source === source) ||
+          (body.filter?.must_not && source === undefined)
+        ) {
+          c.points.delete(p.id);
+        }
+      }
+      return json({ status: "completed" });
+    }
+    default:
+      return json(`no fake for ${route}`, 404);
+  }
+}
+
+// Fresh fake Pinecone indexes for each run of the vector-store checks
+// (__tests__/utils/fake-pinecone.js: log sequence numbers, and searches
+// that lag behind writes): a document index named in the control plane,
+// and a vector index found by its host.
+const { fakePinecone } = createRequire(import.meta.url)(
+  path.join(root, "__tests__", "utils", "fake-pinecone.js"),
+);
+let pinecone;
+function freshPinecone() {
+  pinecone = {
+    documents: fakePinecone({
+      kind: "documents",
+      indexName: PINECONE_DOCS_INDEX,
+      host: "https://docs-abc.svc.test.pinecone.io",
+      apiKey: PINECONE_KEY,
+    }),
+    vectors: fakePinecone({
+      kind: "vectors",
+      indexName: "vecs",
+      host: PINECONE_VECTORS_HOST,
+      apiKey: PINECONE_KEY,
+    }),
+  };
+}
+
+async function fakePineconeResponse(request, url) {
+  const { documents, vectors } = pinecone;
+  const fake =
+    url.origin === documents.host ||
+    url.pathname === `/indexes/${documents.indexName}`
+      ? documents
+      : vectors;
+  const res = await fake.fetch(url.href, {
+    method: request.method,
+    headers: { "Api-Key": request.headers.get("api-key") },
+    body: ["POST", "PUT"].includes(request.method)
+      ? await request.text()
+      : undefined,
+  });
+  // The fake answers with Node's Response; keep its status and headers
+  // (x-pinecone-request-lsn, x-pinecone-max-indexed-lsn).
+  return new Response(await res.text(), {
+    status: res.status,
+    headers: Object.fromEntries(res.headers.entries()),
+  });
+}
+
 async function upstream(request) {
   const url = new URL(request.url);
+  if (url.hostname.endsWith(".pinecone.io")) {
+    return fakePineconeResponse(request, url);
+  }
+  const [, top, name, ...rest] = url.pathname.split("/");
+  if (top === "collections" && name.startsWith("stores_")) {
+    return fakeQdrant(
+      request.method,
+      name,
+      rest.join("/"),
+      ["POST", "PUT"].includes(request.method) ? await request.json() : {},
+    );
+  }
   const json = (body) =>
     new Response(JSON.stringify(body), {
       headers: { "content-type": "application/json" },
@@ -407,6 +566,19 @@ const installed = fs.mkdtempSync(path.join(os.tmpdir(), "rag-edge-npm-"));
     path.join(installed, "src"),
     { recursive: true },
   );
+  // For step 5: Workers that import the installed package.
+  fs.mkdirSync(path.join(installed, "stores"));
+  for (const file of [
+    "checks.js",
+    "vector-stores.js",
+    "stores-worker.js",
+    "stores-edge-worker.js",
+  ]) {
+    fs.copyFileSync(
+      path.join(here, file),
+      path.join(installed, "stores", file),
+    );
+  }
 }
 let fromNpm;
 try {
@@ -447,7 +619,115 @@ if (fromNpm) {
   }
 }
 
-for (const b of [probe, edgeProbe, example, fromNpm].filter(Boolean))
+// 5. QdrantRetriever and PineconeRetriever from the installed package, in
+// Workers on the main entry (nodejs_compat) and /edge (without), against
+// stateful fake upstreams. Each run's results, and the ids it sent (UUIDs
+// and record ids, sha256 of the document ids), must equal Node.js's for the
+// same steps.
+const storeIds = (run) => ({
+  qdrant: qdrant.get(`stores_${run}`)?.upserted ?? [],
+  pineconeDocuments: pinecone.documents.calls
+    .filter((c) => c.url.endsWith("/documents/upsert"))
+    .flatMap((c) => c.body.documents.map((d) => d._id)),
+  pineconeVectors: pinecone.vectors.calls
+    .filter((c) => c.url.endsWith("/vectors/upsert"))
+    .flatMap((c) => c.body.vectors.map((v) => v.id)),
+});
+const storeEnv = (run) => ({ RUN: run, PINECONE_API_KEY: PINECONE_KEY });
+
+const nodeStores = {};
+let nodeStoreIds;
+{
+  freshPinecone();
+  const lib = createRequire(path.join(installed, "package.json"))(
+    "@devilsdev/rag-pipeline-utils",
+  );
+  // Node's fetch to the same fakes the Workers reach
+  const fetch = async (url, init) => {
+    const res = await upstream(new globalThis.Request(url, init));
+    return new globalThis.Response(await res.text(), {
+      status: res.status,
+      headers: Object.fromEntries(res.headers.entries()),
+    });
+  };
+  for (const [name, check] of Object.entries(
+    vectorStoreChecks(lib, { fetch }),
+  )) {
+    try {
+      nodeStores[name] = { ok: true, value: await check(storeEnv("node")) };
+    } catch (error) {
+      nodeStores[name] = { ok: false, error: String(error.message) };
+    }
+    report(`node: ${name}`, nodeStores[name].ok, nodeStores[name].error || "");
+  }
+  nodeStoreIds = storeIds("node");
+}
+
+const storeBundles = [];
+for (const [run, entry, nodejsCompat] of [
+  ["main", "stores-worker.js", true],
+  ["edge", "stores-edge-worker.js", false],
+]) {
+  let bundled;
+  try {
+    bundled = bundle(path.join(installed, "stores", entry), {
+      alias: false,
+      nodejsCompat,
+    });
+    storeBundles.push(bundled);
+  } catch (error) {
+    report(
+      `installed ${run}: Wrangler bundles the vector-store Worker`,
+      false,
+      String(error.stderr || error.message)
+        .split("\n")
+        .slice(0, 6)
+        .join(" | "),
+    );
+    continue;
+  }
+  freshPinecone();
+  const mf = await serve(bundled, storeEnv(run), { nodejsCompat });
+  try {
+    const res = await mf.dispatchFetch("http://localhost/");
+    const results = await res.json();
+    for (const [name, r] of Object.entries(results)) {
+      const same =
+        r.ok &&
+        JSON.stringify(r.value) === JSON.stringify(nodeStores[name]?.value);
+      report(
+        `installed ${run}: ${name}`,
+        same,
+        r.ok
+          ? same
+            ? JSON.stringify(r.value).slice(0, 100)
+            : `differs from Node: ${JSON.stringify(r.value).slice(0, 200)}`
+          : r.error.split("\n").slice(0, 3).join(" | "),
+      );
+    }
+  } catch (error) {
+    report(
+      `installed ${run}: the vector-store Worker answers`,
+      false,
+      String(error.message).split("\n")[0],
+    );
+  } finally {
+    await mf.dispose();
+  }
+  const ids = storeIds(run);
+  report(
+    `installed ${run}: Qdrant and Pinecone ids (sha256) match the Node build`,
+    ids.qdrant.length === 4 &&
+      ids.pineconeDocuments.length === 4 &&
+      ids.pineconeVectors.length === 4 &&
+      JSON.stringify(ids) === JSON.stringify(nodeStoreIds),
+    `${ids.qdrant[1]} ${ids.pineconeDocuments[1]?.slice(0, 20)}...`,
+  );
+}
+
+for (const b of [probe, edgeProbe, example, fromNpm, ...storeBundles].filter(
+  Boolean,
+))
   fs.rmSync(b.out, { recursive: true, force: true });
 fs.rmSync(installed, { recursive: true, force: true });
 if (failed) {

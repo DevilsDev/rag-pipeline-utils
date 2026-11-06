@@ -103,7 +103,7 @@ Each stage is a plugin that implements one contract method: loader `load()`, emb
 | LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                                                        | `openai`, `anthropic`, `ollama`              |
 | Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector`                                      | `scoring`                                    |
 
-Qdrant (`QdrantRetriever`) and PostgreSQL with pgvector (`PgVectorRetriever`, needs `npm install pg`) are built in. Connect other vector databases (Pinecone, Chroma, Weaviate and others) with a custom retriever plugin (see [Plugins](./Plugins.md)).
+Qdrant (`QdrantRetriever`), Pinecone (`PineconeRetriever`), Weaviate (`WeaviateRetriever`, 3.7.0) and PostgreSQL with pgvector (`PgVectorRetriever`, needs `npm install pg`) are built in. Connect other vector databases (Chroma and others) with a custom retriever plugin (see [Plugins](./Plugins.md)).
 
 ---
 

@@ -18,10 +18,13 @@ const STAGE_METHODS = {
   llm: { generate: "generate", generateStream: "generate" },
 };
 
-async function* timedStream(source, record) {
+async function* timedStream(source, record, onError) {
   const start = performance.now();
   try {
     yield* await source;
+  } catch (error) {
+    onError(error);
+    throw error;
   } finally {
     record(performance.now() - start);
   }
@@ -29,11 +32,16 @@ async function* timedStream(source, record) {
 
 /**
  * @param {Object} components - { embedder, retriever, reranker, llm }
- * @returns {{ components: Object, timings: Array<{stage: string, ms: number}>, captured: { results: Array|null } }}
+ * @returns {{ components: Object, timings: Array<{stage: string, ms: number}>, captured: { results: Array|null, error: * } }}
+ *   `captured.error` is the last error a stage threw: the pipeline reports
+ *   only its message, and the CLI words a refused key from the error itself.
  */
 function instrumentComponents(components) {
   const timings = [];
-  const captured = { results: null };
+  const captured = { results: null, error: null };
+  const onError = (error) => {
+    captured.error = error;
+  };
 
   const wrap = (kind, component) => {
     if (!component) return component;
@@ -46,8 +54,10 @@ function instrumentComponents(components) {
 
         if (prop === "generateStream") {
           return (...args) =>
-            timedStream(value.apply(target, args), (ms) =>
-              timings.push({ stage, ms }),
+            timedStream(
+              value.apply(target, args),
+              (ms) => timings.push({ stage, ms }),
+              onError,
             );
         }
         return async (...args) => {
@@ -59,6 +69,9 @@ function instrumentComponents(components) {
               captured.results = out;
             }
             return out;
+          } catch (error) {
+            onError(error);
+            throw error;
           } finally {
             timings.push({ stage, ms: performance.now() - start });
           }

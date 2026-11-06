@@ -13,6 +13,7 @@ const { LocalEmbedder } = require('../connectors/local-embedder');
 const { QdrantRetriever } = require('../retrieval/qdrant-retriever');
 const { PineconeRetriever } = require('../retrieval/pinecone-retriever');
 const { PgVectorRetriever } = require('../retrieval/pgvector-retriever');
+const { WeaviateRetriever } = require('../retrieval/weaviate-retriever');
 const { createAiSdkAdapter } = require('../adapters/ai-sdk');
 
 module.exports = {
@@ -24,5 +25,6 @@ module.exports = {
   QdrantRetriever,
   PineconeRetriever,
   PgVectorRetriever,
+  WeaviateRetriever,
   createAiSdkAdapter,
 };

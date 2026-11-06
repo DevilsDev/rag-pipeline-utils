@@ -1085,28 +1085,37 @@ const JOURNEYS = [
         "CLI query without a key exits non-zero with a clear message",
         (c) => {
           const s = step(c, "cliMissing");
+          const err = s.stderr.trim();
           assert(s.code !== 0, `exit ${s.code}: ${s.stdout.slice(-300)}`);
+          // One line naming the provider and the variable, no stack trace
           assert(
-            /ANTHROPIC_API_KEY/.test(s.stderr + s.stdout),
-            (s.stderr + s.stdout).slice(-300),
+            /Anthropic/.test(err) && /Set ANTHROPIC_API_KEY/.test(err),
+            err.slice(-300),
           );
-          return info(
-            (s.stderr || s.stdout).trim().split("\n").slice(-2).join(" | "),
-          );
+          assert(!/\n\s+at /.test(err), `stack trace: ${err.slice(-300)}`);
+          return info(err.split("\n").slice(-2).join(" | "));
         },
       ],
       [
         "CLI query with a wrong key exits non-zero with a clear message",
         (c) => {
           const s = step(c, "cliWrong");
+          const err = s.stderr.trim();
+          const out = s.stderr + s.stdout;
           assert(s.code !== 0, `exit ${s.code}: ${s.stdout.slice(-300)}`);
+          // The provider, the API's own words, the variable to check
           assert(
-            /auth|api key|invalid/i.test(s.stderr + s.stdout),
-            (s.stderr + s.stdout).slice(-300),
+            /Anthropic/.test(err) &&
+              /401 authentication_error/.test(err) &&
+              /ANTHROPIC_API_KEY/.test(err),
+            err.slice(-300),
           );
-          return info(
-            (s.stderr || s.stdout).trim().split("\n").slice(-2).join(" | "),
+          assert(!/\n\s+at /.test(err), `stack trace: ${err.slice(-300)}`);
+          assert(
+            !out.includes("INVALID-consumer-journey-key"),
+            "prints the key",
           );
+          return info(err.split("\n").slice(-2).join(" | "));
         },
       ],
     ],
