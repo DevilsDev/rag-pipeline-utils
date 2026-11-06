@@ -28,7 +28,7 @@ page.
   `"name": "weaviate"` (the URL from `config.url` or `WEAVIATE_URL`, the
   key only from `WEAVIATE_API_KEY`). It passes the retriever contract
   against an in-memory Weaviate in the unit tests and against Weaviate
-  1.39 in the CI vector-store job, with pgvector and Qdrant.
+  1.40.4 in the CI vector-store job, with pgvector and Qdrant.
 
 ## [3.6.0] - 2026-11-05
 

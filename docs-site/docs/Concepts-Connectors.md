@@ -208,7 +208,7 @@ It has `removeBySource`, `delete`, `clear`, `size` and `list` for the CLI, and p
 `WeaviateRetriever` is in 3.7.0.
 :::
 
-`WeaviateRetriever` keeps documents in a [Weaviate](https://weaviate.io) collection. It talks to Weaviate's REST and GraphQL APIs with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too. It's written against the Weaviate 1.39 API and tested against Weaviate 1.39.
+`WeaviateRetriever` keeps documents in a [Weaviate](https://weaviate.io) collection. It talks to Weaviate's REST and GraphQL APIs with the built-in `fetch`, so there's no package to install, and it runs on the [edge build](./Deployment-Edge) too. It's written against the Weaviate 1.39 and 1.40 APIs (the same for the endpoints it uses) and tested against Weaviate 1.40.4.
 
 ```javascript no-run
 import {
@@ -226,7 +226,7 @@ const embedder = new OpenAIConnector();
 const pipeline = createRagPipeline({ embedder, retriever, llm: embedder });
 ```
 
-The first `store()` creates the collection for vectors you provide (`vectorizer: "none"`, an HNSW index with cosine distance), unless you pass `createCollection: false`. On a collection created elsewhere, it adds the properties it needs and leaves the rest alone. `score` is 1 minus Weaviate's cosine distance, the cosine similarity the other retrievers return. Writes are searchable as soon as `store()` returns, unless the server runs with asynchronous indexing (`ASYNC_INDEXING`).
+The first `store()` creates the collection for vectors you provide (`vectorizer: "none"`, an HNSW index with cosine distance), unless you pass `createCollection: false`. On a collection created elsewhere, it adds the properties it needs and leaves the rest alone. It uses the collection's single unnamed vector, so a collection made with named vectors only (what Weaviate 1.40's auto-schema creates) doesn't work with it: let the retriever create its collection. `score` is 1 minus Weaviate's cosine distance, the cosine similarity the other retrievers return. Writes are searchable as soon as `store()` returns, unless the server runs with asynchronous indexing (`ASYNC_INDEXING`).
 
 Weaviate object ids must be UUIDs. Each document's id becomes the same UUID `QdrantRetriever` derives from it, and the original id is kept in the `rag_id` property, alongside `content`. Weaviate properties need a schema, so your metadata is kept as JSON in `rag_metadata`, and `metadata.source` is copied to `rag_source` (exact match) for `removeBySource`. Results report your original id and metadata. Queries, `clear()`, `size()` and `list()` only touch objects that have a `rag_id`, so a collection can hold other data too.
 

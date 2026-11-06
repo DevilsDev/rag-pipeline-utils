@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * An in-memory Weaviate 1.39 behind a fetch function, for
+ * An in-memory Weaviate 1.40 behind a fetch function, for
  * WeaviateRetriever's tests: the schema endpoints, batch import (200 with
  * per-object errors, including Weaviate's vector-length error), batch
  * delete with Weaviate's per-call limit (QUERY_MAXIMUM_RESULTS), the

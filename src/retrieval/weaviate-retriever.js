@@ -2,7 +2,10 @@
 
 /**
  * Retriever on Weaviate, through its REST and GraphQL APIs with the built-in
- * fetch: no client package is needed. Written against Weaviate 1.39.
+ * fetch: no client package is needed. Written against Weaviate 1.39 and
+ * 1.40 (the endpoints it uses are the same in both). It uses the
+ * collection's legacy (unnamed) vector, which 1.40 creates only when the
+ * collection asks for it, as the one this class creates does.
  *
  * Vectors are self-provided (`vectorizer: "none"`, cosine distance). Object
  * ids must be UUIDs, so each document id is mapped to the same UUID
