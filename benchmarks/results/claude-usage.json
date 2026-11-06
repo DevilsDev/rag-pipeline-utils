@@ -1,6 +1,6 @@
 {
   "report": "claude-usage",
-  "generatedAt": "2026-11-06T00:27:19.764Z",
+  "generatedAt": "2026-11-06T10:49:34.469Z",
   "note": "Metadata only (model, date, status, tokens, latency): no prompt, answer or key.",
   "prices": {
     "perMillionTokens": {
@@ -34,50 +34,50 @@
   },
   "sources": {
     "benchmarkResponses": 10029,
-    "consumerJourneyCalls": 357,
-    "liveTestCalls": 10
+    "consumerJourneyCalls": 575,
+    "liveTestCalls": 180
   },
   "totals": {
-    "calls": 10396,
-    "errors": 56,
+    "calls": 10784,
+    "errors": 101,
     "refusals": 60,
-    "inputTokens": 14812069,
-    "outputTokens": 4149876,
-    "usd": 62.8193
+    "inputTokens": 14905600,
+    "outputTokens": 4169671,
+    "usd": 63.1028
   },
   "byModel": {
     "claude-haiku-5-5": {
-      "calls": 3212,
-      "inputTokens": 4719975,
-      "outputTokens": 2097927,
-      "usd": 1.5209
+      "calls": 3297,
+      "inputTokens": 4737375,
+      "outputTokens": 2102829,
+      "usd": 1.5251
     },
     "claude-haiku-4-5": {
-      "calls": 2678,
-      "inputTokens": 2990592,
-      "outputTokens": 549690,
-      "usd": 5.739
+      "calls": 2839,
+      "inputTokens": 3030028,
+      "outputTokens": 556874,
+      "usd": 5.8144
     },
     "claude-sonnet-5-5": {
-      "calls": 3205,
-      "inputTokens": 4747324,
-      "outputTokens": 906973,
-      "usd": 18.5644
+      "calls": 3304,
+      "inputTokens": 4778204,
+      "outputTokens": 913147,
+      "usd": 18.688
     },
     "claude-opus-5-5": {
-      "calls": 647,
-      "inputTokens": 1188566,
-      "outputTokens": 305992,
-      "usd": 10.8742
+      "calls": 667,
+      "inputTokens": 1192131,
+      "outputTokens": 307102,
+      "usd": 10.9107
     },
     "claude-fable-5-1": {
-      "calls": 634,
-      "inputTokens": 1165612,
-      "outputTokens": 289294,
-      "usd": 26.1208
+      "calls": 649,
+      "inputTokens": 1167862,
+      "outputTokens": 289719,
+      "usd": 26.1646
     },
     "claude-sonnet-9-9": {
-      "calls": 20,
+      "calls": 28,
       "inputTokens": 0,
       "outputTokens": 0,
       "usd": 0
@@ -328,8 +328,8 @@
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-9-9",
-      "calls": 20,
-      "errors": 20,
+      "calls": 28,
+      "errors": 28,
       "refusals": 0,
       "inputTokens": 0,
       "outputTokens": 0,
@@ -339,89 +339,153 @@
         "p95": 1644
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
     },
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-haiku-5-5",
-      "calls": 127,
+      "calls": 197,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 27469,
-      "outputTokens": 5368,
-      "usd": 0.0054,
+      "inputTokens": 42619,
+      "outputTokens": 8458,
+      "usd": 0.0085,
       "estimatedUsd": 0.0001,
       "latencyMs": {
-        "p50": 1071,
-        "p95": 2188
+        "p50": 1454,
+        "p95": 2767
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
     },
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-haiku-4-5",
-      "calls": 87,
+      "calls": 151,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 22124,
-      "outputTokens": 4197,
-      "usd": 0.0431,
+      "inputTokens": 38695,
+      "outputTokens": 7316,
+      "usd": 0.0753,
       "latencyMs": {
-        "p50": 1170,
-        "p95": 2456
+        "p50": 1297,
+        "p95": 2452
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
     },
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-sonnet-5-5",
-      "calls": 116,
-      "errors": 36,
+      "calls": 187,
+      "errors": 53,
       "refusals": 0,
-      "inputTokens": 35725,
-      "outputTokens": 6228,
-      "usd": 0.1337,
+      "inputTokens": 59556,
+      "outputTokens": 10346,
+      "usd": 0.2226,
       "estimatedUsd": 0.0016,
       "latencyMs": {
-        "p50": 1655,
-        "p95": 2841
+        "p50": 1721,
+        "p95": 3137
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
     },
     {
       "activity": "consumer journeys (developer tests)",
       "model": "claude-opus-5-5",
-      "calls": 7,
+      "calls": 12,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 1841,
-      "outputTokens": 208,
-      "usd": 0.0115,
+      "inputTokens": 3156,
+      "outputTokens": 368,
+      "usd": 0.02,
       "latencyMs": {
-        "p50": 3115,
-        "p95": 3115
+        "p50": 3160,
+        "p95": 3476
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
+    },
+    {
+      "activity": "live test suite",
+      "model": "claude-haiku-5-5",
+      "calls": 15,
+      "errors": 5,
+      "refusals": 0,
+      "inputTokens": 2250,
+      "outputTokens": 1812,
+      "usd": 0.0011,
+      "latencyMs": {
+        "p50": 1185,
+        "p95": 2117
+      },
+      "firstDate": "2026-11-06",
+      "lastDate": "2026-11-06"
     },
     {
       "activity": "live test suite",
       "model": "claude-haiku-4-5",
-      "calls": 10,
+      "calls": 107,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 3260,
-      "outputTokens": 561,
-      "usd": 0.0061,
+      "inputTokens": 26125,
+      "outputTokens": 4626,
+      "usd": 0.0493,
       "latencyMs": {
-        "p50": 1130,
-        "p95": 1447
+        "p50": 1042,
+        "p95": 2056
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-05"
+      "lastDate": "2026-11-06"
+    },
+    {
+      "activity": "live test suite",
+      "model": "claude-sonnet-5-5",
+      "calls": 28,
+      "errors": 5,
+      "refusals": 0,
+      "inputTokens": 7049,
+      "outputTokens": 2056,
+      "usd": 0.0347,
+      "latencyMs": {
+        "p50": 1468,
+        "p95": 3843
+      },
+      "firstDate": "2026-11-06",
+      "lastDate": "2026-11-06"
+    },
+    {
+      "activity": "live test suite",
+      "model": "claude-opus-5-5",
+      "calls": 15,
+      "errors": 5,
+      "refusals": 0,
+      "inputTokens": 2250,
+      "outputTokens": 950,
+      "usd": 0.028,
+      "latencyMs": {
+        "p50": 1304,
+        "p95": 2463
+      },
+      "firstDate": "2026-11-06",
+      "lastDate": "2026-11-06"
+    },
+    {
+      "activity": "live test suite",
+      "model": "claude-fable-5-1",
+      "calls": 15,
+      "errors": 5,
+      "refusals": 0,
+      "inputTokens": 2250,
+      "outputTokens": 425,
+      "usd": 0.0438,
+      "latencyMs": {
+        "p50": 1614,
+        "p95": 3356
+      },
+      "firstDate": "2026-11-06",
+      "lastDate": "2026-11-06"
     }
   ]
 }

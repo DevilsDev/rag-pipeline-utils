@@ -29,8 +29,11 @@ process.env.RAG_JOURNEY = process.env.RAG_JOURNEY || "live";
 process.env.RAG_LEDGER_HARD_CAP_USD =
   process.env.RAG_LEDGER_HARD_CAP_USD || "25";
 if (!String(process.env.NODE_OPTIONS || "").includes("ledger-hook.cjs")) {
+  // Forward slashes: NODE_OPTIONS reads a backslash inside quotes as an
+  // escape, so a Windows path ("C:\Users\...") reached child processes as
+  // "C:Users..." and every spawned live test failed to start
   process.env.NODE_OPTIONS =
-    `${process.env.NODE_OPTIONS || ""} --require "${hook}"`.trim();
+    `${process.env.NODE_OPTIONS || ""} --require "${hook.replace(/\\/g, "/")}"`.trim();
 }
 
 require(hook);
