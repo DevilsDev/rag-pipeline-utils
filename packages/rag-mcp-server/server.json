@@ -9,13 +9,13 @@
     "subfolder": "packages/rag-mcp-server"
   },
   "websiteUrl": "https://devilsdev.github.io/rag-pipeline-utils/",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@devilsdev/rag-mcp-server",
-      "version": "3.7.0",
+      "version": "3.7.1",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
