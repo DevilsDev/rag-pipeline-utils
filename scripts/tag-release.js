@@ -8,7 +8,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execFileSync, spawnSync } = require("child_process");
 const readline = require("readline");
 
 const VERSION = process.argv[2];
@@ -20,10 +20,11 @@ if (!VERSION) {
   process.exit(1);
 }
 
-const tag = `v${VERSION.replace(/^v/, "")}`;
+const { generate, parseVersion } = require("./generate-release-note.js");
+// Throws on anything but x.y.z / vx.y.z, so the tag is always plain.
+const tag = `v${parseVersion(VERSION).version}`;
 
 // Step 1: Draft the blog post from the CHANGELOG (skipped if one exists)
-const { generate } = require("./generate-release-note.js");
 const result = generate({ version: VERSION });
 const file = result.skipped ? null : path.relative(process.cwd(), result.path);
 
@@ -36,10 +37,13 @@ if (!file || !fs.existsSync(file)) {
 
 // Step 3: Preview if enabled
 if (PREVIEW) {
-  const editor = process.env.EDITOR || "code"; // fallback to VS Code
-  try {
-    execSync(`${editor} ${file}`, { stdio: "inherit" });
-  } catch (err) {
+  // EDITOR may carry flags ("code --wait"); run it without a shell, with the
+  // file as its own argument.
+  const [editor, ...editorArgs] = (process.env.EDITOR || "code")
+    .trim()
+    .split(/\s+/); // fallback to VS Code
+  const opened = spawnSync(editor, [...editorArgs, file], { stdio: "inherit" });
+  if (opened.error || opened.status !== 0) {
     console.warn("⚠️ Failed to open in editor. Please review manually:", file);
     // eslint-disable-line no-console
   }
@@ -63,10 +67,13 @@ if (PREVIEW) {
 
 // Final tagging + push
 function finalizeRelease() {
-  execSync(`git add CHANGELOG.md ${file}`);
-  execSync(`git commit -m "release: ${tag}"`);
-  execSync(`git tag ${tag}`);
-  execSync("git push && git push --tags");
+  // Argument arrays, no shell: the file name and tag are never parsed by one.
+  const git = (...args) => execFileSync("git", args, { stdio: "inherit" });
+  git("add", "--", "CHANGELOG.md", file);
+  git("commit", "-m", `release: ${tag}`);
+  git("tag", tag);
+  git("push");
+  git("push", "--tags");
   console.log(`🎉 Release ${tag} published and blog post staged!`);
   // eslint-disable-line no-console
 }
