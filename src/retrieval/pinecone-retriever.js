@@ -196,6 +196,19 @@ class PineconeRetriever {
   }
 
   /**
+   * Whether the index embeds text itself (integrated embedding): then
+   * store() needs no vectors and retrieve() takes the query text, so no
+   * embedder is needed. The CLI checks this before requiring an embedder.
+   * Reads the index description on first use.
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<boolean>}
+   */
+  async embedsText({ signal } = {}) {
+    await this._resolve(signal);
+    return this._integrated;
+  }
+
+  /**
    * One REST call; resolves the parsed body and the response headers.
    * @private
    */
@@ -636,6 +649,11 @@ class PineconeRetriever {
     // Which input it searches with depends on the index kind
     await this._resolve(signal);
     if (!this._integrated) {
+      if (queryVector === undefined || queryVector === null) {
+        throw new Error(
+          'PineconeRetriever.retrieve(): needs a queryVector; this index does not embed text itself, so use an embedder',
+        );
+      }
       checkVector(queryVector, 'query');
     } else if (typeof query !== 'string' || query.trim() === '') {
       throw new Error(

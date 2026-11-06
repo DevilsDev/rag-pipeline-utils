@@ -84,6 +84,30 @@ Deletes documents by id.
 
 ---
 
+### embedsText()
+
+```ts
+embedsText(options?): Promise<boolean>;
+```
+
+Whether the index embeds text itself (integrated embedding): then
+store() needs no vectors and retrieve() takes the query text, so no
+embedder is needed. The CLI checks this before requiring an embedder.
+Reads the index description on first use.
+
+#### Parameters
+
+| Parameter         | Type                            | Description |
+| ----------------- | ------------------------------- | ----------- |
+| `options?`        | \{ `signal?`: `AbortSignal`; \} | -           |
+| `options.signal?` | `AbortSignal`                   | -           |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+---
+
 ### getCacheKey()
 
 ```ts

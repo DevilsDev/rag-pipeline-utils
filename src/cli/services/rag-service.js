@@ -23,6 +23,29 @@ function requireStage(components, stage) {
   return components[stage];
 }
 
+/**
+ * A retriever that embeds text itself (PineconeRetriever on an
+ * integrated-embedding index) says so with `embedsText()`, resolving true:
+ * it takes document text and query text, so no embedder is needed.
+ */
+async function retrieverEmbedsText(retriever) {
+  return Boolean(
+    retriever &&
+      typeof retriever.embedsText === "function" &&
+      (await retriever.embedsText()),
+  );
+}
+
+/**
+ * The configured embedder; null when there is none and the retriever embeds
+ * text itself. Otherwise no embedder is the usual "No embedder configured".
+ */
+async function embedderOrNone(components) {
+  if (components.embedder) return components.embedder;
+  if (await retrieverEmbedsText(components.retriever)) return null;
+  return requireStage(components, "embedder");
+}
+
 /** Embed document text with embed() (not embedQuery), normalizing the shape. */
 function embedDocument(embedder, text) {
   return embedQuery({ embed: (t) => embedder.embed(t) }, text);
@@ -113,13 +136,14 @@ async function embedAndStore({
  */
 async function ingest({ config, configDir, inputPath, rebuild = false }) {
   const components = buildComponents(config, { configDir });
-  const embedder = requireStage(components, "embedder");
+  const embedder = await embedderOrNone(components);
   const store = requireStage(components, "retriever");
   if (typeof store.store !== "function") {
     throw new Error(
       `Retriever "${components.names.retriever}" cannot store documents. Use "file-store".`,
     );
   }
+  if (!embedder) return ingestText({ store, configDir, inputPath, rebuild });
 
   assertEmbedderFits(components);
   const embedderName = components.names.embedder;
@@ -165,6 +189,30 @@ async function ingest({ config, configDir, inputPath, rebuild = false }) {
     files: documents.length,
     chunks: documents.reduce((n, d) => n + d.chunks.length, 0),
     totalChunks: (await store.size?.()) ?? vectors.length,
+    sources: documents.map((d) => d.source),
+  };
+}
+
+/**
+ * ingest() into a retriever that embeds text itself, with no embedder: the
+ * chunks are stored as text, without vectors.
+ */
+async function ingestText({ store, configDir, inputPath, rebuild }) {
+  if (rebuild) await store.clear?.();
+  const documents = await readDocuments(inputPath, { baseDir: configDir });
+  for (const { source } of documents) await store.removeBySource?.(source);
+  const entries = documents.flatMap(({ source, chunks }) =>
+    chunks.map((content, i) => ({
+      id: `${source}#${i}`,
+      content,
+      metadata: { source, chunk: i },
+    })),
+  );
+  if (entries.length > 0) await store.store(entries);
+  return {
+    files: documents.length,
+    chunks: entries.length,
+    totalChunks: (await store.size?.()) ?? entries.length,
     sources: documents.map((d) => d.source),
   };
 }
@@ -265,16 +313,21 @@ async function retrain({ config, configDir, inputPath }) {
  */
 function loadComponents({ config, configDir }) {
   const components = buildComponents(config, { configDir });
-  const embedder = requireStage(components, "embedder");
   const retriever = requireStage(components, "retriever");
-  assertEmbedderFits(components);
+  // A retriever that may embed text itself is checked when it is used
+  // (embedderOrNone): whether it does is only known asynchronously
+  const embedder =
+    components.embedder || typeof retriever.embedsText === "function"
+      ? components.embedder
+      : requireStage(components, "embedder");
+  if (embedder) assertEmbedderFits(components);
   // A remote store's size() is a Promise; its callers check emptiness.
   if (retriever.size && retriever.size() === 0) {
     throw new Error(
       "The index is empty. Run `rag-pipeline ingest <path>` first.",
     );
   }
-  restoreEmbedder(embedder, retriever);
+  if (embedder) restoreEmbedder(embedder, retriever);
   return components;
 }
 
@@ -292,7 +345,11 @@ function loadComponents({ config, configDir }) {
  */
 async function retrieve({ components, config, configDir, question, topK = 3 }) {
   const c = components || loadComponents({ config, configDir });
-  const queryVector = await embedQuery(c.embedder, question);
+  const embedder = await embedderOrNone(c);
+  // A retriever that embeds text itself searches by `query`
+  const queryVector = embedder
+    ? await embedQuery(embedder, question)
+    : undefined;
   let results = await c.retriever.retrieve({
     query: question,
     queryVector,
@@ -333,6 +390,8 @@ async function query({
   onToken,
 }) {
   const loaded = components || loadComponents({ config, configDir });
+  // No embedder only for a retriever that embeds text itself
+  await embedderOrNone(loaded);
   const { components: c, timings, captured } = instrumentComponents(loaded);
   const started = performance.now();
 

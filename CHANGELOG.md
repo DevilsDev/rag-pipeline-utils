@@ -31,6 +31,13 @@ page.
   Pinecone (with a bag-of-words "model") and against a real
   integrated-embedding index (`npm run test:live`), and `.ragrc.json`
   takes `textField`.
+- **The CLI with no embedder, on a retriever that embeds text itself.**
+  When the retriever's `embedsText()` resolves `true` (`PineconeRetriever`
+  on an integrated-embedding index), `.ragrc.json` needs no embedder
+  stage: `rag-pipeline ingest` stores the chunks' text without computing
+  vectors, `query`, `run`, `eval`, `ai search` and `ai benchmark` send the
+  question's text, and `doctor` doesn't report a missing embedder. Other
+  retrievers still need an embedder, with the same error as before.
 
 ## [3.6.0] - 2026-11-05
 

@@ -52,18 +52,18 @@ async function checkConfiguration(options) {
 
   const issues = [];
   const stages = new Set(config.pipeline.map((entry) => entry.stage));
-  for (const stage of ["embedder", "retriever"]) {
-    if (!stages.has(stage)) {
-      issues.push(
-        issue(
-          "error",
-          "CONFIG_STAGE_MISSING",
-          `Pipeline has no ${stage} stage`,
-          `Add { "stage": "${stage}", "name": ... } to the pipeline (see rag-pipeline init)`,
-        ),
-      );
-    }
-  }
+  const missing = (stage) =>
+    issue(
+      "error",
+      "CONFIG_STAGE_MISSING",
+      `Pipeline has no ${stage} stage`,
+      `Add { "stage": "${stage}", "name": ... } to the pipeline (see rag-pipeline init)`,
+    );
+  if (!stages.has("retriever")) issues.push(missing("retriever"));
+  // Without an embedder, checked below: fine for a retriever that embeds
+  // text itself
+  const noEmbedder = !stages.has("embedder");
+  if (noEmbedder && !stages.has("retriever")) issues.push(missing("embedder"));
   if (!stages.has("llm")) {
     issues.push(
       issue(
@@ -76,8 +76,25 @@ async function checkConfiguration(options) {
   }
 
   try {
-    buildComponents(config, { configDir: path.dirname(configPath) });
+    const components = buildComponents(config, {
+      configDir: path.dirname(configPath),
+    });
+    if (noEmbedder && stages.has("retriever")) {
+      const { retriever } = components;
+      let embedsText = false;
+      if (retriever && typeof retriever.embedsText === "function") {
+        try {
+          embedsText = await retriever.embedsText();
+        } catch {
+          // Unreachable index: reported as a missing embedder below
+        }
+      }
+      if (!embedsText) issues.push(missing("embedder"));
+    }
   } catch (error) {
+    if (noEmbedder && stages.has("retriever")) {
+      issues.push(missing("embedder"));
+    }
     issues.push(
       issue(
         "error",
