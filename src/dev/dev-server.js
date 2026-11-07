@@ -24,7 +24,25 @@ const { EventEmitter } = require('events');
 const { createHotReloadManager } = require('./hot-reload');
 const { logger } = require('../utils/logger');
 
-const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
+const net = require('net');
+
+/**
+ * Whether a host name or address is loopback: `localhost`, 127.0.0.0/8,
+ * `::1` or an IPv4-mapped 127.x address, in any case, with or without
+ * brackets.
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isLoopbackName(name) {
+  let host = String(name || '').toLowerCase();
+  if (host.startsWith('[') && host.endsWith(']')) host = host.slice(1, -1);
+  if (host === 'localhost') return true;
+  if (net.isIPv4(host)) return host.startsWith('127.');
+  if (!net.isIPv6(host)) return false;
+  // Normalized form: '::1', or '::ffff:a.b.c.d' for an IPv4-mapped address
+  const { address } = new net.SocketAddress({ address: host, family: 'ipv6' });
+  return address === '::1' || address.startsWith('::ffff:127.');
+}
 
 /**
  * Development Server
@@ -35,7 +53,10 @@ class DevServer extends EventEmitter {
   constructor(options = {}) {
     super();
 
+    // Defaults after the spread, so an option passed as undefined still
+    // gets its default.
     this.options = {
+      ...options,
       port: options.port ?? 3000, // 0 picks a free port
       host: options.host || '127.0.0.1',
       watchPaths: options.watchPaths || [],
@@ -48,7 +69,6 @@ class DevServer extends EventEmitter {
       notifyOnReload: options.notifyOnReload !== false,
       pluginRegistry: options.pluginRegistry || null,
       pipeline: options.pipeline || null,
-      ...options,
     };
 
     // Create hot reload manager
@@ -287,10 +307,7 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
     // DNS rebinding: a web page can point its own domain at 127.0.0.1 and
     // then call this server same-origin. When bound to loopback, only accept
     // requests addressed to a loopback name.
-    if (
-      LOOPBACK_HOSTS.has(this.options.host) &&
-      !this._isLoopbackHostHeader(req)
-    ) {
+    if (isLoopbackName(this.options.host) && !this._isLoopbackHostHeader(req)) {
       return this._send(res, 403, { error: 'Forbidden host' });
     }
 
@@ -341,7 +358,7 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
     const hostname = header.startsWith('[')
       ? header.slice(0, header.indexOf(']') + 1)
       : header.split(':')[0];
-    return LOOPBACK_HOSTS.has(hostname.toLowerCase());
+    return isLoopbackName(hostname);
   }
 
   /**
@@ -369,8 +386,12 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
   /** @private */
   _readJson(req) {
     return new Promise((resolve, reject) => {
-      const type = req.headers['content-type'] || '';
-      if (!type.includes('application/json')) {
+      // Compare the media type itself, without its parameters.
+      const type = (req.headers['content-type'] || '')
+        .split(';')[0]
+        .trim()
+        .toLowerCase();
+      if (type !== 'application/json') {
         const error = new Error('Content-Type must be application/json');
         error.statusCode = 415;
         return reject(error);

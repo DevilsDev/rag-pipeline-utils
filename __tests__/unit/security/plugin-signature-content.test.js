@@ -485,3 +485,54 @@ describe("load-plugin-config verifies before import", () => {
     await expect(verifyPluginBeforeImport("p", entry)).resolves.toBeUndefined();
   });
 });
+
+describe("PluginSignatureVerifier reserved manifest keys", () => {
+  test.each(["__proto__"])(
+    "rejects a manifest with a %s key, at the top or nested",
+    async (key) => {
+      const keys = makeKeys();
+      const verifier = new PluginSignatureVerifier({
+        auditLogger: noopAudit,
+        requireContentDigest: true,
+      });
+      verifier.addTrustedSigner("me", keys.rawHex, "Me");
+      const signed = { name: "p", version: "1.0.0", main: "index.js" };
+      const signature = sign(verifier, signed, keys.privateKey);
+      const contents = { "index.js": "module.exports = 2;" };
+      const digest = JSON.stringify(computeContentDigest({ contents }));
+      const base = JSON.stringify(signed).slice(0, -1);
+      for (const json of [
+        `${base},"${key}":{"contentDigest":${digest}}}`,
+        `${base},"extra":{"${key}":{"contentDigest":${digest}}}}`,
+      ]) {
+        await expect(
+          verifier.verifyPluginSignature(JSON.parse(json), signature, "me", {
+            contents,
+          }),
+        ).rejects.toThrow(/reserved key/);
+      }
+    },
+  );
+
+  test("constructor and prototype are ordinary manifest keys", async () => {
+    const keys = makeKeys();
+    const verifier = new PluginSignatureVerifier({ auditLogger: noopAudit });
+    verifier.addTrustedSigner("me", keys.rawHex, "Me");
+    const signed = JSON.parse(
+      '{"name":"p","version":"1.0.0","config":{"constructor":"MyClass","prototype":false}}',
+    );
+    const result = await verifier.verifyPluginSignature(
+      signed,
+      sign(verifier, signed, keys.privateKey),
+      "me",
+    );
+    expect(result.verified).toBe(true);
+  });
+
+  test("getSigningPayload refuses a manifest with a reserved key", () => {
+    const verifier = new PluginSignatureVerifier({ auditLogger: noopAudit });
+    expect(() =>
+      verifier.getSigningPayload(JSON.parse('{"name":"p","__proto__":{}}')),
+    ).toThrow(/reserved key/);
+  });
+});

@@ -164,21 +164,15 @@ class RetrievalGuard extends EventEmitter {
       // 3. ACL filter. Missing userPermissions fails closed: the user is
       // treated as having no roles, so restricted documents are removed.
       if (!dominated && this.config.enforceACL) {
-        const userPermissions = context.userPermissions || [];
-        // Read the restriction from the result itself or its metadata, so a
-        // top-level `acl` is not ignored when the result also has metadata.
-        const restriction =
-          result.requiredRole ?? result.acl ?? doc.requiredRole ?? doc.acl;
-        const requiredRoles = restriction ? [].concat(restriction) : null;
-
-        if (requiredRoles && requiredRoles.length > 0) {
-          const hasAccess = requiredRoles.some((role) =>
-            userPermissions.includes(role),
-          );
-          if (!hasAccess) {
-            dominated = true;
-            reasons.acl = (reasons.acl || 0) + 1;
-          }
+        const userPermissions = permissionsOf(context.userPermissions);
+        // Every restriction set on the result, its metadata or its doc must
+        // be met; within one, any of its roles is enough.
+        const hasAccess = restrictionsOf(result).every((roles) =>
+          roles.some((role) => userPermissions.includes(role)),
+        );
+        if (!hasAccess) {
+          dominated = true;
+          reasons.acl = (reasons.acl || 0) + 1;
         }
       }
 
@@ -261,6 +255,44 @@ function documentText(result) {
       doc.text ||
       '',
   );
+}
+
+/**
+ * The access restrictions of a retrieval result: each `requiredRole` or
+ * `acl` set on the result, its metadata or its doc, as a list of roles.
+ * null, undefined, '' and [] are no restriction and don't hide one set
+ * elsewhere; any other value, such as 0, restricts.
+ * @param {object} result
+ * @returns {Array<Array<any>>}
+ */
+function restrictionsOf(result) {
+  if (!result || typeof result !== 'object') return [];
+  const lists = [];
+  for (const source of [result, result.metadata, result.doc]) {
+    if (!source || typeof source !== 'object') continue;
+    for (const key of ['requiredRole', 'acl']) {
+      const value = source[key];
+      if (value === undefined || value === null || value === '') continue;
+      const roles = [].concat(value);
+      if (roles.length > 0) lists.push(roles);
+    }
+  }
+  return lists;
+}
+
+/**
+ * The user's roles as an array of whole roles: a single role given as a
+ * string is one role; anything that isn't a string or iterable is none.
+ * @param {any} value
+ * @returns {Array<any>}
+ */
+function permissionsOf(value) {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value;
+  if (value && typeof value[Symbol.iterator] === 'function') {
+    return Array.from(value);
+  }
+  return [];
 }
 
 module.exports = { RetrievalGuard, DEFAULT_CONFIG };

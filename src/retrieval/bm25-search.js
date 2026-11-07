@@ -1,6 +1,7 @@
 'use strict';
 
 const { EventEmitter } = require('events');
+const { accessFields } = require('./access-fields');
 // Called through the module object so tests can observe tokenization.
 const scoring = require('../evaluate/scoring');
 
@@ -125,6 +126,7 @@ class BM25Search extends EventEmitter {
         score,
         content: doc.content || doc.text || '',
         metadata: doc.metadata || {},
+        ...accessFields(doc),
       });
     }
 
