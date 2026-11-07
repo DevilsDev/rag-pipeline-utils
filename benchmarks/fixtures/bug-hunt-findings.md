@@ -29,6 +29,7 @@ listed or described here.
 | BH-12 | wrong result | 4             | `FileVectorStore` accepts a wrong-length query vector and scores every document 0         | `__tests__/bug-hunt/docs-claims.test.js`                                |
 | BH-13 | side effect  | 3.9 follow-up | Creating an `AuditLogger` writes `.rag-enterprise/audit-logs/` into the working directory | `__tests__/bug-hunt/audit-logger.test.js`                               |
 | BH-14 | crash        | 3.9 follow-up | An `AuditLogger` whose log folder can't be created ends the process (unhandled rejection) | `__tests__/bug-hunt/audit-logger.test.js`                               |
+| BH-16 | lost events  | 3.9 follow-up | `AuditLogger` has no `close()`, so buffered and pending events are lost at process exit   | `__tests__/bug-hunt/audit-logger-close.test.js`                         |
 
 ## Wrong results
 
@@ -200,6 +201,20 @@ a hunt 6 probe came from the library itself.
 - **Suggested fix:** keep the promise (`this.ready`), catch it, and surface
   the error on the first log call or through an `error` event.
 
+### BH-16. `AuditLogger` loses buffered events at process exit
+
+- **What happens:** an event that isn't CRITICAL waits in the buffer for
+  the next timer flush (every 5 s by default; the timer doesn't keep the
+  process alive) or a full batch, and events already written wait in the
+  chain and webhook queues while those stages fail. When the process exits,
+  all of them are lost: there is no `close()` or shutdown method to flush
+  the buffer and drain the queues, and nothing flushes on exit.
+- **Root cause:** no shutdown path in `src/enterprise/audit-logging.js`.
+- **Suggested fix:** an async `close()` that stops the timer, flushes the
+  buffer and retries the pending stages once, and reports what is still
+  pending (and documents calling it on `SIGTERM` / before exit).
+- **Not fixed** (recorded only).
+
 ## Docs drift
 
 ### BH-9. `checkNumericConsistency` examples
@@ -234,7 +249,16 @@ BH-1, BH-2 and BH-6 (one normalisation, `src/evaluate/normalize-text.js`,
 used by tokenizing, splitting and the checks), BH-3, BH-4 and BH-5 (the
 sentence splitter), BH-8, BH-12, and the docs for BH-9, BH-10 and BH-11 (the
 BH-9 to BH-11 tests now check the corrected docs). Not fixed: BH-7 (options
-above), BH-13 and BH-14 (recorded only).
+above).
+
+BH-13 and BH-14 were fixed afterwards on the same branch: `AuditLogger`
+creates its folders on the first write, not in the constructor, and a
+failed write logs a warning and emits `flush_failed` instead of ending the
+process. The default `logDir` (`.rag-enterprise/audit-logs`) stays for
+3.9, deprecated with a warning, and is removed in 4.0. Both bug-hunt
+tests pass, with unit tests in
+`__tests__/unit/enterprise/audit-logger-storage.test.js` that also cover
+the flush timer and a CRITICAL event on a folder that can't be created.
 
 ## Per hunt
 

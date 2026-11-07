@@ -554,6 +554,7 @@ if (!result.verified) throw new Error(result.error);
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
+  logDir: "./audit-logs", // without it: .rag-enterprise/audit-logs, deprecated
   encryptionKey: process.env.RAG_AUDIT_ENCRYPTION_KEY, // or set the env var
   requireEncryption: true, // a missing key is an error instead of a warning
   signingKey: process.env.RAG_AUDIT_SIGNING_KEY, // stable HMAC key across restarts

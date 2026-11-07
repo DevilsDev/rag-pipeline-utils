@@ -770,13 +770,18 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 
 **Options (selection):**
 
-| Option              | Description                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `logDir`            | Directory for log files (default: `.rag-enterprise/audit-logs`)                                   |
-| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                 |
-| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning              |
-| `signingKey`        | HMAC key; random per process if omitted, so `verifyIntegrity` flags records from before a restart |
-| `retentionDays`     | Retention period (default: 2555)                                                                  |
+| Option              | Description                                                                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logDir`            | Directory for log files, created on the first write (default: `.rag-enterprise/audit-logs` in the working directory, deprecated: it warns once and is removed in 4.0)     |
+| `memoryLimit`       | Events kept per stage (file, chain, webhook) while it fails, for the next flush (default: 10000); older ones are dropped and reported (`events_dropped`, `droppedEvents`) |
+| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                                                                                         |
+| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning                                                                                      |
+| `signingKey`        | HMAC key; random per process if omitted, so `verifyIntegrity` flags records from before a restart                                                                         |
+| `retentionDays`     | Retention period (default: 2555)                                                                                                                                          |
+
+:::info[Coming in 3.9.0]
+On 3.8.0 and earlier, the constructor creates the log folders at once, a directory that can't be created ends the process, a failed integrity-chain update writes the batch to the file again, webhook failures aren't retried, and the default `logDir` doesn't warn.
+:::
 
 **Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity` (all async).
 
@@ -786,6 +791,7 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
+  logDir: "./audit-logs", // without it: .rag-enterprise/audit-logs, deprecated
   encryptionKey: process.env.RAG_AUDIT_ENCRYPTION_KEY,
   signingKey: process.env.RAG_AUDIT_SIGNING_KEY,
   requireEncryption: true,

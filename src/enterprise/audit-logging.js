@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 const { logger } = require('../utils/logger');
+const { warnOnce } = require('../utils/deprecate');
 
 const INTEGRITY_VERSION = 2;
 const ENCRYPTION_VERSION = 2;
@@ -59,9 +60,8 @@ class AuditLogger extends EventEmitter {
     super();
 
     this._config = {
-      logDir:
-        _options.logDir ||
-        path.join(process.cwd(), '.rag-enterprise', 'audit-logs'),
+      logDir: _options.logDir,
+      memoryLimit: _options.memoryLimit,
       retention: {
         days: _options.retentionDays || 2555, // 7 years default for compliance
         maxSizeMB: _options.maxLogSizeMB || 1000,
@@ -93,31 +93,59 @@ class AuditLogger extends EventEmitter {
       ..._options,
     };
 
+    // Defaults after the spread, so an explicit undefined still gets them
+    if (!this._config.logDir) {
+      // Deprecated in 3.9, removed in 4.0: the folder is created on the
+      // first write, not here (BH-13)
+      this._config.logDir = path.join(
+        process.cwd(),
+        '.rag-enterprise',
+        'audit-logs',
+      );
+      warnOnce(
+        'RAG_DEP_AUDIT_LOG_DIR',
+        'AuditLogger: no logDir option, so logs go to .rag-enterprise/audit-logs ' +
+          'in the working directory. This default folder is deprecated and will ' +
+          'be removed in 4.0; set the logDir option.',
+      );
+    }
+    if (
+      !(
+        Number.isFinite(this._config.memoryLimit) &&
+        this._config.memoryLimit > 0
+      )
+    ) {
+      this._config.memoryLimit = 10000;
+    }
+
     this.logBuffer = [];
     this.encryptionKey = this._resolveEncryptionKey(_options);
     this.signingKey = _options.signingKey || this._generateSigningKey();
     this.sequenceNumber = 0;
+    this._storageReady = null;
+    // Events written to the daily file but not yet added to the integrity
+    // chain, or not yet sent to the webhook: each stage retries on its own,
+    // so a failure after the write never writes the events again
+    this._chainPending = [];
+    this._webhookPending = [];
+    /** Events discarded by memoryLimit so far (see 'events_dropped'). */
+    this.droppedEvents = 0;
+    this._failing = {};
+    this._flushQueue = Promise.resolve();
+    this._drops = [];
+    this._listenerWarned = new Set();
+    this._flushErrorWarned = false;
 
     this._initializeAuditSystem();
   }
 
   /**
-   * Initialize audit logging system
+   * Start the periodic flush. Nothing touches the file system here: the log
+   * folders and integrity chain are created on the first flush, so creating
+   * a logger never writes to disk and a folder that can't be created is a
+   * flush failure, not an error the caller can't catch (BH-13, BH-14).
    */
-  async _initializeAuditSystem() {
-    // Create audit log directories
-    await fs.mkdir(this._config.logDir, { recursive: true });
-    await fs.mkdir(path.join(this._config.logDir, 'daily'), {
-      recursive: true,
-    });
-    await fs.mkdir(path.join(this._config.logDir, 'archived'), {
-      recursive: true,
-    });
-    await fs.mkdir(path.join(this._config.logDir, 'integrity'), {
-      recursive: true,
-    });
-
-    // Start periodic flush
+  _initializeAuditSystem() {
     if (this._config.realtime.enabled) {
       this.flushTimer = setInterval(() => {
         this._flushLogs();
@@ -125,10 +153,30 @@ class AuditLogger extends EventEmitter {
       if (typeof this.flushTimer.unref === 'function') this.flushTimer.unref();
     }
 
-    // Initialize integrity chain
-    await this._initializeIntegrityChain();
+    // Emitted asynchronously so a listener added after the constructor sees it
+    process.nextTick(() => this.emit('audit_system_initialized'));
+  }
 
-    this.emit('audit_system_initialized');
+  /**
+   * Create the log folders and integrity chain once; a failure is retried
+   * on the next flush.
+   * @private
+   */
+  _ensureStorage() {
+    if (!this._storageReady) {
+      this._storageReady = (async () => {
+        for (const dir of ['daily', 'archived', 'integrity']) {
+          await fs.mkdir(path.join(this._config.logDir, dir), {
+            recursive: true,
+          });
+        }
+        await this._initializeIntegrityChain();
+      })().catch((error) => {
+        this._storageReady = null;
+        throw error;
+      });
+    }
+    return this._storageReady;
   }
 
   /**
@@ -434,45 +482,178 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Flush logs to persistent storage
+   * Flush buffered events: append them to the daily file, then add them to
+   * the integrity chain, then send them to the webhook. Each stage keeps
+   * its own queue and retries on the next flush, so events are appended to
+   * the file exactly once, and a chain or webhook failure neither repeats
+   * nor blocks file writes. Never rejects: a failed stage emits its event
+   * (`flush_failed`, `chain_failed`, `webhook_failed`) and logs one warning
+   * until it succeeds again (BH-14). Each queue keeps at most memoryLimit
+   * events; older ones are dropped and reported (`events_dropped`).
+   * Flushes run one at a time, and the queue always settles: an error in
+   * one flush is logged once and the next flush still runs.
    */
-  async _flushLogs() {
-    if (this.logBuffer.length === 0) return;
-
-    const logsToFlush = [...this.logBuffer];
-    this.logBuffer = [];
-
-    const today = new Date().toISOString().split('T')[0];
-    const logFile = path.join(
-      this._config.logDir,
-      'daily',
-      `audit-${today}.jsonl`,
-    );
-
-    try {
-      // Write logs in JSONL format
-      const logLines =
-        logsToFlush.map((log) => JSON.stringify(log)).join('\n') + '\n';
-      await fs.appendFile(logFile, logLines);
-
-      // Update integrity chain
-      await this._updateIntegrityChain(logsToFlush);
-
-      // Send to webhook if configured
-      if (this._config.realtime.webhookUrl) {
-        await this._sendToWebhook(logsToFlush);
-      }
-
-      this.emit('logs_flushed', { count: logsToFlush.length, file: logFile });
-    } catch (error) {
-      // Re-add logs to buffer on failure
-      this.logBuffer.unshift(...logsToFlush);
-      this.emit('flush_failed', {
-        error: error.message,
-        count: logsToFlush.length,
+  _flushLogs() {
+    this._flushQueue = this._flushQueue
+      .then(() => this._flushOnce())
+      .catch((error) => {
+        if (!this._flushErrorWarned) {
+          this._flushErrorWarned = true;
+          logger.warn(`AuditLogger: a flush failed: ${error.message}`);
+        }
       });
-      throw error;
+    return this._flushQueue;
+  }
+
+  /** @private */
+  async _flushOnce() {
+    if (this.logBuffer.length > 0) {
+      const batch = this.logBuffer;
+      this.logBuffer = [];
+      const today = new Date().toISOString().split('T')[0];
+      const logFile = path.join(
+        this._config.logDir,
+        'daily',
+        `audit-${today}.jsonl`,
+      );
+      try {
+        await this._ensureStorage();
+        await fs.appendFile(
+          logFile,
+          batch.map((log) => JSON.stringify(log)).join('\n') + '\n',
+        );
+      } catch (error) {
+        this.logBuffer = this._bounded([...batch, ...this.logBuffer], 'file');
+        this._emitDrops();
+        this._stageFailed('file', 'flush_failed', error, batch.length);
+        return;
+      }
+      this._stageSucceeded('file');
+      this._chainPending = this._queued(this._chainPending, batch, 'chain');
+      if (this._config.realtime.webhookUrl) {
+        this._webhookPending = this._queued(
+          this._webhookPending,
+          batch,
+          'webhook',
+        );
+      }
+      this._emitDrops();
+      this._emitSafely('logs_flushed', { count: batch.length, file: logFile });
     }
+
+    if (this._chainPending.length > 0) {
+      const batch = this._chainPending;
+      this._chainPending = [];
+      try {
+        await this._updateIntegrityChain(batch);
+        this._stageSucceeded('chain');
+      } catch (error) {
+        this._chainPending = this._bounded(
+          [...batch, ...this._chainPending],
+          'chain',
+        );
+        this._emitDrops();
+        this._stageFailed('chain', 'chain_failed', error, batch.length);
+      }
+    }
+
+    if (this._webhookPending.length > 0) {
+      const batch = this._webhookPending;
+      this._webhookPending = [];
+      try {
+        await this._sendToWebhook(batch);
+        this._stageSucceeded('webhook');
+      } catch (error) {
+        this._webhookPending = this._bounded(
+          [...batch, ...this._webhookPending],
+          'webhook',
+        );
+        this._emitDrops();
+        this._stageFailed('webhook', 'webhook_failed', error, batch.length);
+      }
+    }
+  }
+
+  /**
+   * A stage's queue with a new batch added. Bounded only while that stage
+   * is failing: a healthy stage takes the whole batch, however large.
+   * @private
+   */
+  _queued(queue, batch, stage) {
+    const events = [...queue, ...batch];
+    return this._failing[stage] ? this._bounded(events, stage) : events;
+  }
+
+  /**
+   * The latest memoryLimit events of a queue; the rest are dropped and
+   * counted in droppedEvents. The 'events_dropped' event is emitted by
+   * _emitDrops, once the caller has updated the queue.
+   * @private
+   */
+  _bounded(events, stage) {
+    const excess = events.length - this._config.memoryLimit;
+    if (excess <= 0) return events;
+    this.droppedEvents += excess;
+    const failing = this._failing[stage];
+    if (failing && !failing.droppedWarned) {
+      failing.droppedWarned = true;
+      logger.warn(
+        `AuditLogger: ${excess} event${excess === 1 ? '' : 's'} dropped (${this.droppedEvents} in all): ` +
+          `the ${stage} stage is still failing and keeps only the latest ${this._config.memoryLimit}.`,
+      );
+    }
+    this._drops.push({
+      count: excess,
+      totalDropped: this.droppedEvents,
+      stage,
+    });
+    return events.slice(excess);
+  }
+
+  /** @private */
+  _stageFailed(stage, eventName, error, count) {
+    if (!this._failing[stage]) {
+      this._failing[stage] = { droppedWarned: false };
+      const what = {
+        file: `write to ${this._config.logDir}`,
+        chain: 'update the integrity chain',
+        webhook: 'send events to the webhook',
+      }[stage];
+      logger.warn(
+        `AuditLogger could not ${what}: ${error.message}. Events are kept in memory ` +
+          `(up to ${this._config.memoryLimit}) and retried on the next flush; ` +
+          `${this.droppedEvents} events dropped so far.`,
+      );
+    }
+    this._emitSafely(eventName, { error: error.message, count });
+  }
+
+  /** @private */
+  _emitDrops() {
+    const drops = this._drops;
+    this._drops = [];
+    for (const drop of drops) this._emitSafely('events_dropped', drop);
+  }
+
+  /**
+   * Emit a flush event; a listener that throws is logged once per event
+   * name, so it can't stop the remaining stages or later flushes.
+   * @private
+   */
+  _emitSafely(name, payload) {
+    try {
+      this.emit(name, payload);
+    } catch (error) {
+      if (!this._listenerWarned.has(name)) {
+        this._listenerWarned.add(name);
+        logger.warn(`AuditLogger: a '${name}' listener threw: ${error.message}`);
+      }
+    }
+  }
+
+  /** @private */
+  _stageSucceeded(stage) {
+    delete this._failing[stage];
   }
 
   /**
@@ -609,15 +790,6 @@ class AuditLogger extends EventEmitter {
   async verifyIntegrity(_options = {}) {
     const { startDate, endDate } = _options;
     const _tenantId = _options.tenantId ?? _options._tenantId;
-
-    const integrityFile = path.join(
-      this._config.logDir,
-      'integrity',
-      'chain.json',
-    );
-    const _integrityChain = JSON.parse(
-      await fs.readFile(integrityFile, 'utf8'),
-    );
 
     const verification = {
       verified: true,
@@ -1050,15 +1222,14 @@ class AuditLogger extends EventEmitter {
     };
   }
 
+  /**
+   * Send events to the webhook; rejects on failure, and _flushLogs keeps
+   * them for the next flush.
+   * @private
+   */
   async _sendToWebhook(logs) {
-    if (!this._config.realtime.webhookUrl) return;
-
-    try {
-      // Mock webhook sending - would use actual HTTP client
-      logger.info(`Sending ${logs.length} audit logs to webhook`);
-    } catch (error) {
-      this.emit('webhook_failed', { error: error.message, count: logs.length });
-    }
+    // Mock webhook sending - would use actual HTTP client
+    logger.info(`Sending ${logs.length} audit logs to webhook`);
   }
 
   /**

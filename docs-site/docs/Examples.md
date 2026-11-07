@@ -168,7 +168,10 @@ class SecureKnowledgeBase {
     });
 
     // Reads the key from RAG_AUDIT_ENCRYPTION_KEY; fail if it is missing
-    this.auditLogger = new AuditLogger({ requireEncryption: true });
+    this.auditLogger = new AuditLogger({
+      logDir: "./audit-logs",
+      requireEncryption: true,
+    });
 
     const openai = new OpenAIConnector();
     const pipeline = createRagPipeline({

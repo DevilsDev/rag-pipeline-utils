@@ -22,7 +22,11 @@ This page covers the supported building blocks in **@devilsdev/rag-pipeline-util
 
 ## Audit Logging
 
-`AuditLogger` writes audit events as JSON lines under `logDir/daily/`. Each event gets a sequence number, an integrity hash and an HMAC signature. With an encryption key, sensitive fields are encrypted with AES-GCM, using a random IV per field.
+`AuditLogger` writes audit events as JSON lines under `logDir/daily/`, creating the folders on the first write. Without a `logDir` it uses `.rag-enterprise/audit-logs` in the working directory and warns once that this default is deprecated (removed in 4.0). Each event is appended to the daily file once; adding it to the integrity chain and sending it to the webhook are separate stages that retry on their own, so a webhook that is down neither repeats nor holds up file writes. A stage that fails logs a warning and emits `flush_failed`, `chain_failed` or `webhook_failed`, and keeps its events for the next flush, up to `memoryLimit` (default 10,000) per stage; older ones are dropped, reported with `events_dropped` (`{ count, totalDropped }`) and in the warning, and counted in `audit.droppedEvents`. Events dropped from the chain stage are in the daily file but not in the integrity chain. A listener that throws doesn't stop a flush: it is logged once, and the remaining stages and later flushes still run. Each event gets a sequence number, an integrity hash and an HMAC signature. With an encryption key, sensitive fields are encrypted with AES-GCM, using a random IV per field.
+
+:::info[Coming in 3.9.0]
+On 3.8.0 and earlier, the constructor creates the log folders at once, a directory that can't be created ends the process, a failed integrity-chain update writes the batch to the file again, webhook failures aren't retried, and the default `logDir` doesn't warn.
+:::
 
 ```javascript no-run
 const { once } = require("events");
@@ -34,7 +38,7 @@ const audit = new AuditLogger({
   requireEncryption: true, // a missing key is an error instead of a warning
   signingKey: process.env.RAG_AUDIT_SIGNING_KEY, // stable across restarts
 });
-await once(audit, "audit_system_initialized"); // directories are created asynchronously
+await once(audit, "audit_system_initialized"); // the folders are created on the first write
 
 await audit.logDataAccess({
   _action: "query",

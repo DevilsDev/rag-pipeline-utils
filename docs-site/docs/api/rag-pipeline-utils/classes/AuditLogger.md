@@ -37,13 +37,14 @@ new AuditLogger(_options?): AuditLogger;
 
 ## Properties
 
-| Property                                              | Type                                      |
-| ----------------------------------------------------- | ----------------------------------------- |
-| <a id="property-encryptionkey"></a> `encryptionKey`   | `string` \| `Buffer`\<`ArrayBufferLike`\> |
-| <a id="property-flushtimer"></a> `flushTimer`         | `Timeout`                                 |
-| <a id="property-logbuffer"></a> `logBuffer`           | `any`[]                                   |
-| <a id="property-sequencenumber"></a> `sequenceNumber` | `number`                                  |
-| <a id="property-signingkey"></a> `signingKey`         | `any`                                     |
+| Property                                              | Type                                      | Description                                                    |
+| ----------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------- |
+| <a id="property-droppedevents"></a> `droppedEvents`   | `number`                                  | Events discarded by memoryLimit so far (see 'events_dropped'). |
+| <a id="property-encryptionkey"></a> `encryptionKey`   | `string` \| `Buffer`\<`ArrayBufferLike`\> | -                                                              |
+| <a id="property-flushtimer"></a> `flushTimer`         | `Timeout`                                 | -                                                              |
+| <a id="property-logbuffer"></a> `logBuffer`           | `any`[]                                   | -                                                              |
+| <a id="property-sequencenumber"></a> `sequenceNumber` | `number`                                  | -                                                              |
+| <a id="property-signingkey"></a> `signingKey`         | `any`                                     | -                                                              |
 
 ## Methods
 

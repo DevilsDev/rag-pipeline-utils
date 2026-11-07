@@ -1,8 +1,9 @@
 /**
- * Bug hunt (3.9 follow-up): AuditLogger's constructor creates its log
- * folders and starts a flush timer before anything is logged. These tests
- * fail until that is fixed; they are excluded from `npm test` and run with
- * `npm run test:bug-hunt`. See benchmarks/fixtures/bug-hunt-findings.md.
+ * Bug hunt (3.9 follow-up): AuditLogger's constructor created its log
+ * folders before anything is logged, and a folder that can't be created
+ * ended the process. Fixed in 3.9; these tests are excluded from `npm test`
+ * and run with `npm run test:bug-hunt`. See
+ * benchmarks/fixtures/bug-hunt-findings.md.
  */
 
 const fs = require("fs");

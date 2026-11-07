@@ -50,6 +50,13 @@ page.
   `--no-condition-check`. The other 3.9 changes (text normalisation and
   sentence splitting, below) still apply, so some scores can still move.
 
+### Deprecated
+
+- **`AuditLogger`'s default `logDir`.** Without a `logDir` option it still
+  writes to `.rag-enterprise/audit-logs` in the working directory, and now
+  warns once per process (`RAG_DEP_AUDIT_LOG_DIR`) that this default is
+  deprecated. It will be removed in 4.0: set `logDir`.
+
 ### Fixed
 
 - **Text from PDFs and web pages reads like typed text.** Tokenizing,
@@ -70,6 +77,26 @@ page.
   dropped.
 - `FileVectorStore` rejects a query vector of the wrong length when the
   index has no embedder info too; it scored every document 0.
+- Creating an `AuditLogger` no longer writes to disk: its log folders are
+  created on the first write, so a logger that never logs leaves no
+  `.rag-enterprise/` folder behind.
+- An `AuditLogger` whose `logDir` can't be written (a read-only working
+  directory, as on AWS Lambda, or a path under a file) no longer ends the
+  process with an unhandled rejection. A failed write logs one warning
+  until a write succeeds, emits `flush_failed`, and keeps the events for
+  the next flush; a log call never rejects because of it.
+- `AuditLogger` writes each event to the daily file once. When the
+  integrity-chain update failed after the write, the whole batch was
+  written again on the next flush. Now each of the three stages (file,
+  chain, webhook) keeps its own queue and retries only itself: a webhook
+  that is down is retried on later flushes (its failures used to be
+  dropped) and neither repeats nor holds up file writes. Each queue
+  keeps the latest `memoryLimit` events (a new option, default 10,000);
+  older ones are dropped, reported with an `events_dropped` event
+  (`{ count, totalDropped }`) and in the warning, and counted in
+  `droppedEvents`. Flushes run one at a time, and a listener that throws
+  (on `logs_flushed`, `events_dropped` or a failure event) is logged once
+  and can't stop the remaining stages or later flushes.
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.

@@ -66,4 +66,4 @@ function deprecateClass(Class, { name, message }) {
   return proxy;
 }
 
-module.exports = { deprecateClass };
+module.exports = { deprecateClass, warnOnce };
