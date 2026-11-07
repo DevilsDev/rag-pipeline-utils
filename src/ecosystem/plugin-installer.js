@@ -190,7 +190,7 @@ async function installPlugin(params) {
     }
 
     progress('scanning');
-    const scan = scanPlugin(staged.root);
+    const scan = scanPlugin(staged.root, { entry });
     if (scan.counts.high > 0 && !params.allowRisky) {
       const error = new Error(
         `Security scan found ${scan.counts.high} high-risk finding(s); not installed. Review them and re-run with --allow-risky to install anyway.`,

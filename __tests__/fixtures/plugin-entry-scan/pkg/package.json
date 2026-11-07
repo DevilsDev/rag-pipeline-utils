@@ -1,0 +1,6 @@
+{
+  "name": "rag-llm-datentry",
+  "version": "1.0.0",
+  "main": "lib.dat",
+  "ragPipeline": { "stage": "llm", "name": "datentry" }
+}

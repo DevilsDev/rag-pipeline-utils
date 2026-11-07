@@ -2,6 +2,7 @@
 
 const path = require("path");
 const pluginRegistry = require("../core/plugin-registry.js");
+const { verifyPluginBeforeLoad } = require("./load-plugin-config.js");
 
 /**
  * Built-in components a .ragrc.json pipeline entry can name. Each factory
@@ -162,10 +163,14 @@ function buildRouter(cfg, resolve) {
 /**
  * Instantiate a custom plugin from `plugins.<stage>.<name>` in the config.
  * The module may export a class (constructed with the entry config), an
- * instance, or either of those as `default`.
+ * instance, or either of those as `default`. When the shared plugin registry
+ * has signature verification enabled (production by default), the module is
+ * verified against its signed manifest before it is loaded.
  */
-function loadPluginModule(modulePath, entryConfig, configDir) {
-  const resolved = path.resolve(configDir, modulePath);
+function loadPluginModule(modulePath, entryConfig, configDir, name) {
+  // Resolve first so the file that is verified is the file that is loaded.
+  const resolved = require.resolve(path.resolve(configDir, modulePath));
+  verifyPluginBeforeLoad(name || modulePath, resolved);
   const mod = require(resolved);
   const exported = mod && mod.default ? mod.default : mod;
   if (typeof exported === "function") {
@@ -219,7 +224,7 @@ function resolveComponent(entry, config, configDir) {
 
   const modulePath = config.plugins?.[stage]?.[name];
   if (typeof modulePath === "string") {
-    return loadPluginModule(modulePath, entryConfig, configDir);
+    return loadPluginModule(modulePath, entryConfig, configDir, name);
   }
 
   try {

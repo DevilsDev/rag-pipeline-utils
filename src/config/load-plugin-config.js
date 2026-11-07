@@ -15,7 +15,46 @@ const registry = require("../core/plugin-registry.js");
 const { validatePluginSchema } = require("./validate-schema.js");
 // eslint-disable-line global-require
 const { logger } = require("../utils/logger.js");
+const {
+  hasContentDigest,
+} = require("../security/plugin-signature-verifier.js");
 // eslint-disable-line global-require
+
+/**
+ * Decide what verification a plugin file needs. Returns null when nothing is
+ * to be checked (verification disabled, or no manifest and unsigned plugins
+ * are allowed), otherwise the parsed manifest and the files its
+ * contentDigest covers. Throws when a manifest is required but missing.
+ */
+function describePluginCheck(name, absPath) {
+  if (
+    typeof registry.isSignatureVerificationEnabled !== "function" ||
+    !registry.isSignatureVerificationEnabled()
+  ) {
+    return null;
+  }
+
+  const manifestPath = `${absPath}.manifest.json`;
+  if (!fs.existsSync(manifestPath)) {
+    if (registry.requiresSignedPlugins()) {
+      throw new Error(
+        `Plugin ${name} has no signed manifest (${manifestPath}) and requireSignedPlugins is enabled`,
+      );
+    }
+    return { unsigned: true };
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+  const baseDir = path.dirname(absPath);
+  const extraFiles = Array.isArray(manifest.files) ? manifest.files : [];
+  return {
+    manifest,
+    content: {
+      baseDir,
+      files: [absPath, ...extraFiles.map((f) => path.resolve(baseDir, f))],
+    },
+  };
+}
 
 /**
  * Verify a plugin file against its signed manifest BEFORE it is imported
@@ -33,29 +72,100 @@ const { logger } = require("../utils/logger.js");
  * @returns {Promise<void>}
  */
 async function verifyPluginBeforeImport(name, absPath) {
-  if (
-    typeof registry.isSignatureVerificationEnabled !== "function" ||
-    !registry.isSignatureVerificationEnabled()
-  ) {
+  const check = describePluginCheck(name, absPath);
+  if (!check) return;
+  if (check.unsigned) {
+    warnUnsigned(name, absPath);
     return;
   }
+  await registry.verifyPluginContent(name, check.manifest, check.content);
+  if (!hasContentDigest(check.manifest)) {
+    warnNoContentDigest(name, absPath);
+  }
+}
 
-  const manifestPath = `${absPath}.manifest.json`;
-  if (!fs.existsSync(manifestPath)) {
-    if (registry.requiresSignedPlugins()) {
-      throw new Error(
-        `Plugin ${name} has no signed manifest (${manifestPath}) and requireSignedPlugins is enabled`,
-      );
+const warned = new Set();
+
+/** Emit a process warning once per process for each plugin file and code. */
+function warnOnce(code, absPath, message) {
+  const key = `${code}:${absPath}`;
+  if (warned.has(key)) return;
+  warned.add(key);
+  process.emitWarning(message, { code });
+}
+
+function warnUnsigned(name, absPath) {
+  warnOnce(
+    "RAG_PLUGIN_UNSIGNED",
+    absPath,
+    `Plugin "${name}" has no signed manifest; loading it unverified (${absPath})`,
+  );
+}
+
+function warnNoContentDigest(name, absPath) {
+  warnOnce(
+    "RAG_PLUGIN_NO_CONTENT_DIGEST",
+    absPath,
+    `Plugin "${name}" has a signed manifest without a contentDigest, so the signature does not cover the plugin code (${absPath}). Add a contentDigest to the manifest and sign it again.`,
+  );
+}
+
+/**
+ * Synchronous form of verifyPluginBeforeImport for loaders that `require`
+ * the plugin. Same policy: nothing happens while the registry's signature
+ * verification is disabled; otherwise a plugin with a manifest must have a
+ * valid signature from a trusted signer and matching content, and a plugin
+ * without one loads with a one-time warning unless the registry requires
+ * signed plugins. Every check completes before any plugin code runs.
+ *
+ * @param {string} name - Plugin name
+ * @param {string} absPath - Absolute path of the file that will be loaded
+ * @returns {void}
+ * @throws {Error} When the plugin must not be loaded
+ */
+function verifyPluginBeforeLoad(name, absPath) {
+  let check;
+  try {
+    check = describePluginCheck(name, absPath);
+    if (!check) return;
+    if (check.unsigned) {
+      warnUnsigned(name, absPath);
+      return;
     }
-    return;
+    registry
+      .getSignatureVerifier()
+      .verifyManifestSync(
+        check.manifest,
+        check.manifest.signature,
+        check.manifest.signerId,
+        check.content,
+      );
+    if (!hasContentDigest(check.manifest)) {
+      warnNoContentDigest(name, absPath);
+    }
+  } catch (err) {
+    emitAudit(
+      "plugin_verification_failed",
+      name,
+      check && check.manifest,
+      false,
+      err.message,
+    );
+    throw new Error(
+      `Plugin "${name}" was not loaded: ${err.message} (${absPath})`,
+    );
   }
+  emitAudit("plugin_verified", name, check.manifest, true);
+}
 
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-  const baseDir = path.dirname(absPath);
-  const extraFiles = Array.isArray(manifest.files) ? manifest.files : [];
-  await registry.verifyPluginContent(name, manifest, {
-    baseDir,
-    files: [absPath, ...extraFiles.map((f) => path.resolve(baseDir, f))],
+function emitAudit(action, name, manifest, verified, error) {
+  registry.recordAuditEntry(action, {
+    pluginName: name,
+    signerId: (manifest && manifest.signerId) || "unknown",
+    version: (manifest && manifest.version) || "unknown",
+    verified,
+    ...(error && { error }),
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -110,4 +220,8 @@ async function loadPluginsFromJson(configPath) {
   }
 }
 
-module.exports = { loadPluginsFromJson, verifyPluginBeforeImport };
+module.exports = {
+  loadPluginsFromJson,
+  verifyPluginBeforeImport,
+  verifyPluginBeforeLoad,
+};
