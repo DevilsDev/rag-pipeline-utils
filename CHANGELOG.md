@@ -28,6 +28,14 @@ A patch release with security fixes.
 - Fixed an access-control issue in how `RetrievalGuard` reads document
   restrictions.
 
+### Changed
+
+- **`RetrievalGuard` now requires every restriction a document sets.** A
+  document can set `requiredRole` or `acl` at its top level, in `metadata`
+  and on `doc`; access now requires meeting each one that is set (any one
+  role of a list is enough for that list). This can hide documents that
+  were visible before.
+
 ## [3.8.0] - 2026-11-06
 
 A minor release with no breaking changes, about testing RAG in TypeScript.
