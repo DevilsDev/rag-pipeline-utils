@@ -293,6 +293,12 @@ function parseJudgeVerdicts(raw, claimCount) {
   return { verdicts, error: null };
 }
 
+/**
+ * Connector error codes for a reply with no text (AnthropicConnector):
+ * judge errors, not failures of the check.
+ */
+const REPLY_ERRORS = new Set(['NO_TEXT', 'MODEL_REFUSED']);
+
 /** Readable text for each lexical reason. */
 const REASON_TEXT = {
   [REASONS.supported]: 'supported by word overlap with a source',
@@ -325,6 +331,8 @@ const REASON_TEXT = {
  * @param {boolean} [params.conditionCheck=true] - false: the condition check
  *   neither fails a sentence nor blocks an overturn
  * @returns {Promise<{verdicts: Array<Object>, calls: number, usage?: Object, error?: string}>}
+ *   error: why the judge's reply couldn't be used (no text, or not the
+ *   expected JSON); those sentences keep their lexical verdict
  */
 async function runJudge({ judge, sentences, docs, allowed, conditionCheck }) {
   const reasons = lexicalReasons(sentences, docs, allowed, { conditionCheck });
@@ -361,7 +369,22 @@ async function runJudge({ judge, sentences, docs, allowed, conditionCheck }) {
     typeof judge.generateWithUsage === 'function'
       ? judge.generateWithUsage
       : judge.generate;
-  const raw = await call.call(judge, prompt, [], { temperature: 0 });
+  let raw;
+  try {
+    raw = await call.call(judge, prompt, [], { temperature: 0 });
+  } catch (error) {
+    // A reply the connector couldn't turn into text (cut off at maxTokens,
+    // or refused) is a judge error, like a reply that isn't JSON: the
+    // lexical verdicts stand (BH-15). Network and auth errors still reject.
+    if (!REPLY_ERRORS.has(error && error.code)) throw error;
+    result.calls = 1;
+    result.error = `judge returned no text (${error.message})`;
+    for (const i of pending) {
+      verdicts[i].decidedBy = 'judge';
+      verdicts[i].reason = `judge gave no usable verdict (${result.error}); kept unsupported`;
+    }
+    return result;
+  }
   result.calls = 1;
   const usage = resultUsage(raw);
   if (usage) result.usage = usage;

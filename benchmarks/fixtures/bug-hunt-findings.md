@@ -29,6 +29,7 @@ listed or described here.
 | BH-12 | wrong result | 4             | `FileVectorStore` accepts a wrong-length query vector and scores every document 0         | `__tests__/bug-hunt/docs-claims.test.js`                                |
 | BH-13 | side effect  | 3.9 follow-up | Creating an `AuditLogger` writes `.rag-enterprise/audit-logs/` into the working directory | `__tests__/bug-hunt/audit-logger.test.js`                               |
 | BH-14 | crash        | 3.9 follow-up | An `AuditLogger` whose log folder can't be created ends the process (unhandled rejection) | `__tests__/bug-hunt/audit-logger.test.js`                               |
+| BH-15 | crash        | 3.9 follow-up | A judge reply with no text (cut off at `maxTokens`) makes `checkAnswer` reject            | `__tests__/unit/grounding/judge-no-text.test.js`                        |
 | BH-16 | lost events  | 3.9 follow-up | `AuditLogger` has no `close()`, so buffered and pending events are lost at process exit   | `__tests__/bug-hunt/audit-logger-close.test.js`                         |
 
 ## Wrong results
@@ -201,6 +202,26 @@ a hunt 6 probe came from the library itself.
 - **Suggested fix:** keep the promise (`this.ready`), catch it, and surface
   the error on the first log call or through an `error` event.
 
+### BH-15. A judge reply with no text makes `checkAnswer` reject
+
+- **What happens:** with `judge: new AnthropicConnector(...)`, a reply that
+  reaches `maxTokens` before writing any text (or a refusal) makes the
+  connector throw (`NO_TEXT`, `MODEL_REFUSED`), and `checkAnswer` rejects
+  with it. `judge.error` is documented as why the judge's reply couldn't be
+  used, so a caller would expect a result with `judge.error` set and the
+  lexical verdicts kept. Found on 2026-11-07, when one Claude Haiku 5.5
+  reply on the RAGTruth full split did this and ended the benchmark run.
+- **Root cause:** `runJudge` (`src/grounding/llm-judge.js`) awaits the
+  judge's `generate` without a `try`.
+- **Suggested fix:** catch errors with those two codes in `runJudge`, set
+  `error` and keep the lexical verdicts; network and auth errors still
+  reject.
+- **Fixed in the 3.9 follow-up** (`src/grounding/llm-judge.js`), with a
+  regression test in `__tests__/unit/grounding/judge-no-text.test.js` (no
+  text, a refusal and invalid JSON are judge errors; a network error still
+  rejects). The rerun's numbers are the same with the fix as with the
+  harness workaround used during the run, checked from the cache.
+
 ### BH-16. `AuditLogger` loses buffered events at process exit
 
 - **What happens:** an event that isn't CRITICAL waits in the buffer for
@@ -259,6 +280,9 @@ process. The default `logDir` (`.rag-enterprise/audit-logs`) stays for
 tests pass, with unit tests in
 `__tests__/unit/enterprise/audit-logger-storage.test.js` that also cover
 the flush timer and a CRITICAL event on a folder that can't be created.
+BH-15 (found on the judge rerun afterwards) is fixed in `runJudge`: a
+judge reply with no text or invalid JSON is a judge error and the lexical
+verdicts stand.
 
 ## Per hunt
 

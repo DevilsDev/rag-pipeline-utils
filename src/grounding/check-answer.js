@@ -119,7 +119,10 @@ function normalizeSources(sources) {
  * @property {number} calls - Calls made to `judge.generate` (0 or 1)
  * @property {{inputTokens: number, outputTokens: number, totalTokens: number}} [usage]
  *   - Token usage summed over the calls, when the LLM result carries `usage`
- * @property {string} [error] - Why the judge's reply could not be parsed
+ * @property {string} [error] - Why the judge's reply couldn't be used: no
+ *   text (cut off at its token limit, or a refusal) or not the expected
+ *   JSON. Those sentences keep their lexical verdict; checkAnswer doesn't
+ *   reject because of a judge reply
  */
 
 /**

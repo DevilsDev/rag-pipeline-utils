@@ -83,6 +83,12 @@ page.
   dropped.
 - `FileVectorStore` rejects a query vector of the wrong length when the
   index has no embedder info too; it scored every document 0.
+- **A judge reply that can't be used no longer makes `checkAnswer` reject.**
+  A reply with no text (cut off at the connector's `maxTokens`, or a
+  refusal) is now a judge error, like a reply that isn't valid JSON:
+  `judge.error` says why, and those sentences keep their lexical verdict.
+  This applies to `verifyCitations`' judge too. Network and authentication
+  errors still reject.
 - Creating an `AuditLogger` no longer writes to disk: its log folders are
   created on the first write, so a logger that never logs leaves no
   `.rag-enterprise/` folder behind.

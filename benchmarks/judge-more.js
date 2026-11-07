@@ -15,7 +15,7 @@
  * benchmarks/judge.js.
  *
  *   node benchmarks/judge-more.js [--concurrency=6] [--cap=88] [--output=file.json]
- *     [--only=full,variance,halueval]
+ *     [--only=full,variance,halueval] [--models=claude-haiku-5-5,...]
  */
 
 "use strict";
@@ -48,12 +48,17 @@ const CONCURRENCY = Number(args.concurrency || 6);
 const ONLY = new Set(
   (args.only || "full,variance,halueval").split(",").filter(Boolean),
 );
-const FULL_MODELS = [
+// --models keeps only the judges listed (a rerun of some of them)
+const keep = (models) =>
+  args.models
+    ? models.filter((m) => args.models.split(",").includes(m))
+    : models;
+const FULL_MODELS = keep([
   "claude-haiku-4-5-20251001",
   "claude-haiku-5-5",
   "claude-sonnet-5-5",
-];
-const VARIANCE_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5"];
+]);
+const VARIANCE_MODELS = keep(["claude-haiku-5-5", "claude-sonnet-5-5"]);
 const VARIANCE_SEED = 20261106;
 const RUNS = [undefined, "run2", "run3"]; // run 1 is the cached first run
 
