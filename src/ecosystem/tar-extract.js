@@ -33,24 +33,32 @@ function readOctal(buffer, start, length) {
 /**
  * Read the "path" record of a pax extended header. Records are
  * "<len> <key>=<value>\n", where <len> is the decimal byte length of the
- * whole record, so the header is walked record by record. A record whose
- * length is missing or runs past the data ends the walk.
+ * whole record, so the header is walked record by record.
+ *
+ * @throws {Error} When a record is malformed: the archive is refused
  */
 function parsePaxPath(data) {
   let pos = 0;
+  const malformed = (reason) =>
+    new Error(
+      `Malformed pax extended header in archive (record at byte ${pos}): ${reason}`,
+    );
   while (pos < data.length) {
     let len = 0;
     let at = pos;
     while (at < data.length && data[at] >= 0x30 && data[at] <= 0x39) {
       len = len * 10 + (data[at] - 0x30);
-      if (len > data.length) return null;
+      if (len > data.length) throw malformed('length runs past the header');
       at += 1;
     }
+    if (at === pos) throw malformed('missing length');
+    if (data[at] !== 0x20) throw malformed('missing space after the length');
     const end = pos + len;
-    if (at === pos || data[at] !== 0x20 || end <= at + 1 || end > data.length) {
-      return null;
-    }
-    const body = data.subarray(at + 1, end - 1).toString('utf8'); // minus "\n"
+    if (end <= at + 1) throw malformed('length too short');
+    if (end > data.length) throw malformed('length runs past the header');
+    if (data[end - 1] !== 0x0a) throw malformed('record does not end in a newline');
+    const body = data.subarray(at + 1, end - 1).toString('utf8');
+    if (!body.includes('=')) throw malformed('record has no "="');
     if (body.startsWith('path=')) return body.slice(5);
     pos = end;
   }

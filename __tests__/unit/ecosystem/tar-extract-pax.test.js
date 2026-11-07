@@ -118,28 +118,54 @@ describe("pax path records", () => {
     ).toThrow(/escapes the destination/);
   });
 
-  test("a large header of digits is read in linear time", () => {
+  test("a large header of digits is refused in linear time", () => {
     const data = Buffer.from("1".repeat(100000));
-    const ms = timed(() =>
-      extractTarGz(archive(data, "package/a.js"), dir, { strip: 1 }),
-    );
+    let error;
+    const ms = timed(() => {
+      try {
+        extractTarGz(archive(data, "package/a.js"), dir, { strip: 1 });
+      } catch (err) {
+        error = err;
+      }
+    });
+    expect(error && error.message).toMatch(/Malformed pax extended header/);
     expect(ms).toBeLessThan(2000);
   });
 
-  test("a large header of digit groups is read in linear time", () => {
+  test("a large header of digit groups is refused in linear time", () => {
     const data = Buffer.from("1 ".repeat(150000));
-    const ms = timed(() =>
-      extractTarGz(archive(data, "package/a.js"), dir, { strip: 1 }),
-    );
+    let error;
+    const ms = timed(() => {
+      try {
+        extractTarGz(archive(data, "package/a.js"), dir, { strip: 1 });
+      } catch (err) {
+        error = err;
+      }
+    });
+    expect(error && error.message).toMatch(/Malformed pax extended header/);
     expect(ms).toBeLessThan(2000);
   });
 
-  test("a header with a record longer than its data is skipped", () => {
-    const { files } = extractTarGz(
-      archive("99999 path=package/x.txt\n", "package/c.txt"),
-      dir,
-      { strip: 1 },
-    );
-    expect(files).toEqual(["c.txt"]);
+  test.each([
+    [
+      "a record longer than its data",
+      "99999 path=package/x.txt\n",
+      /runs past the header/,
+    ],
+    ["a record without a length", " path=package/x.txt\n", /missing length/],
+    ["a length without a space", "20path=package/x.tx\n", /missing space/],
+    ["a length that is too short", "2 path=package/x.txt\n", /too short/],
+    ["a record not ending in a newline", "22 path=package/x.txtX", /newline/],
+    ["a record without a key", "8 abcde\n", /no "="/],
+    [
+      "a bad record after a good one",
+      record("mtime", "1") + "junk",
+      /missing length/,
+    ],
+  ])("%s rejects the whole archive", (_case, pax, reason) => {
+    expect(() =>
+      extractTarGz(archive(pax, "package/c.txt"), dir, { strip: 1 }),
+    ).toThrow(reason);
+    expect(fs.readdirSync(dir)).toEqual([]);
   });
 });
