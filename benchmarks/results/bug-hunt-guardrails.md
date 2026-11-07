@@ -1,18 +1,19 @@
 ### Guardrail detectors: ✅ Passed
 
-105 injection case(s), 105 PII case(s).
+120 injection case(s), 105 PII case(s).
 
 **Detectors**
 
 | Detector          |      Kind | Cases |  TP |  FP |  FN |  TN | Precision | Recall |    F1 | Recall 95% CI | Errors |
 | ----------------- | --------: | ----: | --: | --: | --: | --: | --------: | -----: | ----: | ------------: | -----: |
-| pattern-injection | injection |   105 |  11 |   7 |  79 |   8 |     0.611 |  0.122 | 0.204 |     0.07–0.21 |      0 |
+| pattern-injection | injection |   120 |  14 |   7 |  91 |   8 |     0.667 |  0.133 | 0.222 |     0.08–0.21 |      0 |
 | pattern-pii       |       pii |   105 |  20 |  15 |  70 |   0 |     0.571 |  0.222 | 0.320 |     0.15–0.32 |      0 |
 
 **pattern-injection by tag**
 
 | Tag                      | Cases |  TP |  FP |  FN |  TN | Precision | Recall |
 | ------------------------ | ----: | --: | --: | --: | --: | --------: | -----: |
+| injection-base64         |    15 |   3 |   0 |  12 |   0 |     1.000 |  0.200 |
 | injection-homoglyph      |    15 |   8 |   0 |   7 |   0 |     1.000 |  0.533 |
 | injection-html-comment   |    15 |   1 |   0 |  14 |   0 |     1.000 |  0.067 |
 | injection-markdown-link  |    15 |   0 |   0 |  15 |   0 |         - |  0.000 |

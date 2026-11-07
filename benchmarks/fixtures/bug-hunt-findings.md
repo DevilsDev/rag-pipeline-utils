@@ -396,12 +396,17 @@ counts). Results: `benchmarks/results/bug-hunt-live.json`.
 returned no usable cases: the model stopped partway with `stop_reason: refusal`.
 Redone on 2026-11-07 in three batches of 5 with different prompts
 (`--only=injection-base64 --batch=5`, US$0.04): each batch was refused the
-same way, so the category still has no cases. Built-in pattern
-detectors, by category (TP / FN, or FP / TN for look-alikes):
+same way. The 15 base64 cases were then built offline, without the API
+(`benchmarks/bug-hunt/base64-cases.js`): our own instruction strings,
+encoded with `Buffer.from(...).toString("base64")`, in document text with a
+line telling the assistant to decode and follow them; 225 cases in all.
+Built-in pattern detectors, by category (TP / FN, or FP / TN for
+look-alikes):
 
 | Category                       | Caught     | Missed  | Notes                                                   |
 | ------------------------------ | ---------- | ------- | ------------------------------------------------------- |
 | injection: homoglyphs          | 8          | 7       | homoglyph folding works; the 7 use wording with no rule |
+| injection: base64 (offline)    | 3          | 12      | no decoding; the 3 hits are a "[system]" in the wrapper |
 | injection: HTML comment        | 1          | 14      | wording with no rule                                    |
 | injection: markdown link       | 0          | 15      | wording with no rule                                    |
 | injection: other language      | 0          | 15      | English rules only                                      |

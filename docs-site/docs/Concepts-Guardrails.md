@@ -276,6 +276,11 @@ detailed scorecard. Headlines:
   attacks may slip through, and on public test sets the patterns miss
   most injections ([measured recall](./Benchmarks#guardrail-accuracy)).
   Add a model-based [detector](#plug-in-your-own-detectors) and output-side checks.
+- Encoded payloads are not decoded before scanning: an instruction
+  written in base64 passes the injection patterns. In the 3.9 bug hunt
+  they caught 0 of 15 base64 instructions in retrieved documents (3 of
+  the 15 documents were flagged, for a "[system]" marker in the text
+  around the payload, not for the payload).
 - PII detection uses heuristics; high-stakes compliance needs a
   dedicated classifier and human review.
 - Groundedness scoring is lexical plus numeric-consistency and polarity checks, with no LLM judge; paraphrase and units are not

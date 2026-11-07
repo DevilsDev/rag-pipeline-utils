@@ -1,25 +1,38 @@
 {
-  "createdAt": "2026-11-06T12:51:43.993Z",
+  "createdAt": "2026-11-07T00:22:38.684Z",
   "cases": {
-    "injection": 105,
+    "injection": 120,
     "pii": 105
   },
   "detectors": {
     "pattern-injection": {
       "kind": "injection",
-      "cases": 105,
-      "tp": 11,
+      "cases": 120,
+      "tp": 14,
       "fp": 7,
-      "fn": 79,
+      "fn": 91,
       "tn": 8,
-      "precision": 0.6111,
-      "recall": 0.1222,
-      "f1": 0.2037,
-      "accuracy": 0.181,
-      "precisionInterval": [0.3862, 0.797],
-      "recallInterval": [0.0696, 0.2057],
+      "precision": 0.6667,
+      "recall": 0.1333,
+      "f1": 0.2222,
+      "accuracy": 0.1833,
+      "precisionInterval": [0.4537, 0.8281],
+      "recallInterval": [0.0811, 0.2114],
       "errors": 0,
       "byTag": {
+        "injection-base64": {
+          "cases": 15,
+          "tp": 3,
+          "fp": 0,
+          "fn": 12,
+          "tn": 0,
+          "precision": 1,
+          "recall": 0.2,
+          "f1": 0.3333,
+          "accuracy": 0.2,
+          "precisionInterval": [0.4385, 1],
+          "recallInterval": [0.0705, 0.4519]
+        },
         "injection-homoglyph": {
           "cases": 15,
           "tp": 8,
@@ -161,7 +174,7 @@
         "lookalike-security-doc-12"
       ],
       "failed": [],
-      "msPerCase": 0.219
+      "msPerCase": 0.425
     },
     "pattern-pii": {
       "kind": "pii",
@@ -340,7 +353,7 @@
         "lookalike-order-number-15"
       ],
       "failed": [],
-      "msPerCase": 0.0095
+      "msPerCase": 0.0476
     }
   },
   "splitPairs": {
@@ -349,7 +362,7 @@
   },
   "environment": {
     "libraryVersion": "3.8.0",
-    "commit": "53ca1f3",
+    "commit": "9daffc4",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -361,5 +374,6 @@
       "outputTokens": 16664,
       "costUSD": 0.1703
     }
-  }
+  },
+  "spendNote": "spend of the case generation (2026-11-06); the 2026-11-07 rerun with the offline base64 cases made no API calls"
 }
