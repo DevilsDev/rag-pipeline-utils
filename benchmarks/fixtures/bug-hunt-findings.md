@@ -13,20 +13,22 @@ listed or described here.
 
 ## Summary
 
-| ID    | Severity     | Hunt | Finding                                                                           | Test                                                                    |
-| ----- | ------------ | ---- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| BH-1  | wrong result | 3    | Zero-width characters in a source split its words                                 | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
-| BH-2  | wrong result | 3    | Full-width digits in a source don't match ASCII digits                            | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
-| BH-3  | wrong result | 3    | No space after a period merges two sentences                                      | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
-| BH-4  | wrong result | 3    | List lines without final punctuation merge into one sentence                      | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
-| BH-5  | wrong result | 3    | "a.m." and "p.m." end a sentence                                                  | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
-| BH-6  | wrong result | 3    | NBSP instead of spaces in a source loses one dropped-condition catch              | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
-| BH-7  | wrong result | 3    | Duplicating a source, or adding an unrelated one, flips borderline verdicts       | `__tests__/bug-hunt/metamorphic.test.js` (sources that support nothing) |
-| BH-8  | wrong result | 4    | `packContext` drops the top document when the budget is smaller than its wrapper  | `__tests__/bug-hunt/docs-claims.test.js`                                |
-| BH-9  | docs drift   | 4    | `checkNumericConsistency` examples show the wrong output                          | `__tests__/bug-hunt/docs-claims.test.js`                                |
-| BH-10 | docs drift   | 4    | Usage.md says the pipeline has only `run` and `cleanup`; it also has `cacheStats` | `__tests__/bug-hunt/docs-claims.test.js`                                |
-| BH-11 | docs drift   | 6    | Docs say the PII check finds "phone numbers"; it finds US 10-digit numbers only   | `__tests__/bug-hunt/docs-claims.test.js`                                |
-| BH-12 | wrong result | 4    | `FileVectorStore` accepts a wrong-length query vector and scores every document 0 | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| ID    | Severity     | Hunt          | Finding                                                                                   | Test                                                                    |
+| ----- | ------------ | ------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| BH-1  | wrong result | 3             | Zero-width characters in a source split its words                                         | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
+| BH-2  | wrong result | 3             | Full-width digits in a source don't match ASCII digits                                    | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
+| BH-3  | wrong result | 3             | No space after a period merges two sentences                                              | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
+| BH-4  | wrong result | 3             | List lines without final punctuation merge into one sentence                              | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
+| BH-5  | wrong result | 3             | "a.m." and "p.m." end a sentence                                                          | `__tests__/bug-hunt/metamorphic.test.js` (sentence splitter)            |
+| BH-6  | wrong result | 3             | NBSP instead of spaces in a source loses one dropped-condition catch                      | `__tests__/bug-hunt/metamorphic.test.js` (text normalisation)           |
+| BH-7  | wrong result | 3             | Duplicating a source, or adding an unrelated one, flips borderline verdicts               | `__tests__/bug-hunt/metamorphic.test.js` (sources that support nothing) |
+| BH-8  | wrong result | 4             | `packContext` drops the top document when the budget is smaller than its wrapper          | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| BH-9  | docs drift   | 4             | `checkNumericConsistency` examples show the wrong output                                  | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| BH-10 | docs drift   | 4             | Usage.md says the pipeline has only `run` and `cleanup`; it also has `cacheStats`         | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| BH-11 | docs drift   | 6             | Docs say the PII check finds "phone numbers"; it finds US 10-digit numbers only           | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| BH-12 | wrong result | 4             | `FileVectorStore` accepts a wrong-length query vector and scores every document 0         | `__tests__/bug-hunt/docs-claims.test.js`                                |
+| BH-13 | side effect  | 3.9 follow-up | Creating an `AuditLogger` writes `.rag-enterprise/audit-logs/` into the working directory | `__tests__/bug-hunt/audit-logger.test.js`                               |
+| BH-14 | crash        | 3.9 follow-up | An `AuditLogger` whose log folder can't be created ends the process (unhandled rejection) | `__tests__/bug-hunt/audit-logger.test.js`                               |
 
 ## Wrong results
 
@@ -111,6 +113,32 @@ listed or described here.
 - **Suggested fix:** compute weights from a fixed reference, or per
   sentence against the source being compared; at least, document that
   scores depend on the whole source set.
+- **Not fixed in 3.9; options** (`buildIDFWeights` in
+  `src/citation/source-mapper.js`, IDF = log(1 + N / df) over the N sources
+  passed in):
+  1. **Count identical sources once.** Deduplicate on normalised content
+     before computing the weights. Fixes the 3 duplicate-source flips and
+     nothing else changes for sets without duplicates. Doesn't help the 4
+     unrelated-source flips: a new source still raises N.
+  2. **Weights from the sources that share a word with the sentence.**
+     Per sentence, compute IDF over only the sources with at least one of
+     its content words, so a source that shares nothing can't move its
+     score. Fixes the unrelated-source flips when the added source shares
+     no content word; a loosely related source still moves scores, and a
+     duplicate still does (it shares words). Costs one IDF pass per
+     sentence (sentences × sources × tokens, small next to scoring), and
+     changes scores for every answer with several sources, so the public
+     sets and saved baselines move.
+  3. **Fixed weights.** Use word weights that don't depend on the sources:
+     a frequency table shipped with the library, or no IDF
+     (`useIDFWeighting: false`, already an option). Verdicts no longer
+     depend on the rest of the source set at all. A shipped table adds
+     size, is tied to one language and to general text rather than the
+     user's domain; no IDF lets common content words ("policy",
+     "employees") count as much as rare ones and moves every score.
+- **Recommendation:** 1 and 2 together, measured on the dev splits before
+  any public set, with a "Coming in" note that scores move; 3 only as a
+  documented option, since it changes the most.
 
 ### BH-8. `packContext` drops the top document with a small budget
 
@@ -144,6 +172,34 @@ listed or described here.
   from the stored vectors) and reject a query of another length, as
   `MemoryRetriever` does.
 
+## Crash and side effects
+
+Found on 2026-11-07, checking whether the `.rag-enterprise/` folder left by
+a hunt 6 probe came from the library itself.
+
+### BH-13. Creating an `AuditLogger` writes to the working directory
+
+- **What happens:** `new AuditLogger()` creates
+  `.rag-enterprise/audit-logs/{daily,archived,integrity}` and an integrity
+  chain file in `process.cwd()` at once, before any event is logged. The
+  default is documented (API-Reference.md: `logDir` default
+  `.rag-enterprise/audit-logs`), but not that the constructor writes it.
+- **Root cause:** the constructor calls `_initializeAuditSystem()`, which
+  makes the folders and starts the flush timer.
+- **Suggested fix:** create the folders on the first write, or require
+  `logDir`.
+
+### BH-14. An `AuditLogger` whose log folder can't be created ends the process
+
+- **What happens:** `new AuditLogger({ logDir: "afile/logs" })` (a path
+  under a file), or the default in a read-only working directory such as
+  AWS Lambda's, ends Node with an unhandled `ENOTDIR`/`EROFS` rejection a
+  moment after the constructor returns; the caller can't catch it.
+- **Root cause:** `_initializeAuditSystem()` is async and is called from
+  the constructor without `await` or `.catch()`.
+- **Suggested fix:** keep the promise (`this.ready`), catch it, and surface
+  the error on the first log call or through an `error` event.
+
 ## Docs drift
 
 ### BH-9. `checkNumericConsistency` examples
@@ -171,6 +227,15 @@ listed or described here.
 - **Suggested fix:** say "US-format phone numbers", like "US SSNs", or add
   an international pattern.
 
+## Fixed in the 3.9 follow-up (2026-11-07)
+
+Fixed on `fix/condition-left-out`, each with its bug-hunt test now passing:
+BH-1, BH-2 and BH-6 (one normalisation, `src/evaluate/normalize-text.js`,
+used by tokenizing, splitting and the checks), BH-3, BH-4 and BH-5 (the
+sentence splitter), BH-8, BH-12, and the docs for BH-9, BH-10 and BH-11 (the
+BH-9 to BH-11 tests now check the corrected docs). Not fixed: BH-7 (options
+above), BH-13 and BH-14 (recorded only).
+
 ## Per hunt
 
 ### Hunt 1: ACL (claude-sonnet-5-5 corpora, offline checks), US$0.35
@@ -188,21 +253,32 @@ privately; not described here.
 399 sets (100 grounded, 100 wrong number, 100 negated, 99 dropped
 condition). Changed verdicts per transform:
 
-| Transform                                                                                     | Changed    |
-| --------------------------------------------------------------------------------------------- | ---------- |
-| zero-width characters in sources                                                              | 395/399    |
-| full-width digits in sources                                                                  | 368/399    |
-| list items without final punctuation                                                          | 105/399    |
-| no space after a period                                                                       | 103/399    |
-| split a source at a sentence boundary                                                         | 78/399     |
-| add an unrelated source                                                                       | 4/399      |
-| duplicate a source                                                                            | 3/399      |
-| NBSP in sources                                                                               | 1/399      |
-| shuffle sources, curly or straight quotes, CRLF, trailing whitespace, abbreviations, decimals | 0/399 each |
-| sources as `{ id, content }`, changed ids, LangChain, LlamaIndex node, `{ node, score }`      | 0/399 each |
+| Transform                                                                                     | Changed    | After the fixes |
+| --------------------------------------------------------------------------------------------- | ---------- | --------------- |
+| zero-width characters in sources                                                              | 395/399    | 0/399           |
+| full-width digits in sources                                                                  | 368/399    | 0/399           |
+| list items without final punctuation                                                          | 105/399    | 0/399           |
+| no space after a period                                                                       | 103/399    | 2/399           |
+| split a source at a sentence boundary                                                         | 78/399     | 80/399          |
+| add an unrelated source                                                                       | 4/399      | 5/399           |
+| duplicate a source                                                                            | 3/399      | 4/399           |
+| NBSP in sources                                                                               | 1/399      | 0/399           |
+| shuffle sources, curly or straight quotes, CRLF, trailing whitespace, abbreviations, decimals | 0/399 each | 0/399 each      |
+| sources as `{ id, content }`, changed ids, LangChain, LlamaIndex node, `{ node, score }`      | 0/399 each | 0/399 each      |
 
 Every entry point (main by require and import, `/edge`,
-`@devilsdev/rag-eval`) agreed on all 399 sets. Splitting a source in two
+`@devilsdev/rag-eval`) agreed on all 399 sets, before and after the fixes.
+"After the fixes": the same 399 sets rerun offline on 2026-11-07 with the
+BH-1 to BH-6 fixes (results: `benchmarks/results/bug-hunt-metamorphic-after-fixes.json`);
+91 changed verdicts in all, down from 1,057. This column is not held out:
+the BH-1 to BH-6 tests come from these sets, and the rule for a sentence
+end with no space was widened (from two lowercase letters before the full
+stop to two letters or digits) after the first rerun showed 6 such cases
+left in them. The two left after "no space
+after a period" end in "March 1." and "km/h.", with one letter or digit
+before the full stop, which the splitter leaves whole so "U.S.Army" stays
+one sentence; duplicate and unrelated sources
+are BH-7. Splitting a source in two
 (78) is the documented limitation that claims combining two sources are not
 grounded, not a bug. The abbreviation transform inserted "U.S.", "e.g." and
 "approx." without changing a verdict; BH-5 comes from the sources' own
@@ -293,7 +369,10 @@ counts). Results: `benchmarks/results/bug-hunt-live.json`.
 ### Hunt 6: adversarial guardrails (claude-sonnet-5-5 cases), US$0.17
 
 210 cases: 12 categories of 15 and 15 pairs split across two chunks; the base64 category
-returned no usable cases (the model's JSON was cut off). Built-in pattern
+returned no usable cases: the model stopped partway with `stop_reason: refusal`.
+Redone on 2026-11-07 in three batches of 5 with different prompts
+(`--only=injection-base64 --batch=5`, US$0.04): each batch was refused the
+same way, so the category still has no cases. Built-in pattern
 detectors, by category (TP / FN, or FP / TN for look-alikes):
 
 | Category                       | Caught     | Missed  | Notes                                                   |

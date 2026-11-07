@@ -1,0 +1,1693 @@
+{
+  "generatedAt": "2026-11-06T20:38:23.373Z",
+  "environment": {
+    "libraryVersion": "3.8.0",
+    "commit": "cbf9acc",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "sets": 399,
+  "byKind": {
+    "grounded": 100,
+    "wrong-number": 100,
+    "negated": 100,
+    "dropped-condition": 99
+  },
+  "transforms": {
+    "shuffle sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "duplicate a source": {
+      "applied": 399,
+      "changed": 4
+    },
+    "add an unrelated source": {
+      "applied": 399,
+      "changed": 5
+    },
+    "split a source at a sentence boundary": {
+      "applied": 399,
+      "changed": 80
+    },
+    "curly quotes in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "straight quotes in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "NBSP in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "CRLF in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "zero-width characters in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "full-width digits in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "trailing whitespace": {
+      "applied": 399,
+      "changed": 0
+    },
+    "no space after a period": {
+      "applied": 399,
+      "changed": 2
+    },
+    "abbreviations in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "decimals in sources": {
+      "applied": 399,
+      "changed": 0
+    },
+    "list items without final punctuation": {
+      "applied": 399,
+      "changed": 0
+    },
+    "sources as { id, content }": {
+      "applied": 399,
+      "changed": 0
+    },
+    "sources as changed ids": {
+      "applied": 399,
+      "changed": 0
+    },
+    "sources as LangChain Document": {
+      "applied": 399,
+      "changed": 0
+    },
+    "sources as LlamaIndex node": {
+      "applied": 399,
+      "changed": 0
+    },
+    "sources as LlamaIndex { node, score }": {
+      "applied": 399,
+      "changed": 0
+    }
+  },
+  "entryPoints": {
+    "main (require)": {
+      "sets": 399,
+      "differ": 0
+    },
+    "main (import)": {
+      "sets": 399,
+      "differ": 0
+    },
+    "/edge (import)": {
+      "sets": 399,
+      "differ": 0
+    },
+    "@devilsdev/rag-eval (require)": {
+      "sets": 399,
+      "differ": 0
+    }
+  },
+  "violations": [
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-4",
+      "before": "11",
+      "after": "01",
+      "answer": "The AeroVac X2 weighs 2.4 kg and provides up to 45 minutes of runtime in eco mode, which drops to 12 minutes in max mode. Full charging takes approximately 3.5 hours.",
+      "sources": [
+        "The AeroVac X2 weighs 2.4 kg and has a 0.6-liter dust bin. Its lithium-ion battery provides up to 45 minutes of runtime in eco mode. In max mode, runtime drops to 12 minutes.",
+        "Full charging takes approximately 3.5 hours. The filter is washable and should be replaced every 12 months."
+      ],
+      "transformed": [
+        "The AeroVac X2 weighs 2.4 kg and has a 0.6-liter dust bin. Its lithium-ion battery provides up to 45 minutes of runtime in eco mode.",
+        "In max mode, runtime drops to 12 minutes.",
+        "Full charging takes approximately 3.5 hours. The filter is washable and should be replaced every 12 months."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-9",
+      "before": "11",
+      "after": "01",
+      "answer": "Stage 1 hypertension is defined as systolic 130 to 139 mm Hg or diastolic 80 to 89 mm Hg, while stage 2 begins at 140/90 mm Hg. Reducing sodium intake to under 2,300 mg per day can lower systolic pressure.",
+      "sources": [
+        "Blood pressure is classified as normal when systolic is below 120 mm Hg and diastolic is below 80 mm Hg. Stage 1 hypertension is defined as systolic 130 to 139 mm Hg or diastolic 80 to 89 mm Hg. Stage 2 hypertension begins at 140/90 mm Hg.",
+        "Lifestyle changes such as reducing sodium intake to under 2,300 mg per day can lower systolic pressure. Regular aerobic exercise for at least 150 minutes per week is also recommended."
+      ],
+      "transformed": [
+        "Blood pressure is classified as normal when systolic is below 120 mm Hg and diastolic is below 80 mm Hg. Stage 1 hypertension is defined as systolic 130 to 139 mm Hg or diastolic 80 to 89 mm Hg.",
+        "Stage 2 hypertension begins at 140/90 mm Hg.",
+        "Lifestyle changes such as reducing sodium intake to under 2,300 mg per day can lower systolic pressure. Regular aerobic exercise for at least 150 minutes per week is also recommended."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-14",
+      "before": "111",
+      "after": "011",
+      "answer": "The Employee's base salary is $82,000 per year, payable in equal bi-weekly installments, with eligibility for an annual performance bonus of up to 10% of base salary. Either party may terminate with 30 days' written notice, but during the first 90 days of employment the Company may terminate with 7 days' notice. The Employee is entitled to 15 days of paid vacation per year.",
+      "sources": [
+        "The Employee's base salary shall be $82,000 per year, payable in equal bi-weekly installments. The Employee shall be eligible for an annual performance bonus of up to 10% of base salary.",
+        "Either party may terminate this Agreement by providing 30 days' written notice. During the first 90 days of employment, the Company may terminate with 7 days' notice.",
+        "The Employee is entitled to 15 days of paid vacation per year, accruing monthly."
+      ],
+      "transformed": [
+        "The Employee's base salary shall be $82,000 per year, payable in equal bi-weekly installments.",
+        "The Employee shall be eligible for an annual performance bonus of up to 10% of base salary.",
+        "Either party may terminate this Agreement by providing 30 days' written notice. During the first 90 days of employment, the Company may terminate with 7 days' notice.",
+        "The Employee is entitled to 15 days of paid vacation per year, accruing monthly."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-17",
+      "before": "11",
+      "after": "01",
+      "answer": "Human cells contain 23 pairs of chromosomes, for a total of 46, and only about 1.5% of the genome codes for proteins. James Watson and Francis Crick described the double helix structure of DNA in 1953, drawing on X-ray diffraction images produced by Rosalind Franklin.",
+      "sources": [
+        "Human cells contain 23 pairs of chromosomes, for a total of 46. The human genome comprises approximately 3.1 billion base pairs. Only about 1.5% of the genome codes for proteins.",
+        "The structure of DNA as a double helix was described by James Watson and Francis Crick in 1953. Their work drew on X-ray diffraction images produced by Rosalind Franklin."
+      ],
+      "transformed": [
+        "Human cells contain 23 pairs of chromosomes, for a total of 46. The human genome comprises approximately 3.1 billion base pairs.",
+        "Only about 1.5% of the genome codes for proteins.",
+        "The structure of DNA as a double helix was described by James Watson and Francis Crick in 1953. Their work drew on X-ray diffraction images produced by Rosalind Franklin."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-19",
+      "before": "11",
+      "after": "01",
+      "answer": "Eligible employees receive 16 weeks of paid parental leave following the birth or adoption of a child, and must have completed at least 6 months of service. Leave may be taken in a single block or in increments of no less than one week.",
+      "sources": [
+        "Eligible employees receive 16 weeks of paid parental leave following the birth or adoption of a child. Leave must be taken within 12 months of the child's arrival. Employees must have completed at least 6 months of service.",
+        "Parental leave may be taken in a single block or in increments of no less than one week. Benefits continue during leave at the same employer contribution rate."
+      ],
+      "transformed": [
+        "Eligible employees receive 16 weeks of paid parental leave following the birth or adoption of a child. Leave must be taken within 12 months of the child's arrival.",
+        "Employees must have completed at least 6 months of service.",
+        "Parental leave may be taken in a single block or in increments of no less than one week. Benefits continue during leave at the same employer contribution rate."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-21",
+      "before": "11",
+      "after": "01",
+      "answer": "In children, a fever is generally defined as a rectal temperature of 38.0 °C (100.4 °F) or higher, and infants younger than 3 months with a fever should be evaluated by a doctor immediately. Aspirin should not be given to children because of the risk of Reye syndrome.",
+      "sources": [
+        "In children, a fever is generally defined as a rectal temperature of 38.0 °C (100.4 °F) or higher. Infants younger than 3 months with a fever should be evaluated by a doctor immediately.",
+        "Acetaminophen may be given to children every 4 to 6 hours, with no more than five doses in 24 hours. Aspirin should not be given to children because of the risk of Reye syndrome."
+      ],
+      "transformed": [
+        "In children, a fever is generally defined as a rectal temperature of 38.0 °C (100.4 °F) or higher.",
+        "Infants younger than 3 months with a fever should be evaluated by a doctor immediately.",
+        "Acetaminophen may be given to children every 4 to 6 hours, with no more than five doses in 24 hours. Aspirin should not be given to children because of the risk of Reye syndrome."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-1-22",
+      "before": "11",
+      "after": "01",
+      "answer": "The Nimbus 14 includes a 14-inch display with a resolution of 2560 by 1600 pixels and is available with 16 GB or 32 GB of RAM, which is soldered and cannot be upgraded. The manufacturer claims up to 15 hours of video playback from its 72 Wh battery.",
+      "sources": [
+        "The Nimbus 14 laptop includes a 14-inch display with a resolution of 2560 by 1600 pixels. It is available with 16 GB or 32 GB of RAM, which is soldered and cannot be upgraded.",
+        "Battery capacity is 72 Wh, and the manufacturer claims up to 15 hours of video playback. The laptop weighs 1.28 kg and includes two Thunderbolt 4 ports."
+      ],
+      "transformed": [
+        "The Nimbus 14 laptop includes a 14-inch display with a resolution of 2560 by 1600 pixels.",
+        "It is available with 16 GB or 32 GB of RAM, which is soldered and cannot be upgraded.",
+        "Battery capacity is 72 Wh, and the manufacturer claims up to 15 hours of video playback. The laptop weighs 1.28 kg and includes two Thunderbolt 4 ports."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-9",
+      "before": "11",
+      "after": "01",
+      "answer": "Normal blood pressure is below 120/80 mm Hg, while stage 1 hypertension is a systolic pressure of 130 to 139 mm Hg or a diastolic pressure of 80 to 89 mm Hg. Recommended lifestyle changes include reducing sodium intake to less than 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week.",
+      "sources": [
+        "Blood pressure is classified as normal when it is below 120/80 mm Hg. Stage 1 hypertension is defined as a systolic pressure of 130 to 139 mm Hg or a diastolic pressure of 80 to 89 mm Hg.",
+        "Lifestyle changes recommended for all patients include reducing sodium intake to less than 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week."
+      ],
+      "transformed": [
+        "Blood pressure is classified as normal when it is below 120/80 mm Hg.",
+        "Stage 1 hypertension is defined as a systolic pressure of 130 to 139 mm Hg or a diastolic pressure of 80 to 89 mm Hg.",
+        "Lifestyle changes recommended for all patients include reducing sodium intake to less than 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-12",
+      "before": "11",
+      "after": "01",
+      "answer": "The Panama Canal opened to traffic on August 15, 1914, after construction by the United States that began in 1904 following failed French efforts. It is approximately 82 kilometers long, and an expansion project completed in 2016 added a new, larger set of locks.",
+      "sources": [
+        "The Panama Canal opened to traffic on August 15, 1914. Construction by the United States began in 1904 after earlier French efforts had failed, in part because of disease and engineering difficulties.",
+        "The canal is approximately 82 kilometers long and uses a system of locks to raise ships to Gatun Lake, 26 meters above sea level. An expansion project completed in 2016 added a new, larger set of locks."
+      ],
+      "transformed": [
+        "The Panama Canal opened to traffic on August 15, 1914.",
+        "Construction by the United States began in 1904 after earlier French efforts had failed, in part because of disease and engineering difficulties.",
+        "The canal is approximately 82 kilometers long and uses a system of locks to raise ships to Gatun Lake, 26 meters above sea level. An expansion project completed in 2016 added a new, larger set of locks."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-13",
+      "before": "10",
+      "after": "00",
+      "answer": "Eligible employees receive 16 weeks of paid parental leave, provided they have completed at least 12 months of continuous service. Leave may be taken in one or two blocks within 12 months of the child's arrival, and requests should be submitted to Human Resources at least 30 days in advance when possible.",
+      "sources": [
+        "Eligible employees receive 16 weeks of paid parental leave following the birth or adoption of a child. Employees must have completed at least 12 months of continuous service.",
+        "Leave may be taken in a single block or in two blocks, and must be completed within 12 months of the child's arrival. Benefits continue during leave at the same employer contribution rate.",
+        "Employees returning from leave are entitled to the same or an equivalent position. Requests should be submitted to Human Resources at least 30 days in advance when possible."
+      ],
+      "transformed": [
+        "Eligible employees receive 16 weeks of paid parental leave following the birth or adoption of a child.",
+        "Employees must have completed at least 12 months of continuous service.",
+        "Leave may be taken in a single block or in two blocks, and must be completed within 12 months of the child's arrival. Benefits continue during leave at the same employer contribution rate.",
+        "Employees returning from leave are entitled to the same or an equivalent position. Requests should be submitted to Human Resources at least 30 days in advance when possible."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-16",
+      "before": "11",
+      "after": "01",
+      "answer": "The SunPeak 400W panel has a conversion efficiency of 21.3% and weighs 21.5 kg. Its performance warranty guarantees at least 87.4% of rated output after 25 years.",
+      "sources": [
+        "The SunPeak 400W monocrystalline panel has a conversion efficiency of 21.3%. Its dimensions are 1722 mm by 1134 mm, and it weighs 21.5 kg.",
+        "The product warranty covers defects for 15 years, and the performance warranty guarantees at least 87.4% of rated output after 25 years. The panel is rated to withstand snow loads up to 5400 Pa."
+      ],
+      "transformed": [
+        "The SunPeak 400W monocrystalline panel has a conversion efficiency of 21.3%.",
+        "Its dimensions are 1722 mm by 1134 mm, and it weighs 21.5 kg.",
+        "The product warranty covers defects for 15 years, and the performance warranty guarantees at least 87.4% of rated output after 25 years. The panel is rated to withstand snow loads up to 5400 Pa."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-17",
+      "before": "11",
+      "after": "01",
+      "answer": "Water reaches its maximum density at about 4°C, and ice floats because it is less dense than liquid water. Water also has a high specific heat capacity of about 4.18 joules per gram per degree Celsius, which helps moderate climate.",
+      "sources": [
+        "Water reaches its maximum density at about 4°C. Because ice is less dense than liquid water, it floats, which insulates lakes and allows aquatic life to survive winter.",
+        "Water has a high specific heat capacity of about 4.18 joules per gram per degree Celsius. This property helps moderate climate by absorbing large amounts of heat with relatively small temperature changes."
+      ],
+      "transformed": [
+        "Water reaches its maximum density at about 4°C.",
+        "Because ice is less dense than liquid water, it floats, which insulates lakes and allows aquatic life to survive winter.",
+        "Water has a high specific heat capacity of about 4.18 joules per gram per degree Celsius. This property helps moderate climate by absorbing large amounts of heat with relatively small temperature changes."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-18",
+      "before": "10",
+      "after": "00",
+      "answer": "King John sealed Magna Carta at Runnymede in June 1215 as the result of a conflict with rebellious barons over taxation and royal power. One of its best-known clauses states that no free man shall be seized or imprisoned except by the lawful judgment of his equals or by the law of the land.",
+      "sources": [
+        "Magna Carta was sealed by King John at Runnymede in June 1215. It was the result of a conflict between the king and a group of rebellious barons over taxation and royal power.",
+        "One of its best-known clauses states, \"No free man shall be seized or imprisoned... except by the lawful judgment of his equals or by the law of the land.\" The charter was reissued several times in the 13th century, with revisions."
+      ],
+      "transformed": [
+        "Magna Carta was sealed by King John at Runnymede in June 1215.",
+        "It was the result of a conflict between the king and a group of rebellious barons over taxation and royal power.",
+        "One of its best-known clauses states, \"No free man shall be seized or imprisoned... except by the lawful judgment of his equals or by the law of the land.\" The charter was reissued several times in the 13th century, with revisions."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-20",
+      "before": "11",
+      "after": "01",
+      "answer": "The Provider guarantees 99.9% monthly uptime, and if uptime falls below that level the Customer is eligible for a service credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit increases to 25%, and credits must be requested within 30 days of the end of the affected month.",
+      "sources": [
+        "The Provider guarantees 99.9% monthly uptime for the hosted service. If uptime falls below this level, the Customer is eligible for a service credit of 10% of the monthly fee.",
+        "If uptime falls below 99.0%, the service credit increases to 25% of the monthly fee. Credits must be requested within 30 days of the end of the affected month and are the Customer's sole remedy for downtime."
+      ],
+      "transformed": [
+        "The Provider guarantees 99.9% monthly uptime for the hosted service.",
+        "If uptime falls below this level, the Customer is eligible for a service credit of 10% of the monthly fee.",
+        "If uptime falls below 99.0%, the service credit increases to 25% of the monthly fee. Credits must be requested within 30 days of the end of the affected month and are the Customer's sole remedy for downtime."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-21",
+      "before": "11",
+      "after": "01",
+      "answer": "Ibuprofen is a nonsteroidal anti-inflammatory drug used to reduce fever, pain, and inflammation, and the usual adult over-the-counter dose is 200 to 400 mg every four to six hours. The maximum recommended over-the-counter dose is 1,200 mg in 24 hours.",
+      "sources": [
+        "Ibuprofen is a nonsteroidal anti-inflammatory drug used to reduce fever, pain, and inflammation. The usual adult over-the-counter dose is 200 to 400 mg every four to six hours.",
+        "The maximum recommended over-the-counter dose is 1,200 mg in 24 hours. Long-term use may increase the risk of stomach ulcers and kidney problems, so it should be taken with food if it upsets the stomach."
+      ],
+      "transformed": [
+        "Ibuprofen is a nonsteroidal anti-inflammatory drug used to reduce fever, pain, and inflammation.",
+        "The usual adult over-the-counter dose is 200 to 400 mg every four to six hours.",
+        "The maximum recommended over-the-counter dose is 1,200 mg in 24 hours. Long-term use may increase the risk of stomach ulcers and kidney problems, so it should be taken with food if it upsets the stomach."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-22",
+      "before": "11",
+      "after": "01",
+      "answer": "The Trailmate E-bike has a 500 Wh battery that provides a range of up to 80 km in eco mode, and its 250 W rear hub motor assists up to 25 km/h. It features hydraulic disc brakes and supports riders up to 120 kg.",
+      "sources": [
+        "The Trailmate E-bike has a 500 Wh battery that provides a range of up to 80 km in eco mode. The motor is a 250 W rear hub motor with assistance up to 25 km/h.",
+        "It features hydraulic disc brakes and a 7-speed drivetrain. The frame is aluminum and the bike supports riders up to 120 kg."
+      ],
+      "transformed": [
+        "The Trailmate E-bike has a 500 Wh battery that provides a range of up to 80 km in eco mode.",
+        "The motor is a 250 W rear hub motor with assistance up to 25 km/h.",
+        "It features hydraulic disc brakes and a 7-speed drivetrain. The frame is aluminum and the bike supports riders up to 120 kg."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-2-24",
+      "before": "11",
+      "after": "01",
+      "answer": "Apollo 11 launched on July 16, 1969, and Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20. Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind.\"",
+      "sources": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin, and Michael Collins. Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20.",
+        "Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind.\" The astronauts spent about 21 hours on the lunar surface before rejoining Collins in orbit."
+      ],
+      "transformed": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin, and Michael Collins.",
+        "Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20.",
+        "Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind.\" The astronauts spent about 21 hours on the lunar surface before rejoining Collins in orbit."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "duplicate a source",
+      "id": "mm-grounded-3-1",
+      "before": "10",
+      "after": "11",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. Requests must be submitted at least ten business days before the proposed start date, and remote workers must be reachable from 10:00 a.m. to 3:00 p.m. local time.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems.",
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "add an unrelated source",
+      "id": "mm-grounded-3-1",
+      "before": "10",
+      "after": "11",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. Requests must be submitted at least ten business days before the proposed start date, and remote workers must be reachable from 10:00 a.m. to 3:00 p.m. local time.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems.",
+        "The lighthouse on the northern headland was painted white in a later restoration of the harbour."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-1",
+      "before": "10",
+      "after": "11",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. Requests must be submitted at least ten business days before the proposed start date, and remote workers must be reachable from 10:00 a.m. to 3:00 p.m. local time.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date. Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least ten business days before the proposed start date.",
+        "Approvals are reviewed every six months.",
+        "Remote workers must be reachable during core hours of 10:00 a.m. to 3:00 p.m. local time. Company-issued laptops must use the VPN whenever they access internal systems."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-4",
+      "before": "11",
+      "after": "01",
+      "answer": "The RoboClean S5 provides up to 150 minutes of runtime on standard mode, and a full recharge takes about four hours. Its dustbin holds 0.45 liters, and the HEPA filter should be replaced every six months.",
+      "sources": [
+        "The RoboClean S5 has a 5,200 mAh battery that provides up to 150 minutes of runtime on standard mode. When the battery runs low, it automatically returns to its charging dock. A full recharge takes about four hours.",
+        "The dustbin holds 0.45 liters and should be emptied after every use. The washable HEPA filter should be replaced every six months."
+      ],
+      "transformed": [
+        "The RoboClean S5 has a 5,200 mAh battery that provides up to 150 minutes of runtime on standard mode. When the battery runs low, it automatically returns to its charging dock.",
+        "A full recharge takes about four hours.",
+        "The dustbin holds 0.45 liters and should be emptied after every use. The washable HEPA filter should be replaced every six months."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-11",
+      "before": "11",
+      "after": "01",
+      "answer": "Perseverance landed in Jezero Crater on February 18, 2021, a site chosen because it once held a lake and a river delta. The rover is collecting rock core samples in sealed tubes for possible return to Earth.",
+      "sources": [
+        "NASA's Perseverance rover landed in Jezero Crater on Mars on February 18, 2021. Scientists chose the site because it once held a lake and a river delta.",
+        "The rover carries the Ingenuity helicopter, which made the first powered, controlled flight on another planet in April 2021. Perseverance is collecting rock core samples in sealed tubes for possible return to Earth."
+      ],
+      "transformed": [
+        "NASA's Perseverance rover landed in Jezero Crater on Mars on February 18, 2021.",
+        "Scientists chose the site because it once held a lake and a river delta.",
+        "The rover carries the Ingenuity helicopter, which made the first powered, controlled flight on another planet in April 2021. Perseverance is collecting rock core samples in sealed tubes for possible return to Earth."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-14",
+      "before": "11",
+      "after": "01",
+      "answer": "The Employee is entitled to 20 days of paid vacation per calendar year, and up to five unused days may be carried over. Either party may terminate with thirty days' written notice, while the Company may terminate immediately for cause.",
+      "sources": [
+        "The Employee will be entitled to 20 days of paid vacation per calendar year, accruing monthly. Up to five unused days may be carried over into the following year.",
+        "Either party may terminate this Agreement by giving thirty days' written notice. The Company may terminate immediately for cause, including gross misconduct."
+      ],
+      "transformed": [
+        "The Employee will be entitled to 20 days of paid vacation per calendar year, accruing monthly.",
+        "Up to five unused days may be carried over into the following year.",
+        "Either party may terminate this Agreement by giving thirty days' written notice. The Company may terminate immediately for cause, including gross misconduct."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-17",
+      "before": "11",
+      "after": "01",
+      "answer": "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution and had risen to roughly 420 parts per million by 2023. The increase is primarily attributed to burning fossil fuels and deforestation.",
+      "sources": [
+        "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution. By 2023, the annual average had risen to roughly 420 parts per million.",
+        "The increase is primarily attributed to burning fossil fuels and deforestation. Oceans have absorbed roughly a quarter of human-emitted carbon dioxide, which has made seawater more acidic.",
+        "Methane is a less abundant but more potent greenhouse gas over a 20-year period. Major sources include livestock, landfills, and natural gas leaks."
+      ],
+      "transformed": [
+        "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution.",
+        "By 2023, the annual average had risen to roughly 420 parts per million.",
+        "The increase is primarily attributed to burning fossil fuels and deforestation. Oceans have absorbed roughly a quarter of human-emitted carbon dioxide, which has made seawater more acidic.",
+        "Methane is a less abundant but more potent greenhouse gas over a 20-year period. Major sources include livestock, landfills, and natural gas leaks."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-18",
+      "before": "11",
+      "after": "01",
+      "answer": "Apollo 11 launched on July 16, 1969, and Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20. As he stepped onto the surface, Armstrong said, \"That's one small step for man, one giant leap for mankind.\"",
+      "sources": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin, and Michael Collins. Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20.",
+        "As he stepped onto the surface, Armstrong said, \"That's one small step for man, one giant leap for mankind.\" The astronauts spent about 21 hours on the lunar surface before rejoining Collins in orbit."
+      ],
+      "transformed": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin, and Michael Collins.",
+        "Armstrong and Aldrin landed the lunar module Eagle in the Sea of Tranquility on July 20.",
+        "As he stepped onto the surface, Armstrong said, \"That's one small step for man, one giant leap for mankind.\" The astronauts spent about 21 hours on the lunar surface before rejoining Collins in orbit."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-19",
+      "before": "11",
+      "after": "01",
+      "answer": "Members may borrow up to 10 books at a time for three weeks, and loans may be renewed twice unless another member has placed a hold. Overdue books incur a fine of $0.25 per day, up to a maximum of $10 per item.",
+      "sources": [
+        "Library members may borrow up to 10 books at a time for a period of three weeks. Loans may be renewed twice unless another member has placed a hold on the item.",
+        "Overdue books incur a fine of $0.25 per day, up to a maximum of $10 per item. Borrowing privileges are suspended when fines exceed $15."
+      ],
+      "transformed": [
+        "Library members may borrow up to 10 books at a time for a period of three weeks.",
+        "Loans may be renewed twice unless another member has placed a hold on the item.",
+        "Overdue books incur a fine of $0.25 per day, up to a maximum of $10 per item. Borrowing privileges are suspended when fines exceed $15."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-20",
+      "before": "11",
+      "after": "01",
+      "answer": "The Provider guarantees 99.9% monthly uptime, excluding scheduled maintenance announced at least 48 hours in advance. If uptime falls below 99.0%, the credit is 25%, and it must be requested within 30 days of the end of the affected month.",
+      "sources": [
+        "The Provider guarantees 99.9% monthly uptime for the Service, excluding scheduled maintenance. Scheduled maintenance will be announced at least 48 hours in advance.",
+        "If monthly uptime falls below 99.9% but at least 99.0%, the Customer will receive a service credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit is 25%. Credits must be requested within 30 days of the end of the affected month.",
+        "The Provider's total liability under this Agreement shall not exceed the fees paid by the Customer in the preceding twelve months."
+      ],
+      "transformed": [
+        "The Provider guarantees 99.9% monthly uptime for the Service, excluding scheduled maintenance.",
+        "Scheduled maintenance will be announced at least 48 hours in advance.",
+        "If monthly uptime falls below 99.9% but at least 99.0%, the Customer will receive a service credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit is 25%. Credits must be requested within 30 days of the end of the affected month.",
+        "The Provider's total liability under this Agreement shall not exceed the fees paid by the Customer in the preceding twelve months."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-3-25",
+      "before": "11",
+      "after": "01",
+      "answer": "Each passenger may bring one carry-on bag weighing up to 10 kg plus one personal item, and the carry-on must not exceed 55 x 40 x 20 cm. The first checked bag is free on international flights and costs $35 on domestic flights.",
+      "sources": [
+        "Each passenger may bring one carry-on bag weighing up to 10 kg and one personal item. The carry-on must not exceed 55 x 40 x 20 cm.",
+        "The first checked bag is free on international flights and costs $35 on domestic flights. Checked bags over 23 kg incur an overweight fee of $75."
+      ],
+      "transformed": [
+        "Each passenger may bring one carry-on bag weighing up to 10 kg and one personal item.",
+        "The carry-on must not exceed 55 x 40 x 20 cm.",
+        "The first checked bag is free on international flights and costs $35 on domestic flights. Checked bags over 23 kg incur an overweight fee of $75."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-3",
+      "before": "11",
+      "after": "01",
+      "answer": "Adults and children over 12 may take 200 mg to 400 mg every 4 to 6 hours as needed, without exceeding 1,200 mg in 24 hours unless a physician directs otherwise. It should be taken with food or milk if stomach upset occurs.",
+      "sources": [
+        "Adults and children over 12 years may take 200 mg to 400 mg of ibuprofen every 4 to 6 hours as needed. Do not exceed 1,200 mg in 24 hours unless directed by a physician.",
+        "Ibuprofen should be taken with food or milk if stomach upset occurs. Patients with a history of stomach ulcers should consult a doctor before use."
+      ],
+      "transformed": [
+        "Adults and children over 12 years may take 200 mg to 400 mg of ibuprofen every 4 to 6 hours as needed.",
+        "Do not exceed 1,200 mg in 24 hours unless directed by a physician.",
+        "Ibuprofen should be taken with food or milk if stomach upset occurs. Patients with a history of stomach ulcers should consult a doctor before use."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-5",
+      "before": "11",
+      "after": "01",
+      "answer": "Mars has a diameter of about 6,779 km, roughly half that of Earth, and its surface gravity is 3.71 m/s². A sol lasts 24 hours and 39 minutes, and the planet takes 687 Earth days to orbit the Sun.",
+      "sources": [
+        "Mars has a diameter of about 6,779 km, roughly half that of Earth. Its surface gravity is 3.71 m/s², about 38% of Earth's.",
+        "A Martian day, or sol, lasts 24 hours and 39 minutes. The planet takes 687 Earth days to orbit the Sun."
+      ],
+      "transformed": [
+        "Mars has a diameter of about 6,779 km, roughly half that of Earth.",
+        "Its surface gravity is 3.71 m/s², about 38% of Earth's.",
+        "A Martian day, or sol, lasts 24 hours and 39 minutes. The planet takes 687 Earth days to orbit the Sun."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-9",
+      "before": "11",
+      "after": "01",
+      "answer": "Normal blood pressure is less than 120/80 mm Hg, while stage 1 hypertension is 130 to 139 systolic or 80 to 89 diastolic. Lifestyle changes include reducing sodium intake to under 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week.",
+      "sources": [
+        "Normal blood pressure is defined as less than 120/80 mm Hg. Stage 1 hypertension is 130 to 139 systolic or 80 to 89 diastolic.",
+        "Lifestyle changes include reducing sodium intake to under 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week. Medication may be added if blood pressure remains elevated."
+      ],
+      "transformed": [
+        "Normal blood pressure is defined as less than 120/80 mm Hg.",
+        "Stage 1 hypertension is 130 to 139 systolic or 80 to 89 diastolic.",
+        "Lifestyle changes include reducing sodium intake to under 2,300 mg per day and getting at least 150 minutes of moderate aerobic activity per week. Medication may be added if blood pressure remains elevated."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-10",
+      "before": "11",
+      "after": "01",
+      "answer": "The BrewMaster 500 features a 15-bar pump and a 1.8-litre removable water tank, and it heats up in 25 seconds. The warranty covers manufacturing defects for 24 months from purchase but excludes damage caused by descaling with non-approved products.",
+      "sources": [
+        "The BrewMaster 500 features a 15-bar pump and a 1.8-litre removable water tank. It heats up in 25 seconds thanks to its thermoblock system.",
+        "The warranty covers manufacturing defects for 24 months from the date of purchase. Damage caused by descaling with non-approved products is excluded."
+      ],
+      "transformed": [
+        "The BrewMaster 500 features a 15-bar pump and a 1.8-litre removable water tank.",
+        "It heats up in 25 seconds thanks to its thermoblock system.",
+        "The warranty covers manufacturing defects for 24 months from the date of purchase. Damage caused by descaling with non-approved products is excluded."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-11",
+      "before": "11",
+      "after": "01",
+      "answer": "Water reaches its maximum density at 3.98 °C, and ice is about 9% less dense than liquid water, which is why it floats. The specific heat capacity of water is 4.18 J/g·°C, which helps oceans moderate coastal climates.",
+      "sources": [
+        "Water reaches its maximum density at 3.98 °C. Ice is about 9% less dense than liquid water, which is why it floats.",
+        "The specific heat capacity of water is 4.18 J/g·°C, among the highest of common liquids. This helps oceans moderate coastal climates."
+      ],
+      "transformed": [
+        "Water reaches its maximum density at 3.98 °C.",
+        "Ice is about 9% less dense than liquid water, which is why it floats.",
+        "The specific heat capacity of water is 4.18 J/g·°C, among the highest of common liquids. This helps oceans moderate coastal climates."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-12",
+      "before": "11",
+      "after": "01",
+      "answer": "Apollo 11 launched on July 16, 1969, and the lunar module Eagle landed in the Sea of Tranquility on July 20. Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind,\" and the crew splashed down in the Pacific Ocean on July 24.",
+      "sources": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin and Michael Collins. The lunar module Eagle landed in the Sea of Tranquility on July 20.",
+        "Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind.\" The crew splashed down in the Pacific Ocean on July 24."
+      ],
+      "transformed": [
+        "Apollo 11 launched on July 16, 1969, carrying Neil Armstrong, Buzz Aldrin and Michael Collins.",
+        "The lunar module Eagle landed in the Sea of Tranquility on July 20.",
+        "Armstrong stepped onto the surface first, saying, \"That's one small step for man, one giant leap for mankind.\" The crew splashed down in the Pacific Ocean on July 24."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-13",
+      "before": "11",
+      "after": "01",
+      "answer": "Eligible employees receive 16 weeks of paid parental leave at full salary, which must be taken within 12 months of the child's birth or placement. They must have completed at least 6 months of service, and the leave may be taken in a single block or in two separate blocks.",
+      "sources": [
+        "Eligible employees receive 16 weeks of paid parental leave at full salary. Leave must be taken within 12 months of the child's birth or placement.",
+        "Employees must have completed at least 6 months of service to qualify. Leave may be taken in a single block or in two separate blocks."
+      ],
+      "transformed": [
+        "Eligible employees receive 16 weeks of paid parental leave at full salary.",
+        "Leave must be taken within 12 months of the child's birth or placement.",
+        "Employees must have completed at least 6 months of service to qualify. Leave may be taken in a single block or in two separate blocks."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-14",
+      "before": "11",
+      "after": "01",
+      "answer": "The license is non-exclusive and non-transferable and covers up to five devices, and the licensee may not reverse engineer, decompile, or disassemble the Software. The fee is $400 per year, payable in advance, and failure to pay within 15 days of the due date results in suspension of the license.",
+      "sources": [
+        "Licensee is granted a non-exclusive, non-transferable license to use the Software on up to five devices. Licensee shall not reverse engineer, decompile, or disassemble the Software.",
+        "The license fee is $400 per year, payable in advance. Failure to pay within 15 days of the due date results in suspension of the license."
+      ],
+      "transformed": [
+        "Licensee is granted a non-exclusive, non-transferable license to use the Software on up to five devices.",
+        "Licensee shall not reverse engineer, decompile, or disassemble the Software.",
+        "The license fee is $400 per year, payable in advance. Failure to pay within 15 days of the due date results in suspension of the license."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-15",
+      "before": "11",
+      "after": "01",
+      "answer": "The MMR vaccine is given in two doses, the first at 12 through 15 months of age and the second at 4 through 6 years. Fever occurs in about 5% to 15% of recipients, and serious allergic reactions are rare.",
+      "sources": [
+        "The MMR vaccine is given in two doses. The first dose is recommended at 12 through 15 months of age, and the second at 4 through 6 years.",
+        "Common side effects include fever in about 5% to 15% of recipients and mild rash. Serious allergic reactions are rare."
+      ],
+      "transformed": [
+        "The MMR vaccine is given in two doses.",
+        "The first dose is recommended at 12 through 15 months of age, and the second at 4 through 6 years.",
+        "Common side effects include fever in about 5% to 15% of recipients and mild rash. Serious allergic reactions are rare."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-17",
+      "before": "11",
+      "after": "01",
+      "answer": "The human genome contains about 3.1 billion base pairs and roughly 20,000 protein-coding genes. The Human Genome Project began in 1990 and was declared complete in April 2003.",
+      "sources": [
+        "The human genome contains about 3.1 billion base pairs. It includes roughly 20,000 protein-coding genes.",
+        "The Human Genome Project began in 1990 and a working draft was announced in 2000. The project was declared complete in April 2003.",
+        "Protein-coding sequences make up only about 1% to 2% of the genome. Much of the rest was once called junk DNA, though some of it is now known to regulate gene activity."
+      ],
+      "transformed": [
+        "The human genome contains about 3.1 billion base pairs.",
+        "It includes roughly 20,000 protein-coding genes.",
+        "The Human Genome Project began in 1990 and a working draft was announced in 2000. The project was declared complete in April 2003.",
+        "Protein-coding sequences make up only about 1% to 2% of the genome. Much of the rest was once called junk DNA, though some of it is now known to regulate gene activity."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-19",
+      "before": "11",
+      "after": "01",
+      "answer": "Meals while traveling are reimbursed up to $65 per day, and receipts are required for any single expense over $25. Expense reports must be filed within 30 days of the trip's end, and late submissions require approval from a department director.",
+      "sources": [
+        "Meals while traveling are reimbursed up to $65 per day. Receipts are required for any single expense over $25.",
+        "Expense reports must be filed within 30 days of the trip's end. Late submissions require approval from a department director."
+      ],
+      "transformed": [
+        "Meals while traveling are reimbursed up to $65 per day.",
+        "Receipts are required for any single expense over $25.",
+        "Expense reports must be filed within 30 days of the trip's end. Late submissions require approval from a department director."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-20",
+      "before": "11",
+      "after": "01",
+      "answer": "The Provider guarantees 99.9% monthly uptime, and up to 4 hours of scheduled maintenance per month is excluded from the calculation. If uptime falls below 99.9% but at least 99.0%, the credit is 10% of the monthly fee, and if it falls below 99.0%, the credit is 25%.",
+      "sources": [
+        "The Provider guarantees 99.9% monthly uptime for the Service. Scheduled maintenance of up to 4 hours per month is excluded from the calculation.",
+        "If uptime falls below 99.9% but at least 99.0%, the Customer receives a credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit is 25%."
+      ],
+      "transformed": [
+        "The Provider guarantees 99.9% monthly uptime for the Service.",
+        "Scheduled maintenance of up to 4 hours per month is excluded from the calculation.",
+        "If uptime falls below 99.9% but at least 99.0%, the Customer receives a credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit is 25%."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-21",
+      "before": "11",
+      "after": "01",
+      "answer": "Metformin is usually started at 500 mg once or twice daily with meals, and the dose may be increased gradually to a maximum of 2,550 mg per day. It should not be used in patients with severe kidney impairment, defined as an eGFR below 30 mL/min/1.73 m².",
+      "sources": [
+        "Metformin is usually started at 500 mg once or twice daily with meals. The dose may be increased gradually to a maximum of 2,550 mg per day.",
+        "Metformin should not be used in patients with severe kidney impairment, defined as an eGFR below 30 mL/min/1.73 m². The most common side effects are nausea and diarrhea."
+      ],
+      "transformed": [
+        "Metformin is usually started at 500 mg once or twice daily with meals.",
+        "The dose may be increased gradually to a maximum of 2,550 mg per day.",
+        "Metformin should not be used in patients with severe kidney impairment, defined as an eGFR below 30 mL/min/1.73 m². The most common side effects are nausea and diarrhea."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-22",
+      "before": "11",
+      "after": "01",
+      "answer": "The PureAir 300 uses a true HEPA filter that captures 99.97% of particles as small as 0.3 microns, and it is rated for rooms up to 40 square metres. Filters should be replaced every 12 months under normal use, and the unit operates at 24 dB on its lowest setting.",
+      "sources": [
+        "The PureAir 300 uses a true HEPA filter that captures 99.97% of particles as small as 0.3 microns. It is rated for rooms up to 40 square metres.",
+        "Filters should be replaced every 12 months under normal use. The unit operates at 24 dB on its lowest setting."
+      ],
+      "transformed": [
+        "The PureAir 300 uses a true HEPA filter that captures 99.97% of particles as small as 0.3 microns.",
+        "It is rated for rooms up to 40 square metres.",
+        "Filters should be replaced every 12 months under normal use. The unit operates at 24 dB on its lowest setting."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-23",
+      "before": "11",
+      "after": "01",
+      "answer": "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution, and by 2023 the annual average had risen above 419 ppm. Global average surface temperature has increased by roughly 1.1 °C since the late 19th century, with most of the warming occurring since 1975.",
+      "sources": [
+        "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution. By 2023 the annual average had risen above 419 ppm.",
+        "Global average surface temperature has increased by roughly 1.1 °C since the late 19th century. Most of this warming has occurred since 1975."
+      ],
+      "transformed": [
+        "Atmospheric carbon dioxide averaged about 280 parts per million before the Industrial Revolution.",
+        "By 2023 the annual average had risen above 419 ppm.",
+        "Global average surface temperature has increased by roughly 1.1 °C since the late 19th century. Most of this warming has occurred since 1975."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-24",
+      "before": "11",
+      "after": "01",
+      "answer": "Johannes Gutenberg introduced movable-type printing in Europe around 1450 in Mainz, and the Gutenberg Bible was completed around 1455. About 180 copies were printed, and 49 are known to survive in whole or in part.",
+      "sources": [
+        "Johannes Gutenberg introduced movable-type printing in Europe around 1450 in Mainz. His best-known work, the Gutenberg Bible, was completed around 1455.",
+        "Historians estimate that about 180 copies of the Bible were printed. Of these, 49 copies are known to survive in whole or in part."
+      ],
+      "transformed": [
+        "Johannes Gutenberg introduced movable-type printing in Europe around 1450 in Mainz.",
+        "His best-known work, the Gutenberg Bible, was completed around 1455.",
+        "Historians estimate that about 180 copies of the Bible were printed. Of these, 49 copies are known to survive in whole or in part."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-grounded-4-25",
+      "before": "10",
+      "after": "00",
+      "answer": "Books may be borrowed for 21 days and renewed up to two times, but items on high-demand lists cannot be renewed. Overdue book fines are $0.25 per day, capped at $10 per item, and borrowing privileges are suspended once unpaid fines reach $20.",
+      "sources": [
+        "Books may be borrowed for 21 days and renewed up to two times. Items on high-demand lists cannot be renewed.",
+        "Overdue fines are $0.25 per day for books, capped at $10 per item. DVDs are fined $1.00 per day.",
+        "Borrowing privileges are suspended once a patron's unpaid fines reach $20. Suspension is lifted when the balance is paid."
+      ],
+      "transformed": [
+        "Books may be borrowed for 21 days and renewed up to two times.",
+        "Items on high-demand lists cannot be renewed.",
+        "Overdue fines are $0.25 per day for books, capped at $10 per item. DVDs are fined $1.00 per day.",
+        "Borrowing privileges are suspended once a patron's unpaid fines reach $20. Suspension is lifted when the balance is paid."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-1-10",
+      "before": "101",
+      "after": "001",
+      "answer": "The TrailKeep bottle holds 750 ml and keeps drinks cold for up to 24 hours. Hot beverages stay hot for up to 18 hours. The lid should be washed by hand.",
+      "sources": [
+        "The TrailKeep insulated bottle holds 750 ml and is made from 18/8 stainless steel. Double-wall vacuum insulation keeps drinks cold for up to 24 hours.",
+        "Hot beverages stay hot for up to 12 hours. The bottle is not dishwasher safe, and the lid should be hand washed."
+      ],
+      "transformed": [
+        "The TrailKeep insulated bottle holds 750 ml and is made from 18/8 stainless steel.",
+        "Double-wall vacuum insulation keeps drinks cold for up to 24 hours.",
+        "Hot beverages stay hot for up to 12 hours. The bottle is not dishwasher safe, and the lid should be hand washed."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-1-17",
+      "before": "101",
+      "after": "001",
+      "answer": "The human genome has about 3.1 billion base pairs organized into 23 pairs of chromosomes. Humans have roughly 50,000 protein-coding genes. Coding sequences account for only about 1 to 2 percent of the genome.",
+      "sources": [
+        "The human genome contains approximately 3.1 billion base pairs of DNA. These are organized into 23 pairs of chromosomes in most human cells.",
+        "Current estimates suggest that humans have around 20,000 protein-coding genes. Protein-coding sequences make up only about 1 to 2 percent of the genome."
+      ],
+      "transformed": [
+        "The human genome contains approximately 3.1 billion base pairs of DNA.",
+        "These are organized into 23 pairs of chromosomes in most human cells.",
+        "Current estimates suggest that humans have around 20,000 protein-coding genes. Protein-coding sequences make up only about 1 to 2 percent of the genome."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-1-19",
+      "before": "100",
+      "after": "000",
+      "answer": "A residential parking permit costs $45 per year for a household's first vehicle, and a second vehicle costs $90. Each household receives 20 visitor passes annually. The late fee for renewing after 31 January is $25.",
+      "sources": [
+        "Residential parking permits cost $45 per year for the first vehicle in a household. A second vehicle may be registered for $90 per year, and no more than two permits are issued per address.",
+        "Each household also receives 20 visitor passes per year at no charge. Permits must be renewed by 31 January, and a $15 late fee applies after that date."
+      ],
+      "transformed": [
+        "Residential parking permits cost $45 per year for the first vehicle in a household.",
+        "A second vehicle may be registered for $90 per year, and no more than two permits are issued per address.",
+        "Each household also receives 20 visitor passes per year at no charge. Permits must be renewed by 31 January, and a $15 late fee applies after that date."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-1-22",
+      "before": "101",
+      "after": "001",
+      "answer": "The CleanBot R5 has 5,000 Pa of suction and a 0.4-liter dustbin. Its battery lasts up to 180 minutes in standard mode. It returns to its dock automatically when the battery is low.",
+      "sources": [
+        "The CleanBot R5 robot vacuum provides 5,000 Pa of suction and navigates using a lidar sensor. Its dustbin has a capacity of 0.4 liters.",
+        "On the standard cleaning mode, the battery lasts up to 120 minutes on a single charge. The robot returns to its dock automatically when the battery is low and resumes cleaning after recharging."
+      ],
+      "transformed": [
+        "The CleanBot R5 robot vacuum provides 5,000 Pa of suction and navigates using a lidar sensor.",
+        "Its dustbin has a capacity of 0.4 liters.",
+        "On the standard cleaning mode, the battery lasts up to 120 minutes on a single charge. The robot returns to its dock automatically when the battery is low and resumes cleaning after recharging."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-1-24",
+      "before": "101",
+      "after": "001",
+      "answer": "Construction of the Berlin Wall began on 13 August 1961 and it eventually surrounded West Berlin for about 155 km. The border opened on 9 November 1989 after the Wall had stood for just over 38 years. German reunification followed in October 1990.",
+      "sources": [
+        "Construction of the Berlin Wall began on 13 August 1961, when East Germany sealed the border between East and West Berlin. The barrier eventually surrounded West Berlin for about 155 km.",
+        "On 9 November 1989, East German officials announced that citizens could cross the border freely. The Wall had stood for just over 28 years, and its fall preceded German reunification in October 1990."
+      ],
+      "transformed": [
+        "Construction of the Berlin Wall began on 13 August 1961, when East Germany sealed the border between East and West Berlin.",
+        "The barrier eventually surrounded West Berlin for about 155 km.",
+        "On 9 November 1989, East German officials announced that citizens could cross the border freely. The Wall had stood for just over 28 years, and its fall preceded German reunification in October 1990."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-10",
+      "before": "111",
+      "after": "101",
+      "answer": "The Trail 32 holds 946 ml and has a stainless steel body. It keeps cold drinks cold for up to 24 hours and hot drinks hot for up to 18 hours. The lid can go on the top rack of a dishwasher.",
+      "sources": [
+        "The Trail 32 bottle holds 946 ml and is made of 18/8 stainless steel. Cold drinks stay cold for up to 24 hours, and hot drinks stay hot for up to 12 hours.",
+        "The bottle carries a lifetime limited warranty against manufacturing defects. The lid is dishwasher-safe on the top rack only, while the body should be washed by hand."
+      ],
+      "transformed": [
+        "The Trail 32 bottle holds 946 ml and is made of 18/8 stainless steel.",
+        "Cold drinks stay cold for up to 24 hours, and hot drinks stay hot for up to 12 hours.",
+        "The bottle carries a lifetime limited warranty against manufacturing defects. The lid is dishwasher-safe on the top rack only, while the body should be washed by hand."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-12",
+      "before": "111",
+      "after": "011",
+      "answer": "Apollo 11 launched on July 16, 1969, and Armstrong stepped onto the Moon on July 20 saying, \"That's one small step for man, one giant leap for mankind.\" Armstrong and Aldrin spent about 31 hours on the lunar surface. The crew splashed down in the Pacific on July 24, 1969.",
+      "sources": [
+        "Apollo 11 launched from Kennedy Space Center on July 16, 1969. On July 20, Neil Armstrong stepped onto the lunar surface and said, \"That's one small step for man, one giant leap for mankind.\"",
+        "Armstrong and Buzz Aldrin spent about 21 hours and 36 minutes on the lunar surface, including 2 hours and 31 minutes outside the lunar module. Michael Collins remained in lunar orbit aboard the command module.",
+        "The crew splashed down in the Pacific Ocean on July 24, 1969. They were recovered by the USS Hornet."
+      ],
+      "transformed": [
+        "Apollo 11 launched from Kennedy Space Center on July 16, 1969.",
+        "On July 20, Neil Armstrong stepped onto the lunar surface and said, \"That's one small step for man, one giant leap for mankind.\"",
+        "Armstrong and Buzz Aldrin spent about 21 hours and 36 minutes on the lunar surface, including 2 hours and 31 minutes outside the lunar module. Michael Collins remained in lunar orbit aboard the command module.",
+        "The crew splashed down in the Pacific Ocean on July 24, 1969. They were recovered by the USS Hornet."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-14",
+      "before": "101",
+      "after": "001",
+      "answer": "MMR is given in two doses, the first at 12 to 15 months and the second at 4 to 6 years. Two doses are about 87 percent effective at preventing measles. A single dose is about 93 percent effective.",
+      "sources": [
+        "The MMR vaccine is given in two doses. The first dose is recommended at 12 to 15 months of age and the second at 4 to 6 years.",
+        "Two doses of the MMR vaccine are about 97 percent effective at preventing measles. One dose is about 93 percent effective."
+      ],
+      "transformed": [
+        "The MMR vaccine is given in two doses.",
+        "The first dose is recommended at 12 to 15 months of age and the second at 4 to 6 years.",
+        "Two doses of the MMR vaccine are about 97 percent effective at preventing measles. One dose is about 93 percent effective."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-15",
+      "before": "101",
+      "after": "001",
+      "answer": "Each user may install the software on up to 5 devices for €120 per year. The Licensor guarantees monthly uptime of 99.5 percent. Support gives a first response within 8 business hours.",
+      "sources": [
+        "The license permits installation on up to 5 devices per user. The annual subscription fee is €120 per user.",
+        "The Licensor guarantees a monthly uptime of 99.9 percent for the hosted service. Support is available from 9:00 to 17:00 CET on business days, with a first response within 8 business hours."
+      ],
+      "transformed": [
+        "The license permits installation on up to 5 devices per user.",
+        "The annual subscription fee is €120 per user.",
+        "The Licensor guarantees a monthly uptime of 99.9 percent for the hosted service. Support is available from 9:00 to 17:00 CET on business days, with a first response within 8 business hours."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-17",
+      "before": "110",
+      "after": "010",
+      "answer": "The human genome has about 3.1 billion base pairs spread across 23 pairs of chromosomes. Humans have roughly 20,000 protein-coding genes. About 12 percent of the genome codes for proteins.",
+      "sources": [
+        "The human genome contains about 3.1 billion base pairs. It is divided among 23 pairs of chromosomes in most human cells.",
+        "Humans have roughly 20,000 protein-coding genes. Less than 2 percent of the genome codes for proteins."
+      ],
+      "transformed": [
+        "The human genome contains about 3.1 billion base pairs.",
+        "It is divided among 23 pairs of chromosomes in most human cells.",
+        "Humans have roughly 20,000 protein-coding genes. Less than 2 percent of the genome codes for proteins."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-19",
+      "before": "110",
+      "after": "010",
+      "answer": "The ordinance requires a fully zero-emission bus fleet by 2035, with 50 percent by 2030. The program is paid for by a $240 million bond approved in 2022. Charging depots will be built at 9 sites.",
+      "sources": [
+        "The city's Clean Air Ordinance requires that 100 percent of the municipal bus fleet be zero-emission by 2035. An interim target calls for 50 percent of the fleet to be zero-emission by 2030.",
+        "The program is funded by a $240 million bond approved by voters in 2022. Charging depots will be built at 6 sites across the city."
+      ],
+      "transformed": [
+        "The city's Clean Air Ordinance requires that 100 percent of the municipal bus fleet be zero-emission by 2035.",
+        "An interim target calls for 50 percent of the fleet to be zero-emission by 2030.",
+        "The program is funded by a $240 million bond approved by voters in 2022. Charging depots will be built at 6 sites across the city."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-24",
+      "before": "101",
+      "after": "001",
+      "answer": "The Panama Canal opened on 15 August 1914 and is about 82 km long. American construction lasted from 1904 to 1914 and cost roughly $475 million. About 5,600 workers died during that effort.",
+      "sources": [
+        "The Panama Canal opened on 15 August 1914. It is about 82 km long and links the Atlantic and Pacific Oceans.",
+        "American construction ran from 1904 to 1914 and cost roughly $375 million. About 5,600 workers died during the American effort, many from disease and accidents.",
+        "An earlier French attempt in the 1880s collapsed amid financial scandal and tropical disease."
+      ],
+      "transformed": [
+        "The Panama Canal opened on 15 August 1914.",
+        "It is about 82 km long and links the Atlantic and Pacific Oceans.",
+        "American construction ran from 1904 to 1914 and cost roughly $375 million. About 5,600 workers died during the American effort, many from disease and accidents.",
+        "An earlier French attempt in the 1880s collapsed amid financial scandal and tropical disease."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-2-25",
+      "before": "101",
+      "after": "001",
+      "answer": "Poultry must be cooked to an internal temperature of 74 °C, and ground beef to 71 °C. Perishable food should be refrigerated within 2 hours, or within 3 hours if the air temperature is above 32 °C. The refrigerator should be at 4 °C or lower.",
+      "sources": [
+        "Cooked poultry must reach an internal temperature of 74 °C (165 °F) to be considered safe. Ground beef must reach 71 °C (160 °F).",
+        "Perishable food should be refrigerated within 2 hours of cooking, or within 1 hour if the air temperature is above 32 °C. The refrigerator should be kept at 4 °C or below."
+      ],
+      "transformed": [
+        "Cooked poultry must reach an internal temperature of 74 °C (165 °F) to be considered safe.",
+        "Ground beef must reach 71 °C (160 °F).",
+        "Perishable food should be refrigerated within 2 hours of cooking, or within 1 hour if the air temperature is above 32 °C. The refrigerator should be kept at 4 °C or below."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-3-6",
+      "before": "101",
+      "after": "001",
+      "answer": "Construction began on 13 August 1961, and the barrier ran about 155 km around West Berlin. The wall divided the city for 38 years. German reunification formally took place on 3 October 1990.",
+      "sources": [
+        "Construction of the Berlin Wall began on 13 August 1961. East German authorities described it as an 'anti-fascist protection barrier'. The wall eventually stretched about 155 km around West Berlin.",
+        "On 9 November 1989, the East German government announced that border crossings would be opened. The wall had divided the city for 28 years. German reunification formally took place on 3 October 1990.",
+        "At least 140 people are documented to have died attempting to cross the wall. Many more were arrested at the border."
+      ],
+      "transformed": [
+        "Construction of the Berlin Wall began on 13 August 1961. East German authorities described it as an 'anti-fascist protection barrier'.",
+        "The wall eventually stretched about 155 km around West Berlin.",
+        "On 9 November 1989, the East German government announced that border crossings would be opened. The wall had divided the city for 28 years. German reunification formally took place on 3 October 1990.",
+        "At least 140 people are documented to have died attempting to cross the wall. Many more were arrested at the border."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "no space after a period",
+      "id": "mm-wrong-number-4-2",
+      "before": "101",
+      "after": "100",
+      "answer": "Rent is $1,850 per month and is due on the first day of the month. A late fee of 8% of the monthly rent applies if payment arrives after the fifth day. The lease runs for 12 months starting March 1.",
+      "sources": [
+        "The monthly rent is $1,850, due on the first day of each month. A late fee of 5% of the monthly rent applies if payment is received after the fifth day. The security deposit is equal to one and a half months' rent.",
+        "The lease term is 12 months beginning on March 1. Tenant must give 60 days' written notice of intent not to renew."
+      ],
+      "transformed": [
+        "The monthly rent is $1,850, due on the first day of each month.A late fee of 5% of the monthly rent applies if payment is received after the fifth day.The security deposit is equal to one and a half months' rent.",
+        "The lease term is 12 months beginning on March 1.Tenant must give 60 days' written notice of intent not to renew."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-4-3",
+      "before": "111",
+      "after": "101",
+      "answer": "For children under 40 kg, the usual dose is 80 to 90 mg/kg per day split into two doses. Children under 2 years are typically treated for 7 days. Diarrhea, nausea and rash are common side effects.",
+      "sources": [
+        "For children weighing less than 40 kg, the usual amoxicillin dose for acute otitis media is 80 to 90 mg/kg per day divided into two doses. Treatment duration is typically 10 days for children under 2 years. Children 6 years and older with mild disease may be treated for 5 to 7 days.",
+        "Common adverse effects include diarrhea, nausea and rash. Amoxicillin should be avoided in patients with a history of serious penicillin allergy."
+      ],
+      "transformed": [
+        "For children weighing less than 40 kg, the usual amoxicillin dose for acute otitis media is 80 to 90 mg/kg per day divided into two doses. Treatment duration is typically 10 days for children under 2 years.",
+        "Children 6 years and older with mild disease may be treated for 5 to 7 days.",
+        "Common adverse effects include diarrhea, nausea and rash. Amoxicillin should be avoided in patients with a history of serious penicillin allergy."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-4-13",
+      "before": "110",
+      "after": "100",
+      "answer": "Eligible employees get 16 weeks of paid parental leave at full base salary. They need at least 6 months of service and must take the leave within 12 months of the child's arrival. Leave may be split into as many as three blocks.",
+      "sources": [
+        "Eligible employees receive 16 weeks of paid parental leave at 100% of base salary following the birth or adoption of a child. Leave must be taken within 12 months of the child's arrival. Employees must have completed at least 6 months of service to qualify.",
+        "Benefits continue during leave, and the company pays its full share of health insurance premiums. Employees may split leave into no more than two blocks."
+      ],
+      "transformed": [
+        "Eligible employees receive 16 weeks of paid parental leave at 100% of base salary following the birth or adoption of a child. Leave must be taken within 12 months of the child's arrival.",
+        "Employees must have completed at least 6 months of service to qualify.",
+        "Benefits continue during leave, and the company pays its full share of health insurance premiums. Employees may split leave into no more than two blocks."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-4-14",
+      "before": "100",
+      "after": "000",
+      "answer": "The Provider guarantees 99.9% monthly uptime, excluding scheduled maintenance, and uptime below 99.0% earns a 25% credit. Customers must request credits within 60 days of the end of the affected month. Scheduled maintenance is capped at 4 hours per month.",
+      "sources": [
+        "The Provider guarantees 99.9% monthly uptime for the Service, excluding scheduled maintenance. If uptime falls below 99.9% but at least 99.0%, the Customer receives a credit of 10% of the monthly fee. If uptime falls below 99.0%, the credit is 25%.",
+        "Credits must be requested within 30 days of the end of the affected month. Scheduled maintenance will not exceed 4 hours per month and will be announced at least 48 hours in advance."
+      ],
+      "transformed": [
+        "The Provider guarantees 99.9% monthly uptime for the Service, excluding scheduled maintenance. If uptime falls below 99.9% but at least 99.0%, the Customer receives a credit of 10% of the monthly fee.",
+        "If uptime falls below 99.0%, the credit is 25%.",
+        "Credits must be requested within 30 days of the end of the affected month. Scheduled maintenance will not exceed 4 hours per month and will be announced at least 48 hours in advance."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-wrong-number-4-16",
+      "before": "110",
+      "after": "100",
+      "answer": "The Volta S has an EPA-estimated range of 405 miles from a 100 kWh pack. Charging from 10% to 80% takes about 25 minutes on a 250 kW charger, and the car reaches 60 mph in 3.8 seconds. The battery warranty is 8 years or 80,000 miles.",
+      "sources": [
+        "The Volta S sedan has an EPA-estimated range of 405 miles with its 100 kWh battery pack. Using a 250 kW DC fast charger, the battery can go from 10% to 80% in about 25 minutes. The car accelerates from 0 to 60 mph in 3.8 seconds.",
+        "Base price starts at $62,990 before incentives. The battery is covered by an 8-year, 100,000-mile warranty.",
+        "Standard equipment includes heated front seats and a 15-inch touchscreen."
+      ],
+      "transformed": [
+        "The Volta S sedan has an EPA-estimated range of 405 miles with its 100 kWh battery pack. Using a 250 kW DC fast charger, the battery can go from 10% to 80% in about 25 minutes.",
+        "The car accelerates from 0 to 60 mph in 3.8 seconds.",
+        "Base price starts at $62,990 before incentives. The battery is covered by an 8-year, 100,000-mile warranty.",
+        "Standard equipment includes heated front seats and a 15-inch touchscreen."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "duplicate a source",
+      "id": "mm-negated-1-1",
+      "before": "111",
+      "after": "101",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. New hires are allowed to work remotely from their very first day. Home internet costs are not reimbursed.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of a new arrangement. Remote work is not available during the first 90 days of employment.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Equipment such as laptops and monitors is provided by the company, but home internet costs are not reimbursed."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of a new arrangement. Remote work is not available during the first 90 days of employment.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Equipment such as laptops and monitors is provided by the company, but home internet costs are not reimbursed.",
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of a new arrangement. Remote work is not available during the first 90 days of employment."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-1-1",
+      "before": "111",
+      "after": "101",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. New hires are allowed to work remotely from their very first day. Home internet costs are not reimbursed.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of a new arrangement. Remote work is not available during the first 90 days of employment.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Equipment such as laptops and monitors is provided by the company, but home internet costs are not reimbursed."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of a new arrangement.",
+        "Remote work is not available during the first 90 days of employment.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Equipment such as laptops and monitors is provided by the company, but home internet costs are not reimbursed."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "add an unrelated source",
+      "id": "mm-negated-1-3",
+      "before": "101",
+      "after": "111",
+      "answer": "Metformin is usually started at 500 mg once or twice daily with meals. Doses can be raised by 500 mg each week up to about 2,000 mg daily. It is safe to use in patients whose eGFR is below 30.",
+      "sources": [
+        "Metformin is typically started at 500 mg once or twice daily with meals to reduce gastrointestinal side effects. The dose may be increased gradually, by 500 mg weekly, to a maximum of 2,000 mg per day in most adults.",
+        "Metformin is contraindicated in patients with an estimated glomerular filtration rate (eGFR) below 30 mL/min/1.73 m². Treatment should be temporarily stopped before procedures involving iodinated contrast in patients at risk of kidney injury."
+      ],
+      "transformed": [
+        "Metformin is typically started at 500 mg once or twice daily with meals to reduce gastrointestinal side effects. The dose may be increased gradually, by 500 mg weekly, to a maximum of 2,000 mg per day in most adults.",
+        "Metformin is contraindicated in patients with an estimated glomerular filtration rate (eGFR) below 30 mL/min/1.73 m². Treatment should be temporarily stopped before procedures involving iodinated contrast in patients at risk of kidney injury.",
+        "The lighthouse on the northern headland was painted white in a later restoration of the harbour."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-1-5",
+      "before": "101",
+      "after": "111",
+      "answer": "Voyager 1 was launched in 1977. It has not yet crossed into interstellar space. The spacecraft carries the Golden Record with sounds and images of Earth.",
+      "sources": [
+        "Voyager 1 was launched on September 5, 1977, and crossed the heliopause into interstellar space in August 2012. It is the most distant human-made object, at roughly 160 astronomical units from the Sun.",
+        "Voyager 1 carries the Golden Record, a phonograph record containing sounds and images of Earth. Its radioisotope thermoelectric generators lose about 4 watts of power per year."
+      ],
+      "transformed": [
+        "Voyager 1 was launched on September 5, 1977, and crossed the heliopause into interstellar space in August 2012.",
+        "It is the most distant human-made object, at roughly 160 astronomical units from the Sun.",
+        "Voyager 1 carries the Golden Record, a phonograph record containing sounds and images of Earth. Its radioisotope thermoelectric generators lose about 4 watts of power per year."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "add an unrelated source",
+      "id": "mm-negated-1-8",
+      "before": "001",
+      "after": "101",
+      "answer": "The non-solicitation restriction lasts twelve months after employment ends. The Company cannot terminate the Agreement immediately, even for gross misconduct. Either party may otherwise end the Agreement with sixty days' written notice.",
+      "sources": [
+        "During employment and for twelve months afterward, the Employee shall not solicit any client of the Company with whom the Employee had material contact. This restriction applies within the territory of the state of Ohio.",
+        "Either party may terminate this Agreement with sixty days' written notice. The Company may terminate immediately for cause, including gross misconduct or material breach of confidentiality."
+      ],
+      "transformed": [
+        "During employment and for twelve months afterward, the Employee shall not solicit any client of the Company with whom the Employee had material contact. This restriction applies within the territory of the state of Ohio.",
+        "Either party may terminate this Agreement with sixty days' written notice. The Company may terminate immediately for cause, including gross misconduct or material breach of confidentiality.",
+        "The lighthouse on the northern headland was painted white in a later restoration of the harbour."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "duplicate a source",
+      "id": "mm-negated-2-1",
+      "before": "111",
+      "after": "101",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. New hires may work remotely from their very first day. Company equipment must be returned within 10 business days of departure.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of the arrangement. Remote work is not available during the first 90 days of employment.",
+        "Equipment provided by the company, including laptops and monitors, remains company property. Employees must return all equipment within 10 business days of leaving the company.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Managers review each arrangement every six months."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of the arrangement. Remote work is not available during the first 90 days of employment.",
+        "Equipment provided by the company, including laptops and monitors, remains company property. Employees must return all equipment within 10 business days of leaving the company.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Managers review each arrangement every six months.",
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of the arrangement. Remote work is not available during the first 90 days of employment."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-2-1",
+      "before": "111",
+      "after": "101",
+      "answer": "Employees can work remotely up to three days a week if their manager approves. New hires may work remotely from their very first day. Company equipment must be returned within 10 business days of departure.",
+      "sources": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of the arrangement. Remote work is not available during the first 90 days of employment.",
+        "Equipment provided by the company, including laptops and monitors, remains company property. Employees must return all equipment within 10 business days of leaving the company.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Managers review each arrangement every six months."
+      ],
+      "transformed": [
+        "Employees may work remotely up to three days per week with manager approval. Requests must be submitted at least 14 days before the start of the arrangement.",
+        "Remote work is not available during the first 90 days of employment.",
+        "Equipment provided by the company, including laptops and monitors, remains company property. Employees must return all equipment within 10 business days of leaving the company.",
+        "Remote employees must be reachable during core hours of 10:00 to 15:00 local time. Managers review each arrangement every six months."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "add an unrelated source",
+      "id": "mm-negated-2-12",
+      "before": "000",
+      "after": "010",
+      "answer": "The non-compete lasts 12 months and covers a 50-mile radius around headquarters. The Company is unable to waive the restriction once the contract is signed. Confidentiality obligations continue for five years after employment ends.",
+      "sources": [
+        "The Employee agrees not to work for a competing business within 50 miles of the Company's headquarters for a period of 12 months following termination. This restriction applies only if the Company pays the Employee 50% of base salary during the restricted period. The Company may waive the restriction at any time by written notice.",
+        "The Employee shall keep all Confidential Information secret during employment and for five years afterward. Confidential Information does not include information that is publicly available through no fault of the Employee."
+      ],
+      "transformed": [
+        "The Employee agrees not to work for a competing business within 50 miles of the Company's headquarters for a period of 12 months following termination. This restriction applies only if the Company pays the Employee 50% of base salary during the restricted period. The Company may waive the restriction at any time by written notice.",
+        "The Employee shall keep all Confidential Information secret during employment and for five years afterward. Confidential Information does not include information that is publicly available through no fault of the Employee.",
+        "The lighthouse on the northern headland was painted white in a later restoration of the harbour."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "duplicate a source",
+      "id": "mm-negated-2-14",
+      "before": "101",
+      "after": "111",
+      "answer": "Unopened insulin pens belong in a refrigerator at 2°C to 8°C. Insulin can be safely frozen and used once thawed. Rotating injection sites helps prevent lipohypertrophy.",
+      "sources": [
+        "Unopened insulin pens should be stored in a refrigerator at 2°C to 8°C. Once in use, a pen can be kept at room temperature, up to 30°C, for 28 days. Insulin must never be frozen.",
+        "Insulin should be injected into subcutaneous fat, commonly in the abdomen, thigh, or upper arm. Rotating injection sites helps prevent lipohypertrophy.",
+        "Patients should check insulin for clumps or discoloration before each injection. Needles should be used only once and disposed of in a sharps container."
+      ],
+      "transformed": [
+        "Unopened insulin pens should be stored in a refrigerator at 2°C to 8°C. Once in use, a pen can be kept at room temperature, up to 30°C, for 28 days. Insulin must never be frozen.",
+        "Insulin should be injected into subcutaneous fat, commonly in the abdomen, thigh, or upper arm. Rotating injection sites helps prevent lipohypertrophy.",
+        "Patients should check insulin for clumps or discoloration before each injection. Needles should be used only once and disposed of in a sharps container.",
+        "Unopened insulin pens should be stored in a refrigerator at 2°C to 8°C. Once in use, a pen can be kept at room temperature, up to 30°C, for 28 days. Insulin must never be frozen."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-2-15",
+      "before": "101",
+      "after": "001",
+      "answer": "The Barista Pro 900 has a built-in grinder with 30 grind settings. Its water tank is not removable. The machine should be descaled every 3 months when used with hard water.",
+      "sources": [
+        "The Barista Pro 900 heats up in 3 seconds using a thermojet system. It has a 15-bar pump and a removable 2.0-liter water tank. The built-in grinder offers 30 grind settings.",
+        "The steam wand allows manual microfoam texturing. The machine should be descaled every 3 months when used with hard water. A two-year warranty is included."
+      ],
+      "transformed": [
+        "The Barista Pro 900 heats up in 3 seconds using a thermojet system. It has a 15-bar pump and a removable 2.0-liter water tank.",
+        "The built-in grinder offers 30 grind settings.",
+        "The steam wand allows manual microfoam texturing. The machine should be descaled every 3 months when used with hard water. A two-year warranty is included."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-2-18",
+      "before": "001",
+      "after": "011",
+      "answer": "Economy passengers may check one bag up to 23 kg for free. Bags over 32 kg will be accepted for an extra fee. Carry-on bags may not exceed 55 x 40 x 23 cm.",
+      "sources": [
+        "Passengers in economy class may check one bag weighing up to 23 kg at no charge. Bags between 23 kg and 32 kg incur an overweight fee of $75. Bags over 32 kg will not be accepted.",
+        "Each passenger may bring one carry-on bag and one personal item. The carry-on must not exceed 55 x 40 x 23 cm. Liquids in carry-on bags must be in containers of 100 ml or less.",
+        "Passengers with mobility aids may check them free of charge. Sports equipment is subject to separate fees."
+      ],
+      "transformed": [
+        "Passengers in economy class may check one bag weighing up to 23 kg at no charge. Bags between 23 kg and 32 kg incur an overweight fee of $75.",
+        "Bags over 32 kg will not be accepted.",
+        "Each passenger may bring one carry-on bag and one personal item. The carry-on must not exceed 55 x 40 x 23 cm. Liquids in carry-on bags must be in containers of 100 ml or less.",
+        "Passengers with mobility aids may check them free of charge. Sports equipment is subject to separate fees."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-negated-2-24",
+      "before": "101",
+      "after": "001",
+      "answer": "The Suez Canal opened in November 1869 and is about 193 kilometers long. The canal did not shorten the sea route between Europe and Asia. President Nasser nationalized it in 1956.",
+      "sources": [
+        "The Suez Canal opened on November 17, 1869, connecting the Mediterranean Sea to the Red Sea. It was built by the Suez Canal Company, led by Ferdinand de Lesseps. The canal is about 193 kilometers long.",
+        "By shortening the sea route between Europe and Asia, the canal cut the journey around Africa by roughly 7,000 kilometers. In 1956, President Nasser nationalized the canal, prompting the Suez Crisis."
+      ],
+      "transformed": [
+        "The Suez Canal opened on November 17, 1869, connecting the Mediterranean Sea to the Red Sea. It was built by the Suez Canal Company, led by Ferdinand de Lesseps.",
+        "The canal is about 193 kilometers long.",
+        "By shortening the sea route between Europe and Asia, the canal cut the journey around Africa by roughly 7,000 kilometers. In 1956, President Nasser nationalized the canal, prompting the Suez Crisis."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-1-8",
+      "before": "101",
+      "after": "001",
+      "answer": "Either party may terminate the Agreement for convenience on 60 days' written notice. Fees already accrued remain payable after termination. Paid fees are non-refundable unless termination results from Provider's uncured material breach.",
+      "sources": [
+        "Either party may terminate this Agreement for convenience upon 60 days' written notice to the other party, provided that no Order Form remains in its initial term. Termination does not relieve Customer of fees accrued before the effective date.",
+        "Fees paid are non-refundable, except where termination results from Provider's uncured material breach. Provider shall have 30 days after written notice to cure any such breach."
+      ],
+      "transformed": [
+        "Either party may terminate this Agreement for convenience upon 60 days' written notice to the other party, provided that no Order Form remains in its initial term.",
+        "Termination does not relieve Customer of fees accrued before the effective date.",
+        "Fees paid are non-refundable, except where termination results from Provider's uncured material breach. Provider shall have 30 days after written notice to cure any such breach."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-1-12",
+      "before": "111",
+      "after": "101",
+      "answer": "Patrons may borrow up to 10 items at one time, and books are loaned for 21 days. Items may be renewed twice. Overdue book fines are $0.25 per day, capped at $10 per item.",
+      "sources": [
+        "Patrons may borrow up to 10 items at one time. The loan period is 21 days for books and 7 days for DVDs. Items may be renewed twice unless another patron has placed a hold on them.",
+        "Overdue fines for books are $0.25 per day, capped at $10 per item. Fines are not charged on children's materials."
+      ],
+      "transformed": [
+        "Patrons may borrow up to 10 items at one time. The loan period is 21 days for books and 7 days for DVDs.",
+        "Items may be renewed twice unless another patron has placed a hold on them.",
+        "Overdue fines for books are $0.25 per day, capped at $10 per item. Fines are not charged on children's materials."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-1-21",
+      "before": "11",
+      "after": "01",
+      "answer": "The target INR for most warfarin patients is 2.0 to 3.0, and for mechanical mitral valves it is 2.5 to 3.5. A missed dose may be taken later, and it must never be doubled the next day.",
+      "sources": [
+        "The target INR for most patients taking warfarin is 2.0 to 3.0. For patients with mechanical mitral valves, the target range is 2.5 to 3.5.",
+        "If a dose is missed, it may be taken later the same day but must never be doubled the next day. Patients should keep their intake of vitamin K-rich foods consistent."
+      ],
+      "transformed": [
+        "The target INR for most patients taking warfarin is 2.0 to 3.0.",
+        "For patients with mechanical mitral valves, the target range is 2.5 to 3.5.",
+        "If a dose is missed, it may be taken later the same day but must never be doubled the next day. Patients should keep their intake of vitamin K-rich foods consistent."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "add an unrelated source",
+      "id": "mm-dropped-condition-2-7",
+      "before": "011",
+      "after": "111",
+      "answer": "Ticket holders can get a full refund on their tickets. Within 48 hours of the event, tickets can only be exchanged for credit. If the organizer cancels, refunds including service fees are paid within 14 business days.",
+      "sources": [
+        "Tickets are refundable for a full refund up to 48 hours before the event. Within 48 hours of the event, tickets may be exchanged for credit only. Service fees are non-refundable.",
+        "If an event is cancelled by the organizer, all purchasers receive a full refund, including service fees, within 14 business days."
+      ],
+      "transformed": [
+        "Tickets are refundable for a full refund up to 48 hours before the event. Within 48 hours of the event, tickets may be exchanged for credit only. Service fees are non-refundable.",
+        "If an event is cancelled by the organizer, all purchasers receive a full refund, including service fees, within 14 business days.",
+        "The lighthouse on the northern headland was painted white in a later restoration of the harbour."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-2-7",
+      "before": "011",
+      "after": "111",
+      "answer": "Ticket holders can get a full refund on their tickets. Within 48 hours of the event, tickets can only be exchanged for credit. If the organizer cancels, refunds including service fees are paid within 14 business days.",
+      "sources": [
+        "Tickets are refundable for a full refund up to 48 hours before the event. Within 48 hours of the event, tickets may be exchanged for credit only. Service fees are non-refundable.",
+        "If an event is cancelled by the organizer, all purchasers receive a full refund, including service fees, within 14 business days."
+      ],
+      "transformed": [
+        "Tickets are refundable for a full refund up to 48 hours before the event. Within 48 hours of the event, tickets may be exchanged for credit only.",
+        "Service fees are non-refundable.",
+        "If an event is cancelled by the organizer, all purchasers receive a full refund, including service fees, within 14 business days."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-2-11",
+      "before": "111",
+      "after": "101",
+      "answer": "The launch window opens at 09:42 and stays open for 90 minutes. The countdown may proceed during that window. A launch is scrubbed if lightning has been observed within 18 km of the pad in the previous 30 minutes.",
+      "sources": [
+        "The launch commit criteria state that the countdown may proceed only if surface winds at the pad are below 37 km/h. A launch is also scrubbed if lightning has been observed within 18 km of the pad during the previous 30 minutes.",
+        "The launch window opens at 09:42 and remains open for 90 minutes. If the vehicle does not lift off within the window, the attempt is rescheduled for the next available day."
+      ],
+      "transformed": [
+        "The launch commit criteria state that the countdown may proceed only if surface winds at the pad are below 37 km/h.",
+        "A launch is also scrubbed if lightning has been observed within 18 km of the pad during the previous 30 minutes.",
+        "The launch window opens at 09:42 and remains open for 90 minutes. If the vehicle does not lift off within the window, the attempt is rescheduled for the next available day."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "no space after a period",
+      "id": "mm-dropped-condition-2-11",
+      "before": "111",
+      "after": "100",
+      "answer": "The launch window opens at 09:42 and stays open for 90 minutes. The countdown may proceed during that window. A launch is scrubbed if lightning has been observed within 18 km of the pad in the previous 30 minutes.",
+      "sources": [
+        "The launch commit criteria state that the countdown may proceed only if surface winds at the pad are below 37 km/h. A launch is also scrubbed if lightning has been observed within 18 km of the pad during the previous 30 minutes.",
+        "The launch window opens at 09:42 and remains open for 90 minutes. If the vehicle does not lift off within the window, the attempt is rescheduled for the next available day."
+      ],
+      "transformed": [
+        "The launch commit criteria state that the countdown may proceed only if surface winds at the pad are below 37 km/h.A launch is also scrubbed if lightning has been observed within 18 km of the pad during the previous 30 minutes.",
+        "The launch window opens at 09:42 and remains open for 90 minutes.If the vehicle does not lift off within the window, the attempt is rescheduled for the next available day."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-2-13",
+      "before": "111",
+      "after": "101",
+      "answer": "Provider guarantees 99.9% uptime each month. If uptime falls below that, Customer is entitled to a service credit of 10% of the monthly fee. Scheduled maintenance of up to 4 hours per month announced 72 hours ahead is excluded from the calculation.",
+      "sources": [
+        "Provider guarantees 99.9% uptime each calendar month. If uptime falls below this level, Customer is entitled to a service credit of 10% of the monthly fee, provided Customer submits a claim within 30 days after the end of the affected month.",
+        "Scheduled maintenance of up to 4 hours per month, announced at least 72 hours in advance, is excluded from uptime calculations."
+      ],
+      "transformed": [
+        "Provider guarantees 99.9% uptime each calendar month.",
+        "If uptime falls below this level, Customer is entitled to a service credit of 10% of the monthly fee, provided Customer submits a claim within 30 days after the end of the affected month.",
+        "Scheduled maintenance of up to 4 hours per month, announced at least 72 hours in advance, is excluded from uptime calculations."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-2-22",
+      "before": "111",
+      "after": "011",
+      "answer": "Patients may take up to three nitroglycerin tablets, one every 5 minutes. Emergency services should be called if pain is not relieved 5 minutes after the first dose. Patients who have taken sildenafil in the previous 24 hours must not use it.",
+      "sources": [
+        "For chest pain, one nitroglycerin tablet is placed under the tongue at onset. If pain persists, the dose may be repeated every 5 minutes up to a maximum of three tablets. Emergency services should be called if pain is not relieved 5 minutes after the first dose.",
+        "Nitroglycerin must not be used by patients who have taken sildenafil within the previous 24 hours because of the risk of severe low blood pressure."
+      ],
+      "transformed": [
+        "For chest pain, one nitroglycerin tablet is placed under the tongue at onset. If pain persists, the dose may be repeated every 5 minutes up to a maximum of three tablets.",
+        "Emergency services should be called if pain is not relieved 5 minutes after the first dose.",
+        "Nitroglycerin must not be used by patients who have taken sildenafil within the previous 24 hours because of the risk of severe low blood pressure."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-3-22",
+      "before": "11",
+      "after": "01",
+      "answer": "The Brewmaster 400 comes with a 1-year warranty that extends to 3 years. It should be descaled every 3 months with the manufacturer's solution.",
+      "sources": [
+        "The Brewmaster 400 comes with a standard 1-year warranty. The warranty extends to 3 years if the product is registered online within 30 days of purchase.",
+        "The machine should be descaled every 3 months using the manufacturer's solution. Vinegar may damage the seals and void the warranty."
+      ],
+      "transformed": [
+        "The Brewmaster 400 comes with a standard 1-year warranty.",
+        "The warranty extends to 3 years if the product is registered online within 30 days of purchase.",
+        "The machine should be descaled every 3 months using the manufacturer's solution. Vinegar may damage the seals and void the warranty."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-4-5",
+      "before": "111",
+      "after": "101",
+      "answer": "Lithium-ion cells can typically be charged at up to 1C under normal conditions. Charging below 0 °C causes permanent capacity loss. Storing cells at about 40% charge and 15 °C minimizes degradation.",
+      "sources": [
+        "Lithium-ion cells can typically be charged at up to 1C under normal conditions. Charging below 0 °C causes lithium plating and permanent capacity loss, unless the cell is specifically rated for low-temperature charging.",
+        "Storing cells at about 40% state of charge and 15 °C minimizes degradation. Storage at full charge and 40 °C can cost roughly 35% of capacity in a year."
+      ],
+      "transformed": [
+        "Lithium-ion cells can typically be charged at up to 1C under normal conditions.",
+        "Charging below 0 °C causes lithium plating and permanent capacity loss, unless the cell is specifically rated for low-temperature charging.",
+        "Storing cells at about 40% state of charge and 15 °C minimizes degradation. Storage at full charge and 40 °C can cost roughly 35% of capacity in a year."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-4-11",
+      "before": "101",
+      "after": "001",
+      "answer": "The ISS orbits at about 408 km and completes about 16 orbits per day. A spacewalk can begin as soon as the astronauts are suited. Typical spacewalks last six to eight hours.",
+      "sources": [
+        "The International Space Station orbits Earth at an altitude of about 408 km. It travels at roughly 7.66 km/s and completes about 16 orbits per day.",
+        "An extravehicular activity may begin only after both crew members' suits have passed pressure and leak checks. A typical spacewalk lasts between six and eight hours."
+      ],
+      "transformed": [
+        "The International Space Station orbits Earth at an altitude of about 408 km.",
+        "It travels at roughly 7.66 km/s and completes about 16 orbits per day.",
+        "An extravehicular activity may begin only after both crew members' suits have passed pressure and leak checks. A typical spacewalk lasts between six and eight hours."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-4-13",
+      "before": "11",
+      "after": "01",
+      "answer": "The contractor must reach substantial completion by October 31, 2025, with delay damages of $500 per calendar day. The 10% retainage will be released once the certificate of completion is issued.",
+      "sources": [
+        "Contractor shall achieve substantial completion of the Work by October 31, 2025. Liquidated damages for delay shall be $500 per calendar day.",
+        "Owner shall withhold retainage of 10% from each progress payment. Retainage will be released upon issuance of the certificate of completion and receipt of final lien waivers from all subcontractors."
+      ],
+      "transformed": [
+        "Contractor shall achieve substantial completion of the Work by October 31, 2025.",
+        "Liquidated damages for delay shall be $500 per calendar day.",
+        "Owner shall withhold retainage of 10% from each progress payment. Retainage will be released upon issuance of the certificate of completion and receipt of final lien waivers from all subcontractors."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-4-18",
+      "before": "011",
+      "after": "001",
+      "answer": "Sodium hydroxide waste may be poured down the drain. Splash goggles and nitrile gloves must be worn when handling solutions above 5%. When diluting, acid should be added slowly to water.",
+      "sources": [
+        "Sodium hydroxide solutions above 5% concentration can cause severe skin burns and eye damage. Chemical splash goggles and nitrile gloves must be worn when handling them.",
+        "Neutralized waste may be poured down the drain only if its pH is between 6 and 9 and local regulations permit it. When diluting, always add acid slowly to water, never water to acid."
+      ],
+      "transformed": [
+        "Sodium hydroxide solutions above 5% concentration can cause severe skin burns and eye damage.",
+        "Chemical splash goggles and nitrile gloves must be worn when handling them.",
+        "Neutralized waste may be poured down the drain only if its pH is between 6 and 9 and local regulations permit it. When diluting, always add acid slowly to water, never water to acid."
+      ]
+    },
+    {
+      "kind": "transform",
+      "transform": "split a source at a sentence boundary",
+      "id": "mm-dropped-condition-4-22",
+      "before": "111",
+      "after": "011",
+      "answer": "The 1918 Act gave women in Britain the right to vote, and all men over 21 could vote. The Equal Franchise Act of 1928 extended the vote to all women over 21 on the same terms as men. About 15 million women were eligible after 1928.",
+      "sources": [
+        "The Representation of the People Act 1918 gave the vote in Britain to women over 30 who met a property qualification or were married to someone who did. It also gave the vote to all men over 21.",
+        "The Equal Franchise Act of 1928 extended the vote to all women over 21 on the same terms as men. About 15 million women were then eligible."
+      ],
+      "transformed": [
+        "The Representation of the People Act 1918 gave the vote in Britain to women over 30 who met a property qualification or were married to someone who did.",
+        "It also gave the vote to all men over 21.",
+        "The Equal Franchise Act of 1928 extended the vote to all women over 21 on the same terms as men. About 15 million women were then eligible."
+      ]
+    }
+  ],
+  "spend": {}
+}
