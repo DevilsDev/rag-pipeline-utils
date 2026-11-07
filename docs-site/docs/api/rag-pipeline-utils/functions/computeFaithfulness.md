@@ -14,12 +14,13 @@ Measures how well each sentence in the answer is supported by the retrieved cont
 
 ## Parameters
 
-| Parameter            | Type                          | Description                                              |
-| -------------------- | ----------------------------- | -------------------------------------------------------- |
-| `answer`             | `string`                      | The generated answer text                                |
-| `retrievedDocs`      | `object`[]                    | Array of retrieved documents with content                |
-| `options?`           | \{ `threshold?`: `number`; \} | Configuration options                                    |
-| `options.threshold?` | `number`                      | Minimum similarity score to consider a sentence faithful |
+| Parameter                 | Type                                                        | Description                                                   |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| `answer`                  | `string`                                                    | The generated answer text                                     |
+| `retrievedDocs`           | `object`[]                                                  | Array of retrieved documents with content                     |
+| `options?`                | \{ `conditionCheck?`: `boolean`; `threshold?`: `number`; \} | Configuration options                                         |
+| `options.conditionCheck?` | `boolean`                                                   | false: skip the 3.9 condition check (see computeSupportScore) |
+| `options.threshold?`      | `number`                                                    | Minimum similarity score to consider a sentence faithful      |
 
 ## Returns
 

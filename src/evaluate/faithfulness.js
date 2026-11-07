@@ -11,10 +11,11 @@ const { mapSentenceToSources } = require('../citation/source-mapper');
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents with content
  * @param {object} [options={}] - Configuration options
  * @param {number} [options.threshold=0.5] - Minimum similarity score to consider a sentence faithful
+ * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
  * @returns {{ score: number, faithfulSentences: number, totalSentences: number, details: Array<{ sentence: string, score: number, isFaithful: boolean, bestSource: number }> }}
  */
 function computeFaithfulness(answer, retrievedDocs, options = {}) {
-  const { threshold = 0.5 } = options;
+  const { threshold = 0.5, conditionCheck } = options;
 
   if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
@@ -60,6 +61,7 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
         claimText: sentence,
         docText: docContent,
         answerText: answer,
+        conditionCheck,
       });
 
       if (similarity > bestScore) {

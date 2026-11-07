@@ -276,7 +276,12 @@ A source id matches a retrieved passage's `id` or its `metadata.source`, so with
 | `--concurrency <n>`    | Cases run at the same time (default 1)                                                                                     |
 | `--timeout <ms>`       | Abort each case after this many milliseconds; the case is recorded as failed                                               |
 | `--top-k <n>`          | Passages to retrieve (default 3)                                                                                           |
+| `--no-condition-check` | Turn off the 3.9 condition check, to compare with a baseline saved before 3.9; other 3.9 scoring changes still apply       |
 | `--json`               | Print `{ passed, reasons, thresholds, summary, comparison }` as JSON                                                       |
+
+:::info[Coming in 3.9.0]
+`--no-condition-check` is new in 3.9.0, with the condition check it turns off.
+:::
 
 The metrics are `faithfulness`, `relevance`, `contextPrecision`, `contextRecall` (cases with `expected`), `groundedness`, `citationCoverage` and `sourceRecall` (cases with `sourceIds`); see [Run a test set and compare configurations](./Evaluation.md#run-a-test-set-and-compare-configurations). Without an `llm` stage only `sourceRecall` is measured.
 

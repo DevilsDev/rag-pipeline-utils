@@ -15,7 +15,7 @@ const { scoreAnswer } = require('./scoring');
 
 /**
  * Default configuration for PipelineEvaluator.
- * @type {{ metrics: string[], threshold: number, includeBLEU: boolean, includeROUGE: boolean }}
+ * @type {{ metrics: string[], threshold: number, includeBLEU: boolean, includeROUGE: boolean, conditionCheck: boolean }}
  */
 const DEFAULT_CONFIG = {
   metrics: [
@@ -28,6 +28,8 @@ const DEFAULT_CONFIG = {
   threshold: 0.5,
   includeBLEU: false,
   includeROUGE: false,
+  // false: faithfulness, context recall and groundedness skip the 3.9 condition check
+  conditionCheck: true,
 };
 
 /**
@@ -49,6 +51,7 @@ class PipelineEvaluator extends EventEmitter {
    * @param {number} [options.threshold] - Similarity threshold for metrics
    * @param {boolean} [options.includeBLEU] - Whether to include BLEU score when reference answer is provided
    * @param {boolean} [options.includeROUGE] - Whether to include ROUGE score when reference answer is provided
+   * @param {boolean} [options.conditionCheck=true] - false: faithfulness, context recall and groundedness skip the 3.9 condition check
    */
   constructor(options = {}) {
     super();
@@ -83,14 +86,17 @@ class PipelineEvaluator extends EventEmitter {
     const details = {};
     const metricsComputed = [];
     const metricsSkipped = [];
-    const { metrics, threshold } = this.config;
+    const { metrics, threshold, conditionCheck } = this.config;
 
     if (metrics.includes('faithfulness')) {
       let faithResult;
       if (citationResult) {
         faithResult = computeFaithfulnessFromCitations(citationResult);
       } else {
-        faithResult = computeFaithfulness(answer, results, { threshold });
+        faithResult = computeFaithfulness(answer, results, {
+          threshold,
+          conditionCheck,
+        });
       }
       scores.faithfulness = faithResult.score;
       details.faithfulness = faithResult;
@@ -120,6 +126,7 @@ class PipelineEvaluator extends EventEmitter {
       if (hasReference) {
         const recallResult = computeContextRecall(referenceAnswer, results, {
           threshold,
+          conditionCheck,
         });
         scores.contextRecall = recallResult.score;
         details.contextRecall = recallResult;
@@ -142,6 +149,7 @@ class PipelineEvaluator extends EventEmitter {
       const groundednessResult = computeGroundedness(query, answer, results, {
         threshold,
         referenceAnswer: hasReference ? referenceAnswer : undefined,
+        conditionCheck,
       });
       scores.groundedness = groundednessResult.score;
       details.groundedness = groundednessResult;

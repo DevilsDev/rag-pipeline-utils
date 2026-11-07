@@ -432,9 +432,11 @@ const REASON_TEXT = {
  *   it may only name a passage the claim cites, and never overturns a
  *   number or negation mismatch. One call at most. Errors from
  *   `judge.generate` are not caught.
+ * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9
+ *   condition check, as in checkAnswer
  * @returns {Promise<CitationVerification>}
  */
-async function verifyCitations(input, { judge } = {}) {
+async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
   checkInput(input);
   if (judge != null && typeof judge.generate !== 'function') {
     throw new TypeError('judge must have a generate() method');
@@ -468,7 +470,12 @@ async function verifyCitations(input, { judge } = {}) {
           tokenize(text),
           new Set(tokenize(contents.join('\n'))),
           idfWeights,
-          { claimText: text, docText: contents.join('\n'), answerText },
+          {
+            claimText: text,
+            docText: contents.join('\n'),
+            answerText,
+            conditionCheck,
+          },
         );
 
   const claims = input.claims.map((claim, ci) => {
@@ -508,7 +515,9 @@ async function verifyCitations(input, { judge } = {}) {
     bestSource: null,
   }));
   const allowed = verifiable.map((i) => claimPassageIds[i]);
-  let verdicts = lexicalReasons(sentences, passageDocs, allowed).map(
+  let verdicts = lexicalReasons(sentences, passageDocs, allowed, {
+    conditionCheck,
+  }).map(
     (reason) => ({
       verdict: reason === REASONS.supported ? 'supported' : 'unsupported',
       lexicalReason: reason,
@@ -518,7 +527,13 @@ async function verifyCitations(input, { judge } = {}) {
   );
   let judged;
   if (judge != null && sentences.length > 0) {
-    judged = await runJudge({ judge, sentences, docs: passageDocs, allowed });
+    judged = await runJudge({
+      judge,
+      sentences,
+      docs: passageDocs,
+      allowed,
+      conditionCheck,
+    });
     verdicts = judged.verdicts.map((v) => ({
       verdict: v.verdict,
       lexicalReason: v.lexicalReason,

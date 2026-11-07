@@ -53,7 +53,14 @@ function computeQuality({ query, answer, results, options }) {
       PipelineEvaluator,
       DEFAULT_CONFIG,
     } = require('../evaluate/pipeline-evaluator');
-    const evaluateOptions = options.evaluateOptions || {};
+    // Citations scored without the condition check (citationOptions) mean
+    // the evaluation is too, unless evaluateOptions says otherwise
+    const evaluateOptions = {
+      ...(options.citationOptions?.conditionCheck === false && {
+        conditionCheck: false,
+      }),
+      ...(options.evaluateOptions || {}),
+    };
     let config = evaluateOptions;
     if (answer === null) {
       const metrics = evaluateOptions.metrics || DEFAULT_CONFIG.metrics;

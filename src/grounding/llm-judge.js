@@ -46,9 +46,17 @@ const REASONS = {
  * @param {number} threshold
  * @param {string} [answerText] - The whole answer, for conditions restated
  *   in another sentence
+ * @param {boolean} [conditionCheck=true] - false: no condition_mismatch
  * @returns {string} one of REASONS (never 'supported')
  */
-function classifyFailure(sentence, docs, idfWeights, threshold, answerText) {
+function classifyFailure(
+  sentence,
+  docs,
+  idfWeights,
+  threshold,
+  answerText,
+  conditionCheck = true,
+) {
   if (docs.length === 0) return REASONS.noSources;
   const tokens = tokenize(sentence);
 
@@ -66,6 +74,7 @@ function classifyFailure(sentence, docs, idfWeights, threshold, answerText) {
       polarityMismatch = true;
     }
     if (
+      conditionCheck &&
       !checkConditionConsistency(sentence, doc.content, answerText).consistent
     ) {
       conditionMismatch = true;
@@ -92,9 +101,11 @@ function classifyFailure(sentence, docs, idfWeights, threshold, answerText) {
  * @param {Array<{id?: string, content: string}>} docs
  * @param {Array<string[]>} [allowed] - Per sentence, the ids of the only
  *   docs that may support it (verifyCitations: the passages it cites)
+ * @param {{ conditionCheck?: boolean }} [options] - conditionCheck false: no
+ *   condition_mismatch
  * @returns {string[]}
  */
-function lexicalReasons(sentences, docs, allowed) {
+function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
   const idfWeights = DEFAULT_CONFIG.useIDFWeighting
     ? buildIDFWeights(docs)
     : null;
@@ -108,6 +119,7 @@ function lexicalReasons(sentences, docs, allowed) {
           idfWeights,
           DEFAULT_CONFIG.similarityThreshold,
           answerText,
+          conditionCheck !== false,
         ),
   );
 }
@@ -310,10 +322,12 @@ const REASON_TEXT = {
  * @param {Array<string[]>} [params.allowed] - Per sentence, the ids of the
  *   only docs that may support it; a verdict naming another doc is kept
  *   unsupported. Default: any doc.
+ * @param {boolean} [params.conditionCheck=true] - false: the condition check
+ *   neither fails a sentence nor blocks an overturn
  * @returns {Promise<{verdicts: Array<Object>, calls: number, usage?: Object, error?: string}>}
  */
-async function runJudge({ judge, sentences, docs, allowed }) {
-  const reasons = lexicalReasons(sentences, docs, allowed);
+async function runJudge({ judge, sentences, docs, allowed, conditionCheck }) {
+  const reasons = lexicalReasons(sentences, docs, allowed, { conditionCheck });
   const verdicts = sentences.map((s, i) => {
     const supported = reasons[i] === REASONS.supported;
     const best = s.bestSource;
@@ -418,6 +432,7 @@ async function runJudge({ judge, sentences, docs, allowed }) {
     // never overturned either
     const answerText = verdicts.map((v) => v.sentence).join(' ');
     if (
+      conditionCheck !== false &&
       !checkConditionConsistency(entry.sentence, doc.content, answerText)
         .consistent
     ) {

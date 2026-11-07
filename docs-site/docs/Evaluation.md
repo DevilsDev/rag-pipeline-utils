@@ -33,6 +33,8 @@ Leaving out a clause is fine when the clause contrasts, and not when it restrict
 
 Some phrases look like conditions and restrict nothing, so leaving them out is fine: "even if", "if any", "if applicable", "if necessary", "if needed", "if need be" and "if possible" (when they close their clause), an "If not," or "If so," that points back at the previous sentence, and legal boilerplate: "except as required by law", "except as permitted by law", "to the extent permitted by law" and "as required by applicable law". "Customer data is never shared with third parties" is supported by "Customer data is never shared with third parties except as required by law". A source scraped without a space between sentences ("...at reception.Visitors may park ... if they show a badge") is read as two sentences, so one doesn't take the other's condition.
 
+To compare with a baseline saved on 3.8 or earlier, turn the check off: `checkAnswer({ ..., conditionCheck: false })`, `new CitationTracker({ conditionCheck: false })` (or `citationOptions: { conditionCheck: false }` on a run, which its evaluation follows), `new PipelineEvaluator({ conditionCheck: false })` and the same option on `computeFaithfulness`, `computeContextRecall` and `computeGroundedness`, `verifyCitations(input, { conditionCheck: false })`, `expect(answer).toBeGroundedIn(sources, { conditionCheck: false })` and `rag-pipeline eval --no-condition-check`. Everything else in 3.9 still applies, so other scores can move a little.
+
 The check catches restrictions that are left out, not other changes of meaning that keep the source's words. These still pass the lexical check (miss rates from the [loophole hunt](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/loophole-hunt-findings.md), about 30 generated cases per category):
 
 - **Role swap** (100% missed): who does what to whom ("the employee reimburses the company" from "the company reimburses the employee").
@@ -172,13 +174,13 @@ computeContextRecall("Refunds are accepted within 30 days.", docs);
 
 Signatures:
 
-| Function                                                        | Arguments                                                         |
-| --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5)                                 |
-| `computeAnswerRelevance(query, answer, options)`                |                                                                   |
-| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                 |
-| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5)                                 |
-| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer` |
+| Function                                                        | Arguments                                                                                         |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
+| `computeAnswerRelevance(query, answer, options)`                |                                                                                                   |
+| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                                                 |
+| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
+| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9) |
 
 ### Numeric and polarity consistency helpers
 

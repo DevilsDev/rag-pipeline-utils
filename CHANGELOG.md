@@ -33,7 +33,16 @@ page.
   "If so," that points back at the previous sentence, and legal boilerplate ("except as required by
   law", "to the extent permitted by law"); a source with no space between
   sentences is read as separate sentences for this check. Verdicts can
-  change: re-save the report you pass to `rag-pipeline eval --baseline`.
+  change: re-save the report you pass to `rag-pipeline eval --baseline`,
+  or turn the condition check off with the option below.
+- **`conditionCheck: false` turns the condition check off**, for a
+  baseline saved before 3.9: `checkAnswer` (its evaluation too),
+  `CitationTracker` (and `citationOptions` on a run, which the run's
+  evaluation follows), `PipelineEvaluator`, `computeFaithfulness`,
+  `computeContextRecall`, `computeGroundedness`, `verifyCitations` and
+  `toBeGroundedIn` take it, and `rag-pipeline eval` takes
+  `--no-condition-check`. The other 3.9 changes (text normalisation and
+  sentence splitting, below) still apply, so some scores can still move.
 
 ### Fixed
 

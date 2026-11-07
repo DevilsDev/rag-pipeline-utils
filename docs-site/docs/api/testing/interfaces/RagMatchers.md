@@ -51,11 +51,12 @@ run() result's `results`.
 
 #### Parameters
 
-| Parameter            | Type                          |
-| -------------------- | ----------------------------- |
-| `sources?`           | `unknown`[]                   |
-| `options?`           | \{ `threshold?`: `number`; \} |
-| `options.threshold?` | `number`                      |
+| Parameter                 | Type                                                        |
+| ------------------------- | ----------------------------------------------------------- |
+| `sources?`                | `unknown`[]                                                 |
+| `options?`                | \{ `conditionCheck?`: `boolean`; `threshold?`: `number`; \} |
+| `options.conditionCheck?` | `boolean`                                                   |
+| `options.threshold?`      | `number`                                                    |
 
 #### Returns
 

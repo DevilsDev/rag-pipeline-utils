@@ -398,3 +398,124 @@ describe("non-restricting phrases and sources without sentence spaces", () => {
     );
   });
 });
+
+describe("conditionCheck: false (scores as on 3.8)", () => {
+  const source =
+    "Remote work is allowed two days per week with manager approval.";
+  const answer = "Remote work is allowed two days per week.";
+
+  test("checkAnswer grounds a sentence that leaves out the condition", async () => {
+    const on = await checkAnswer({
+      answer,
+      sources: [source],
+      evaluate: false,
+    });
+    const off = await checkAnswer({
+      answer,
+      sources: [source],
+      evaluate: false,
+      conditionCheck: false,
+    });
+    expect(on.grounded).toBe(false);
+    expect(off.grounded).toBe(true);
+  });
+
+  test("CitationTracker and computeSupportScore take the option", () => {
+    const on = new CitationTracker().track(answer, [{ content: source }]);
+    const off = new CitationTracker({ conditionCheck: false }).track(answer, [
+      { content: source },
+    ]);
+    expect(on.groundednessScore).toBe(0);
+    expect(off.groundednessScore).toBe(1);
+  });
+
+  test("the judge path neither fails nor blocks on the condition", async () => {
+    const judge = {
+      generate: async () => {
+        throw new Error("not called: nothing failed for low overlap");
+      },
+    };
+    const on = await checkAnswer({
+      answer,
+      sources: [{ id: "a", content: source }],
+      evaluate: false,
+      judge,
+    });
+    const off = await checkAnswer({
+      answer,
+      sources: [{ id: "a", content: source }],
+      evaluate: false,
+      judge,
+      conditionCheck: false,
+    });
+    expect(on.judge.verdicts[0].lexicalReason).toBe("condition_mismatch");
+    expect(off.grounded).toBe(true);
+    expect(off.judge.verdicts[0].lexicalReason).toBe("supported");
+  });
+
+  test("toBeGroundedIn takes the option", () => {
+    const { toBeGroundedIn } = require("../../../src/testing/matchers");
+    expect(toBeGroundedIn(answer, [source]).pass).toBe(false);
+    expect(
+      toBeGroundedIn(answer, [source], { conditionCheck: false }).pass,
+    ).toBe(true);
+  });
+});
+
+describe("conditionCheck: false reaches the evaluation metrics", () => {
+  const sources = [
+    {
+      id: "a",
+      content:
+        "Remote work is allowed two days per week with manager approval. Equipment is provided by the company.",
+    },
+  ];
+  const args = {
+    answer:
+      "Remote work is allowed two days per week. Equipment is provided by the company.",
+    sources,
+    question: "How many days of remote work are allowed?",
+    referenceAnswer: "Remote work is allowed two days per week.",
+  };
+
+  test("checkAnswer's evaluation", async () => {
+    const on = await checkAnswer(args);
+    const off = await checkAnswer({ ...args, conditionCheck: false });
+    expect(on.evaluation.scores).toMatchObject({
+      faithfulness: 0.5,
+      contextRecall: 0,
+    });
+    expect(off.evaluation.scores).toMatchObject({
+      faithfulness: 1,
+      contextRecall: 1,
+      groundedness: 1,
+    });
+  });
+
+  test("a pipeline run with citationOptions", async () => {
+    const pipeline = rag.createRagPipeline({
+      embedder: { embed: async () => [1, 0] },
+      retriever: { retrieve: async () => sources },
+      llm: { generate: async () => args.answer },
+    });
+    const run = (citationOptions) =>
+      pipeline.run({
+        query: args.question,
+        options: {
+          citations: true,
+          evaluate: true,
+          referenceAnswer: args.referenceAnswer,
+          ...(citationOptions && { citationOptions }),
+        },
+      });
+    const on = await run();
+    const off = await run({ conditionCheck: false });
+    expect(on.evaluation.scores.contextRecall).toBe(0);
+    expect(off.citations.groundednessScore).toBe(1);
+    expect(off.evaluation.scores).toMatchObject({
+      faithfulness: 1,
+      contextRecall: 1,
+      groundedness: 1,
+    });
+  });
+});

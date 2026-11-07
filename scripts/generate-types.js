@@ -494,7 +494,10 @@ export interface RagMatchers<R = unknown> {
    * words, numbers and negation match a source. \`sources\` defaults to the
    * run() result's \`results\`.
    */
-  toBeGroundedIn(sources?: unknown[], options?: { threshold?: number }): R;
+  toBeGroundedIn(
+    sources?: unknown[],
+    options?: { threshold?: number; conditionCheck?: boolean },
+  ): R;
   /** The answer cites each of the given source ids. */
   toCite(ids: string | string[], sources?: unknown[]): R;
   /** No email, phone, US SSN or card number appears in the value. */

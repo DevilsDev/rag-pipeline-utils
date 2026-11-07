@@ -1374,12 +1374,13 @@ const NUMERIC_MISMATCH_FACTOR = 0.4;
  * Condition consistency: a claim that leaves out a restricting clause of its
  * source, and doesn't restate it elsewhere in `options.answerText` (see
  * checkConditionConsistency), has its score multiplied by
- * CONDITION_MISMATCH_FACTOR (0.4).
+ * CONDITION_MISMATCH_FACTOR (0.4); `options.conditionCheck: false` turns this
+ * check off, for scores comparable with a baseline saved before 3.9.
  *
  * @param {string[]} claimTokens - Tokens of the sentence/claim/query
  * @param {string[]|Set<string>} docTokens - Tokens of the document
  * @param {Map<string, number>|null} [idfWeights] - Optional token weights
- * @param {{ claimText?: string, docText?: string, answerText?: string }} [options] - Raw texts
+ * @param {{ claimText?: string, docText?: string, answerText?: string, conditionCheck?: boolean }} [options] - Raw texts
  *   enabling the numeric, polarity and condition consistency checks;
  *   `answerText` is the whole answer the claim comes from
  * @returns {number} Support score between 0 and 1
@@ -1437,6 +1438,7 @@ function computeSupportScore(
       score *= POLARITY_MISMATCH_FACTOR;
     }
     if (
+      options.conditionCheck !== false &&
       !checkConditionConsistency(claimText, docText, options.answerText)
         .consistent
     ) {

@@ -539,3 +539,22 @@ test("is exported from the main entry, ./edge and rag-eval", () => {
     expect(mod.verifyCitations).toBe(verifyCitations);
   }
 });
+
+describe("verifyCitations with conditionCheck: false", () => {
+  test("a claim that leaves out its passage's condition is supported", async () => {
+    const passage =
+      "Remote work is allowed two days per week with manager approval.";
+    const message = claudeMessage([
+      block("Remote work is allowed two days per week.", [
+        charCitation(passage, 0, "Policy"),
+      ]),
+    ]);
+    const on = await verifyCitations(fromAnthropicCitations(message));
+    const off = await verifyCitations(fromAnthropicCitations(message), {
+      conditionCheck: false,
+    });
+    expect(on.claims[0].verdict).toBe("unsupported");
+    expect(on.claims[0].lexicalReason).toBe("condition_mismatch");
+    expect(off.claims[0].verdict).toBe("supported");
+  });
+});

@@ -62,10 +62,11 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
  * @param {number} [options.threshold=0.5] - Minimum share of a claim's content terms a doc must contain to support it
+ * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
  * @returns {{ score: number, supportedClaims: number, totalClaims: number, details: Array<{ claim: string, score: number, isSupported: boolean, bestDocIndex: number }> }}
  */
 function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
-  const { threshold = 0.5 } = options;
+  const { threshold = 0.5, conditionCheck } = options;
 
   if (
     !referenceAnswer ||
@@ -114,6 +115,7 @@ function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
         claimText: claim,
         docText: docContent,
         answerText: referenceAnswer,
+        conditionCheck,
       });
 
       if (similarity > bestScore) {

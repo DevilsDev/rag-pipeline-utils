@@ -13,6 +13,7 @@ const DEFAULT_CONFIG = {
   similarityThreshold: 0.5,
   maxCitationsPerSentence: 3,
   useIDFWeighting: true,
+  conditionCheck: true,
 };
 
 /**
@@ -27,6 +28,10 @@ class CitationTracker extends EventEmitter {
    * @param {number} [options.similarityThreshold=0.5] - Minimum similarity for a citation match
    * @param {number} [options.maxCitationsPerSentence=3] - Max citations per sentence
    * @param {boolean} [options.useIDFWeighting=true] - Whether to apply IDF weighting
+   * @param {boolean} [options.conditionCheck=true] - false: a sentence that
+   *   leaves out a restricting condition of its source is no longer marked
+   *   down (the 3.9 condition check), for scores comparable with a baseline
+   *   saved on 3.8 or earlier
    */
   constructor(options = {}) {
     super();
@@ -116,6 +121,7 @@ class CitationTracker extends EventEmitter {
         threshold: this.config.similarityThreshold,
         idfWeights,
         answerText: answer,
+        conditionCheck: this.config.conditionCheck,
       });
 
       return {

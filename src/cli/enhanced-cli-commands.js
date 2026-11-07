@@ -199,6 +199,10 @@ class EnhancedCLI {
         parsePositiveInteger,
       )
       .option("--top-k <n>", "Passages to retrieve", parsePositiveInteger, 3)
+      .option(
+        "--no-condition-check",
+        "Turn off the 3.9 condition check, to compare with a baseline saved before 3.9",
+      )
       .option("--json", "Print the verdict, summary and comparison as JSON")
       .action(async (dataset, options) => {
         await handlers.eval().handleEval(this.program.opts(), dataset, options);

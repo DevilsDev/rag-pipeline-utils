@@ -22,12 +22,13 @@ new CitationTracker(options?): CitationTracker;
 
 #### Parameters
 
-| Parameter                          | Type                                                                                                         | Description                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
-| `options?`                         | \{ `maxCitationsPerSentence?`: `number`; `similarityThreshold?`: `number`; `useIDFWeighting?`: `boolean`; \} | Override default configuration          |
-| `options.maxCitationsPerSentence?` | `number`                                                                                                     | Max citations per sentence              |
-| `options.similarityThreshold?`     | `number`                                                                                                     | Minimum similarity for a citation match |
-| `options.useIDFWeighting?`         | `boolean`                                                                                                    | Whether to apply IDF weighting          |
+| Parameter                          | Type                                                                                                                                       | Description                                                                                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options?`                         | \{ `conditionCheck?`: `boolean`; `maxCitationsPerSentence?`: `number`; `similarityThreshold?`: `number`; `useIDFWeighting?`: `boolean`; \} | Override default configuration                                                                                                                                                            |
+| `options.conditionCheck?`          | `boolean`                                                                                                                                  | false: a sentence that leaves out a restricting condition of its source is no longer marked down (the 3.9 condition check), for scores comparable with a baseline saved on 3.8 or earlier |
+| `options.maxCitationsPerSentence?` | `number`                                                                                                                                   | Max citations per sentence                                                                                                                                                                |
+| `options.similarityThreshold?`     | `number`                                                                                                                                   | Minimum similarity for a citation match                                                                                                                                                   |
+| `options.useIDFWeighting?`         | `boolean`                                                                                                                                  | Whether to apply IDF weighting                                                                                                                                                            |
 
 #### Returns
 

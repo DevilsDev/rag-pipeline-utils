@@ -144,6 +144,10 @@ function normalizeSources(sources) {
  * @param {Object} [params.embedder] - With a referenceAnswer, adds
  *   `evaluation.scores.semanticSimilarity` (computeSemanticSimilarity)
  * @param {boolean} [params.evaluate=true] - Also compute evaluation scores
+ * @param {boolean} [params.conditionCheck=true] - false: a sentence that
+ *   leaves out a restricting condition of its source (an approval,
+ *   exception or eligibility rule) is no longer unsupported for that
+ *   reason, as on 3.8 and earlier; for comparisons with saved baselines
  * @param {JudgeLLM} [params.judge] - Opt-in LLM judge for sentences the
  *   lexical check failed for lack of word overlap (correct paraphrases).
  *   It never overturns a sentence that failed the number or negation check,
@@ -162,6 +166,7 @@ async function checkAnswer({
   embedder,
   evaluate = true,
   judge,
+  conditionCheck = true,
 } = {}) {
   if (typeof answer !== 'string') {
     throw new TypeError('answer must be a string');
@@ -185,7 +190,7 @@ async function checkAnswer({
     };
   }
 
-  const tracked = new CitationTracker().track(answer, docs);
+  const tracked = new CitationTracker({ conditionCheck }).track(answer, docs);
   const sentences =
     (tracked.hallucinationReport && tracked.hallucinationReport.sentences) ||
     [];
@@ -196,7 +201,7 @@ async function checkAnswer({
 
   let judged;
   if (judge != null) {
-    judged = await runJudge({ judge, sentences, docs });
+    judged = await runJudge({ judge, sentences, docs, conditionCheck });
     unsupported = judged.verdicts
       .filter((v) => v.verdict !== 'supported')
       .map((v) => v.sentence);
@@ -208,7 +213,7 @@ async function checkAnswer({
 
   let evaluation;
   if (evaluate) {
-    evaluation = await new PipelineEvaluator().evaluate(
+    evaluation = await new PipelineEvaluator({ conditionCheck }).evaluate(
       { query: question || '', answer, results: docs },
       referenceAnswer ? { referenceAnswer } : {},
     );

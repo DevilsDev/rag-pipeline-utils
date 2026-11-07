@@ -412,6 +412,7 @@ new PipelineEvaluator({
   threshold?: number;   // per-sentence similarity threshold (default: 0.5)
   includeBLEU?: boolean;
   includeROUGE?: boolean;
+  conditionCheck?: boolean; // false: faithfulness, context recall and groundedness skip the condition check (3.9)
 })
 
 evaluate(

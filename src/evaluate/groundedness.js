@@ -43,16 +43,18 @@ const NO_REFERENCE_REASON =
  * @param {{ faithfulness: number, contextPrecision: number, contextRecall: number }} [options.weights] - Custom weights for each component
  * @param {number} [options.threshold=0.5] - Similarity threshold passed to component metrics
  * @param {string} [options.referenceAnswer] - Reference (ground-truth) answer used for context recall
+ * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
  * @returns {{ score: number, components: { faithfulness: object, contextPrecision: object, contextRecall: object }, weights: { faithfulness: number, contextPrecision: number, contextRecall: number } }}
  *   `components.contextRecall` is `{ score: null, skipped: true, reason }`
  *   when no reference answer was given.
  */
 function computeGroundedness(query, answer, retrievedDocs, options = {}) {
-  const { threshold = 0.5, referenceAnswer } = options;
+  const { threshold = 0.5, referenceAnswer, conditionCheck } = options;
   const weights = { ...DEFAULT_WEIGHTS, ...(options.weights || {}) };
 
   const faithfulness = computeFaithfulness(answer, retrievedDocs, {
     threshold,
+    conditionCheck,
   });
   const contextPrecision = computeContextPrecision(query, retrievedDocs, {
     threshold: threshold * 0.67,
@@ -60,7 +62,10 @@ function computeGroundedness(query, answer, retrievedDocs, options = {}) {
   const hasReference =
     typeof referenceAnswer === 'string' && referenceAnswer.trim().length > 0;
   const contextRecall = hasReference
-    ? computeContextRecall(referenceAnswer, retrievedDocs, { threshold })
+    ? computeContextRecall(referenceAnswer, retrievedDocs, {
+        threshold,
+        conditionCheck,
+      })
     : { score: null, skipped: true, reason: NO_REFERENCE_REASON };
 
   const parts = [

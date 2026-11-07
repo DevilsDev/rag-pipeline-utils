@@ -32,13 +32,14 @@ Create a new PipelineEvaluator.
 
 #### Parameters
 
-| Parameter               | Type                                                                                                         | Description                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `options?`              | \{ `includeBLEU?`: `boolean`; `includeROUGE?`: `boolean`; `metrics?`: `string`[]; `threshold?`: `number`; \} | Configuration options                                            |
-| `options.includeBLEU?`  | `boolean`                                                                                                    | Whether to include BLEU score when reference answer is provided  |
-| `options.includeROUGE?` | `boolean`                                                                                                    | Whether to include ROUGE score when reference answer is provided |
-| `options.metrics?`      | `string`[]                                                                                                   | List of metrics to compute                                       |
-| `options.threshold?`    | `number`                                                                                                     | Similarity threshold for metrics                                 |
+| Parameter                 | Type                                                                                                                                       | Description                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `options?`                | \{ `conditionCheck?`: `boolean`; `includeBLEU?`: `boolean`; `includeROUGE?`: `boolean`; `metrics?`: `string`[]; `threshold?`: `number`; \} | Configuration options                                                             |
+| `options.conditionCheck?` | `boolean`                                                                                                                                  | false: faithfulness, context recall and groundedness skip the 3.9 condition check |
+| `options.includeBLEU?`    | `boolean`                                                                                                                                  | Whether to include BLEU score when reference answer is provided                   |
+| `options.includeROUGE?`   | `boolean`                                                                                                                                  | Whether to include ROUGE score when reference answer is provided                  |
+| `options.metrics?`        | `string`[]                                                                                                                                 | List of metrics to compute                                                        |
+| `options.threshold?`      | `number`                                                                                                                                   | Similarity threshold for metrics                                                  |
 
 #### Returns
 
@@ -53,6 +54,7 @@ Create a new PipelineEvaluator.
 | Property                              | Type       |
 | ------------------------------------- | ---------- |
 | <a id="property-config"></a> `config` | `object`   |
+| `config.conditionCheck`               | `boolean`  |
 | `config.includeBLEU`                  | `boolean`  |
 | `config.includeROUGE`                 | `boolean`  |
 | `config.metrics`                      | `string`[] |
