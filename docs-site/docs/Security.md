@@ -920,7 +920,7 @@ Runs between retrieval and generation: `GuardrailsPipeline` passes the retrieval
 
 - **Relevance threshold**: drops results whose score is below `minRelevanceScore`.
 - **Freshness filtering**: drops documents older than `maxAgeDays` (0 disables it).
-- **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed. The guard reads `acl` / `requiredRole` from each result or its `metadata`, which is where `MemoryRetriever` and `FileVectorStore` return them (see [Examples](./Examples.md)).
+- **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed. The guard reads `acl` / `requiredRole` from each result or its `metadata`. Every built-in store keeps a document's top-level `acl` and `requiredRole` on its results (since 3.8.2 for `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` and `PgVectorRetriever`; re-ingest documents stored with them by earlier versions), and `HybridRetriever` keeps the restrictions of every copy of a document it merges. When the copies carry more distinct restrictions than one result can hold, the result is restricted to the roles they all share, which can deny some users but never grants extra access (see [Examples](./Examples.md)).
 - **Indirect injection scan** (opt-in): `detectInjection: true` scans retrieved document text; `injectionAction: 'remove'` (default) drops flagged documents, `'flag'` keeps and marks them.
 
 ### **Layer 3 -- Post-Generation**

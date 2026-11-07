@@ -5,14 +5,16 @@
  *
  * Pass a `pg` Pool or Client you manage (`pool`), or a `connectionString`
  * and this class creates a Pool with the optional `pg` package. Documents
- * live in one table: id (text, primary key), content, metadata (jsonb) and
- * embedding (vector). Similarity is cosine; `score` is 1 - cosine distance.
+ * live in one table: id (text, primary key), content, metadata (jsonb, with
+ * top-level `acl` and `requiredRole` under `rag_access`) and embedding
+ * (vector). Similarity is cosine; `score` is 1 - cosine distance.
  *
  * The database can change without this process knowing, so the retriever
  * has no cache identity unless you give it a `cacheKey`; see getCacheKey.
  */
 
 const { throwIfAborted, raceAbort } = require('../connectors/connector-utils');
+const { storedMetadata, readStoredMetadata } = require('./access-fields');
 
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]{0,62}$/;
 const DEFAULT_TABLE = 'rag_documents';
@@ -20,6 +22,12 @@ const DEFAULT_TABLE = 'rag_documents';
 const PG_DEFAULT_EF_SEARCH = 40;
 // 4 parameters per row; pg allows 65535 per statement.
 const MAX_BATCH = 1000;
+
+/** A row's content, metadata and top-level access fields. */
+function fromRow(row) {
+  const { metadata, access } = readStoredMetadata(row.metadata || {});
+  return { content: row.content, metadata, ...access };
+}
 
 /** Quotes a table name, optionally schema-qualified, after validating it. */
 function quoteTable(name) {
@@ -266,7 +274,7 @@ class PgVectorRetriever {
       return [
         id,
         doc.content || '',
-        JSON.stringify(doc.metadata || {}),
+        JSON.stringify(storedMetadata(doc)),
         literal,
       ];
     });
@@ -338,8 +346,7 @@ class PgVectorRetriever {
     return rows.map((r) => ({
       id: r.id,
       score: Number(r.score),
-      content: r.content,
-      metadata: r.metadata || {},
+      ...fromRow(r),
     }));
   }
 
@@ -402,11 +409,7 @@ class PgVectorRetriever {
       `SELECT id, content, metadata FROM ${this.table} ORDER BY id${limit ? ' LIMIT $1' : ''}`,
       limit ? [limit] : [],
     );
-    return rows.map((r) => ({
-      id: r.id,
-      content: r.content,
-      metadata: r.metadata || {},
-    }));
+    return rows.map((r) => ({ id: r.id, ...fromRow(r) }));
   }
 
   /** Closes the Pool this retriever created; a pool you passed in stays open. */

@@ -16,6 +16,7 @@
 
 const crypto = require('crypto');
 const { throwIfAborted } = require('../connectors/connector-utils');
+const { accessFields } = require('./access-fields');
 
 const COLLECTION = /^[A-Za-z0-9_-]{1,255}$/;
 const DEFAULT_COLLECTION = 'rag_documents';
@@ -227,6 +228,7 @@ class QdrantRetriever {
           rag_id: id,
           content: doc.content || '',
           metadata: doc.metadata || {},
+          ...accessFields(doc),
         },
       };
     });
@@ -270,6 +272,7 @@ class QdrantRetriever {
       score: p.score,
       content: p.payload.content || '',
       metadata: p.payload.metadata || {},
+      ...accessFields(p.payload),
     }));
   }
 
@@ -351,6 +354,7 @@ class QdrantRetriever {
           id: p.payload.rag_id,
           content: p.payload.content || '',
           metadata: p.payload.metadata || {},
+          ...accessFields(p.payload),
         });
       }
       offset = result.next_page_offset;
