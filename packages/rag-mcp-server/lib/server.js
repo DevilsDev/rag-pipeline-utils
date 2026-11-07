@@ -21,6 +21,10 @@ const { version } = require("../package.json");
 
 const EMBEDDERS = ["local"];
 const MAX_TOP_K = 20;
+const DEFAULT_MAX_ANSWER_CHARS = 50000;
+const DEFAULT_MAX_SOURCE_CHARS = 200000;
+const DEFAULT_MAX_QUESTION_CHARS = 10000;
+const DEFAULT_MAX_SOURCES = 100;
 
 const USAGE = `Usage: rag-mcp-server <folder> [options]
 
@@ -30,6 +34,14 @@ the MCP tools search_documents and check_answer over stdio. Runs offline.
 Options:
   --top-k <n>       Passages per search when the client doesn't ask (default 4, max ${MAX_TOP_K})
   --embedder <name> Embedder: local (TF-IDF, offline; the default and only option)
+  --max-answer-chars <n>  Longest answer check_answer accepts (default ${DEFAULT_MAX_ANSWER_CHARS};
+                          env RAG_MCP_MAX_ANSWER_CHARS)
+  --max-source-chars <n>  Longest source passage check_answer accepts (default ${DEFAULT_MAX_SOURCE_CHARS};
+                          env RAG_MCP_MAX_SOURCE_CHARS)
+  --max-question-chars <n>  Longest question or search query accepted (default ${DEFAULT_MAX_QUESTION_CHARS};
+                          env RAG_MCP_MAX_QUESTION_CHARS)
+  --max-sources <n>       Most sources check_answer accepts per call (default ${DEFAULT_MAX_SOURCES};
+                          env RAG_MCP_MAX_SOURCES)
   -h, --help        Show this help
   -v, --version     Show the version
 `;
@@ -100,9 +112,37 @@ const toolError = (text) => ({
  * The MCP server for an index (not yet connected to a transport).
  *
  * @param {{search: Function, size: number}} index - From buildIndex
- * @param {{defaultTopK?: number, folder?: string}} [options]
+ * @param {{defaultTopK?: number, folder?: string, maxAnswerChars?: number, maxSourceChars?: number, maxQuestionChars?: number, maxSources?: number}} [options]
+ *   maxAnswerChars, maxSourceChars, maxQuestionChars and maxSources bound what the tools
+ *   accept: the answer, each source, the question or query, and the sources per call
  */
-function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
+function createServer(
+  index,
+  {
+    defaultTopK = 4,
+    folder = "the folder",
+    maxAnswerChars = DEFAULT_MAX_ANSWER_CHARS,
+    maxSourceChars = DEFAULT_MAX_SOURCE_CHARS,
+    maxQuestionChars = DEFAULT_MAX_QUESTION_CHARS,
+    maxSources = DEFAULT_MAX_SOURCES,
+  } = {},
+) {
+  const answerText = z
+    .string()
+    .min(1)
+    .max(
+      maxAnswerChars,
+      `answer is too long: at most ${maxAnswerChars} characters are accepted. Check a shorter answer, or start the server with --max-answer-chars (env RAG_MCP_MAX_ANSWER_CHARS).`,
+    );
+  const sourceText = z
+    .string()
+    .min(1)
+    .max(
+      maxSourceChars,
+      `source text is too long: at most ${maxSourceChars} characters per source are accepted. Pass a shorter passage, or start the server with --max-source-chars (env RAG_MCP_MAX_SOURCE_CHARS).`,
+    );
+  const questionMessage = (name) =>
+    `${name} is too long: at most ${maxQuestionChars} characters are accepted. Send a shorter ${name}, or start the server with --max-question-chars (env RAG_MCP_MAX_QUESTION_CHARS).`;
   const server = new McpServer({ name: "rag-mcp-server", version });
   const empty = () =>
     toolError(
@@ -122,7 +162,10 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
         query: z
           .string()
           .min(1)
-          .describe("What to look for, in natural language"),
+          .max(maxQuestionChars, questionMessage("query"))
+          .describe(
+            `What to look for, in natural language (at most ${maxQuestionChars} characters)`,
+          ),
         topK: z
           .number()
           .int()
@@ -154,17 +197,20 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
         "0 to 1), the unsupported sentences and, per sentence, the sources that support it. " +
         "Use it before giving an answer about the documents, and revise or drop unsupported sentences.",
       inputSchema: {
-        answer: z.string().min(1).describe("The answer to check"),
+        answer: answerText.describe(
+          `The answer to check (at most ${maxAnswerChars} characters)`,
+        ),
         question: z
           .string()
+          .max(maxQuestionChars, questionMessage("question"))
           .optional()
           .describe(
-            "The question the answer responds to; improves source retrieval",
+            `The question the answer responds to; improves source retrieval (at most ${maxQuestionChars} characters)`,
           ),
         sources: z
           .array(
             z.union([
-              z.string().min(1),
+              sourceText,
               z.object({
                 id: z
                   .string()
@@ -172,14 +218,18 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
                   .describe(
                     "Id to cite, such as a search_documents passage id",
                   ),
-                text: z.string().min(1),
+                text: sourceText,
               }),
             ]),
           )
           .min(1)
+          .max(
+            maxSources,
+            `too many sources: at most ${maxSources} are accepted per call. Pass fewer sources, or start the server with --max-sources (env RAG_MCP_MAX_SOURCES).`,
+          )
           .optional()
           .describe(
-            "Source passages to check against (strings or { id, text }). Omit to search the indexed documents.",
+            `Source passages to check against (strings or { id, text }; at most ${maxSources}). Omit to search the indexed documents.`,
           ),
         topK: z
           .number()
@@ -262,6 +312,10 @@ async function main(argv) {
       allowPositionals: true,
       options: {
         "top-k": { type: "string" },
+        "max-answer-chars": { type: "string" },
+        "max-source-chars": { type: "string" },
+        "max-question-chars": { type: "string" },
+        "max-sources": { type: "string" },
         embedder: { type: "string", default: "local" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" },
@@ -303,6 +357,43 @@ async function main(argv) {
     return 2;
   }
 
+  const limits = {};
+  for (const [key, flag, envName, fallback] of [
+    [
+      "maxAnswerChars",
+      "max-answer-chars",
+      "RAG_MCP_MAX_ANSWER_CHARS",
+      DEFAULT_MAX_ANSWER_CHARS,
+    ],
+    [
+      "maxSourceChars",
+      "max-source-chars",
+      "RAG_MCP_MAX_SOURCE_CHARS",
+      DEFAULT_MAX_SOURCE_CHARS,
+    ],
+    [
+      "maxQuestionChars",
+      "max-question-chars",
+      "RAG_MCP_MAX_QUESTION_CHARS",
+      DEFAULT_MAX_QUESTION_CHARS,
+    ],
+    ["maxSources", "max-sources", "RAG_MCP_MAX_SOURCES", DEFAULT_MAX_SOURCES],
+  ]) {
+    const raw = values[flag] ?? process.env[envName];
+    if (raw === undefined || raw === "") {
+      limits[key] = fallback;
+      continue;
+    }
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 1) {
+      process.stderr.write(
+        `--${flag} (env ${envName}) must be a whole number of at least 1.\n`,
+      );
+      return 2;
+    }
+    limits[key] = value;
+  }
+
   const folder = path.resolve(positionals[0]);
   let index;
   try {
@@ -316,7 +407,7 @@ async function main(argv) {
       `warning: no ${SUPPORTED_EXTENSIONS.join(", ")} files with text under ${folder}`,
     );
   }
-  const server = createServer(index, { defaultTopK, folder });
+  const server = createServer(index, { defaultTopK, folder, ...limits });
   await server.connect(new StdioServerTransport());
   log(
     `indexed ${index.size} passages from ${index.files} files in ${folder}; serving search_documents and check_answer over stdio`,

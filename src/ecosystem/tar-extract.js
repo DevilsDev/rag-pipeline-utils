@@ -30,10 +30,31 @@ function readOctal(buffer, start, length) {
   return text ? parseInt(text, 8) : 0;
 }
 
-/** Parse "<len> path=<value>\n" records from a pax extended header. */
+/**
+ * Read the "path" record of a pax extended header. Records are
+ * "<len> <key>=<value>\n", where <len> is the decimal byte length of the
+ * whole record, so the header is walked record by record. A record whose
+ * length is missing or runs past the data ends the walk.
+ */
 function parsePaxPath(data) {
-  const match = data.toString('utf8').match(/\d+ path=([^\n]*)\n/);
-  return match ? match[1] : null;
+  let pos = 0;
+  while (pos < data.length) {
+    let len = 0;
+    let at = pos;
+    while (at < data.length && data[at] >= 0x30 && data[at] <= 0x39) {
+      len = len * 10 + (data[at] - 0x30);
+      if (len > data.length) return null;
+      at += 1;
+    }
+    const end = pos + len;
+    if (at === pos || data[at] !== 0x20 || end <= at + 1 || end > data.length) {
+      return null;
+    }
+    const body = data.subarray(at + 1, end - 1).toString('utf8'); // minus "\n"
+    if (body.startsWith('path=')) return body.slice(5);
+    pos = end;
+  }
+  return null;
 }
 
 /**

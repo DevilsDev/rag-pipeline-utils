@@ -191,7 +191,7 @@ const DEFAULT_RULES = [
     // <|im_start|>system, [INST], <<SYS>>, "### system".
     id: 'role-marker',
     pattern:
-      /(?:^|\n)\s*(?:system|assistant|developer)\s*:|\[\s*(?:system|inst)\s*\]|<\|?\s*(?:im_start|system)\s*\|?>|<<\s*sys\s*>>|#{2,}\s*(?:system|instruction)s?\b/,
+      /(?:^|\n)\s*(?:system|assistant|developer)\s*:|\[\s*(?:system|inst)\s*\]|<\|?\s*(?:im_start|system)\s*\|?>|<<\s*sys\s*>>|(?<!#)#{2,}\s*(?:system|instruction)s?\b/,
   },
   {
     id: 'dan',
