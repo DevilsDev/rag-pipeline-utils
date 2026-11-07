@@ -578,7 +578,15 @@ Behaviour since 2.5.0:
 - Encryption uses `createCipheriv` with a random IV per field; legacy `createCipher` records still decrypt on Node 22+.
 - Tenant, user and action filters in queries and compliance reports now match correctly (they previously returned every tenant's records).
 - The integrity hash covers action and tenant, and HMAC signatures are compared in constant time.
-- Without `signingKey`, the HMAC key is random per process, so `verifyIntegrity` flags records written before a restart. Pass a stable `signingKey` in production.
+- Without `signingKey`, the HMAC key is random per process, so `verifyIntegrity` flags records written before a restart (until 3.8.1). Pass a stable `signingKey` in production.
+
+Since 3.8.2:
+
+- **Integrity chain**: each record carries a sequence number, a link to the previous record, a `keyId` and a keyed HMAC over the whole record, including whether it was signed; `logDir/integrity/chain.json` holds the latest state. `verifyIntegrity()` returns `verified`, `totalLogs`, `verifiedLogs` and `tamperedLogs` (one entry per record, with `reason`, the first problem found, and `reasons`, all of them), plus `integrityBreaks` (`{ file, line, sequence, reason }`, where reason is `edited`, `chain`, `order`, `tail`, `unparseable`, `chain file missing`, `chain file reset` or `chain file forged`), `missingLogs` (gaps in the sequence), `unchained` (records written before 3.8.2, which don't make `verified` false), `otherKey` (records written with another signing key, which can't be checked) and `secondWriter`. A missing signature is reported only for a record written with signing on.
+- **One writer per `logDir`**: two loggers writing to the same directory show up as `secondWriter` (duplicate or interleaved sequences), which makes `verified` false.
+- **Unreadable lines** are reported, not thrown: `verifyIntegrity()` lists them as `unparseable` breaks, and `queryLogs()` skips them and returns their count as `skippedLines`.
+- **The signing key** comes from `signingKey`, else `RAG_AUDIT_SIGNING_KEY`, else a key generated once and stored in `logDir/integrity/signing.key` (owner-only permissions on Linux and macOS; Windows ignores them), so records still verify after a restart. A key stored with the logs only detects accidental damage and casual edits, not changes by someone who can read the log folder: set `RAG_AUDIT_SIGNING_KEY` or `signingKey` for that, and treat `signing.key` as a secret if you copy the logs elsewhere. Without a configured key, a one-time `RAG_AUDIT_NO_SIGNING_KEY` process warning says so. Switching from the stored key to `signingKey` or `RAG_AUDIT_SIGNING_KEY` makes the records written before the switch count as `otherKey`, so `verifyIntegrity()` reports `verified: false` for them. If `signing.key` exists but can't be used, it is left untouched and the logger uses a per-process key, with a warning.
+- **Tenant filters**: `queryLogs()`, `verifyIntegrity()` and `generateComplianceReport()` throw a `TypeError` for a `tenantId` that is present but `null`, `undefined` or not a string, and don't fall back to `_tenantId` when `tenantId` is present; `tenantId: ""` is the tenant `""`. A compliance report without a `tenantId` still covers every tenant, with a one-time deprecation warning; pass `allTenants: true` to do that explicitly. A tenant will be required in 4.0.
 
 ### **Security Logging** (application code)
 
@@ -736,7 +744,7 @@ There is no global `security` block in `.ragrc.json` or in `createRagPipeline`. 
 | `requireSignedPlugins`, `requireContentDigest`                     | `PluginRegistry` / `PluginSignatureVerifier` options | `false` (opt-in)                                        |
 | Trusted signers                                                    | `addTrustedSigner()` or `trustedKeysPath`            | Empty trust store                                       |
 | `singleUseTokens`, `maxTrackedJtis`, `strictValidation`            | `JWTValidator`                                       | `true`, `100000`, `true`                                |
-| `encryptionKey`, `requireEncryption`, `signingKey`                 | `AuditLogger`                                        | `RAG_AUDIT_ENCRYPTION_KEY`, `false`, random per process |
+| `encryptionKey`, `requireEncryption`, `signingKey`                 | `AuditLogger`                                        | `RAG_AUDIT_ENCRYPTION_KEY`, `false`, env, then key file |
 | `enableInjectionDetection`, `maxQueryLength`                       | `PreRetrievalGuard`                                  | `true`, `10000`                                         |
 | `enforceACL`, `detectInjection`, `minRelevanceScore`, `maxAgeDays` | `RetrievalGuard`                                     | `false`, `false`, `0`, `0`                              |
 | `enablePIIDetection`, `enableGroundednessCheck`                    | `PostGenerationGuard`                                | `true`, `true`                                          |

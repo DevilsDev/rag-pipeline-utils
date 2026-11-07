@@ -33,6 +33,8 @@ A patch release with security fixes.
   inputs.
 - Fixed a request-validation issue in `DevServer` when it is bound to all
   interfaces.
+- Fixed an integrity-verification issue in `AuditLogger`.
+- Fixed an access-control issue in `AuditLogger`'s tenant filters.
 
 ### Changed
 
@@ -67,6 +69,28 @@ A patch release with security fixes.
 - **`DevServer` checks the `Host` header of loopback requests whatever it is
   bound to.** A server bound to `0.0.0.0` or `::` now refuses requests that
   arrive from a loopback address with a non-loopback `Host` header.
+- **Plugin archives with a malformed extended (pax) header are refused.**
+  `hub install` rejects the whole archive instead of reading it in part.
+- **`AuditLogger` chains and verifies its records.** New records carry a
+  sequence number, a link to the previous record, a `keyId` and a keyed
+  hash over the whole record. `verifyIntegrity()` also returns
+  `integrityBreaks`, `missingLogs`, `unchained`, `otherKey` and
+  `secondWriter`; `tamperedLogs` has one entry per record, with `reason`
+  and `reasons`; a missing signature is reported only for records written
+  with signing on. Unreadable lines are reported instead of thrown, and
+  `queryLogs()` returns their count as `skippedLines`.
+- **`AuditLogger` stores a signing key when none is configured.** Without
+  `signingKey` or `RAG_AUDIT_SIGNING_KEY`, a key is generated once and
+  stored in `logDir/integrity/signing.key`, so records verify after a
+  restart, with a one-time `RAG_AUDIT_NO_SIGNING_KEY` warning; it only
+  detects accidental damage and casual edits. Records written with the
+  stored key count as `otherKey` once you configure a key.
+- **`AuditLogger` validates tenant filters.** `queryLogs()`,
+  `verifyIntegrity()` and `generateComplianceReport()` throw a `TypeError`
+  for a `tenantId` that is present but not a string, and no longer fall
+  back to `_tenantId` when `tenantId` is present. A compliance report
+  without a `tenantId` is deprecated: pass `allTenants: true` to cover
+  every tenant.
 
 ## [3.8.1] - 2026-11-07
 
