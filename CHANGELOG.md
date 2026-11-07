@@ -9,6 +9,35 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [3.8.2] - Unreleased
+
+A patch release with security fixes.
+
+### Security
+
+- Fixed an access-control issue in `QdrantRetriever`, `PineconeRetriever`,
+  `WeaviateRetriever` and `PgVectorRetriever`.
+- Fixed an access-control issue in `HybridRetriever`.
+- Fixed an issue in how `GuardrailsPipeline` checks streamed answers.
+- Fixed an issue in what `GuardrailsPipeline` returns when it blocks an
+  answer.
+- Fixed an access-control issue in `GuardrailsPipeline` with custom
+  pipelines.
+
+### Changed
+
+- **`GuardrailsPipeline` buffers streamed answers.** With
+  `options.stream: true` and a post-generation guard, the answer is checked
+  as a whole and released as one token chunk followed by the done chunk;
+  buffering stops at the output guard's `maxResponseLength`, or 1,000,000
+  characters when none is set.
+- **`GuardrailsPipeline` withholds results the retrieval guard couldn't
+  check.** When the wrapped pipeline neither calls `options.filterResults`
+  nor returns `results`: with `enforceACL`, any successful result is
+  withheld (`success: false`) in both modes; with only other retrieval
+  checks, strict mode withholds it and non-strict mode returns it with
+  `guardrails.retrieval.skipped` and a one-time warning.
+
 ## [3.8.1] - 2026-11-07
 
 A patch release with security fixes.

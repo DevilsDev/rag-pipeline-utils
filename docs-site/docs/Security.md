@@ -922,6 +922,7 @@ Runs between retrieval and generation: `GuardrailsPipeline` passes the retrieval
 - **Freshness filtering**: drops documents older than `maxAgeDays` (0 disables it).
 - **ACL-based access control**: with `enforceACL: true`, documents are checked against `context.userPermissions`. Since 2.5.0 this fails closed: if `userPermissions` is missing, restricted documents are removed. The guard reads `acl` / `requiredRole` from each result or its `metadata`. Every built-in store keeps a document's top-level `acl` and `requiredRole` on its results (since 3.8.2 for `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` and `PgVectorRetriever`; re-ingest documents stored with them by earlier versions), and `HybridRetriever` keeps the restrictions of every copy of a document it merges. When the copies carry more distinct restrictions than one result can hold, the result is restricted to the roles they all share, which can deny some users but never grants extra access (see [Examples](./Examples.md)).
 - **Indirect injection scan** (opt-in): `detectInjection: true` scans retrieved document text; `injectionAction: 'remove'` (default) drops flagged documents, `'flag'` keeps and marks them.
+- **A guard that couldn't run**: since 3.8.2, when the wrapped pipeline neither calls `options.filterResults` nor returns `results`, the guard has nothing to check. With `enforceACL` the result is withheld in both modes (`success: false`, whether it carries an answer or only sources); with only the other retrieval checks, strict mode withholds it and non-strict mode returns it with `guardrails.retrieval = { skipped: true, reason }` and a one-time `RAG_GUARDRAILS_RETRIEVAL_SKIPPED` warning.
 
 ### **Layer 3 -- Post-Generation**
 
@@ -930,6 +931,8 @@ Checks the generated answer:
 - **PII detection**: email addresses, phone numbers, Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
 - **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus numeric-consistency and polarity checks; paraphrase and units are not checked), against `groundednessThreshold` (default 0.3).
 - **Length validation**: `minResponseLength` / `maxResponseLength` (characters).
+- **Streamed answers** (`options.stream: true`): since 3.8.2 the answer is buffered and checked as a whole before any of it is released (see [Concepts: rag-guardrails](./Concepts-Guardrails.md#streaming-custom-pipelines-and-blocked-results)).
+- **Blocked results carry no text**: a withheld result has no answer, `guardrails.postGeneration.sanitizedOutput` is empty, and the guard summaries keep counts, kinds and reasons but not the query, matched strings or document content.
 
 ### **Combining Guardrails with Existing Security**
 
