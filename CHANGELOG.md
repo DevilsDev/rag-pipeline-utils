@@ -26,6 +26,13 @@ A patch release with security fixes.
 - Fixed a signature-verification issue in how plugins configured in
   `.ragrc.json` are loaded.
 - Fixed an issue in the `hub install` security scan and contract check.
+- Fixed denial-of-service issues in `InjectionDetector`, the default PII
+  patterns and answer scoring.
+- Fixed a denial-of-service issue in plugin archive extraction.
+- Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s tool
+  inputs.
+- Fixed a request-validation issue in `DevServer` when it is bound to all
+  interfaces.
 
 ### Changed
 
@@ -52,6 +59,14 @@ A patch release with security fixes.
 - **Plugins from a JSON plugin config warn when unsigned.** The async loader
   for a JSON plugin config now emits the same one-time `RAG_PLUGIN_UNSIGNED`
   warning for a plugin without a manifest as the `.ragrc.json` loader does.
+- **`@devilsdev/rag-mcp-server` limits tool inputs.** `check_answer`
+  accepts an answer of up to 50,000 characters and up to 100 sources of up
+  to 200,000 characters each; a `question` or `query` can be up to 10,000
+  characters. Larger input is rejected with an error. Each limit can be
+  raised with a CLI flag or environment variable (see the package README).
+- **`DevServer` checks the `Host` header of loopback requests whatever it is
+  bound to.** A server bound to `0.0.0.0` or `::` now refuses requests that
+  arrive from a loopback address with a non-loopback `Host` header.
 
 ## [3.8.1] - 2026-11-07
 

@@ -930,7 +930,7 @@ Checks the generated answer:
 
 - **PII detection**: email addresses, phone numbers, Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
 - **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus numeric-consistency and polarity checks; paraphrase and units are not checked), against `groundednessThreshold` (default 0.3).
-- **Length validation**: `minResponseLength` / `maxResponseLength` (characters).
+- **Length validation**: `minResponseLength` / `maxResponseLength` (characters). PII is redacted before an over-long answer is truncated, so a value cut at the limit is never left partly visible.
 - **Streamed answers** (`options.stream: true`): since 3.8.2 the answer is buffered and checked as a whole before any of it is released (see [Concepts: rag-guardrails](./Concepts-Guardrails.md#streaming-custom-pipelines-and-blocked-results)).
 - **Blocked results carry no text**: a withheld result has no answer, `guardrails.postGeneration.sanitizedOutput` is empty, and the guard summaries keep counts, kinds and reasons but not the query, matched strings or document content.
 

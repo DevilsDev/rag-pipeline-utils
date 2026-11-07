@@ -39,21 +39,21 @@ Then ask something your documents answer, such as "How many vacation days do emp
 
 ### `search_documents`
 
-| Input   | Type             | Description                                  |
-| ------- | ---------------- | -------------------------------------------- |
-| `query` | string, required | What to look for, in natural language        |
-| `topK`  | integer, 1–20    | Passages to return (default 4, or `--top-k`) |
+| Input   | Type             | Description                                                                                  |
+| ------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| `query` | string, required | What to look for, in natural language (at most 10,000 characters, or `--max-question-chars`) |
+| `topK`  | integer, 1–20    | Passages to return (default 4, or `--top-k`)                                                 |
 
 Returns `{ passages: [{ id, source, score, text }] }`, best first, as structured content and as JSON text. `source` is the file relative to the folder and `id` is `<source>#<chunk number>`. Passages that share no terms with the query are left out.
 
 ### `check_answer`
 
-| Input      | Type                               | Description                                                           |
-| ---------- | ---------------------------------- | --------------------------------------------------------------------- |
-| `answer`   | string, required                   | The answer to check                                                   |
-| `question` | string                             | The question it answers; improves retrieval when `sources` is omitted |
-| `sources`  | array of strings or `{ id, text }` | Passages to check against; omit to search the indexed documents       |
-| `topK`     | integer, 1–20                      | Passages to retrieve when `sources` is omitted                        |
+| Input      | Type                               | Description                                                                                                   |
+| ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `answer`   | string, required                   | The answer to check (at most 50,000 characters)                                                               |
+| `question` | string                             | The question it answers; improves retrieval when `sources` is omitted (at most 10,000 characters)             |
+| `sources`  | array of strings or `{ id, text }` | Passages to check against, at most 100, each at most 200,000 characters; omit to search the indexed documents |
+| `topK`     | integer, 1–20                      | Passages to retrieve when `sources` is omitted                                                                |
 
 Runs the library's [`checkAnswer`](https://devilsdev.github.io/rag-pipeline-utils/docs/Integrations) and returns `{ grounded, groundedness, unsupported, citations, sources }`: whether every sentence is supported, the share of supported sentences (0 to 1), the unsupported sentences, the ids of the sources supporting each sentence, and the sources that were checked. The check is lexical and makes no model calls, so a correct paraphrase can come back unsupported; treat it as a flag to look again, not a verdict.
 
@@ -66,13 +66,20 @@ Markdown (`.md`, `.markdown`), HTML (`.html`, `.htm`, visible text only), CSV (`
 ## Options
 
 ```bash
-rag-mcp-server <folder> [--top-k <n>] [--embedder local]
+rag-mcp-server <folder> [--top-k <n>] [--embedder local] [--max-answer-chars <n>]
+               [--max-source-chars <n>] [--max-question-chars <n>] [--max-sources <n>]
 ```
 
-| Option              | Default | Meaning                                                 |
-| ------------------- | ------- | ------------------------------------------------------- |
-| `--top-k <n>`       | `4`     | Passages per call when the client doesn't pass `topK`   |
-| `--embedder <name>` | `local` | The embedder; `local` (TF-IDF, offline) is the only one |
+| Option                     | Default  | Meaning                                                                        |
+| -------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `--top-k <n>`              | `4`      | Passages per call when the client doesn't pass `topK`                          |
+| `--embedder <name>`        | `local`  | The embedder; `local` (TF-IDF, offline) is the only one                        |
+| `--max-answer-chars <n>`   | `50000`  | Longest `answer` `check_answer` accepts (env `RAG_MCP_MAX_ANSWER_CHARS`)       |
+| `--max-source-chars <n>`   | `200000` | Longest source passage `check_answer` accepts (env `RAG_MCP_MAX_SOURCE_CHARS`) |
+| `--max-question-chars <n>` | `10000`  | Longest `question` or `query` (env `RAG_MCP_MAX_QUESTION_CHARS`)               |
+| `--max-sources <n>`        | `100`    | Most `sources` per `check_answer` call (env `RAG_MCP_MAX_SOURCES`)             |
+
+A tool call over a limit is rejected with an error that names the flag to raise it. A flag wins over its environment variable; each must be a whole number of at least 1. When you build the server in code, `createServer(index, { maxAnswerChars, maxSourceChars, maxQuestionChars, maxSources })` takes the same limits.
 
 Everything the server logs goes to stderr; stdout carries the protocol.
 
