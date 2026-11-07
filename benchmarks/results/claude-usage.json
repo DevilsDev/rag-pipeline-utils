@@ -1,6 +1,6 @@
 {
   "report": "claude-usage",
-  "generatedAt": "2026-11-06T20:47:26.118Z",
+  "generatedAt": "2026-11-07T01:00:13.463Z",
   "note": "Metadata only (model, date, status, tokens, latency): no prompt, answer or key.",
   "prices": {
     "perMillionTokens": {
@@ -33,24 +33,24 @@
     "asOf": "2026-11-05"
   },
   "sources": {
-    "benchmarkResponses": 10502,
+    "benchmarkResponses": 11332,
     "consumerJourneyCalls": 575,
     "liveTestCalls": 203
   },
   "totals": {
-    "calls": 11280,
+    "calls": 12110,
     "errors": 104,
     "refusals": 64,
-    "inputTokens": 15486964,
-    "outputTokens": 4778577,
-    "usd": 70.7332
+    "inputTokens": 16560369,
+    "outputTokens": 5468251,
+    "usd": 71.1854
   },
   "byModel": {
     "claude-haiku-5-5": {
-      "calls": 3650,
-      "inputTokens": 4795863,
-      "outputTokens": 2109691,
-      "usd": 1.5345
+      "calls": 4480,
+      "inputTokens": 5869268,
+      "outputTokens": 2799365,
+      "usd": 1.9867
     },
     "claude-haiku-4-5": {
       "calls": 2839,
@@ -87,18 +87,18 @@
     {
       "activity": "benchmarks: answer checks (judge)",
       "model": "claude-haiku-5-5",
-      "calls": 2842,
+      "calls": 3672,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 3962434,
-      "outputTokens": 1948299,
-      "usd": 1.3704,
+      "inputTokens": 5035839,
+      "outputTokens": 2637973,
+      "usd": 1.8226,
       "latencyMs": {
-        "p50": 3316,
-        "p95": 6619
+        "p50": 3456,
+        "p95": 6775
       },
       "firstDate": "2026-11-05",
-      "lastDate": "2026-11-06"
+      "lastDate": "2026-11-07"
     },
     {
       "activity": "benchmarks: answer checks (judge)",
