@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-06T13:08:15.202Z",
+  "generatedAt": "2026-11-07T01:24:19.555Z",
   "environment": {
     "libraryVersion": "3.8.0",
     "commit": "53ca1f3",
@@ -7,7 +7,7 @@
     "platform": "win32 10.0.26300",
     "runner": "local"
   },
-  "note": "Follow-up to the 3.9 condition check after the public-set reruns (Phase D). The false alarms behind it (\"if necessary\", an anaphoric \"If not,\", sources with no space between sentences) were first observed on the public sets (RAGTruth); the fix was written against new dev cases, not cases from those sets (__tests__/unit/evaluate/condition-consistency.test.js), and the public sets were rerun once after it. Legal boilerplate (\"except as required by law\" and similar) was made non-restricting by a maintainer decision taken after the condition-dropped test split showed 4 of 4 false alarms on it, so the test-split rows after the fix are not a held-out measure; all of their change is those four cases. Known causes of the remaining public-set false alarms, left alone because they were found on those sets: a clause cut at an abbreviation (\"if the U.S.\" read as \"if the U\") and structured sources (JSON records with review text) read as one sentence. Every judge call was a cache hit (no new API spend).",
+  "note": "Follow-up to the 3.9 condition check after the public-set reruns (Phase D). The false alarms behind it (\"if necessary\", an anaphoric \"If not,\", sources with no space between sentences) were first observed on the public sets (RAGTruth); the fix was written against new dev cases, not cases from those sets (__tests__/unit/evaluate/condition-consistency.test.js), and the public sets were rerun once after it. Legal boilerplate (\"except as required by law\" and similar) was made non-restricting by a maintainer decision taken after the condition-dropped test split showed 4 of 4 false alarms on it, so the test-split rows after the fix are not a held-out measure; all of their change is those four cases. Known causes of the remaining public-set false alarms, left alone because they were found on those sets: a clause cut at an abbreviation (\"if the U.S.\" read as \"if the U\") and structured sources (JSON records with review text) read as one sentence. Every judge call was a cache hit (no new API spend). Then (2026-11-07) the bug-hunt fixes (text normalisation and sentence splitting, BH-1 to BH-6) and a fix for full stops inside abbreviations in restricting clauses (\"if the U.S.\"; written against new dev cases, __tests__/unit/evaluate/condition-abbreviations.test.js) were measured once each: lexical, SciFact and condition-dropped rows from the cache with no misses, so exact; of the judges only Claude Haiku 5.5 was rerun (RAGTruth sample, full test split and HaluEval; the full split and HaluEval judge rows were not run on 3.9 before), after both fixes; the other judge rows were not rerun on the bug-hunt fixes. The condition-dropped judge rows for these two stages were all cache hits, so they are exact too. With the BH-15 fix, a judge reply with no text (cut off at maxTokens) is a judge error and the lexical verdict stands, where checkAnswer used to reject; the 3.8.0 run had no such reply, and at least one full-split answer on this rerun did.",
   "publicSets": {
     "3.8.0": {
       "RAGTruth sample (450 answers), lexical": {
@@ -101,6 +101,24 @@
       "SciFact claims flagged, lexical (claude-fable-5-1)": {
         "flagged": 3,
         "claims": 313
+      },
+      "RAGTruth full test split, judge claude-haiku-5-5": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 898,
+        "fp": 1200,
+        "precision": 0.428,
+        "recall": 0.9523,
+        "f1": 0.5906
+      },
+      "HaluEval QA (500), judge claude-haiku-5-5": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 129,
+        "fp": 17,
+        "precision": 0.8836,
+        "recall": 0.516,
+        "f1": 0.6515
       }
     },
     "3.9 before fix": {
@@ -290,6 +308,131 @@
         "flagged": 4,
         "claims": 313
       }
+    },
+    "3.9 after bug-hunt fixes": {
+      "RAGTruth sample (450 answers), lexical": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 217,
+        "fp": 188,
+        "precision": 0.5358,
+        "recall": 0.9644,
+        "f1": 0.6889
+      },
+      "RAGTruth full test split, lexical": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 913,
+        "fp": 1368,
+        "precision": 0.4003,
+        "recall": 0.9682,
+        "f1": 0.5664
+      },
+      "HaluEval QA (500), lexical": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 132,
+        "fp": 17,
+        "precision": 0.8859,
+        "recall": 0.528,
+        "f1": 0.6617
+      },
+      "SciFact claims flagged, lexical (claude-haiku-4-5-20251001)": {
+        "flagged": 12,
+        "claims": 232
+      },
+      "SciFact claims flagged, lexical (claude-haiku-5-5)": {
+        "flagged": 6,
+        "claims": 495
+      },
+      "SciFact claims flagged, lexical (claude-sonnet-5-5)": {
+        "flagged": 18,
+        "claims": 604
+      },
+      "SciFact claims flagged, lexical (claude-opus-5-5)": {
+        "flagged": 5,
+        "claims": 329
+      },
+      "SciFact claims flagged, lexical (claude-fable-5-1)": {
+        "flagged": 3,
+        "claims": 313
+      }
+    },
+    "3.9 after abbreviation fix": {
+      "RAGTruth sample (450 answers), lexical": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 217,
+        "fp": 188,
+        "precision": 0.5358,
+        "recall": 0.9644,
+        "f1": 0.6889
+      },
+      "RAGTruth full test split, lexical": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 913,
+        "fp": 1368,
+        "precision": 0.4003,
+        "recall": 0.9682,
+        "f1": 0.5664
+      },
+      "HaluEval QA (500), lexical": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 132,
+        "fp": 17,
+        "precision": 0.8859,
+        "recall": 0.528,
+        "f1": 0.6617
+      },
+      "SciFact claims flagged, lexical (claude-haiku-4-5-20251001)": {
+        "flagged": 12,
+        "claims": 232
+      },
+      "SciFact claims flagged, lexical (claude-haiku-5-5)": {
+        "flagged": 6,
+        "claims": 495
+      },
+      "SciFact claims flagged, lexical (claude-sonnet-5-5)": {
+        "flagged": 18,
+        "claims": 604
+      },
+      "SciFact claims flagged, lexical (claude-opus-5-5)": {
+        "flagged": 5,
+        "claims": 329
+      },
+      "SciFact claims flagged, lexical (claude-fable-5-1)": {
+        "flagged": 3,
+        "claims": 313
+      },
+      "RAGTruth sample, judge claude-haiku-5-5": {
+        "clean": 225,
+        "hallucinated": 225,
+        "tp": 213,
+        "fp": 169,
+        "precision": 0.5576,
+        "recall": 0.9467,
+        "f1": 0.7018
+      },
+      "RAGTruth full test split, judge claude-haiku-5-5": {
+        "clean": 1732,
+        "hallucinated": 943,
+        "tp": 897,
+        "fp": 1235,
+        "precision": 0.4207,
+        "recall": 0.9512,
+        "f1": 0.5834
+      },
+      "HaluEval QA (500), judge claude-haiku-5-5": {
+        "clean": 250,
+        "hallucinated": 250,
+        "tp": 127,
+        "fp": 17,
+        "precision": 0.8819,
+        "recall": 0.508,
+        "f1": 0.6447
+      }
     }
   },
   "conditionDropped": {
@@ -330,6 +473,42 @@
             "n": 4,
             "flagged": 0
           }
+        },
+        "bughunt": {
+          "precision": 0.8588,
+          "recall": 0.869,
+          "f1": 0.8639,
+          "tp": 73,
+          "fp": 12,
+          "fn": 11,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
+          "precision": 0.8588,
+          "recall": 0.869,
+          "f1": 0.8639,
+          "tp": 73,
+          "fp": 12,
+          "fn": 11,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
         }
       },
       "dev": {
@@ -352,6 +531,42 @@
           }
         },
         "after": {
+          "precision": 0.8416,
+          "recall": 0.9341,
+          "f1": 0.8854,
+          "tp": 85,
+          "fp": 16,
+          "fn": 6,
+          "tn": 72,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 1,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "bughunt": {
+          "precision": 0.8416,
+          "recall": 0.9341,
+          "f1": 0.8854,
+          "tp": 85,
+          "fp": 16,
+          "fn": 6,
+          "tn": 72,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 1,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
           "precision": 0.8416,
           "recall": 0.9341,
           "f1": 0.8854,
@@ -408,6 +623,42 @@
             "n": 4,
             "flagged": 0
           }
+        },
+        "bughunt": {
+          "precision": 0.9241,
+          "recall": 0.869,
+          "f1": 0.8957,
+          "tp": 73,
+          "fp": 6,
+          "fn": 11,
+          "tn": 80,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
+          "precision": 0.9241,
+          "recall": 0.869,
+          "f1": 0.8957,
+          "tp": 73,
+          "fp": 6,
+          "fn": 11,
+          "tn": 80,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
         }
       },
       "dev": {
@@ -430,6 +681,42 @@
           }
         },
         "after": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "bughunt": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
           "precision": 0.8586,
           "recall": 0.9341,
           "f1": 0.8947,
@@ -486,6 +773,42 @@
             "n": 4,
             "flagged": 0
           }
+        },
+        "bughunt": {
+          "precision": 0.9241,
+          "recall": 0.869,
+          "f1": 0.8957,
+          "tp": 73,
+          "fp": 6,
+          "fn": 11,
+          "tn": 80,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
+          "precision": 0.9241,
+          "recall": 0.869,
+          "f1": 0.8957,
+          "tp": 73,
+          "fp": 6,
+          "fn": 11,
+          "tn": 80,
+          "nonRestricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 4,
+            "flagged": 0
+          }
         }
       },
       "dev": {
@@ -508,6 +831,42 @@
           }
         },
         "after": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "bughunt": {
+          "precision": 0.8586,
+          "recall": 0.9341,
+          "f1": 0.8947,
+          "tp": 85,
+          "fp": 14,
+          "fn": 6,
+          "tn": 74,
+          "nonRestricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "exceptAsRequiredByLaw": {
+            "n": 2,
+            "flagged": 0
+          }
+        },
+        "abbreviations": {
           "precision": 0.8586,
           "recall": 0.9341,
           "f1": 0.8947,
