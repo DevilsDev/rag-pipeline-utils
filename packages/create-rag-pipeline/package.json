@@ -1,6 +1,6 @@
 {
   "name": "create-rag-pipeline",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "description": "npm create rag-pipeline: starter projects for @devilsdev/rag-pipeline-utils with Next.js and the AI SDK, Mastra, or Cloudflare Workers.",
   "keywords": [
     "rag",

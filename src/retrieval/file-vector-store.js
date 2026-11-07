@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { randomBytes } = require('crypto');
 const { digest } = require('../cache/component-keys');
+const { accessFields } = require('./access-fields');
 
 const FORMAT_VERSION = 1;
 
@@ -117,6 +118,7 @@ class FileVectorStore {
         vector: encodeVector(doc.vector),
         content: doc.content || '',
         metadata: doc.metadata || {},
+        ...accessFields(doc),
       };
     }
   }
@@ -152,6 +154,7 @@ class FileVectorStore {
       id,
       content: doc.content,
       metadata: doc.metadata,
+      ...accessFields(doc),
     }));
   }
 
@@ -204,6 +207,7 @@ class FileVectorStore {
       score: cosine(queryVector, queryMagnitude, doc.vector),
       content: doc.content,
       metadata: doc.metadata,
+      ...accessFields(doc),
     }));
     results.sort((a, b) => b.score - a.score);
     return results.slice(0, topK);

@@ -113,6 +113,33 @@ page.
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.
 
+## [3.8.1] - 2026-11-07
+
+A patch release with security fixes.
+
+### Security
+
+- Fixed an access-control issue in `MemoryRetriever`, `FileVectorStore`
+  and `BM25Search`.
+- Fixed a signature-verification issue in `PluginSignatureVerifier`.
+- Fixed an issue in how `DevServer` applies its default options.
+- Fixed a request-validation issue in `DevServer`.
+- Fixed an issue in how `DevServer` recognises loopback host names.
+- Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s HTML
+  indexing.
+- Fixed an access-control issue in how `RetrievalGuard` reads user
+  permissions.
+- Fixed an access-control issue in how `RetrievalGuard` reads document
+  restrictions.
+
+### Changed
+
+- **`RetrievalGuard` now requires every restriction a document sets.** A
+  document can set `requiredRole` or `acl` at its top level, in `metadata`
+  and on `doc`; access now requires meeting each one that is set (any one
+  role of a list is enough for that list). This can hide documents that
+  were visible before.
+
 ## [3.8.0] - 2026-11-06
 
 A minor release with no breaking changes, about testing RAG in TypeScript.
