@@ -512,8 +512,8 @@ Plugins (loaders, embedders, retrievers, LLMs, rerankers) run in the same Node.j
 `rag-pipeline hub install <source>` (alias `plugin install`) installs a plugin from a local directory, a `.tgz`, a single `.js` file, `npm:<package>` or a registry (registry downloads are sha256-verified). The installer:
 
 - extracts into `.rag/plugins` and refuses entries that would escape that directory;
-- runs a static security scan; high-risk findings block the install unless you pass `--allow-risky`;
-- checks the stage contract (for example `embed()` for an embedder) in a separate process;
+- runs a static security scan; high-risk findings block the install unless you pass `--allow-risky`. Since 3.8.2 the scan covers the package entry file whatever its extension, and every file in the package that a scanned file loads by a literal relative `require` or `import`. It doesn't follow computed `require` calls or files outside the package;
+- checks the stage contract (for example `embed()` for an embedder) in a separate process, which since 3.8.2 gets only `PATH` (plus `SystemRoot` and `TEMP` on Windows) from your environment;
 - registers the plugin in `.ragrc.json`.
 
 There is no default registry: registry operations need `--registry <url>` or `RAG_PLUGIN_REGISTRY`. `rag-pipeline hub certify check <path>` scores a local plugin from its files (contract, security scan, tests, documentation). These checks reduce risk; they do not make untrusted code safe to run. See the [CLI reference](./CLI.md) for all options.
@@ -523,9 +523,9 @@ There is no default registry: registry operations need `--registry <url>` or `RA
 `pluginRegistry.register(category, name, impl, manifest, { content })` verifies an Ed25519-signed manifest when signature verification is enabled. The exported `pluginRegistry` singleton enables verification and fails closed when `NODE_ENV` is `production`.
 
 - **Empty trust store**: since 2.5.0 the trust store starts empty (the placeholder key was removed). Nothing verifies until you add a signer, either with `addTrustedSigner(signerId, publicKey, name)` on a `PluginSignatureVerifier` or through a `trustedKeysPath` JSON file.
-- **Binding the code**: the signed manifest can contain a `contentDigest` that covers the plugin's files. When a manifest declares one, the plugin content must be supplied (`register(..., { content })`) and must match, otherwise verification fails. `requireContentDigest: true` rejects signed manifests that do not bind the code.
+- **Binding the code**: the signed manifest can contain a `contentDigest` that covers the plugin's files. When a manifest declares one, the plugin content must be supplied (`register(..., { content })`) and must match, otherwise verification fails. `requireContentDigest: true` rejects signed manifests that do not bind the code. A `contentDigest` of `null` counts as missing.
 - **Unsigned plugins**: by default a plugin registered without a manifest is still accepted. A registry created with `requireSignedPlugins: true` refuses them while verification is enabled.
-- Plugins listed in a JSON plugin config are verified (signed manifest and plugin files) before they are imported.
+- **Configured plugins**: plugins listed in `.ragrc.json` (`plugins.<stage>.<name>`) and in a JSON plugin config are verified (signed manifest and plugin files) before they are loaded, whenever the shared `pluginRegistry` has verification enabled (by default when `NODE_ENV` is `production`; since 3.8.2 for `.ragrc.json`). A plugin whose manifest fails verification is not loaded. One without a manifest loads with a one-time `RAG_PLUGIN_UNSIGNED` process warning, unless `requireSignedPlugins` is set; a signed manifest without a `contentDigest` loads with a one-time `RAG_PLUGIN_NO_CONTENT_DIGEST` warning, because the signature doesn't cover the code, unless `requireContentDigest` is set.
 
 ```javascript no-run
 import { PluginSignatureVerifier } from "@devilsdev/rag-pipeline-utils";

@@ -23,6 +23,9 @@ A patch release with security fixes.
   answer.
 - Fixed an access-control issue in `GuardrailsPipeline` with custom
   pipelines.
+- Fixed a signature-verification issue in how plugins configured in
+  `.ragrc.json` are loaded.
+- Fixed an issue in the `hub install` security scan and contract check.
 
 ### Changed
 
@@ -37,6 +40,18 @@ A patch release with security fixes.
   withheld (`success: false`) in both modes; with only other retrieval
   checks, strict mode withholds it and non-strict mode returns it with
   `guardrails.retrieval.skipped` and a one-time warning.
+- **Plugins configured in `.ragrc.json` are verified before they load.**
+  When the shared `pluginRegistry` verifies signatures (by default when
+  `NODE_ENV` is `production`), a configured plugin whose manifest fails
+  verification is no longer loaded. An unsigned plugin still loads, with a
+  one-time `RAG_PLUGIN_UNSIGNED` warning (refused with
+  `requireSignedPlugins`); a signed manifest without a `contentDigest`, or
+  with `contentDigest: null`, loads with a one-time
+  `RAG_PLUGIN_NO_CONTENT_DIGEST` warning (refused with
+  `requireContentDigest`).
+- **Plugins from a JSON plugin config warn when unsigned.** The async loader
+  for a JSON plugin config now emits the same one-time `RAG_PLUGIN_UNSIGNED`
+  warning for a plugin without a manifest as the `.ragrc.json` loader does.
 
 ## [3.8.1] - 2026-11-07
 
