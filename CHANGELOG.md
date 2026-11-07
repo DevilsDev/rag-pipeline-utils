@@ -32,8 +32,14 @@ page.
   necessary", "if needed", "if need be", "if possible", an "If not," or
   "If so," that points back at the previous sentence, and legal boilerplate ("except as required by
   law", "to the extent permitted by law"); a source with no space between
-  sentences is read as separate sentences for this check. Verdicts can
-  change: re-save the report you pass to `rag-pipeline eval --baseline`,
+  sentences is read as separate sentences for this check. On the
+  condition-dropped benchmark's test split, with the code frozen before it
+  ran, F1 is 84.9% lexical and 87.9% with a judge, up from 6.1% and 6.5%
+  on 3.8.0. After the legal-boilerplate rule, which was decided on that
+  split and so is not a held-out measure, it was 86.9% and 90.1%, measured
+  before the text normalisation and sentence-splitting fixes below; with
+  them it is 86.4% and 89.6% (one more false alarm). Verdicts
+  can change: re-save the report you pass to `rag-pipeline eval --baseline`,
   or turn the condition check off with the option below.
 - **`conditionCheck: false` turns the condition check off**, for a
   baseline saved before 3.9: `checkAnswer` (its evaluation too),

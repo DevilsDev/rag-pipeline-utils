@@ -425,7 +425,7 @@ function renderConditionFollowup(report) {
       })
       .join("; ")} (3.8.0 / 3.9 before / after the fix).`,
     "",
-    "**Condition-dropped benchmark after the fix:**",
+    "**Condition-dropped benchmark after the fix.** The headline numbers are the frozen-code test split above (F1 84.9% lexical, 87.9% with either judge). The rows after the fix were measured after the legal-boilerplate rule, which was decided on that test split, so they are not held out.",
     "",
     table(
       [
@@ -442,7 +442,9 @@ function renderConditionFollowup(report) {
           ["before", "after"].map((when) => {
             const r = splits[split][when];
             return [
-              `${labels[key]}, 3.9 ${when} the fix`,
+              when === "before"
+                ? `${labels[key]}, 3.9 (frozen)`
+                : `${labels[key]}, 3.9 after the legal-boilerplate rule (not held out)`,
               split,
               pct(r.precision),
               pct(r.recall),

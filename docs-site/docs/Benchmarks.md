@@ -999,22 +999,22 @@ The false alarms the public sets showed on 3.9 ("if necessary", an "If not," tha
 
 SciFact (no unsupported labels; claims flagged, lower is better): Claude Haiku 4.5 12 / 12 / 12 of 232; Claude Haiku 5.5 5 / 6 / 6 of 495; Claude Sonnet 5.5 16 / 17 / 17 of 604; Claude Opus 5.5 3 / 6 / 6 of 329; Claude Fable 5.1 3 / 4 / 4 of 313 (3.8.0 / 3.9 before / after the fix).
 
-**Condition-dropped benchmark after the fix:**
+**Condition-dropped benchmark after the fix.** The headline numbers are the frozen-code test split above (F1 84.9% lexical, 87.9% with either judge). The rows after the fix were measured after the legal-boilerplate rule, which was decided on that test split, so they are not held out.
 
-| Run                                         | Split | Precision | Recall | F1    | Non-restricting flagged | Of which legal boilerplate |
-| ------------------------------------------- | ----- | --------- | ------ | ----- | ----------------------- | -------------------------- |
-| Lexical, 3.9 before the fix                 | test  | 83.0%     | 86.9%  | 84.9% | 4/12                    | 4/4                        |
-| Lexical, 3.9 after the fix                  | test  | 86.9%     | 86.9%  | 86.9% | 0/12                    | 0/4                        |
-| Lexical, 3.9 before the fix                 | dev   | 82.5%     | 93.4%  | 87.6% | 3/13                    | 2/2                        |
-| Lexical, 3.9 after the fix                  | dev   | 84.2%     | 93.4%  | 88.5% | 1/13                    | 0/2                        |
-| Judge Claude Haiku 5.5, 3.9 before the fix  | test  | 89.0%     | 86.9%  | 87.9% | 4/12                    | 4/4                        |
-| Judge Claude Haiku 5.5, 3.9 after the fix   | test  | 93.6%     | 86.9%  | 90.1% | 0/12                    | 0/4                        |
-| Judge Claude Haiku 5.5, 3.9 before the fix  | dev   | 84.2%     | 93.4%  | 88.5% | 2/13                    | 2/2                        |
-| Judge Claude Haiku 5.5, 3.9 after the fix   | dev   | 85.9%     | 93.4%  | 89.5% | 0/13                    | 0/2                        |
-| Judge Claude Sonnet 5.5, 3.9 before the fix | test  | 89.0%     | 86.9%  | 87.9% | 4/12                    | 4/4                        |
-| Judge Claude Sonnet 5.5, 3.9 after the fix  | test  | 93.6%     | 86.9%  | 90.1% | 0/12                    | 0/4                        |
-| Judge Claude Sonnet 5.5, 3.9 before the fix | dev   | 84.2%     | 93.4%  | 88.5% | 2/13                    | 2/2                        |
-| Judge Claude Sonnet 5.5, 3.9 after the fix  | dev   | 85.9%     | 93.4%  | 89.5% | 0/13                    | 0/2                        |
+| Run                                                                          | Split | Precision | Recall | F1    | Non-restricting flagged | Of which legal boilerplate |
+| ---------------------------------------------------------------------------- | ----- | --------- | ------ | ----- | ----------------------- | -------------------------- |
+| Lexical, 3.9 (frozen)                                                        | test  | 83.0%     | 86.9%  | 84.9% | 4/12                    | 4/4                        |
+| Lexical, 3.9 after the legal-boilerplate rule (not held out)                 | test  | 86.9%     | 86.9%  | 86.9% | 0/12                    | 0/4                        |
+| Lexical, 3.9 (frozen)                                                        | dev   | 82.5%     | 93.4%  | 87.6% | 3/13                    | 2/2                        |
+| Lexical, 3.9 after the legal-boilerplate rule (not held out)                 | dev   | 84.2%     | 93.4%  | 88.5% | 1/13                    | 0/2                        |
+| Judge Claude Haiku 5.5, 3.9 (frozen)                                         | test  | 89.0%     | 86.9%  | 87.9% | 4/12                    | 4/4                        |
+| Judge Claude Haiku 5.5, 3.9 after the legal-boilerplate rule (not held out)  | test  | 93.6%     | 86.9%  | 90.1% | 0/12                    | 0/4                        |
+| Judge Claude Haiku 5.5, 3.9 (frozen)                                         | dev   | 84.2%     | 93.4%  | 88.5% | 2/13                    | 2/2                        |
+| Judge Claude Haiku 5.5, 3.9 after the legal-boilerplate rule (not held out)  | dev   | 85.9%     | 93.4%  | 89.5% | 0/13                    | 0/2                        |
+| Judge Claude Sonnet 5.5, 3.9 (frozen)                                        | test  | 89.0%     | 86.9%  | 87.9% | 4/12                    | 4/4                        |
+| Judge Claude Sonnet 5.5, 3.9 after the legal-boilerplate rule (not held out) | test  | 93.6%     | 86.9%  | 90.1% | 0/12                    | 0/4                        |
+| Judge Claude Sonnet 5.5, 3.9 (frozen)                                        | dev   | 84.2%     | 93.4%  | 88.5% | 2/13                    | 2/2                        |
+| Judge Claude Sonnet 5.5, 3.9 after the legal-boilerplate rule (not held out) | dev   | 85.9%     | 93.4%  | 89.5% | 0/13                    | 0/2                        |
 
 <!-- bench:condition-followup:end -->
 
