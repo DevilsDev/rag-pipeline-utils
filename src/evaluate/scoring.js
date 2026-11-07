@@ -145,6 +145,8 @@ function sentenceStarts(text) {
       if (listNumber.test(before)) continue;
       const word = /[\p{L}.]*$/u.exec(before)[0];
       if (ABBREVIATIONS.has(word.toLowerCase())) continue;
+      // "form No. 7": a capitalised "No." before a number is an abbreviation
+      if (word === 'No' && /\p{N}/u.test(text[end])) continue;
     }
     starts.add(end);
   }
@@ -1190,7 +1192,60 @@ const STATEMENT_BOUNDARY =
   /\s*;\s*|,\s+and\s+|,?\s+\b(?:but|whereas|while|however)\b\s+/i;
 
 /** Where a restricting clause ends: punctuation or a coordinator. */
-const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/i;
+const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/gi;
+
+/**
+ * Words whose full stop doesn't end a restricting clause: the sentence
+ * splitter's titles and Latin abbreviations, and company and number
+ * abbreviations ("Acme Inc. or its subsidiaries", "form No. 7").
+ */
+const CLAUSE_ABBREVIATIONS = new Set([
+  ...ABBREVIATIONS,
+  'inc',
+  'ltd',
+  'co',
+  'corp',
+  'no',
+]);
+
+/**
+ * Where the restricting clause at the start of `text` (lowercased) ends, or
+ * -1 when it runs to the end. A full stop inside a word or number ("U.S",
+ * "2.5"), after a single letter ("U.S.", "e.g.", "i.e.") or after an
+ * abbreviation ("Inc.", "No.") doesn't end it, so "if the U.S. economy
+ * grows" is one clause, not "if the U" (3.9, on new dev cases).
+ * @param {string} text
+ * @returns {number}
+ */
+function clauseEnd(text) {
+  for (const match of text.matchAll(CLAUSE_END)) {
+    if (match[0] === '.') {
+      const next = text[match.index + 1];
+      if (next !== undefined && /[\p{L}\p{N}]/u.test(next)) continue;
+      const before = text.slice(Math.max(0, match.index - 12), match.index);
+      const word = /[\p{L}.]*$/u.exec(before)[0];
+      if (/(?:^|\.)\p{L}$/u.test(word) || CLAUSE_ABBREVIATIONS.has(word)) {
+        continue;
+      }
+    }
+    return match.index;
+  }
+  return -1;
+}
+
+/**
+ * Text as the condition check reads it: an initialism with full stops reads
+ * as one word ("U.S." as "US", so an answer writing "US" keeps a "U.S."
+ * restriction), and "e.g." and "i.e." restrict nothing.
+ * @param {string} text
+ * @returns {string}
+ */
+const conditionText = (text) =>
+  normalizeText(text)
+    .replace(/\b(?:e\.g|i\.e)\b\.?/gi, ' ')
+    .replace(/(?<![\p{L}.])(?:\p{Lu}\.){2,}(?!\p{L})/gu, (initialism) =>
+      initialism.replace(/\./g, ''),
+    );
 
 /** Light stemming for matching a restriction: approval/approves/approve. */
 const conditionStem = (t) => {
@@ -1198,7 +1253,7 @@ const conditionStem = (t) => {
   return s.length > 5 ? s.replace(/al$/, '') : s;
 };
 const conditionWords = (text) =>
-  contentTokens(tokenize(text))
+  contentTokens(tokenize(conditionText(text)))
     .filter((t) => !MARKER_WORDS.has(t))
     .map(conditionStem);
 
@@ -1224,7 +1279,7 @@ function restrictingClauses(statement) {
       // "with ... approval" ends at its match; the others run to the end of
       // their clause
       const rest = lower.slice(matchEnd);
-      const until = rest.search(CLAUSE_END);
+      const until = clauseEnd(rest);
       const end = m[0].startsWith('with ')
         ? matchEnd
         : matchEnd + (until < 0 ? rest.length : until);

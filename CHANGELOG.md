@@ -37,8 +37,8 @@ page.
   ran, F1 is 84.9% lexical and 87.9% with a judge, up from 6.1% and 6.5%
   on 3.8.0. After the legal-boilerplate rule, which was decided on that
   split and so is not a held-out measure, it was 86.9% and 90.1%, measured
-  before the text normalisation and sentence-splitting fixes below; with
-  them it is 86.4% and 89.6% (one more false alarm). Verdicts
+  before the text normalisation, sentence-splitting and abbreviation fixes
+  below; with them it is 86.4% and 89.6% (one more false alarm). Verdicts
   can change: re-save the report you pass to `rag-pipeline eval --baseline`,
   or turn the condition check off with the option below.
 - **`conditionCheck: false` turns the condition check off**, for a
@@ -72,6 +72,12 @@ page.
   Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't; a blank line, and
   the line break around a list item or heading, do. The sentences returned
   are still the original text.
+- **A condition with an abbreviation in it is read whole.** A full stop
+  inside an abbreviation ("U.S.", "e.g.", "i.e.", "Inc.", "No.") no longer
+  ends a restricting clause, so "if the U.S. economy grows" is one
+  condition, not "if the U", and the clause reported in `missing` is all
+  of it. "US" in an answer keeps a "U.S." condition of its source, and "No."
+  before a number ("form No. 7") no longer ends a sentence.
 - `packContext` keeps the top document's first word when the budget is
   too small for one word beside the wrapper, as documented; it was
   dropped.
