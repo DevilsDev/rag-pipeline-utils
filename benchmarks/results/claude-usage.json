@@ -1,6 +1,6 @@
 {
   "report": "claude-usage",
-  "generatedAt": "2026-11-06T12:57:04.903Z",
+  "generatedAt": "2026-11-06T20:47:26.118Z",
   "note": "Metadata only (model, date, status, tokens, latency): no prompt, answer or key.",
   "prices": {
     "perMillionTokens": {
@@ -33,17 +33,17 @@
     "asOf": "2026-11-05"
   },
   "sources": {
-    "benchmarkResponses": 10494,
+    "benchmarkResponses": 10502,
     "consumerJourneyCalls": 575,
     "liveTestCalls": 203
   },
   "totals": {
-    "calls": 11272,
+    "calls": 11280,
     "errors": 104,
-    "refusals": 61,
-    "inputTokens": 15444281,
-    "outputTokens": 4759898,
-    "usd": 70.2253
+    "refusals": 64,
+    "inputTokens": 15486964,
+    "outputTokens": 4778577,
+    "usd": 70.7332
   },
   "byModel": {
     "claude-haiku-5-5": {
@@ -59,16 +59,16 @@
       "usd": 5.8144
     },
     "claude-sonnet-5-5": {
-      "calls": 3434,
-      "inputTokens": 5184498,
-      "outputTokens": 1479376,
-      "usd": 25.1628
+      "calls": 3438,
+      "inputTokens": 5185049,
+      "outputTokens": 1482914,
+      "usd": 25.1993
     },
     "claude-opus-5-5": {
-      "calls": 672,
-      "inputTokens": 1266030,
-      "outputTokens": 324238,
-      "usd": 11.549
+      "calls": 676,
+      "inputTokens": 1308162,
+      "outputTokens": 339379,
+      "usd": 12.0204
     },
     "claude-fable-5-1": {
       "calls": 649,
@@ -344,14 +344,14 @@
     {
       "activity": "benchmarks: other",
       "model": "claude-sonnet-5-5",
-      "calls": 106,
+      "calls": 110,
       "errors": 0,
-      "refusals": 1,
-      "inputTokens": 398359,
-      "outputTokens": 564278,
-      "usd": 6.4395,
+      "refusals": 4,
+      "inputTokens": 398910,
+      "outputTokens": 567816,
+      "usd": 6.476,
       "latencyMs": {
-        "p50": 23753,
+        "p50": 23515,
         "p95": 86228
       },
       "firstDate": "2026-11-06",
@@ -360,14 +360,14 @@
     {
       "activity": "benchmarks: other",
       "model": "claude-opus-5-5",
-      "calls": 5,
+      "calls": 9,
       "errors": 0,
       "refusals": 0,
-      "inputTokens": 73899,
-      "outputTokens": 17136,
-      "usd": 0.6383,
+      "inputTokens": 116031,
+      "outputTokens": 32277,
+      "usd": 1.1097,
       "latencyMs": {
-        "p50": 28957,
+        "p50": 30491,
         "p95": 82637
       },
       "firstDate": "2026-11-06",
