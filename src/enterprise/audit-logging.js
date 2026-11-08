@@ -3,7 +3,8 @@
  * Compliance-grade activity tracking with immutable logs
  */
 
-const fs = require('fs').promises;
+const fsSync = require('fs');
+const fs = fsSync.promises;
 // eslint-disable-line global-require
 const path = require('path');
 // eslint-disable-line global-require
@@ -12,10 +13,75 @@ const crypto = require('crypto');
 const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 const { logger } = require('../utils/logger');
+const { warnOnce } = require('../utils/deprecate');
 
-const INTEGRITY_VERSION = 2;
+// Records written by 3.8.2 and later carry a sequence, a link to the previous
+// record and a keyed hash over the whole record (integrityVersion 3). Version 2
+// records have an unkeyed SHA-256 of a few fields; they are still verified, but
+// they are not part of a chain.
+const INTEGRITY_VERSION = 3;
+const LEGACY_HASH_VERSION = 2;
+const CHAIN_FILE_VERSION = 3;
 const ENCRYPTION_VERSION = 2;
 const ENCRYPTION_KEY_ENV = 'RAG_AUDIT_ENCRYPTION_KEY';
+const SIGNING_KEY_ENV = 'RAG_AUDIT_SIGNING_KEY';
+const SIGNING_KEY_FILE = 'signing.key';
+const SIGNING_KEY_BYTES = 64;
+const NO_SIGNING_KEY_WARNING_CODE = 'RAG_AUDIT_NO_SIGNING_KEY';
+const REPORT_TENANT_WARNING_CODE = 'RAG_DEP_AUDIT_REPORT_NO_TENANT';
+const FAR_FUTURE = new Date('9999-12-31T00:00:00Z');
+
+const warnedKinds = new Set();
+
+/** Emit a process warning once per process for each kind of message. */
+function warnNoSigningKeyOnce(kind, message) {
+  if (warnedKinds.has(kind)) return;
+  warnedKinds.add(kind);
+  process.emitWarning(message, { code: NO_SIGNING_KEY_WARNING_CODE });
+}
+
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+/**
+ * JSON with sorted keys and no undefined members, so the same record always
+ * serializes to the same text whatever order its keys were written in.
+ *
+ * @param {*} value - A JSON-compatible value
+ * @returns {string}
+ */
+function canonicalize(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => canonicalize(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    const members = Object.keys(value)
+      .filter((key) => value[key] !== undefined)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalize(value[key])}`);
+    return `{${members.join(',')}}`;
+  }
+  return JSON.stringify(value === undefined ? null : value);
+}
+
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const left = Buffer.from(a, 'utf8');
+  const right = Buffer.from(b, 'utf8');
+  // The expected length is fixed by the HMAC algorithm, so a length mismatch
+  // is not secret.
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
+
+/** Sequence ranges ({ from, to }) in the order the records were read. */
+function addToRanges(ranges, sequence) {
+  if (!Number.isSafeInteger(sequence)) return;
+  const last = ranges[ranges.length - 1];
+  if (last && sequence === last.to + 1) last.to = sequence;
+  else if (!last || sequence !== last.to) ranges.push({ from: sequence, to: sequence });
+}
 
 /**
  * OpenSSL EVP_BytesToKey with MD5, one iteration and no salt: the key/IV
@@ -95,8 +161,20 @@ class AuditLogger extends EventEmitter {
 
     this.logBuffer = [];
     this.encryptionKey = this._resolveEncryptionKey(_options);
-    this.signingKey = _options.signingKey || this._generateSigningKey();
-    this.sequenceNumber = 0;
+    this.signingKey = this._resolveSigningKey(_options);
+
+    this._chainState = null;
+    this._chainLoad = null;
+    this._chainDirty = false;
+    this._flushQueue = Promise.resolve();
+
+    if (this._config.realtime.webhookUrl) {
+      logger.warn(
+        'AuditLogger: the webhook isn\'t implemented in this release; ' +
+          'webhookUrl is ignored and no events are sent. Ship the log files ' +
+          'with a log shipper instead.',
+      );
+    }
 
     this._initializeAuditSystem();
   }
@@ -124,9 +202,6 @@ class AuditLogger extends EventEmitter {
       }, this._config.realtime.flushInterval);
       if (typeof this.flushTimer.unref === 'function') this.flushTimer.unref();
     }
-
-    // Initialize integrity chain
-    await this._initializeIntegrityChain();
 
     this.emit('audit_system_initialized');
   }
@@ -393,21 +468,14 @@ class AuditLogger extends EventEmitter {
    * Write audit log with integrity protection
    */
   async _writeAuditLog(auditEvent) {
-    // Add sequence number for integrity chain
-    auditEvent.sequence = ++this.sequenceNumber;
+    // The sequence, chain link, integrity hash and signature are assigned
+    // when the record is written (see _flushOnce), so they follow the order
+    // records reach the file and continue across restarts.
     auditEvent.integrityVersion = INTEGRITY_VERSION;
-
-    // Calculate integrity hash
-    auditEvent.integrity = await this._calculateIntegrityHash(auditEvent);
 
     // Encrypt sensitive data if enabled
     if (this._config.compliance.encryption) {
       auditEvent = await this._encryptSensitiveFields(auditEvent);
-    }
-
-    // Digital signature if enabled
-    if (this._config.compliance.digitalSigning) {
-      auditEvent.signature = await this._signAuditEvent(auditEvent);
     }
 
     // Add to buffer for batch processing
@@ -434,12 +502,22 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Flush logs to persistent storage
+   * Flush logs to persistent storage. Flushes run one at a time, so records
+   * are numbered and chained in the order they are appended.
    */
-  async _flushLogs() {
-    if (this.logBuffer.length === 0) return;
+  _flushLogs() {
+    const run = this._flushQueue.then(() => this._flushOnce());
+    this._flushQueue = run.catch(() => {});
+    return run;
+  }
 
-    const logsToFlush = [...this.logBuffer];
+  async _flushOnce() {
+    if (this.logBuffer.length === 0) {
+      if (this._chainDirty) await this._persistChainState();
+      return;
+    }
+
+    const logsToFlush = this.logBuffer;
     this.logBuffer = [];
 
     const today = new Date().toISOString().split('T')[0];
@@ -449,29 +527,89 @@ class AuditLogger extends EventEmitter {
       `audit-${today}.jsonl`,
     );
 
+    let advanced;
     try {
+      const state = await this._loadChainState();
+      advanced = { ...state };
+      await this._numberRecords(logsToFlush, advanced);
+
       // Write logs in JSONL format
       const logLines =
         logsToFlush.map((log) => JSON.stringify(log)).join('\n') + '\n';
-      await fs.appendFile(logFile, logLines);
-
-      // Update integrity chain
-      await this._updateIntegrityChain(logsToFlush);
-
-      // Send to webhook if configured
-      if (this._config.realtime.webhookUrl) {
-        await this._sendToWebhook(logsToFlush);
-      }
-
-      this.emit('logs_flushed', { count: logsToFlush.length, file: logFile });
+      // An earlier failed append can leave half a line; start on a new line
+      // so the next record isn't glued onto it.
+      const prefix = (await this._endsMidLine(logFile)) ? '\n' : '';
+      await fs.appendFile(logFile, prefix + logLines);
     } catch (error) {
-      // Re-add logs to buffer on failure
+      // Put the records back unnumbered: the retry numbers them again from
+      // the same chain state.
+      for (const log of logsToFlush) this._stripChainFields(log);
       this.logBuffer.unshift(...logsToFlush);
       this.emit('flush_failed', {
         error: error.message,
         count: logsToFlush.length,
       });
       throw error;
+    }
+
+    // The records are in the file; the chain state moves with them even if
+    // writing chain.json fails (it is rewritten on the next flush).
+    this._chainState = advanced;
+    this._chainDirty = true;
+    await this._persistChainState();
+
+    this.emit('logs_flushed', { count: logsToFlush.length, file: logFile });
+  }
+
+  async _endsMidLine(file) {
+    let handle;
+    try {
+      handle = await fs.open(file, 'r');
+      const { size } = await handle.stat();
+      if (size === 0) return false;
+      const last = Buffer.alloc(1);
+      await handle.read(last, 0, 1, size - 1);
+      return last[0] !== 0x0a;
+    } catch (error) {
+      if (error.code === 'ENOENT') return false;
+      throw error;
+    } finally {
+      if (handle) await handle.close();
+    }
+  }
+
+  _stripChainFields(log) {
+    delete log.sequence;
+    delete log.chainPrev;
+    delete log.keyId;
+    delete log.signed;
+    delete log.integrity;
+    delete log.signature;
+  }
+
+  /**
+   * Give each record its sequence, the link to the previous record, the key
+   * id, the integrity hash and (when signing is on) the signature, advancing
+   * `state` as it goes.
+   * @private
+   */
+  async _numberRecords(records, state) {
+    const keyId = this._keyId();
+    for (const record of records) {
+      this._stripChainFields(record);
+      record.sequence = state.sequence + 1;
+      record.chainPrev = state.lastHash;
+      record.keyId = keyId;
+      // Whether this record is signed is part of what the integrity hash and
+      // the chain cover, so removing the signature later is detected whatever
+      // the signing setting is at verification time.
+      record.signed = Boolean(this._config.compliance.digitalSigning);
+      record.integrity = await this._calculateIntegrityHash(record);
+      if (this._config.compliance.digitalSigning) {
+        record.signature = await this._signAuditEvent(record);
+      }
+      state.sequence = record.sequence;
+      state.lastHash = this._chainLink(record.chainPrev, record.integrity);
     }
   }
 
@@ -492,7 +630,12 @@ class AuditLogger extends EventEmitter {
       offset = 0,
     } = query;
 
+    // Throws for a tenantId that is present but not a string, before any file
+    // is read.
+    this._resolveTenantFilter(query);
+
     const results = [];
+    let skippedLines = 0;
     const startTime = startDate
       ? new Date(startDate)
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -502,7 +645,9 @@ class AuditLogger extends EventEmitter {
     const filesToSearch = await this._getLogFilesInRange(startTime, endTime);
 
     for (const file of filesToSearch) {
-      const logs = await this._readLogFile(file);
+      const entries = await this._readLogEntries(file);
+      skippedLines += entries.filter((entry) => !entry.record).length;
+      const logs = entries.filter((e) => e.record).map((e) => e.record);
 
       for (const log of logs) {
         if (this._matchesQuery(log, query)) {
@@ -523,6 +668,8 @@ class AuditLogger extends EventEmitter {
       results: results.slice(offset, offset + limit),
       total: results.length,
       hasMore: results.length > limit + offset,
+      // Lines that could not be parsed and were left out of the results.
+      skippedLines,
     };
   }
 
@@ -536,14 +683,29 @@ class AuditLogger extends EventEmitter {
       endDate,
       includeEvidence = false,
     } = _options;
-    const _tenantId = _options.tenantId ?? _options._tenantId;
 
-    const query = {
-      _tenantId,
-      startDate,
-      endDate,
-      limit: 10000,
-    };
+    if (
+      _options.allTenants !== undefined &&
+      typeof _options.allTenants !== 'boolean'
+    ) {
+      throw new TypeError('AuditLogger: allTenants must be a boolean');
+    }
+    const allTenants = _options.allTenants === true;
+    if (allTenants && ('tenantId' in _options || '_tenantId' in _options)) {
+      throw new TypeError(
+        'AuditLogger: allTenants: true cannot be combined with a tenantId',
+      );
+    }
+    const _tenantId = this._resolveTenantFilter(_options);
+    if (!allTenants && _tenantId === undefined) warnOnce(
+        REPORT_TENANT_WARNING_CODE,
+        'AuditLogger.generateComplianceReport() called without a tenantId covers ' +
+          'all tenants. Pass tenantId to scope the report, or allTenants: true to ' +
+          'cover all tenants explicitly; a tenant will be required in 4.0.',
+      );
+
+    const query = { startDate, endDate, limit: 10000 };
+    if (_tenantId !== undefined) query.tenantId = _tenantId;
 
     const logs = await this.queryLogs(query);
 
@@ -604,83 +766,398 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Verify log integrity
+   * Verify log integrity.
+   *
+   * Besides the per-record checks it reads the chain: every record carries its
+   * sequence, a link to the previous record and a keyed hash over the whole
+   * record, and the chain file holds the latest state.
+   *
+   * - `integrityBreaks`: `{ file, line, sequence, reason }`, where reason is
+   *   `edited`, `chain`, `order`, `tail`, `unparseable`, `chain file missing`,
+   *   `chain file reset` or `chain file forged`.
+   * - `missingLogs`: gaps in the sequence, `{ after, before, count }`.
+   * - `unchained`: records written before chain links existed (counted, and
+   *   they do not make `verified` false).
+   * - `otherKey`: records written with another signing key; they can't be
+   *   checked, so `verified` is false.
+   * - `secondWriter`: duplicate or interleaved sequences that look like two
+   *   writers on one log directory. A break is only reported here when every
+   *   record involved verifies and every interleaved run links up on its own;
+   *   otherwise it is reported as the tampering it may be.
    */
   async verifyIntegrity(_options = {}) {
     const { startDate, endDate } = _options;
-    const _tenantId = _options.tenantId ?? _options._tenantId;
+    // Throws for a tenantId that is present but not a string, as queryLogs does.
+    const tenantId = this._resolveTenantFilter(_options);
+    const keyId = this._keyId();
+    const signingOn = this._config.compliance.digitalSigning;
+    const chainFilePath = this._chainFilePath();
 
-    const integrityFile = path.join(
-      this._config.logDir,
-      'integrity',
-      'chain.json',
-    );
-    const _integrityChain = JSON.parse(
-      await fs.readFile(integrityFile, 'utf8'),
-    );
-
-    const verification = {
+    const result = {
       verified: true,
       totalLogs: 0,
       verifiedLogs: 0,
       tamperedLogs: [],
       missingLogs: [],
       integrityBreaks: [],
+      unchained: { count: 0, ranges: [] },
+      otherKey: { count: 0, ranges: [] },
+      secondWriter: [],
     };
+    const breaks = result.integrityBreaks;
 
-    // Verify each log file
-    const filesToVerify = await this._getLogFilesInRange(
-      startDate ? new Date(startDate) : new Date(0),
-      endDate ? new Date(endDate) : new Date(),
-    );
+    const rangeStart = startDate ? new Date(startDate) : new Date(0);
+    const rangeEnd = endDate ? new Date(endDate) : new Date();
+    const files = await this._getLogFilesInRange(rangeStart, rangeEnd);
+    const allFiles = await this._getLogFilesInRange(new Date(0), FAR_FUTURE);
+    const chainFile = await this._readChainFile();
 
-    for (const file of filesToVerify) {
-      const logs = await this._readLogFile(file);
+    // Pass 1: check each record on its own and collect the chained ones.
+    const items = [];
+    let seenChained = false;
+    for (const file of files) {
+      for (const { line, record } of await this._readLogEntries(file)) {
+        if (!record) {
+          breaks.push({ file, line, sequence: null, reason: 'unparseable' });
+          continue;
+        }
+        const inScope = tenantId === undefined || record.tenantId === tenantId;
+        if (inScope) result.totalLogs++;
+        const sequence = Number.isSafeInteger(record.sequence)
+          ? record.sequence
+          : null;
+        const where = { file, line, sequence };
+        // One entry per record: `reason` is the first problem found,
+        // `reasons` all of them in the order found.
+        let tampered = null;
+        const tamper = (reason) => {
+          if (!inScope) return;
+          if (tampered) {
+            tampered.reasons.push(reason);
+            return;
+          }
+          tampered = {
+            _correlationId: record.metadata?.correlationId,
+            sequence,
+            file,
+            line,
+            reason,
+            reasons: [reason],
+          };
+          result.tamperedLogs.push(tampered);
+        };
+        const chained = record.integrityVersion === INTEGRITY_VERSION;
 
-      for (const log of logs) {
-        if (_tenantId && log.tenantId !== _tenantId) continue;
-
-        verification.totalLogs++;
-
-        // Verify integrity hash
-        const expectedHash = await this._calculateIntegrityHash(log);
-        if (log.integrity !== expectedHash) {
-          verification.tamperedLogs.push({
-            _correlationId: log.metadata.correlationId,
-            sequence: log.sequence,
-            file: file,
-          });
-          verification.verified = false;
-        } else {
-          verification.verifiedLogs++;
+        if (chained && record.keyId !== keyId) {
+          seenChained = true;
+          result.otherKey.count++;
+          addToRanges(result.otherKey.ranges, sequence);
+          items.push({ boundary: true });
+          continue;
         }
 
-        // Verify digital signature if present
-        if (log.signature && !(await this._verifySignature(log))) {
-          verification.tamperedLogs.push({
-            _correlationId: log.metadata.correlationId,
-            reason: 'invalid_signature',
-            file: file,
+        const hashOk = safeEqual(
+          record.integrity,
+          await this._calculateIntegrityHash(record),
+        );
+        if (!hashOk) tamper('edited');
+
+        // A signature is required when the record was written with signing on:
+        // for v3 records that is their own (hashed) `signed` field, for older
+        // records the current setting.
+        const expectSignature = chained ? record.signed === true : signingOn;
+        let signatureOk = true;
+        if (!Object.prototype.hasOwnProperty.call(record, 'signature')) {
+          if (expectSignature) {
+            signatureOk = false;
+            tamper('missing_signature');
+          }
+        } else if (!(await this._verifySignature(record))) {
+          signatureOk = false;
+          tamper('invalid_signature');
+        }
+        if (hashOk && signatureOk && inScope) result.verifiedLogs++;
+
+        if (!chained) {
+          if (seenChained) {
+            // An unchained record after chained ones is out of place.
+            breaks.push({ ...where, reason: 'chain' });
+          } else {
+            result.unchained.count++;
+            addToRanges(result.unchained.ranges, sequence);
+          }
+          continue;
+        }
+
+        seenChained = true;
+        if (!hashOk) breaks.push({ ...where, reason: 'edited' });
+        if (sequence === null) {
+          if (hashOk) breaks.push({ ...where, reason: 'edited' });
+          items.push({ boundary: true });
+          continue;
+        }
+        const chainPrev =
+          typeof record.chainPrev === 'string' ? record.chainPrev : '';
+        const integrity =
+          typeof record.integrity === 'string' ? record.integrity : '';
+        items.push({
+          ...where,
+          seq: sequence,
+          chainPrev,
+          link: this._chainLink(chainPrev, integrity),
+          valid: hashOk && signatureOk,
+        });
+      }
+    }
+
+    // What the chain file says about itself, and its start-of-segment links.
+    const chainBreak = (reason, sequence = null) =>
+      breaks.push({ file: chainFilePath, line: null, sequence, reason });
+    const genesisLinks = new Set();
+    let chainDoc = null;
+    const chainedItems = items.filter((item) => !item.boundary);
+    switch (chainFile.status) {
+      case 'missing':
+        if (seenChained) chainBreak('chain file missing');
+        break;
+      case 'ok': {
+        chainDoc = chainFile.doc;
+        const resets = Array.isArray(chainDoc.resets) ? chainDoc.resets : [];
+        for (const reset of resets) {
+          if (!reset || typeof reset !== 'object') continue;
+          if (typeof reset.chainId === 'string') {
+            genesisLinks.add(this._genesisLink(reset.chainId));
+          }
+          const at = new Date(reset.at);
+          const outside =
+            !Number.isNaN(at.getTime()) && (at < rangeStart || at > rangeEnd);
+          if (!outside) chainBreak('chain file reset', reset.afterSequence ?? null);
+        }
+        break;
+      }
+      case 'otherKey':
+        // Written with another key: it can't be checked. If records of the
+        // current key exist it should have been rewritten with this key.
+        if (chainedItems.length > 0) chainBreak('chain file forged');
+        break;
+      default:
+        if (seenChained) chainBreak('chain file forged');
+    }
+
+    // Pass 2: sequence and link of each chained record against the one
+    // before it in the files.
+    let previous = null;
+    for (const item of items) {
+      if (item.boundary) {
+        previous = null;
+        continue;
+      }
+      item.before = previous;
+      item.issues = [];
+      if (previous) {
+        if (item.seq <= previous.seq) {
+          item.issues.push({ kind: 'order' });
+        } else if (item.seq > previous.seq + 1) {
+          item.issues.push({
+            kind: 'gap',
+            after: previous.seq,
+            before: item.seq,
+            count: item.seq - previous.seq - 1,
           });
-          verification.verified = false;
+        }
+        if (
+          item.chainPrev !== previous.link &&
+          !genesisLinks.has(item.chainPrev)
+        ) {
+          item.issues.push({ kind: 'chain' });
+        }
+      }
+      previous = item;
+    }
+
+    // Pass 3: split the records into runs, each following the links of the
+    // one before it. A record whose link points at an earlier record that
+    // already has a successor starts a run forked from it.
+    const runs = [];
+    const tails = new Map();
+    const linked = new Map();
+    for (const item of chainedItems) {
+      let run = tails.get(item.chainPrev);
+      if (run) {
+        tails.delete(item.chainPrev);
+        run.items.push(item);
+      } else {
+        run = {
+          index: runs.length,
+          items: [item],
+          parent: linked.get(item.chainPrev) || null,
+        };
+        runs.push(run);
+      }
+      item.run = run;
+      tails.set(item.link, run);
+      linked.set(item.link, { run, item });
+    }
+    const group = runs.map((_, index) => index);
+    const find = (index) => {
+      let node = index;
+      while (group[node] !== node) {
+        group[node] = group[group[node]];
+        node = group[node];
+      }
+      return node;
+    };
+    for (const run of runs) {
+      if (run.parent) group[find(run.index)] = find(run.parent.run.index);
+    }
+    // Forked runs only count as a second writer when every record involved
+    // verifies and each run is an unbroken chain (sequences go up by one).
+    const groups = new Map();
+    for (const run of runs) {
+      const id = find(run.index);
+      let info = groups.get(id);
+      if (!info) {
+        info = { runs: 0, clean: true, seen: new Set() };
+        groups.set(id, info);
+      }
+      info.runs++;
+      run.items.forEach((item, position) => {
+        if (!item.valid) info.clean = false;
+        if (position > 0 && item.seq !== run.items[position - 1].seq + 1) {
+          info.clean = false;
+        }
+      });
+      if (run.parent && run.items[0].seq !== run.parent.item.seq + 1) {
+        info.clean = false;
+      }
+    }
+
+    // The one predicate for "these breaks are a second writer": several runs
+    // forked from each other, all records valid, each run unbroken.
+    const isSecondWriterGroup = (id) => {
+      const info = groups.get(id);
+      return info.runs > 1 && info.clean;
+    };
+
+    for (const item of chainedItems) {
+      const id = find(item.run.index);
+      const info = groups.get(id);
+      const switched =
+        item.before &&
+        item.before.run !== item.run &&
+        find(item.before.run.index) === id;
+      if (item.issues.length > 0 && isSecondWriterGroup(id) && switched) {
+        result.secondWriter.push({
+          file: item.file,
+          line: item.line,
+          sequence: item.seq,
+          reason: info.seen.has(item.seq) ? 'duplicate' : 'interleaved',
+        });
+      } else {
+        for (const issue of item.issues) {
+          if (issue.kind === 'gap') {
+            result.missingLogs.push({
+              after: issue.after,
+              before: issue.before,
+              count: issue.count,
+            });
+          } else {
+            breaks.push({
+              file: item.file,
+              line: item.line,
+              sequence: item.seq,
+              reason: issue.kind,
+            });
+          }
+        }
+      }
+      info.seen.add(item.seq);
+    }
+
+    // The last record must be the one the chain file ends at, when the
+    // checked range reaches the end of the logs.
+    const tailInRange =
+      files.length === 0
+        ? allFiles.length === 0
+        : files[files.length - 1] === allFiles[allFiles.length - 1];
+    if (chainDoc && tailInRange) {
+      const last = items[items.length - 1];
+      if (!last) {
+        if (chainDoc.sequence > 0) chainBreak('tail', chainDoc.sequence);
+      } else if (
+        !last.boundary &&
+        (last.seq !== chainDoc.sequence ||
+          !safeEqual(last.link, chainDoc.lastHash))
+      ) {
+        // The chain file may end at the tip of another writer's run. That is a
+        // second writer only under the same conditions as everywhere else, and
+        // only when the chain file's link is a record in the same group.
+        const lastId = find(last.run.index);
+        const tip = linked.get(chainDoc.lastHash);
+        const otherWriterTip =
+          isSecondWriterGroup(lastId) &&
+          tip !== undefined &&
+          find(tip.run.index) === lastId &&
+          tip.item.seq === chainDoc.sequence;
+        if (!otherWriterTip) {
+          breaks.push({
+            file: last.file,
+            line: last.line,
+            sequence: last.seq,
+            reason: 'tail',
+          });
+        } else if (
+          !result.secondWriter.some(
+            (entry) => entry.file === last.file && entry.line === last.line,
+          )
+        ) {
+          result.secondWriter.push({
+            file: last.file,
+            line: last.line,
+            sequence: last.seq,
+            reason: 'interleaved',
+          });
         }
       }
     }
 
-    return verification;
+    const rank = new Map(files.map((file, index) => [file, index]));
+    const place = (entry) => (rank.has(entry.file) ? rank.get(entry.file) : files.length);
+    breaks.sort(
+      (a, b) => place(a) - place(b) || (a.line ?? 0) - (b.line ?? 0),
+    );
+
+    result.verified =
+      result.tamperedLogs.length === 0 &&
+      result.missingLogs.length === 0 &&
+      breaks.length === 0 &&
+      result.secondWriter.length === 0 &&
+      result.otherKey.count === 0;
+    return result;
   }
 
   // Private helper methods
   async _calculateIntegrityHash(auditEvent) {
+    if (auditEvent.integrityVersion === INTEGRITY_VERSION) {
+      // Keyed hash over every field except the hash and the signature. Going
+      // through JSON first makes the in-memory record hash the same as the
+      // record read back from the file.
+      // eslint-disable-next-line no-unused-vars
+      const { integrity, signature, ...rest } = auditEvent;
+      return this._hmac(
+        `rag-audit-event|${canonicalize(JSON.parse(JSON.stringify(rest)))}`,
+      );
+    }
+
     // Records written before integrityVersion 2 hashed the non-existent
     // _action/_tenantId fields (always undefined); keep verifying them as-is.
-    const isV2 = auditEvent.integrityVersion === INTEGRITY_VERSION;
+    const isV2 = auditEvent.integrityVersion === LEGACY_HASH_VERSION;
     const data = {
       sequence: auditEvent.sequence,
       category: auditEvent._category,
       action: isV2 ? auditEvent.action : auditEvent._action,
       tenantId: isV2 ? auditEvent.tenantId : auditEvent._tenantId,
-      timestamp: auditEvent.metadata.timestamp,
+      timestamp: auditEvent.metadata?.timestamp,
     };
 
     return crypto
@@ -901,56 +1378,372 @@ class AuditLogger extends EventEmitter {
     return crypto.createDecipheriv('aes-256-gcm', key, iv);
   }
 
-  _generateSigningKey() {
-    return crypto.randomBytes(64);
+  /**
+   * Resolve the key behind the integrity hashes, chain links and signatures.
+   *
+   * Order: the `signingKey` option, then the RAG_AUDIT_SIGNING_KEY env var,
+   * then a key stored in `<logDir>/integrity/signing.key` (created on first
+   * use), and only if that file can't be used a random per-process key. A
+   * stored key lets the logs be checked after a restart, but anyone who can
+   * read the log folder can read it, so it only detects accidental damage and
+   * casual edits. Both of the last two warn once per process.
+   *
+   * @param {Object} _options - Constructor options
+   * @returns {Buffer|string} Key material
+   * @private
+   */
+  _resolveSigningKey(_options) {
+    const configured =
+      _options.signingKey || process.env[SIGNING_KEY_ENV] || null;
+    if (configured) return configured;
+
+    const stored = this._storedSigningKey();
+    if (stored.key) {
+      warnNoSigningKeyOnce(
+        'stored',
+        'AuditLogger: no signingKey or RAG_AUDIT_SIGNING_KEY, so a key stored ' +
+          `with the logs (${stored.file}) is used. A key stored with the logs ` +
+          'only detects accidental damage and casual edits, not changes by ' +
+          'someone who can read the log folder; set RAG_AUDIT_SIGNING_KEY (or ' +
+          'the signingKey option) for that.',
+      );
+      return stored.key;
+    }
+    warnNoSigningKeyOnce(
+      'fallback',
+      `AuditLogger: the stored signing key (${stored.file}) couldn't be used ` +
+        `(${stored.reason}), so a random key is used for this process and the ` +
+        'audit logs can\'t be checked after a restart. Fix or remove that ' +
+        'file, or set RAG_AUDIT_SIGNING_KEY (or the signingKey option).',
+    );
+    return crypto.randomBytes(SIGNING_KEY_BYTES);
   }
 
-  async _initializeIntegrityChain() {
-    const integrityFile = path.join(
-      this._config.logDir,
-      'integrity',
-      'chain.json',
-    );
-
+  /**
+   * The key stored in `<logDir>/integrity/signing.key` as 128 hex digits and
+   * a newline, created if it doesn't exist yet. It is created with the 'wx'
+   * flag, so of several processes starting together exactly one writes it and
+   * the rest read what it wrote (briefly retrying while it is still empty).
+   * Modes are owner-only (0o600 file, 0o700 directory); Windows ignores POSIX
+   * modes. A file that exists but is unreadable or invalid is never
+   * overwritten. It lives next to chain.json, not under daily/, so it is never
+   * read as a log file.
+   * @returns {{key: ?Buffer, file: string, reason?: string}}
+   * @private
+   */
+  _storedSigningKey() {
+    const dir = path.join(this._config.logDir, 'integrity');
+    const file = path.join(dir, SIGNING_KEY_FILE);
+    const hexLength = SIGNING_KEY_BYTES * 2;
+    const fail = (reason) => ({ key: null, file, reason });
     try {
-      await fs.access(integrityFile);
-    } catch {
-      // Create initial integrity chain
-      const initialChain = {
-        created: new Date().toISOString(),
-        lastHash: crypto.createHash('sha256').update('genesis').digest('hex'),
-        sequence: 0,
-      };
-
-      await fs.writeFile(integrityFile, JSON.stringify(initialChain, null, 2));
+      fsSync.mkdirSync(dir, { recursive: true, mode: 0o700 });
+      try {
+        fsSync.writeFileSync(
+          file,
+          `${crypto.randomBytes(SIGNING_KEY_BYTES).toString('hex')}\n`,
+          { flag: 'wx', mode: 0o600 },
+        );
+      } catch (error) {
+        if (error.code !== 'EEXIST') throw error;
+      }
+      for (let attempt = 0; ; attempt++) {
+        const text = fsSync.readFileSync(file, 'utf8').trim();
+        if (text.length === hexLength && /^[0-9a-f]+$/.test(text)) {
+          return { key: Buffer.from(text, 'hex'), file };
+        }
+        // Still being written by another process: wait a little.
+        if (text.length >= hexLength || attempt >= 20) {
+          return fail(`it is not a ${hexLength}-digit hex key`);
+        }
+        sleepSync(10);
+      }
+    } catch (error) {
+      return fail(error.message);
     }
   }
 
-  async _updateIntegrityChain(logs) {
-    const integrityFile = path.join(
-      this._config.logDir,
-      'integrity',
-      'chain.json',
-    );
-    const chain = JSON.parse(await fs.readFile(integrityFile, 'utf8'));
+  _hmac(text) {
+    return crypto
+      .createHmac('sha256', this.signingKey)
+      .update(text)
+      .digest('hex');
+  }
 
-    for (const log of logs) {
-      const blockData = {
-        sequence: log.sequence,
-        timestamp: log.metadata.timestamp,
-        hash: log.integrity,
-        previousHash: chain.lastHash,
+  _keyId() {
+    return this._hmac('rag-audit-key-id').slice(0, 16);
+  }
+
+  _genesisLink(chainId) {
+    return this._hmac(`rag-audit-genesis|${chainId}`);
+  }
+
+  _chainLink(chainPrev, integrity) {
+    return this._hmac(`rag-audit-chain|${chainPrev}|${integrity}`);
+  }
+
+  _stateTag(chainId, sequence, lastHash) {
+    return this._hmac(`rag-audit-state|${chainId}|${sequence}|${lastHash}`);
+  }
+
+  _chainFilePath() {
+    return path.join(this._config.logDir, 'integrity', 'chain.json');
+  }
+
+  /**
+   * Read chain.json. Status is `missing`, `unreadable`, `legacy` (a file from
+   * before 3.8.2), `invalid` (wrong shape, or a state tag that doesn't match
+   * under this key), `otherKey` (written with another signing key) or `ok`.
+   * @private
+   */
+  async _readChainFile() {
+    let raw;
+    try {
+      raw = await fs.readFile(this._chainFilePath(), 'utf8');
+    } catch (error) {
+      if (error.code === 'ENOENT') return { status: 'missing' };
+      throw error;
+    }
+    let doc;
+    try {
+      doc = JSON.parse(raw);
+    } catch {
+      return { status: 'unreadable' };
+    }
+    if (!doc || typeof doc !== 'object' || doc.version !== CHAIN_FILE_VERSION) {
+      return { status: 'legacy', doc };
+    }
+    if (
+      typeof doc.chainId !== 'string' ||
+      !Number.isSafeInteger(doc.sequence) ||
+      doc.sequence < 0 ||
+      typeof doc.lastHash !== 'string' ||
+      typeof doc.stateTag !== 'string'
+    ) {
+      return { status: 'invalid', doc };
+    }
+    const expected = this._stateTag(doc.chainId, doc.sequence, doc.lastHash);
+    if (!safeEqual(doc.stateTag, expected)) {
+      return { status: doc.keyId === this._keyId() ? 'invalid' : 'otherKey', doc };
+    }
+    return { status: 'ok', doc };
+  }
+
+  /**
+   * The chain state (chain id, last sequence and link), loaded once, at the
+   * first write.
+   * @private
+   */
+  _loadChainState() {
+    if (this._chainState) return Promise.resolve(this._chainState);
+    if (!this._chainLoad) {
+      this._chainLoad = this._recoverChainState().then(
+        (state) => {
+          this._chainState = state;
+          this._chainLoad = null;
+          return state;
+        },
+        (error) => {
+          this._chainLoad = null;
+          throw error;
+        },
+      );
+    }
+    return this._chainLoad;
+  }
+
+  /**
+   * Work out where the chain stands before the first write of this process.
+   *
+   * - chain.json is valid and the newest records don't go past it: continue.
+   * - Records go past it and link from it (the process ended after the
+   *   file was appended to but before chain.json was rewritten): advance the state and continue.
+   * - Otherwise (chain.json missing, replaced, not valid under this key, or
+   *   records that don't link) a new chain segment starts. It is never
+   *   silent: it is recorded in chain.json `resets`, logged as a warning and
+   *   emitted as `chain_reset`, and the sequence carries on from the highest
+   *   one in the files. A chain problem never blocks logging.
+   * @private
+   */
+  async _recoverChainState() {
+    const keyId = this._keyId();
+    const chainFile = await this._readChainFile();
+    const files = await this._getLogFilesInRange(new Date(0), FAR_FUTURE);
+
+    if (chainFile.status === 'ok') {
+      const { doc } = chainFile;
+      const state = {
+        chainId: doc.chainId,
+        keyId,
+        created: doc.created,
+        sequence: doc.sequence,
+        lastHash: doc.lastHash,
+        resets: Array.isArray(doc.resets) ? doc.resets : [],
+        legacy: doc.legacy,
       };
-
-      chain.lastHash = crypto
-        .createHash('sha256')
-        .update(JSON.stringify(blockData))
-        .digest('hex');
-      chain.sequence = log.sequence;
+      const newest = await this._newestChainedRecords(files);
+      const past = newest.filter((record) => record.sequence > state.sequence);
+      if (past.length === 0) return state;
+      if (await this._advanceThrough(state, past)) {
+        this._chainDirty = true;
+        return state;
+      }
+      return this._startChainSegment(
+        files,
+        chainFile,
+        'records after the chain file do not link to it',
+      );
     }
 
-    chain.lastUpdated = new Date().toISOString();
-    await fs.writeFile(integrityFile, JSON.stringify(chain, null, 2));
+    const reasons = {
+      missing: 'chain file missing',
+      unreadable: 'chain file unreadable',
+      legacy: 'chain file in an older format',
+      invalid: 'chain file failed verification',
+      otherKey: 'signing key changed',
+    };
+    return this._startChainSegment(files, chainFile, reasons[chainFile.status]);
+  }
+
+  /** Chained records of the newest daily file that has any, in file order. */
+  async _newestChainedRecords(files) {
+    for (let i = files.length - 1; i >= 0; i--) {
+      const records = (await this._readLogEntries(files[i]))
+        .map((entry) => entry.record)
+        .filter(
+          (record) =>
+            record &&
+            record.integrityVersion === INTEGRITY_VERSION &&
+            Number.isSafeInteger(record.sequence),
+        );
+      if (records.length > 0) return records;
+    }
+    return [];
+  }
+
+  /**
+   * Move `state` forward over `records` if they continue it exactly: this
+   * key, consecutive sequences, each linked to the one before and with a
+   * valid hash. Leaves `state` alone otherwise.
+   * @private
+   */
+  async _advanceThrough(state, records) {
+    let sequence = state.sequence;
+    let lastHash = state.lastHash;
+    for (const record of records) {
+      if (
+        record.keyId !== state.keyId ||
+        record.sequence !== sequence + 1 ||
+        record.chainPrev !== lastHash ||
+        !safeEqual(record.integrity, await this._calculateIntegrityHash(record))
+      ) {
+        return false;
+      }
+      lastHash = this._chainLink(record.chainPrev, record.integrity);
+      sequence = record.sequence;
+    }
+    state.sequence = sequence;
+    state.lastHash = lastHash;
+    return true;
+  }
+
+  /**
+   * Start a chain: fresh when no chained records exist yet (keeping the
+   * values of a pre-3.8.2 chain.json under `legacy`), or a new segment that
+   * continues the sequence when they do.
+   * @private
+   */
+  async _startChainSegment(files, chainFile, reason) {
+    let highest = 0;
+    let chained = false;
+    for (const file of files) {
+      for (const { record } of await this._readLogEntries(file)) {
+        if (
+          record &&
+          record.integrityVersion === INTEGRITY_VERSION &&
+          Number.isSafeInteger(record.sequence)
+        ) {
+          chained = true;
+          highest = Math.max(highest, record.sequence);
+        }
+      }
+    }
+
+    const doc =
+      chainFile.doc && typeof chainFile.doc === 'object' ? chainFile.doc : null;
+    let legacy;
+    if (doc && doc.legacy && typeof doc.legacy === 'object') {
+      legacy = doc.legacy;
+    } else if (
+      doc &&
+      doc.version !== CHAIN_FILE_VERSION &&
+      typeof doc.lastHash === 'string' &&
+      Number.isSafeInteger(doc.sequence)
+    ) {
+      legacy = { lastHash: doc.lastHash, sequence: doc.sequence };
+    }
+
+    const now = new Date().toISOString();
+    const chainId = crypto.randomUUID();
+    const state = {
+      chainId,
+      keyId: this._keyId(),
+      created: now,
+      sequence: highest,
+      lastHash: this._genesisLink(chainId),
+      resets: [],
+      legacy,
+    };
+    if (chained) {
+      if (doc && Array.isArray(doc.resets)) {
+        state.resets = doc.resets.filter(
+          (entry) => entry && typeof entry === 'object',
+        );
+      }
+      const entry = { at: now, afterSequence: highest, reason, chainId };
+      state.resets.push(entry);
+      logger.warn(
+        `AuditLogger: ${reason}; started a new integrity chain after sequence ${highest}`,
+      );
+      this.emit('chain_reset', entry);
+    }
+    this._chainDirty = true;
+    return state;
+  }
+
+  /**
+   * Write chain.json with the latest state. If the write fails the state is
+   * kept and written on the next flush.
+   * @private
+   */
+  async _persistChainState() {
+    const state = this._chainState;
+    if (!state) return;
+    const doc = {
+      version: CHAIN_FILE_VERSION,
+      chainId: state.chainId,
+      keyId: state.keyId,
+      created: state.created,
+      sequence: state.sequence,
+      lastHash: state.lastHash,
+      stateTag: this._stateTag(state.chainId, state.sequence, state.lastHash),
+      resets: state.resets,
+    };
+    if (state.legacy) doc.legacy = state.legacy;
+
+    const file = this._chainFilePath();
+    const temp = `${file}.${process.pid}.tmp`;
+    try {
+      await fs.mkdir(path.dirname(file), { recursive: true });
+      await fs.writeFile(temp, JSON.stringify(doc, null, 2));
+      await fs.rename(temp, file);
+      this._chainDirty = false;
+    } catch (error) {
+      await fs.rm(temp, { force: true }).catch(() => {});
+      logger.warn(
+        `AuditLogger: could not write the integrity chain file (${error.message}); it will be written on the next flush`,
+      );
+    }
   }
 
   async _signAuditEvent(auditEvent) {
@@ -999,20 +1792,61 @@ class AuditLogger extends EventEmitter {
       .map((name) => path.join(dailyDir, name));
   }
 
-  async _readLogFile(filepath) {
+  /**
+   * Every non-blank line of a daily file (queryLogs() counts the unreadable ones as skippedLines) as `{ line, record }`, where `record`
+   * is null when the line isn't a JSON object (a half-written or damaged
+   * line). `line` counts from 1.
+   */
+  async _readLogEntries(filepath) {
     const content = await fs.readFile(filepath, 'utf8');
-    return content
-      .trim()
-      .split('\n')
-      .map((line) => JSON.parse(line));
+    const entries = [];
+    content.split('\n').forEach((text, index) => {
+      if (text.trim() === '') return;
+      let record = null;
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          record = parsed;
+        }
+      } catch {
+        record = null;
+      }
+      entries.push({ line: index + 1, record });
+    });
+    return entries;
+  }
+
+  /**
+   * The tenant a query asks for, or undefined when it names none. A tenantId
+   * (or the underscore form `_tenantId`, read only when `tenantId` is absent)
+   * that is present must be a string: null, undefined and other types used to
+   * match every tenant.
+   * @private
+   */
+  _resolveTenantFilter(query) {
+    let key = null;
+    if ('tenantId' in query) key = 'tenantId';
+    else if ('_tenantId' in query) key = '_tenantId';
+    if (key === null) return undefined;
+    const value = query[key];
+    if (typeof value !== 'string') {
+      const kind = value === null ? 'null' : typeof value;
+      throw new TypeError(
+        `AuditLogger: ${key} must be a string when present (got ${kind}); ` +
+          'leave it out to query all tenants',
+      );
+    }
+    return value;
   }
 
   _matchesQuery(log, query) {
-    // Accept both plain (tenantId) and underscore (_tenantId) query keys; the
+    // Accept both plain (userId) and underscore (_userId) query keys; the
     // underscore form matches the event input names used by the log* methods.
+    // The tenant is resolved separately: it never falls back to the
+    // underscore form once `tenantId` is there at all.
     const pick = (key) => query[key] ?? query[`_${key}`];
     const filters = [
-      [pick('tenantId'), log.tenantId],
+      [this._resolveTenantFilter(query), log.tenantId],
       [pick('userId'), log.userId],
       [pick('category'), log._category],
       [pick('action'), log.action],
@@ -1048,17 +1882,6 @@ class AuditLogger extends EventEmitter {
       violation: false,
       evidence: log.metadata._correlationId,
     };
-  }
-
-  async _sendToWebhook(logs) {
-    if (!this._config.realtime.webhookUrl) return;
-
-    try {
-      // Mock webhook sending - would use actual HTTP client
-      logger.info(`Sending ${logs.length} audit logs to webhook`);
-    } catch (error) {
-      this.emit('webhook_failed', { error: error.message, count: logs.length });
-    }
   }
 
   /**

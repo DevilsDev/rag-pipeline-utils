@@ -75,6 +75,28 @@ const RULES = [
   },
 ];
 
+// Relative module specifiers: require('./x'), import('./x'), from './x'
+const RELATIVE_REF =
+  /(?:\brequire\s*\(\s*|\bimport\s*\(\s*|\bfrom\s+|\bimport\s+)['"](\.{1,2}\/[^'"\n]+)['"]/g;
+
+/** The existing file a relative specifier points at (Node's lookup order). */
+function resolveRelative(fromFile, specifier) {
+  const base = path.resolve(path.dirname(fromFile), specifier);
+  for (const candidate of [
+    base,
+    `${base}.js`,
+    `${base}.cjs`,
+    `${base}.mjs`,
+  ]) {
+    try {
+      if (fs.statSync(candidate).isFile()) return candidate;
+    } catch {
+      // not a file
+    }
+  }
+  return null;
+}
+
 function listFiles(dir) {
   const files = [];
   const walk = (current) => {
@@ -93,20 +115,33 @@ function listFiles(dir) {
 }
 
 /**
+ * Besides files with a source extension, the package entry file and any
+ * file a scanned file loads by relative path are scanned whatever their
+ * extension, because Node runs them as JavaScript.
+ *
  * @param {string} pluginPath - Plugin directory or single .js file
+ * @param {object} [options]
+ * @param {string} [options.entry] - Package entry file (absolute or relative to pluginPath)
  * @returns {{
  *   findings: Array<{severity: string, rule: string, message: string, file: string, line?: number}>,
  *   counts: {high: number, medium: number, low: number},
  *   filesScanned: number
  * }}
  */
-function scanPlugin(pluginPath) {
+function scanPlugin(pluginPath, options = {}) {
   const root = path.resolve(pluginPath);
   const isDir = fs.statSync(root).isDirectory();
   const baseDir = isDir ? root : path.dirname(root);
   const files = isDir ? listFiles(root) : [root];
   const findings = [];
   let filesScanned = 0;
+  const inRoot = new Set(files.map((f) => path.resolve(f)));
+  const forced = new Set();
+  if (!isDir) forced.add(root);
+  if (options.entry) {
+    const entry = path.resolve(baseDir, options.entry);
+    if (inRoot.has(entry)) forced.add(entry);
+  }
 
   const add = (finding) =>
     findings.push({
@@ -115,9 +150,14 @@ function scanPlugin(pluginPath) {
         relativeWithin(baseDir, finding.file) || path.basename(finding.file),
     });
 
-  for (const file of files) {
+  const queue = [...files];
+  const seen = new Set();
+  while (queue.length > 0) {
+    const file = queue.shift();
+    if (seen.has(file)) continue;
     const ext = path.extname(file).toLowerCase();
     if (ext === '.node') {
+      seen.add(file);
       add({
         severity: 'high',
         rule: 'native-addon',
@@ -126,7 +166,8 @@ function scanPlugin(pluginPath) {
       });
       continue;
     }
-    if (!SOURCE_EXTENSIONS.has(ext)) continue;
+    if (!SOURCE_EXTENSIONS.has(ext) && !forced.has(path.resolve(file))) continue;
+    seen.add(file);
     if (fs.statSync(file).size > MAX_FILE_BYTES) {
       add({
         severity: 'medium',
@@ -137,7 +178,21 @@ function scanPlugin(pluginPath) {
       continue;
     }
     filesScanned++;
-    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    const text = fs.readFileSync(file, 'utf8');
+    const lines = text.split(/\r?\n/);
+    for (const match of text.matchAll(RELATIVE_REF)) {
+      const target = resolveRelative(file, match[1]);
+      const targetExt = target && path.extname(target).toLowerCase();
+      if (
+        target &&
+        inRoot.has(path.resolve(target)) &&
+        targetExt !== '.json' &&
+        targetExt !== '.node'
+      ) {
+        forced.add(path.resolve(target));
+        queue.push(target);
+      }
+    }
     for (const rule of RULES) {
       const index = lines.findIndex((line) => rule.pattern.test(line));
       if (index !== -1) {

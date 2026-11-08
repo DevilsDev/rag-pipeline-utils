@@ -8,6 +8,11 @@
 const wrapped = new WeakMap();
 const warned = new Set();
 
+/**
+ * Emit a DeprecationWarning once per process for each code.
+ * @param {string} code - Warning code, e.g. RAG_DEP_...
+ * @param {string} message - Full warning text
+ */
 function warnOnce(code, message) {
   if (warned.has(code)) return;
   warned.add(code);
@@ -66,4 +71,4 @@ function deprecateClass(Class, { name, message }) {
   return proxy;
 }
 
-module.exports = { deprecateClass };
+module.exports = { deprecateClass, warnOnce };

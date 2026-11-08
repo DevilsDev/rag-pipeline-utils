@@ -551,6 +551,25 @@ class PluginRegistry {
   }
 
   /**
+   * The signature verifier this registry uses (trust store, policy flags).
+   * @returns {object} The PluginSignatureVerifier
+   */
+  getSignatureVerifier() {
+    return this._signatureVerifier;
+  }
+
+  /**
+   * Record an audit entry for a plugin verification decision made outside the
+   * registry (for example when a configured plugin is checked before load).
+   * @param {string} action - Audit action
+   * @param {object} details - Audit details
+   * @returns {void}
+   */
+  recordAuditEntry(action, details) {
+    this._emitAuditEntry(action, details);
+  }
+
+  /**
    * Whether plugins without a signed manifest are rejected.
    * @returns {boolean}
    */

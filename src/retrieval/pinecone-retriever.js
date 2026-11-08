@@ -20,7 +20,8 @@
  * The retriever owns a namespace of the index (default `rag_documents`):
  * clear() deletes everything it stored there. Pinecone metadata is flat,
  * so each record keeps the document's id (`rag_id`), content
- * (`rag_content`), metadata as JSON (`rag_metadata`) and `metadata.source`
+ * (`rag_content`), metadata as JSON (`rag_metadata`, with top-level `acl`
+ * and `requiredRole` under `rag_access`) and `metadata.source`
  * (`rag_source`, for removeBySource).
  *
  * Pinecone is eventually consistent. Like QdrantRetriever's `wait=true`,
@@ -34,6 +35,7 @@
 
 const crypto = require('crypto');
 const { throwIfAborted } = require('../connectors/connector-utils');
+const { storedMetadata, readStoredMetadata } = require('./access-fields');
 
 const API_VERSION = '2026-07';
 const CONTROL_PLANE = 'https://api.pinecone.io';
@@ -76,16 +78,18 @@ function checkVector(vector, id) {
 /** A document from a record's flat fields. */
 function fromFields(fields, fallbackId) {
   const m = fields || {};
-  let metadata = {};
+  let stored = {};
   try {
-    metadata = m.rag_metadata ? JSON.parse(m.rag_metadata) : {};
+    stored = m.rag_metadata ? JSON.parse(m.rag_metadata) : {};
   } catch {
-    metadata = {};
+    stored = {};
   }
+  const { metadata, access } = readStoredMetadata(stored);
   return {
     id: m.rag_id !== undefined ? String(m.rag_id) : fallbackId,
     content: m.rag_content || '',
     metadata,
+    ...access,
   };
 }
 
@@ -524,7 +528,7 @@ class PineconeRetriever {
         fields: {
           rag_id: id,
           rag_content: doc.content || '',
-          rag_metadata: JSON.stringify(metadata),
+          rag_metadata: JSON.stringify(storedMetadata(doc)),
           ...(metadata.source !== undefined &&
             metadata.source !== null && {
               rag_source: String(metadata.source),
@@ -588,7 +592,7 @@ class PineconeRetriever {
         [this._textField]: doc.content,
         rag_id: id,
         rag_content: doc.content,
-        rag_metadata: JSON.stringify(metadata),
+        rag_metadata: JSON.stringify(storedMetadata(doc)),
         ...(metadata.source !== undefined &&
           metadata.source !== null && {
             rag_source: String(metadata.source),

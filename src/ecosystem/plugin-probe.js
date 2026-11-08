@@ -41,6 +41,25 @@ for (let o = instance; o && o !== Object.prototype; o = Object.getPrototypeOf(o)
 process.stdout.write(MARKER + JSON.stringify({ type: typeof instance, methods: [...new Set(methods)] }));
 `;
 
+/**
+ * Environment for the probe process: only what Node needs to start, so the
+ * plugin code being loaded does not see the caller's other variables. HOME,
+ * NODE_OPTIONS and NODE_PATH are left out on purpose.
+ *
+ * @param {string} [platform] - Defaults to process.platform
+ * @param {object} [source] - Defaults to process.env
+ * @returns {Object<string, string>}
+ */
+function probeEnvironment(platform = process.platform, source = process.env) {
+  const names =
+    platform === 'win32' ? ['PATH', 'SystemRoot', 'TEMP'] : ['PATH'];
+  const env = {};
+  for (const name of names) {
+    if (source[name] !== undefined) env[name] = source[name];
+  }
+  return env;
+}
+
 /** The "Error: ..." line of a Node stack trace, else the first line. */
 function firstErrorLine(text) {
   const lines = String(text)
@@ -87,6 +106,7 @@ function probeContract(modulePath, stage, options = {}) {
         timeout: options.timeoutMs || 10000,
         cwd: path.dirname(absolute),
         windowsHide: true,
+        env: probeEnvironment(),
       },
       (error, stdout, stderr) => {
         if (error) {
@@ -124,4 +144,4 @@ function probeContract(modulePath, stage, options = {}) {
   });
 }
 
-module.exports = { probeContract, STAGE_METHODS };
+module.exports = { probeContract, probeEnvironment, STAGE_METHODS };

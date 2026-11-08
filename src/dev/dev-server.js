@@ -305,9 +305,14 @@ ${this.options.watchPaths.map((p) => `║   - ${p.padEnd(56)}║`).join('\n')}
    */
   async _handleRequest(req, res) {
     // DNS rebinding: a web page can point its own domain at 127.0.0.1 and
-    // then call this server same-origin. When bound to loopback, only accept
-    // requests addressed to a loopback name.
-    if (isLoopbackName(this.options.host) && !this._isLoopbackHostHeader(req)) {
+    // then call this server same-origin. When bound to loopback, or when the
+    // request arrives from a loopback address (a server bound to 0.0.0.0 or
+    // :: is reachable that way too), only accept requests addressed to a
+    // loopback name.
+    const fromLoopback =
+      isLoopbackName(this.options.host) ||
+      isLoopbackName(req.socket && req.socket.remoteAddress);
+    if (fromLoopback && !this._isLoopbackHostHeader(req)) {
       return this._send(res, 403, { error: 'Forbidden host' });
     }
 
