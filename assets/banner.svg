@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="title desc">
   <title id="title">rag-pipeline-utils</title>
-  <desc id="desc">Composable RAG for Node.js: query, retrieve, rerank, generate, then an answer with citations.</desc>
+  <desc id="desc">RAG for Node.js that tells you when your LLM is making things up: query, retrieve, rerank, generate, then an answer with citations.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b1020"/>
@@ -27,10 +27,9 @@
   <rect width="1280" height="420" rx="20" fill="url(#glow)"/>
 
   <g font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
-    <text x="72" y="118" font-size="58" font-weight="700" fill="#f8fafc">rag-pipeline-utils</text>
-    <rect x="74" y="140" width="96" height="5" rx="2.5" fill="url(#accent)"/>
-    <text x="72" y="196" font-size="25" fill="#cbd5e1">Composable RAG for Node.js with grounded citations,</text>
-    <text x="72" y="230" font-size="25" fill="#cbd5e1">evaluation, guardrails and a working CLI.</text>
+    <text x="72" y="118" font-size="46" font-weight="700" fill="#f8fafc">RAG for Node.js that tells you</text>
+    <text x="72" y="176" font-size="46" font-weight="700" fill="#f8fafc">when your LLM is making things up.</text>
+    <rect x="74" y="204" width="96" height="5" rx="2.5" fill="url(#accent)"/>
   </g>
 
 
