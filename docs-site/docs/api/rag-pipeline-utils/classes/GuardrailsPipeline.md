@@ -56,6 +56,12 @@ run(input): Promise<object>;
 
 Run the full guarded pipeline.
 
+With `options.stream` and a post-generation guard, the token stream is
+buffered, checked and redacted as a whole, then released as an async
+iterable: one token chunk with the sanitized answer, then a done chunk
+carrying the redacted citations/evaluation and the `guardrails` summary.
+A strict-mode block yields only a done chunk with `success: false`.
+
 #### Parameters
 
 | Parameter            | Type                                                                                                 | Description                                    |
