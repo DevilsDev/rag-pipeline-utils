@@ -18,7 +18,7 @@ const DEFAULT_PATTERNS = {
   /** URLs */
   url: /https?:\/\/[^\s]+/g,
   /** Email addresses */
-  email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+  email: /(?<![a-zA-Z0-9._%+-])[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
   /** Technical terms (CamelCase or ALLCAPS) */
   technical: /\b[A-Z][a-z]+[A-Z]\w+\b/g,
 };

@@ -28,6 +28,8 @@ A patch release with security fixes.
 - Fixed an issue in the `hub install` security scan and contract check.
 - Fixed denial-of-service issues in `InjectionDetector`, the default PII
   patterns and answer scoring.
+- Fixed denial-of-service issues in `EntityExtractor` and in
+  `SecureLogger`'s email redaction.
 - Fixed a denial-of-service issue in plugin archive extraction.
 - Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s tool
   inputs.

@@ -107,7 +107,8 @@ const DEFAULT_PATTERNS = {
 
   // Email addresses (optional redaction)
   email: {
-    regex: /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g,
+    regex:
+      /(?<![a-zA-Z0-9._%+-])([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g,
     replacement: '[REDACTED_EMAIL]',
     description: 'Email addresses',
     enabled: false, // Disabled by default
