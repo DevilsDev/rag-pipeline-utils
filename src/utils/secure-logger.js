@@ -27,7 +27,8 @@ const DEFAULT_PATTERNS = {
   // The key-value patterns below bound the key name around the keyword to 64
   // characters on each side and have no leading word boundary: matching stays
   // linear in the text length, and a match can start inside a longer name, so
-  // the value is still redacted.
+  // the value is still redacted. Key names with more than 64 characters after
+  // the keyword are not redacted: a trade-off for linear time.
   // API Keys - various formats
   apiKey: {
     regex:
