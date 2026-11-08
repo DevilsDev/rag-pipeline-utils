@@ -60,6 +60,9 @@ A patch release with security fixes.
   loads by relative path, so some installs that passed before are blocked;
   the stage-contract check runs with only `PATH` (plus `SystemRoot` and
   `TEMP` on Windows) from your environment.
+- **`hub certify` scans the entry file the same way.** Its security score
+  now covers the package entry file whatever its extension, so some plugins
+  score lower than before.
 - **`GuardrailsPipeline` buffers streamed answers.** With
   `options.stream: true` and a post-generation guard, the answer is checked
   as a whole and released as one token chunk followed by the done chunk;
@@ -86,8 +89,13 @@ A patch release with security fixes.
 - **`@devilsdev/rag-mcp-server` limits tool inputs.** `check_answer`
   accepts an answer of up to 50,000 characters and up to 100 sources of up
   to 200,000 characters each; a `question` or `query` can be up to 10,000
-  characters. Larger input is rejected with an error. Each limit can be
-  raised with a CLI flag or environment variable (see the package README).
+  characters. Larger input is rejected with an error. It also rejects input
+  that would take too long to check: more than 2,000,000 answer words ×
+  source clauses, or more than 3,000,000 answer sentences × source
+  characters. Each limit can be raised with a CLI flag or environment
+  variable (see the package README). `checkAnswer` itself is unchanged: its
+  cost grows with the size of the answer and the sources, so cap untrusted
+  input before checking it.
 - **`DevServer` checks the `Host` header of loopback requests whatever it is
   bound to.** A server bound to `0.0.0.0` or `::` now refuses requests that
   arrive from a loopback address with a non-loopback `Host` header.

@@ -68,18 +68,21 @@ Markdown (`.md`, `.markdown`), HTML (`.html`, `.htm`, visible text only), CSV (`
 ```bash
 rag-mcp-server <folder> [--top-k <n>] [--embedder local] [--max-answer-chars <n>]
                [--max-source-chars <n>] [--max-question-chars <n>] [--max-sources <n>]
+               [--max-clause-pairs <n>] [--max-sentence-source-chars <n>]
 ```
 
-| Option                     | Default  | Meaning                                                                        |
-| -------------------------- | -------- | ------------------------------------------------------------------------------ |
-| `--top-k <n>`              | `4`      | Passages per call when the client doesn't pass `topK`                          |
-| `--embedder <name>`        | `local`  | The embedder; `local` (TF-IDF, offline) is the only one                        |
-| `--max-answer-chars <n>`   | `50000`  | Longest `answer` `check_answer` accepts (env `RAG_MCP_MAX_ANSWER_CHARS`)       |
-| `--max-source-chars <n>`   | `200000` | Longest source passage `check_answer` accepts (env `RAG_MCP_MAX_SOURCE_CHARS`) |
-| `--max-question-chars <n>` | `10000`  | Longest `question` or `query` (env `RAG_MCP_MAX_QUESTION_CHARS`)               |
-| `--max-sources <n>`        | `100`    | Most `sources` per `check_answer` call (env `RAG_MCP_MAX_SOURCES`)             |
+| Option                            | Default   | Meaning                                                                                                     |
+| --------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `--top-k <n>`                     | `4`       | Passages per call when the client doesn't pass `topK`                                                       |
+| `--embedder <name>`               | `local`   | The embedder; `local` (TF-IDF, offline) is the only one                                                     |
+| `--max-answer-chars <n>`          | `50000`   | Longest `answer` `check_answer` accepts (env `RAG_MCP_MAX_ANSWER_CHARS`)                                    |
+| `--max-source-chars <n>`          | `200000`  | Longest source passage `check_answer` accepts (env `RAG_MCP_MAX_SOURCE_CHARS`)                              |
+| `--max-question-chars <n>`        | `10000`   | Longest `question` or `query` (env `RAG_MCP_MAX_QUESTION_CHARS`)                                            |
+| `--max-sources <n>`               | `100`     | Most `sources` per `check_answer` call (env `RAG_MCP_MAX_SOURCES`)                                          |
+| `--max-clause-pairs <n>`          | `2000000` | Most answer words × source clauses `check_answer` compares (env `RAG_MCP_MAX_CLAUSE_PAIRS`)                 |
+| `--max-sentence-source-chars <n>` | `3000000` | Most answer sentences × source characters `check_answer` compares (env `RAG_MCP_MAX_SENTENCE_SOURCE_CHARS`) |
 
-A tool call over a limit is rejected with an error that names the flag to raise it. A flag wins over its environment variable; each must be a whole number of at least 1. When you build the server in code, `createServer(index, { maxAnswerChars, maxSourceChars, maxQuestionChars, maxSources })` takes the same limits.
+A tool call over a limit is rejected with an error that names the flag to raise it. A flag wins over its environment variable; each must be a whole number of at least 1. When you build the server in code, `createServer(index, { maxAnswerChars, maxSourceChars, maxQuestionChars, maxSources, maxClausePairs, maxSentenceSourceChars })` takes the same limits. The last two bound how long a check can take: at their defaults the slowest input we found took about 3 seconds to check on our test machine.
 
 Everything the server logs goes to stderr; stdout carries the protocol.
 
