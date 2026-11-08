@@ -68,7 +68,8 @@ Markdown (`.md`, `.markdown`), HTML (`.html`, `.htm`, visible text only), CSV (`
 ```bash
 rag-mcp-server <folder> [--top-k <n>] [--embedder local] [--max-answer-chars <n>]
                [--max-source-chars <n>] [--max-question-chars <n>] [--max-sources <n>]
-               [--max-clause-pairs <n>] [--max-sentence-source-chars <n>]
+               [--max-clause-pairs <n>] [--max-sentence-source-chars <n>] [--check-timeout-ms <n>]
+               [--max-concurrent-checks <n>]
 ```
 
 | Option                            | Default   | Meaning                                                                                                     |
@@ -81,8 +82,10 @@ rag-mcp-server <folder> [--top-k <n>] [--embedder local] [--max-answer-chars <n>
 | `--max-sources <n>`               | `100`     | Most `sources` per `check_answer` call (env `RAG_MCP_MAX_SOURCES`)                                          |
 | `--max-clause-pairs <n>`          | `2000000` | Most answer words × source clauses `check_answer` compares (env `RAG_MCP_MAX_CLAUSE_PAIRS`)                 |
 | `--max-sentence-source-chars <n>` | `3000000` | Most answer sentences × source characters `check_answer` compares (env `RAG_MCP_MAX_SENTENCE_SOURCE_CHARS`) |
+| `--check-timeout-ms <n>`          | `10000`   | Longest a `check_answer` check may run before it is stopped (env `RAG_MCP_CHECK_TIMEOUT_MS`)                |
+| `--max-concurrent-checks <n>`     | `2`       | Most `check_answer` checks run at once; up to 8 more wait (env `RAG_MCP_MAX_CONCURRENT_CHECKS`)             |
 
-A tool call over a limit is rejected with an error that names the flag to raise it. A flag wins over its environment variable; each must be a whole number of at least 1. When you build the server in code, `createServer(index, { maxAnswerChars, maxSourceChars, maxQuestionChars, maxSources, maxClausePairs, maxSentenceSourceChars })` takes the same limits. The last two bound how long a check can take: at their defaults the slowest input we found took about 3 seconds to check on our test machine.
+A tool call over a limit is rejected with an error that names the flag to raise it. A flag wins over its environment variable; each must be a whole number of at least 1. When you build the server in code, `createServer(index, { maxAnswerChars, maxSourceChars, maxQuestionChars, maxSources, maxClausePairs, maxSentenceSourceChars, checkTimeoutMs, maxConcurrentChecks })` takes the same limits. `maxClausePairs` and `maxSentenceSourceChars` refuse input that would take long to check before checking it. Every check also runs in a worker thread, with at most 512 MB of heap, and is stopped when it runs past `checkTimeoutMs`; the server keeps answering other calls meanwhile. At most `maxConcurrentChecks` checks run at once; up to 8 more wait, and time spent waiting doesn't count toward `checkTimeoutMs`. A call beyond that is refused with "Too many check_answer calls waiting; try again shortly."
 
 Everything the server logs goes to stderr; stdout carries the protocol.
 

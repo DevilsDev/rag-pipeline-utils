@@ -15,7 +15,12 @@ const {
   StdioServerTransport,
 } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { z } = require("zod");
-const { LocalEmbedder, MemoryRetriever, checkAnswer } = require("./library");
+const { LocalEmbedder, MemoryRetriever } = require("./library");
+const {
+  createCheckRunner,
+  CheckTimeoutError,
+  CheckQueueFullError,
+} = require("./check-runner");
 const { readPassages, SUPPORTED_EXTENSIONS } = require("./documents");
 const { version } = require("../package.json");
 
@@ -27,6 +32,8 @@ const DEFAULT_MAX_QUESTION_CHARS = 10000;
 const DEFAULT_MAX_SOURCES = 100;
 const DEFAULT_MAX_CLAUSE_PAIRS = 2000000;
 const DEFAULT_MAX_SENTENCE_SOURCE_CHARS = 3000000;
+const DEFAULT_CHECK_TIMEOUT_MS = 10000;
+const DEFAULT_MAX_CONCURRENT_CHECKS = 2;
 
 const USAGE = `Usage: rag-mcp-server <folder> [options]
 
@@ -48,6 +55,10 @@ Options:
                           (default ${DEFAULT_MAX_CLAUSE_PAIRS}; env RAG_MCP_MAX_CLAUSE_PAIRS)
   --max-sentence-source-chars <n>  Most answer sentences × source characters check_answer
                           compares (default ${DEFAULT_MAX_SENTENCE_SOURCE_CHARS}; env RAG_MCP_MAX_SENTENCE_SOURCE_CHARS)
+  --check-timeout-ms <n>  Longest a check_answer check may run before it is stopped
+                          (default ${DEFAULT_CHECK_TIMEOUT_MS}; env RAG_MCP_CHECK_TIMEOUT_MS)
+  --max-concurrent-checks <n>  Most check_answer checks run at once; up to 8 more wait
+                          (default ${DEFAULT_MAX_CONCURRENT_CHECKS}; env RAG_MCP_MAX_CONCURRENT_CHECKS)
   -h, --help        Show this help
   -v, --version     Show the version
 `;
@@ -186,10 +197,12 @@ function checkSize(answer, docs, { maxClausePairs, maxSentenceSourceChars }) {
  * The MCP server for an index (not yet connected to a transport).
  *
  * @param {{search: Function, size: number}} index - From buildIndex
- * @param {{defaultTopK?: number, folder?: string, maxAnswerChars?: number, maxSourceChars?: number, maxQuestionChars?: number, maxSources?: number, maxClausePairs?: number, maxSentenceSourceChars?: number}} [options]
+ * @param {{defaultTopK?: number, folder?: string, maxAnswerChars?: number, maxSourceChars?: number, maxQuestionChars?: number, maxSources?: number, maxClausePairs?: number, maxSentenceSourceChars?: number, checkTimeoutMs?: number, maxConcurrentChecks?: number}} [options]
  *   maxAnswerChars, maxSourceChars, maxQuestionChars and maxSources bound what the tools
  *   accept: the answer, each source, the question or query, and the sources per call.
- *   maxClausePairs and maxSentenceSourceChars bound the work check_answer does (see checkSize)
+ *   maxClausePairs and maxSentenceSourceChars bound the work check_answer does (see checkSize);
+ *   checkTimeoutMs stops a check that runs longer (it runs in a worker thread, see check-runner.js);
+ *   maxConcurrentChecks checks run at once and up to 8 more wait
  */
 function createServer(
   index,
@@ -202,6 +215,8 @@ function createServer(
     maxSources = DEFAULT_MAX_SOURCES,
     maxClausePairs = DEFAULT_MAX_CLAUSE_PAIRS,
     maxSentenceSourceChars = DEFAULT_MAX_SENTENCE_SOURCE_CHARS,
+    checkTimeoutMs = DEFAULT_CHECK_TIMEOUT_MS,
+    maxConcurrentChecks = DEFAULT_MAX_CONCURRENT_CHECKS,
   } = {},
 ) {
   const answerText = z
@@ -221,6 +236,16 @@ function createServer(
   const questionMessage = (name) =>
     `${name} is too long: at most ${maxQuestionChars} characters are accepted. Send a shorter ${name}, or start the server with --max-question-chars (env RAG_MCP_MAX_QUESTION_CHARS).`;
   const server = new McpServer({ name: "rag-mcp-server", version });
+  const checks = createCheckRunner({
+    timeoutMs: checkTimeoutMs,
+    maxConcurrent: maxConcurrentChecks,
+  });
+  // Stop the check workers when the connection closes
+  const onclose = server.server.onclose;
+  server.server.onclose = () => {
+    checks.close();
+    if (onclose) onclose();
+  };
   const empty = () =>
     toolError(
       `No documents are indexed: ${folder} has no ${SUPPORTED_EXTENSIONS.join(", ")} files with text.`,
@@ -354,12 +379,27 @@ function createServer(
         maxSentenceSourceChars,
       });
       if (tooLarge) return toolError(tooLarge);
-      const check = await checkAnswer({
-        answer,
-        question,
-        sources: docs,
-        evaluate: false,
-      });
+      let check;
+      try {
+        check = await checks.run({
+          answer,
+          question,
+          sources: docs,
+          evaluate: false,
+        });
+      } catch (error) {
+        if (error instanceof CheckTimeoutError) {
+          return toolError(
+            `check_answer took longer than ${checkTimeoutMs} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`,
+          );
+        }
+        if (error instanceof CheckQueueFullError) {
+          return toolError(
+            "Too many check_answer calls waiting; try again shortly.",
+          );
+        }
+        throw error;
+      }
       return reply({
         grounded: check.grounded,
         groundedness: Number(check.groundedness.toFixed(4)),
@@ -400,6 +440,8 @@ async function main(argv) {
         "max-sources": { type: "string" },
         "max-clause-pairs": { type: "string" },
         "max-sentence-source-chars": { type: "string" },
+        "check-timeout-ms": { type: "string" },
+        "max-concurrent-checks": { type: "string" },
         embedder: { type: "string", default: "local" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" },
@@ -473,6 +515,18 @@ async function main(argv) {
       "max-sentence-source-chars",
       "RAG_MCP_MAX_SENTENCE_SOURCE_CHARS",
       DEFAULT_MAX_SENTENCE_SOURCE_CHARS,
+    ],
+    [
+      "checkTimeoutMs",
+      "check-timeout-ms",
+      "RAG_MCP_CHECK_TIMEOUT_MS",
+      DEFAULT_CHECK_TIMEOUT_MS,
+    ],
+    [
+      "maxConcurrentChecks",
+      "max-concurrent-checks",
+      "RAG_MCP_MAX_CONCURRENT_CHECKS",
+      DEFAULT_MAX_CONCURRENT_CHECKS,
     ],
   ]) {
     const raw = values[flag] ?? process.env[envName];

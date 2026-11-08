@@ -92,10 +92,13 @@ A patch release with security fixes.
   characters. Larger input is rejected with an error. It also rejects input
   that would take too long to check: more than 2,000,000 answer words ×
   source clauses, or more than 3,000,000 answer sentences × source
-  characters. Each limit can be raised with a CLI flag or environment
-  variable (see the package README). `checkAnswer` itself is unchanged: its
-  cost grows with the size of the answer and the sources, so cap untrusted
-  input before checking it.
+  characters. A check runs in a worker thread with at most 512 MB of heap,
+  and one that takes longer than 10 seconds is stopped with an error; at
+  most 2 checks run at once, up to 8 more wait, and further calls are
+  refused until one finishes. Each limit can be raised with a CLI flag or
+  environment variable (see the package README). `checkAnswer` itself is
+  unchanged: its cost grows with the size of the answer and the sources, so
+  cap untrusted input before checking it.
 - **`DevServer` checks the `Host` header of loopback requests whatever it is
   bound to.** A server bound to `0.0.0.0` or `::` now refuses requests that
   arrive from a loopback address with a non-loopback `Host` header.

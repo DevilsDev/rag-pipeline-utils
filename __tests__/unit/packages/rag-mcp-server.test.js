@@ -402,6 +402,8 @@ describe("package", () => {
       "LICENSE",
       "README.md",
       "bin/rag-mcp-server.js",
+      "lib/check-runner.js",
+      "lib/check-worker.js",
       "lib/documents.js",
       "lib/library.js",
       "lib/server.js",
