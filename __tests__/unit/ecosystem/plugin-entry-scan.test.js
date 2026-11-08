@@ -84,6 +84,19 @@ describe("plugin entry scanning", () => {
     expect(result.entry).toBe("./.rag/plugins/llm-datentry/lib.dat");
   });
 
+  test("hub certify scans an entry file with a non-source extension", async () => {
+    const { runPluginChecks } = require("../../../src/ecosystem/plugin-checks");
+
+    const report = await runPluginChecks(FIXTURE);
+    const security = report.checks.find((c) => c.id === "security");
+
+    expect(security.score).toBeLessThan(100);
+    expect(security.details).toEqual([
+      expect.stringContaining("child_process) (lib.dat:1)"),
+    ]);
+    expect(report.level).toBeNull();
+  });
+
   test("a plain plugin still installs", async () => {
     const {
       installPlugin,

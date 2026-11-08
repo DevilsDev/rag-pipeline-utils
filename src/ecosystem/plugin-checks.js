@@ -40,8 +40,9 @@ function listFiles(dir) {
   return out;
 }
 
-function securityCheck(root) {
-  const scan = scanPlugin(root);
+function securityCheck(root, entry) {
+  // The entry is scanned whatever its extension, as at install
+  const scan = scanPlugin(root, { entry });
   const { high, medium, low } = scan.counts;
   const score = Math.max(0, 100 - 40 * high - 10 * medium - 2 * low);
   return {
@@ -151,7 +152,7 @@ async function runPluginChecks(pluginPath, options = {}) {
 
   const checks = [
     contract,
-    isDir ? securityCheck(root) : securityCheck(absolute),
+    isDir ? securityCheck(root, entry) : securityCheck(absolute),
     testsCheck(files, manifest),
     docsCheck(root, isDir ? files : [], manifest),
   ];
