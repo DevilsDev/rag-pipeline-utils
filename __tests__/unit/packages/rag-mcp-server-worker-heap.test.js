@@ -36,10 +36,10 @@ jest.setTimeout(120000);
 // The suite runs on fake timers; the runner's time limit needs real ones.
 beforeEach(() => jest.useRealTimers());
 
-// A distinct 200 KB source of quantities each time: its quantities are
-// cached in the worker (about 4 MB each)
+// A distinct 50 KB source of quantities each time: its quantities are
+// cached in the worker (about 1 MB each)
 const largeSource = (i) =>
-  `Staff carry ${1000 + i} kg ${"5 kg ".repeat(39990).trim()}.`;
+  `Staff carry ${1000 + i} kg ${"5 kg ".repeat(10000).trim()}.`;
 const largeCheck = (i) => ({
   answer: "Staff carry 5 kg.",
   sources: [largeSource(i)],
@@ -79,8 +79,10 @@ test("the check worker reports its heap after each check", async () => {
 });
 
 describe("checks against distinct large sources", () => {
-  // A 64 MB heap holds about a dozen cached sources; 30 are checked
-  const limits = { maxOldGenerationSizeMb: 64 };
+  // A 40 MB heap holds about 30 cached sources; 45 are checked. (In the
+  // server: a 512 MB heap, 200 KB sources and a 256 MB reuse limit.)
+  const limits = { maxOldGenerationSizeMb: 40 };
+  const REUSE_LIMIT_MB = 30;
 
   test("without a reuse limit the reused worker runs out of memory", async () => {
     const runner = createCheckRunner({
@@ -90,7 +92,7 @@ describe("checks against distinct large sources", () => {
       file: WITH_THREAD_ID,
     });
     try {
-      const { checks, error } = await runAll(runner, 30, largeCheck);
+      const { checks, error } = await runAll(runner, 45, largeCheck);
       expect(error).not.toBeNull();
       expect(error.message).toMatch(/stopped unexpectedly: .*memory limit/);
       expect(new Set(checks.map((c) => c.threadId)).size).toBe(1);
@@ -103,15 +105,22 @@ describe("checks against distinct large sources", () => {
     const runner = createCheckRunner({
       timeoutMs: 60000,
       resourceLimits: limits,
-      reuseHeapLimitMb: 32,
+      reuseHeapLimitMb: REUSE_LIMIT_MB,
       file: WITH_THREAD_ID,
     });
     try {
-      const { checks, error } = await runAll(runner, 30, largeCheck);
+      const { checks, error } = await runAll(runner, 45, largeCheck);
       expect(error).toBeNull();
-      expect(checks).toHaveLength(30);
+      expect(checks).toHaveLength(45);
       for (const c of checks) expect(c.grounded).toBe(true);
       expect(new Set(checks.map((c) => c.threadId)).size).toBeGreaterThan(1);
+      // A worker is replaced exactly when its last check ended at or over
+      // the limit
+      const limit = REUSE_LIMIT_MB * 1024 * 1024;
+      for (let i = 1; i < checks.length; i++) {
+        const replaced = checks[i].threadId !== checks[i - 1].threadId;
+        expect([i, replaced]).toEqual([i, checks[i - 1].heapUsed >= limit]);
+      }
     } finally {
       await runner.close();
     }

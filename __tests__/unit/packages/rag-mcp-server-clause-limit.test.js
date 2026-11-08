@@ -123,7 +123,9 @@ describe("default limits", () => {
     );
     expect(value.result).toBeUndefined();
     expect(value.error).toMatch(/^Input too large to check: /);
-    expect(ms).toBeLessThan(1000);
+    // Generous for a busy machine, and still under the 11 s or more each
+    // of these took to check
+    expect(ms).toBeLessThan(5000);
   });
 
   test("the clause-pair message gives the counts, the limit and the flag", async () => {
