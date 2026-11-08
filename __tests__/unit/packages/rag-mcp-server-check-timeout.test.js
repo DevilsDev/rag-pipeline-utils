@@ -106,18 +106,32 @@ const stopped = (ms) =>
   `check_answer took longer than ${ms} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`;
 
 describe("the time limit", () => {
-  test('10,000 "5 kg" against 15 sources is stopped at the default 10,000 ms', async () => {
+  test('10,000 "5 kg" against 15 sources is stopped at the default 10,000 ms, within 1 s', async () => {
+    const input = {
+      answer: quantities(9990),
+      sources: Array(15).fill(QUANTITY_SOURCE),
+    };
+    // What this machine spends outside the limit (counting the input,
+    // starting a worker, copying the input to it): the same call stopped
+    // after 1 ms
+    const probe = await inMemory({ checkTimeoutMs: 1 });
+    let overhead;
+    try {
+      const start = Date.now();
+      expect((await check(probe, input)).error).toBe(stopped(1));
+      overhead = Date.now() - start;
+    } finally {
+      await probe.close();
+    }
     const client = await inMemory();
     try {
       const start = Date.now();
-      const { result, error } = await check(client, {
-        answer: quantities(9990),
-        sources: Array(15).fill(QUANTITY_SOURCE),
-      });
+      const { result, error } = await check(client, input);
       const ms = Date.now() - start;
       expect(result).toBeUndefined();
       expect(error).toBe(stopped(10000));
-      expect(ms).toBeLessThan(11000);
+      expect(ms).toBeGreaterThanOrEqual(10000);
+      expect(ms).toBeLessThan(10000 + overhead + 1000);
     } finally {
       await client.close();
     }
@@ -279,15 +293,21 @@ describe("worker failures", () => {
   );
 
   test("running out of memory during a check gives an error, not a hang", async () => {
-    // 16 MB is enough to load the library and run a small check, not to
-    // check against 3 MB of sources
+    // 16 MB is enough to load the library and run a small check, and far
+    // too little to check against 30 distinct 200 KB sources (6 MB of text,
+    // which completes with the default 512 MB). 15 identical sources needed
+    // about 16 MB and sometimes fit.
     const runner = createCheckRunner({
       timeoutMs: 30000,
       resourceLimits: { maxOldGenerationSizeMb: 16 },
     });
     const big = {
       answer: "cat bb.",
-      sources: Array(15).fill(`cat ${"bb ".repeat(66000)}`),
+      sources: Array.from(
+        { length: 30 },
+        (_, i) => `cat ${i} ${"bb ".repeat(66000)}`,
+      ),
+      evaluate: false,
     };
     try {
       expect((await runner.run({ answer: "a", sources: ["a"] })).grounded).toBe(
@@ -434,8 +454,9 @@ test("the server answers other calls while a long check runs", async () => {
     score: 1,
     text: "Employees receive twenty days of paid vacation.",
   };
+  // A limit the long check can't reach, even on a slow machine
   const client = await inMemory(
-    { checkTimeoutMs: 5000 },
+    { checkTimeoutMs: 60000 },
     { size: 1, search: async () => [passage] },
   );
   try {
@@ -445,8 +466,7 @@ test("the server answers other calls while a long check runs", async () => {
       return r;
     });
     // Give the check time to start in its worker
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const start = Date.now();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const search = await call(client, "search_documents", {
       query: "vacation",
     });
@@ -456,8 +476,8 @@ test("the server answers other calls while a long check runs", async () => {
     });
     expect(search.error).toBeUndefined();
     expect(quick.result.structuredContent.grounded).toBe(true);
+    // Both answered while the long check was still running
     expect(checkDone).toBe(false);
-    expect(Date.now() - start).toBeLessThan(2000);
     await long;
   } finally {
     await client.close();
