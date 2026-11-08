@@ -121,6 +121,55 @@ Remove trusted signer
 
 ---
 
+### verifyManifestSync()
+
+```ts
+verifyManifestSync(
+   manifest,
+   signature,
+   signerId,
+   content?
+): object;
+```
+
+Synchronous signature check shared by every verification path: input
+validation, trusted-signer lookup, Ed25519 signature over the canonical
+manifest, and the contentDigest check. Does not consult `enabled` and
+does not write audit entries; callers decide both.
+
+#### Parameters
+
+| Parameter   | Type     | Description                                                                                       |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `manifest`  | `object` | Plugin manifest                                                                                   |
+| `signature` | `string` | Base64 encoded signature                                                                          |
+| `signerId`  | `string` | Signer identifier                                                                                 |
+| `content?`  | `object` | `{ files, baseDir, contents }` to check against manifest.contentDigest (see computeContentDigest) |
+
+#### Returns
+
+`object`
+
+contentVerified is false when the manifest has no contentDigest
+
+##### canonicalManifest
+
+```ts
+canonicalManifest: object;
+```
+
+##### contentVerified
+
+```ts
+contentVerified: boolean;
+```
+
+#### Throws
+
+When the manifest must not be trusted
+
+---
+
 ### verifyPluginSignature()
 
 ```ts
