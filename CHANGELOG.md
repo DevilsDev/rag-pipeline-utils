@@ -60,9 +60,9 @@ A patch release with security fixes.
   loads by relative path, so some installs that passed before are blocked;
   the stage-contract check runs with only `PATH` (plus `SystemRoot` and
   `TEMP` on Windows) from your environment.
-- **`hub certify` scans the entry file the same way.** Its security score
-  now covers the package entry file whatever its extension, so some plugins
-  score lower than before.
+- **`hub certify` scans the entry file the same way as `hub install`.** Its
+  security score now covers the package entry file whatever its extension,
+  so some plugins score lower than before.
 - **`GuardrailsPipeline` buffers streamed answers.** With
   `options.stream: true` and a post-generation guard, the answer is checked
   as a whole and released as one token chunk followed by the done chunk;
