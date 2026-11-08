@@ -10,6 +10,12 @@
  * alive). A check that finds it busy starts a worker of its own, and a
  * stopped or failed worker is replaced.
  *
+ * checkAnswer caches the quantities of recent sources (up to 256), about
+ * 4 MB each for a 200 KB source, so a reused worker's heap grows with the
+ * distinct sources it has checked. A worker is kept only while its heap is
+ * under reuseHeapLimitMb after a check; otherwise the next check starts a
+ * fresh one, before the heap reaches resourceLimits.
+ *
  * At most maxConcurrent checks run at once; up to maxQueue more wait for a
  * free slot, and further checks are refused. Waiting doesn't count toward
  * the time limit.
@@ -65,9 +71,9 @@ function nextMessage(worker) {
 }
 
 /**
- * @param {{timeoutMs: number, maxConcurrent?: number, maxQueue?: number, file?: string, resourceLimits?: object}} options
- *   maxConcurrent and maxQueue default to 2 and 8; file and resourceLimits to
- *   check-worker.js and a 512 MB heap
+ * @param {{timeoutMs: number, maxConcurrent?: number, maxQueue?: number, reuseHeapLimitMb?: number, file?: string, resourceLimits?: object}} options
+ *   maxConcurrent and maxQueue default to 2 and 8, reuseHeapLimitMb to 256;
+ *   file and resourceLimits to check-worker.js and a 512 MB heap
  * @returns {{run: (params: object) => Promise<object>, close: () => Promise<void>}}
  *   run rejects with a CheckTimeoutError at the time limit, a
  *   CheckQueueFullError when the queue is full, and with the error
@@ -77,6 +83,7 @@ function createCheckRunner({
   timeoutMs,
   maxConcurrent = 2,
   maxQueue = 8,
+  reuseHeapLimitMb = 256,
   file = WORKER_FILE,
   resourceLimits = RESOURCE_LIMITS,
 }) {
@@ -117,11 +124,19 @@ function createCheckRunner({
     return worker;
   }
 
-  /** Keep the worker for the next check, or stop it if one is kept. */
-  function release(worker) {
+  /**
+   * Keep the worker for the next check, or stop it if one is kept or its
+   * heap (`heapUsed`, in bytes) is at reuseHeapLimitMb or more.
+   */
+  function release(worker, heapUsed) {
     worker.unref();
-    if (idle === null && !closed && !worker.exited) idle = worker;
-    else worker.terminate();
+    // A reply without heapUsed counts as under the limit
+    const underLimit = !(heapUsed >= reuseHeapLimitMb * 1024 * 1024);
+    if (idle === null && !closed && !worker.exited && underLimit) {
+      idle = worker;
+    } else {
+      worker.terminate();
+    }
   }
 
   async function run(params) {
@@ -159,7 +174,7 @@ function createCheckRunner({
       } finally {
         clearTimeout(timer);
       }
-      release(worker);
+      release(worker, message.heapUsed);
       if (!message.ok)
         throw Object.assign(new Error(message.message), { fromCheck: true });
       return message.check;
