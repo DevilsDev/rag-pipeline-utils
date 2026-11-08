@@ -38,6 +38,25 @@ A patch release with security fixes.
 
 ### Changed
 
+- **Re-ingest documents with top-level access restrictions.**
+  `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` and
+  `PgVectorRetriever` now store a document's top-level `acl` and
+  `requiredRole` (Pinecone, Weaviate and pgvector under the reserved
+  metadata key `rag_access`). Documents stored by earlier versions were
+  saved without them; re-ingest them.
+- **`HybridRetriever` keeps the restrictions of every copy of a document.**
+  When two retrievers return the same document, the merged result requires
+  every restriction any copy sets, which can hide documents that were
+  visible before. The role `rag:no-access` is reserved: it restricts a
+  document to no one, and a user's permissions never match it.
+- **Blocked `GuardrailsPipeline` results carry no text.** A withheld result
+  has no answer, an empty `guardrails.postGeneration.sanitizedOutput`, and
+  guard summaries without the query, matched strings or document content.
+- **`hub install` scans more and passes less.** The security scan now
+  covers the package entry file whatever its extension and the files it
+  loads by relative path, so some installs that passed before are blocked;
+  the stage-contract check runs with only `PATH` (plus `SystemRoot` and
+  `TEMP` on Windows) from your environment.
 - **`GuardrailsPipeline` buffers streamed answers.** With
   `options.stream: true` and a post-generation guard, the answer is checked
   as a whole and released as one token chunk followed by the done chunk;
