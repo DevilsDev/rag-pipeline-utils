@@ -28,9 +28,7 @@ A patch release with security fixes.
 - Fixed an issue in the `hub install` security scan and contract check.
 - Fixed denial-of-service issues in `InjectionDetector`, the default PII
   patterns and answer scoring.
-- Fixed denial-of-service issues in `EntityExtractor` and in
-  `SecureLogger`'s email redaction.
-- Fixed a denial-of-service issue in `SecureLogger`'s secret redaction.
+- Fixed a denial-of-service issue in `EntityExtractor`.
 - Fixed a denial-of-service issue in plugin archive extraction.
 - Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s tool
   inputs.
@@ -46,7 +44,9 @@ A patch release with security fixes.
   `PgVectorRetriever` now store a document's top-level `acl` and
   `requiredRole` (Pinecone, Weaviate and pgvector under the reserved
   metadata key `rag_access`). Documents stored by earlier versions were
-  saved without them; re-ingest them.
+  saved without them; re-ingest them. See
+  [Do I need to re-ingest?](https://devilsdev.github.io/rag-pipeline-utils/docs/Security#do-i-need-to-re-ingest)
+  to check a store. Thanks to a reader for suggesting this.
 - **`HybridRetriever` keeps the restrictions of every copy of a document.**
   When two retrievers return the same document, the merged result requires
   every restriction any copy sets, which can hide documents that were
