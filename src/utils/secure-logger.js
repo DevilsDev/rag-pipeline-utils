@@ -24,10 +24,14 @@
  * @private
  */
 const DEFAULT_PATTERNS = {
+  // The key-value patterns below bound the key name around the keyword to 64
+  // characters on each side and have no leading word boundary: matching stays
+  // linear in the text length, and a match can start inside a longer name, so
+  // the value is still redacted.
   // API Keys - various formats
   apiKey: {
     regex:
-      /\b([a-zA-Z0-9_-]*(?:api[_-]?key|apikey|key)[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([a-zA-Z0-9_\-]{16,})(['"]?)/gi,
+      /([a-zA-Z0-9_-]{0,64}(?:api[_-]?key|apikey|key)[a-zA-Z0-9_-]{0,64}[:=]\s*)(['"]?)([a-zA-Z0-9_\-]{16,})(['"]?)/gi,
     replacement: (match, prefix, quote1, key, quote2) =>
       `${prefix}${quote1}[REDACTED_API_KEY]${quote2}`,
     description: 'API keys in key-value format',
@@ -66,7 +70,7 @@ const DEFAULT_PATTERNS = {
   // Generic passwords
   password: {
     regex:
-      /\b([a-zA-Z0-9_-]*password[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
+      /([a-zA-Z0-9_-]{0,64}password[a-zA-Z0-9_-]{0,64}[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
     replacement: (match, prefix, quote1, pwd, quote2) =>
       `${prefix}${quote1}[REDACTED_PASSWORD]${quote2}`,
     description: 'Password fields',
@@ -75,7 +79,7 @@ const DEFAULT_PATTERNS = {
   // Generic tokens
   token: {
     regex:
-      /\b([a-zA-Z0-9_-]*token[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([a-zA-Z0-9_\-\.=]{16,})(['"]?)/gi,
+      /([a-zA-Z0-9_-]{0,64}token[a-zA-Z0-9_-]{0,64}[:=]\s*)(['"]?)([a-zA-Z0-9_\-\.=]{16,})(['"]?)/gi,
     replacement: (match, prefix, quote1, token, quote2) =>
       `${prefix}${quote1}[REDACTED_TOKEN]${quote2}`,
     description: 'Generic token fields',
@@ -84,7 +88,7 @@ const DEFAULT_PATTERNS = {
   // Generic secrets
   secret: {
     regex:
-      /\b([a-zA-Z0-9_-]*secret[a-zA-Z0-9_-]*[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
+      /([a-zA-Z0-9_-]{0,64}secret[a-zA-Z0-9_-]{0,64}[:=]\s*)(['"]?)([^\s'"]{6,})(['"]?)/gi,
     replacement: (match, prefix, quote1, secret, quote2) =>
       `${prefix}${quote1}[REDACTED_SECRET]${quote2}`,
     description: 'Generic secret fields',

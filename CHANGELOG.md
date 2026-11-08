@@ -30,6 +30,7 @@ A patch release with security fixes.
   patterns and answer scoring.
 - Fixed denial-of-service issues in `EntityExtractor` and in
   `SecureLogger`'s email redaction.
+- Fixed a denial-of-service issue in `SecureLogger`'s secret redaction.
 - Fixed a denial-of-service issue in plugin archive extraction.
 - Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s tool
   inputs.
