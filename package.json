@@ -1,7 +1,7 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "3.8.2",
-  "description": "Composable retrieval-augmented generation (RAG) for Node.js: grounded citations, evaluation, guardrails, hybrid retrieval and a CLI.",
+  "version": "3.8.3",
+  "description": "RAG for Node.js that tells you when your LLM is making things up",
   "main": "dist/index.cjs",
   "type": "commonjs",
   "types": "dist/index.d.ts",
@@ -170,7 +170,15 @@
     "vector-database",
     "rag-evaluation",
     "llm-evaluation",
-    "context-window"
+    "context-window",
+    "hallucination",
+    "hallucination-detection",
+    "grounding",
+    "fact-checking",
+    "mcp",
+    "vercel-ai-sdk",
+    "mastra",
+    "langchain"
   ],
   "author": "Ali Kahwaji",
   "license": "MIT",
@@ -259,10 +267,10 @@
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
-    "@devilsdev/rag-connectors": "3.8.2",
-    "@devilsdev/rag-core": "3.8.2",
-    "@devilsdev/rag-eval": "3.8.2",
-    "@devilsdev/rag-guardrails": "3.8.2",
+    "@devilsdev/rag-connectors": "3.8.3",
+    "@devilsdev/rag-core": "3.8.3",
+    "@devilsdev/rag-eval": "3.8.3",
+    "@devilsdev/rag-guardrails": "3.8.3",
     "ajv": "^8.17.1",
     "axios": "^1.21.0",
     "chokidar": "^4.0.3",

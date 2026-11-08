@@ -9,6 +9,11 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [3.8.3] - 2026-11-09
+
+Documentation and package metadata only; no code changes. If you're on
+3.8.1 or earlier, upgrade for the security fixes in 3.8.2.
+
 ## [3.8.2] - 2026-11-09
 
 A patch release with security fixes.
