@@ -117,12 +117,14 @@ describe("the time limit", () => {
     };
     const client = await inMemory();
     try {
-      const start = Date.now();
+      // performance.now(): Date.now() can step when the system clock is
+      // adjusted (it read 9,950 ms here once, under WSL)
+      const start = performance.now();
       const { result, error } = await check(client, input);
-      const ms = Date.now() - start;
+      const ms = performance.now() - start;
       expect(result).toBeUndefined();
       expect(error).toBe(stopped(10000));
-      expect(ms).toBeGreaterThanOrEqual(10000);
+      expect(ms).toBeGreaterThanOrEqual(9500);
       // Unstopped, this check takes about 471 s; the ceiling leaves room
       // for counting the input and starting a worker on a busy machine
       expect(ms).toBeLessThan(30000);
@@ -271,11 +273,11 @@ describe("worker failures", () => {
         file: path.join(FIXTURES, file),
       });
       try {
-        const start = Date.now();
+        const start = performance.now();
         await expect(
           runner.run({ answer: "a", sources: ["a"] }),
         ).rejects.toThrow(message);
-        expect(Date.now() - start).toBeLessThan(5000);
+        expect(performance.now() - start).toBeLessThan(5000);
         // A new worker replaces the failed one
         await expect(
           runner.run({ answer: "a", sources: ["a"] }),
@@ -332,13 +334,42 @@ describe("worker failures", () => {
 
 const queueFull = "Too many check_answer calls waiting; try again shortly.";
 
-/** Send `n` slow checks at once; the error texts, in the order sent. */
-async function burst(client, n) {
-  const results = await Promise.all(
-    Array.from({ length: n }, () => check(client, slow)),
+// A time limit no check reaches during a burst, so every accepted call is
+// still running or waiting when the refused ones are answered
+const BURST_TIMEOUT_MS = 60000;
+
+/**
+ * Send `n` slow checks at once and wait until `refused` of them are
+ * answered (a refused call is answered as soon as it arrives). Then close
+ * the client, which stops the workers. Returns, in the order sent, each
+ * call's error text at that point, or "pending" for a call not yet answered.
+ */
+async function burst(client, n, refused) {
+  const outcomes = Array(n).fill("pending");
+  let answered = 0;
+  let allRefused;
+  const refusedDone = new Promise((resolve) => {
+    allRefused = resolve;
+  });
+  const calls = Array.from({ length: n }, (_, i) =>
+    check(client, slow).then(({ error }) => {
+      outcomes[i] = error === undefined ? "result" : error;
+      answered += 1;
+      if (answered === refused) allRefused();
+    }),
   );
-  return results.map((r) => r.error);
+  await refusedDone;
+  const atRefusal = [...outcomes];
+  await client.close();
+  await Promise.all(calls);
+  return atRefusal;
 }
+
+/** `accepted` calls still pending, then `refused` refused. */
+const expected = (accepted, refused) => [
+  ...Array(accepted).fill("pending"),
+  ...Array(refused).fill(queueFull),
+];
 
 describe("concurrent checks", () => {
   test("5 parallel checks never use more than 2 workers at once, and all finish", async () => {
@@ -371,11 +402,9 @@ describe("concurrent checks", () => {
   });
 
   test("with 2 running and 8 waiting, an 11th call is refused", async () => {
-    const client = await inMemory({ checkTimeoutMs: 100 });
+    const client = await inMemory({ checkTimeoutMs: BURST_TIMEOUT_MS });
     try {
-      const errors = await burst(client, 11);
-      expect(errors.slice(0, 10)).toEqual(Array(10).fill(stopped(100)));
-      expect(errors[10]).toBe(queueFull);
+      expect(await burst(client, 11, 1)).toEqual(expected(10, 1));
     } finally {
       await client.close();
     }
@@ -383,13 +412,12 @@ describe("concurrent checks", () => {
 
   test("createServer's maxConcurrentChecks sets the cap", async () => {
     const client = await inMemory({
-      checkTimeoutMs: 100,
+      checkTimeoutMs: BURST_TIMEOUT_MS,
       maxConcurrentChecks: 1,
     });
     try {
-      const errors = await burst(client, 10);
-      expect(errors.filter((e) => e === queueFull)).toHaveLength(1);
-      expect(errors[9]).toBe(queueFull);
+      // 1 running and 8 waiting
+      expect(await burst(client, 10, 1)).toEqual(expected(9, 1));
     } finally {
       await client.close();
     }
@@ -397,21 +425,20 @@ describe("concurrent checks", () => {
 
   test("--max-concurrent-checks sets the cap; RAG_MCP_MAX_CONCURRENT_CHECKS too, and the flag wins", async () => {
     const env = { RAG_MCP_MAX_CONCURRENT_CHECKS: "1" };
-    const viaEnv = await stdio(["--check-timeout-ms", "100"], env);
+    const timeout = ["--check-timeout-ms", String(BURST_TIMEOUT_MS)];
+    const viaEnv = await stdio(timeout, env);
     try {
-      const errors = await burst(viaEnv, 10);
-      expect(errors[9]).toBe(queueFull);
+      expect(await burst(viaEnv, 10, 1)).toEqual(expected(9, 1));
     } finally {
       await viaEnv.close();
     }
     const viaFlag = await stdio(
-      ["--check-timeout-ms", "100", "--max-concurrent-checks", "3"],
+      [...timeout, "--max-concurrent-checks", "3"],
       env,
     );
     try {
-      const errors = await burst(viaFlag, 12);
-      expect(errors.slice(0, 11)).toEqual(Array(11).fill(stopped(100)));
-      expect(errors[11]).toBe(queueFull);
+      // 3 running and 8 waiting
+      expect(await burst(viaFlag, 12, 1)).toEqual(expected(11, 1));
     } finally {
       await viaFlag.close();
     }
