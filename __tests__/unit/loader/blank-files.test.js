@@ -38,3 +38,26 @@ describe("blank files do not fail the ingest", () => {
     expect(html.flatMap((d) => d.chunk())).toEqual([]);
   });
 });
+
+describe("MarkdownLoader decodes HTML entities in the text it extracts", () => {
+  test("entities from the Markdown renderer become plain characters", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rpu-md-"));
+    try {
+      const file = path.join(dir, "a.md");
+      fs.writeFileSync(
+        file,
+        '# Tom & Jerry\n\nUse `a < b && c > d`, "quotes" and it\'s fine. Literal &amp;lt; stays.\n',
+      );
+      const docs = await new MarkdownLoader().load(file);
+      const text = docs.flatMap((d) => d.chunk()).join(" ");
+      expect(text).toContain("Tom & Jerry");
+      expect(text).toContain("a < b && c > d");
+      expect(text).toContain('"quotes"');
+      expect(text).toContain("it's");
+      expect(text).toContain("&lt; stays");
+      expect(text).not.toMatch(/&amp;|&quot;|&#39;/);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
