@@ -31,6 +31,9 @@ function reciprocalRankFusion(resultSets, options = {}) {
         ? weights[setIndex]
         : 1.0;
 
+    // An id repeated within one list counts once, at its first position
+    const seenInSet = new Set();
+
     for (let rank = 0; rank < results.length; rank++) {
       const doc = results[rank];
       if (!doc || doc.id == null) {
@@ -38,11 +41,14 @@ function reciprocalRankFusion(resultSets, options = {}) {
       }
 
       const id = String(doc.id);
-      const rrfScore = weight / (k + rank);
+      const rrfScore = weight / (k + rank + 1);
+
+      const repeated = seenInSet.has(id);
+      seenInSet.add(id);
 
       if (scoreMap.has(id)) {
         const entry = scoreMap.get(id);
-        entry.score += rrfScore;
+        if (!repeated) entry.score += rrfScore;
         // Later copies can carry restrictions the first lacks
         entry.copies.push(doc);
       } else {

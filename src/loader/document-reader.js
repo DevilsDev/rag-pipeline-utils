@@ -13,6 +13,7 @@ const textLoader = {
     return [
       {
         chunk: () => {
+          if (!text.trim()) return [];
           const { ChunkingEngine } = require('../chunking/chunking-engine');
           return new ChunkingEngine({
             strategy: 'sentence',

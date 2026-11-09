@@ -2,6 +2,7 @@
 
 const { EventEmitter } = require('events');
 const { accessFields } = require('./access-fields');
+const { copyValue } = require('./copy-value');
 // Called through the module object so tests can observe tokenization.
 const scoring = require('../evaluate/scoring');
 
@@ -24,15 +25,25 @@ class BM25Search extends EventEmitter {
   }
 
   /**
-   * Index documents for BM25 search
+   * Index documents for BM25 search. Each call replaces the whole corpus
+   * (indexing an empty array clears it); pass every document each time.
    * @param {Array} documents - [{id, content|text, metadata?}]
    */
   index(documents) {
-    if (!Array.isArray(documents) || documents.length === 0) {
+    if (!Array.isArray(documents)) {
+      return;
+    }
+    if (documents.length === 0) {
+      this.clear();
       return;
     }
 
-    this.documents = documents;
+    // Copied, so later edits to the caller's objects don't change the index
+    this.documents = documents.map((doc) => ({
+      ...doc,
+      ...(doc.metadata ? { metadata: copyValue(doc.metadata) } : {}),
+      ...accessFields(doc),
+    }));
     this.docCount = documents.length;
     this.invertedIndex.clear();
     this.docLengths = new Array(documents.length);
@@ -125,7 +136,7 @@ class BM25Search extends EventEmitter {
         id: doc.id,
         score,
         content: doc.content || doc.text || '',
-        metadata: doc.metadata || {},
+        metadata: copyValue(doc.metadata || {}),
         ...accessFields(doc),
       });
     }

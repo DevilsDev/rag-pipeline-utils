@@ -324,12 +324,12 @@ With a custom `baseURL` the connector **never** reads `OPENAI_API_KEY`, so your 
 
 ### Rerankers
 
-| Connector           | Notes                                                                                                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `ScoringReranker`   | Lexical (BM25-style) scoring on top of vector retrieval.                                               |
-| `EmbeddingReranker` | Re-scores with an embedder; LRU cache of document embeddings (`cacheSize`), `concurrency` (default 4). |
-| `CascadeReranker`   | Chains rerankers (cheap first, expensive last) for cost-effective reranking.                           |
-| `CohereConnector`   | `rerank()` via Cohere's rerank API.                                                                    |
+| Connector           | Notes                                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `ScoringReranker`   | Lexical (BM25-style) scoring on top of vector retrieval.                                                                           |
+| `EmbeddingReranker` | Re-scores with an embedder; LRU cache of document embeddings (`cacheSize`), `concurrency` (default 4).                             |
+| `CascadeReranker`   | Chains rerankers (cheap first, expensive last) for cost-effective reranking.                                                       |
+| `CohereConnector`   | `rerank()` via Cohere's rerank API: each result has Cohere's score in `relevanceScore` (from 3.9.0; it used to overwrite `score`). |
 
 ## Why a connector layer
 

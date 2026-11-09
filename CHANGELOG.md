@@ -87,6 +87,28 @@ page.
   changed in 577 of 2,010 cases. `hallucinationRate`, groundedness and
   which sentences are unsupported are unchanged. Re-save baselines that
   compare classes.
+- **`FileVectorStore` scores are cosine similarity.** An identical vector
+  scores 1, as in `MemoryRetriever`; scores used to grow with the query
+  vector's length (an identical vector could score 2.236). If you set
+  `minRelevanceScore` (or any other score cut-off) against
+  `FileVectorStore` results, re-tune it.
+- **`MemoryRetriever` and `FileVectorStore` check `topK` and the query
+  vector the same way.** `topK: 0` returns no results (`MemoryRetriever`
+  used to return the default number); a negative, fractional, NaN or
+  non-numeric `topK` throws (a negative one used to return all but the
+  last few results); and NaN or Infinity in the query vector throws.
+  Leaving `topK` out still uses the default.
+- **Reciprocal rank fusion scores rank 1 as `1/(k+1)`**, not `1/k` (1/61
+  with the default `k` of 60), and an id repeated within one list counts
+  once, at its first position. Fused scores change, and so can the order
+  of results whose scores were close.
+- **`CohereConnector.rerank` puts Cohere's score in `relevanceScore`**, like
+  the other rerankers, and string documents come back as
+  `{ content, relevanceScore }`. Object documents keep their own `score`,
+  which `rerank` used to overwrite: read `relevanceScore` instead.
+- **The `fixed-size` chunker rejects a `chunkOverlap` above half of
+  `chunkSize`**, or a negative one; such an overlap used to produce about
+  one chunk per character.
 
 ### Deprecated
 
@@ -165,6 +187,40 @@ page.
 - The polarity check keeps at most 1,024 verdicts per source sentence, so
   a document object reused across many answers no longer grows its memo
   without bound. Results don't change.
+- **The `recursive` chunker, the default, no longer drops text.** Text
+  with no separator left is cut into consecutive slices (only the first
+  `chunkSize` characters used to be kept), a short document is no longer
+  dropped by `minChunkSize`, and the overlap is whole words counted inside
+  `chunkSize` (it used to glue words together and exceed it). Chunks can
+  change, so re-ingest to pick this up.
+- The `fixed-size` chunker no longer skips text when the overlap is under
+  20 characters, and neither it nor the `recursive` chunker splits an
+  emoji.
+- The `sentence` chunker honours `chunkSize` (`maxLen` still works) and
+  splits text with no sentence punctuation at line breaks, then words.
+- A blank `.txt`, `.md` or `.html` file yields no chunks instead of
+  failing the whole ingest.
+- `MarkdownLoader` returns plain characters instead of HTML entities
+  (`&amp;`, `&lt;`, `&#39;`).
+- Stores copy documents on the way in and results on the way out, so
+  editing a result no longer changes the store. Copies keep Map, Set,
+  Date, Buffer and typed arrays, and circular references.
+- `FileVectorStore` keeps documents another process saved: `save()`
+  re-reads the file and applies only its own changes, and `load()` picks
+  up a newer file. There is no lock, so two saves of the same id at the
+  same instant still race. A batch with an invalid document stores
+  nothing, mixed-dimension or non-finite vectors are rejected, and the id
+  `__proto__` works. A batch with a new vector size must replace every
+  stored document (as `ingest` and `ai train` do after refitting the local
+  embedder); otherwise it throws and asks you to re-ingest with
+  `--rebuild`. `MemoryRetriever` checks the same way.
+- `BM25Search.index([])` clears the index.
+- Empty Cohere `rerank` and `embed` responses give a clear error.
+- The Pinecone freshness wait stops as soon as the request is aborted.
+- API keys no longer show when a connector is logged, inspected or
+  serialised, and connectors with different API keys no longer share
+  cache entries (the cache identity holds a short SHA-256 hash of the key,
+  never the key).
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.

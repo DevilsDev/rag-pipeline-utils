@@ -4,6 +4,11 @@ const { randomBytes } = require('crypto');
 const { BaseConnector } = require('./base-connector');
 const { throwIfAborted } = require('./connector-utils');
 const { accessFields } = require('../retrieval/access-fields');
+const { copyValue } = require('../retrieval/copy-value');
+const {
+  validTopK,
+  assertFiniteVector,
+} = require('../retrieval/query-validation');
 
 /**
  * Default configuration for the in-memory retriever.
@@ -71,6 +76,7 @@ class MemoryRetriever extends BaseConnector {
   async store(vectors) {
     let dimensions = this.dimensions;
     const newIds = new Set();
+    let batchDimensions = null;
     for (const doc of vectors) {
       const length = doc && doc.vector ? doc.vector.length : undefined;
       if (typeof length !== 'number') {
@@ -78,16 +84,35 @@ class MemoryRetriever extends BaseConnector {
           `MemoryRetriever.store(): document "${doc && doc.id}" has no vector`,
         );
       }
-      if (dimensions === null) {
-        dimensions = length;
-      } else if (length !== dimensions) {
+      if (batchDimensions === null) {
+        batchDimensions = length;
+      } else if (length !== batchDimensions) {
         throw new Error(
           `MemoryRetriever.store(): document "${doc.id}" has ${length} dimensions ` +
-            `but the store holds ${dimensions}-dimension vectors. Use the same embedder for all documents.`,
+            `but the batch holds ${batchDimensions}-dimension vectors. Use the same embedder for all documents.`,
         );
       }
       if (!this.documents.has(doc.id)) newIds.add(doc.id);
     }
+    // A refit embedder changes the dimension. That is only allowed when the
+    // batch replaces every stored document, so the store never mixes sizes.
+    if (dimensions !== null && batchDimensions !== null) {
+      if (batchDimensions !== dimensions) {
+        const ids = new Set(vectors.map((doc) => doc.id));
+        const missing = [...this.documents.keys()].filter(
+          (id) => !ids.has(id),
+        );
+        if (missing.length > 0) {
+          throw new Error(
+            `MemoryRetriever.store(): document "${vectors[0].id}" has ${batchDimensions} dimensions ` +
+              `but the store holds ${dimensions}-dimension vectors, and the batch does not replace ` +
+              `${missing.length} stored document(s) (e.g. "${missing[0]}"). Use the same embedder ` +
+              'for all documents, or re-ingest everything: store all documents again with the new embedder.',
+          );
+        }
+      }
+    }
+    if (batchDimensions !== null) dimensions = batchDimensions;
 
     const { maxDocuments, eviction } = this.config;
     const projected = this.documents.size + newIds.size;
@@ -108,8 +133,8 @@ class MemoryRetriever extends BaseConnector {
 
     for (const doc of vectors) {
       this.documents.set(doc.id, {
-        vector: doc.vector,
-        metadata: doc.metadata || {},
+        vector: doc.vector.slice(),
+        metadata: copyValue(doc.metadata || {}),
         content: doc.content || '',
         ...accessFields(doc),
       });
@@ -152,7 +177,7 @@ class MemoryRetriever extends BaseConnector {
       queryVector = queryOrObj;
     } else {
       queryVector = queryOrObj?.queryVector;
-      topK = queryOrObj?.topK || k;
+      topK = queryOrObj?.topK ?? k;
       signal = queryOrObj?.signal;
     }
 
@@ -165,6 +190,9 @@ class MemoryRetriever extends BaseConnector {
       );
     }
 
+    topK = validTopK(topK, 10, 'MemoryRetriever.retrieve()');
+    assertFiniteVector(queryVector, 'MemoryRetriever.retrieve()');
+
     if (this.dimensions !== null && this.documents.size > 0) {
       if (queryVector.length !== this.dimensions) {
         throw new Error(
@@ -174,23 +202,23 @@ class MemoryRetriever extends BaseConnector {
       }
     }
 
-    const results = [];
+    const scored = [];
 
     for (const [id, doc] of this.documents) {
-      const score = this._cosineSimilarity(queryVector, doc.vector);
-      results.push({
-        id,
-        score,
-        metadata: doc.metadata,
-        content: doc.content,
-        ...accessFields(doc),
-      });
+      scored.push({ id, doc, score: this._cosineSimilarity(queryVector, doc.vector) });
     }
 
-    results.sort((a, b) => b.score - a.score);
+    scored.sort((a, b) => b.score - a.score);
 
     throwIfAborted(signal);
-    return results.slice(0, topK);
+    // Results are copies, so editing one never rewrites the store
+    return scored.slice(0, topK).map(({ id, doc, score }) => ({
+      id,
+      score,
+      metadata: copyValue(doc.metadata),
+      content: doc.content,
+      ...accessFields(doc),
+    }));
   }
 
   /**

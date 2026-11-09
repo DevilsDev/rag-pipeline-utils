@@ -331,6 +331,13 @@ A retriever backed by a JSON file. It is the index used by `rag-pipeline ingest`
 - The index records which embedder produced the vectors (name, dimensions, optional serialized state) and rejects query vectors whose dimension does not match.
 - Mostly-zero vectors are stored sparsely and values are rounded to 7 significant digits.
 - `removeBySource()` supports re-ingesting one source file.
+- Scores are cosine similarity (1 for an identical vector), as in `MemoryRetriever`. `topK` must be a whole number of 0 or more (0 returns no results), and a query vector with NaN or Infinity is rejected.
+- `store()` checks the whole batch first, so a batch with an invalid document stores nothing. A batch with a new vector size must replace every stored document (as `ingest` and `ai train` do after refitting the local embedder); otherwise it throws and asks you to re-ingest with `--rebuild`. `MemoryRetriever` checks the same way. Documents are copied on the way in and results on the way out.
+- `save()` re-reads the file and applies only this instance's changes, so several processes can ingest into one index, and `load()` picks up a newer file when this instance has no unsaved changes. There is no lock: if two processes write the same id at the same instant, the last save wins. Use one writer for the same ids.
+
+:::info[Coming in 3.9.0]
+On 3.8.3 and earlier, scores grew with the query vector's length (an identical vector could score above 2), so a `minRelevanceScore` tuned on them needs re-tuning; a negative `topK` returned all but the last few results; and a save replaced documents another process had saved since this one read the file.
+:::
 
 **Constructor:**
 
@@ -341,8 +348,8 @@ new FileVectorStore({ path: string });
 **Methods:**
 
 ```typescript
-load(): object                      // read the index (cached after the first call)
-save(): void                        // write the index atomically
+load(): object                      // read the index (cached; reread when the file changes)
+save(): void                        // merge with the file on disk and write it atomically
 store(docs: Array<{ id: string; vector: number[]; content: string; metadata?: object }>): Promise<void>
 retrieve(request: { queryVector: number[]; topK?: number }): Promise<Array<{ id; score; content; metadata }>>
 removeBySource(source: string): number   // removes docs whose metadata.source matches
