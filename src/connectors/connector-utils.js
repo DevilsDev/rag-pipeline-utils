@@ -270,6 +270,27 @@ function resolveApiKey(options, envVar) {
 }
 
 /**
+ * Adds a `keyId` to cache-identity fields so connectors that differ only in
+ * API key never share cached results. It is the first 16 hex characters
+ * (64 bits) of the key's SHA-256: enough to tell keys apart with no
+ * realistic chance of a clash, and the raw key can't be read back from it.
+ * With no key the fields are returned unchanged.
+ *
+ * @param {object} fields - Cache-identity fields
+ * @param {string} [apiKey]
+ * @returns {object}
+ */
+function withKeyId(fields, apiKey) {
+  if (!apiKey) return fields;
+  const keyId = require('crypto') // eslint-disable-line global-require
+    .createHash('sha256')
+    .update(String(apiKey))
+    .digest('hex')
+    .slice(0, 16);
+  return { ...fields, keyId };
+}
+
+/**
  * Error thrown when a provider call is attempted without an API key.
  * @param {string} provider - Display name, e.g. 'OpenAI'
  * @param {string} envVar - Environment variable name
@@ -452,6 +473,7 @@ function cleanAxiosErrors(client, provider) {
 }
 
 module.exports = {
+  withKeyId,
   toConnectorError,
   cleanAxiosErrors,
   textChunks,

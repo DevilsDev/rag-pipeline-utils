@@ -12,6 +12,7 @@ const {
   signalOptions,
   textChunks,
   throwIfAborted,
+  withKeyId,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
 const { componentCacheKey } = require('../cache/component-keys');
@@ -124,13 +125,16 @@ class AnthropicConnector extends BaseConnector {
   getCacheKey(role) {
     if (role !== 'llm') return null;
     const c = this.config;
-    return componentCacheKey('anthropic', {
+    return componentCacheKey(
+      'anthropic',
+      withKeyId({
       baseURL: c.baseURL,
       model: c.model,
       temperature: c.temperature,
       maxTokens: c.maxTokens,
       systemPrompt: c.systemPrompt,
-    });
+    }, c.apiKey),
+    );
   }
 
   /**

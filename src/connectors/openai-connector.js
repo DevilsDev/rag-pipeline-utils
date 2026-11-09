@@ -7,6 +7,7 @@ const {
   raceAbort,
   resolveApiKey,
   throwIfAborted,
+  withKeyId,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
 const { componentCacheKey } = require('../cache/component-keys');
@@ -69,19 +70,25 @@ class OpenAIConnector extends BaseConnector {
   getCacheKey(role) {
     const c = this.config;
     if (role === 'embedder') {
-      return componentCacheKey('openai-embed', {
+      return componentCacheKey(
+        'openai-embed',
+        withKeyId({
         baseURL: c.baseURL,
         model: c.embeddingModel,
-      });
+      }, c.apiKey),
+      );
     }
     if (role === 'llm') {
-      return componentCacheKey('openai', {
+      return componentCacheKey(
+        'openai',
+        withKeyId({
         baseURL: c.baseURL,
         model: c.model,
         temperature: c.temperature,
         maxTokens: c.maxTokens,
         systemPrompt: c.systemPrompt,
-      });
+      }, c.apiKey),
+      );
     }
     return null;
   }

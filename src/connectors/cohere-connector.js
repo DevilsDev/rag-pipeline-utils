@@ -10,6 +10,7 @@ const {
   missingApiKeyError,
   resolveApiKey,
   throwIfAborted,
+  withKeyId,
 } = require('./connector-utils');
 
 const API_KEY_ENV = 'COHERE_API_KEY';
@@ -49,11 +50,14 @@ class CohereConnector extends BaseConnector {
   getCacheKey(role) {
     if (role !== 'embedder') return null;
     const c = this.config;
-    return componentCacheKey('cohere-embed', {
+    return componentCacheKey(
+      'cohere-embed',
+      withKeyId({
       baseURL: c.baseURL,
       model: c.embeddingModel,
       queryInputType: c.queryInputType,
-    });
+    }, c.apiKey),
+    );
   }
 
   /**
