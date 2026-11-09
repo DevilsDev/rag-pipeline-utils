@@ -3,7 +3,7 @@
 const {
   tokenize,
   computeSupportScore,
-  prepareSource,
+  prepareDocument,
   sourceTokenSet,
 } = require('../evaluate/scoring');
 
@@ -23,7 +23,7 @@ function buildIDFWeights(docs) {
 
   for (const doc of docs) {
     const text = doc.content || doc.text || '';
-    const tokens = new Set(tokenize(text));
+    const tokens = sourceTokenSet(prepareDocument(doc, text));
     for (const token of tokens) {
       docFrequency.set(token, (docFrequency.get(token) || 0) + 1);
     }
@@ -50,7 +50,7 @@ function buildIDFWeights(docs) {
  *   from: a condition it restates in another sentence counts as kept
  * @param {boolean} [options.conditionCheck=true] - false: skip the condition
  *   check (see computeSupportScore)
- * @param {object[]} [options.preparedSources] - prepareSource() of each doc,
+ * @param {object[]} [options.preparedSources] - prepareDocument() of each doc,
  *   in order, when the same docs are mapped for several sentences
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
  */
@@ -73,7 +73,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
     const doc = docs[i];
     const prepared =
       (preparedSources && preparedSources[i]) ||
-      prepareSource(doc.content || doc.text || '');
+      prepareDocument(doc, doc.content || doc.text || '');
     const docSet = sourceTokenSet(prepared);
     if (docSet.size === 0) continue;
 

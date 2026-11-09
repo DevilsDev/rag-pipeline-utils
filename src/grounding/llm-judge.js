@@ -19,7 +19,7 @@ const {
   checkConditionConsistency,
   extractNumbers,
   isNegated,
-  prepareSource,
+  prepareDocument,
   prepareAnswer,
   sourceTokenSet,
 } = require('../evaluate/scoring');
@@ -50,7 +50,7 @@ const REASONS = {
  * @param {string} [answerText] - The whole answer, for conditions restated
  *   in another sentence
  * @param {boolean} [conditionCheck=true] - false: no condition_mismatch
- * @param {Map<object, object>} [prepared] - prepareSource() of each doc
+ * @param {Map<object, object>} [prepared] - prepareDocument() of each doc
  * @returns {string} one of REASONS (never 'supported')
  */
 function classifyFailure(
@@ -64,7 +64,7 @@ function classifyFailure(
 ) {
   if (docs.length === 0) return REASONS.noSources;
   const tokens = tokenize(sentence);
-  const source = (doc) => prepared.get(doc) || prepareSource(doc.content);
+  const source = (doc) => prepared.get(doc) || prepareDocument(doc, doc.content);
 
   let numberMismatch = false;
   let polarityMismatch = false;
@@ -121,7 +121,7 @@ function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
     : null;
   // Each source and the answer are prepared once for all the sentences
   const answerText = prepareAnswer(sentences.map((s) => s.text).join(' '));
-  const prepared = new Map(docs.map((d) => [d, prepareSource(d.content)]));
+  const prepared = new Map(docs.map((d) => [d, prepareDocument(d, d.content)]));
   return sentences.map((s, i) =>
     s.classification === 'grounded'
       ? REASONS.supported

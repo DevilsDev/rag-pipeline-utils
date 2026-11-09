@@ -4,7 +4,7 @@ const {
   tokenize,
   splitSentences,
   computeSupportScore,
-  prepareSource,
+  prepareDocument,
   prepareAnswer,
   sourceTokenSet,
 } = require('./scoring');
@@ -41,9 +41,11 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
       continue;
     }
 
-    const docTokens = tokenize(docContent);
     // Share of the query's content terms that the document contains.
-    const score = computeSupportScore(queryTokens, docTokens);
+    const score = computeSupportScore(
+      queryTokens,
+      sourceTokenSet(prepareDocument(doc, docContent)),
+    );
     perDocScores.push({ index: i, score, isRelevant: score >= threshold });
   }
 
@@ -107,7 +109,7 @@ function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
   // Each source and the reference answer are prepared once for all claims
   const prepared = retrievedDocs.map((doc) => {
     const docContent = doc && (doc.content || doc.text || '');
-    return docContent ? prepareSource(docContent) : null;
+    return docContent ? prepareDocument(doc, docContent) : null;
   });
   const preparedAnswer = prepareAnswer(referenceAnswer);
 

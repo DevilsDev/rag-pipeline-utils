@@ -3,7 +3,7 @@
 const { EventEmitter } = require('events');
 const {
   splitSentences,
-  prepareSource,
+  prepareDocument,
   prepareAnswer,
 } = require('../evaluate/scoring');
 const { mapSentenceToSources, buildIDFWeights } = require('./source-mapper');
@@ -121,7 +121,7 @@ class CitationTracker extends EventEmitter {
     // 5 & 6. Map each sentence to sources and build citations array. Each
     // source and the answer are prepared once for all the sentences.
     const preparedSources = docs.map((doc) =>
-      prepareSource(doc.content || doc.text || ''),
+      prepareDocument(doc, doc.content || doc.text || ''),
     );
     const preparedAnswer = prepareAnswer(answer);
     const citations = sentences.map((sentence) => {

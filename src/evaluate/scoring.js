@@ -601,6 +601,27 @@ function prepareSource(text) {
   return { [PREPARED]: 'source', input: text, memo: {}, byAnswer: new WeakMap() };
 }
 
+/** Prepared texts of document objects, so every check of one call shares them. */
+const preparedByDocument = new WeakMap();
+
+/**
+ * prepareSource() of a document object's text, shared by the checks that
+ * read the same document (citations, faithfulness, the judge's reasons), so
+ * checkAnswer prepares each source once. A changed text is prepared again.
+ * @param {object} doc
+ * @param {string} text - the document's text as the caller reads it
+ * @returns {object}
+ */
+function prepareDocument(doc, text) {
+  if (!doc || typeof doc !== 'object') return prepareSource(text);
+  let prepared = preparedByDocument.get(doc);
+  if (!prepared || prepared.input !== text) {
+    prepared = prepareSource(text);
+    preparedByDocument.set(doc, prepared);
+  }
+  return prepared;
+}
+
 /**
  * Prepare an answer whose sentences may restate a source's condition (see
  * checkConditionConsistency).
@@ -1770,6 +1791,7 @@ module.exports = {
   splitSentences,
   computeJaccardSimilarity,
   prepareSource,
+  prepareDocument,
   prepareAnswer,
   sourceTokenSet,
 };

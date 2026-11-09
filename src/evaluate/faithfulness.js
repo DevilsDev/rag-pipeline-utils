@@ -4,7 +4,7 @@ const {
   splitSentences,
   tokenize,
   computeSupportScore,
-  prepareSource,
+  prepareDocument,
   prepareAnswer,
   sourceTokenSet,
 } = require('./scoring');
@@ -53,7 +53,7 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
   // Each source and the answer are prepared once for all the sentences
   const prepared = retrievedDocs.map((doc) => {
     const docContent = doc && (doc.content || doc.text || '');
-    return docContent ? prepareSource(docContent) : null;
+    return docContent ? prepareDocument(doc, docContent) : null;
   });
   const preparedAnswer = prepareAnswer(answer);
 
