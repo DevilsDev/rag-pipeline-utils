@@ -126,3 +126,55 @@ describe("recursive chunker overlap", () => {
     for (const w of words) expect(seen.has(w)).toBe(true);
   });
 });
+
+describe("sentence chunker", () => {
+  const {
+    sentenceChunk,
+  } = require("../../../src/chunking/strategies/sentence");
+
+  test("honours chunkSize", () => {
+    const text = Array.from(
+      { length: 40 },
+      (_, i) => `Sentence number ${i}.`,
+    ).join(" ");
+    const chunks = sentenceChunk(text, { chunkSize: 100 });
+    expect(chunks.length).toBeGreaterThan(3);
+    expect(Math.max(...chunks.map((c) => c.length))).toBeLessThanOrEqual(100);
+    expect(chunks.join(" ")).toBe(text);
+  });
+
+  test("maxLen still works and wins when given", () => {
+    const text = Array.from(
+      { length: 40 },
+      (_, i) => `Sentence number ${i}.`,
+    ).join(" ");
+    const chunks = sentenceChunk(text, { maxLen: 60, chunkSize: 512 });
+    expect(Math.max(...chunks.map((c) => c.length))).toBeLessThanOrEqual(60);
+  });
+
+  test("text without sentence punctuation is split at line breaks", () => {
+    const text = Array.from({ length: 200 }, (_, i) => `line ${i}`).join("\n");
+    const chunks = sentenceChunk(text, { maxLen: 100 });
+    expect(Math.max(...chunks.map((c) => c.length))).toBeLessThanOrEqual(100);
+    const seen = new Set(chunks.join(" ").split(/\s+/));
+    expect(seen.has("line") && seen.has("199")).toBe(true);
+  });
+
+  test("a long run with no punctuation or line breaks is hard-split without loss", () => {
+    const text = "word ".repeat(2000).trim();
+    const chunks = sentenceChunk(text, { maxLen: 200 });
+    expect(Math.max(...chunks.map((c) => c.length))).toBeLessThanOrEqual(200);
+    expect(chunks.join(" ").split(/\s+/).length).toBe(2000);
+    const cjk = "\u4e2d".repeat(1000);
+    const cjkChunks = sentenceChunk(cjk, { maxLen: 200 });
+    expect(cjkChunks.join("")).toBe(cjk);
+    expect(cjkChunks.every((c) => c.length <= 200)).toBe(true);
+  });
+
+  test("never yields an empty chunk", () => {
+    const chunks = sentenceChunk(`${"x".repeat(300)}. Short one.`, {
+      maxLen: 100,
+    });
+    expect(chunks.every((c) => c.length > 0)).toBe(true);
+  });
+});
