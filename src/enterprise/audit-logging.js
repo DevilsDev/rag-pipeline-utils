@@ -206,6 +206,8 @@ class AuditLogger extends EventEmitter {
     this._listenerWarned = new Set();
     this._flushErrorWarned = false;
     this._writes = new Set();
+    // Day of the newest daily file (read on the first flush)
+    this._newestDay = undefined;
     this._closing = null;
 
     if (this._config.realtime.webhookUrl) {
@@ -650,41 +652,61 @@ class AuditLogger extends EventEmitter {
     if (this.logBuffer.length > 0) {
       const batch = this.logBuffer;
       this.logBuffer = [];
-      const today = new Date().toISOString().split('T')[0];
-      const logFile = path.join(
-        this._config.logDir,
-        'daily',
-        `audit-${today}.jsonl`,
-      );
-      let advanced;
+      let advanced = null;
+      let written = 0;
+      let failure = null;
+      const flushed = [];
       try {
         await this._ensureStorage();
         advanced = { ...(await this._loadChainState()) };
-        await this._numberRecords(batch, advanced);
-        // An earlier failed append can leave half a line; start on a new
-        // line so the next record isn't glued onto it.
-        const prefix = (await this._endsMidLine(logFile)) ? '\n' : '';
-        await fs.appendFile(
-          logFile,
-          prefix + batch.map((log) => JSON.stringify(log)).join('\n') + '\n',
-        );
+        // One file per day of the events, each group numbered and appended
+        // in turn, so a failure part-way leaves only whole groups written.
+        for (const { day, records } of await this._groupByDay(batch)) {
+          const logFile = path.join(
+            this._config.logDir,
+            'daily',
+            `audit-${day}.jsonl`,
+          );
+          const next = { ...advanced };
+          await this._numberRecords(records, next);
+          // An earlier failed append can leave half a line; start on a new
+          // line so the next record isn't glued onto it.
+          const prefix = (await this._endsMidLine(logFile)) ? '\n' : '';
+          await fs.appendFile(
+            logFile,
+            prefix +
+              records.map((log) => JSON.stringify(log)).join('\n') +
+              '\n',
+          );
+          advanced = next;
+          written += records.length;
+          this._newestDay = day;
+          flushed.push({ count: records.length, file: logFile });
+        }
       } catch (error) {
-        // Put the records back unnumbered: the retry numbers them again from
-        // the same chain state.
-        for (const log of batch) this._stripChainFields(log);
-        this.logBuffer = this._bounded([...batch, ...this.logBuffer], 'file');
-        this._emitDrops();
-        this._stageFailed('file', 'flush_failed', error, batch.length);
-        return;
+        failure = error;
       }
-      this._stageSucceeded('file');
-      // The records are in the file; the chain state moves with them even if
-      // writing chain.json fails (the chain stage retries it).
-      this._chainState = advanced;
-      this._chainDirty = true;
-      this._chainUnsaved += batch.length;
-      this._emitDrops();
-      this._emitSafely('logs_flushed', { count: batch.length, file: logFile });
+      if (failure) {
+        // Put the records that were not written back unnumbered: the retry
+        // numbers them again from the same chain state.
+        const rest = batch.slice(written);
+        for (const log of rest) this._stripChainFields(log);
+        this.logBuffer = this._bounded([...rest, ...this.logBuffer], 'file');
+        this._emitDrops();
+        this._stageFailed('file', 'flush_failed', failure, rest.length);
+      } else {
+        this._stageSucceeded('file');
+      }
+      if (written > 0) {
+        // The records are in the file; the chain state moves with them even
+        // if writing chain.json fails (the chain stage retries it).
+        this._chainState = advanced;
+        this._chainDirty = true;
+        this._chainUnsaved += written;
+        if (!failure) this._emitDrops();
+        for (const entry of flushed) this._emitSafely('logs_flushed', entry);
+      }
+      if (failure && written === 0) return;
     }
 
     if (this._chainDirty) {
@@ -696,6 +718,51 @@ class AuditLogger extends EventEmitter {
         this._stageFailed('chain', 'chain_failed', error, this._chainUnsaved);
       }
     }
+  }
+
+  /**
+   * Split a batch into runs of records that go in the same daily file, in
+   * batch order. A record goes in the file of the day it happened (UTC, as
+   * the file names are), never later than today and never earlier than the
+   * newest file, so the files stay in the order of the sequence numbers and
+   * verifyIntegrity() reads them as one chain.
+   * @private
+   */
+  async _groupByDay(batch) {
+    if (this._newestDay === undefined) {
+      this._newestDay = await this._newestLogDay();
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const groups = [];
+    let newest = this._newestDay;
+    for (const record of batch) {
+      const at = new Date(record.metadata && record.metadata.timestamp);
+      let day = Number.isNaN(at.getTime()) ? today : at.toISOString().slice(0, 10);
+      if (day > today) day = today;
+      if (newest && day < newest) day = newest;
+      newest = day;
+      const last = groups[groups.length - 1];
+      if (last && last.day === day) last.records.push(record);
+      else groups.push({ day, records: [record] });
+    }
+    return groups;
+  }
+
+  /** The day of the newest daily file, or null when there is none. @private */
+  async _newestLogDay() {
+    let names;
+    try {
+      names = await fs.readdir(path.join(this._config.logDir, 'daily'));
+    } catch (error) {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    }
+    let newest = null;
+    for (const name of names) {
+      const match = /^audit-(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(name);
+      if (match && (!newest || match[1] > newest)) newest = match[1];
+    }
+    return newest;
   }
 
   /**
