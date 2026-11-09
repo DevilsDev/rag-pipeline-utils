@@ -4,6 +4,7 @@ const {
   tokenize,
   computeSupportScore,
   prepareDocument,
+  sourceNorm,
   sourceTokenSet,
 } = require('../evaluate/scoring');
 
@@ -11,24 +12,31 @@ const {
  * Build IDF (Inverse Document Frequency) weights from a collection of documents.
  * IDF = log(1 + totalDocs / docsContainingToken). The +1 keeps weights
  * positive, so tokens found in every document (and every token when only one
- * document was retrieved) still count instead of weighing zero.
+ * document was retrieved) still count instead of weighing zero. Identical
+ * documents (the same text after normalisation) count once, so a duplicated
+ * source doesn't move any weight (3.9, BH-7).
  * @param {Array<{content?: string, text?: string}>} docs - Array of document objects
  * @returns {Map<string, number>} Map of token to IDF weight
  */
 function buildIDFWeights(docs) {
-  const totalDocs = docs.length;
-  if (totalDocs === 0) return new Map();
+  if (docs.length === 0) return new Map();
 
   const docFrequency = new Map();
+  const seen = new Set();
 
   for (const doc of docs) {
     const text = doc.content || doc.text || '';
-    const tokens = sourceTokenSet(prepareDocument(doc, text));
+    const prepared = prepareDocument(doc, text);
+    const key = sourceNorm(prepared);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const tokens = sourceTokenSet(prepared);
     for (const token of tokens) {
       docFrequency.set(token, (docFrequency.get(token) || 0) + 1);
     }
   }
 
+  const totalDocs = seen.size;
   const idfWeights = new Map();
   for (const [token, df] of docFrequency) {
     idfWeights.set(token, Math.log(1 + totalDocs / df));

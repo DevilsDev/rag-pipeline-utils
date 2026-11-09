@@ -2086,5 +2086,6 @@ module.exports = {
   prepareSource,
   prepareDocument,
   prepareAnswer,
+  sourceNorm,
   sourceTokenSet,
 };
