@@ -25,11 +25,16 @@ class BM25Search extends EventEmitter {
   }
 
   /**
-   * Index documents for BM25 search
+   * Index documents for BM25 search. Each call replaces the whole corpus
+   * (indexing an empty array clears it); pass every document each time.
    * @param {Array} documents - [{id, content|text, metadata?}]
    */
   index(documents) {
-    if (!Array.isArray(documents) || documents.length === 0) {
+    if (!Array.isArray(documents)) {
+      return;
+    }
+    if (documents.length === 0) {
+      this.clear();
       return;
     }
 

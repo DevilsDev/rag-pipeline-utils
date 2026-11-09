@@ -283,3 +283,23 @@ describe("stores validate topK and the query vector the same way", () => {
     expect((await m.retrieve({ queryVector: [0, 0] }))[0].score).toBe(0);
   });
 });
+
+describe("BM25Search.index replaces the corpus", () => {
+  const { BM25Search } = require("../../../src/retrieval/bm25-search");
+
+  test("indexing an empty array clears the index", () => {
+    const b = new BM25Search();
+    b.index([{ id: "a", content: "alpha beta" }]);
+    b.index([]);
+    expect(b.getStats().docCount).toBe(0);
+    expect(b.search("alpha")).toEqual([]);
+  });
+
+  test("a second index() call replaces the first corpus", () => {
+    const b = new BM25Search();
+    b.index([{ id: "a", content: "alpha beta" }]);
+    b.index([{ id: "c", content: "delta" }]);
+    expect(b.search("alpha")).toEqual([]);
+    expect(b.search("delta").map((r) => r.id)).toEqual(["c"]);
+  });
+});
