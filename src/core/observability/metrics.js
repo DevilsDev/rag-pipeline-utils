@@ -114,9 +114,13 @@ class Gauge {
   }
 }
 
+/** Observations a Histogram keeps for percentiles. */
+const MAX_SAMPLE = 10000;
+
 /**
- * Histogram with cumulative bucket counts. It also keeps every observed value
- * in memory to compute percentiles and standard deviation.
+ * Histogram with cumulative bucket counts. It keeps a bounded random sample
+ * of the observed values (at most 10000) to compute percentiles; count, sum,
+ * min, max, mean and standard deviation are exact.
  */
 class Histogram {
   /**
@@ -141,19 +145,35 @@ class Histogram {
     this.count = 0;
     this.min = Infinity;
     this.max = -Infinity;
+    // A bounded random sample of the observations, for percentiles
     this._obs = [];
+    // Running mean and sum of squared deviations (Welford), for stdDev
+    this._mean = 0;
+    this._m2 = 0;
   }
 
   /**
    * Record a value. Non-numbers and NaN are ignored.
+   * Count, sum, min, max, mean and standard deviation are exact; percentiles
+   * come from a uniform random sample of at most MAX_SAMPLE observations, so
+   * they are exact up to that many and estimates beyond it.
    * @param {number} v - Observed value
    * @returns {void}
    */
   observe(v) {
     if (typeof v !== 'number' || Number.isNaN(v)) return;
-    this._obs.push(v);
     this.sum += v;
     this.count += 1;
+    if (this._obs.length < MAX_SAMPLE) {
+      this._obs.push(v);
+    } else {
+      // Reservoir sampling: every observation is kept with equal chance
+      const slot = Math.floor(Math.random() * this.count);
+      if (slot < MAX_SAMPLE) this._obs[slot] = v;
+    }
+    const delta = v - this._mean;
+    this._mean += delta / this.count;
+    this._m2 += delta * (v - this._mean);
     if (v < this.min) this.min = v;
     if (v > this.max) this.max = v;
 
@@ -206,9 +226,7 @@ class Histogram {
     }
     const mean = this.sum / this.count;
     // population std dev
-    const variance =
-      this._obs.reduce((acc, x) => acc + Math.pow(x - mean, 2), 0) / this.count;
-    const stdDev = Math.sqrt(variance);
+    const stdDev = Math.sqrt(Math.max(0, this._m2) / this.count);
     return {
       mean,
       stdDev,
@@ -230,6 +248,8 @@ class Histogram {
     this.min = Infinity;
     this.max = -Infinity;
     this._obs = [];
+    this._mean = 0;
+    this._m2 = 0;
   }
   /**
    * Cumulative count per bucket bound (plus '+Inf') together with getStatistics().
