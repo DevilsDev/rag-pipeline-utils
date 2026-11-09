@@ -157,8 +157,10 @@ async function* guardStream(
     }
   } finally {
     onEnd();
-    // Not awaited: a source stuck in a read never answers.
-    close();
+    // After an abort the source may be stuck in a read and never answer, so
+    // it is not waited for; otherwise its cleanup finishes before this ends.
+    if (signal.aborted) close();
+    else await close();
   }
 }
 
