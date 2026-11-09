@@ -333,10 +333,32 @@ function parseNumberWords(words) {
   return total + current;
 }
 
+/** Digits, then a scale word: "5 million", "2.5 billion", "12 thousand". */
+const SCALED_DIGITS_RE =
+  /(?<![\p{L}\p{N}.,])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s+(thousand|million|billion|trillion)\b/giu;
+
+/**
+ * A text with "<digits> <scale word>" written as one number ("5 million"
+ * as "5000000"), so it matches the same number in digits.
+ * @param {string} text
+ * @returns {string}
+ */
+function withScaledDigits(text) {
+  return text.replace(SCALED_DIGITS_RE, (whole, digits, scale) => {
+    const value =
+      Number(digits.replace(/,/g, '')) * NUMBER_SCALES[scale.toLowerCase()];
+    // toPrecision: 1.1 * 1e9 is 1100000000.0000002 in floating point
+    return Number.isFinite(value)
+      ? String(Number(value.toPrecision(15)))
+      : whole;
+  });
+}
+
 /**
  * Extract the numbers stated in a text, as normalised value strings, so
  * "20", "20%", "twenty" and "Twenty" all yield "20", "1,000" yields "1000"
- * and "2.5" yields "2.5".
+ * and "2.5" yields "2.5". Digits followed by thousand, million, billion or
+ * trillion are one value: "5 million" and "5,000,000" both yield "5000000".
  *
  * @param {string} text
  * @returns {{ values: string[], parts: string[] }} values: one entry per
@@ -348,6 +370,7 @@ function extractNumbers(text) {
   const values = [];
   const parts = [];
   if (!text || typeof text !== 'string') return { values, parts };
+  text = withScaledDigits(text);
 
   for (const match of text.matchAll(DIGIT_NUMBER_RE)) {
     const negative = MINUS.test(match[0]);
