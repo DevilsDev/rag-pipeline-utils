@@ -638,7 +638,6 @@ function sourceTokenSet(doc) {
 
 // The same claim is checked against every source: keep the last few claims'
 // quantities
-const docQuantityCache = new Map();
 const claimQuantityCache = new Map();
 function cachedQuantities(cache, text) {
   const key = String(text || '');
@@ -650,7 +649,6 @@ function cachedQuantities(cache, text) {
   }
   return hit;
 }
-const docQuantities = (text) => cachedQuantities(docQuantityCache, text);
 
 /** Whether two quantities of one kind are equal (thirds are compared to the nearest point). */
 function sameQuantity(a, b) {
@@ -682,12 +680,12 @@ function clockHours(text) {
  * "5 pm" must be a 17:00 in the source, and a bare hour after "at", "from",
  * "to" or "until" ("open from 9 to 5") an hour of the source on a 12-hour
  * clock. Returns the claim's spans it checked and the times it didn't find.
+ * The second argument is clockHours() of the source.
  */
-function checkClockTimes(claimText, docText) {
+function checkClockTimes(claimText, { hours24, hours12 }) {
   const spans = [];
   const matched = [];
   const missing = [];
-  const { hours24, hours12 } = clockHours(docText);
   if (hours24.size === 0) return { spans, matched, missing };
   const tokens = [...String(claimText || '').matchAll(QUANTITY_TOKEN_RE)].map(
     (m) => ({
@@ -764,6 +762,32 @@ function footnotedYears(text) {
 }
 
 /**
+ * What the number check reads from a source, prepared once per source: the
+ * numbers it states (with each number word on its own, and years with a
+ * footnote marker), its quantities, clock times, and every number, month
+ * and identifier it states.
+ */
+function sourceNumbers(doc) {
+  return once(prepareSource(doc), 'numbers', () => {
+    const text = sourceNorm(doc);
+    const parts = new Set([
+      ...extractNumbers(text).parts,
+      ...footnotedYears(text),
+    ]);
+    return {
+      parts,
+      quantities: quantities(text),
+      clock: clockHours(text),
+      numbers: new Set([
+        ...parts,
+        ...docMonths(text).map((m) => `month:${m}`),
+        ...identifiers(text),
+      ]),
+    };
+  });
+}
+
+/**
  * Numeric consistency between a claim and a document: every number the claim
  * states (digits, decimals, percentages or number words) must also appear in
  * the document. Lexical overlap alone would ground "thirty days" against a
@@ -778,18 +802,15 @@ function footnotedYears(text) {
  */
 function checkNumericConsistency(claimText, docText) {
   claimText = normalizeText(claimText);
-  docText = sourceNorm(docText);
+  const source = sourceNumbers(docText);
   const claim = withoutReferences(claimText);
-  const docParts = new Set([
-    ...extractNumbers(docText).parts,
-    ...footnotedYears(docText),
-  ]);
+  const docParts = source.parts;
 
   // Quantities with a unit (3.7): "2 kg" is checked as a mass, so it
   // matches "2,000 grams" and not "2 pounds". A quantity the source states
   // in no comparable unit falls back to the plain number check, unless it
   // was written in words ("three quarters of"), which has no plain number.
-  const doc = docQuantities(docText);
+  const doc = source.quantities;
   const spans = [];
   const matched = [];
   const missing = [];
@@ -819,7 +840,7 @@ function checkNumericConsistency(claimText, docText) {
     if (!found && (sameKind.length > 0 || !q.words))
       missing.push(`${q.kind}:${q.number} ${q.unit}`);
   }
-  const clock = checkClockTimes(claim, docText);
+  const clock = checkClockTimes(claim, source.clock);
   spans.push(...clock.spans);
   matched.push(...clock.matched);
   missing.push(...clock.missing);
@@ -838,11 +859,7 @@ function checkNumericConsistency(claimText, docText) {
   if (claimNumbers.length === 0) {
     return { consistent: true, claimNumbers, missing: [], matchedWords };
   }
-  const docNumbers = new Set([
-    ...docParts,
-    ...docMonths(docText).map((m) => `month:${m}`),
-    ...identifiers(docText),
-  ]);
+  const docNumbers = source.numbers;
   missing.push(...plain.filter((n) => !docNumbers.has(n)));
   return {
     consistent: missing.length === 0,
@@ -1057,6 +1074,61 @@ function isNegated(tokens) {
 }
 
 /**
+ * The document sentences sharing most of these (distinct) words, in
+ * document order, looked up in a word -> sentence index.
+ * @param {Iterable<string>} words
+ * @param {Map<string, number[]>} byWord
+ * @returns {number[]}
+ */
+function closest(words, byWord) {
+  const shared = new Map();
+  for (const w of words) {
+    for (const i of byWord.get(w) || []) shared.set(i, (shared.get(i) || 0) + 1);
+  }
+  let best = 0;
+  for (const n of shared.values()) if (n > best) best = n;
+  const out = [];
+  for (const [i, n] of shared) if (n === best) out.push(i);
+  return out.sort((a, b) => a - b);
+}
+
+/** Add each item's keys to a key -> item indices index, each index once per key. */
+function indexBy(items, keysOf) {
+  const index = new Map();
+  items.forEach((item, i) => {
+    for (const key of keysOf(item)) {
+      const list = index.get(key);
+      if (!list) index.set(key, [i]);
+      else if (list[list.length - 1] !== i) list.push(i);
+    }
+  });
+  return index;
+}
+
+/**
+ * A source's sentences as the polarity check reads them: each clause's
+ * negation and stems, a stem -> clause index per sentence and a stem ->
+ * sentence index, prepared once per source.
+ */
+function polaritySentences(doc) {
+  return once(prepareSource(doc), 'polarity', () => {
+    const sentences = splitSentences(sourceNorm(doc)).map((sentence) => {
+      const clauses = clauseTokens(sentence).map((tokens, i) => ({
+        negated: isNegated(tokens),
+        stems: new Set(tokens.map(stem)),
+        // "... but was not better than Y", "... but did not reduce Y": no
+        // subject of its own, so it continues the first clause's (3.7)
+        continues: i > 0 && ELLIPTICAL_START.has(tokens[0]),
+      }));
+      const clausesByStem = indexBy(clauses, (c) => c.stems);
+      return { sentence, clauses, clausesByStem, agreed: new Map() };
+    });
+    const sentencesByStem = indexBy(sentences, (s) => s.clausesByStem.keys());
+    return { sentences, sentencesByStem };
+  });
+}
+
+/**
  * Polarity consistency between a claim and a document. Word overlap alone
  * grounds "employees never receive paid vacation" against a source that says
  * "employees receive twenty days of paid vacation", because the negation is
@@ -1076,7 +1148,7 @@ function isNegated(tokens) {
  */
 function checkPolarityConsistency(claimText, docText) {
   claimText = normalizeText(claimText);
-  docText = sourceNorm(docText);
+  const doc = prepareSource(docText);
   // Negation is scoped to its clause (3.6): "requires X but not Y" negates
   // Y, not X, and "may not use X and may not park Y" has two negated
   // clauses, not an even count that reads as positive. Each clause of the
@@ -1104,17 +1176,7 @@ function checkPolarityConsistency(claimText, docText) {
     return { consistent: true, claimNegated, sourceSentence: null };
   }
 
-  const sentences = splitSentences(docText).map((sentence) => {
-    const clauses = clauseTokens(sentence).map((tokens, i) => ({
-      negated: isNegated(tokens),
-      stems: new Set(tokens.map(stem)),
-      // "... but was not better than Y", "... but did not reduce Y": no
-      // subject of its own, so it continues the first clause's (3.7)
-      continues: i > 0 && ELLIPTICAL_START.has(tokens[0]),
-    }));
-    const stems = new Set(clauses.flatMap((c) => [...c.stems]));
-    return { sentence, clauses, stems };
-  });
+  const { sentences, sentencesByStem } = polaritySentences(doc);
 
   /**
    * Whether one claim clause agrees with one document sentence. The claim's
@@ -1122,14 +1184,19 @@ function checkPolarityConsistency(claimText, docText) {
    * clause must be negated exactly when the claim clause is ("allowed on
    * Mondays" fails against "allowed on Fridays, whereas it is not allowed
    * on Mondays", because "Mondays" is only in the negated clause). With no
-   * such word, the closest clause decides.
+   * such word, the closest clause decides. The sentence's clauses are
+   * looked up by stem, and an answer of repeated clauses is decided once
+   * per sentence.
    */
   const agrees = (clause, sentence) => {
     const negated = isNegated(clause.tokens);
+    const key = `${negated} ${clause.words.join(' ')}`;
+    if (sentence.agreed.has(key)) return sentence.agreed.get(key);
+    const owners = (w) => sentence.clausesByStem.get(w) || [];
     let distinctive = clause.words
-      .map((w) => sentence.clauses.filter((c) => c.stems.has(w)))
-      .filter((owners) => owners.length === 1)
-      .map((owners) => owners[0]);
+      .map(owners)
+      .filter((list) => list.length === 1)
+      .map((list) => sentence.clauses[list[0]]);
     // A subject named once, in the first clause, also belongs to a later
     // clause that continues it: when such a clause holds some of the
     // claim's words, the first clause's words don't decide on their own
@@ -1139,41 +1206,39 @@ function checkPolarityConsistency(claimText, docText) {
     if (distinctive.some((c) => c.continues)) {
       distinctive = distinctive.filter((c) => c !== first);
     }
+    let result;
     if (distinctive.length > 0) {
-      return distinctive.every((c) => c.negated === negated);
+      result = distinctive.every((c) => c.negated === negated);
+    } else {
+      // The clauses sharing most of the claim clause's words decide
+      const support = new Map();
+      for (const w of clause.words) {
+        for (const i of owners(w)) support.set(i, (support.get(i) || 0) + 1);
+      }
+      if (support.size === 0) {
+        result = true;
+      } else {
+        let best = 0;
+        for (const n of support.values()) if (n > best) best = n;
+        result = [...support].some(
+          ([i, n]) => n === best && sentence.clauses[i].negated === negated,
+        );
+      }
     }
-    const ranked = sentence.clauses
-      .map((c) => ({
-        c,
-        support: clause.words.filter((w) => c.stems.has(w)).length,
-      }))
-      .filter((r) => r.support > 0)
-      .sort((a, b) => b.support - a.support);
-    if (ranked.length === 0) return true;
-    const best = ranked[0].support;
-    return ranked
-      .filter((r) => r.support === best)
-      .some((r) => r.c.negated === negated);
+    sentence.agreed.set(key, result);
+    return result;
   };
 
   let consistent = true;
   let sourceSentence = null;
   for (const clause of claimClauses) {
-    const candidates = sentences
-      .map((s) => ({
-        ...s,
-        support:
-          clause.words.filter((w) => s.stems.has(w)).length /
-          clause.words.length,
-      }))
-      .filter((s) => s.support > 0)
-      .sort((a, b) => b.support - a.support);
-    if (candidates.length === 0) continue;
     // Only the closest sentences: "contractors receive paid vacation" must be
     // judged by "contractors do not receive paid vacation", not by a sentence
     // about employees that happens to share "receive paid vacation".
-    const best = candidates[0].support;
-    const compared = candidates.filter((s) => s.support === best);
+    const compared = closest(clause.words, sentencesByStem).map(
+      (i) => sentences[i],
+    );
+    if (compared.length === 0) continue;
     const match = compared.find((s) => agrees(clause, s));
     if (!match) consistent = false;
     if (sourceSentence === null || !match) {
@@ -1356,6 +1421,34 @@ function restrictingClauses(statement) {
 }
 
 /**
+ * A source's sentences as the condition check reads them: each sentence's
+ * condition words, a word -> sentence index and, on first use, its
+ * statements with their restricting clauses, prepared once per source.
+ */
+function conditionSentences(doc) {
+  return once(prepareSource(doc), 'conditionSentences', () => {
+    const sentences = splitSentences(sourceNorm(doc)).map((sentence) => {
+      let statements = null;
+      return {
+        sentence,
+        words: new Set(conditionWords(sentence)),
+        statements: () => {
+          if (!statements) {
+            statements = sentence.split(STATEMENT_BOUNDARY).map((text) => ({
+              words: conditionWords(text),
+              clauses: restrictingClauses(text),
+            }));
+          }
+          return statements;
+        },
+      };
+    });
+    const sentencesByWord = indexBy(sentences, (s) => s.words);
+    return { sentences, sentencesByWord };
+  });
+}
+
+/**
  * The condition words of an answer's sentences that this document supports
  * (most of their content words are in it), worked out once per answer and
  * document.
@@ -1425,7 +1518,6 @@ function restatingWords(doc, answer) {
 function checkConditionConsistency(claimText, docText, answerText) {
   claimText = normalizeText(claimText);
   const doc = prepareSource(docText);
-  docText = sourceNorm(doc);
   const claimWords = new Set(conditionWords(claimText));
   if (claimWords.size === 0) {
     return { consistent: true, missing: [], sourceSentence: null };
@@ -1440,26 +1532,17 @@ function checkConditionConsistency(claimText, docText, answerText) {
   // sentences ("...per week.If you need"), which would otherwise lend one
   // sentence the next one's restriction (first seen on RAGTruth, fixed on
   // new dev cases)
-  const candidates = splitSentences(docText)
-    .map((sentence) => {
-      const words = new Set(conditionWords(sentence));
-      const shared = [...claimWords].filter((w) => words.has(w)).length;
-      return { sentence, shared };
-    })
-    .filter((s) => s.shared > 0)
-    .sort((a, b) => b.shared - a.shared);
-  if (candidates.length === 0) {
+  const { sentences, sentencesByWord } = conditionSentences(doc);
+  const tied = closest(claimWords, sentencesByWord);
+  if (tied.length === 0) {
     return { consistent: true, missing: [], sourceSentence: null };
   }
-  const best = candidates[0].shared;
   let first = null;
-  for (const { sentence } of candidates.filter((s) => s.shared === best)) {
-    const missing = sentence
-      .split(STATEMENT_BOUNDARY)
-      .filter((statement) =>
-        conditionWords(statement).some((w) => claimWords.has(w)),
-      )
-      .flatMap(restrictingClauses)
+  for (const i of tied) {
+    const { sentence, statements } = sentences[i];
+    const missing = statements()
+      .filter((statement) => statement.words.some((w) => claimWords.has(w)))
+      .flatMap((statement) => statement.clauses)
       .filter((clause) => !clause.words.some((w) => answerWords.has(w)))
       .map((clause) => clause.text);
     if (missing.length === 0) {

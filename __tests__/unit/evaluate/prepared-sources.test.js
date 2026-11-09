@@ -53,3 +53,25 @@ describe("long answers", () => {
     expect(ms).toBeLessThan(1500);
   });
 });
+
+describe("long sources", () => {
+  test("checks 50 sentences against a 200 KB source in linear time", async () => {
+    let source = "";
+    for (let k = 0; source.length < 200 * 1024; k++) {
+      source += `Section ${k} says employees in region ${k} receive ${k % 30} days of leave. `;
+    }
+    let answer = "";
+    for (let j = 0; j < 50; j++) {
+      answer += `Employees in region ${j} receive ${j % 30} days of leave. `;
+    }
+    const { ms, value } = await elapsed(() =>
+      checkAnswer({
+        answer,
+        sources: [{ id: "big", content: source }],
+        evaluate: false,
+      }),
+    );
+    expect(value.groundedness).toBe(1);
+    expect(ms).toBeLessThan(1500);
+  });
+});

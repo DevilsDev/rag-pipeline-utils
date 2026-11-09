@@ -19,6 +19,9 @@ const {
   checkConditionConsistency,
   extractNumbers,
   isNegated,
+  prepareSource,
+  prepareAnswer,
+  sourceTokenSet,
 } = require('../evaluate/scoring');
 const { buildIDFWeights } = require('../citation/source-mapper');
 const { DEFAULT_CONFIG } = require('../citation/citation-tracker');
@@ -47,6 +50,7 @@ const REASONS = {
  * @param {string} [answerText] - The whole answer, for conditions restated
  *   in another sentence
  * @param {boolean} [conditionCheck=true] - false: no condition_mismatch
+ * @param {Map<object, object>} [prepared] - prepareSource() of each doc
  * @returns {string} one of REASONS (never 'supported')
  */
 function classifyFailure(
@@ -56,26 +60,32 @@ function classifyFailure(
   threshold,
   answerText,
   conditionCheck = true,
+  prepared = new Map(),
 ) {
   if (docs.length === 0) return REASONS.noSources;
   const tokens = tokenize(sentence);
+  const source = (doc) => prepared.get(doc) || prepareSource(doc.content);
 
   let numberMismatch = false;
   let polarityMismatch = false;
   let conditionMismatch = false;
   for (const doc of docs) {
-    const docSet = new Set(tokenize(doc.content));
-    const overlap = computeSupportScore(tokens, docSet, idfWeights);
+    const text = source(doc);
+    const overlap = computeSupportScore(
+      tokens,
+      sourceTokenSet(text),
+      idfWeights,
+    );
     if (overlap < threshold) continue;
-    if (!checkNumericConsistency(sentence, doc.content).consistent) {
+    if (!checkNumericConsistency(sentence, text).consistent) {
       numberMismatch = true;
     }
-    if (!checkPolarityConsistency(sentence, doc.content).consistent) {
+    if (!checkPolarityConsistency(sentence, text).consistent) {
       polarityMismatch = true;
     }
     if (
       conditionCheck &&
-      !checkConditionConsistency(sentence, doc.content, answerText).consistent
+      !checkConditionConsistency(sentence, text, answerText).consistent
     ) {
       conditionMismatch = true;
     }
@@ -83,7 +93,7 @@ function classifyFailure(
 
   if (!numberMismatch && extractNumbers(sentence).values.length > 0) {
     numberMismatch = !docs.some(
-      (doc) => checkNumericConsistency(sentence, doc.content).consistent,
+      (doc) => checkNumericConsistency(sentence, source(doc)).consistent,
     );
   }
 
@@ -109,7 +119,9 @@ function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
   const idfWeights = DEFAULT_CONFIG.useIDFWeighting
     ? buildIDFWeights(docs)
     : null;
-  const answerText = sentences.map((s) => s.text).join(' ');
+  // Each source and the answer are prepared once for all the sentences
+  const answerText = prepareAnswer(sentences.map((s) => s.text).join(' '));
+  const prepared = new Map(docs.map((d) => [d, prepareSource(d.content)]));
   return sentences.map((s, i) =>
     s.classification === 'grounded'
       ? REASONS.supported
@@ -120,6 +132,7 @@ function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
           DEFAULT_CONFIG.similarityThreshold,
           answerText,
           conditionCheck !== false,
+          prepared,
         ),
   );
 }
