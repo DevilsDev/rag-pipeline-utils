@@ -127,74 +127,174 @@ class CostTracker extends EventEmitter {
           tracker.startSession({ autoStarted: true });
         }
 
+        // Refuse a run the budget cannot cover before any money is spent,
+        // using what is known up front: the query.
+        tracker._preCheck(args[0]);
+
         const result = await pipeline.run(...args);
 
-        const { inputTokens, outputTokens, estimated } =
-          tracker._extractUsage(result);
+        if (result && typeof result[Symbol.asyncIterator] === 'function') {
+          return tracker._trackStream(result, args[0]);
+        }
+
+        const usage = tracker._extractUsage(result);
+        const cacheHit = Boolean(result.cache && result.cache.generation === 'hit');
         // A routed run (createModelRouter) names the model it used.
         const model =
           result.model ||
           (result.route && result.route.model) ||
           tracker.config.model;
-        const costEstimate = tracker.calculator.estimate(
+        const { cost, budgetError } = tracker._settle({
+          ...usage,
           model,
-          inputTokens,
-          outputTokens,
-        );
-
-        // Budget enforcement
-        if (tracker.budget) {
-          const budgetCheck = tracker.budget.check(
-            inputTokens + outputTokens,
-            costEstimate.totalCost,
-          );
-          if (!budgetCheck.allowed) {
-            const err = new Error(`Budget exceeded: ${budgetCheck.reason}`);
-            err.code = 'BUDGET_EXCEEDED';
-            err.budgetCheck = budgetCheck;
-            throw err;
-          }
-          tracker.budget.record(
-            inputTokens + outputTokens,
-            costEstimate.totalCost,
-          );
+          cacheHit,
+        });
+        result.cost = cost;
+        if (budgetError) {
+          budgetError.result = result;
+          throw budgetError;
         }
-
-        // Attach cost data to result
-        result.cost = {
-          inputTokens,
-          outputTokens,
-          estimatedCost: costEstimate.totalCost,
-          // The price-table entry used (as before), and the model the run
-          // asked for, which can differ in form (claude-haiku-4-5 is priced
-          // as claude-haiku-4.5)
-          model: costEstimate.model,
-          requestedModel: model,
-          currency: 'USD',
-          // Token counts estimated from text length (no usage reported)
-          ...(estimated && { tokensEstimated: true }),
-        };
-
-        // Record in session
-        const entry = {
-          timestamp: Date.now(),
-          inputTokens,
-          outputTokens,
-          cost: costEstimate.totalCost,
-          model: costEstimate.model,
-        };
-
-        if (tracker.currentSession) {
-          tracker.currentSession.entries.push(entry);
-          tracker.currentSession.totalTokens += inputTokens + outputTokens;
-          tracker.currentSession.totalCost += costEstimate.totalCost;
-        }
-
-        tracker.emit('tracked', entry);
-
         return result;
       },
     };
+  }
+
+  /**
+   * Throw BUDGET_EXCEEDED before a run when the budget is already spent or
+   * the query alone would not fit.
+   * @private
+   */
+  _preCheck(input) {
+    if (!this.budget) return;
+    const query = typeof input === 'string' ? input : input && input.query;
+    const inputTokens = Math.ceil(String(query || '').length / CHARS_PER_TOKEN);
+    const est = this.calculator.estimate(this.config.model, inputTokens, 0);
+    const check = this.budget.check(inputTokens, est.totalCost);
+    if (!check.allowed) {
+      const err = new Error(`Budget exceeded: ${check.reason}`);
+      err.code = 'BUDGET_EXCEEDED';
+      err.budgetCheck = check;
+      throw err;
+    }
+  }
+
+  /**
+   * Price a finished run, record it (the money is spent even when it is over
+   * budget), and report a BUDGET_EXCEEDED error when it did not fit.
+   * @private
+   */
+  _settle({ inputTokens, outputTokens, estimated, model, cacheHit }) {
+    // A generation cache hit makes no model call, so it costs nothing.
+    const tokensIn = cacheHit ? 0 : inputTokens;
+    const tokensOut = cacheHit ? 0 : outputTokens;
+    const costEstimate = this.calculator.estimate(model, tokensIn, tokensOut);
+
+    let budgetError = null;
+    if (this.budget) {
+      const budgetCheck = this.budget.check(
+        tokensIn + tokensOut,
+        costEstimate.totalCost,
+      );
+      this.budget.record(tokensIn + tokensOut, costEstimate.totalCost);
+      if (!budgetCheck.allowed) {
+        budgetError = new Error(`Budget exceeded: ${budgetCheck.reason}`);
+        budgetError.code = 'BUDGET_EXCEEDED';
+        budgetError.budgetCheck = budgetCheck;
+      }
+    }
+
+    const cost = {
+      inputTokens: tokensIn,
+      outputTokens: tokensOut,
+      estimatedCost: costEstimate.totalCost,
+      // The price-table entry used (as before), and the model the run
+      // asked for, which can differ in form (claude-haiku-4-5 is priced
+      // as claude-haiku-4.5)
+      model: costEstimate.model,
+      requestedModel: model,
+      currency: 'USD',
+      // Token counts estimated from text length (no usage reported)
+      ...(estimated && { tokensEstimated: true }),
+      ...(cacheHit && { cacheHit: true }),
+    };
+
+    const entry = {
+      timestamp: Date.now(),
+      inputTokens: tokensIn,
+      outputTokens: tokensOut,
+      cost: costEstimate.totalCost,
+      model: costEstimate.model,
+    };
+    if (this.currentSession) {
+      this.currentSession.entries.push(entry);
+      this.currentSession.totalTokens += tokensIn + tokensOut;
+      this.currentSession.totalCost += costEstimate.totalCost;
+    }
+    this.emit('tracked', entry);
+
+    if (budgetError) budgetError.cost = cost;
+    return { cost, budgetError };
+  }
+
+  /**
+   * Wrap a token stream so its usage is recorded when it ends. Tokens are
+   * counted from the text that streamed (or the usage the final chunk
+   * reports); the final chunk carries the cost.
+   * @private
+   */
+  _trackStream(stream, input) {
+    const tracker = this;
+    const query = typeof input === 'string' ? input : (input && input.query) || '';
+    const model = tracker.config.model;
+    const state = { text: '', settled: false };
+
+    const settle = (doneChunk) => {
+      state.settled = true;
+      const usage = tracker._extractUsage({
+        query,
+        answer: state.text,
+        usage: doneChunk && doneChunk.usage,
+        model: doneChunk && doneChunk.model,
+        route: doneChunk && doneChunk.route,
+      });
+      return tracker._settle({
+        ...usage,
+        model:
+          (doneChunk && (doneChunk.model || (doneChunk.route && doneChunk.route.model))) ||
+          model,
+        cacheHit: Boolean(
+          doneChunk && doneChunk.cache && doneChunk.cache.generation === 'hit',
+        ),
+      });
+    };
+
+    const wrapped = (async function* () {
+      try {
+        for await (const chunk of stream) {
+          if (chunk && chunk.done) {
+            const { cost, budgetError } = settle(chunk);
+            wrapped.cost = cost;
+            if (budgetError) throw budgetError;
+            yield { ...chunk, cost };
+            return;
+          }
+          const token = chunk && chunk.token !== undefined ? chunk.token : chunk;
+          if (typeof token === 'string') state.text += token;
+          yield chunk;
+        }
+      } finally {
+        // Ended without a final chunk (consumer stopped, or the source
+        // failed): the tokens were still produced, so record them.
+        if (!state.settled) {
+          try {
+            wrapped.cost = settle(null).cost;
+          } catch (_e) {
+            /* recording must not mask the stream's own outcome */
+          }
+        }
+      }
+    })();
+    return wrapped;
   }
 
   /**
