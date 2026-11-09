@@ -85,7 +85,7 @@ spec:
                 secretKeyRef:
                   name: rag-secrets
                   key: openai-api-key
-            - name: VECTOR_DB_URL
+            - name: QDRANT_URL
               valueFrom:
                 configMapKeyRef:
                   name: rag-config
@@ -407,7 +407,7 @@ spec:
             secretKeyRef:
               name: {{ include "rag-pipeline.fullname" . }}
               key: openai-api-key
-        - name: VECTOR_DB_URL
+        - name: QDRANT_URL
           value: {{ .Values.config.vectorDbUrl }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
