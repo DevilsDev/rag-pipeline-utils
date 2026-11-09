@@ -76,3 +76,70 @@ describe("a stream settles on abort", () => {
     expect(outcome).toBe("Execution aborted");
   });
 });
+
+describe("stream chunks are normalised", () => {
+  const stringLlm = {
+    async generate() {
+      return "Employees get 20 vacation days.";
+    },
+    async *generateStream() {
+      yield "Employees get ";
+      yield "20 vacation days.";
+    },
+  };
+
+  test("string chunks become { token, done } chunks and a done chunk follows", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: stringLlm });
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+    expect(chunks.map((c) => [c.token, c.done])).toEqual([
+      ["Employees get ", false],
+      ["20 vacation days.", false],
+      ["", true],
+    ]);
+    expect(chunks.at(-1).timing.firstTokenMs).not.toBeNull();
+  });
+
+  test("a source that never sends a done chunk still ends with one", async () => {
+    const llm = {
+      async *generateStream() {
+        yield { token: "a", done: false };
+        yield { token: "b", done: false };
+      },
+    };
+    const pipeline = createRagPipeline({ retriever, llm });
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+    expect(chunks.map((c) => c.done)).toEqual([false, false, true]);
+    expect(chunks.at(-1).timing.totalMs).toBeGreaterThanOrEqual(0);
+  });
+
+  test("a source's own done chunk is not doubled", async () => {
+    const llm = {
+      async *generateStream() {
+        yield { token: "a", done: false };
+        yield { token: "", done: true };
+      },
+    };
+    const pipeline = createRagPipeline({ retriever, llm });
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+    expect(chunks.filter((c) => c.done)).toHaveLength(1);
+  });
+
+  test("with citations the string chunks are normalised too", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: stringLlm });
+    const chunks = await collect(
+      await pipeline.run({
+        query: "q",
+        options: { stream: true, citations: true },
+      }),
+    );
+    expect(chunks.slice(0, -1).every((c) => typeof c === "object")).toBe(true);
+    expect(chunks.at(-1).done).toBe(true);
+    expect(chunks.at(-1).citations).toBeDefined();
+  });
+});

@@ -84,6 +84,20 @@ function computeQuality({ query, answer, results, options }) {
 }
 
 /**
+ * A source's chunk as a `{ token, done }` object: a string is a token, and
+ * anything else without a string token has an empty one.
+ */
+function normaliseChunk(chunk) {
+  if (typeof chunk === 'string') return { token: chunk, done: false };
+  if (chunk && typeof chunk === 'object') {
+    return typeof chunk.token === 'string'
+      ? chunk
+      : { ...chunk, token: String(chunk.token ?? '') };
+  }
+  return { token: '', done: false };
+}
+
+/**
  * Pass a token stream through, stopping when the run's signal aborts. When
  * citations or evaluation were requested, the streamed answer is accumulated
  * and the stream ends with one final chunk
@@ -116,6 +130,7 @@ async function* guardStream(
   });
   const iterator = source[Symbol.asyncIterator]();
   let exhausted = false;
+  let sawDone = false;
   // Close the source (runs its cleanup) unless it already ended.
   const close = () => {
     if (exhausted) return Promise.resolve();
@@ -132,19 +147,23 @@ async function* guardStream(
         exhausted = true;
         break;
       }
-      const chunk = step.value;
+      const chunk = normaliseChunk(step.value);
       if (signal.aborted) throw signal.reason;
-      const token =
-        typeof chunk === 'string' ? chunk : String(chunk?.token ?? '');
+      const token = chunk.token;
       if (token && firstTokenMs === null) {
         firstTokenMs = performance.now() - startedAt;
       }
       if (!finalize) {
-        yield chunk && chunk.done ? { ...chunk, ...timing() } : chunk;
+        if (chunk.done) {
+          sawDone = true;
+          yield { ...chunk, ...timing() };
+        } else {
+          yield chunk;
+        }
         continue;
       }
       text += token;
-      if (chunk && chunk.done) {
+      if (chunk.done) {
         if (token) yield { ...chunk, token, done: false };
         break;
       }
@@ -154,6 +173,9 @@ async function* guardStream(
     await close();
     if (finalize) {
       yield { token: '', done: true, ...finalize(text), ...timing() };
+    } else if (!sawDone) {
+      // The source ended without a done chunk
+      yield { token: '', done: true, ...timing() };
     }
   } finally {
     onEnd();
