@@ -403,7 +403,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       const wantsQuality = Boolean(opts.citations || opts.evaluate);
       const generationKey =
         pc && llmI
-          ? pc.generationKey({ query, docs: results, options: opts })
+          ? pc.generationKey({ query, docs: results, options: opts, route })
           : null;
       const cachedAnswer =
         pc && llmI

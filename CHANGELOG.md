@@ -133,10 +133,12 @@ page.
   30 s default is still not applied to a node without one, and a timed-out
   node's work is abandoned, not cancelled. `concurrency` now really runs
   independent nodes in parallel.
-- **A model router's answers are generation-cached only when every route's
-  llm has `config.temperature` of 0.** A route with an unknown or higher
-  temperature turns the cache off for the router; it used to be cached as
-  if it never sampled. The router has a new `routeTemperature(model?)`.
+- **A model router's answers are generation-cached only when the route
+  that answers has `config.temperature` of 0.** A route with an unknown or
+  higher temperature samples, so its answers are not cached; they used to
+  be cached as if no route sampled. Queries sent to a temperature-0 route
+  are still cached when another route samples. The router has a new
+  `routeTemperature(model?)`.
 - **The AI SDK adapter no longer sends the run's `topK`** (the number of
   passages to retrieve) to the model as a sampling setting. Put a sampling
   topK in `settings.topK`.

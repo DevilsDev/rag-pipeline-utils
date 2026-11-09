@@ -118,4 +118,24 @@ describe("generation cache with a model router", () => {
       pc.generationKey({ ...args, route: { model: "gpt-4o" } }),
     ).toBeNull();
   });
+
+  test("a run caches answers from a temperature-0 route even when another route samples", async () => {
+    const { pipeline, counter } = await setup([
+      { temperature: 0 },
+      { temperature: 0.7 },
+    ]);
+    // A simple query goes to gpt-4o-mini (temperature 0): cached
+    await pipeline.run({ query: "How many vacation days?" });
+    const simple = await pipeline.run({ query: "How many vacation days?" });
+    expect(simple.cache.generation).toBe("hit");
+    expect(counter.n).toBe(1);
+
+    // A complex one goes to gpt-4o (temperature 0.7): not cached
+    const query =
+      "Compare the vacation policies across regions and explain the trade-offs between accrual and carry-over in detail, step by step.";
+    await pipeline.run({ query });
+    const complex = await pipeline.run({ query });
+    expect(complex.cache.generation).toBe("skip");
+    expect(counter.n).toBe(3);
+  });
 });
