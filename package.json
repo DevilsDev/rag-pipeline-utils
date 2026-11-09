@@ -36,7 +36,7 @@
       "types": "./dist/edge.d.ts",
       "default": "./dist/edge.mjs"
     },
-    "./cli": "./bin/cli.js"
+    "./cli": "./dist/cli.cjs"
   },
   "bin": {
     "rag-pipeline": "bin/cli.js"
