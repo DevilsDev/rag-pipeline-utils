@@ -76,6 +76,7 @@ class MemoryRetriever extends BaseConnector {
   async store(vectors) {
     let dimensions = this.dimensions;
     const newIds = new Set();
+    let batchDimensions = null;
     for (const doc of vectors) {
       const length = doc && doc.vector ? doc.vector.length : undefined;
       if (typeof length !== 'number') {
@@ -83,16 +84,35 @@ class MemoryRetriever extends BaseConnector {
           `MemoryRetriever.store(): document "${doc && doc.id}" has no vector`,
         );
       }
-      if (dimensions === null) {
-        dimensions = length;
-      } else if (length !== dimensions) {
+      if (batchDimensions === null) {
+        batchDimensions = length;
+      } else if (length !== batchDimensions) {
         throw new Error(
           `MemoryRetriever.store(): document "${doc.id}" has ${length} dimensions ` +
-            `but the store holds ${dimensions}-dimension vectors. Use the same embedder for all documents.`,
+            `but the batch holds ${batchDimensions}-dimension vectors. Use the same embedder for all documents.`,
         );
       }
       if (!this.documents.has(doc.id)) newIds.add(doc.id);
     }
+    // A refit embedder changes the dimension. That is only allowed when the
+    // batch replaces every stored document, so the store never mixes sizes.
+    if (dimensions !== null && batchDimensions !== null) {
+      if (batchDimensions !== dimensions) {
+        const ids = new Set(vectors.map((doc) => doc.id));
+        const missing = [...this.documents.keys()].filter(
+          (id) => !ids.has(id),
+        );
+        if (missing.length > 0) {
+          throw new Error(
+            `MemoryRetriever.store(): document "${vectors[0].id}" has ${batchDimensions} dimensions ` +
+              `but the store holds ${dimensions}-dimension vectors, and the batch does not replace ` +
+              `${missing.length} stored document(s) (e.g. "${missing[0]}"). Use the same embedder ` +
+              'for all documents, or re-ingest everything: store all documents again with the new embedder.',
+          );
+        }
+      }
+    }
+    if (batchDimensions !== null) dimensions = batchDimensions;
 
     const { maxDocuments, eviction } = this.config;
     const projected = this.documents.size + newIds.size;

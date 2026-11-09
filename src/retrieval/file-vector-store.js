@@ -146,8 +146,13 @@ class FileVectorStore {
         ours.dimensions &&
         theirs.dimensions &&
         ours.dimensions !== theirs.dimensions &&
-        Object.keys(onDisk.documents).length > 0
+        Object.keys(onDisk.documents).some(
+          (id) => !pending.upserts.has(id) && !pending.removes.has(id),
+        )
       ) {
+        // Refitting the embedder replaces every vector, which is fine; a
+        // document on disk that this save does not replace would be left
+        // behind at the old dimension.
         throw new Error(
           `The index at ${this.path} was rebuilt with a different embedder ` +
             `("${theirs.name}", ${theirs.dimensions} dimensions) since it was read. ` +
@@ -202,11 +207,12 @@ class FileVectorStore {
 
     // Validate the whole batch before changing anything
     const info = index.embedder;
-    let dimensions = info && info.dimensions ? info.dimensions : null;
-    if (dimensions === null) {
+    let existing = info && info.dimensions ? info.dimensions : null;
+    if (existing === null) {
       const [first] = Object.values(documents);
-      dimensions = first ? vectorLength(first.vector) : null;
+      existing = first ? vectorLength(first.vector) : null;
     }
+    let batchDimensions = null;
     for (const doc of docs) {
       if (!doc || !doc.id || !Array.isArray(doc.vector)) {
         throw new Error(
@@ -218,12 +224,30 @@ class FileVectorStore {
           `FileVectorStore.store(): vector for "${doc.id}" must contain only finite numbers`,
         );
       }
-      if (dimensions === null) {
-        dimensions = doc.vector.length;
-      } else if (doc.vector.length !== dimensions) {
+      if (batchDimensions === null) {
+        batchDimensions = doc.vector.length;
+      } else if (doc.vector.length !== batchDimensions) {
         throw new Error(
           `FileVectorStore.store(): "${doc.id}" has ${doc.vector.length} dimensions ` +
-            `but the index holds ${dimensions}-dimension vectors. Use the same embedder for all documents.`,
+            `but the batch holds ${batchDimensions}-dimension vectors. Use the same embedder for all documents.`,
+        );
+      }
+    }
+    // A refit embedder changes the dimension. That is only allowed when the
+    // batch replaces every stored document, so the index never mixes sizes.
+    if (
+      existing !== null &&
+      batchDimensions !== null &&
+      batchDimensions !== existing
+    ) {
+      const ids = new Set(docs.map((doc) => doc.id));
+      const missing = Object.keys(documents).filter((id) => !ids.has(id));
+      if (missing.length > 0) {
+        throw new Error(
+          `FileVectorStore.store(): "${docs[0].id}" has ${batchDimensions} dimensions ` +
+            `but the index holds ${existing}-dimension vectors, and the batch does not replace ` +
+            `${missing.length} stored document(s) (e.g. "${missing[0]}"). Use the same embedder ` +
+            'for all documents, or re-ingest everything with the new embedder (re-run ingest with --rebuild).',
         );
       }
     }
