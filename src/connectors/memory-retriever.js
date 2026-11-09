@@ -4,6 +4,7 @@ const { randomBytes } = require('crypto');
 const { BaseConnector } = require('./base-connector');
 const { throwIfAborted } = require('./connector-utils');
 const { accessFields } = require('../retrieval/access-fields');
+const { copyValue } = require('../retrieval/copy-value');
 
 /**
  * Default configuration for the in-memory retriever.
@@ -108,8 +109,8 @@ class MemoryRetriever extends BaseConnector {
 
     for (const doc of vectors) {
       this.documents.set(doc.id, {
-        vector: doc.vector,
-        metadata: doc.metadata || {},
+        vector: doc.vector.slice(),
+        metadata: copyValue(doc.metadata || {}),
         content: doc.content || '',
         ...accessFields(doc),
       });
@@ -174,23 +175,23 @@ class MemoryRetriever extends BaseConnector {
       }
     }
 
-    const results = [];
+    const scored = [];
 
     for (const [id, doc] of this.documents) {
-      const score = this._cosineSimilarity(queryVector, doc.vector);
-      results.push({
-        id,
-        score,
-        metadata: doc.metadata,
-        content: doc.content,
-        ...accessFields(doc),
-      });
+      scored.push({ id, doc, score: this._cosineSimilarity(queryVector, doc.vector) });
     }
 
-    results.sort((a, b) => b.score - a.score);
+    scored.sort((a, b) => b.score - a.score);
 
     throwIfAborted(signal);
-    return results.slice(0, topK);
+    // Results are copies, so editing one never rewrites the store
+    return scored.slice(0, topK).map(({ id, doc, score }) => ({
+      id,
+      score,
+      metadata: copyValue(doc.metadata),
+      content: doc.content,
+      ...accessFields(doc),
+    }));
   }
 
   /**

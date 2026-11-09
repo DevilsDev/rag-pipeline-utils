@@ -50,3 +50,75 @@ describe("FileVectorStore scores are cosine similarity", () => {
     }
   });
 });
+
+describe("stores do not share objects with callers", () => {
+  const { BM25Search } = require("../../../src/retrieval/bm25-search");
+  const makeDocs = () => [
+    {
+      id: "a",
+      content: "alpha beta",
+      vector: [3, 4, 0, 0],
+      metadata: { tag: "x", nested: { n: 1 } },
+      acl: ["admin"],
+      requiredRole: ["staff"],
+    },
+  ];
+
+  test("MemoryRetriever: editing results or inputs does not change the store", async () => {
+    const docs = makeDocs();
+    const m = new MemoryRetriever();
+    await m.store(docs);
+    docs[0].vector[0] = -3;
+    docs[0].metadata.tag = "late";
+    docs[0].acl.push("guest");
+
+    const [r] = await m.retrieve({ queryVector: [3, 4, 0, 0] });
+    expect(r.score).toBeCloseTo(1, 6);
+    expect(r.metadata.tag).toBe("x");
+    expect(r.acl).toEqual(["admin"]);
+
+    r.metadata.tag = "HACKED";
+    r.metadata.nested.n = 99;
+    r.acl.length = 0;
+    r.requiredRole.push("guest");
+    const [again] = await m.retrieve({ queryVector: [3, 4, 0, 0] });
+    expect(again.metadata).toEqual({ tag: "x", nested: { n: 1 } });
+    expect(again.acl).toEqual(["admin"]);
+    expect(again.requiredRole).toEqual(["staff"]);
+  });
+
+  test("FileVectorStore: editing results, list() or inputs does not change the store", async () => {
+    const docs = makeDocs();
+    const f = new FileVectorStore({ path: newPath() });
+    await f.store(docs);
+    docs[0].metadata.tag = "late";
+    docs[0].acl.push("guest");
+
+    const [r] = await f.retrieve({ queryVector: [3, 4, 0, 0] });
+    r.metadata.tag = "HACKED";
+    r.acl.push("guest");
+    const [l] = f.list();
+    l.metadata.nested.n = 99;
+    l.requiredRole.push("guest");
+
+    const [again] = await f.retrieve({ queryVector: [3, 4, 0, 0] });
+    expect(again.metadata).toEqual({ tag: "x", nested: { n: 1 } });
+    expect(again.acl).toEqual(["admin"]);
+    expect(again.requiredRole).toEqual(["staff"]);
+  });
+
+  test("BM25Search: editing results or the indexed array does not change the index", () => {
+    const docs = makeDocs();
+    const b = new BM25Search();
+    b.index(docs);
+    docs[0].metadata.tag = "late";
+    docs[0].acl.push("guest");
+    const [r] = b.search("alpha");
+    expect(r.metadata.tag).toBe("x");
+    r.metadata.tag = "HACKED";
+    r.acl.push("guest");
+    const [again] = b.search("alpha");
+    expect(again.metadata.tag).toBe("x");
+    expect(again.acl).toEqual(["admin"]);
+  });
+});

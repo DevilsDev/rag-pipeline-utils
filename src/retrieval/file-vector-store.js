@@ -5,6 +5,7 @@ const path = require('path');
 const { randomBytes } = require('crypto');
 const { digest } = require('../cache/component-keys');
 const { accessFields } = require('./access-fields');
+const { copyValue } = require('./copy-value');
 
 const FORMAT_VERSION = 1;
 
@@ -117,7 +118,7 @@ class FileVectorStore {
       documents[doc.id] = {
         vector: encodeVector(doc.vector),
         content: doc.content || '',
-        metadata: doc.metadata || {},
+        metadata: copyValue(doc.metadata || {}),
         ...accessFields(doc),
       };
     }
@@ -153,7 +154,7 @@ class FileVectorStore {
     return Object.entries(this.load().documents).map(([id, doc]) => ({
       id,
       content: doc.content,
-      metadata: doc.metadata,
+      metadata: copyValue(doc.metadata),
       ...accessFields(doc),
     }));
   }
@@ -202,15 +203,20 @@ class FileVectorStore {
     const queryMagnitude = Math.sqrt(
       queryVector.reduce((sum, x) => sum + x * x, 0),
     );
-    const results = Object.entries(this.load().documents).map(([id, doc]) => ({
+    const scored = Object.entries(this.load().documents).map(([id, doc]) => ({
       id,
+      doc,
       score: cosine(queryVector, queryMagnitude, doc.vector),
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    // Results are copies, so editing one never rewrites the store
+    return scored.slice(0, topK).map(({ id, doc, score }) => ({
+      id,
+      score,
       content: doc.content,
-      metadata: doc.metadata,
+      metadata: copyValue(doc.metadata),
       ...accessFields(doc),
     }));
-    results.sort((a, b) => b.score - a.score);
-    return results.slice(0, topK);
   }
 }
 
