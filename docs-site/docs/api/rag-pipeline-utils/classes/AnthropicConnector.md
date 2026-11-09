@@ -45,25 +45,41 @@ new AnthropicConnector(options?): AnthropicConnector;
 
 ## Properties
 
-| Property                                    | Type            | Inherited from                                                                         |
-| ------------------------------------------- | --------------- | -------------------------------------------------------------------------------------- |
-| <a id="property-client"></a> `client`       | `AxiosInstance` | -                                                                                      |
-| <a id="property-config"></a> `config`       | `object`        | -                                                                                      |
-| `config.apiKey`                             | `string`        | -                                                                                      |
-| `config.apiVersion`                         | `string`        | -                                                                                      |
-| `config.baseURL`                            | `string`        | -                                                                                      |
-| `config.maxRetries`                         | `number`        | -                                                                                      |
-| `config.maxTokens`                          | `number`        | -                                                                                      |
-| `config.model`                              | `string`        | -                                                                                      |
-| `config.retryDelay`                         | `number`        | -                                                                                      |
-| `config.systemPrompt?`                      | `string`        | -                                                                                      |
-| `config.temperature`                        | `number`        | -                                                                                      |
-| <a id="property-connected"></a> `connected` | `boolean`       | [`BaseConnector`](BaseConnector.md).[`connected`](BaseConnector.md#property-connected) |
-| <a id="property-name"></a> `name`           | `string`        | [`BaseConnector`](BaseConnector.md).[`name`](BaseConnector.md#property-name)           |
-| <a id="property-options"></a> `options`     | `object`        | [`BaseConnector`](BaseConnector.md).[`options`](BaseConnector.md#property-options)     |
-| `options.name?`                             | `string`        | -                                                                                      |
+| Property                                    | Type            | Description                                                                                                                                 | Overrides                                                               | Inherited from                                                                         |
+| ------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| <a id="property-client"></a> `client`       | `AxiosInstance` | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| <a id="property-config"></a> `config`       | `object`        | Connector settings. Secret fields such as `apiKey` are readable here but not enumerable, so they don't appear when the connector is logged. | [`BaseConnector`](BaseConnector.md).[`config`](BaseConnector.md#config) | -                                                                                      |
+| `config.apiKey`                             | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.apiVersion`                         | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.baseURL`                            | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.maxRetries`                         | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.maxTokens`                          | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.model`                              | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.retryDelay`                         | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.systemPrompt?`                      | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| `config.temperature`                        | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
+| <a id="property-connected"></a> `connected` | `boolean`       | -                                                                                                                                           | -                                                                       | [`BaseConnector`](BaseConnector.md).[`connected`](BaseConnector.md#property-connected) |
+| <a id="property-name"></a> `name`           | `string`        | -                                                                                                                                           | -                                                                       | [`BaseConnector`](BaseConnector.md).[`name`](BaseConnector.md#property-name)           |
 
 ## Methods
+
+### \[custom\]()
+
+```ts
+[custom](): string;
+```
+
+What console.log and util.inspect show: no settings, no credentials.
+
+#### Returns
+
+`string`
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`[custom]`](BaseConnector.md#custom)
+
+---
 
 ### connect()
 
@@ -283,6 +299,36 @@ Override in subclass for custom health checks.
 #### Inherited from
 
 [`BaseConnector`](BaseConnector.md).[`isHealthy`](BaseConnector.md#ishealthy)
+
+---
+
+### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+What JSON.stringify sees: no settings, no credentials.
+
+#### Returns
+
+`object`
+
+##### connected
+
+```ts
+connected: boolean;
+```
+
+##### name
+
+```ts
+name: string;
+```
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`toJSON`](BaseConnector.md#tojson)
 
 ---
 

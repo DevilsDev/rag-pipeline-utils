@@ -41,16 +41,50 @@ new LocalEmbedder(options?): LocalEmbedder;
 
 | Property                                      | Type                        | Inherited from                                                                         |
 | --------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------- |
-| <a id="property-config"></a> `config`         | `any`                       | -                                                                                      |
 | <a id="property-connected"></a> `connected`   | `boolean`                   | [`BaseConnector`](BaseConnector.md).[`connected`](BaseConnector.md#property-connected) |
 | <a id="property-doccount"></a> `docCount`     | `number`                    | -                                                                                      |
 | <a id="property-idf"></a> `idf`               | `Map`\<`string`, `number`\> | -                                                                                      |
 | <a id="property-name"></a> `name`             | `string`                    | [`BaseConnector`](BaseConnector.md).[`name`](BaseConnector.md#property-name)           |
-| <a id="property-options"></a> `options`       | `object`                    | [`BaseConnector`](BaseConnector.md).[`options`](BaseConnector.md#property-options)     |
-| `options.name?`                               | `string`                    | -                                                                                      |
 | <a id="property-vocabulary"></a> `vocabulary` | `Map`\<`string`, `number`\> | -                                                                                      |
 
 ## Accessors
+
+### config
+
+#### Get Signature
+
+```ts
+get config(): object;
+```
+
+Connector settings. Secret fields such as `apiKey` are readable here but
+not enumerable, so they don't appear when the connector is logged.
+
+##### Returns
+
+`object`
+
+#### Set Signature
+
+```ts
+set config(value): void;
+```
+
+##### Parameters
+
+| Parameter | Type     |
+| --------- | -------- |
+| `value`   | `object` |
+
+##### Returns
+
+`void`
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`config`](BaseConnector.md#config)
+
+---
 
 ### dimensions
 
@@ -67,6 +101,24 @@ get dimensions(): number;
 Vector length produced by embed() once trained
 
 ## Methods
+
+### \[custom\]()
+
+```ts
+[custom](): string;
+```
+
+What console.log and util.inspect show: no settings, no credentials.
+
+#### Returns
+
+`string`
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`[custom]`](BaseConnector.md#custom)
+
+---
 
 ### connect()
 
@@ -301,6 +353,36 @@ Restore state produced by getState().
 #### Returns
 
 `void`
+
+---
+
+### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+What JSON.stringify sees: no settings, no credentials.
+
+#### Returns
+
+`object`
+
+##### connected
+
+```ts
+connected: boolean;
+```
+
+##### name
+
+```ts
+name: string;
+```
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`toJSON`](BaseConnector.md#tojson)
 
 ---
 

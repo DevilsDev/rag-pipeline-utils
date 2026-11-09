@@ -102,6 +102,39 @@ Cleanup old logs based on retention policy
 
 ---
 
+### close()
+
+```ts
+close(): Promise<{
+  pending: {
+     chain: boolean;
+     events: number;
+     webhook: number;
+  };
+}>;
+```
+
+Shut the logger down: stop the flush timer, wait for log calls in
+progress, write the buffered events and the pending chain state, and
+retry any stage that failed once more. Call it before the process
+exits (for example on SIGTERM). Resolves, never rejects, with what is
+still pending: `{ pending: { events, chain, webhook } }`. Calls made
+while a close is running share it. A log call after close() still
+buffers and flushes as before, but there is no timer any more; call
+close() again to write it.
+
+#### Returns
+
+`Promise`\<\{
+`pending`: \{
+`chain`: `boolean`;
+`events`: `number`;
+`webhook`: `number`;
+\};
+\}\>
+
+---
+
 ### generateComplianceReport()
 
 ```ts
@@ -122,6 +155,7 @@ generateComplianceReport(_options): Promise<{
      totalEvents: number;
   };
   summary: {
+     apiAccessEvents: number;
      authenticationEvents: number;
      authorizationEvents: number;
      complianceEvents: number;
@@ -129,6 +163,7 @@ generateComplianceReport(_options): Promise<{
      dataAccessEvents: number;
      dataModificationEvents: number;
      failedEvents: number;
+     otherEvents: number;
      systemChangeEvents: number;
   };
 }>;
@@ -161,6 +196,7 @@ Generate compliance report
 `totalEvents`: `number`;
 \};
 `summary`: \{
+`apiAccessEvents`: `number`;
 `authenticationEvents`: `number`;
 `authorizationEvents`: `number`;
 `complianceEvents`: `number`;
@@ -168,6 +204,7 @@ Generate compliance report
 `dataAccessEvents`: `number`;
 `dataModificationEvents`: `number`;
 `failedEvents`: `number`;
+`otherEvents`: `number`;
 `systemChangeEvents`: `number`;
 \};
 \}\>

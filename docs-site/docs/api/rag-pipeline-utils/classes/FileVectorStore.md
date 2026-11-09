@@ -186,6 +186,11 @@ save(): void;
 ```
 
 Write the index atomically: temp file in the same directory, then rename.
+Documents another process saved since this instance last read the file
+are kept: the file is re-read and this instance's own changes (stores,
+removals, embedder info) are applied on top. There is no lock, so two
+saves at the same instant can still race; ids written by both are won
+by whoever saves last.
 
 #### Returns
 

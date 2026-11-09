@@ -26,8 +26,12 @@ restrictingClauses) must appear in the claim, or in another sentence of
 the answer that this document supports (most of its content words are in
 the document), so a condition restated from the same source still counts
 and a word from a sentence about something else doesn't. Contrasting
-clauses ("but not in children") may be left out, as the polarity check
-allows since 3.6. Phrases that restrict nothing are not restrictions:
+clauses that add or contrast something ("but not in children" after "in
+adults", "but it may take a few minutes") may be left out, as the
+polarity check allows since 3.6; since 3.9 one that narrows or negates
+the statement before it ("but not for guests", "but only on Fridays",
+"but except ...") is a restricting clause of that statement and must be
+kept. Phrases that restrict nothing are not restrictions:
 "even if", "if any", "if applicable", "if necessary", "if needed", "if
 need be", "if possible", an anaphoric "If not," or "If so,", and "except
 as required (or permitted) by law". A source with no space after a

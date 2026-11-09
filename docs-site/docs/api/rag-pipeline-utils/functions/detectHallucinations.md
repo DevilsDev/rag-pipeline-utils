@@ -19,11 +19,12 @@ Classification:
 
 ## Parameters
 
-| Parameter            | Type                          | Description                                 |
-| -------------------- | ----------------------------- | ------------------------------------------- |
-| `citationResults`    | `object`[]                    | -                                           |
-| `options?`           | \{ `threshold?`: `number`; \} | -                                           |
-| `options.threshold?` | `number`                      | Score threshold for grounded classification |
+| Parameter             | Type                                                     | Description                                                                                                                                                                                                                           |
+| --------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `citationResults`     | `object`[]                                               | -                                                                                                                                                                                                                                     |
+| `options?`            | \{ `bestScores?`: `number`[]; `threshold?`: `number`; \} | -                                                                                                                                                                                                                                     |
+| `options.bestScores?` | `number`[]                                               | Per sentence, the best score of any source, also below the threshold (CitationTracker passes it): a sentence with no source at or above the threshold but some support is a likely hallucination with that score, and bestSource null |
+| `options.threshold?`  | `number`                                                 | Score threshold for grounded classification                                                                                                                                                                                           |
 
 ## Returns
 
