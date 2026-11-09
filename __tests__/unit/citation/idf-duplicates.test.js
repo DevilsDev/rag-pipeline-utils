@@ -29,3 +29,31 @@ describe("identical sources", () => {
     );
   });
 });
+
+describe("sources a sentence shares no word with", () => {
+  test("don't count in that sentence's word weights", () => {
+    const unrelated = {
+      content: "The lighthouse on the northern headland was painted white.",
+    };
+    const sentence = "Remote work is allowed two days per week.";
+    expect([...buildIDFWeights([a, b, unrelated], { sentence })]).toEqual([
+      ...buildIDFWeights([a, b], { sentence }),
+    ]);
+    // without a sentence every source counts, as before
+    expect(buildIDFWeights([a, b, unrelated]).get("remote")).not.toBe(
+      buildIDFWeights([a, b]).get("remote"),
+    );
+  });
+
+  test("don't change a sentence's score", () => {
+    const answer = "Remote work is allowed two days per week for new hires.";
+    const unrelated = {
+      content: "The lighthouse on the northern headland was painted white.",
+    };
+    const before = new CitationTracker().track(answer, [a, b]);
+    const after = new CitationTracker().track(answer, [a, b, unrelated]);
+    expect(after.citations[0].sources[0].score).toBe(
+      before.citations[0].sources[0].score,
+    );
+  });
+});
