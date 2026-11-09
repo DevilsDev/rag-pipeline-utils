@@ -51,29 +51,39 @@ class GraphRetriever extends EventEmitter {
   async store(documents) {
     if (!Array.isArray(documents)) return;
 
+    // Each document gets its id once; the extractor credits entities to
+    // the same id the document is stored under.
+    const stored = [];
     for (const doc of documents) {
       const id = doc.id || `doc_${this.documents.size + 1}`;
-      this.documents.set(id, {
+      const entry = {
         id,
         content: doc.content || '',
         metadata: doc.metadata || {},
-      });
+      };
+      this.documents.set(id, entry);
+      stored.push(entry);
     }
 
-    const { entities, relationships } = this.extractor.extractFromDocuments(
-      documents.map((doc) => ({
-        id: doc.id || `doc_${this.documents.size}`,
-        content: doc.content || '',
-        metadata: doc.metadata || {},
-      })),
-    );
+    const { entities, relationships } =
+      this.extractor.extractFromDocuments(stored);
 
     for (const entity of entities) {
       const entityId = entity.name.toLowerCase().trim().replace(/\s+/g, '_');
+      // An entity seen in an earlier store() keeps its sources and count
+      const known = this.graph.getEntity(entityId);
+      const sources = [
+        ...new Set([
+          ...((known && known.properties.sources) || []),
+          ...(entity.sources || []),
+        ]),
+      ];
+      const frequency =
+        ((known && known.properties.frequency) || 0) + (entity.frequency || 0);
       this.graph.addEntity(entityId, entity.type, {
         name: entity.name,
-        frequency: entity.frequency,
-        sources: entity.sources || [],
+        frequency,
+        sources,
       });
       this.index.indexEntity({
         id: entityId,
@@ -81,7 +91,7 @@ class GraphRetriever extends EventEmitter {
         name: entity.name,
         properties: {
           name: entity.name,
-          frequency: entity.frequency,
+          frequency,
         },
       });
     }
