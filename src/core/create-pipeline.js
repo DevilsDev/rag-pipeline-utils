@@ -221,7 +221,7 @@ async function* reportWhenComplete(source, signal, onComplete) {
  *   done chunk carries `timing: { firstTokenMs, totalMs }`
  * - `citations`, `citationOptions`, `evaluate`, `evaluateOptions`,
  *   `referenceAnswer` (ground truth for context recall)
- * - `filterResults(docs)`: hook applied after retrieval
+ * - `filterResults(docs, { signal })`: hook applied after retrieval
  *
  * A successful result carries `timing: { totalMs }`, measured from the start
  * of run().
@@ -237,7 +237,8 @@ async function* reportWhenComplete(source, signal, onComplete) {
  * retrieval, generation }` ('hit', 'miss' or 'skip'), and the pipeline has
  * `cacheStats()`.
  *
- * Every component call receives the run's AbortSignal: `retriever.retrieve({
+ * Every component call except `loader.load()` receives the run's AbortSignal:
+ * `llm.route(query, docs, { ...options, signal })`, `retriever.retrieve({
  * ..., signal })`, `embedder.embedQuery(text, { signal })` /
  * `embedder.embed(text, { signal })`, `reranker.rerank(query, docs, { topK,
  * signal })` and `llm.generate(query, docs, { ...options, signal })`.
@@ -356,7 +357,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       // Hook for filtering (e.g. ACL guardrails) before anything downstream,
       // including the LLM, sees the retrieved documents.
       if (typeof opts.filterResults === 'function' && Array.isArray(docs)) {
-        docs = await opts.filterResults(docs);
+        docs = await opts.filterResults(docs, { signal });
         run.throwIfAborted();
       }
       let results = docs;
@@ -385,7 +386,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       }
 
       if (llmI && typeof llmI.route === 'function') {
-        route = await llmI.route(query, results, opts);
+        route = await llmI.route(query, results, { ...opts, signal });
         run.throwIfAborted();
       }
       const genOptions = route
