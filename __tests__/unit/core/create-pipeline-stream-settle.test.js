@@ -143,3 +143,50 @@ describe("stream chunks are normalised", () => {
     expect(chunks.at(-1).citations).toBeDefined();
   });
 });
+
+describe("timeout covers the stream", () => {
+  const slowLlm = {
+    async *generateStream() {
+      yield { token: "a", done: false };
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      yield { token: "b", done: false };
+      yield { token: "", done: true };
+    },
+  };
+
+  test("a stream still running at the timeout is aborted", async () => {
+    const pipeline = createRagPipeline({ retriever, llm: slowLlm });
+    const started = performance.now();
+    const stream = await pipeline.run({
+      query: "q",
+      options: { stream: true, timeout: 150 },
+    });
+    const seen = [];
+    let error;
+    try {
+      for await (const chunk of stream) seen.push(chunk.token);
+    } catch (e) {
+      error = e;
+    }
+    expect(seen).toEqual(["a"]);
+    expect(error.message).toBe("Execution timeout");
+    expect(performance.now() - started).toBeLessThan(450);
+  });
+
+  test("a stream that finishes in time is untouched", async () => {
+    const llm = {
+      async *generateStream() {
+        yield { token: "a", done: false };
+        yield { token: "", done: true };
+      },
+    };
+    const pipeline = createRagPipeline({ retriever, llm });
+    const chunks = await collect(
+      await pipeline.run({
+        query: "q",
+        options: { stream: true, timeout: 5000 },
+      }),
+    );
+    expect(chunks.map((c) => c.token)).toEqual(["a", ""]);
+  });
+});

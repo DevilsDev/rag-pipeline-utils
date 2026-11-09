@@ -212,7 +212,9 @@ async function* reportWhenComplete(source, signal, onComplete) {
  *
  * `run({ query, queryVector, options })` options:
  * - `topK` (default 3)
- * - `timeout` (ms): aborts the run; resolves `{ success: false, error: 'Execution timeout' }`
+ * - `timeout` (ms): aborts the run, a stream included, until it ends; resolves
+ *   `{ success: false, error: 'Execution timeout' }`, or a stream's iteration
+ *   rejects with it
  * - `signal` (AbortSignal): caller cancellation; resolves
  *   `{ success: false, error: 'Execution aborted' }` when it aborts
  * - `stream`: return an async iterable of `{ token, done }` chunks; the
@@ -452,7 +454,7 @@ module.exports.createRagPipeline = function createRagPipeline({
             finalize,
             startedAt,
             doneFields: () => (routed ? { route: { ...route } } : {}),
-            onEnd: run.detach,
+            onEnd: run.cleanup,
           });
         }
       }
@@ -491,12 +493,12 @@ module.exports.createRagPipeline = function createRagPipeline({
     try {
       return await run.race(doWork);
     } catch (e) {
+      streaming = false;
       return { success: false, error: String(e?.message || e) };
     } finally {
-      // The timeout covers the run up to the returned stream; a caller
-      // signal keeps cancelling a stream until it finishes.
-      run.clearTimer();
-      if (!streaming) run.detach();
+      // A returned stream keeps the timeout and the caller's signal until it
+      // ends; guardStream's onEnd releases them.
+      if (!streaming) run.cleanup();
     }
   }
 
