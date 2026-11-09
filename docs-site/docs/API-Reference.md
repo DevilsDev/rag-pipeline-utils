@@ -647,6 +647,7 @@ createModelRouter(options: {
   generate(query, docs?, options?): Promise<string>;
   generateStream(query, docs?, options?): AsyncIterable<{ token: string; done: boolean }>;
   getCacheKey(role): string | null;
+  routeTemperature(model?): number | undefined; // that route's llm config.temperature; the highest over all routes without a model
   readonly routes: Array<{ model; handles; pricing }>;
 }
 ```
@@ -699,6 +700,13 @@ connect(fromId: string, toId: string): void
 execute(seed?: any, options?: object): Promise<any>
 validate(): boolean // true, or throws
 ```
+
+- `addNode(id, fn, { timeout })` fails the node with "Node &lt;id&gt; timed out after &lt;n&gt; ms" when it runs longer than `timeout` milliseconds (or `RAG_NODE_TIMEOUT`). A node without one has no limit. A timed-out node's work is abandoned, not cancelled, so it can still finish in the background.
+- `execute(seed, { concurrency })` runs up to `concurrency` independent nodes at a time (default: `RAG_MAX_CONCURRENCY`, or one at a time).
+
+:::info[Coming in 3.9.0]
+On 3.8.3 and earlier, a node's `timeout` was ignored and `concurrency` ran the nodes one at a time.
+:::
 
 **Example:**
 
@@ -777,20 +785,30 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 
 **Options (selection):**
 
-| Option              | Description                                                                                                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `logDir`            | Directory for log files, created on the first write (default: `.rag-enterprise/audit-logs` in the working directory, deprecated: it warns once and is removed in 4.0)     |
-| `memoryLimit`       | Events kept per stage (file, chain, webhook) while it fails, for the next flush (default: 10000); older ones are dropped and reported (`events_dropped`, `droppedEvents`) |
-| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                                                                                         |
-| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning                                                                                      |
-| `signingKey`        | HMAC key; random per process if omitted, so `verifyIntegrity` flags records from before a restart                                                                         |
-| `retentionDays`     | Retention period (default: 2555)                                                                                                                                          |
+| Option              | Description                                                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logDir`            | Directory for log files, created on the first write (default: `.rag-enterprise/audit-logs` in the working directory, deprecated: it warns once and is removed in 4.0)                           |
+| `memoryLimit`       | Events kept per stage (file, chain, webhook) while it fails, for the next flush (default: 10000); older ones are dropped and reported (`events_dropped`, `droppedEvents`)                       |
+| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                                                                                                               |
+| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning                                                                                                            |
+| `signingKey`        | HMAC key; falls back to `RAG_AUDIT_SIGNING_KEY`, else a key generated once and stored in `logDir/integrity/signing.key` (with a one-time warning)                                               |
+| `retentionDays`     | Retention period (default: 2555)                                                                                                                                                                |
+| `webhookUrl`        | Also POST each written event to this URL as `{ events: [...] }`: https, or http for localhost; anything else throws when the logger is created                                                  |
+| `webhookHeaders`    | Extra request headers, as an object of names to string values (for example `Authorization`); `Content-Type`, `Content-Length`, `Host`, `Connection` and `Transfer-Encoding` can't be overridden |
+| `webhookTimeoutMs`  | Request timeout (default: 5000)                                                                                                                                                                 |
+| `webhookRetryMs`    | First retry delay after a failed delivery (default: 1000), doubling up to 60 s                                                                                                                  |
+
+**Webhook.** Events go to the webhook after they are written to the log file, on their own queue, so a slow or failing endpoint never holds up the file or the chain. A delivery that fails (a non-2xx answer, a redirect, a network error or the timeout) emits `webhook_failed` (`{ error, count }`) and is retried on a later flush; redirects are not followed, and the error never contains the URL, a header or an event. Delivery is at least once (a retry after a lost answer sends the events again), so de-duplicate on `sequence`. Encrypted fields are sent as stored.
+
+**Daily files.** An event goes in the file named for its UTC date. An event older than the newest file goes in the newest file, so the files stay in sequence order for `verifyIntegrity()`.
 
 :::info[Coming in 3.9.0]
-On 3.8.0 and earlier, the constructor creates the log folders at once, a directory that can't be created ends the process, a failed integrity-chain update writes the batch to the file again, webhook failures aren't retried, and the default `logDir` doesn't warn.
+On 3.8.0 and earlier, the constructor creates the log folders at once, a directory that can't be created ends the process, a failed integrity-chain update writes the batch to the file again, and the default `logDir` doesn't warn. 3.8.0 only logged that it would send to `webhookUrl`, and 3.8.1 to 3.8.3 ignored it with a warning. A daily file was named for the day of the flush, and there was no `close()`.
 :::
 
-**Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity` (all async).
+**Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity`, `close` (all async).
+
+`close()` stops the flush timer, writes the buffered events and the chain state, tries a failed stage (the file, the chain or the webhook) once more, and resolves, never rejects, with what is still pending: `{ pending: { events, chain, webhook } }`. Call it before the process exits, for example on SIGTERM. `queryLogs()` returns `total` (every match) and `hasMore`; the compliance report's summary counts each category, including `apiAccessEvents` and `otherEvents`.
 
 **Example:**
 

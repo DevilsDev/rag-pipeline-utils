@@ -137,11 +137,15 @@ class StreamingEmbedder extends EventEmitter {
            * @event StreamingEmbedder#error
            * @type {{ id: string, error: Error, index: number }}
            */
-          this.emit('error', {
-            id: embedding.id,
-            error: embedding.error,
-            index: embedding.index,
-          });
+          // Only emit when someone listens: an unhandled 'error' event
+          // throws, which would end the stream for one bad document.
+          if (this.listenerCount('error') > 0) {
+            this.emit('error', {
+              id: embedding.id,
+              error: embedding.error,
+              index: embedding.index,
+            });
+          }
         } else {
           this.stats.processed += 1;
         }

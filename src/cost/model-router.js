@@ -75,6 +75,7 @@ async function* streamFrom(llm, query, docs, options) {
  * @property {(query: string, docs?: object[], options?: object) => Promise<string>} generate
  * @property {(query: string, docs?: object[], options?: object) => AsyncGenerator<{token: string, done: boolean}>} generateStream
  * @property {(role: string) => string|null} getCacheKey
+ * @property {(model?: string) => number|undefined} routeTemperature
  * @property {Array<{model: string, handles: string[]|null, pricing: {input: number, output: number, unit: number}}>} routes
  *   The routes with their resolved prices (copies)
  */
@@ -292,6 +293,23 @@ function createModelRouter(options = {}) {
    * None (cache off) when a route's llm has no key, or `classify` is custom
    * and no `cacheKey` was given.
    */
+  // The sampling temperature of a route's llm (its config.temperature), or
+  // undefined when it doesn't say. With no model: the highest over all
+  // routes, undefined if any route doesn't say. The generation cache uses
+  // it, as a router has no config of its own.
+  function routeTemperature(model) {
+    const chosen =
+      model === undefined ? routes : routes.filter((r) => r.model === model);
+    if (chosen.length === 0) return undefined;
+    let highest = 0;
+    for (const r of chosen) {
+      const t = r.llm.config && r.llm.config.temperature;
+      if (typeof t !== 'number') return undefined;
+      highest = Math.max(highest, t);
+    }
+    return highest;
+  }
+
   function getCacheKey(role) {
     const classifier =
       classify === classifyQuery
@@ -317,6 +335,7 @@ function createModelRouter(options = {}) {
     generate,
     generateStream,
     getCacheKey,
+    routeTemperature,
     /** The routes with their resolved prices (read-only copies). */
     get routes() {
       return routes.map((r) => ({

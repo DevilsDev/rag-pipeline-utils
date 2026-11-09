@@ -82,50 +82,64 @@ class ExecutionScheduler {
    * @since 2.2.3
    */
   async scheduleExecution(order, context) {
-    const { concurrency, results, errors, fwd } = context;
+    const { concurrency, results } = context;
 
-    const semaphore = concurrency ? new Array(concurrency).fill(null) : null;
-    let semaphoreIndex = 0;
+    // At most `limit` nodes run at once. Without a concurrency option nodes
+    // run one at a time, in order. A node starts as soon as every one of its
+    // inputs has finished (or been skipped).
+    const limit =
+      Number.isFinite(concurrency) && concurrency >= 1
+        ? Math.floor(concurrency)
+        : 1;
+    const pending = [...order];
+    const finished = new Set();
+    const running = new Map();
+    let failure = null;
 
-    const executeWithSemaphore = async (node) => {
-      if (semaphore) {
-        // Wait for available slot
-        while (semaphore[semaphoreIndex % semaphore.length] !== null) {
-          await new Promise((resolve) => setTimeout(resolve, 10));
-        }
-        const slotIndex = semaphoreIndex % semaphore.length;
-        semaphoreIndex++;
-
+    const start = (node) => {
+      const run = (async () => {
         try {
           const result = await this.executeNode(node, context);
-          // Only set result if it's not undefined (failed optional nodes return undefined)
-          if (result !== undefined) {
+          // A failed optional node returns a marker symbol, never a result
+          if (
+            typeof result !== 'symbol' ||
+            result.description !== 'failed-optional-node'
+          ) {
             results.set(node.id, result);
           }
+        } catch (error) {
+          if (!failure) failure = { error };
         } finally {
-          semaphore[slotIndex] = null;
+          finished.add(node.id);
+          running.delete(node.id);
         }
-      } else {
-        const result = await this.executeNode(node, context);
-        // Only set result if it's not the special failed-optional-node symbol
-        if (
-          typeof result !== 'symbol' ||
-          result.description !== 'failed-optional-node'
-        ) {
-          results.set(node.id, result);
-        }
-      }
+      })();
+      running.set(node.id, run);
     };
 
-    // Execute nodes respecting dependencies
-    for (const node of order) {
-      // Check if all dependencies are satisfied
-      const canExecute = this.canExecuteNode(node, context);
-
-      if (canExecute) {
-        await executeWithSemaphore(node);
+    for (;;) {
+      // After a critical failure nothing new starts; running nodes finish
+      if (!failure) {
+        for (let i = 0; i < pending.length && running.size < limit; ) {
+          const node = pending[i];
+          if (!node.inputs.every((dep) => finished.has(dep.id))) {
+            i += 1;
+            continue;
+          }
+          pending.splice(i, 1);
+          if (this.canExecuteNode(node, context)) {
+            start(node);
+          } else {
+            // An input failed or was skipped: this node is skipped too
+            finished.add(node.id);
+          }
+        }
       }
+      if (running.size === 0) break;
+      await Promise.race(running.values());
     }
+
+    if (failure) throw failure.error;
   }
 
   /**
@@ -235,7 +249,7 @@ class ExecutionScheduler {
     while (keepRetrying) {
       try {
         // Execute the node
-        const output = await node.run(input);
+        const output = await this._runWithTimeout(node, input);
         if (errors.has(node.id)) errors.delete(node.id);
         return output;
       } catch (e) {
@@ -262,6 +276,36 @@ class ExecutionScheduler {
         errors.set(node.id, nodeErr);
         throw nodeErr;
       }
+    }
+  }
+
+  /**
+   * Run a node, failing it when it has an explicit timeout (the `timeout`
+   * option or RAG_NODE_TIMEOUT) and runs longer. The node's work is not
+   * cancelled: it is abandoned, and its late result is ignored.
+   * @private
+   */
+  async _runWithTimeout(node, input) {
+    const run = node.run(input);
+    if (!(node.timeoutExplicit && node.timeout > 0)) return run;
+    let timer;
+    try {
+      return await Promise.race([
+        run,
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                new Error(`Node ${node.id} timed out after ${node.timeout} ms`),
+              ),
+            node.timeout,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+      // An abandoned run that fails later must not be an unhandled rejection
+      Promise.resolve(run).catch(() => {});
     }
   }
 

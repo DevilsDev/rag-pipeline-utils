@@ -64,6 +64,7 @@ class SSEAdapter extends EventEmitter {
   async stream(asyncGenerator, httpResponse) {
     let heartbeatTimer = null;
     let clientDisconnected = false;
+    let sentDone = false;
 
     // --- helpers --------------------------------------------------------
     const cleanup = () => {
@@ -105,8 +106,14 @@ class SSEAdapter extends EventEmitter {
         }
 
         if (value && value.done) {
-          // Final frame
+          // Final frame: forward the chunk's extra fields (citations,
+          // evaluation, timing, ...) once, then the sentinel once.
+          const { token: _t, done: _d, ...rest } = value;
+          if (Object.keys(rest).length > 0) {
+            httpResponse.write(this.formatEvent('done', rest));
+          }
           httpResponse.write(`data: ${this.config.doneEvent}\n\n`);
+          sentDone = true;
           this.emit('done');
           break;
         }
@@ -118,18 +125,20 @@ class SSEAdapter extends EventEmitter {
       }
 
       // If the generator is exhausted without an explicit done flag, send DONE
-      if (!clientDisconnected && !httpResponse.writableEnded) {
+      if (!sentDone && !clientDisconnected && !httpResponse.writableEnded) {
         httpResponse.write(`data: ${this.config.doneEvent}\n\n`);
         this.emit('done');
       }
     } catch (err) {
-      this.emit('error', err);
-
       if (!clientDisconnected && !httpResponse.writableEnded) {
         const errorFrame = this.formatEvent('error', {
           message: err.message || 'Internal streaming error',
         });
         httpResponse.write(errorFrame);
+      }
+      // Only emit when someone listens: an unhandled 'error' event throws.
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', err);
       }
     } finally {
       cleanup();

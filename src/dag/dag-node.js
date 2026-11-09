@@ -13,8 +13,11 @@ class DAGNode {
     this.outputs = [];
 
     // Per-node timeout configuration
-    this.timeout =
-      options.timeout || parseInt(process.env.RAG_NODE_TIMEOUT) || 30000; // Default 30 seconds per node
+    const explicit = options.timeout || parseInt(process.env.RAG_NODE_TIMEOUT);
+    this.timeout = explicit || 30000;
+    // Only a timeout that was asked for is enforced; the 30 s default is the
+    // value reported, not a limit applied to every node.
+    this.timeoutExplicit = Boolean(explicit);
     this.retries = options.retries || 0;
     this.priority = options.priority || 0; // Higher priority executes first
   }

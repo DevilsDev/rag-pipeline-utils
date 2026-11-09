@@ -559,8 +559,9 @@ class SSOManager extends EventEmitter {
    * List active sessions for a tenant
    */
   async getActiveSessions(tenantId, _options = {}) {
+    // Pending logins share the map but are not sessions (no metadata)
     const sessions = Array.from(this.sessions.values())
-      .filter((s) => s.tenantId === tenantId)
+      .filter((s) => s.metadata && s.tenantId === tenantId)
       .map((s) => ({
         id: s.id,
         userId: s.userId,
@@ -649,10 +650,18 @@ class SSOManager extends EventEmitter {
     const expiredSessions = [];
 
     for (const [sessionId, session] of this.sessions.entries()) {
-      if (session.metadata.expiresAt < now) {
+      // A pending login (keyed by its state) expires on its own field
+      const isLogin = !session.metadata;
+      const expiresAt = isLogin ? session.expiresAt : session.metadata.expiresAt;
+      if (expiresAt < now) {
         expiredSessions.push(sessionId);
         this.sessions.delete(sessionId);
-        this.emit('session_expired', { sessionId, tenantId: session.tenantId });
+        if (!isLogin) {
+          this.emit('session_expired', {
+            sessionId,
+            tenantId: session.tenantId,
+          });
+        }
       }
     }
 

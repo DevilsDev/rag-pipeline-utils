@@ -41,6 +41,34 @@ const PRICING = {
     source: OPENAI,
     asOf: AS_OF,
   },
+  'gpt-4.1': {
+    input: 0.002,
+    output: 0.008,
+    unit: 1000,
+    source: OPENAI,
+    asOf: '2026-11-09',
+  },
+  'gpt-4.1-mini': {
+    input: 0.0004,
+    output: 0.0016,
+    unit: 1000,
+    source: OPENAI,
+    asOf: '2026-11-09',
+  },
+  'gpt-4.1-nano': {
+    input: 0.0001,
+    output: 0.0004,
+    unit: 1000,
+    source: OPENAI,
+    asOf: '2026-11-09',
+  },
+  'gpt-4.5-preview': {
+    input: 0.075,
+    output: 0.15,
+    unit: 1000,
+    source: OPENAI,
+    asOf: '2026-11-09',
+  },
   'gpt-4-turbo': {
     input: 0.01,
     output: 0.03,
@@ -228,9 +256,15 @@ class CostCalculator extends EventEmitter {
 
     let best = null;
     for (const k of keys) {
-      if (wanted.includes(canonical(k)) && (!best || k.length > best.length)) {
-        best = k;
+      const at = wanted.indexOf(canonical(k));
+      if (at < 0) continue;
+      // "gpt-4" inside "gpt-4-1-mini" is a different model, not a shorter
+      // name for it: a version digit right after the match means no match.
+      // (A date or snapshot suffix such as -0613 or -2024-04-09 is fine.)
+      if (/^-\d{1,2}(?:-|$)/.test(wanted.slice(at + canonical(k).length))) {
+        continue;
       }
+      if (!best || k.length > best.length) best = k;
     }
     if (best) return best;
 

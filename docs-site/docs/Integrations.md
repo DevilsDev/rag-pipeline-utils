@@ -126,7 +126,7 @@ How the adapter behaves:
 - **Embedding:** `embedder.embedBatch(texts)` uses `embedMany` when you pass it.
 - **Streaming:** `run({ options: { stream: true } })` streams through `streamText` when you pass it.
 - **Cancellation:** the run's `AbortSignal` is passed to every AI SDK call as `abortSignal`.
-- **Settings:** `settings` applies to every text call. Per-run `temperature`, `maxOutputTokens` and similar options override it.
+- **Settings:** `settings` applies to every text call. Per-run `temperature`, `maxOutputTokens` and similar options override it. A run's `topK` is the number of passages to retrieve and is not sent to the model; put a sampling topK in `settings.topK`.
 - **Providers:** any AI SDK provider works (OpenAI, Anthropic, Google, Mistral, Ollama and others), and so do the AI SDK's test models.
 
 Tested against AI SDK 6 and 7.

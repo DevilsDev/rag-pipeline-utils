@@ -52,6 +52,21 @@ page.
 - **`splitSentences` and `splitClauses`** are exported from the main
   entry and `@devilsdev/rag-eval`: the sentence and clause splitters the
   grounding checks use.
+- **`AuditLogger` delivers events to its webhook.** With `webhookUrl` set
+  (https, or http for localhost; anything else throws when the logger is
+  created), each written event is POSTed as `{ events: [...] }`.
+  `webhookHeaders` adds headers such as `Authorization`,
+  `webhookTimeoutMs` sets the request timeout (default 5,000) and
+  `webhookRetryMs` the first retry delay (default 1,000, doubling up to
+  60 s). Events that weren't delivered are kept, up to `memoryLimit`, and
+  sent on a later flush, and each failure emits `webhook_failed`
+  (`{ error, count }`). Delivery is at least once, so de-duplicate on
+  `sequence`. 3.8.0 only logged that it would send, and 3.8.1 to 3.8.3
+  ignored `webhookUrl` with a warning.
+- **`AuditLogger.close()`** writes the buffered events and the chain state,
+  tries a failed stage once more, and resolves with what is still pending,
+  `{ pending: { events, chain, webhook } }`. Call it before the process
+  exits, for example on SIGTERM.
 
 ### Changed
 
@@ -109,6 +124,39 @@ page.
 - **The `fixed-size` chunker rejects a `chunkOverlap` above half of
   `chunkSize`**, or a negative one; such an overlap used to produce about
   one chunk per character.
+- **An audit daily file is named for the day of its events** (UTC), not
+  the day of the flush, so events from just before midnight no longer land
+  in the next day's file. An event older than the newest file goes in the
+  newest file, so the files stay in sequence order.
+- **A DAG node's `timeout` (or `RAG_NODE_TIMEOUT`) is enforced**: the node
+  fails with "timed out" when it runs longer. It used to be ignored. The
+  30 s default is still not applied to a node without one, and a timed-out
+  node's work is abandoned, not cancelled. `concurrency` now really runs
+  independent nodes in parallel.
+- **A model router's answers are generation-cached only when every route's
+  llm has `config.temperature` of 0.** A route with an unknown or higher
+  temperature turns the cache off for the router; it used to be cached as
+  if it never sampled. The router has a new `routeTemperature(model?)`.
+- **The AI SDK adapter no longer sends the run's `topK`** (the number of
+  passages to retrieve) to the model as a sampling setting. Put a sampling
+  topK in `settings.topK`.
+- `AuditLogger.queryLogs()` counts every match in `total`, so `hasMore`
+  works, and the compliance report counts `apiAccessEvents` and
+  `otherEvents`.
+- A cache store's own `ttlSeconds` applies unless `cache.ttlSeconds` sets
+  one for the layer.
+- `IterativeRetriever` coverage is the share of query words found in the
+  results.
+- `AgenticPipeline` returns `success: false` with an `error` when
+  generation fails, and keeps failed nodes out of its results.
+- `CostTracker` refuses a run the budget can't cover before it runs, and
+  records runs that go over. Streams are costed from their tokens, and a
+  generation cache hit costs nothing.
+- `StreamingEmbedder` and `createEmbeddingStream` embed one text at a time
+  (or through `embedBatch`) and honour `maxConcurrency`.
+- `Histogram` keeps a sample of at most 10,000 observations for
+  percentiles; count, sum, minimum, maximum, mean and standard deviation
+  stay exact.
 
 ### Deprecated
 
@@ -221,6 +269,28 @@ page.
   serialised, and connectors with different API keys no longer share
   cache entries (the cache identity holds a short SHA-256 hash of the key,
   never the key).
+- The SSE and WebSocket adapters send the final chunk's fields (citations,
+  evaluation, timing) once, and end with a single `[DONE]` or `done`. A
+  token stream that throws writes an error frame, with no unhandled
+  rejection.
+- A failed retrieval in the DAG's parallel path is no longer passed to the
+  LLM as a document.
+- `StreamingEmbedder` no longer sends arrays to embedders that take one
+  string, and one failed document no longer ends the stream.
+- `GraphRetriever.store()` keeps entity sources across calls and gives
+  documents without an id their own ids.
+- `CostCalculator` prices gpt-4.1, gpt-4.1-mini, gpt-4.1-nano and
+  gpt-4.5-preview on their own; they were priced as gpt-4.
+- The AI SDK adapter's generation cache key includes `presencePenalty` and
+  `frequencyPenalty`.
+- `AgenticPipeline({ maxIterations })` is honoured.
+- An audit signing key file left empty by a crash is replaced after 5 s,
+  instead of the process falling back to a key of its own.
+- SSO `cleanupExpiredSessions()` and `getActiveSessions()` no longer throw
+  while a login is pending.
+- (Experimental) `TenantManager` enforces `maxWorkspaces`, keeps
+  `pluginsEnabled: false`, and a hard delete removes the tenant's
+  workspaces.
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.

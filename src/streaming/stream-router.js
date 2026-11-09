@@ -133,7 +133,9 @@ class StreamRouter extends EventEmitter {
           await this.streamSSE(pipeline, query, res);
         }
       } catch (err) {
-        this.emit('error', err);
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', err);
+        }
 
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });

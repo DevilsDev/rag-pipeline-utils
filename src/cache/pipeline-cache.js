@@ -41,6 +41,8 @@ const GENERATION_OPTIONS = [
   'maxTokens',
   'maxOutputTokens',
   'topP',
+  'presencePenalty',
+  'frequencyPenalty',
   'model',
   'systemPrompt',
   'seed',
@@ -108,9 +110,11 @@ function normalizeCacheOption(option) {
     if (backend) {
       layers[layer] = {
         backend,
+        // cache.ttlSeconds[layer] wins; else the store's own ttlSeconds
+        // (left undefined here, so the store applies it); else the default
         ttlSeconds:
           (option.ttlSeconds && option.ttlSeconds[layer]) ??
-          DEFAULT_TTL_SECONDS[layer],
+          (backend.ttlSeconds > 0 ? undefined : DEFAULT_TTL_SECONDS[layer]),
         hits: 0,
         misses: 0,
         skipped: 0,
@@ -209,11 +213,21 @@ class PipelineCache {
    * @returns {string|null} The key, or null to skip (temperature above 0,
    *   or no llm cache key)
    */
-  generationKey({ query, docs, options }) {
+  generationKey({ query, docs, options, route }) {
     if (!this.layers.generation) return null;
     const llm = this.components.llm;
-    const temperature =
-      options.temperature ?? (llm && llm.config && llm.config.temperature);
+    let temperature = options.temperature;
+    if (temperature === undefined && llm) {
+      if (typeof llm.routeTemperature === 'function') {
+        // A model router has no config of its own: ask it for the chosen
+        // route's temperature (the highest over its routes when none is
+        // given). Unknown counts as sampling, so it is never cached.
+        const t = llm.routeTemperature(route && route.model);
+        temperature = typeof t === 'number' ? t : Infinity;
+      } else {
+        temperature = llm.config && llm.config.temperature;
+      }
+    }
     if (typeof temperature === 'number' && temperature > 0) {
       this.layers.generation.skipped += 1;
       return null;
