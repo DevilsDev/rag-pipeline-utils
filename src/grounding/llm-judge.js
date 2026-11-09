@@ -121,11 +121,9 @@ function classifyFailure(
  * @returns {string[]}
  */
 function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
-  // Word weights per sentence, as CitationTracker weights them
-  const idfWeightsFor = (sentence) =>
-    DEFAULT_CONFIG.useIDFWeighting
-      ? buildIDFWeights(docs, { sentence })
-      : null;
+  const idfWeights = DEFAULT_CONFIG.useIDFWeighting
+    ? buildIDFWeights(docs)
+    : null;
   // Each source and the answer are prepared once for all the sentences
   const answerText = prepareAnswer(sentences.map((s) => s.text).join(' '));
   const prepared = new Map(docs.map((d) => [d, prepareDocument(d, d.content)]));
@@ -135,7 +133,7 @@ function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
       : classifyFailure(
           s.text,
           allowed ? docs.filter((d) => allowed[i].includes(d.id)) : docs,
-          idfWeightsFor(s.text),
+          idfWeights,
           DEFAULT_CONFIG.similarityThreshold,
           answerText,
           conditionCheck !== false,

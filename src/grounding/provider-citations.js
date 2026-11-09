@@ -504,15 +504,10 @@ async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
     ),
   );
   // Terms weighted over the cited passages, as checkAnswer weights over
-  // its sources: per claim, over the passages sharing a word with it
-  const weightsByClaim = new Map();
-  const idfWeightsFor = (text) => {
-    if (!DEFAULT_CONFIG.useIDFWeighting) return null;
-    if (!weightsByClaim.has(text)) {
-      weightsByClaim.set(text, buildIDFWeights(passageDocs, { sentence: text }));
-    }
-    return weightsByClaim.get(text);
-  };
+  // its sources
+  const idfWeights = DEFAULT_CONFIG.useIDFWeighting
+    ? buildIDFWeights(passageDocs)
+    : null;
   const byId = new Map(passageDocs.map((d) => [d.id, d]));
 
   // The cited answer as a whole: a condition one claim restates in another
@@ -524,7 +519,7 @@ async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
       : computeSupportScore(
           tokenize(text),
           new Set(tokenize(contents.join('\n'))),
-          idfWeightsFor(text),
+          idfWeights,
           {
             claimText: text,
             docText: contents.join('\n'),

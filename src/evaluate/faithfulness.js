@@ -60,14 +60,12 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
   });
   const preparedAnswer = prepareAnswer(answer);
   // The same word weights as CitationTracker, over the same documents
-  const idfDocs = retrievedDocs.filter((doc) => doc != null);
+  const idfWeights = useIDFWeighting
+    ? buildIDFWeights(retrievedDocs.filter((doc) => doc != null))
+    : null;
 
   const details = sentences.map((sentence) => {
     const sentenceTokens = tokenize(sentence);
-    // per sentence, as CitationTracker weights it
-    const idfWeights = useIDFWeighting
-      ? buildIDFWeights(idfDocs, { sentence })
-      : null;
     let bestScore = 0;
     let bestSource = -1;
 

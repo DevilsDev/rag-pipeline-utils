@@ -118,12 +118,9 @@ class CitationTracker extends EventEmitter {
     }
 
     // 4. Build IDF weights if enabled
-    // per sentence, over the sources sharing a word with it (BH-7)
-    const idfDocs = docs.filter((_, i) => retrievedDocs[i] != null);
-    const idfWeightsFor = (sentence) =>
-      this.config.useIDFWeighting
-        ? buildIDFWeights(idfDocs, { sentence })
-        : null;
+    const idfWeights = this.config.useIDFWeighting
+      ? buildIDFWeights(docs.filter((_, i) => retrievedDocs[i] != null))
+      : null;
 
     // 5 & 6. Map each sentence to sources and build citations array. Each
     // source and the answer are prepared once for all the sentences.
@@ -140,7 +137,7 @@ class CitationTracker extends EventEmitter {
         best,
         maxCitations: this.config.maxCitationsPerSentence,
         threshold: this.config.similarityThreshold,
-        idfWeights: idfWeightsFor(sentence),
+        idfWeights,
         answerText: preparedAnswer,
         preparedSources,
         conditionCheck: this.config.conditionCheck,
