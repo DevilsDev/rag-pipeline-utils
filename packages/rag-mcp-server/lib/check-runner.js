@@ -19,6 +19,10 @@
  * At most maxConcurrent checks run at once; up to maxQueue more wait for a
  * free slot, and further checks are refused. Waiting doesn't count toward
  * the time limit.
+ *
+ * A call can pass an AbortSignal (the request's cancellation signal): when
+ * it aborts, a waiting call leaves the queue and a running check is stopped,
+ * its worker terminated and replaced as for a timeout.
  */
 
 const path = require("path");
@@ -41,6 +45,14 @@ class CheckQueueFullError extends Error {
   constructor() {
     super("too many checks waiting");
     this.name = "CheckQueueFullError";
+  }
+}
+
+/** A check its caller no longer wants (the request was cancelled). */
+class CheckAbortedError extends Error {
+  constructor() {
+    super("the check was cancelled");
+    this.name = "CheckAbortedError";
   }
 }
 
@@ -75,8 +87,9 @@ function nextMessage(worker) {
  *   maxConcurrent and maxQueue default to 2 and 8, reuseHeapLimitMb to 256;
  *   file and resourceLimits to check-worker.js and a 512 MB heap
  * @returns {{run: (params: object) => Promise<object>, close: () => Promise<void>}}
- *   run rejects with a CheckTimeoutError at the time limit, a
- *   CheckQueueFullError when the queue is full, and with the error
+ *   run(params, {signal}) rejects with a CheckTimeoutError at the time limit,
+ *   a CheckQueueFullError when the queue is full, a CheckAbortedError when
+ *   its signal aborts, and with the error
  *   checkAnswer threw, or a crash, otherwise
  */
 function createCheckRunner({
@@ -93,15 +106,33 @@ function createCheckRunner({
   let active = 0;
   const waiting = [];
 
-  /** Take a slot to run a check, waiting in the queue if none is free. */
-  async function acquire() {
+  /**
+   * Take a slot to run a check, waiting in the queue if none is free. A
+   * waiting call whose signal aborts leaves the queue.
+   */
+  async function acquire(signal) {
     if (active < maxConcurrent) {
       active += 1;
       return;
     }
     if (waiting.length >= maxQueue) throw new CheckQueueFullError();
     // The slot is handed over by releaseSlot(), so `active` stays the same
-    await new Promise((resolve, reject) => waiting.push({ resolve, reject }));
+    await new Promise((resolve, reject) => {
+      const entry = {
+        resolve: () => {
+          signal?.removeEventListener("abort", onAbort);
+          resolve();
+        },
+        reject,
+      };
+      const onAbort = () => {
+        const at = waiting.indexOf(entry);
+        if (at !== -1) waiting.splice(at, 1);
+        reject(new CheckAbortedError());
+      };
+      waiting.push(entry);
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
   }
 
   /** Hand the slot to the next waiting check, or free it. */
@@ -139,25 +170,34 @@ function createCheckRunner({
     }
   }
 
-  async function run(params) {
+  async function run(params, { signal } = {}) {
     if (closed) throw new Error("the server is closed");
-    await acquire();
+    if (signal?.aborted) throw new CheckAbortedError();
+    await acquire(signal);
     try {
-      return await runInWorker(params);
+      return await runInWorker(params, signal);
     } finally {
       releaseSlot();
     }
   }
 
-  async function runInWorker(params) {
+  async function runInWorker(params, signal) {
     if (closed) throw new Error("the server is closed");
+    if (signal?.aborted) throw new CheckAbortedError();
     const worker = idle || start();
     idle = null;
     running.add(worker);
     worker.ref();
+    // Rejects when the signal aborts, even during the worker's startup
+    let onAbort;
+    const aborted = new Promise((_, reject) => {
+      onAbort = () => reject(new CheckAbortedError());
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+    aborted.catch(() => {});
     try {
       // Startup doesn't count toward the time limit
-      await worker.ready;
+      await Promise.race([worker.ready, aborted]);
       const reply = nextMessage(worker);
       reply.catch(() => {});
       worker.postMessage(params);
@@ -170,7 +210,7 @@ function createCheckRunner({
       });
       let message;
       try {
-        message = await Promise.race([reply, timeout]);
+        message = await Promise.race([reply, timeout, aborted]);
       } finally {
         clearTimeout(timer);
       }
@@ -185,6 +225,7 @@ function createCheckRunner({
       }
       throw error;
     } finally {
+      signal?.removeEventListener("abort", onAbort);
       running.delete(worker);
     }
   }
@@ -204,4 +245,9 @@ function createCheckRunner({
   };
 }
 
-module.exports = { createCheckRunner, CheckTimeoutError, CheckQueueFullError };
+module.exports = {
+  createCheckRunner,
+  CheckTimeoutError,
+  CheckQueueFullError,
+  CheckAbortedError,
+};

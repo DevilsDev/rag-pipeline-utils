@@ -20,6 +20,7 @@ const {
   createCheckRunner,
   CheckTimeoutError,
   CheckQueueFullError,
+  CheckAbortedError,
 } = require("./check-runner");
 const { readPassages, SUPPORTED_EXTENSIONS } = require("./documents");
 const { version } = require("../package.json");
@@ -356,7 +357,7 @@ function createServer(
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ answer, question, sources, topK }) => {
+    async ({ answer, question, sources, topK }, extra) => {
       let docs;
       if (sources) {
         docs = sources.map((s, i) =>
@@ -381,13 +382,16 @@ function createServer(
       if (tooLarge) return toolError(tooLarge);
       let check;
       try {
-        check = await checks.run({
-          answer,
-          question,
-          sources: docs,
-          evaluate: false,
-        });
+        // extra.signal aborts when the client cancels the request: the call
+        // leaves the queue, or its running check is stopped
+        check = await checks.run(
+          { answer, question, sources: docs, evaluate: false },
+          { signal: extra?.signal },
+        );
       } catch (error) {
+        if (error instanceof CheckAbortedError) {
+          return toolError("check_answer was cancelled.");
+        }
         if (error instanceof CheckTimeoutError) {
           return toolError(
             `check_answer took longer than ${checkTimeoutMs} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`,
@@ -559,6 +563,16 @@ async function main(argv) {
   }
   const server = createServer(index, { defaultTopK, folder, ...limits });
   await server.connect(new StdioServerTransport());
+  // The client is gone when stdin ends: close, which stops the check workers
+  // and rejects the queue, so the process can exit.
+  let closing = false;
+  const closeOnStdinEnd = () => {
+    if (closing) return;
+    closing = true;
+    server.close().catch(() => {});
+  };
+  process.stdin.once("end", closeOnStdinEnd);
+  process.stdin.once("close", closeOnStdinEnd);
   log(
     `indexed ${index.size} passages from ${index.files} files in ${folder}; serving search_documents and check_answer over stdio`,
   );
