@@ -52,7 +52,7 @@ describe("AuditLogger.close()", () => {
       fs.readFileSync(path.join(dir, "integrity", "chain.json"), "utf8"),
     );
     expect(JSON.stringify(chain)).toContain('"sequence":1');
-    expect(result.pending).toEqual({ events: 0, chain: false });
+    expect(result.pending).toEqual({ events: 0, chain: false, webhook: 0 });
     expect(l.flushTimer).toBeFalsy();
   });
 

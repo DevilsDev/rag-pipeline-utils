@@ -10,6 +10,8 @@ const path = require('path');
 // eslint-disable-line global-require
 const crypto = require('crypto');
 // eslint-disable-line global-require
+const http = require('http');
+const https = require('https');
 const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 const { logger } = require('../utils/logger');
@@ -41,6 +43,56 @@ const SUMMARY_KEYS = {
   apiAccess: 'apiAccessEvents',
   complianceEvents: 'complianceEvents',
 };
+
+const WEBHOOK_TIMEOUT_MS = 5000;
+const WEBHOOK_RETRY_MS = 1000;
+const WEBHOOK_MAX_RETRY_MS = 60000;
+// Headers the webhook always sets itself
+const WEBHOOK_FIXED_HEADERS = new Set([
+  'content-type',
+  'content-length',
+  'host',
+  'connection',
+  'transfer-encoding',
+]);
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+/**
+ * Check the webhookUrl and webhookHeaders options. The URL must be https,
+ * or http for localhost. Messages never repeat the URL or a header value,
+ * which can hold a token.
+ */
+function checkWebhookOptions(url, headers) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new TypeError('AuditLogger: webhookUrl must be a valid URL');
+  }
+  const local = LOCAL_HOSTS.has(parsed.hostname);
+  if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && local)) {
+    throw new TypeError(
+      'AuditLogger: webhookUrl must be an https URL (http is allowed only for localhost)',
+    );
+  }
+  if (headers !== undefined) {
+    const valid =
+      headers &&
+      typeof headers === 'object' &&
+      !Array.isArray(headers) &&
+      Object.entries(headers).every(
+        ([name, value]) =>
+          /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name) &&
+          typeof value === 'string' &&
+          !/[\r\n]/.test(value),
+      );
+    if (!valid) {
+      throw new TypeError(
+        'AuditLogger: webhookHeaders must be an object of header names to string values',
+      );
+    }
+  }
+}
 
 const warnedKinds = new Set();
 
@@ -221,11 +273,17 @@ class AuditLogger extends EventEmitter {
     this._newestDay = undefined;
     this._closing = null;
 
+    // Events written to the log are also POSTed to the webhook, on their own
+    // stage: a queue that is retried on later flushes and never holds up
+    // the log file or the chain.
+    this._webhookQueue = [];
+    this._webhookRun = null;
+    this._webhookFailures = 0;
+    this._webhookRetryAt = 0;
     if (this._config.realtime.webhookUrl) {
-      logger.warn(
-        'AuditLogger: the webhook isn\'t implemented in this release; ' +
-          'webhookUrl is ignored and no events are sent. Ship the log files ' +
-          'with a log shipper instead.',
+      checkWebhookOptions(
+        this._config.realtime.webhookUrl,
+        _options.webhookHeaders,
       );
     }
 
@@ -645,10 +703,15 @@ class AuditLogger extends EventEmitter {
         if (this.logBuffer.length > 0 || this._chainDirty) {
           await this._flushLogs();
         }
+        // The webhook: wait for the delivery under way, then try what is
+        // left once more, ignoring the retry delay
+        await this._deliverWebhook(true);
+        await this._deliverWebhook(true);
         return {
           pending: {
             events: this.logBuffer.length,
             chain: this._chainDirty,
+            webhook: this._webhookQueue.length,
           },
         };
       })().finally(() => {
@@ -716,8 +779,14 @@ class AuditLogger extends EventEmitter {
         this._chainUnsaved += written;
         if (!failure) this._emitDrops();
         for (const entry of flushed) this._emitSafely('logs_flushed', entry);
+        if (this._config.realtime.webhookUrl) {
+          this._webhookQueue = this._bounded(
+            [...this._webhookQueue, ...batch.slice(0, written)],
+            'webhook',
+          );
+          this._emitDrops();
+        }
       }
-      if (failure && written === 0) return;
     }
 
     if (this._chainDirty) {
@@ -729,6 +798,111 @@ class AuditLogger extends EventEmitter {
         this._stageFailed('chain', 'chain_failed', error, this._chainUnsaved);
       }
     }
+
+    // The webhook runs on its own; this only starts a delivery (or a retry).
+    this._deliverWebhook();
+  }
+
+  /**
+   * Start delivering the webhook queue unless a delivery is running or the
+   * retry delay after a failure has not passed (`force` ignores the delay).
+   * Never rejects; the promise settles when the delivery ends.
+   * @private
+   */
+  _deliverWebhook(force = false) {
+    if (this._webhookRun) return this._webhookRun;
+    if (this._webhookQueue.length === 0) return Promise.resolve();
+    if (!force && Date.now() < this._webhookRetryAt) return Promise.resolve();
+    const size = this._config.realtime.batchSize;
+    this._webhookRun = (async () => {
+      while (this._webhookQueue.length > 0) {
+        const chunk = this._webhookQueue.slice(0, size);
+        try {
+          await this._postWebhook(chunk);
+        } catch (error) {
+          this._webhookFailures += 1;
+          const base = this._config.webhookRetryMs ?? WEBHOOK_RETRY_MS;
+          this._webhookRetryAt =
+            Date.now() +
+            Math.min(
+              WEBHOOK_MAX_RETRY_MS,
+              base * 2 ** (this._webhookFailures - 1),
+            );
+          this._stageFailed(
+            'webhook',
+            'webhook_failed',
+            error,
+            this._webhookQueue.length,
+          );
+          return;
+        }
+        // Sent: take them out by identity (the queue may have been trimmed
+        // or grown while the request was running)
+        const sent = new Set(chunk);
+        this._webhookQueue = this._webhookQueue.filter((r) => !sent.has(r));
+        this._webhookFailures = 0;
+        this._webhookRetryAt = 0;
+        this._stageSucceeded('webhook');
+      }
+    })()
+      .catch(() => {})
+      .finally(() => {
+        this._webhookRun = null;
+      });
+    return this._webhookRun;
+  }
+
+  /**
+   * POST events to the webhook as `{ events: [...] }`. Resolves on a 2xx
+   * answer. A redirect, any other status, a network error and a timeout
+   * reject with a short message that holds neither the URL, nor a header,
+   * nor the events.
+   * @private
+   */
+  _postWebhook(events) {
+    const url = new URL(this._config.realtime.webhookUrl);
+    const timeoutMs = this._config.webhookTimeoutMs ?? WEBHOOK_TIMEOUT_MS;
+    const body = JSON.stringify({ events });
+    const headers = {};
+    for (const [name, value] of Object.entries(
+      this._config.webhookHeaders || {},
+    )) {
+      if (!WEBHOOK_FIXED_HEADERS.has(name.toLowerCase())) headers[name] = value;
+    }
+    headers['Content-Type'] = 'application/json';
+    headers['Content-Length'] = Buffer.byteLength(body);
+    const client = url.protocol === 'https:' ? https : http;
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const done = (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      };
+      const request = client.request(
+        url,
+        { method: 'POST', headers, agent: false },
+        (response) => {
+          response.resume();
+          response.on('end', () => {
+            const ok = response.statusCode >= 200 && response.statusCode < 300;
+            done(ok ? null : new Error(`HTTP ${response.statusCode}`));
+          });
+          response.on('error', () => done(new Error('response failed')));
+        },
+      );
+      const timer = setTimeout(() => {
+        done(new Error(`timed out after ${timeoutMs} ms`));
+        request.destroy();
+      }, timeoutMs);
+      if (typeof timer.unref === 'function') timer.unref();
+      request.on('error', (error) =>
+        done(new Error(error.code || 'request failed')),
+      );
+      request.end(body);
+    });
   }
 
   /**
@@ -812,7 +986,10 @@ class AuditLogger extends EventEmitter {
           ? `AuditLogger could not write to ${this._config.logDir}: ${error.message}. Events are kept in memory ` +
               `(up to ${this._config.memoryLimit}) and retried on the next flush; ` +
               `${this.droppedEvents} events dropped so far.`
-          : `AuditLogger could not write the integrity chain file: ${error.message}. The events are in the ` +
+          : stage === 'webhook'
+            ? `AuditLogger could not deliver events to the webhook: ${error.message}. The events are in the ` +
+              `log file; they are kept in memory (up to ${this._config.memoryLimit}) and sent on a later flush.`
+            : `AuditLogger could not write the integrity chain file: ${error.message}. The events are in the ` +
               'log file; the chain file is written on the next flush.',
       );
     }
