@@ -97,6 +97,8 @@ function computeQuality({ query, answer, results, options }) {
  * @param {AsyncIterable<object|string>} source
  * @param {object} params
  * @param {AbortSignal} params.signal
+ * @param {(promise: Promise<any>) => Promise<any>} params.race - Settles
+ *   with the run's abort even when the source ignores the signal
  * @param {((text: string) => object)|null} params.finalize
  * @param {number} params.startedAt - performance.now() at the start of run()
  * @param {() => object} [params.doneFields] - More fields for the done chunk,
@@ -105,16 +107,32 @@ function computeQuality({ query, answer, results, options }) {
  */
 async function* guardStream(
   source,
-  { signal, finalize, startedAt, doneFields = () => ({}), onEnd },
+  { signal, race, finalize, startedAt, doneFields = () => ({}), onEnd },
 ) {
   let firstTokenMs = null;
   const timing = () => ({
     ...doneFields(),
     timing: { firstTokenMs, totalMs: performance.now() - startedAt },
   });
+  const iterator = source[Symbol.asyncIterator]();
+  let exhausted = false;
+  // Close the source (runs its cleanup) unless it already ended.
+  const close = () => {
+    if (exhausted) return Promise.resolve();
+    exhausted = true;
+    return Promise.resolve(iterator.return?.()).catch(() => {});
+  };
   try {
     let text = '';
-    for await (const chunk of source) {
+    for (;;) {
+      // A source that ignores the signal must not hold the consumer: each
+      // read is raced against the abort.
+      const step = await race(iterator.next());
+      if (step.done) {
+        exhausted = true;
+        break;
+      }
+      const chunk = step.value;
       if (signal.aborted) throw signal.reason;
       const token =
         typeof chunk === 'string' ? chunk : String(chunk?.token ?? '');
@@ -133,11 +151,14 @@ async function* guardStream(
       yield chunk;
     }
     if (signal.aborted) throw signal.reason;
+    await close();
     if (finalize) {
       yield { token: '', done: true, ...finalize(text), ...timing() };
     }
   } finally {
     onEnd();
+    // Not awaited: a source stuck in a read never answers.
+    close();
   }
 }
 
@@ -403,6 +424,7 @@ module.exports.createRagPipeline = function createRagPipeline({
           }
           return guardStream(source, {
             signal,
+            race: (promise) => run.race(promise),
             finalize,
             startedAt,
             doneFields: () => (routed ? { route: { ...route } } : {}),
