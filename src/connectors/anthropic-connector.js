@@ -20,12 +20,6 @@ const { componentCacheKey } = require('../cache/component-keys');
 const API_KEY_ENV = 'ANTHROPIC_API_KEY';
 
 /**
- * Default configuration for the Anthropic connector.
- * `apiKey` is a getter so the environment is read when a connector is
- * constructed, not when this module is first required.
- * @type {Object}
- */
-/**
  * The Messages API's own default temperature. Claude 4.7 and later models
  * accept only this value, so the connector leaves `temperature` out of the
  * request when it equals it.
@@ -97,6 +91,12 @@ function responseText(data) {
   throw error;
 }
 
+/**
+ * Default configuration for the Anthropic connector.
+ * `apiKey` is a getter so the environment is read when a connector is
+ * constructed, not when this module is first required.
+ * @type {Object}
+ */
 const DEFAULT_CONFIG = {
   model: 'claude-sonnet-5-5',
   baseURL: 'https://api.anthropic.com',

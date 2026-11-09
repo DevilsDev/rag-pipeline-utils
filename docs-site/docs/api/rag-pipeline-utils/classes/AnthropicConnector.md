@@ -45,21 +45,48 @@ new AnthropicConnector(options?): AnthropicConnector;
 
 ## Properties
 
-| Property                                    | Type            | Description                                                                                                                                 | Overrides                                                               | Inherited from                                                                         |
-| ------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <a id="property-client"></a> `client`       | `AxiosInstance` | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| <a id="property-config"></a> `config`       | `object`        | Connector settings. Secret fields such as `apiKey` are readable here but not enumerable, so they don't appear when the connector is logged. | [`BaseConnector`](BaseConnector.md).[`config`](BaseConnector.md#config) | -                                                                                      |
-| `config.apiKey`                             | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.apiVersion`                         | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.baseURL`                            | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.maxRetries`                         | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.maxTokens`                          | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.model`                              | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.retryDelay`                         | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.systemPrompt?`                      | `string`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| `config.temperature`                        | `number`        | -                                                                                                                                           | -                                                                       | -                                                                                      |
-| <a id="property-connected"></a> `connected` | `boolean`       | -                                                                                                                                           | -                                                                       | [`BaseConnector`](BaseConnector.md).[`connected`](BaseConnector.md#property-connected) |
-| <a id="property-name"></a> `name`           | `string`        | -                                                                                                                                           | -                                                                       | [`BaseConnector`](BaseConnector.md).[`name`](BaseConnector.md#property-name)           |
+| Property                                    | Type            | Inherited from                                                                         |
+| ------------------------------------------- | --------------- | -------------------------------------------------------------------------------------- |
+| <a id="property-client"></a> `client`       | `AxiosInstance` | -                                                                                      |
+| <a id="property-connected"></a> `connected` | `boolean`       | [`BaseConnector`](BaseConnector.md).[`connected`](BaseConnector.md#property-connected) |
+| <a id="property-name"></a> `name`           | `string`        | [`BaseConnector`](BaseConnector.md).[`name`](BaseConnector.md#property-name)           |
+
+## Accessors
+
+### config
+
+#### Get Signature
+
+```ts
+get config(): object;
+```
+
+Connector settings. Secret fields such as `apiKey` are readable here but
+not enumerable, so they don't appear when the connector is logged.
+
+##### Returns
+
+`object`
+
+#### Set Signature
+
+```ts
+set config(value): void;
+```
+
+##### Parameters
+
+| Parameter | Type     |
+| --------- | -------- |
+| `value`   | `object` |
+
+##### Returns
+
+`void`
+
+#### Inherited from
+
+[`BaseConnector`](BaseConnector.md).[`config`](BaseConnector.md#config)
 
 ## Methods
 
