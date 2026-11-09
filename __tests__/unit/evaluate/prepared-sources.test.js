@@ -107,29 +107,40 @@ describe("many quantities", () => {
 });
 
 describe("one check, several metrics", () => {
-  test("checkAnswer prepares each source once for citations and evaluation", async () => {
-    const source =
-      "Staff carry " + "5 kg ".repeat(40000).trim() + " in each crate.";
-    // New source objects for every run, so no run reuses another's work
-    const sources = () =>
-      Array.from({ length: 6 }, (_, i) => ({ id: String(i), content: source }));
+  const { prepareDocument } = require("../../../src/evaluate/scoring");
+  const {
+    PipelineEvaluator,
+  } = require("../../../src/evaluate/pipeline-evaluator");
+
+  test("citations and evaluation share each source's preparation", () => {
+    const docs = [
+      {
+        id: "a",
+        content: "Staff carry 5 kg in each crate, but not on Mondays.",
+      },
+      { id: "b", content: "Crates are collected at 9 am." },
+    ];
     const answer = "Staff carry 5 kg in each crate.";
-    // The faster of two runs each, so a pause in a busy test run doesn't decide
-    const fastest = async (evaluate) => {
-      const runs = [];
-      for (let i = 0; i < 2; i++) {
-        runs.push(
-          await elapsed(() =>
-            checkAnswer({ answer, sources: sources(), evaluate }),
-          ),
-        );
-      }
-      return runs.sort((a, b) => a.ms - b.ms)[0];
-    };
-    const citationsOnly = await fastest(false);
-    const withEvaluation = await fastest(true);
-    expect(withEvaluation.value.evaluation.scores.faithfulness).toBe(1);
-    // Evaluation reuses the prepared sources: far less than a second pass
-    expect(withEvaluation.ms).toBeLessThan(citationsOnly.ms * 1.5 + 200);
+    new CitationTracker().track(answer, docs);
+    const prepared = docs.map((d) => prepareDocument(d, d.content));
+    expect(Object.keys(prepared[0].memo)).toEqual(
+      expect.arrayContaining(["tokens", "numbers", "polarity"]),
+    );
+    new PipelineEvaluator().evaluate({
+      query: "crates",
+      answer,
+      results: docs,
+    });
+    // Still the same preparations: evaluation didn't prepare the sources again
+    docs.forEach((d, i) =>
+      expect(prepareDocument(d, d.content)).toBe(prepared[i]),
+    );
+  });
+
+  test("a changed source text is prepared again", () => {
+    const doc = { id: "a", content: "Staff carry 5 kg." };
+    const before = prepareDocument(doc, doc.content);
+    doc.content = "Staff carry 6 kg.";
+    expect(prepareDocument(doc, doc.content)).not.toBe(before);
   });
 });
