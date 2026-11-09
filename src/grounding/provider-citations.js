@@ -286,6 +286,7 @@ function fromAnthropicCitations(message, { documents } = {}) {
     answer += block.text;
     const citations = [];
     for (const c of block.citations || []) {
+      if (c == null) continue;
       const citation = anthropicCitation(c, documents);
       if (citation) citations.push(citation);
       else skipped[c.type] = (skipped[c.type] || 0) + 1;
@@ -475,6 +476,17 @@ const REASON_TEXT = {
  */
 async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
   checkInput(input);
+  // A null claim or citation is skipped; a claim without citations has
+  // nothing to check (unverifiable)
+  input = {
+    ...input,
+    claims: input.claims
+      .filter((claim) => claim != null)
+      .map((claim) => ({
+        ...claim,
+        citations: (claim.citations || []).filter((c) => c != null),
+      })),
+  };
   if (judge != null && typeof judge.generate !== 'function') {
     throw new TypeError('judge must have a generate() method');
   }

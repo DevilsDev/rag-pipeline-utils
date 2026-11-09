@@ -94,7 +94,11 @@ class CitationTracker extends EventEmitter {
     }
 
     // 2. Normalize docs
-    const docs = retrievedDocs.map((doc) => this._normalizeDoc(doc));
+    // A null entry is an empty document: skipped, and the others keep
+    // their positions (docIndex)
+    const docs = retrievedDocs.map((doc) =>
+      doc == null ? { content: '' } : this._normalizeDoc(doc),
+    );
 
     // 3. Split answer into sentences
     const sentences = splitSentences(answer);
@@ -115,7 +119,7 @@ class CitationTracker extends EventEmitter {
 
     // 4. Build IDF weights if enabled
     const idfWeights = this.config.useIDFWeighting
-      ? buildIDFWeights(docs)
+      ? buildIDFWeights(docs.filter((_, i) => retrievedDocs[i] != null))
       : null;
 
     // 5 & 6. Map each sentence to sources and build citations array. Each
