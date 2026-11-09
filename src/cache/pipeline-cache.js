@@ -108,9 +108,11 @@ function normalizeCacheOption(option) {
     if (backend) {
       layers[layer] = {
         backend,
+        // cache.ttlSeconds[layer] wins; else the store's own ttlSeconds
+        // (left undefined here, so the store applies it); else the default
         ttlSeconds:
           (option.ttlSeconds && option.ttlSeconds[layer]) ??
-          DEFAULT_TTL_SECONDS[layer],
+          (backend.ttlSeconds > 0 ? undefined : DEFAULT_TTL_SECONDS[layer]),
         hits: 0,
         misses: 0,
         skipped: 0,
