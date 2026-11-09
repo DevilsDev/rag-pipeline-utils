@@ -3,146 +3,162 @@
 
 release:
   label: Release
-  permalink: /blog/tags/release
+  permalink: /release
 
 architecture:
   label: Architecture
-  permalink: /blog/tags/architecture
+  permalink: /architecture
 
 prompt-engineering:
   label: Prompt Engineering
-  permalink: /blog/tags/prompt-engineering
+  permalink: /prompt-engineering
 
 evaluation:
   label: Evaluation
-  permalink: /blog/tags/evaluation
+  permalink: /evaluation
 
 tutorials:
   label: Tutorials
-  permalink: /blog/tags/tutorials
+  permalink: /tutorials
 
 changelog:
   label: Changelog
-  permalink: /blog/tags/changelog
+  permalink: /changelog
 
 design:
   label: Design
-  permalink: /blog/tags/design
+  permalink: /design
 
 rag:
   label: RAG
-  permalink: /blog/tags/rag
+  permalink: /rag
 
 developer-tools:
   label: Developer Tools
-  permalink: /blog/tags/developer-tools
+  permalink: /developer-tools
 
 modular:
   label: Modular
-  permalink: /blog/tags/modular
+  permalink: /modular
 
 image:
   label: Image
-  permalink: /blog/tags/image
+  permalink: /image
 
 facebook:
   label: Facebook
-  permalink: /blog/tags/facebook
+  permalink: /facebook
 
 hello:
   label: Hello
-  permalink: /blog/tags/hello
+  permalink: /hello
 
 docusaurus:
   label: Docusaurus
-  permalink: /blog/tags/docusaurus
+  permalink: /docusaurus
 
 enterprise:
   label: Enterprise
-  permalink: /blog/tags/enterprise
+  permalink: /enterprise
 
 ai:
   label: AI
-  permalink: /blog/tags/ai
+  permalink: /ai
 
 observability:
   label: Observability
-  permalink: /blog/tags/observability
+  permalink: /observability
 
 security:
   label: Security
-  permalink: /blog/tags/security
+  permalink: /security
 
 jwt:
   label: JWT
-  permalink: /blog/tags/jwt
+  permalink: /jwt
 
 path-traversal:
   label: Path Traversal
-  permalink: /blog/tags/path-traversal
+  permalink: /path-traversal
 
 defense-in-depth:
   label: Defense-in-Depth
-  permalink: /blog/tags/defense-in-depth
+  permalink: /defense-in-depth
 
 embeddings:
   label: "Embeddings"
-  permalink: /blog/tags/embeddings
+  permalink: /embeddings
 
 customization:
   label: "Customization"
-  permalink: /blog/tags/customization
+  permalink: /customization
 
 tutorial:
   label: "Tutorial"
-  permalink: /blog/tags/tutorial
+  permalink: /tutorial
 
 production:
   label: "Production"
-  permalink: /blog/tags/production
+  permalink: /production
 
 best-practices:
   label: "Best practices"
-  permalink: /blog/tags/best-practices
+  permalink: /best-practices
 
 authentication:
   label: "Authentication"
-  permalink: /blog/tags/authentication
+  permalink: /authentication
 
 v2.4.0:
   label: "v2.4.0"
-  permalink: /blog/tags/v2.4.0
+  permalink: /v2.4.0
 
 features:
   label: "Features"
-  permalink: /blog/tags/features
+  permalink: /features
 
 comparison:
   label: "Comparison"
-  permalink: /blog/tags/comparison
+  permalink: /comparison
 
 langchain:
   label: "LangChain"
-  permalink: /blog/tags/langchain
+  permalink: /langchain
 
 performance:
   label: "Performance"
-  permalink: /blog/tags/performance
+  permalink: /performance
 
 optimization:
   label: "Optimization"
-  permalink: /blog/tags/optimization
+  permalink: /optimization
 
 case-study:
   label: "Case study"
-  permalink: /blog/tags/case-study
+  permalink: /case-study
 
 testing:
   label: Testing
-  permalink: /blog/tags/testing
+  permalink: /testing
   description: Testing RAG code and answers
 
 typescript:
   label: TypeScript
-  permalink: /blog/tags/typescript
+  permalink: /typescript
   description: Using the library from TypeScript
+
+connectors:
+  label: Connectors
+  permalink: /connectors
+
+cli:
+  label: CLI
+  permalink: /cli
+
+starters:
+  label: Starters
+  permalink: /starters
+
+guardrails:
+  label: Guardrails
+  permalink: /guardrails
