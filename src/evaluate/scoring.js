@@ -907,7 +907,7 @@ function sourceNumbers(doc) {
  *   counts them as matched
  */
 function checkNumericConsistency(claimText, docText) {
-  claimText = normalizeText(claimText);
+  claimText = withoutMarkers(claimText);
   const source = sourceNumbers(docText);
   const claim = withoutReferences(claimText);
   const docParts = source.parts;
@@ -1001,6 +1001,31 @@ function identifiers(text) {
       ),
     ),
   ];
+}
+
+/**
+ * Citation markers in a claim: bracketed numbers ("[1]", ".[2]", "[1, 3]",
+ * "[2-4]"), superscript digits after punctuation or a word of three or more
+ * letters ("year.¹", "year¹"; not after a digit or a short unit, so "10³"
+ * and "m²" stay), and the number of a list item at its start ("1. ",
+ * "2) "). They say where a sentence comes from or where it sits in a list,
+ * not a number its source must state.
+ */
+const SUPERSCRIPT_MARKER_RE = /(?<=\p{P}|\p{L}{3})[⁰¹²³⁴⁵⁶⁷⁸⁹]+/gu;
+const BRACKET_MARKER_RE = /\[\s*\d{1,3}(?:\s*[,;–-]\s*\d{1,3})*\s*\]/g;
+const LIST_NUMBER_RE = /^\s*\d{1,3}[.)]\s+/;
+
+/**
+ * A claim's text, normalised, without citation markers. Superscripts are
+ * removed before normalising, which would turn them into plain digits.
+ * @param {string} text
+ * @returns {string}
+ */
+function withoutMarkers(text) {
+  if (typeof text !== 'string') return normalizeText(text);
+  return normalizeText(text.replace(SUPERSCRIPT_MARKER_RE, ' '))
+    .replace(LIST_NUMBER_RE, '')
+    .replace(BRACKET_MARKER_RE, ' ');
 }
 
 /** A claim's text without reference phrases and identifier numbers. */
@@ -1713,12 +1738,17 @@ function computeSupportScore(
   idfWeights = null,
   options = {},
 ) {
-  // A reference phrase ("Document 3 shows", "Table 2") names where a claim
-  // comes from, not what it says: leave it out of the words to support.
+  // A reference phrase ("Document 3 shows", "Table 2") or a citation marker
+  // ("[1]", "¹") names where a claim comes from, not what it says: leave it
+  // out of the words to support.
   const rawClaim = options && options.claimText;
+  const cleaned =
+    typeof rawClaim === 'string'
+      ? withoutReferences(withoutMarkers(rawClaim))
+      : rawClaim;
   const fromText =
-    typeof rawClaim === 'string' && rawClaim !== withoutReferences(rawClaim)
-      ? tokenize(withoutReferences(rawClaim))
+    typeof rawClaim === 'string' && cleaned !== normalizeText(rawClaim)
+      ? tokenize(cleaned)
       : claimTokens;
   const claim = [...new Set(contentTokens(fromText))];
   if (claim.length === 0) return 0;
@@ -1782,6 +1812,7 @@ module.exports = {
   CONDITION_MISMATCH_FACTOR,
   isNegated,
   extractNumbers,
+  withoutMarkers,
   NUMERIC_MISMATCH_FACTOR,
   POLARITY_MISMATCH_FACTOR,
   scoreAnswer,

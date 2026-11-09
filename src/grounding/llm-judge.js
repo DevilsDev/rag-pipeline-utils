@@ -18,6 +18,7 @@ const {
   checkPolarityConsistency,
   checkConditionConsistency,
   extractNumbers,
+  withoutMarkers,
   isNegated,
   prepareDocument,
   prepareAnswer,
@@ -91,7 +92,11 @@ function classifyFailure(
     }
   }
 
-  if (!numberMismatch && extractNumbers(sentence).values.length > 0) {
+  // Citation markers ("[1]", "1. ") aren't numbers the source must state
+  if (
+    !numberMismatch &&
+    extractNumbers(withoutMarkers(sentence)).values.length > 0
+  ) {
     numberMismatch = !docs.some(
       (doc) => checkNumericConsistency(sentence, source(doc)).consistent,
     );
