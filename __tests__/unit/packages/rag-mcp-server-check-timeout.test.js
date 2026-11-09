@@ -4,6 +4,10 @@
  * (RAG_MCP_CHECK_TIMEOUT_MS, createServer's checkTimeoutMs; default 10,000).
  * At most --max-concurrent-checks checks run at once (default 2), and up to
  * 8 more wait.
+ *
+ * The time-limit tests use a test-only worker (slow-check.js) that never
+ * finishes one marked answer, so they reach their limit however fast
+ * checkAnswer is. Every other check runs exactly as in the real worker.
  */
 
 const { spawnSync } = require("child_process");
@@ -15,12 +19,13 @@ const {
   StdioClientTransport,
 } = require("@modelcontextprotocol/sdk/client/stdio.js");
 const { InMemoryTransport } = require("@modelcontextprotocol/sdk/inMemory.js");
-const { createServer } = require("../../../packages/rag-mcp-server/lib/server");
 const {
   createCheckRunner,
   CheckTimeoutError,
 } = require("../../../packages/rag-mcp-server/lib/check-runner");
 const { checkAnswer } = require("../../../packages/rag-mcp-server/lib/library");
+const { SLOW_ANSWER } = require("../../fixtures/mcp-check-worker/slow-answer");
+const useCheckWorker = require("../../fixtures/mcp-check-worker/use-check-worker");
 
 const PKG = path.join(
   __dirname,
@@ -38,6 +43,13 @@ const FIXTURES = path.join(
   "fixtures",
   "mcp-check-worker",
 );
+const SLOW_WORKER = path.join(FIXTURES, "slow-check.js");
+// The rag-mcp-server command with SLOW_WORKER as its check worker
+const SLOW_SERVER = path.join(FIXTURES, "slow-server.js");
+
+// createServer's checks run in SLOW_WORKER (before server.js loads)
+useCheckWorker(SLOW_WORKER);
+const { createServer } = require("../../../packages/rag-mcp-server/lib/server");
 
 jest.setTimeout(60000);
 
@@ -60,9 +72,8 @@ const quantities = (n) => `Staff carry ${"5 kg ".repeat(n).trim()}.`;
 // About 200,000 characters of "5 kg": every claim quantity is compared with
 // every source quantity. Within both work limits.
 const QUANTITY_SOURCE = quantities(39995);
-// About 3 s to check here: well past the short limits below (at most
-// 400 ms), on a faster machine too.
-const slow = { answer: quantities(2000), sources: [QUANTITY_SOURCE] };
+// Never finishes in SLOW_WORKER: stopped at whatever limit is set
+const slow = { answer: SLOW_ANSWER, sources: [SLOW_ANSWER] };
 // About 0.1 s to check here (0.3 s in a worker under Jest): for checks
 // that run to the end.
 const medium = { answer: quantities(50), sources: [QUANTITY_SOURCE] };
@@ -82,7 +93,7 @@ async function inMemory(
 async function stdio(args, env = {}) {
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [BIN, docs, ...args],
+    args: [SLOW_SERVER, docs, ...args],
     env: { ...process.env, ...env },
     stderr: "pipe",
   });
@@ -110,11 +121,8 @@ const stopped = (ms) =>
   `check_answer took longer than ${ms} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`;
 
 describe("the time limit", () => {
-  test('10,000 "5 kg" against 15 sources is stopped at the default 10,000 ms', async () => {
-    const input = {
-      answer: quantities(9990),
-      sources: Array(15).fill(QUANTITY_SOURCE),
-    };
+  test("a check that never finishes is stopped at the default 10,000 ms", async () => {
+    const input = slow;
     const client = await inMemory();
     try {
       // performance.now(): Date.now() can step when the system clock is
@@ -125,8 +133,29 @@ describe("the time limit", () => {
       expect(result).toBeUndefined();
       expect(error).toBe(stopped(10000));
       expect(ms).toBeGreaterThanOrEqual(9500);
-      // Unstopped, this check takes about 471 s; the ceiling leaves room
-      // for counting the input and starting a worker on a busy machine
+      // The ceiling leaves room for counting the input and starting a
+      // worker on a busy machine
+      expect(ms).toBeLessThan(30000);
+    } finally {
+      await client.close();
+    }
+  });
+
+  test('10,000 "5 kg" against 15 sources now finishes in seconds', async () => {
+    // Took about 471 s before 3.9's linear-time checks; 3 to 9 s now,
+    // depending on the machine's load, so the limit here is raised to keep
+    // a busy run from stopping it
+    const input = {
+      answer: quantities(9990),
+      sources: Array(15).fill(QUANTITY_SOURCE),
+    };
+    const client = await inMemory({ checkTimeoutMs: 60000 });
+    try {
+      const start = performance.now();
+      const { result, error } = await check(client, input);
+      const ms = performance.now() - start;
+      expect(error).toBeUndefined();
+      expect(result.structuredContent.grounded).toBe(true);
       expect(ms).toBeLessThan(30000);
     } finally {
       await client.close();
@@ -318,9 +347,9 @@ describe("worker failures", () => {
   });
 
   test("a stopped check is reported as a CheckTimeoutError", async () => {
-    // Stops `slow` (about 3 s), and leaves the small check that follows
-    // plenty of time on a busy machine
-    const runner = createCheckRunner({ timeoutMs: 1000 });
+    // Stops `slow`, and leaves the small check that follows plenty of
+    // time on a busy machine
+    const runner = createCheckRunner({ timeoutMs: 1000, file: SLOW_WORKER });
     try {
       await expect(runner.run(slow)).rejects.toBeInstanceOf(CheckTimeoutError);
       // The next check runs in a fresh worker
@@ -471,9 +500,9 @@ describe("concurrent checks", () => {
 });
 
 test("the server answers other calls while a long check runs, and closing stops it", () => {
-  // In its own process: see the fixture. The long check would take about
-  // 471 s with a 300 s limit, so the process exits on its own inside the
-  // 120 s allowed here (about 1.5 s on an idle machine) only if closing the
+  // In its own process: see the fixture. The long check never finishes,
+  // with a 300 s limit, so the process exits on its own inside the 120 s
+  // allowed here (about 1.5 s on an idle machine) only if closing the
   // client stopped its worker.
   const run = spawnSync(
     process.execPath,

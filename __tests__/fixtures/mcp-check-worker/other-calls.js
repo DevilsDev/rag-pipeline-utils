@@ -1,18 +1,20 @@
 "use strict";
 
 // Run by rag-mcp-server-check-timeout.test.js in its own process. A check
-// that would take minutes runs (limit 300 s) while search_documents and a
+// that never finishes runs (limit 300 s) while search_documents and a
 // quick check_answer are called; then the client disconnects. Prints what
 // happened as JSON. The process exits on its own only if closing stopped the
 // long check's worker: a running check keeps it alive until its time limit.
 const path = require("path");
 const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { InMemoryTransport } = require("@modelcontextprotocol/sdk/inMemory.js");
+const { SLOW_ANSWER } = require("./slow-answer");
+
+// Checks run in slow-check.js, which never finishes SLOW_ANSWER
+require("./use-check-worker")(path.join(__dirname, "slow-check.js"));
 const { createServer } = require(
   path.join(__dirname, "../../../packages/rag-mcp-server/lib/server"),
 );
-
-const quantities = (n) => `Staff carry ${"5 kg ".repeat(n).trim()}.`;
 
 (async () => {
   const passage = {
@@ -30,16 +32,12 @@ const quantities = (n) => `Staff carry ${"5 kg ".repeat(n).trim()}.`;
   const client = new Client({ name: "other-calls", version: "1.0.0" });
   await client.connect(clientSide);
 
-  // About 471 s to check (10,000 quantities × 15 sources of 200,000 chars)
   let longDone = false;
   const long = client
     .callTool(
       {
         name: "check_answer",
-        arguments: {
-          answer: quantities(9990),
-          sources: Array(15).fill(quantities(39995)),
-        },
+        arguments: { answer: SLOW_ANSWER, sources: [SLOW_ANSWER] },
       },
       undefined,
       { timeout: 600000 },
