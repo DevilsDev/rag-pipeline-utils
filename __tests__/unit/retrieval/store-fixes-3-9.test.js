@@ -122,3 +122,112 @@ describe("stores do not share objects with callers", () => {
     expect(again.acl).toEqual(["admin"]);
   });
 });
+
+describe("FileVectorStore persistence and validation", () => {
+  const doc = (id, vector = [1, 0], extra = {}) => ({
+    id,
+    vector,
+    content: id,
+    ...extra,
+  });
+
+  test("two writers on one file keep each other documents", async () => {
+    const p = newPath();
+    const w1 = new FileVectorStore({ path: p });
+    const w2 = new FileVectorStore({ path: p });
+    w1.load();
+    w2.load();
+    await w1.store([doc("one")]);
+    w1.save();
+    await w2.store([doc("two")]);
+    w2.save();
+    const fresh = new FileVectorStore({ path: p });
+    expect(
+      fresh
+        .list()
+        .map((d) => d.id)
+        .sort(),
+    ).toEqual(["one", "two"]);
+  });
+
+  test("clear() followed by save() replaces what is on disk", async () => {
+    const p = newPath();
+    const w1 = new FileVectorStore({ path: p });
+    await w1.store([doc("old")]);
+    w1.save();
+    const w2 = new FileVectorStore({ path: p });
+    w2.clear();
+    await w2.store([doc("new")]);
+    w2.save();
+    expect(new FileVectorStore({ path: p }).list().map((d) => d.id)).toEqual([
+      "new",
+    ]);
+  });
+
+  test("removeBySource followed by save() removes it on disk even after another writer", async () => {
+    const p = newPath();
+    const w1 = new FileVectorStore({ path: p });
+    await w1.store([doc("a", [1, 0], { metadata: { source: "s" } })]);
+    w1.save();
+    const w2 = new FileVectorStore({ path: p });
+    w2.load();
+    w2.removeBySource("s");
+    w2.save();
+    expect(new FileVectorStore({ path: p }).size()).toBe(0);
+  });
+
+  test("a reader sees documents another process saved later", async () => {
+    const p = newPath();
+    const writer = new FileVectorStore({ path: p });
+    await writer.store([doc("one")]);
+    writer.save();
+    const reader = new FileVectorStore({ path: p });
+    expect(reader.size()).toBe(1);
+    await writer.store([doc("two", [0, 1])]);
+    writer.save();
+    expect(reader.size()).toBe(2);
+    const hits = await reader.retrieve({ queryVector: [0, 1], topK: 1 });
+    expect(hits[0].id).toBe("two");
+  });
+
+  test("an invalid document leaves the whole batch unstored", async () => {
+    const f = new FileVectorStore({ path: newPath() });
+    await expect(
+      f.store([doc("ok"), { id: "bad", content: "x" }]),
+    ).rejects.toThrow(/each doc needs id and vector/);
+    expect(f.size()).toBe(0);
+  });
+
+  test("mixed dimensions are rejected, in a batch and against the index", async () => {
+    const f = new FileVectorStore({ path: newPath() });
+    await expect(
+      f.store([doc("a", [1, 0]), doc("b", [1, 0, 0])]),
+    ).rejects.toThrow(/dimension/);
+    expect(f.size()).toBe(0);
+    await f.store([doc("a", [1, 0])]);
+    await expect(f.store([doc("b", [1, 0, 0])])).rejects.toThrow(/dimension/);
+    expect(f.size()).toBe(1);
+  });
+
+  test("vectors with non-finite numbers are rejected", async () => {
+    const f = new FileVectorStore({ path: newPath() });
+    await expect(f.store([doc("a", [NaN, 0])])).rejects.toThrow(/finite/);
+  });
+
+  test("an id of __proto__ is stored like any other", async () => {
+    const p = newPath();
+    const f = new FileVectorStore({ path: p });
+    await f.store([doc("__proto__"), doc("b", [0, 1])]);
+    f.save();
+    expect(f.size()).toBe(2);
+    const fresh = new FileVectorStore({ path: p });
+    expect(
+      fresh
+        .list()
+        .map((d) => d.id)
+        .sort(),
+    ).toEqual(["__proto__", "b"]);
+    const hits = await fresh.retrieve({ queryVector: [1, 0], topK: 1 });
+    expect(hits[0].id).toBe("__proto__");
+  });
+});
