@@ -114,7 +114,7 @@ describe("default limits", () => {
     ],
     [
       "2,000 short sentences and a 200 KB source of words",
-      "cat. ".repeat(2000),
+      "Cat. ".repeat(2000),
       `cat ${"bb ".repeat(66000)}`,
     ],
   ])("%s is refused quickly", async (_name, answer, source) => {
@@ -141,7 +141,7 @@ describe("default limits", () => {
   test("the sentence message gives the counts, the limit and the flag", async () => {
     const source = "x".repeat(200000);
     const { error } = await call(client, {
-      answer: "cat. ".repeat(20),
+      answer: "Cat. ".repeat(20),
       sources: [source],
     });
     expect(error).toBe(
@@ -173,8 +173,8 @@ describe("default limits", () => {
       { size: 1, search: async () => [passage] },
     );
     try {
-      expect((await call(c, { answer: "cat." })).error).toBeUndefined();
-      expect((await call(c, { answer: "cat. dog." })).error).toMatch(
+      expect((await call(c, { answer: "Cat." })).error).toBeUndefined();
+      expect((await call(c, { answer: "Cat. Dog." })).error).toMatch(
         /2 answer sentences × 100 source characters exceeds the limit of 150/,
       );
     } finally {
@@ -183,10 +183,30 @@ describe("default limits", () => {
   });
 });
 
+describe("counting as checkAnswer does", () => {
+  // The limits count with rag-eval's splitSentences and splitClauses, so a
+  // title or "a.m." doesn't end a sentence: this answer is one sentence (a
+  // split on every full stop would count three).
+  test("an abbreviation doesn't end a sentence", async () => {
+    const c = await inMemory({ maxSentenceSourceChars: 1 });
+    try {
+      const { error } = await call(c, {
+        answer: "Dr. Lee opens the clinic at 9 a.m. on weekdays.",
+        sources: ["xx"],
+      });
+      expect(error).toMatch(
+        /^Input too large to check: 1 answer sentences × 2 source characters/,
+      );
+    } finally {
+      await c.close();
+    }
+  });
+});
+
 // "a, b, c." has 3 words; "a, b, c, d." has 4 clauses: 12 clause pairs.
-// "x one. y two." has 2 sentences; "abcdefghijk" has 11 characters: 22.
+// "X one. Y two." has 2 sentences; "abcdefghijk" has 11 characters: 22.
 const pairs = { answer: "a, b, c.", sources: ["a, b, c, d."] };
-const sentences = { answer: "x one. y two.", sources: ["abcdefghijk"] };
+const sentences = { answer: "X one. Y two.", sources: ["abcdefghijk"] };
 
 describe("changing the limits", () => {
   test("createServer options set both limits", async () => {

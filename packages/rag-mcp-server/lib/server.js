@@ -15,7 +15,12 @@ const {
   StdioServerTransport,
 } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { z } = require("zod");
-const { LocalEmbedder, MemoryRetriever } = require("./library");
+const {
+  LocalEmbedder,
+  MemoryRetriever,
+  splitSentences,
+  splitClauses,
+} = require("./library");
 const {
   createCheckRunner,
   CheckTimeoutError,
@@ -126,48 +131,14 @@ const toolError = (text) => ({
   content: [{ type: "text", text }],
 });
 
-// Sentence and clause splitting as in checkAnswer (rag-eval's
-// src/evaluate/scoring.js), so the counts below follow the comparisons it
-// makes.
-const CLAUSE_BOUNDARY_WORDS = new Set(
-  "but whereas although though while however yet and or except unlike".split(
-    " ",
-  ),
-);
-const tokenize = (text) =>
-  text
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .split(" ")
-    .filter(Boolean);
-const splitSentences = (text) =>
-  text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
-
-/** The word count of each clause of a sentence. */
-function clauseWords(sentence) {
-  const out = [];
-  for (const part of sentence.split(/[,;:()[\]]+/)) {
-    let words = 0;
-    for (const token of tokenize(part)) {
-      if (CLAUSE_BOUNDARY_WORDS.has(token)) {
-        if (words) out.push(words);
-        words = 0;
-      } else {
-        words += 1;
-      }
-    }
-    if (words) out.push(words);
-  }
-  return out;
-}
-
 /**
  * Whether checkAnswer can check `answer` against `docs` in bounded time. Its
  * cost grows with answer sentences × source characters (each sentence is
  * compared with every source) and with answer words × source clauses (each
  * clause of the answer is compared with the source's clauses; a sentence
- * with no words counts as one clause).
+ * with no words counts as one clause). It counts with rag-eval's own
+ * splitSentences and splitClauses, so the counts are the ones checkAnswer
+ * works with.
  *
  * @returns {string|null} An error message, or null when within the limits
  */
@@ -180,12 +151,12 @@ function checkSize(answer, docs, { maxClausePairs, maxSentenceSourceChars }) {
   }
   let answerWords = 0;
   for (const sentence of sentences) {
-    for (const words of clauseWords(sentence)) answerWords += words;
+    for (const clause of splitClauses(sentence)) answerWords += clause.length;
   }
   let sourceClauses = 0;
   for (const doc of docs) {
     for (const sentence of splitSentences(doc.content)) {
-      sourceClauses += Math.max(1, clauseWords(sentence).length);
+      sourceClauses += Math.max(1, splitClauses(sentence).length);
     }
   }
   if (answerWords * sourceClauses > maxClausePairs) {
