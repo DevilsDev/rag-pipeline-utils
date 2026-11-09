@@ -12,14 +12,18 @@ The framework is internally organized around four conceptual modules.
 pipeline needs, regardless of which connectors, evaluators, or
 guardrails you bolt on top.
 
-> **Why "concepts" and not separate packages?**
-> Today everything ships as one npm package. The conceptual modules
-> describe **what code is responsible for what** so you can reason
-> about blast radius, security review scope, and dependency footprint
-> without us splitting the codebase. Splitting into scoped packages is on the
-> [roadmap](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.github/PROJECT_ROADMAP.md) for 3.x.
+> **Concepts and packages.**
+> Since 3.2.0 each conceptual module is also an npm package:
+> `@devilsdev/rag-core`, `rag-connectors`, `rag-eval` and `rag-guardrails`.
+> The full package, `@devilsdev/rag-pipeline-utils`, re-exports all four, and
+> they share the same objects. See [Packages](./Packages) for what each one
+> installs. The concepts describe **what code is responsible for what** so
+> you can reason about blast radius, security review scope, and dependency
+> footprint.
 
 ## What's in rag-core
+
+The table lists what is part of the core. `@devilsdev/rag-core` exports the factory and its building blocks (the retrieval, reranking, cache and cost classes are listed in [Packages](./Packages)); `pluginRegistry`, the contract files and `logger` come with the full package.
 
 | Surface                                                                                         | Purpose                                                                                                                                                                                                                |
 | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
