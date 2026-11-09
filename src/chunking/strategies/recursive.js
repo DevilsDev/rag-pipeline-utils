@@ -1,5 +1,7 @@
 'use strict';
 
+const { sliceOnCodePoints } = require('./code-points');
+
 const DEFAULT_SEPARATORS = ['\n\n', '\n', '. ', ' '];
 
 /**
@@ -30,7 +32,10 @@ function recursiveChunk(text, options = {}) {
 
   const results = _splitRecursive(text, separators, 0, chunkSize, chunkOverlap);
 
-  return results.filter((chunk) => chunk.length >= minChunkSize);
+  const nonEmpty = results.filter((chunk) => chunk.length > 0);
+  const kept = nonEmpty.filter((chunk) => chunk.length >= minChunkSize);
+  // A document whose chunks are all below minChunkSize is still kept.
+  return kept.length > 0 ? kept : nonEmpty;
 }
 
 /**
@@ -51,8 +56,10 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
   }
 
   if (sepIndex >= separators.length) {
-    // No more separators; hard-cut the text
-    return [text.slice(0, chunkSize).trim()];
+    // No more separators; hard-cut the text into consecutive slices
+    return sliceOnCodePoints(text, chunkSize)
+      .map((slice) => slice.trim())
+      .filter(Boolean);
   }
 
   const separator = separators[sepIndex];
