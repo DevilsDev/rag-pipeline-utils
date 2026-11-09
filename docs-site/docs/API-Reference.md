@@ -37,6 +37,7 @@ function createRagPipeline(config?: {
   reranker?: Reranker | string;
   registry?: PluginRegistry;
   cache?: boolean | CacheBackend | CacheOptions;
+  telemetry?: boolean | TelemetryOptions;
 }): {
   run(input: RunInput): Promise<RunResult | AsyncIterable<StreamChunk>>;
   cleanup(): void;
@@ -46,15 +47,16 @@ function createRagPipeline(config?: {
 
 **Parameters:**
 
-| Parameter          | Type                                | Required | Description                                                                     |
-| ------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                       |
-| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed               |
-| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                          |
-| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                      |
-| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                     |
-| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)               |
-| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching) |
+| Parameter          | Type                                | Required | Description                                                                                  |
+| ------------------ | ----------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                                    |
+| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed                            |
+| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                                       |
+| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                                   |
+| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                                  |
+| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)                            |
+| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching)              |
+| `config.telemetry` | `boolean \| object`                 | No       | Record each run as an OpenTelemetry span; see [Observability](./Observability#opentelemetry) |
 
 String names are resolved from `registry`, or from the exported `pluginRegistry` when no registry is given.
 
@@ -501,7 +503,32 @@ checkPolarityConsistency(
 // { consistent: false, claimNegated: true, sourceSentence: "Employees receive twenty days of paid vacation per year." }
 ```
 
-Not checked: paraphrase (from 3.4.0, `checkAnswer({ judge })` can ask an LLM about sentences that fail for lack of word overlap only; see [Evaluation](./Evaluation#paraphrases-the-optional-llm-judge)), negation expressed without a negation word ("excluded", "denied"), units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
+### checkConditionConsistency
+
+Claim support also checks restricting clauses (from 3.9.0): a sentence that keeps the words of its closest source sentence but leaves out an approval, "only if", "if", "unless", "provided", "subject to", "as long as", a waiting period, an eligibility rule or an exception is not grounded (`lexicalReason: "condition_mismatch"`). See [Evaluation](./Evaluation#known-limitations) for what counts as a restriction.
+
+```typescript
+checkConditionConsistency(claimText: string, docText: string, answerText?: string): {
+  consistent: boolean;
+  missing: string[]; // the restricting clauses the claim leaves out
+  sourceSentence: string | null; // the source sentence it was compared with
+}
+```
+
+`answerText` is the whole answer. A condition restated in another sentence of the answer that the same source supports counts as kept. It defaults to the claim.
+
+```js no-run
+import { checkConditionConsistency } from "@devilsdev/rag-pipeline-utils";
+
+checkConditionConsistency(
+  "Remote work is allowed two days per week.",
+  "Remote work is allowed two days per week with manager approval.",
+);
+// { consistent: false, missing: ["with manager approval"],
+//   sourceSentence: "Remote work is allowed two days per week with manager approval." }
+```
+
+Not checked: paraphrase (from 3.4.0, `checkAnswer({ judge })` can ask an LLM about sentences that fail for lack of word overlap only; see [Evaluation](./Evaluation#paraphrases-the-optional-llm-judge)), negation expressed without a negation word ("excluded", "denied"), units it does not know (currencies, temperatures), ordinals, a lone "one", and claims that combine facts from several documents.
 
 ---
 

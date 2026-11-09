@@ -77,7 +77,9 @@ page.
   but it may take a few minutes") or contrasts a different case ("in
   adults, but not in children") may still be left out. Known gaps: a
   negated clause with no scope word ("but not guests", "but guests are
-  not admitted") is still not read as a restriction.
+  not admitted") is still not read as a restriction, and neither is a
+  restriction attached to a different subject ("Staff may enter" against
+  "Guests may enter, but staff need approval").
 - **Long answers and sources are checked in linear time.** Each source and
   answer is prepared once per check (sentences, clauses, numbers and an
   index of its quantities), so a 1,000-sentence answer that took about 9 s

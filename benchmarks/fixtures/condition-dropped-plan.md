@@ -101,3 +101,19 @@ console"). Three are borderline exceptions for a subgroup:
 `cd-contrast-dropped-10-03` (test), `cd-contrast-dropped-10-11` (test) and
 `cd-contrast-dropped-10-16` (dev). The human review pass should check these
 five first.
+
+## Known gaps for a later release (added for 3.9)
+
+The 3.9 contrast rule is narrow, so these restrictions are still not read
+as restrictions. Each is in `condition-contrast-supplement.jsonl`, marked
+`knownGap`:
+
+- A negated contrast with no scope word: a bare noun ("Access is allowed,
+  but not guests") or a clause with its own subject ("Access is allowed,
+  but guests are not admitted"). `cc-known-gap-06` and `cc-known-gap-07`.
+- A restriction attached to a different subject (from a reader's report):
+  "Staff may enter." against "Guests may enter, but staff need approval."
+  (`cc-known-gap-10`). Two separate gaps cause this miss: the check
+  doesn't track which subject a clause is about, and "need approval" as a
+  clause of its own isn't read as a restriction. The same source must
+  still ground "Guests may enter." (`cc-other-subject-09`).

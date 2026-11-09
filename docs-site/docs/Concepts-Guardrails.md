@@ -320,8 +320,8 @@ detailed scorecard. Headlines:
   around the payload, not for the payload).
 - PII detection uses heuristics; high-stakes compliance needs a
   dedicated classifier and human review.
-- Groundedness scoring is lexical plus numeric-consistency and polarity checks, with no LLM judge; paraphrase and units are not
-  checked. It's a confidence
+- Groundedness scoring is lexical plus numeric-consistency, polarity and (from 3.9.0) condition checks, with no LLM judge; paraphrase and units
+  it does not know (currencies, temperatures) are not checked. It's a confidence
   signal, not a guarantee.
 
 ## Stability

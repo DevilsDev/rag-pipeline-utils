@@ -1036,14 +1036,14 @@ SciFact (no unsupported labels; claims flagged, lower is better): Claude Haiku 4
 
 **After the 3.9 grounding fixes** (contrast clauses that narrow, linear-time checks, citation markers, word weights over the sources a sentence shares words with, and the rest in the CHANGELOG), lexical only, not held out: test split precision 84.9%, recall 86.9%, F1 85.9% (73 / 13 / 11 / 73), down from 86.4%; dev split F1 88.5%, unchanged. The one changed case is a new false alarm on the test split, `cd-contrast-dropped-12-17` ("Staff must keep their ID badges visible while inside the facility."): with word weights computed only over the sources a sentence shares words with, its overlap falls below the threshold. The judges were not rerun.
 
-**Contrast clauses that narrow (3.9 supplement).** Six cases kept apart from the frozen set above, run with `node benchmarks/condition-contrast-supplement.js`: four contrast clauses that narrow the statement must be flagged ("…, but not for guests", "…, except for sale items", "…, but only on Fridays", "…, but nobody under 18"), and two that add something must stay grounded ("…, but it may take a few minutes", "…, but most people arrive later").
+**Contrast clauses that narrow (3.9 supplement).** Seven cases kept apart from the frozen set above, run with `node benchmarks/condition-contrast-supplement.js`: four contrast clauses that narrow the statement must be flagged ("…, but not for guests", "…, except for sale items", "…, but only on Fridays", "…, but nobody under 18"), two that add something must stay grounded ("…, but it may take a few minutes", "…, but most people arrive later"), and so must one whose restriction belongs to another subject ("Guests may enter." against "Guests may enter, but staff need approval.", from a reader's report).
 
 | Run                         | TP / FP / FN / TN | F1     |
 | --------------------------- | ----------------- | ------ |
-| Lexical, 3.9 before the fix | 1 / 0 / 3 / 2     | 40.0%  |
-| Lexical, 3.9 after the fix  | 4 / 0 / 0 / 2     | 100.0% |
+| Lexical, 3.9 before the fix | 1 / 0 / 3 / 3     | 40.0%  |
+| Lexical, 3.9 after the fix  | 4 / 0 / 0 / 3     | 100.0% |
 
-Known gaps, in the same file but not in its F1, marked `knownGap` and expected to miss: "Access is allowed, but not guests." and "Access is allowed, but guests are not admitted." are both missed.
+Known gaps, in the same file but not in its F1, marked `knownGap` and expected to miss: "Access is allowed, but not guests.", "Access is allowed, but guests are not admitted." and "Staff may enter." against "Guests may enter, but staff need approval." are all missed. The last is a restriction attached to a different subject: 3.9 doesn't track which subject a clause is about, and "need approval" as a clause of its own isn't read as a restriction either.
 
 A read of the frozen set's 75 `contrast-dropped` cases labelled supported, after the runs above, found two that likely leave out a restriction of the main statement (`cd-contrast-dropped-10-25`, test, and `cd-contrast-dropped-10-24`, dev) and three borderline exceptions for a subgroup (`10-03`, `10-11` and `10-16`). The frozen cases file is unchanged; the five are listed for the human review pass in [condition-dropped-plan.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/condition-dropped-plan.md#human-review-pass-added-for-39-after-the-runs).
 

@@ -10,9 +10,12 @@ description: Provider integrations for embedders, vector stores, and LLMs. Swapp
 The framework's connector layer is the boundary between the pipeline
 and the outside world: embedding providers, vector stores, LLM APIs,
 document loaders. Every connector implements a [plugin contract](./Plugins)
-defined as a JSON schema in `contracts/`.
+defined as a JSON schema in `contracts/` (the full package checks plugins
+against these when you register them).
 
 ## What's in rag-connectors
+
+`@devilsdev/rag-connectors` has the provider connectors: `OpenAIConnector`, `AnthropicConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, `QdrantRetriever`, `PineconeRetriever`, `PgVectorRetriever`, `WeaviateRetriever` and `createAiSdkAdapter`. The rest of the tables below come from other packages: `MemoryRetriever`, `HybridRetriever` and the rerankers are in `@devilsdev/rag-core`, and `FileVectorStore`, `GraphRetriever` and the document reader are in the full package only. The full package, `@devilsdev/rag-pipeline-utils`, has them all. See [Packages](./Packages).
 
 ### Embedders
 

@@ -50,7 +50,7 @@ The CLI's built-in `auto` loader (`rag-pipeline ingest <path>`) reads:
 - `.txt`
 - Whole directories of these files
 
-PDF and other formats need a custom loader plugin.
+PDF and other formats are not read by `ingest`. Extract the text yourself, then chunk, embed and store it from your own code. A loader plugin does not do this: the pipeline calls `load()` with no arguments before each run and does not use what it returns, and `ingest` does not use a configured loader.
 
 ---
 

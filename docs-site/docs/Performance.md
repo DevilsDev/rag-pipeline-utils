@@ -23,7 +23,7 @@ rag-pipeline doctor --category performance
 
 ### **In your application**
 
-`ExecutionTracer` wraps a pipeline and records the duration of each run and its steps:
+`ExecutionTracer` wraps a pipeline and records the duration of each run. A trace has one step, `pipeline.run`, so it does not break a run down by stage (use [OpenTelemetry spans](./Observability#opentelemetry) for that):
 
 ```javascript no-run
 const {
@@ -39,10 +39,7 @@ const traced = tracer.trace(pipeline);
 await traced.run({ query: "What is RAG?" });
 
 const [trace] = tracer.getTraces();
-console.log(
-  trace.totalDurationMs,
-  trace.steps.map((s) => s.durationMs),
-);
+console.log(trace.totalDurationMs, trace.steps[0].durationMs);
 ```
 
 `MetricsAggregator` keeps rolling latency, throughput, cost and error statistics, and `DashboardGenerator` renders them as a self-contained HTML page or a text report:

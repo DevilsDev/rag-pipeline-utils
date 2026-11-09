@@ -102,7 +102,7 @@ The main package has everything. The smaller ones are there if install size matt
 | Package                                                                                        | What you get                                             | Installed   |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------- |
 | [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            | about 34 MB |
-| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      | about 6 MB  |
+| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrieval, caching and cost tracking       | about 6 MB  |
 | [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        | about 10 MB |
 | [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks                             | about 6 MB  |
 | [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     | about 6 MB  |

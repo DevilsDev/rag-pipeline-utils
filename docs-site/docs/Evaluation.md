@@ -33,7 +33,7 @@ Leaving out a clause is fine when the clause contrasts, and not when it restrict
 
 From 3.9.0 a contrasting clause that narrows the statement before it counts as a restriction too: "Access is allowed" is not supported by "Access is allowed, but not for guests", and neither are "Refunds are available" by "Refunds are available, except for sale items" or "Remote work is allowed" by "Remote work is allowed, but only on Fridays". A clause starting with "except", "excluding", "unless" or "other than", or ending in "only" after "for ...", always narrows. One starting with "not", "no", "never", "nobody", "only", "just" or "solely" narrows only when a scope word follows ("for", "on", "in", "at", "during", "under", "from" and the like) that the statement before it doesn't already use, so "in adults, but not in children under twelve" above still contrasts. A clause that adds something ("The upgrade is free, but it may take a few minutes") can still be left out.
 
-Known gaps, planned for a later release: a negated contrasting clause with no scope word, whether a bare noun ("Access is allowed, but not guests") or a clause with its own subject ("Access is allowed, but guests are not admitted"), is not read as a restriction, so an answer that leaves it out is still grounded.
+Known gaps, planned for a later release: a negated contrasting clause with no scope word, whether a bare noun ("Access is allowed, but not guests") or a clause with its own subject ("Access is allowed, but guests are not admitted"), is not read as a restriction, so an answer that leaves it out is still grounded. Nor is a restriction attached to a different subject: "Staff may enter" is grounded by "Guests may enter, but staff need approval", because the check doesn't track which subject a clause is about, and "need approval" as a clause of its own isn't read as a restriction.
 
 Some phrases look like conditions and restrict nothing, so leaving them out is fine: "even if", "if any", "if applicable", "if necessary", "if needed", "if need be" and "if possible" (when they close their clause), an "If not," or "If so," that points back at the previous sentence, and legal boilerplate: "except as required by law", "except as permitted by law", "to the extent permitted by law" and "as required by applicable law". "Customer data is never shared with third parties" is supported by "Customer data is never shared with third parties except as required by law". A source scraped without a space between sentences ("...at reception.Visitors may park ... if they show a badge") is read as two sentences, so one doesn't take the other's condition. A full stop inside an abbreviation ("U.S.", "e.g.", "i.e.", "Inc.", "No.") doesn't end a condition, so "if the U.S. economy grows" is one condition and `missing` reports all of it, and "US" in an answer keeps a "U.S." condition.
 
@@ -87,7 +87,7 @@ The deterministic check stays in charge:
 - **It runs first, and without `judge` nothing changes**: same result, same shape, no model call.
 - **The judge only sees sentences that failed for lack of word overlap** (`lexicalReason: "low_overlap"`). A sentence that failed because a number doesn't match its source (`"number_mismatch"`), because it is negated where its source is not (`"polarity_mismatch"`) or, from 3.9.0, because it leaves out a condition its source states (`"condition_mismatch"`) is never sent, and stays unsupported.
 - **A "supported" verdict must name a source, and that source must pass the number and negation checks** against the sentence; a negated sentence also needs a negated source sentence that shares its words. Otherwise the sentence stays unsupported, so the judge can't accept "30 days" against a source that says twenty, or "workers aren't entitled to holidays" against one that grants them.
-- **It fails closed.** Output that isn't the expected JSON (a code fence around it is fine), a missing or malformed verdict, or an unknown source id leaves the sentence unsupported, with the reason in `verdicts[i].reason`. An error thrown by `generate()` is not caught.
+- **It fails closed.** Output that isn't the expected JSON (a code fence around it is fine), a missing or malformed verdict, or an unknown source id leaves the sentence unsupported, with the reason in `verdicts[i].reason`. An error thrown by `generate()` is not caught, except a reply with no text from `AnthropicConnector` (error code `NO_TEXT`, or `MODEL_REFUSED` when the model refused): the sentences keep their lexical verdict, `check.judge.error` says why, and each affected verdict's `reason` reads "judge gave no usable verdict".
 - **Sources are untrusted data.** They go to the judge inside `<reference_documents>` delimiters, with an instruction not to follow instructions inside them; the answer's sentences are delimited the same way.
 - **One call per answer**, for all the sentences that need it, and none when the lexical check settles everything. `check.judge.calls` counts the calls and `check.judge.usage` sums the token usage the LLM result reports (`usage` with `inputTokens`/`outputTokens` or `prompt_tokens`/`completion_tokens`). From 3.5.0 `AnthropicConnector` reports it (the judge calls its `generateWithUsage()` when an LLM has one); the other built-in connectors return plain text, so they report calls only.
 - **Any current Claude model works as the judge.** The judge asks for temperature 0; Claude 4.7 and later models reject any temperature but the default, so from 3.5.0 `AnthropicConnector` sends the request again without it, once per model, with a `RAG_ANTHROPIC_TEMPERATURE` warning. (Before 3.5.0 the judge failed with HTTP 400 on those models, including the connector's default, `claude-sonnet-5-5`.)
@@ -129,7 +129,7 @@ The result has the shape `{ scores, details, metadata }`:
 
 - **`scores.faithfulness`** -- share of answer sentences supported by the retrieved documents
 - **`scores.relevance`** -- how directly the answer addresses the query
-- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query
+- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query. A document is relevant when it contains at least `threshold * 0.67` of the query's content terms (0.335 with the default threshold of 0.5), the same factor `computeGroundedness` uses; `computeContextPrecision` on its own takes its own `options.threshold` (default 0.2)
 - **`scores.contextRecall`** -- share of the **reference answer's** sentences that the retrieved documents support (did retrieval find everything needed?)
 - **`scores.groundedness`** -- composite score (see [`computeGroundedness`](#computegroundedness))
 - **`details.<metric>`** -- the full output of each metric function
@@ -182,17 +182,17 @@ computeContextRecall("Refunds are accepted within 30 days.", docs);
 
 Signatures:
 
-| Function                                                        | Arguments                                                                                         |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
-| `computeAnswerRelevance(query, answer, options)`                |                                                                                                   |
-| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                                                 |
-| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
-| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9) |
+| Function                                                        | Arguments                                                                                                |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeAnswerRelevance(query, answer, options)`                |                                                                                                          |
+| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2; `computeGroundedness` and `PipelineEvaluator` pass `threshold * 0.67`) |
+| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9)        |
 
-### Numeric and polarity consistency helpers
+### Numeric, polarity and condition consistency helpers
 
-The numeric and polarity checks used by the grounding metrics are exported as well:
+The numeric, polarity and condition checks used by the grounding metrics are exported as well:
 
 ```javascript
 const {
@@ -223,6 +223,19 @@ checkPolarityConsistency(
 //   sourceSentence: "Contractors do not receive paid vacation." }
 ```
 
+`checkConditionConsistency` (3.9.0) compares a claim with the source sentence closest to it and lists the restricting clauses the claim leaves out. The optional third argument is the whole answer: a condition restated in another sentence of it counts.
+
+```js no-run
+const { checkConditionConsistency } = require("@devilsdev/rag-pipeline-utils");
+
+checkConditionConsistency(
+  "Remote work is allowed two days per week.",
+  "Remote work is allowed two days per week with manager approval.",
+);
+// { consistent: false, missing: ["with manager approval"],
+//   sourceSentence: "Remote work is allowed two days per week with manager approval." }
+```
+
 ---
 
 ## **computeGroundedness**
@@ -232,6 +245,8 @@ checkPolarityConsistency(
 1. **Faithfulness** -- the answer's sentences are supported by the retrieved context
 2. **Context Precision** -- the retrieved chunks are relevant rather than noisy
 3. **Context Recall** -- the retrieved chunks support the reference answer (only with `options.referenceAnswer`)
+
+`options.threshold` (default 0.5) is passed to faithfulness and context recall as it is. Context precision gets `threshold * 0.67`, so 0.335 with the default.
 
 The score is a weighted mean over the available components, `sum(w * m) / sum(w)`. With the default weights (0.4, 0.3, 0.3) and a reference answer:
 
@@ -722,7 +737,7 @@ See [Benchmarks](./Benchmarks.md) for methodology and for benchmarking your own 
 - **Use a reference answer.** Without one, context recall is skipped and groundedness rests on faithfulness and precision alone.
 - **Combine metrics.** Faithfulness catches unsupported claims; context precision and recall tell you whether retrieval or generation is the problem.
 - **Track trends, not absolutes.** Lexical scores depend on your corpus and phrasing. Compare runs on the same test set and evaluator options; scores from before 2.5.0 are not comparable with 2.5.0 scores.
-- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, units, multi-document claims) in mind.
+- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, currencies and temperatures, multi-document claims) in mind.
 
 ---
 

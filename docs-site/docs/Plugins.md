@@ -101,7 +101,7 @@ The built-in connectors put retrieved documents in the user message as delimited
 
 ### **Loader**
 
-`load()` is called with no arguments at the start of every `createRagPipeline` run. The CLI `ingest` command reads `.md`, `.html`, `.csv` and `.txt` files itself, so most projects do not need a custom loader.
+`load()` is called with no arguments at the start of every `createRagPipeline` run, and its result is not used: the pipeline does not ingest what it returns. To ingest files such as PDFs, extract the text yourself, then chunk, embed and store it from your own code. The CLI `ingest` command reads `.md`, `.html`, `.csv` and `.txt` files itself, so most projects do not need a custom loader.
 
 ---
 

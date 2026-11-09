@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 /**
- * Supplementary condition set (3.9): six cases where the answer leaves out
+ * Supplementary condition set (3.9): seven cases where the answer leaves out
  * a contrast clause of its source. Four clauses narrow what came before
  * ("but not for guests", "except for sale items", "but only on Fridays",
  * "but nobody under 18") and must be flagged; two only add something ("but
- * it may take a few minutes") and must stay grounded. Kept apart from the frozen
- * condition-dropped set and reported as its own row.
+ * it may take a few minutes") and one restricts another subject ("Guests
+ * may enter, but staff need approval" for "Guests may enter"), and these
+ * must stay grounded. Kept apart from the frozen condition-dropped set and
+ * reported as its own row.
  *
  * Cases marked knownGap restrict too, but in a form 3.9 doesn't read ("but
- * not guests", "but guests are not admitted"): they
- * are expected to miss, left out of F1, and reported on their own line, so
- * a later fix shows up as "now caught".
+ * not guests", "but guests are not admitted", a restriction attached to a
+ * different subject): they are expected to miss, left out of F1, and
+ * reported on their own line, so a later fix shows up as "now caught".
  *
  *   node benchmarks/condition-contrast-supplement.js
  *
