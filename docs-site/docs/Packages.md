@@ -15,7 +15,7 @@ description: Install only what you use. @devilsdev/rag-core, rag-connectors, rag
 | `@devilsdev/rag-eval`       | The evaluation metrics, datasets and reports, `evaluateRagDataset`, `checkAnswer`, `CitationTracker`, hallucination detection                                                                          | rag-core        |
 | `@devilsdev/rag-guardrails` | `detectInjection`, `GuardrailsPipeline` and the pre-retrieval, retrieval and post-generation guards                                                                                                    | rag-core        |
 
-Evaluating answers from another framework needs only `rag-eval`, about 6 MB installed. All four together are about 10 MB. The full package, at about 33 MB, adds the document loaders, `.ragrc.json` configuration, the CLI and the rest.
+Evaluating answers from another framework needs only `rag-eval`, about 6 MB installed. All four together are about 10 MB. The full package, at about 34 MB, adds the document loaders, `.ragrc.json` configuration, the CLI and the rest.
 
 ```bash
 npm install @devilsdev/rag-eval
