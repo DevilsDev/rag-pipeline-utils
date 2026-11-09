@@ -5,16 +5,19 @@
  * @description Registry of built-in project templates for RAG pipeline scaffolding.
  */
 
+// A range of the version these templates ship with, not "latest"
+const LIBRARY_RANGE = `^${require('../../package.json').version}`;
+
 /** @type {Object<string, Object>} Built-in template definitions */
 const TEMPLATES = {
   'document-qa': {
     name: 'Document Q&A',
     description: 'Question answering over documents (PDF, Markdown, HTML)',
-    dependencies: { '@devilsdev/rag-pipeline-utils': 'latest' },
+    dependencies: { '@devilsdev/rag-pipeline-utils': LIBRARY_RANGE },
     devDependencies: {},
     config: {
       pipeline: {
-        loader: 'markdown',
+        loader: 'auto',
         embedder: 'openai',
         retriever: 'memory',
         llm: 'openai',
@@ -64,7 +67,7 @@ const TEMPLATES = {
   chatbot: {
     name: 'Chatbot',
     description: 'Conversational chatbot with document context',
-    dependencies: { '@devilsdev/rag-pipeline-utils': 'latest' },
+    dependencies: { '@devilsdev/rag-pipeline-utils': LIBRARY_RANGE },
     devDependencies: {},
     config: {
       pipeline: { embedder: 'openai', retriever: 'memory', llm: 'openai' },
@@ -106,11 +109,11 @@ const TEMPLATES = {
   'code-search': {
     name: 'Code Search',
     description: 'Search and explain code repositories',
-    dependencies: { '@devilsdev/rag-pipeline-utils': 'latest' },
+    dependencies: { '@devilsdev/rag-pipeline-utils': LIBRARY_RANGE },
     devDependencies: {},
     config: {
       pipeline: {
-        loader: 'directory',
+        loader: 'auto',
         embedder: 'openai',
         retriever: 'memory',
         llm: 'openai',
@@ -151,11 +154,11 @@ const TEMPLATES = {
   'customer-support': {
     name: 'Customer Support',
     description: 'AI-powered customer support with knowledge base',
-    dependencies: { '@devilsdev/rag-pipeline-utils': 'latest' },
+    dependencies: { '@devilsdev/rag-pipeline-utils': LIBRARY_RANGE },
     devDependencies: {},
     config: {
       pipeline: {
-        loader: 'markdown',
+        loader: 'auto',
         embedder: 'openai',
         retriever: 'memory',
         llm: 'openai',
