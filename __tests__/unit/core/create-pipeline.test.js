@@ -178,7 +178,12 @@ describe("createRagPipeline", () => {
 
     expect(received).toEqual([
       { token: "I could not find an answer.", done: false },
-      { token: "", done: true, timing: expect.any(Object) },
+      {
+        token: "",
+        done: true,
+        results: expect.any(Array),
+        timing: expect.any(Object),
+      },
     ]);
   });
 

@@ -429,10 +429,11 @@ module.exports.createRagPipeline = function createRagPipeline({
         } else if (llmI.generate) {
           routed = Boolean(route);
           // Fallback: simulate streaming from regular generate
-          const answer =
-            (await llmI.generate(query, results, genOptions)) ?? '';
+          const answer = String(
+            (await llmI.generate(query, results, genOptions)) ?? '',
+          );
           source = (async function* gen() {
-            yield { token: String(answer || ''), done: false };
+            yield { token: answer, done: false };
             yield { token: '', done: true };
           })();
         }
@@ -453,7 +454,12 @@ module.exports.createRagPipeline = function createRagPipeline({
             race: (promise) => run.race(promise),
             finalize,
             startedAt,
-            doneFields: () => (routed ? { route: { ...route } } : {}),
+            // What run() reports besides the answer
+            doneFields: () => ({
+              results,
+              ...(pc && { cache: { ...cacheStatus } }),
+              ...(routed && { route: { ...route } }),
+            }),
             onEnd: run.cleanup,
           });
         }

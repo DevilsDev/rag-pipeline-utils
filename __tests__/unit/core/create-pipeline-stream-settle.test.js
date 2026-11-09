@@ -190,3 +190,59 @@ describe("timeout covers the stream", () => {
     expect(chunks.map((c) => c.token)).toEqual(["a", ""]);
   });
 });
+
+describe("a stream's done chunk matches run()", () => {
+  const llm = {
+    cacheKey: "l1",
+    config: { temperature: 0 },
+    async generate() {
+      return "Employees get 20 vacation days.";
+    },
+  };
+  const retrieverWithKey = { cacheKey: "r1", ...retriever };
+
+  test("it carries the results and the cache outcome", async () => {
+    const pipeline = createRagPipeline({
+      retriever: retrieverWithKey,
+      llm,
+      cache: true,
+    });
+    const result = await pipeline.run({ query: "q" });
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+    const done = chunks.at(-1);
+    expect(done.done).toBe(true);
+    expect(done.results).toEqual(result.results);
+    expect(Object.keys(done.cache).sort()).toEqual(
+      Object.keys(result.cache).sort(),
+    );
+  });
+
+  test("without a cache it has no cache field, like run()", async () => {
+    const pipeline = createRagPipeline({ retriever, llm });
+    const result = await pipeline.run({ query: "q" });
+    const done = (
+      await collect(
+        await pipeline.run({ query: "q", options: { stream: true } }),
+      )
+    ).at(-1);
+    expect("cache" in result).toBe(false);
+    expect("cache" in done).toBe(false);
+    expect(done.results).toEqual(result.results);
+  });
+
+  test("an answer of 0 streams the same text as run() returns", async () => {
+    const zero = {
+      async generate() {
+        return 0;
+      },
+    };
+    const pipeline = createRagPipeline({ retriever, llm: zero });
+    const result = await pipeline.run({ query: "q" });
+    const chunks = await collect(
+      await pipeline.run({ query: "q", options: { stream: true } }),
+    );
+    expect(chunks.map((c) => c.token).join("")).toBe(result.answer);
+  });
+});
