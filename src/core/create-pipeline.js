@@ -317,6 +317,14 @@ module.exports.createRagPipeline = function createRagPipeline({
       };
     };
 
+    // Embeddings and retrieval reach the cache only once the run has
+    // succeeded, so a failed run stores nothing.
+    const pendingWrites = [];
+    const deferWrite = (write) => pendingWrites.push(write);
+    const flushWrites = async () => {
+      for (const write of pendingWrites.splice(0)) await write();
+    };
+
     const doWork = (async () => {
       run.throwIfAborted();
       if (loaderI?.load) {
@@ -330,7 +338,7 @@ module.exports.createRagPipeline = function createRagPipeline({
         if (!vector) {
           vector = await embedQuery(embedderI, query, { signal });
           run.throwIfAborted();
-          if (pc) await pc.set('embeddings', key, vector);
+          if (pc) deferWrite(() => pc.set('embeddings', key, vector));
         }
         run.throwIfAborted();
       }
@@ -350,7 +358,7 @@ module.exports.createRagPipeline = function createRagPipeline({
         });
         run.throwIfAborted();
         if (pc && Array.isArray(docs)) {
-          await pc.set('retrieval', retrievalKey, docs);
+          deferWrite(() => pc.set('retrieval', retrievalKey, docs));
         }
       }
       run.throwIfAborted();
@@ -409,6 +417,7 @@ module.exports.createRagPipeline = function createRagPipeline({
           ? (text) =>
               computeQuality({ query, answer: text, results, options: opts })
           : null;
+        if (!llmI || typeof cachedAnswer === 'string') await flushWrites();
         if (!llmI) {
           // Retrieval only: no tokens, one done chunk carrying the results.
           const quality = computeQuality({
@@ -446,9 +455,10 @@ module.exports.createRagPipeline = function createRagPipeline({
           run.throwIfAborted();
           streaming = true;
           if (pc && llmI && generationKey && typeof cachedAnswer !== 'string') {
-            source = reportWhenComplete(source, signal, (text) =>
-              pc.set('generation', generationKey, text),
-            );
+            source = reportWhenComplete(source, signal, async (text) => {
+              await flushWrites();
+              await pc.set('generation', generationKey, text);
+            });
           }
           return guardStream(source, {
             signal,
@@ -467,6 +477,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       }
 
       if (!llmI) {
+        await flushWrites();
         return withCache({
           success: true,
           query,
@@ -479,11 +490,13 @@ module.exports.createRagPipeline = function createRagPipeline({
       let answer;
       if (typeof cachedAnswer === 'string') {
         answer = cachedAnswer;
+        await flushWrites();
       } else {
         routed = Boolean(route);
         const raw = (await llmI.generate?.(query, results, genOptions)) ?? '';
         run.throwIfAborted();
         answer = String(raw);
+        await flushWrites();
         if (pc) await pc.set('generation', generationKey, answer);
         run.throwIfAborted();
       }
