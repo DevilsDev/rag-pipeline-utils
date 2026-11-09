@@ -381,11 +381,12 @@ services:
       - openai_api_key
       - jwt_secret
     # The library reads OPENAI_API_KEY from the environment, not from a
-    # *_FILE variable, so the container reads the secret file at start
+    # *_FILE variable, so the container reads the secret file at start.
+    # Replace <your start command> with the command that starts your app.
     command:
       - sh
       - -c
-      - export OPENAI_API_KEY="$$(cat /run/secrets/openai_api_key)" && exec node dist/index.js
+      - export OPENAI_API_KEY="$$(cat /run/secrets/openai_api_key)" && exec <your start command>
 
 secrets:
   openai_api_key:
