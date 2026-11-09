@@ -186,9 +186,9 @@ Signatures:
 | `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
 | `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9) |
 
-### Numeric and polarity consistency helpers
+### Numeric, polarity and condition consistency helpers
 
-The numeric and polarity checks used by the grounding metrics are exported as well:
+The numeric, polarity and condition checks used by the grounding metrics are exported as well:
 
 ```javascript
 const {
@@ -217,6 +217,19 @@ checkPolarityConsistency(
 );
 // { consistent: false, claimNegated: false,
 //   sourceSentence: "Contractors do not receive paid vacation." }
+```
+
+`checkConditionConsistency` (3.9.0) compares a claim with the source sentence closest to it and lists the restricting clauses the claim leaves out. The optional third argument is the whole answer: a condition restated in another sentence of it counts.
+
+```js no-run
+const { checkConditionConsistency } = require("@devilsdev/rag-pipeline-utils");
+
+checkConditionConsistency(
+  "Remote work is allowed two days per week.",
+  "Remote work is allowed two days per week with manager approval.",
+);
+// { consistent: false, missing: ["with manager approval"],
+//   sourceSentence: "Remote work is allowed two days per week with manager approval." }
 ```
 
 ---
