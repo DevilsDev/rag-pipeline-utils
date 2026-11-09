@@ -70,8 +70,8 @@ jobs:
           RAG_SKIP_TIMING_TESTS: "1"
         run: npm test -- --ci --passWithNoTests
 
-      # Wall-clock limits (linear-time, ReDoS, MCP limits, SecureLogger), run
-      # one at a time so a busy parallel run can't push them over
+      # Wall-clock limits (linear-time, ReDoS, MCP limits), run one at a
+      # time so a busy parallel run can't push them over
       - name: Timing-sensitive tests
         run: npm run test:timing -- --ci
 

@@ -22,7 +22,6 @@ jest.mock("path", () => ({
   }),
 }));
 jest.mock("../../../src/config/enhanced-ragrc-schema.js");
-jest.mock("../../../src/core/plugin-marketplace/version-resolver.js");
 
 describe("PipelineDoctor", () => {
   let doctor;

@@ -342,6 +342,25 @@ page.
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.
 
+### Internal
+
+- **Dead code removed.** 37 modules that no entry point of any package
+  reaches are gone, with the tests that covered only them: among them the
+  old `src/observability/` copies of the event logger and metrics,
+  `src/utils/secure-logger.js` and `input-sanitizer.js` (the live
+  redaction is `src/utils/secure-logging.js`), the plugin marketplace
+  prototypes, the sample plugins, `memory-monitor.js`,
+  `safe-expression-evaluator.js` and `LLMReranker`. None was exported, so
+  nothing you can import changes.
+- Unused development dependencies removed: `framer-motion`,
+  `jest-transform-stub`, `plaiceholder`, `prop-types`, `rimraf`, `sharp`,
+  `ts-jest` and `why-is-node-running`, with the `watch:lqip` and
+  `observability:start`/`stop` scripts, whose targets don't exist.
+  `js-yaml` and `dotenv`, which maintenance scripts use, are now declared.
+- CI runs the tests that assert on wall-clock time (linear-time, ReDoS and
+  the MCP server's limits) in a step of their own, one at a time
+  (`npm run test:timing`).
+
 ## [3.8.3] - 2026-11-09
 
 Documentation and package metadata only; no code changes. If you're on
