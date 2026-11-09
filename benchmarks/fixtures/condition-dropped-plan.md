@@ -89,3 +89,15 @@ and after lexical runs are listed case by case (dev and test).
   Haiku 5.5 ≈ 350 × $0.00016 ≈ $0.06; Sonnet 5.5 ≈ 350 × $0.0031 ≈ $1.09;
   two code versions ≈ **$2.30** at most.
 - Total ≈ **$3.04** at most, against the $8 allocation.
+
+## Human review pass (added for 3.9, after the runs)
+
+A read of the 75 `contrast-dropped` cases labelled supported, after the
+benchmark ran; the cases file is unchanged. Two likely leave out a
+restriction of the main statement and so may be mislabelled:
+`cd-contrast-dropped-10-25` (test; "but not alcohol") and
+`cd-contrast-dropped-10-24` (dev; "but not with more than one gaming
+console"). Three are borderline exceptions for a subgroup:
+`cd-contrast-dropped-10-03` (test), `cd-contrast-dropped-10-11` (test) and
+`cd-contrast-dropped-10-16` (dev). The human review pass should check these
+five first.

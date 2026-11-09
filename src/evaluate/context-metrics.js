@@ -1,6 +1,13 @@
 'use strict';
 
-const { tokenize, splitSentences, computeSupportScore } = require('./scoring');
+const {
+  tokenize,
+  splitSentences,
+  computeSupportScore,
+  prepareDocument,
+  prepareAnswer,
+  sourceTokenSet,
+} = require('./scoring');
 
 /**
  * Compute context precision: the fraction of retrieved documents that are relevant to the query.
@@ -34,9 +41,11 @@ function computeContextPrecision(query, retrievedDocs, options = {}) {
       continue;
     }
 
-    const docTokens = tokenize(docContent);
     // Share of the query's content terms that the document contains.
-    const score = computeSupportScore(queryTokens, docTokens);
+    const score = computeSupportScore(
+      queryTokens,
+      sourceTokenSet(prepareDocument(doc, docContent)),
+    );
     perDocScores.push({ index: i, score, isRelevant: score >= threshold });
   }
 
@@ -97,26 +106,36 @@ function computeContextRecall(referenceAnswer, retrievedDocs, options = {}) {
     };
   }
 
+  // Each source and the reference answer are prepared once for all claims
+  const prepared = retrievedDocs.map((doc) => {
+    const docContent = doc && (doc.content || doc.text || '');
+    return docContent ? prepareDocument(doc, docContent) : null;
+  });
+  const preparedAnswer = prepareAnswer(referenceAnswer);
+
   const details = claims.map((claim) => {
     const claimTokens = tokenize(claim);
     let bestScore = 0;
     let bestDocIndex = -1;
 
     for (let i = 0; i < retrievedDocs.length; i++) {
-      const doc = retrievedDocs[i];
-      const docContent = doc && (doc.content || doc.text || '');
+      const doc = prepared[i];
 
-      if (!docContent) {
+      if (!doc) {
         continue;
       }
 
-      const docTokens = tokenize(docContent);
-      const similarity = computeSupportScore(claimTokens, docTokens, null, {
-        claimText: claim,
-        docText: docContent,
-        answerText: referenceAnswer,
-        conditionCheck,
-      });
+      const similarity = computeSupportScore(
+        claimTokens,
+        sourceTokenSet(doc),
+        null,
+        {
+          claimText: claim,
+          docText: doc,
+          answerText: preparedAnswer,
+          conditionCheck,
+        },
+      );
 
       if (similarity > bestScore) {
         bestScore = similarity;

@@ -49,6 +49,8 @@ class PipelineEvaluator extends EventEmitter {
    * @param {object} [options={}] - Configuration options
    * @param {string[]} [options.metrics] - List of metrics to compute
    * @param {number} [options.threshold] - Similarity threshold for metrics
+   *   (default 0.5); context precision uses threshold * 0.67 (0.335 at the
+   *   default), not computeContextPrecision's own default of 0.2
    * @param {boolean} [options.includeBLEU] - Whether to include BLEU score when reference answer is provided
    * @param {boolean} [options.includeROUGE] - Whether to include ROUGE score when reference answer is provided
    * @param {boolean} [options.conditionCheck=true] - false: faithfulness, context recall and groundedness skip the 3.9 condition check
@@ -87,6 +89,9 @@ class PipelineEvaluator extends EventEmitter {
     const metricsComputed = [];
     const metricsSkipped = [];
     const { metrics, threshold, conditionCheck } = this.config;
+    // Faithfulness computed from the answer and results, kept for
+    // groundedness, which uses the same computation
+    let computedFaithfulness;
 
     if (metrics.includes('faithfulness')) {
       let faithResult;
@@ -97,6 +102,7 @@ class PipelineEvaluator extends EventEmitter {
           threshold,
           conditionCheck,
         });
+        computedFaithfulness = faithResult;
       }
       scores.faithfulness = faithResult.score;
       details.faithfulness = faithResult;
@@ -150,6 +156,7 @@ class PipelineEvaluator extends EventEmitter {
         threshold,
         referenceAnswer: hasReference ? referenceAnswer : undefined,
         conditionCheck,
+        faithfulness: computedFaithfulness,
       });
       scores.groundedness = groundednessResult.score;
       details.groundedness = groundednessResult;

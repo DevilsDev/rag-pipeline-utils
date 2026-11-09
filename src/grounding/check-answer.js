@@ -153,12 +153,15 @@ function normalizeSources(sources) {
  *   reason, as on 3.8 and earlier; for comparisons with saved baselines
  * @param {JudgeLLM} [params.judge] - Opt-in LLM judge for sentences the
  *   lexical check failed for lack of word overlap (correct paraphrases).
- *   It never overturns a sentence that failed the number or negation check,
- *   and a "supported" verdict must name a source whose numbers and negation
- *   match the sentence. Unparseable output keeps a sentence unsupported.
- *   With a judge, `grounded`, `groundedness` and `unsupported` combine both
- *   checks and `judge` reports the verdicts; `citations` and `evaluation`
- *   stay lexical. Errors thrown by `judge.generate` are not caught.
+ *   It never overturns a sentence that failed the number, negation or
+ *   condition check, and a "supported" verdict must name a source whose
+ *   numbers and negation match the sentence. Unparseable output keeps a
+ *   sentence unsupported. With a judge, `grounded`, `groundedness` and
+ *   `unsupported` combine both checks and `judge` reports the verdicts;
+ *   `citations` and `evaluation` stay lexical. A reply with no text (a
+ *   connector error with code NO_TEXT or MODEL_REFUSED) is a judge error:
+ *   the lexical verdicts stand and `judge.error` says why. Any other error
+ *   thrown by `judge.generate` is not caught.
  * @returns {Promise<AnswerCheck>}
  */
 async function checkAnswer({

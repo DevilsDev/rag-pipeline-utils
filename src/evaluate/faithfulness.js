@@ -1,7 +1,14 @@
 'use strict';
 
-const { splitSentences, tokenize, computeSupportScore } = require('./scoring');
-const { mapSentenceToSources } = require('../citation/source-mapper');
+const {
+  splitSentences,
+  tokenize,
+  computeSupportScore,
+  prepareDocument,
+  prepareAnswer,
+  sourceTokenSet,
+} = require('./scoring');
+const { buildIDFWeights } = require('../citation/source-mapper');
 
 /**
  * Compute faithfulness score for an answer against retrieved documents.
@@ -12,10 +19,13 @@ const { mapSentenceToSources } = require('../citation/source-mapper');
  * @param {object} [options={}] - Configuration options
  * @param {number} [options.threshold=0.5] - Minimum similarity score to consider a sentence faithful
  * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
+ * @param {boolean} [options.useIDFWeighting=true] - Weight words by IDF over
+ *   the documents, as CitationTracker and checkAnswer do (3.9), so they agree
+ *   on every sentence
  * @returns {{ score: number, faithfulSentences: number, totalSentences: number, details: Array<{ sentence: string, score: number, isFaithful: boolean, bestSource: number }> }}
  */
 function computeFaithfulness(answer, retrievedDocs, options = {}) {
-  const { threshold = 0.5, conditionCheck } = options;
+  const { threshold = 0.5, conditionCheck, useIDFWeighting = true } = options;
 
   if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
@@ -43,26 +53,42 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
   }
 
+  // Each source and the answer are prepared once for all the sentences
+  const prepared = retrievedDocs.map((doc) => {
+    const docContent = doc && (doc.content || doc.text || '');
+    return docContent ? prepareDocument(doc, docContent) : null;
+  });
+  const preparedAnswer = prepareAnswer(answer);
+  // The same word weights as CitationTracker, over the same documents
+  const idfDocs = retrievedDocs.filter((doc) => doc != null);
+
   const details = sentences.map((sentence) => {
     const sentenceTokens = tokenize(sentence);
+    // per sentence, as CitationTracker weights it
+    const idfWeights = useIDFWeighting
+      ? buildIDFWeights(idfDocs, { sentence })
+      : null;
     let bestScore = 0;
     let bestSource = -1;
 
     for (let i = 0; i < retrievedDocs.length; i++) {
-      const doc = retrievedDocs[i];
-      const docContent = doc && (doc.content || doc.text || '');
+      const doc = prepared[i];
 
-      if (!docContent) {
+      if (!doc) {
         continue;
       }
 
-      const docTokens = tokenize(docContent);
-      const similarity = computeSupportScore(sentenceTokens, docTokens, null, {
-        claimText: sentence,
-        docText: docContent,
-        answerText: answer,
-        conditionCheck,
-      });
+      const similarity = computeSupportScore(
+        sentenceTokens,
+        sourceTokenSet(doc),
+        idfWeights,
+        {
+          claimText: sentence,
+          docText: doc,
+          answerText: preparedAnswer,
+          conditionCheck,
+        },
+      );
 
       if (similarity > bestScore) {
         bestScore = similarity;

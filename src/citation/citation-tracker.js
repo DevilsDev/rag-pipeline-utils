@@ -1,7 +1,11 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { splitSentences, tokenize } = require('../evaluate/scoring');
+const {
+  splitSentences,
+  prepareDocument,
+  prepareAnswer,
+} = require('../evaluate/scoring');
 const { mapSentenceToSources, buildIDFWeights } = require('./source-mapper');
 const { detectHallucinations } = require('./hallucination-detector');
 
@@ -90,7 +94,11 @@ class CitationTracker extends EventEmitter {
     }
 
     // 2. Normalize docs
-    const docs = retrievedDocs.map((doc) => this._normalizeDoc(doc));
+    // A null entry is an empty document: skipped, and the others keep
+    // their positions (docIndex)
+    const docs = retrievedDocs.map((doc) =>
+      doc == null ? { content: '' } : this._normalizeDoc(doc),
+    );
 
     // 3. Split answer into sentences
     const sentences = splitSentences(answer);
@@ -110,17 +118,31 @@ class CitationTracker extends EventEmitter {
     }
 
     // 4. Build IDF weights if enabled
-    const idfWeights = this.config.useIDFWeighting
-      ? buildIDFWeights(docs)
-      : null;
+    // per sentence, over the sources sharing a word with it (BH-7)
+    const idfDocs = docs.filter((_, i) => retrievedDocs[i] != null);
+    const idfWeightsFor = (sentence) =>
+      this.config.useIDFWeighting
+        ? buildIDFWeights(idfDocs, { sentence })
+        : null;
 
-    // 5 & 6. Map each sentence to sources and build citations array
+    // 5 & 6. Map each sentence to sources and build citations array. Each
+    // source and the answer are prepared once for all the sentences.
+    const preparedSources = docs.map((doc) =>
+      prepareDocument(doc, doc.content || doc.text || ''),
+    );
+    const preparedAnswer = prepareAnswer(answer);
+    // The best score of each sentence, also below the threshold
+    const bestScores = [];
     const citations = sentences.map((sentence) => {
+      const best = { bestScore: 0 };
+      bestScores.push(best);
       const sources = mapSentenceToSources(sentence, docs, {
+        best,
         maxCitations: this.config.maxCitationsPerSentence,
         threshold: this.config.similarityThreshold,
-        idfWeights,
-        answerText: answer,
+        idfWeights: idfWeightsFor(sentence),
+        answerText: preparedAnswer,
+        preparedSources,
         conditionCheck: this.config.conditionCheck,
       });
 
@@ -137,6 +159,7 @@ class CitationTracker extends EventEmitter {
     // 7. Detect hallucinations
     const hallucinationReport = detectHallucinations(citations, {
       threshold: this.config.similarityThreshold,
+      bestScores: bestScores.map((b) => b.bestScore),
     });
 
     // 8. Compute groundedness score

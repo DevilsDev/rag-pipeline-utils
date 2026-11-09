@@ -49,6 +49,44 @@ page.
   `toBeGroundedIn` take it, and `rag-pipeline eval` takes
   `--no-condition-check`. The other 3.9 changes (text normalisation and
   sentence splitting, below) still apply, so some scores can still move.
+- **`splitSentences` and `splitClauses`** are exported from the main
+  entry and `@devilsdev/rag-eval`: the sentence and clause splitters the
+  grounding checks use.
+
+### Changed
+
+- **A contrast clause that narrows its statement is a restriction.**
+  "Access is allowed" is no longer supported by "Access is allowed, but
+  not for guests" (`condition_mismatch`), nor are "except for sale items"
+  and "but only on Fridays" left out. A clause that adds something ("...,
+  but it may take a few minutes") or contrasts a different case ("in
+  adults, but not in children") may still be left out. Known gaps: a
+  negated clause with no scope word ("but not guests", "but guests are
+  not admitted") is still not read as a restriction.
+- **Long answers and sources are checked in linear time.** Each source and
+  answer is prepared once per check (sentences, clauses, numbers and an
+  index of its quantities), so a 1,000-sentence answer that took about 9 s
+  takes under half a second. Results don't change.
+- **Faithfulness uses the same word weights as `checkAnswer`.**
+  `computeFaithfulness` (and so groundedness and `PipelineEvaluator`'s
+  faithfulness) weights words by IDF, like `checkAnswer` and
+  `CitationTracker`; `useIDFWeighting: false` keeps the old scores.
+  Context recall still scores without IDF. `checkAnswer` verdicts don't
+  change.
+- **Scores move for answers checked against several sources.** Identical
+  sources count once in the word weights, and each sentence's weights
+  come only from the sources that share a content word with it, so a
+  duplicated or unrelated source no longer changes a verdict. Checks
+  against a single source are unaffected. On the condition-dropped
+  benchmark's test split, lexical F1 is now 85.9% (was 86.4%): one more
+  false alarm. Dev F1 is unchanged at 88.5%.
+- **Hallucination classes change in many cases; rates and verdicts
+  don't.** A sentence that some source supports below the threshold is
+  now a `likely_hallucination` with its best score; it was a
+  `definite_hallucination` with score 0. On the golden set, classes
+  changed in 577 of 2,010 cases. `hallucinationRate`, groundedness and
+  which sentences are unsupported are unchanged. Re-save baselines that
+  compare classes.
 
 ### Deprecated
 
@@ -108,6 +146,25 @@ page.
   flush without writing the events again. A listener that throws (on
   `logs_flushed`, `events_dropped` or a failure event) is logged once and
   can't stop the rest of the flush or later flushes.
+- Citation markers (`[1]`, `.[2]`, `¹`) and a leading list number (`1.`,
+  `2)`) are no longer read as numbers the source must state.
+- A restriction of another statement in the same source sentence, joined
+  by "and", no longer flags a claim, and each statement of a claim that
+  joins two is checked against its own closest source sentence.
+- Chinese and Japanese sentences are split at 。！？, and digits next to
+  Chinese or Japanese characters are read. Number words in those
+  languages are still not read.
+- "no more than", "no later than", "at no cost", "at no charge" and "No. 7"
+  are no longer read as negations.
+- A minus sign is part of a number: "-3%" doesn't match "3%".
+- "5 million" matches "5,000,000".
+- `verifyCitations` reports the uncited text inside a sentence that starts
+  in a cited block.
+- A null source (`CitationTracker`), a null citation, and a claim without
+  citations no longer throw.
+- The polarity check keeps at most 1,024 verdicts per source sentence, so
+  a document object reused across many answers no longer grows its memo
+  without bound. Results don't change.
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.

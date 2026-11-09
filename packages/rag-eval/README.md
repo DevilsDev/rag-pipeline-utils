@@ -8,7 +8,7 @@ Part of [@devilsdev/rag-pipeline-utils](https://www.npmjs.com/package/@devilsdev
 npm install @devilsdev/rag-eval
 ```
 
-Exports: `evaluateRagDataset`, `scoreAnswer`, `computeBLEU`, `computeROUGE`, `checkNumericConsistency`, `checkPolarityConsistency`, `checkConditionConsistency`, `extractNumbers`, `computeFaithfulness`, `computeSemanticSimilarity`, `validateDataset`, `generateSyntheticDataset`, `runEvaluation`, `compareConfigurations`, `evaluationVerdict`, `renderEvaluationReport`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`, `PipelineEvaluator`, `checkAnswer`, `fromAnthropicCitations`, `fromOpenAIFileCitations`, `verifyCitations`, `normalizeSources`, `CitationTracker`, `mapSentenceToSources`, `buildIDFWeights`, `detectHallucinations`.
+Exports: `evaluateRagDataset`, `scoreAnswer`, `computeBLEU`, `computeROUGE`, `checkNumericConsistency`, `checkPolarityConsistency`, `checkConditionConsistency`, `extractNumbers`, `splitSentences`, `splitClauses`, `computeFaithfulness`, `computeSemanticSimilarity`, `validateDataset`, `generateSyntheticDataset`, `runEvaluation`, `compareConfigurations`, `evaluationVerdict`, `renderEvaluationReport`, `computeAnswerRelevance`, `computeContextPrecision`, `computeContextRecall`, `computeGroundedness`, `PipelineEvaluator`, `checkAnswer`, `fromAnthropicCitations`, `fromOpenAIFileCitations`, `verifyCitations`, `normalizeSources`, `CitationTracker`, `mapSentenceToSources`, `buildIDFWeights`, `detectHallucinations`.
 
 Documentation: https://devilsdev.github.io/rag-pipeline-utils/
 

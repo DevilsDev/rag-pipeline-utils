@@ -41,7 +41,9 @@ const NO_REFERENCE_REASON =
  * @param {Array<{content: string}>} retrievedDocs - Array of retrieved documents
  * @param {object} [options={}] - Configuration options
  * @param {{ faithfulness: number, contextPrecision: number, contextRecall: number }} [options.weights] - Custom weights for each component
- * @param {number} [options.threshold=0.5] - Similarity threshold passed to component metrics
+ * @param {number} [options.threshold=0.5] - Similarity threshold passed to
+ *   component metrics; context precision uses threshold * 0.67 (0.335 at the
+ *   default), not computeContextPrecision's own default of 0.2
  * @param {string} [options.referenceAnswer] - Reference (ground-truth) answer used for context recall
  * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
  * @returns {{ score: number, components: { faithfulness: object, contextPrecision: object, contextRecall: object }, weights: { faithfulness: number, contextPrecision: number, contextRecall: number } }}
@@ -52,10 +54,14 @@ function computeGroundedness(query, answer, retrievedDocs, options = {}) {
   const { threshold = 0.5, referenceAnswer, conditionCheck } = options;
   const weights = { ...DEFAULT_WEIGHTS, ...(options.weights || {}) };
 
-  const faithfulness = computeFaithfulness(answer, retrievedDocs, {
-    threshold,
-    conditionCheck,
-  });
+  // PipelineEvaluator passes the faithfulness it already computed with the
+  // same threshold and condition check, so it isn't computed twice
+  const faithfulness =
+    options.faithfulness ||
+    computeFaithfulness(answer, retrievedDocs, {
+      threshold,
+      conditionCheck,
+    });
   const contextPrecision = computeContextPrecision(query, retrievedDocs, {
     threshold: threshold * 0.67,
   });
