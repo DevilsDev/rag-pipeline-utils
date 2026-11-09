@@ -1382,7 +1382,9 @@ function checkPolarityConsistency(claimText, docText) {
  * exception or an eligibility rule. Dropping one broadens what the claim
  * grants ("allowed two days per week" from "... with manager approval").
  * Contrasting markers (but, whereas, while, however) are not here: dropping
- * a contrasting clause leaves a narrower claim that is still true. For
+ * a contrasting clause usually leaves a narrower claim that is still true;
+ * one that narrows the statement before it is handled by narrowingClause
+ * (3.9). For
  * "for <people> who/with ...", the restriction starts at who/with: the
  * people are who it applies to.
  */
@@ -1549,6 +1551,80 @@ function restrictingClauses(statement) {
   });
 }
 
+/** A statement boundary, kept when splitting, and the contrasting ones. */
+const STATEMENT_SPLIT = new RegExp(`(${STATEMENT_BOUNDARY.source})`, 'i');
+const CONTRAST_BOUNDARY = /\b(?:but|whereas|while|however)\b/i;
+
+/** Prepositions that open the scope a contrast clause narrows ("not for guests"). */
+const SCOPE_PREPOSITIONS =
+  'for|on|in|at|during|to|from|by|with|before|after|under|over|within|between|outside|inside|until';
+
+/**
+ * The start of a contrast clause that narrows or negates what came before
+ * (3.9): a negation or a limit on a scope ("but not for guests", "but only
+ * on Fridays", "but never at night"), an exclusion ("but except ...",
+ * "but unless ...", "but excluding ...", "but other than ...") or "for X
+ * only". Group 1 is the scope's preposition.
+ */
+const NARROWING_START = new RegExp(
+  `^(?:(?:not|no|never|nobody|only|just|solely)\\s+(${SCOPE_PREPOSITIONS})\\b|(?:except|excluding|unless|other\\s+than)\\b|for\\b[^,;]*\\bonly\\b)`,
+  'i',
+);
+
+/**
+ * A contrast clause that restricts the statement before it, as a
+ * restricting clause of that statement, or null. A clause that names its
+ * scope with a preposition the statement already uses ("reduced blood
+ * pressure in adults, but not in children") contrasts a second scope
+ * rather than narrowing the first, and so does one with no preposition
+ * ("dental coverage for full-time staff, but not part-time staff"): either
+ * can be left out.
+ * @param {string} clause - the text after "but", "whereas", "while" or "however"
+ * @param {string} before - the statement before it
+ * @returns {{text: string, words: string[]}|null}
+ */
+function narrowingClause(clause, before) {
+  const match = NARROWING_START.exec(clause.trim());
+  if (!match) return null;
+  // Up to the end of the clause, as for the other restricting clauses
+  const end = clauseEnd(clause.trim().toLowerCase());
+  const text = (end < 0 ? clause.trim() : clause.trim().slice(0, end)).trim();
+  if (match[1] && tokenize(before).includes(match[1].toLowerCase())) {
+    return null;
+  }
+  const words = conditionWords(text);
+  if (words.length === 0) return null;
+  const elsewhere = new Set(conditionWords(before));
+  const distinctive = words.filter((w) => !elsewhere.has(w));
+  return { text, words: distinctive.length > 0 ? distinctive : words };
+}
+
+/**
+ * A source sentence's statements (see STATEMENT_BOUNDARY), each with its
+ * condition words and restricting clauses. A contrast clause that narrows
+ * the statement before it (narrowingClause) is also a restricting clause of
+ * that statement, so leaving it out is a dropped condition.
+ * @param {string} sentence
+ * @returns {Array<{words: string[], clauses: Array<{text: string, words: string[]}>}>}
+ */
+function sentenceStatements(sentence) {
+  const parts = sentence.split(STATEMENT_SPLIT);
+  const statements = [];
+  for (let i = 0; i < parts.length; i += 2) {
+    const text = parts[i];
+    const narrowing =
+      i > 0 && CONTRAST_BOUNDARY.test(parts[i - 1])
+        ? narrowingClause(text, parts[i - 2])
+        : null;
+    if (narrowing) statements[statements.length - 1].clauses.push(narrowing);
+    statements.push({
+      words: conditionWords(text),
+      clauses: restrictingClauses(text),
+    });
+  }
+  return statements;
+}
+
 /**
  * A source's sentences as the condition check reads them: each sentence's
  * condition words, a word -> sentence index and, on first use, its
@@ -1562,12 +1638,7 @@ function conditionSentences(doc) {
         sentence,
         words: new Set(conditionWords(sentence)),
         statements: () => {
-          if (!statements) {
-            statements = sentence.split(STATEMENT_BOUNDARY).map((text) => ({
-              words: conditionWords(text),
-              clauses: restrictingClauses(text),
-            }));
-          }
+          if (!statements) statements = sentenceStatements(sentence);
           return statements;
         },
       };
@@ -1631,8 +1702,12 @@ function restatingWords(doc, answer) {
  * the answer that this document supports (most of its content words are in
  * the document), so a condition restated from the same source still counts
  * and a word from a sentence about something else doesn't. Contrasting
- * clauses ("but not in children") may be left out, as the polarity check
- * allows since 3.6. Phrases that restrict nothing are not restrictions:
+ * clauses that add or contrast something ("but not in children" after "in
+ * adults", "but it may take a few minutes") may be left out, as the
+ * polarity check allows since 3.6; since 3.9 one that narrows or negates
+ * the statement before it ("but not for guests", "but only on Fridays",
+ * "but except ...") is a restricting clause of that statement and must be
+ * kept. Phrases that restrict nothing are not restrictions:
  * "even if", "if any", "if applicable", "if necessary", "if needed", "if
  * need be", "if possible", an anaphoric "If not," or "If so,", and "except
  * as required (or permitted) by law". A source with no space after a
