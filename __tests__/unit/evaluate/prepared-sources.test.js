@@ -8,6 +8,11 @@ const { CitationTracker } = require("../../../src/citation/citation-tracker");
 
 jest.setTimeout(60000);
 
+// Each input is large enough that the code before the 3.9 grounding
+// changes took far longer than the limit (measured on one machine: 21 s to
+// 129 s), while the current code takes 0.3 s to 1 s, so a busy runner
+// still passes.
+
 // The suite runs on fake timers; the clock below must be real.
 beforeEach(() => jest.useRealTimers());
 
@@ -37,27 +42,29 @@ const policySources = [
 ];
 
 describe("long answers", () => {
-  test("the condition check reads a 30 KB answer in linear time", async () => {
-    const answer = longAnswer(30);
+  test("the condition check reads a 120 KB answer in linear time", async () => {
+    const answer = longAnswer(120);
     const { ms } = await elapsed(() =>
       new CitationTracker().track(answer, policySources),
     );
-    expect(ms).toBeLessThan(3000);
+    // Before the 3.9 changes: 37 s
+    expect(ms).toBeLessThan(10000);
   });
 
-  test("checkAnswer with evaluation checks a 20 KB answer in linear time", async () => {
-    const answer = longAnswer(20);
+  test("checkAnswer with evaluation checks an 80 KB answer in linear time", async () => {
+    const answer = longAnswer(80);
     const { ms } = await elapsed(() =>
       checkAnswer({ answer, sources: policySources }),
     );
-    expect(ms).toBeLessThan(3000);
+    // Before the 3.9 changes: 52 s
+    expect(ms).toBeLessThan(10000);
   });
 });
 
 describe("long sources", () => {
-  test("checks 50 sentences against a 200 KB source in linear time", async () => {
+  test("checks 50 sentences against an 800 KB source in linear time", async () => {
     let source = "";
-    for (let k = 0; source.length < 200 * 1024; k++) {
+    for (let k = 0; source.length < 800 * 1024; k++) {
       source += `Section ${k} says employees in region ${k} receive ${k % 30} days of leave. `;
     }
     let answer = "";
@@ -72,21 +79,23 @@ describe("long sources", () => {
       }),
     );
     expect(value.groundedness).toBe(1);
-    expect(ms).toBeLessThan(3000);
+    // Before the 3.9 changes: 21 s
+    expect(ms).toBeLessThan(8000);
   });
 });
 
 describe("many quantities", () => {
   const { checkNumericConsistency } = require("../../../src/evaluate/scoring");
 
-  test("compares 12,000 claim quantities with 12,000 source quantities in linear time", () => {
-    const claim = "Pack " + "5 kg, ".repeat(12000) + "done.";
-    const source = "Each box holds 5 kg. ".repeat(12000) + "Also 5 g.";
+  test("compares 48,000 claim quantities with 48,000 source quantities in linear time", () => {
+    const claim = "Pack " + "5 kg, ".repeat(48000) + "done.";
+    const source = "Each box holds 5 kg. ".repeat(48000) + "Also 5 g.";
     const start = process.hrtime.bigint();
     const result = checkNumericConsistency(claim, source);
     const ms = Number(process.hrtime.bigint() - start) / 1e6;
     expect(result.consistent).toBe(true);
-    expect(ms).toBeLessThan(3000);
+    // Before the 3.9 changes: 129 s
+    expect(ms).toBeLessThan(10000);
   });
 
   test("still matches quantities converted between units", () => {
