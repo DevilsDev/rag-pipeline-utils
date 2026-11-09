@@ -189,7 +189,7 @@ The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name r
 
 ## Pipeline Factory Pattern
 
-`createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache })` returns `{ run, cleanup, cacheStats }`; `cache` enables the pipeline cache (see [Caching](./Caching.md)). Each component may be an instance or a name resolved from `registry` (default: the exported `pluginRegistry`).
+`createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache, telemetry })` returns `{ run, cleanup, cacheStats }`; `cache` enables the pipeline cache (see [Caching](./Caching.md)) and `telemetry` records OpenTelemetry spans (see [Observability](./Observability.md#opentelemetry)). Each component may be an instance or a name resolved from `registry` (default: the exported `pluginRegistry`).
 
 `run({ query, queryVector, options })` performs, in order:
 

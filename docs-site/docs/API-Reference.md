@@ -37,6 +37,7 @@ function createRagPipeline(config?: {
   reranker?: Reranker | string;
   registry?: PluginRegistry;
   cache?: boolean | CacheBackend | CacheOptions;
+  telemetry?: boolean | TelemetryOptions;
 }): {
   run(input: RunInput): Promise<RunResult | AsyncIterable<StreamChunk>>;
   cleanup(): void;
@@ -46,15 +47,16 @@ function createRagPipeline(config?: {
 
 **Parameters:**
 
-| Parameter          | Type                                | Required | Description                                                                     |
-| ------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                       |
-| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed               |
-| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                          |
-| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                      |
-| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                     |
-| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)               |
-| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching) |
+| Parameter          | Type                                | Required | Description                                                                                  |
+| ------------------ | ----------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                                    |
+| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed                            |
+| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                                       |
+| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                                   |
+| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                                  |
+| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)                            |
+| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching)              |
+| `config.telemetry` | `boolean \| object`                 | No       | Record each run as an OpenTelemetry span; see [Observability](./Observability#opentelemetry) |
 
 String names are resolved from `registry`, or from the exported `pluginRegistry` when no registry is given.
 

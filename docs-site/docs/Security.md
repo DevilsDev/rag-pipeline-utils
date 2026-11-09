@@ -338,7 +338,7 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 
 **Data in Transit**:
 
-`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, cache, registry }`. The built-in connectors default to HTTPS endpoints (OpenAI through the optional `openai` SDK, Anthropic and Cohere through axios); a custom `baseURL` is your responsibility. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
+`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, cache, telemetry, registry }`. The built-in connectors default to HTTPS endpoints (OpenAI through the optional `openai` SDK, Anthropic and Cohere through axios); a custom `baseURL` is your responsibility. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
 
 ### **Data Sanitization**
 
