@@ -434,7 +434,8 @@ const initPipeline = () => {
   if (!pipeline) {
     // OpenAIConnector reads OPENAI_API_KEY. The index is built ahead of time
     // with `rag-pipeline ingest` (openai embedder) and shipped with the function;
-    // for a hosted vector store, implement the retriever contract instead.
+    // for a hosted vector store, use PgVectorRetriever, QdrantRetriever,
+    // PineconeRetriever or WeaviateRetriever instead.
     const openai = new OpenAIConnector({ model: "gpt-4o-mini" });
     pipeline = createRagPipeline({
       embedder: openai,
