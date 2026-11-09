@@ -1843,7 +1843,28 @@ function checkConditionConsistency(claimText, docText, answerText) {
       ? restatingWords(doc, prepareAnswer(answerText))
       : [];
   const answerWords = new Set([...claimWords, ...restating]);
+  const whole = keptConditions(doc, claimWords, answerWords);
+  if (!whole.consistent) return whole;
+  // A claim joining two statements ("..., and additional storage costs
+  // $2") restates each from its own source sentence: each is checked too
+  const statements = claimText
+    .split(STATEMENT_BOUNDARY)
+    .map((statement) => new Set(conditionWords(statement)))
+    .filter((words) => words.size > 0);
+  if (statements.length > 1) {
+    for (const words of statements) {
+      const result = keptConditions(doc, words, answerWords);
+      if (!result.consistent) return result;
+    }
+  }
+  return whole;
+}
 
+/**
+ * checkConditionConsistency for one set of claim words: the restricting
+ * clauses of the closest source sentence's restated parts must be kept.
+ */
+function keptConditions(doc, claimWords, answerWords) {
   // splitSentences also splits a source scraped without a space between
   // sentences ("...per week.If you need"), which would otherwise lend one
   // sentence the next one's restriction (first seen on RAGTruth, fixed on

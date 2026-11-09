@@ -50,3 +50,26 @@ describe("statements joined by and", () => {
     ).toBe(false);
   });
 });
+
+describe("a claim joining two statements", () => {
+  test("each statement keeps the restrictions of its own source sentence", () => {
+    expect(
+      checkConditionConsistency(
+        "The app offers 50 GB of free cloud storage, and additional storage costs $2 per 100 GB per month.",
+        "The app offers 50 GB of cloud storage at no charge for users who have verified their email address. Additional storage costs $2 per 100 GB per month.",
+      ),
+    ).toMatchObject({
+      consistent: false,
+      missing: ["who have verified their email address"],
+    });
+  });
+
+  test("both statements kept is consistent", () => {
+    expect(
+      checkConditionConsistency(
+        "Verified users get 50 GB of free cloud storage, and additional storage costs $2 per 100 GB per month.",
+        "The app offers 50 GB of cloud storage at no charge for users who have verified their email address. Additional storage costs $2 per 100 GB per month.",
+      ).consistent,
+    ).toBe(true);
+  });
+});
