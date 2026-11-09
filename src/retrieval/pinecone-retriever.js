@@ -34,7 +34,10 @@
  */
 
 const crypto = require('crypto');
-const { throwIfAborted } = require('../connectors/connector-utils');
+const {
+  abortableSleep,
+  throwIfAborted,
+} = require('../connectors/connector-utils');
 const { storedMetadata, readStoredMetadata } = require('./access-fields');
 
 const API_VERSION = '2026-07';
@@ -99,8 +102,6 @@ function normalizeHost(host) {
   while (h.endsWith('/')) h = h.slice(0, -1);
   return /^https?:\/\//.test(h) ? h : `https://${h}`;
 }
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Retriever on a Pinecone serverless index over its REST API, with no
@@ -462,8 +463,7 @@ class PineconeRetriever {
             : { id: m.id, score: m.score, fields: m.metadata },
         );
       }
-      await sleep(delay);
-      throwIfAborted(signal);
+      await abortableSleep(delay, signal);
     }
   }
 

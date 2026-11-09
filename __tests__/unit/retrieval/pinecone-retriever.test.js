@@ -440,3 +440,47 @@ describe("PineconeRetriever", () => {
     }
   });
 });
+
+describe("PineconeRetriever freshness wait honours abort", () => {
+  // An index whose indexed position never reaches the retriever's writes
+  const stuckFetch =
+    (fake) =>
+    async (...args) => {
+      const res = await fake.fetch(...args);
+      return new Proxy(res, {
+        get(target, prop) {
+          if (prop === "headers") {
+            return {
+              get: (name) =>
+                name.toLowerCase() === "x-pinecone-max-indexed-lsn"
+                  ? "0"
+                  : target.headers.get(name),
+            };
+          }
+          const value = target[prop];
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      });
+    };
+
+  test("aborting while waiting rejects at once, not after the next poll", async () => {
+    jest.useRealTimers(); // the wait is timing based
+    const fake = fakePinecone({ kind: "vectors" });
+    const retriever = make(fake, {
+      fetch: stuckFetch(fake),
+      freshnessTimeoutMs: 10000,
+    });
+    await retriever.store([{ id: "a", vector: [1, 0, 0, 0] }]);
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 10);
+    const started = Date.now();
+    await expect(
+      retriever.retrieve({
+        queryVector: [1, 0, 0, 0],
+        topK: 1,
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow(/abort/i);
+    expect(Date.now() - started).toBeLessThan(80);
+  });
+});
