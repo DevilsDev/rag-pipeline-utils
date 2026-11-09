@@ -200,7 +200,8 @@ class AgenticPipeline extends EventEmitter {
       // Deduplicate by id
       const seen = new Map();
       for (const r of allResults) {
-        if (r == null) continue;
+        // A failed retrieval is not a document
+        if (r == null || typeof r === 'symbol') continue;
         const id = r?.id || JSON.stringify(r);
         if (!seen.has(id) || (r.score && r.score > (seen.get(id).score || 0))) {
           seen.set(id, r);
@@ -266,12 +267,34 @@ class AgenticPipeline extends EventEmitter {
       subQueries.length + 2 + (this.config.enableCritique ? 1 : 0);
     this.emit('executing', { nodeCount });
 
-    const dagResult = await dag.execute(query, {
-      concurrency: this.config.maxConcurrency,
-      timeout: this.config.timeout,
-      continueOnError: true,
-      gracefulDegradation: true,
-    });
+    let dagResult;
+    try {
+      dagResult = await dag.execute(query, {
+        concurrency: this.config.maxConcurrency,
+        timeout: this.config.timeout,
+        continueOnError: true,
+        gracefulDegradation: true,
+      });
+    } catch (err) {
+      // An abort or timeout rejects (see run()); any other failure, such as
+      // the llm call failing, is reported as an unsuccessful run.
+      runAbort.throwIfAborted();
+      const cause = Array.isArray(err.errors) && err.errors[0];
+      return {
+        success: false,
+        query,
+        answer: '',
+        results: [],
+        critique: null,
+        error: String((cause && cause.message) || err.message || err),
+        subQueries,
+        metadata: {
+          subQueryCount: subQueries.length,
+          enabledCritique: this.config.enableCritique,
+          enabledIterative: this.config.enableIterativeRetrieval,
+        },
+      };
+    }
     // continueOnError lets nodes degrade; an abort must not look like success.
     runAbort.throwIfAborted();
 

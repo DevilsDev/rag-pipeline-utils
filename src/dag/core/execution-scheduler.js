@@ -98,8 +98,11 @@ class ExecutionScheduler {
 
         try {
           const result = await this.executeNode(node, context);
-          // Only set result if it's not undefined (failed optional nodes return undefined)
-          if (result !== undefined) {
+          // A failed optional node returns a marker symbol, never a result
+          if (
+            typeof result !== 'symbol' ||
+            result.description !== 'failed-optional-node'
+          ) {
             results.set(node.id, result);
           }
         } finally {
