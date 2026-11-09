@@ -183,7 +183,7 @@ Components that ignore `signal` still work: on abort the run settles anyway and 
 
 ### **Configuration-driven components (CLI)**
 
-The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name resolves to a built-in component (for example `local`, `openai`, `ollama`, `cohere` embedders; `file-store`, `memory`, `pgvector` and `qdrant` retrievers; `openai`, `anthropic`, `ollama` LLMs; `scoring` reranker), to a custom module listed under `plugins`, or to a plugin registered on `pluginRegistry`. See the [CLI reference](./CLI.md).
+The CLI reads `.ragrc.json` pipeline entries `{ stage, name, config }`. A name resolves to a built-in component (for example `local`, `openai`, `ollama`, `cohere` embedders; `file-store`, `memory`, `pgvector`, `qdrant`, `pinecone` and `weaviate` retrievers; `openai`, `anthropic`, `ollama` LLMs and the `router` LLM, which picks among other LLM entries; `scoring` reranker), to a custom module listed under `plugins`, or to a plugin registered on `pluginRegistry`. See the [CLI reference](./CLI.md).
 
 ---
 
