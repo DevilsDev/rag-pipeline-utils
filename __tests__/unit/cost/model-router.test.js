@@ -24,6 +24,12 @@ const DOCS = [
 const retriever = { retrieve: async () => DOCS };
 
 /** A fake llm that answers with its name and records its calls. */
+// A router caches answers only from routes with a known temperature of 0.
+function withTemperature(llm, temperature = 0) {
+  llm.config = { temperature };
+  return llm;
+}
+
 function fake(name, { fail, failStream, stream = true, cacheKey } = {}) {
   const llm = {
     calls: [],
@@ -385,8 +391,8 @@ describe("createModelRouter in createRagPipeline", () => {
     const { router } = twoTier(
       {},
       {
-        haiku: fake("haiku", { cacheKey: "h" }),
-        sonnet: fake("sonnet", { cacheKey: "s" }),
+        haiku: withTemperature(fake("haiku", { cacheKey: "h" })),
+        sonnet: withTemperature(fake("sonnet", { cacheKey: "s" })),
       },
     );
     const pipeline = createRagPipeline({
