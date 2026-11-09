@@ -44,6 +44,8 @@ const SUMMARY_KEYS = {
   complianceEvents: 'complianceEvents',
 };
 
+// An empty signing.key older than this is a crashed write, not a live one
+const STALE_KEY_FILE_MS = 5000;
 const WEBHOOK_TIMEOUT_MS = 5000;
 const WEBHOOK_RETRY_MS = 1000;
 const WEBHOOK_MAX_RETRY_MS = 60000;
@@ -1906,19 +1908,42 @@ class AuditLogger extends EventEmitter {
     const fail = (reason) => ({ key: null, file, reason });
     try {
       fsSync.mkdirSync(dir, { recursive: true, mode: 0o700 });
-      try {
-        fsSync.writeFileSync(
-          file,
-          `${crypto.randomBytes(SIGNING_KEY_BYTES).toString('hex')}\n`,
-          { flag: 'wx', mode: 0o600 },
-        );
-      } catch (error) {
-        if (error.code !== 'EEXIST') throw error;
-      }
       for (let attempt = 0; ; attempt++) {
-        const text = fsSync.readFileSync(file, 'utf8').trim();
+        try {
+          fsSync.writeFileSync(
+            file,
+            `${crypto.randomBytes(SIGNING_KEY_BYTES).toString('hex')}\n`,
+            { flag: 'wx', mode: 0o600 },
+          );
+        } catch (error) {
+          if (error.code !== 'EEXIST') throw error;
+        }
+        let text;
+        try {
+          text = fsSync.readFileSync(file, 'utf8').trim();
+        } catch (error) {
+          // Another process is replacing an empty file: look again
+          if (error.code === 'ENOENT' && attempt < 20) {
+            sleepSync(10);
+            continue;
+          }
+          throw error;
+        }
         if (text.length === hexLength && /^[0-9a-f]+$/.test(text)) {
           return { key: Buffer.from(text, 'hex'), file };
+        }
+        // Empty for longer than any process takes to write it: a crash
+        // between creating and writing it. Move it aside (only one process
+        // wins the rename) and create a new one on the next turn.
+        if (text.length === 0 && this._isStale(file)) {
+          const stale = `${file}.stale-${process.pid}`;
+          try {
+            fsSync.renameSync(file, stale);
+            fsSync.rmSync(stale, { force: true });
+          } catch {
+            // lost the race: the winner's new file is read next turn
+          }
+          continue;
         }
         // Still being written by another process: wait a little.
         if (text.length >= hexLength || attempt >= 20) {
@@ -1928,6 +1953,15 @@ class AuditLogger extends EventEmitter {
       }
     } catch (error) {
       return fail(error.message);
+    }
+  }
+
+  /** Whether a file was last changed more than a few seconds ago. @private */
+  _isStale(file) {
+    try {
+      return Date.now() - fsSync.statSync(file).mtimeMs > STALE_KEY_FILE_MS;
+    } catch {
+      return false;
     }
   }
 
