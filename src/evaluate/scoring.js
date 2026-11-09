@@ -1173,6 +1173,19 @@ const FRAMING_WORDS = new Set(
   ),
 );
 
+/**
+ * Split a sentence into clauses as the polarity check reads them: at
+ * commas, semicolons, colons and brackets, and at but, whereas, although,
+ * though, while, however, yet, and, or, except and unlike (left out). Each
+ * clause is its tokens (see tokenize). The text is normalised first.
+ *
+ * @param {string} text
+ * @returns {string[][]}
+ */
+function splitClauses(text) {
+  return clauseTokens(normalizeText(text));
+}
+
 /** A sentence's clauses, each as its tokens. */
 function clauseTokens(text) {
   const out = [];
@@ -2045,6 +2058,7 @@ module.exports = {
   computeBLEU,
   computeROUGE,
   splitSentences,
+  splitClauses,
   computeJaccardSimilarity,
   prepareSource,
   prepareDocument,
