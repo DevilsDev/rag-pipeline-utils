@@ -100,6 +100,14 @@ const SENTENCE_END = /[.!?]["'’”)\]]*\s+/gu;
  */
 const UNSPACED_END = /(?<=[\p{L}\p{N}]{2}[.!?])(?=\p{Lu})/gu;
 
+/**
+ * A Chinese or Japanese sentence end, which has no space after it: "。",
+ * or "！" / "？" (NFKC "!" / "?") after a Chinese or Japanese character,
+ * with any closing quotes or brackets.
+ */
+const CJK_END =
+  /(?:。|(?<=[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])[!?])["'’”)\]」』）]*\s*/gu;
+
 /** A line that starts a list item or heading: "- ", "* ", "• ", "2. ", "3) ", "# ". */
 const LIST_ITEM = /^[ \t]*(?:[-*•‣◦▪]|\d{1,3}[.)]|#{1,6})[ \t]/u;
 
@@ -151,6 +159,10 @@ function sentenceStarts(text) {
     starts.add(end);
   }
   for (const match of text.matchAll(UNSPACED_END)) starts.add(match.index);
+  for (const match of text.matchAll(CJK_END)) {
+    const end = match.index + match[0].length;
+    if (end < text.length) starts.add(end);
+  }
 
   // Lines: a blank line ends a sentence, and so does the line break before
   // or after a list item or heading, whose lines often have no full stop
@@ -288,9 +300,12 @@ const NUMBER_SCALES = {
 
 /**
  * Digit numbers, optionally with thousands separators or a decimal part (a
- * trailing "%" is ignored). The lookbehind skips digits glued to letters (BM25).
+ * trailing "%" is ignored). The lookbehind skips digits glued to letters (BM25),
+ * but not to Chinese or Japanese characters, which aren't separated by spaces
+ * ("年間20日").
  */
-const DIGIT_NUMBER_RE = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)*/gu;
+const DIGIT_NUMBER_RE =
+  /(?<!\p{N}|(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])\p{L})\d+(?:[.,]\d+)*/gu;
 
 /**
  * Turn one run of number words into its value: "twenty five" -> 25,
