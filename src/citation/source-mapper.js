@@ -50,6 +50,9 @@ function buildIDFWeights(docs) {
  *   from: a condition it restates in another sentence counts as kept
  * @param {boolean} [options.conditionCheck=true] - false: skip the condition
  *   check (see computeSupportScore)
+ * @param {{bestScore: number}} [options.best] - Filled with the best score of
+ *   any document, also when below the threshold (CitationTracker's near
+ *   misses)
  * @param {object[]} [options.preparedSources] - prepareDocument() of each doc,
  *   in order, when the same docs are mapped for several sentences
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
@@ -62,6 +65,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
     answerText,
     conditionCheck,
     preparedSources,
+    best,
   } = options;
 
   const sentenceTokens = tokenize(sentence);
@@ -85,6 +89,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
       conditionCheck,
     });
     const matched = [...new Set(sentenceTokens)].filter((t) => docSet.has(t));
+    if (best && score > best.bestScore) best.bestScore = score;
 
     if (score >= threshold) {
       results.push({

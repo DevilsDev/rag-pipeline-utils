@@ -128,8 +128,13 @@ class CitationTracker extends EventEmitter {
       prepareDocument(doc, doc.content || doc.text || ''),
     );
     const preparedAnswer = prepareAnswer(answer);
+    // The best score of each sentence, also below the threshold
+    const bestScores = [];
     const citations = sentences.map((sentence) => {
+      const best = { bestScore: 0 };
+      bestScores.push(best);
       const sources = mapSentenceToSources(sentence, docs, {
+        best,
         maxCitations: this.config.maxCitationsPerSentence,
         threshold: this.config.similarityThreshold,
         idfWeights,
@@ -151,6 +156,7 @@ class CitationTracker extends EventEmitter {
     // 7. Detect hallucinations
     const hallucinationReport = detectHallucinations(citations, {
       threshold: this.config.similarityThreshold,
+      bestScores: bestScores.map((b) => b.bestScore),
     });
 
     // 8. Compute groundedness score

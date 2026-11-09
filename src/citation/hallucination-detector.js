@@ -11,6 +11,10 @@
  * @param {Array<{sentence: string, sources: Array<{docId: string|undefined, docIndex: number, score: number}>}>} citationResults
  * @param {object} [options]
  * @param {number} [options.threshold=0.5] - Score threshold for grounded classification
+ * @param {number[]} [options.bestScores] - Per sentence, the best score of
+ *   any source, also below the threshold (CitationTracker passes it): a
+ *   sentence with no source at or above the threshold but some support is
+ *   a likely hallucination with that score, and bestSource null
  * @returns {{
  *   hallucinationRate: number,
  *   sentences: Array<{text: string, classification: string, bestScore: number, bestSource: object|null}>,
@@ -18,7 +22,7 @@
  * }}
  */
 function detectHallucinations(citationResults, options = {}) {
-  const { threshold = 0.5 } = options;
+  const { threshold = 0.5, bestScores } = options;
 
   if (!Array.isArray(citationResults) || citationResults.length === 0) {
     return {
@@ -39,10 +43,11 @@ function detectHallucinations(citationResults, options = {}) {
   };
   const sentences = [];
 
-  for (const entry of citationResults) {
+  citationResults.forEach((entry, i) => {
     const sources = entry.sources || [];
     const bestSource = sources.length > 0 ? sources[0] : null;
-    const bestScore = bestSource ? bestSource.score : 0;
+    const nearMiss = Array.isArray(bestScores) ? bestScores[i] || 0 : 0;
+    const bestScore = bestSource ? bestSource.score : nearMiss;
 
     let classification;
     if (bestScore === 0) {
@@ -60,7 +65,7 @@ function detectHallucinations(citationResults, options = {}) {
       bestScore,
       bestSource,
     });
-  }
+  });
 
   const total = sentences.length;
   const hallucinationRate =
