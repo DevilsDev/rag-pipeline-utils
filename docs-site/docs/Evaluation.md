@@ -125,7 +125,7 @@ The result has the shape `{ scores, details, metadata }`:
 
 - **`scores.faithfulness`** -- share of answer sentences supported by the retrieved documents
 - **`scores.relevance`** -- how directly the answer addresses the query
-- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query
+- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query. A document is relevant when it contains at least `threshold * 0.67` of the query's content terms (0.335 with the default threshold of 0.5), the same factor `computeGroundedness` uses; `computeContextPrecision` on its own takes its own `options.threshold` (default 0.2)
 - **`scores.contextRecall`** -- share of the **reference answer's** sentences that the retrieved documents support (did retrieval find everything needed?)
 - **`scores.groundedness`** -- composite score (see [`computeGroundedness`](#computegroundedness))
 - **`details.<metric>`** -- the full output of each metric function
@@ -178,13 +178,13 @@ computeContextRecall("Refunds are accepted within 30 days.", docs);
 
 Signatures:
 
-| Function                                                        | Arguments                                                                                         |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
-| `computeAnswerRelevance(query, answer, options)`                |                                                                                                   |
-| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                                                 |
-| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                 |
-| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9) |
+| Function                                                        | Arguments                                                                                                |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeAnswerRelevance(query, answer, options)`                |                                                                                                          |
+| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2; `computeGroundedness` and `PipelineEvaluator` pass `threshold * 0.67`) |
+| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9)        |
 
 ### Numeric, polarity and condition consistency helpers
 
@@ -241,6 +241,8 @@ checkConditionConsistency(
 1. **Faithfulness** -- the answer's sentences are supported by the retrieved context
 2. **Context Precision** -- the retrieved chunks are relevant rather than noisy
 3. **Context Recall** -- the retrieved chunks support the reference answer (only with `options.referenceAnswer`)
+
+`options.threshold` (default 0.5) is passed to faithfulness and context recall as it is. Context precision gets `threshold * 0.67`, so 0.335 with the default.
 
 The score is a weighted mean over the available components, `sum(w * m) / sum(w)`. With the default weights (0.4, 0.3, 0.3) and a reference answer:
 
