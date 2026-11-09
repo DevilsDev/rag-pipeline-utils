@@ -113,9 +113,11 @@ async function handleConfigGet(globalOptions, key) {
     let value = config;
 
     for (const k of keys) {
-      value = value[k];
+      value =
+        value !== null && typeof value === "object" ? value[k] : undefined;
       if (value === undefined) {
-        console.log("❌ Key not found");
+        console.error("❌ Key not found");
+        process.exitCode = 1;
         return;
       }
     }
