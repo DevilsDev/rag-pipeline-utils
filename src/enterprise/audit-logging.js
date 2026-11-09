@@ -205,6 +205,8 @@ class AuditLogger extends EventEmitter {
     this._drops = [];
     this._listenerWarned = new Set();
     this._flushErrorWarned = false;
+    this._writes = new Set();
+    this._closing = null;
 
     if (this._config.realtime.webhookUrl) {
       logger.warn(
@@ -535,9 +537,19 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Write audit log with integrity protection
+   * Write audit log with integrity protection. Tracks the call so close()
+   * can wait for log calls that haven't finished.
    */
-  async _writeAuditLog(auditEvent) {
+  _writeAuditLog(auditEvent) {
+    const write = this._writeAuditLogNow(auditEvent);
+    this._writes.add(write);
+    const done = () => this._writes.delete(write);
+    write.then(done, done);
+    return write;
+  }
+
+  /** @private */
+  async _writeAuditLogNow(auditEvent) {
     // The sequence, chain link, integrity hash and signature are assigned
     // when the record is written (see _flushOnce), so they follow the order
     // records reach the file and continue across restarts.
@@ -594,6 +606,43 @@ class AuditLogger extends EventEmitter {
         }
       });
     return this._flushQueue;
+  }
+
+  /**
+   * Shut the logger down: stop the flush timer, wait for log calls in
+   * progress, write the buffered events and the pending chain state, and
+   * retry any stage that failed once more. Call it before the process
+   * exits (for example on SIGTERM). Resolves, never rejects, with what is
+   * still pending: `{ pending: { events, chain } }`. Calls made while a
+   * close is running share it. A log call after close() still buffers and
+   * flushes as before, but there is no timer any more; call close() again
+   * to write it.
+   * @returns {Promise<{pending: {events: number, chain: boolean}}>}
+   */
+  close() {
+    if (!this._closing) {
+      this._closing = (async () => {
+        if (this.flushTimer) {
+          clearInterval(this.flushTimer);
+          this.flushTimer = null;
+        }
+        await Promise.allSettled([...this._writes]);
+        await this._flushLogs();
+        // One more pass for a stage that failed during the first
+        if (this.logBuffer.length > 0 || this._chainDirty) {
+          await this._flushLogs();
+        }
+        return {
+          pending: {
+            events: this.logBuffer.length,
+            chain: this._chainDirty,
+          },
+        };
+      })().finally(() => {
+        this._closing = null;
+      });
+    }
+    return this._closing;
   }
 
   /** @private */
