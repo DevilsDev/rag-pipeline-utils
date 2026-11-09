@@ -31,6 +31,17 @@ const NO_SIGNING_KEY_WARNING_CODE = 'RAG_AUDIT_NO_SIGNING_KEY';
 const REPORT_TENANT_WARNING_CODE = 'RAG_DEP_AUDIT_REPORT_NO_TENANT';
 const FAR_FUTURE = new Date('9999-12-31T00:00:00Z');
 
+// Report summary counter for each event category
+const SUMMARY_KEYS = {
+  authentication: 'authenticationEvents',
+  authorization: 'authorizationEvents',
+  dataAccess: 'dataAccessEvents',
+  dataModification: 'dataModificationEvents',
+  systemChanges: 'systemChangeEvents',
+  apiAccess: 'apiAccessEvents',
+  complianceEvents: 'complianceEvents',
+};
+
 const warnedKinds = new Set();
 
 /** Emit a process warning once per process for each kind of message. */
@@ -909,7 +920,10 @@ class AuditLogger extends EventEmitter {
     // is read.
     this._resolveTenantFilter(query);
 
-    const results = [];
+    // Every match is counted (total, hasMore); only the requested page is
+    // kept and decrypted.
+    const page = [];
+    let matched = 0;
     let skippedLines = 0;
     const startTime = startDate
       ? new Date(startDate)
@@ -926,23 +940,19 @@ class AuditLogger extends EventEmitter {
 
       for (const log of logs) {
         if (this._matchesQuery(log, query)) {
-          results.push(await this._decryptAuditEvent(log));
-
-          if (results.length >= limit + offset) {
-            break;
-          }
+          matched += 1;
+          if (matched > offset && matched <= offset + limit) page.push(log);
         }
-      }
-
-      if (results.length >= limit + offset) {
-        break;
       }
     }
 
+    const results = [];
+    for (const log of page) results.push(await this._decryptAuditEvent(log));
+
     return {
-      results: results.slice(offset, offset + limit),
-      total: results.length,
-      hasMore: results.length > limit + offset,
+      results,
+      total: matched,
+      hasMore: matched > offset + limit,
       // Lines that could not be parsed and were left out of the results.
       skippedLines,
     };
@@ -998,7 +1008,9 @@ class AuditLogger extends EventEmitter {
         dataAccessEvents: 0,
         dataModificationEvents: 0,
         systemChangeEvents: 0,
+        apiAccessEvents: 0,
         complianceEvents: 0,
+        otherEvents: 0,
         criticalEvents: 0,
         failedEvents: 0,
       },
@@ -1012,7 +1024,11 @@ class AuditLogger extends EventEmitter {
 
     // Analyze logs for compliance
     for (const log of logs.results) {
-      report.summary[log._category + 'Events']++;
+      report.summary[
+        Object.hasOwn(SUMMARY_KEYS, log._category)
+          ? SUMMARY_KEYS[log._category]
+          : 'otherEvents'
+      ]++;
 
       if (log.metadata._severity === 'CRITICAL') {
         report.summary.criticalEvents++;
@@ -1030,7 +1046,7 @@ class AuditLogger extends EventEmitter {
 
       if (includeEvidence && complianceCheck.evidence) {
         report.evidence.push({
-          logId: log.metadata._correlationId,
+          logId: log.metadata.correlationId,
           requirement: complianceCheck.requirement,
           evidence: complianceCheck.evidence,
         });
@@ -2154,7 +2170,7 @@ class AuditLogger extends EventEmitter {
     return {
       requirement: requirements[standard]?.[0] || 'general_compliance',
       violation: false,
-      evidence: log.metadata._correlationId,
+      evidence: log.metadata.correlationId,
     };
   }
 

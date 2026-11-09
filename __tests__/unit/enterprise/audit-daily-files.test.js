@@ -145,3 +145,80 @@ describe("daily files are named by event date", () => {
     });
   });
 });
+describe("queryLogs totals", () => {
+  async function filled(n) {
+    const l = logger();
+    for (let i = 0; i < n; i++) {
+      await l._writeAuditLog(event(new Date().toISOString()));
+    }
+    await l._flushLogs();
+    return l;
+  }
+
+  test("total counts every match and hasMore is true when more remain", async () => {
+    const l = await filled(8);
+    const q = await l.queryLogs({ tenantId: "t1", limit: 2 });
+    expect(q.results).toHaveLength(2);
+    expect(q.total).toBe(8);
+    expect(q.hasMore).toBe(true);
+  });
+
+  test("offset pages through the matches and the last page has no more", async () => {
+    const l = await filled(5);
+    const page = await l.queryLogs({ tenantId: "t1", limit: 2, offset: 4 });
+    expect(page.results).toHaveLength(1);
+    expect(page.total).toBe(5);
+    expect(page.hasMore).toBe(false);
+  });
+});
+
+describe("compliance report", () => {
+  test("every category is counted, with no NaN", async () => {
+    const l = logger();
+    const now = new Date().toISOString();
+    for (const _category of [
+      "authentication",
+      "authorization",
+      "dataAccess",
+      "dataModification",
+      "systemChanges",
+      "apiAccess",
+      "complianceEvents",
+    ]) {
+      await l._writeAuditLog(event(now, { _category }));
+    }
+    await l._flushLogs();
+    const report = await l.generateComplianceReport({
+      standard: "SOC2",
+      tenantId: "t1",
+      includeEvidence: true,
+    });
+    for (const value of Object.values(report.summary)) {
+      expect(Number.isNaN(value)).toBe(false);
+    }
+    expect(report.summary).toMatchObject({
+      authenticationEvents: 1,
+      authorizationEvents: 1,
+      dataAccessEvents: 1,
+      dataModificationEvents: 1,
+      systemChangeEvents: 1,
+      apiAccessEvents: 1,
+      complianceEvents: 1,
+    });
+  });
+
+  test("evidence entries carry the event's correlation id", async () => {
+    const l = logger();
+    const e = event(new Date().toISOString(), { _category: "authentication" });
+    await l._writeAuditLog(e);
+    await l._flushLogs();
+    const report = await l.generateComplianceReport({
+      standard: "SOC2",
+      tenantId: "t1",
+      includeEvidence: true,
+    });
+    expect(report.evidence).toHaveLength(1);
+    expect(report.evidence[0].logId).toBe(e.metadata.correlationId);
+    expect(report.evidence[0].evidence).toBe(e.metadata.correlationId);
+  });
+});
