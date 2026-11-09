@@ -69,11 +69,13 @@ describe("SecureLogger key-value patterns", () => {
     );
 
     // The worst case for the 64-character bound: the keyword everywhere.
+    // About 0.3 s here; the 3.8.1 pattern ran past 60 s on the same input,
+    // so 10 s still fails the old pattern and leaves room on a busy runner.
     test("a long run of the keyword stays linear", () => {
       const text = `${keyword}-`.repeat(
         Math.ceil(100000 / (keyword.length + 1)),
       );
-      expect(scan(name, text)).toBeLessThan(2000);
+      expect(scan(name, text)).toBeLessThan(10000);
     });
 
     test("a 100-character key name ending in the keyword has its value redacted", () => {
