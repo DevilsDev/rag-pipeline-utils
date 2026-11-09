@@ -27,11 +27,13 @@
     },
     "./experimental": {
       "types": "./dist/experimental.d.ts",
+      "workerd": "./dist/experimental.cjs",
       "require": "./dist/experimental.cjs",
       "import": "./dist/experimental.mjs"
     },
     "./testing": {
       "types": "./dist/testing.d.ts",
+      "workerd": "./dist/testing.cjs",
       "require": "./dist/testing.cjs",
       "import": "./dist/testing.mjs"
     },
