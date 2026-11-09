@@ -6,6 +6,7 @@ const { randomBytes } = require('crypto');
 const { digest } = require('../cache/component-keys');
 const { accessFields } = require('./access-fields');
 const { copyValue } = require('./copy-value');
+const { validTopK, assertFiniteVector } = require('./query-validation');
 
 const FORMAT_VERSION = 1;
 
@@ -292,12 +293,14 @@ class FileVectorStore {
    * @returns {Promise<Array<{id: string, score: number, content: string, metadata: object}>>}
    */
   async retrieve(request = {}) {
-    const { queryVector, topK = 5 } = request;
+    const { queryVector } = request;
     if (!Array.isArray(queryVector)) {
       throw new Error(
         'FileVectorStore.retrieve(): queryVector is required. Configure an embedder stage.',
       );
     }
+    const topK = validTopK(request.topK, 5, 'FileVectorStore.retrieve()');
+    assertFiniteVector(queryVector, 'FileVectorStore.retrieve()');
     const info = this.getEmbedderInfo();
     if (info && info.dimensions && info.dimensions !== queryVector.length) {
       throw new Error(

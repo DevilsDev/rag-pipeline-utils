@@ -231,3 +231,55 @@ describe("FileVectorStore persistence and validation", () => {
     expect(hits[0].id).toBe("__proto__");
   });
 });
+
+describe("stores validate topK and the query vector the same way", () => {
+  const docs = [
+    { id: "a", content: "a", vector: [1, 0] },
+    { id: "b", content: "b", vector: [0, 1] },
+  ];
+  const build = async () => {
+    const f = new FileVectorStore({ path: newPath() });
+    const m = new MemoryRetriever();
+    await f.store(docs);
+    await m.store(docs);
+    return { f, m };
+  };
+
+  test.each([0, -1, NaN, 1.5, "abc"])(
+    "topK %p is rejected by both stores",
+    async (topK) => {
+      const { f, m } = await build();
+      await expect(f.retrieve({ queryVector: [1, 0], topK })).rejects.toThrow(
+        /topK/,
+      );
+      await expect(m.retrieve({ queryVector: [1, 0], topK })).rejects.toThrow(
+        /topK/,
+      );
+    },
+  );
+
+  test("topK defaults when absent and accepts a numeric string", async () => {
+    const { f, m } = await build();
+    expect((await f.retrieve({ queryVector: [1, 0] })).length).toBe(2);
+    expect((await m.retrieve({ queryVector: [1, 0] })).length).toBe(2);
+    expect((await f.retrieve({ queryVector: [1, 0], topK: "1" })).length).toBe(
+      1,
+    );
+    expect((await m.retrieve([1, 0], 1)).length).toBe(1);
+  });
+
+  test.each([
+    [NaN, 0],
+    [Infinity, 0],
+  ])("query vector %p is rejected by both stores", async (...v) => {
+    const { f, m } = await build();
+    await expect(f.retrieve({ queryVector: v })).rejects.toThrow(/finite/);
+    await expect(m.retrieve({ queryVector: v })).rejects.toThrow(/finite/);
+  });
+
+  test("a zero query vector still returns results with score 0", async () => {
+    const { f, m } = await build();
+    expect((await f.retrieve({ queryVector: [0, 0] }))[0].score).toBe(0);
+    expect((await m.retrieve({ queryVector: [0, 0] }))[0].score).toBe(0);
+  });
+});

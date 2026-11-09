@@ -5,6 +5,10 @@ const { BaseConnector } = require('./base-connector');
 const { throwIfAborted } = require('./connector-utils');
 const { accessFields } = require('../retrieval/access-fields');
 const { copyValue } = require('../retrieval/copy-value');
+const {
+  validTopK,
+  assertFiniteVector,
+} = require('../retrieval/query-validation');
 
 /**
  * Default configuration for the in-memory retriever.
@@ -153,7 +157,7 @@ class MemoryRetriever extends BaseConnector {
       queryVector = queryOrObj;
     } else {
       queryVector = queryOrObj?.queryVector;
-      topK = queryOrObj?.topK || k;
+      topK = queryOrObj?.topK ?? k;
       signal = queryOrObj?.signal;
     }
 
@@ -165,6 +169,9 @@ class MemoryRetriever extends BaseConnector {
           '`embedder` to createRagPipeline or supply `queryVector` to run().',
       );
     }
+
+    topK = validTopK(topK, 10, 'MemoryRetriever.retrieve()');
+    assertFiniteVector(queryVector, 'MemoryRetriever.retrieve()');
 
     if (this.dimensions !== null && this.documents.size > 0) {
       if (queryVector.length !== this.dimensions) {
