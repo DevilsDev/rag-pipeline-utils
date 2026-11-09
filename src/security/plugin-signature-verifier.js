@@ -175,6 +175,22 @@ function computeContentDigest({ files = [], baseDir, contents = {} } = {}) {
 }
 
 /**
+ * Whether a manifest binds the plugin code: it has a contentDigest that is
+ * neither undefined nor null. Every path that decides "digest or no digest"
+ * (verification and the missing-digest warning) uses this one test.
+ * @param {object} manifest - Plugin manifest
+ * @returns {boolean}
+ */
+function hasContentDigest(manifest) {
+  return (
+    Boolean(manifest) &&
+    Object.hasOwn(manifest, 'contentDigest') &&
+    manifest.contentDigest !== undefined &&
+    manifest.contentDigest !== null
+  );
+}
+
+/**
  * Plugin signature verification with Ed25519
  */
 class PluginSignatureVerifier {
@@ -257,49 +273,13 @@ class PluginSignatureVerifier {
         return verificationResult;
       }
 
-      // Validate inputs
-      if (!manifest || typeof manifest !== 'object') {
-        throw new Error('Invalid manifest: must be an object');
-      }
-
-      if (!signature || typeof signature !== 'string') {
-        throw new Error('Invalid signature: must be a non-empty string');
-      }
-
-      if (!signerId || typeof signerId !== 'string') {
-        throw new Error('Invalid signerId: must be a non-empty string');
-      }
-
-      // Check if signer is trusted
-      const trustedKey = this.trustStore.get(signerId);
-      if (!trustedKey) {
-        throw new Error(`Untrusted signer: ${signerId}`);
-      }
-
-      // Canonicalize manifest for verification
-      const canonicalManifest = this._canonicalizeManifest(manifest);
-      const manifestData = Buffer.from(
-        JSON.stringify(canonicalManifest),
-        'utf8',
-      );
-
-      const signatureBuffer = Buffer.from(signature, 'base64');
-
-      const isValid = await this._verifyEd25519Signature(
-        manifestData,
-        signatureBuffer,
-        trustedKey.publicKey,
-      );
-
-      if (!isValid) {
-        throw new Error('Signature verification failed');
-      }
-
-      // The signature covers contentDigest; now check the code matches it.
-      verificationResult.contentVerified = this._verifyContentDigest(
-        canonicalManifest,
+      const { canonicalManifest, contentVerified } = this.verifyManifestSync(
+        manifest,
+        signature,
+        signerId,
         content,
       );
+      verificationResult.contentVerified = contentVerified;
 
       verificationResult.verified = true;
       verificationResult.auditTrail.push({
@@ -332,6 +312,63 @@ class PluginSignatureVerifier {
   }
 
   /**
+   * Synchronous signature check shared by every verification path: input
+   * validation, trusted-signer lookup, Ed25519 signature over the canonical
+   * manifest, and the contentDigest check. Does not consult `enabled` and
+   * does not write audit entries; callers decide both.
+   *
+   * @param {object} manifest - Plugin manifest
+   * @param {string} signature - Base64 encoded signature
+   * @param {string} signerId - Signer identifier
+   * @param {object} [content] - `{ files, baseDir, contents }` to check
+   *   against manifest.contentDigest (see computeContentDigest)
+   * @returns {{contentVerified: boolean, canonicalManifest: object}}
+   *   contentVerified is false when the manifest has no contentDigest
+   * @throws {Error} When the manifest must not be trusted
+   */
+  verifyManifestSync(manifest, signature, signerId, content = null) {
+    if (!manifest || typeof manifest !== 'object') {
+      throw new Error('Invalid manifest: must be an object');
+    }
+
+    if (!signature || typeof signature !== 'string') {
+      throw new Error('Invalid signature: must be a non-empty string');
+    }
+
+    if (!signerId || typeof signerId !== 'string') {
+      throw new Error('Invalid signerId: must be a non-empty string');
+    }
+
+    // Check if signer is trusted
+    const trustedKey = this.trustStore.get(signerId);
+    if (!trustedKey) {
+      throw new Error(`Untrusted signer: ${signerId}`);
+    }
+
+    // Canonicalize manifest for verification
+    const canonicalManifest = this._canonicalizeManifest(manifest);
+    const manifestData = Buffer.from(JSON.stringify(canonicalManifest), 'utf8');
+    const signatureBuffer = Buffer.from(signature, 'base64');
+
+    if (
+      !this._checkEd25519Signature(
+        manifestData,
+        signatureBuffer,
+        trustedKey.publicKey,
+      )
+    ) {
+      throw new Error('Signature verification failed');
+    }
+
+    // The signature covers contentDigest; now check the code matches it.
+    const contentVerified = this._verifyContentDigest(
+      canonicalManifest,
+      content,
+    );
+    return { contentVerified, canonicalManifest };
+  }
+
+  /**
    * Check the supplied plugin content against the signed contentDigest.
    * @param {object} canonicalManifest - Signed manifest
    * @param {object|null} content - `{ files, baseDir, contents }`
@@ -339,7 +376,7 @@ class PluginSignatureVerifier {
    * @private
    */
   _verifyContentDigest(canonicalManifest, content) {
-    const declared = Object.hasOwn(canonicalManifest, 'contentDigest')
+    const declared = hasContentDigest(canonicalManifest)
       ? canonicalManifest.contentDigest
       : undefined;
     const hasContent =
@@ -347,7 +384,7 @@ class PluginSignatureVerifier {
       ((Array.isArray(content.files) && content.files.length > 0) ||
         (content.contents && Object.keys(content.contents).length > 0));
 
-    if (declared === undefined || declared === null) {
+    if (declared === undefined) {
       if (this.requireContentDigest) {
         throw new Error(
           'Manifest has no contentDigest; the signature does not cover the plugin code',
@@ -388,6 +425,18 @@ class PluginSignatureVerifier {
    * @returns {Promise<boolean>} Verification result
    */
   async _verifyEd25519Signature(data, signature, publicKey) {
+    return this._checkEd25519Signature(data, signature, publicKey);
+  }
+
+  /**
+   * Synchronous form of _verifyEd25519Signature.
+   * @param {Buffer} data - Data that was signed
+   * @param {Buffer} signature - Signature bytes
+   * @param {crypto.KeyObject|Buffer|string} publicKey - Ed25519 public key
+   * @returns {boolean}
+   * @private
+   */
+  _checkEd25519Signature(data, signature, publicKey) {
     const keyObject = toEd25519PublicKey(publicKey);
     if (!Buffer.isBuffer(signature) || signature.length !== 64) {
       return false;
@@ -606,5 +655,6 @@ module.exports = {
   PluginSignatureVerifier,
   createPluginVerifier,
   computeContentDigest,
+  hasContentDigest,
   toEd25519PublicKey,
 };

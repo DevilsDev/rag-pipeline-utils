@@ -1,5 +1,7 @@
 'use strict';
 
+const { mergeAccess } = require('./access-fields');
+
 const DEFAULT_CONFIG = { k: 60 };
 
 /**
@@ -15,7 +17,7 @@ function reciprocalRankFusion(resultSets, options = {}) {
     return [];
   }
 
-  /** @type {Map<string, {score: number, fields: object}>} */
+  /** @type {Map<string, {score: number, fields: object, copies: object[]}>} */
   const scoreMap = new Map();
 
   for (let setIndex = 0; setIndex < resultSets.length; setIndex++) {
@@ -41,17 +43,20 @@ function reciprocalRankFusion(resultSets, options = {}) {
       if (scoreMap.has(id)) {
         const entry = scoreMap.get(id);
         entry.score += rrfScore;
+        // Later copies can carry restrictions the first lacks
+        entry.copies.push(doc);
       } else {
         // Copy all original fields except score
         const { score: _origScore, ...rest } = doc;
-        scoreMap.set(id, { score: rrfScore, fields: rest });
+        scoreMap.set(id, { score: rrfScore, fields: rest, copies: [] });
       }
     }
   }
 
   const fused = [];
   for (const [id, entry] of scoreMap) {
-    fused.push({ ...entry.fields, id, score: entry.score });
+    const fields = mergeAccess(entry.fields, entry.copies);
+    fused.push({ ...fields, id, score: entry.score });
   }
 
   fused.sort((a, b) => b.score - a.score);

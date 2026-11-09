@@ -86,6 +86,23 @@ function describeRetrieverContract(
       });
     });
 
+    it("keeps access restrictions set at a document's top level", async () => {
+      await retriever.store([
+        { ...DOCS[0], acl: ["hr"], requiredRole: "manager" },
+      ]);
+      const [top] = await retriever.retrieve({
+        queryVector: DOCS[0].vector,
+        topK: 1,
+      });
+      expect(top).toMatchObject({ acl: ["hr"], requiredRole: "manager" });
+      expect(top.metadata).toEqual(DOCS[0].metadata);
+      if (typeof retriever.list === "function") {
+        const [listed] = await retriever.list();
+        expect(listed).toMatchObject({ acl: ["hr"], requiredRole: "manager" });
+        expect(listed.metadata).toEqual(DOCS[0].metadata);
+      }
+    });
+
     it("replaces a document stored again under the same id", async () => {
       await retriever.store(DOCS);
       await retriever.store([
@@ -226,6 +243,23 @@ function describeTextRetrieverContract(
         content: TEXT_DOCS[0].content,
         metadata: TEXT_DOCS[0].metadata,
       });
+    });
+
+    it("keeps access restrictions set at a document's top level", async () => {
+      await retriever.store([
+        { ...TEXT_DOCS[0], acl: ["hr"], requiredRole: "manager" },
+      ]);
+      const [top] = await retriever.retrieve({
+        query: TEXT_DOCS[0].content,
+        topK: 1,
+      });
+      expect(top).toMatchObject({ acl: ["hr"], requiredRole: "manager" });
+      expect(top.metadata).toEqual(TEXT_DOCS[0].metadata);
+      if (typeof retriever.list === "function") {
+        const [listed] = await retriever.list();
+        expect(listed).toMatchObject({ acl: ["hr"], requiredRole: "manager" });
+        expect(listed.metadata).toEqual(TEXT_DOCS[0].metadata);
+      }
     });
 
     it("replaces a document stored again under the same id", async () => {

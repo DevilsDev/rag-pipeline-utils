@@ -51,6 +51,8 @@ An abbreviation followed by a capital ends a sentence: "Funding comes from the U
 
 From 3.7.0 a number with a unit is checked as a quantity, converted exactly within its kind ("2 kg" matches "2,000 grams", "2 pounds" doesn't match "2 kilograms"; a month is not converted to days), "three quarters of" reads as 75%, and "5 pm" matches 17:00 when the source states clock times. It does not handle ordinals, a lone "one", differently split decimals, units it doesn't know (currencies, temperatures), or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
 
+`checkAnswer`'s cost grows with answer words × source clauses and with answer sentences × source length, so cap the size of untrusted answers and sources before you check them.
+
 ### Paraphrases: the optional LLM judge
 
 A correct paraphrase shares too few words with its source to pass the lexical check: "Staff working full time get 20 days of paid leave annually" is reported unsupported against "Full-time employees receive twenty days of paid vacation per year." Pass `judge`, any LLM with this library's `generate()` contract (`OpenAIConnector`, `AnthropicConnector`, `OllamaConnector` or your own), and it rules on those sentences:

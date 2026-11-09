@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/banner.svg" alt="rag-pipeline-utils: composable RAG for Node.js with grounded citations, evaluation, guardrails and a working CLI" width="100%">
+  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/banner.svg" alt="rag-pipeline-utils: RAG for Node.js that tells you when your LLM is making things up" width="100%">
 </p>
 
 <p align="center">
@@ -99,15 +99,15 @@ Rather start from a working app? `npm create rag-pipeline@latest` scaffolds one 
 
 The main package has everything. The smaller ones are there if install size matters:
 
-| Package                                                                                        | What you get                                             |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            |
-| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      |
-| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        |
-| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks, about 6 MB installed       |
-| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     |
-| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP) |
-| [`create-rag-pipeline`](https://www.npmjs.com/package/create-rag-pipeline)                     | `npm create rag-pipeline`: Next.js, Mastra or Workers    |
+| Package                                                                                        | What you get                                             | Installed   |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------- |
+| [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            | about 34 MB |
+| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      | about 6 MB  |
+| [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        | about 10 MB |
+| [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks                             | about 6 MB  |
+| [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     | about 6 MB  |
+| [`@devilsdev/rag-mcp-server`](https://www.npmjs.com/package/@devilsdev/rag-mcp-server)         | Search and check a folder of documents from Claude (MCP) | about 34 MB |
+| [`create-rag-pipeline`](https://www.npmjs.com/package/create-rag-pipeline)                     | `npm create rag-pipeline`: Next.js, Mastra or Workers    | under 1 MB  |
 
 ## Go further
 

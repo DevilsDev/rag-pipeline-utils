@@ -15,12 +15,25 @@ const {
   StdioServerTransport,
 } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { z } = require("zod");
-const { LocalEmbedder, MemoryRetriever, checkAnswer } = require("./library");
+const { LocalEmbedder, MemoryRetriever } = require("./library");
+const {
+  createCheckRunner,
+  CheckTimeoutError,
+  CheckQueueFullError,
+} = require("./check-runner");
 const { readPassages, SUPPORTED_EXTENSIONS } = require("./documents");
 const { version } = require("../package.json");
 
 const EMBEDDERS = ["local"];
 const MAX_TOP_K = 20;
+const DEFAULT_MAX_ANSWER_CHARS = 50000;
+const DEFAULT_MAX_SOURCE_CHARS = 200000;
+const DEFAULT_MAX_QUESTION_CHARS = 10000;
+const DEFAULT_MAX_SOURCES = 100;
+const DEFAULT_MAX_CLAUSE_PAIRS = 2000000;
+const DEFAULT_MAX_SENTENCE_SOURCE_CHARS = 3000000;
+const DEFAULT_CHECK_TIMEOUT_MS = 10000;
+const DEFAULT_MAX_CONCURRENT_CHECKS = 2;
 
 const USAGE = `Usage: rag-mcp-server <folder> [options]
 
@@ -30,6 +43,22 @@ the MCP tools search_documents and check_answer over stdio. Runs offline.
 Options:
   --top-k <n>       Passages per search when the client doesn't ask (default 4, max ${MAX_TOP_K})
   --embedder <name> Embedder: local (TF-IDF, offline; the default and only option)
+  --max-answer-chars <n>  Longest answer check_answer accepts (default ${DEFAULT_MAX_ANSWER_CHARS};
+                          env RAG_MCP_MAX_ANSWER_CHARS)
+  --max-source-chars <n>  Longest source passage check_answer accepts (default ${DEFAULT_MAX_SOURCE_CHARS};
+                          env RAG_MCP_MAX_SOURCE_CHARS)
+  --max-question-chars <n>  Longest question or search query accepted (default ${DEFAULT_MAX_QUESTION_CHARS};
+                          env RAG_MCP_MAX_QUESTION_CHARS)
+  --max-sources <n>       Most sources check_answer accepts per call (default ${DEFAULT_MAX_SOURCES};
+                          env RAG_MCP_MAX_SOURCES)
+  --max-clause-pairs <n>  Most answer words × source clauses check_answer compares
+                          (default ${DEFAULT_MAX_CLAUSE_PAIRS}; env RAG_MCP_MAX_CLAUSE_PAIRS)
+  --max-sentence-source-chars <n>  Most answer sentences × source characters check_answer
+                          compares (default ${DEFAULT_MAX_SENTENCE_SOURCE_CHARS}; env RAG_MCP_MAX_SENTENCE_SOURCE_CHARS)
+  --check-timeout-ms <n>  Longest a check_answer check may run before it is stopped
+                          (default ${DEFAULT_CHECK_TIMEOUT_MS}; env RAG_MCP_CHECK_TIMEOUT_MS)
+  --max-concurrent-checks <n>  Most check_answer checks run at once; up to 8 more wait
+                          (default ${DEFAULT_MAX_CONCURRENT_CHECKS}; env RAG_MCP_MAX_CONCURRENT_CHECKS)
   -h, --help        Show this help
   -v, --version     Show the version
 `;
@@ -96,14 +125,127 @@ const toolError = (text) => ({
   content: [{ type: "text", text }],
 });
 
+// Sentence and clause splitting as in checkAnswer (rag-eval's
+// src/evaluate/scoring.js), so the counts below follow the comparisons it
+// makes.
+const CLAUSE_BOUNDARY_WORDS = new Set(
+  "but whereas although though while however yet and or except unlike".split(
+    " ",
+  ),
+);
+const tokenize = (text) =>
+  text
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .split(" ")
+    .filter(Boolean);
+const splitSentences = (text) =>
+  text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+
+/** The word count of each clause of a sentence. */
+function clauseWords(sentence) {
+  const out = [];
+  for (const part of sentence.split(/[,;:()[\]]+/)) {
+    let words = 0;
+    for (const token of tokenize(part)) {
+      if (CLAUSE_BOUNDARY_WORDS.has(token)) {
+        if (words) out.push(words);
+        words = 0;
+      } else {
+        words += 1;
+      }
+    }
+    if (words) out.push(words);
+  }
+  return out;
+}
+
+/**
+ * Whether checkAnswer can check `answer` against `docs` in bounded time. Its
+ * cost grows with answer sentences × source characters (each sentence is
+ * compared with every source) and with answer words × source clauses (each
+ * clause of the answer is compared with the source's clauses; a sentence
+ * with no words counts as one clause).
+ *
+ * @returns {string|null} An error message, or null when within the limits
+ */
+function checkSize(answer, docs, { maxClausePairs, maxSentenceSourceChars }) {
+  const sentences = splitSentences(answer);
+  const sourceChars = docs.reduce((sum, d) => sum + d.content.length, 0);
+  // Checked first: it needs no tokenizing, and it bounds the work below
+  if (sentences.length * sourceChars > maxSentenceSourceChars) {
+    return `Input too large to check: ${sentences.length} answer sentences × ${sourceChars} source characters exceeds the limit of ${maxSentenceSourceChars}. Shorten the answer or sources, or raise --max-sentence-source-chars.`;
+  }
+  let answerWords = 0;
+  for (const sentence of sentences) {
+    for (const words of clauseWords(sentence)) answerWords += words;
+  }
+  let sourceClauses = 0;
+  for (const doc of docs) {
+    for (const sentence of splitSentences(doc.content)) {
+      sourceClauses += Math.max(1, clauseWords(sentence).length);
+    }
+  }
+  if (answerWords * sourceClauses > maxClausePairs) {
+    return `Input too large to check: ${answerWords} answer words × ${sourceClauses} source clauses exceeds the limit of ${maxClausePairs}. Shorten the answer or sources, or raise --max-clause-pairs.`;
+  }
+  return null;
+}
+
 /**
  * The MCP server for an index (not yet connected to a transport).
  *
  * @param {{search: Function, size: number}} index - From buildIndex
- * @param {{defaultTopK?: number, folder?: string}} [options]
+ * @param {{defaultTopK?: number, folder?: string, maxAnswerChars?: number, maxSourceChars?: number, maxQuestionChars?: number, maxSources?: number, maxClausePairs?: number, maxSentenceSourceChars?: number, checkTimeoutMs?: number, maxConcurrentChecks?: number}} [options]
+ *   maxAnswerChars, maxSourceChars, maxQuestionChars and maxSources bound what the tools
+ *   accept: the answer, each source, the question or query, and the sources per call.
+ *   maxClausePairs and maxSentenceSourceChars bound the work check_answer does (see checkSize);
+ *   checkTimeoutMs stops a check that runs longer (it runs in a worker thread, see check-runner.js);
+ *   maxConcurrentChecks checks run at once and up to 8 more wait
  */
-function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
+function createServer(
+  index,
+  {
+    defaultTopK = 4,
+    folder = "the folder",
+    maxAnswerChars = DEFAULT_MAX_ANSWER_CHARS,
+    maxSourceChars = DEFAULT_MAX_SOURCE_CHARS,
+    maxQuestionChars = DEFAULT_MAX_QUESTION_CHARS,
+    maxSources = DEFAULT_MAX_SOURCES,
+    maxClausePairs = DEFAULT_MAX_CLAUSE_PAIRS,
+    maxSentenceSourceChars = DEFAULT_MAX_SENTENCE_SOURCE_CHARS,
+    checkTimeoutMs = DEFAULT_CHECK_TIMEOUT_MS,
+    maxConcurrentChecks = DEFAULT_MAX_CONCURRENT_CHECKS,
+  } = {},
+) {
+  const answerText = z
+    .string()
+    .min(1)
+    .max(
+      maxAnswerChars,
+      `answer is too long: at most ${maxAnswerChars} characters are accepted. Check a shorter answer, or start the server with --max-answer-chars (env RAG_MCP_MAX_ANSWER_CHARS).`,
+    );
+  const sourceText = z
+    .string()
+    .min(1)
+    .max(
+      maxSourceChars,
+      `source text is too long: at most ${maxSourceChars} characters per source are accepted. Pass a shorter passage, or start the server with --max-source-chars (env RAG_MCP_MAX_SOURCE_CHARS).`,
+    );
+  const questionMessage = (name) =>
+    `${name} is too long: at most ${maxQuestionChars} characters are accepted. Send a shorter ${name}, or start the server with --max-question-chars (env RAG_MCP_MAX_QUESTION_CHARS).`;
   const server = new McpServer({ name: "rag-mcp-server", version });
+  const checks = createCheckRunner({
+    timeoutMs: checkTimeoutMs,
+    maxConcurrent: maxConcurrentChecks,
+  });
+  // Stop the check workers when the connection closes
+  const onclose = server.server.onclose;
+  server.server.onclose = () => {
+    checks.close();
+    if (onclose) onclose();
+  };
   const empty = () =>
     toolError(
       `No documents are indexed: ${folder} has no ${SUPPORTED_EXTENSIONS.join(", ")} files with text.`,
@@ -122,7 +264,10 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
         query: z
           .string()
           .min(1)
-          .describe("What to look for, in natural language"),
+          .max(maxQuestionChars, questionMessage("query"))
+          .describe(
+            `What to look for, in natural language (at most ${maxQuestionChars} characters)`,
+          ),
         topK: z
           .number()
           .int()
@@ -154,17 +299,20 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
         "0 to 1), the unsupported sentences and, per sentence, the sources that support it. " +
         "Use it before giving an answer about the documents, and revise or drop unsupported sentences.",
       inputSchema: {
-        answer: z.string().min(1).describe("The answer to check"),
+        answer: answerText.describe(
+          `The answer to check (at most ${maxAnswerChars} characters)`,
+        ),
         question: z
           .string()
+          .max(maxQuestionChars, questionMessage("question"))
           .optional()
           .describe(
-            "The question the answer responds to; improves source retrieval",
+            `The question the answer responds to; improves source retrieval (at most ${maxQuestionChars} characters)`,
           ),
         sources: z
           .array(
             z.union([
-              z.string().min(1),
+              sourceText,
               z.object({
                 id: z
                   .string()
@@ -172,14 +320,18 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
                   .describe(
                     "Id to cite, such as a search_documents passage id",
                   ),
-                text: z.string().min(1),
+                text: sourceText,
               }),
             ]),
           )
           .min(1)
+          .max(
+            maxSources,
+            `too many sources: at most ${maxSources} are accepted per call. Pass fewer sources, or start the server with --max-sources (env RAG_MCP_MAX_SOURCES).`,
+          )
           .optional()
           .describe(
-            "Source passages to check against (strings or { id, text }). Omit to search the indexed documents.",
+            `Source passages to check against (strings or { id, text }; at most ${maxSources}). Omit to search the indexed documents.`,
           ),
         topK: z
           .number()
@@ -222,12 +374,32 @@ function createServer(index, { defaultTopK = 4, folder = "the folder" } = {}) {
           metadata: { source: p.source },
         }));
       }
-      const check = await checkAnswer({
-        answer,
-        question,
-        sources: docs,
-        evaluate: false,
+      const tooLarge = checkSize(answer, docs, {
+        maxClausePairs,
+        maxSentenceSourceChars,
       });
+      if (tooLarge) return toolError(tooLarge);
+      let check;
+      try {
+        check = await checks.run({
+          answer,
+          question,
+          sources: docs,
+          evaluate: false,
+        });
+      } catch (error) {
+        if (error instanceof CheckTimeoutError) {
+          return toolError(
+            `check_answer took longer than ${checkTimeoutMs} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`,
+          );
+        }
+        if (error instanceof CheckQueueFullError) {
+          return toolError(
+            "Too many check_answer calls waiting; try again shortly.",
+          );
+        }
+        throw error;
+      }
       return reply({
         grounded: check.grounded,
         groundedness: Number(check.groundedness.toFixed(4)),
@@ -262,6 +434,14 @@ async function main(argv) {
       allowPositionals: true,
       options: {
         "top-k": { type: "string" },
+        "max-answer-chars": { type: "string" },
+        "max-source-chars": { type: "string" },
+        "max-question-chars": { type: "string" },
+        "max-sources": { type: "string" },
+        "max-clause-pairs": { type: "string" },
+        "max-sentence-source-chars": { type: "string" },
+        "check-timeout-ms": { type: "string" },
+        "max-concurrent-checks": { type: "string" },
         embedder: { type: "string", default: "local" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" },
@@ -303,6 +483,67 @@ async function main(argv) {
     return 2;
   }
 
+  const limits = {};
+  for (const [key, flag, envName, fallback] of [
+    [
+      "maxAnswerChars",
+      "max-answer-chars",
+      "RAG_MCP_MAX_ANSWER_CHARS",
+      DEFAULT_MAX_ANSWER_CHARS,
+    ],
+    [
+      "maxSourceChars",
+      "max-source-chars",
+      "RAG_MCP_MAX_SOURCE_CHARS",
+      DEFAULT_MAX_SOURCE_CHARS,
+    ],
+    [
+      "maxQuestionChars",
+      "max-question-chars",
+      "RAG_MCP_MAX_QUESTION_CHARS",
+      DEFAULT_MAX_QUESTION_CHARS,
+    ],
+    ["maxSources", "max-sources", "RAG_MCP_MAX_SOURCES", DEFAULT_MAX_SOURCES],
+    [
+      "maxClausePairs",
+      "max-clause-pairs",
+      "RAG_MCP_MAX_CLAUSE_PAIRS",
+      DEFAULT_MAX_CLAUSE_PAIRS,
+    ],
+    [
+      "maxSentenceSourceChars",
+      "max-sentence-source-chars",
+      "RAG_MCP_MAX_SENTENCE_SOURCE_CHARS",
+      DEFAULT_MAX_SENTENCE_SOURCE_CHARS,
+    ],
+    [
+      "checkTimeoutMs",
+      "check-timeout-ms",
+      "RAG_MCP_CHECK_TIMEOUT_MS",
+      DEFAULT_CHECK_TIMEOUT_MS,
+    ],
+    [
+      "maxConcurrentChecks",
+      "max-concurrent-checks",
+      "RAG_MCP_MAX_CONCURRENT_CHECKS",
+      DEFAULT_MAX_CONCURRENT_CHECKS,
+    ],
+  ]) {
+    const raw = values[flag] ?? process.env[envName];
+    if (raw === undefined || raw === "") {
+      limits[key] = fallback;
+      continue;
+    }
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 1) {
+      process.stderr.write(
+        `--${flag} (env ${envName}) must be a whole number of at least 1.\n`,
+      );
+      return 2;
+    }
+    limits[key] = value;
+  }
+
   const folder = path.resolve(positionals[0]);
   let index;
   try {
@@ -316,7 +557,7 @@ async function main(argv) {
       `warning: no ${SUPPORTED_EXTENSIONS.join(", ")} files with text under ${folder}`,
     );
   }
-  const server = createServer(index, { defaultTopK, folder });
+  const server = createServer(index, { defaultTopK, folder, ...limits });
   await server.connect(new StdioServerTransport());
   log(
     `indexed ${index.size} passages from ${index.files} files in ${folder}; serving search_documents and check_answer over stdio`,

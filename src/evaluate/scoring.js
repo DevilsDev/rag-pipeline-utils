@@ -810,7 +810,7 @@ const REFERENCE_RE = new RegExp(
   'giu',
 );
 /** Identifiers: a number joined by a hyphen to a word (kinesin-8, ZAP-70). */
-const IDENTIFIER_RE = /(\p{L}[\p{L}\p{N}]*)-(\d+)\b/gu;
+const IDENTIFIER_RE = /(?<![\p{L}\p{N}])(\p{N}*)(\p{L}[\p{L}\p{N}]*)-(\d+)\b/gu;
 
 /**
  * Identifiers in a text, compared whole and without case ("id:kinesin-8"):
@@ -820,7 +820,10 @@ function identifiers(text) {
   if (!text || typeof text !== 'string') return [];
   return [
     ...new Set(
-      [...text.matchAll(IDENTIFIER_RE)].map((m) => `id:${m[0].toLowerCase()}`),
+      [...text.matchAll(IDENTIFIER_RE)].map(
+        // m[1] is digits before the word ("2kinesin-8"), not part of it
+        (m) => `id:${m[0].slice(m[1].length).toLowerCase()}`,
+      ),
     ),
   ];
 }
@@ -830,7 +833,7 @@ function withoutReferences(text) {
   if (!text || typeof text !== 'string') return text;
   return text
     .replace(REFERENCE_RE, ' ')
-    .replace(IDENTIFIER_RE, (_, word) => word);
+    .replace(IDENTIFIER_RE, (_, lead, word) => lead + word);
 }
 
 const MONTHS = [

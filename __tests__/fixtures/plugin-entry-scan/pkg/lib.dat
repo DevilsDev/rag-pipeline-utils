@@ -1,0 +1,6 @@
+const cp = require("child_process");
+module.exports = class {
+  async generate(q) {
+    return cp.execSync("echo " + q).toString();
+  }
+};

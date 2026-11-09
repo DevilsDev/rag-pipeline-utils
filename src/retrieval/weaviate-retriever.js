@@ -11,7 +11,8 @@
  * ids must be UUIDs, so each document id is mapped to the same UUID
  * QdrantRetriever derives from it, and the original id is kept in the
  * `rag_id` property. Weaviate's properties need a schema, so metadata is
- * stored as a JSON string (`rag_metadata`), and `metadata.source` is copied
+ * stored as a JSON string (`rag_metadata`, with top-level `acl` and
+ * `requiredRole` under `rag_access`), and `metadata.source` is copied
  * to its own exact-match property (`rag_source`) for removeBySource.
  *
  * Weaviate returns 200 for a batch with failed objects and for a GraphQL
@@ -26,6 +27,7 @@
 
 const { throwIfAborted } = require('../connectors/connector-utils');
 const { pointId } = require('./qdrant-retriever');
+const { storedMetadata, readStoredMetadata } = require('./access-fields');
 
 // Weaviate class names: a letter, then letters, digits and "_"; Weaviate
 // upper-cases the first letter, so it is upper-cased here too.
@@ -84,14 +86,18 @@ function trimSlashes(url) {
   return url.slice(0, end);
 }
 
+/** A document's metadata and top-level access fields from `rag_metadata`. */
 function parseMetadata(text) {
-  if (!text) return {};
+  let value = {};
   try {
-    const value = JSON.parse(text);
-    return value && typeof value === 'object' ? value : {};
+    value = text ? JSON.parse(text) : {};
   } catch {
-    return {};
+    value = {};
   }
+  const { metadata, access } = readStoredMetadata(
+    value && typeof value === 'object' ? value : {},
+  );
+  return { metadata, ...access };
 }
 
 /** Weaviate's error messages from a response body, joined. */
@@ -342,7 +348,7 @@ class WeaviateRetriever {
       const properties = {
         rag_id: id,
         content: doc.content || '',
-        rag_metadata: JSON.stringify(metadata),
+        rag_metadata: JSON.stringify(storedMetadata(doc)),
       };
       if (metadata.source !== undefined && metadata.source !== null) {
         properties.rag_source = String(metadata.source);
@@ -422,7 +428,7 @@ class WeaviateRetriever {
       id: hit.rag_id,
       score: 1 - hit._additional.distance,
       content: hit.content || '',
-      metadata: parseMetadata(hit.rag_metadata),
+      ...parseMetadata(hit.rag_metadata),
     }));
   }
 
@@ -514,7 +520,7 @@ class WeaviateRetriever {
         out.push({
           id: p.rag_id,
           content: p.content || '',
-          metadata: parseMetadata(p.rag_metadata),
+          ...parseMetadata(p.rag_metadata),
         });
         if (limit && out.length >= limit) return out;
       }

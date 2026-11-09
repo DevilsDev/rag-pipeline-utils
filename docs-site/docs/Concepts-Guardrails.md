@@ -59,12 +59,12 @@ layer to disable it; the others still run.
 | `PreRetrievalGuard`: topic filter        | Keyword lists: `blockedTopics` / `allowedTopics` with `enableTopicFiltering: true`.                                                                                                                                                            |
 | `PreRetrievalGuard`: query-length limit  | `maxQueryLength` (default 10000).                                                                                                                                                                                                              |
 | `RetrievalGuard`: minimum relevance      | Drop results whose `score` is below `minRelevanceScore`.                                                                                                                                                                                       |
-| `RetrievalGuard`: ACL filter             | `enforceACL: true` checks each document's `requiredRole` / `acl` (on the result or in its `metadata`, as `MemoryRetriever` and `FileVectorStore` return it) against `context.userPermissions`. Fails closed when `userPermissions` is missing. |
+| `RetrievalGuard`: ACL filter             | `enforceACL: true` checks each document's `requiredRole` / `acl` (on the result or in its `metadata`, as all built-in stores and `HybridRetriever` keep it) against `context.userPermissions`. Fails closed when `userPermissions` is missing. |
 | `RetrievalGuard`: freshness              | `maxAgeDays` (0 disables it).                                                                                                                                                                                                                  |
 | `RetrievalGuard`: injection scan         | `detectInjection: true` scans retrieved text; `injectionAction: 'remove'` (default) or `'flag'`.                                                                                                                                               |
 | `PostGenerationGuard`: PII detection     | Regex patterns for emails, US phone numbers (10 digits, such as 555-123-4567), SSNs and credit cards; detected PII is redacted in the answer, citations and evaluation details.                                                                |
 | `PostGenerationGuard`: groundedness      | Flags answers below `groundednessThreshold` (default 0.3).                                                                                                                                                                                     |
-| `PostGenerationGuard`: length            | `minResponseLength` / `maxResponseLength`.                                                                                                                                                                                                     |
+| `PostGenerationGuard`: length            | `minResponseLength` / `maxResponseLength`; PII is redacted before an over-long answer is cut.                                                                                                                                                  |
 | `detectInjection(text)`                  | The injection detector as a standalone function.                                                                                                                                                                                               |
 | `detectors` (each guard)                 | Your own injection or PII detectors (an injection classifier, a PII or NER service), with or instead of the built-in patterns. See [Plug in your own detectors](#plug-in-your-own-detectors).                                                  |
 
@@ -118,6 +118,38 @@ const result = await safe.run({
 
 Without `strict`, issues are reported in `result.guardrails` and the run
 continues (PII is still redacted).
+
+## Streaming, custom pipelines and blocked results
+
+- **Streaming.** With `options.stream: true` and a post-generation guard, the
+  tokens are collected until the source's done chunk, then checked and
+  redacted as one answer, and released through the same async iterable: one
+  token chunk with the sanitized answer, then the done chunk (redacted
+  citations and evaluation, plus `guardrails`). Nothing reaches the caller
+  before the whole answer is checked. Buffering stops at the guard's
+  `maxResponseLength`, or at 1,000,000 characters when none is set; the
+  source is then closed and the answer is treated as over-long (truncated, or
+  blocked in strict mode). `options.timeout` and `options.signal` apply while
+  buffering and reject as a run does. A strict-mode block yields only a done
+  chunk with `success: false` and the error.
+- **Custom pipelines.** If the wrapped pipeline neither calls
+  `options.filterResults` nor returns `results`, the retrieval guard can't run.
+  With `enforceACL`, any successful result (an answer, or sources only) is
+  withheld in both modes with the error "retrieval guard could not run: the
+  wrapped pipeline neither called filterResults nor returned results; answer
+  withheld". With only the other retrieval checks, strict mode withholds the
+  result; non-strict mode returns it with
+  `guardrails.retrieval = { skipped: true, reason }` and emits a one-time
+  `RAG_GUARDRAILS_RETRIEVAL_SKIPPED` warning. Results with `success: false`
+  pass through unchanged.
+- **Blocked results carry no text.** A withheld result is
+  `{ success: false, error, guardrails }`: no answer, an empty
+  `guardrails.postGeneration.sanitizedOutput`, and guard summaries that keep
+  counts, kinds and reasons but not the query, matched strings or document
+  content.
+- **The `postGeneration` event** receives the full check result, including
+  `sanitizedOutput`, even when the result is then withheld. Treat what your
+  listener receives as you would the answer.
 
 ## Plug in your own detectors
 

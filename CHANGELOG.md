@@ -89,29 +89,149 @@ page.
   `judge.error` says why, and those sentences keep their lexical verdict.
   This applies to `verifyCitations`' judge too. Network and authentication
   errors still reject.
-- Creating an `AuditLogger` no longer writes to disk: its log folders are
-  created on the first write, so a logger that never logs leaves no
-  `.rag-enterprise/` folder behind.
+- Creating an `AuditLogger` no longer writes to disk: its log folders, and
+  the stored signing key when no key is configured, are created on the
+  first write, so a logger that never logs leaves no `.rag-enterprise/`
+  folder behind.
 - An `AuditLogger` whose `logDir` can't be written (a read-only working
   directory, as on AWS Lambda, or a path under a file) no longer ends the
   process with an unhandled rejection. A failed write logs one warning
   until a write succeeds, emits `flush_failed`, and keeps the events for
   the next flush; a log call never rejects because of it.
-- `AuditLogger` writes each event to the daily file once. When the
-  integrity-chain update failed after the write, the whole batch was
-  written again on the next flush. Now each of the three stages (file,
-  chain, webhook) keeps its own queue and retries only itself: a webhook
-  that is down is retried on later flushes (its failures used to be
-  dropped) and neither repeats nor holds up file writes. Each queue
-  keeps the latest `memoryLimit` events (a new option, default 10,000);
-  older ones are dropped, reported with an `events_dropped` event
-  (`{ count, totalDropped }`) and in the warning, and counted in
-  `droppedEvents`. Flushes run one at a time, and a listener that throws
-  (on `logs_flushed`, `events_dropped` or a failure event) is logged once
-  and can't stop the remaining stages or later flushes.
+- `AuditLogger` keeps at most `memoryLimit` events (a new option, default
+  10,000) while writes fail; older ones are dropped, reported with an
+  `events_dropped` event (`{ count, totalDropped }`) and in the warning,
+  and counted in `droppedEvents`. Dropped events were never numbered, so
+  they leave no gap in the chain. A failed write of the integrity chain
+  file now emits `chain_failed` and logs one warning until it succeeds,
+  instead of a warning on every flush; it is still retried on the next
+  flush without writing the events again. A listener that throws (on
+  `logs_flushed`, `events_dropped` or a failure event) is logged once and
+  can't stop the rest of the flush or later flushes.
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.
+
+## [3.8.3] - 2026-11-09
+
+Documentation and package metadata only; no code changes. If you're on
+3.8.1 or earlier, upgrade for the security fixes in 3.8.2.
+
+## [3.8.2] - 2026-11-09
+
+A patch release with security fixes.
+
+### Security
+
+- Fixed an access-control issue in `QdrantRetriever`, `PineconeRetriever`,
+  `WeaviateRetriever` and `PgVectorRetriever`.
+- Fixed an access-control issue in `HybridRetriever`.
+- Fixed an issue in how `GuardrailsPipeline` checks streamed answers.
+- Fixed an issue in what `GuardrailsPipeline` returns when it blocks an
+  answer.
+- Fixed an access-control issue in `GuardrailsPipeline` with custom
+  pipelines.
+- Fixed a signature-verification issue in how plugins configured in
+  `.ragrc.json` are loaded.
+- Fixed an issue in the `hub install` security scan and contract check.
+- Fixed denial-of-service issues in `InjectionDetector`, the default PII
+  patterns and answer scoring.
+- Fixed a denial-of-service issue in `EntityExtractor`.
+- Fixed a denial-of-service issue in plugin archive extraction.
+- Fixed a denial-of-service issue in `@devilsdev/rag-mcp-server`'s tool
+  inputs.
+- Fixed a request-validation issue in `DevServer` when it is bound to all
+  interfaces.
+- Fixed an integrity-verification issue in `AuditLogger`.
+- Fixed an access-control issue in `AuditLogger`'s tenant filters.
+
+### Changed
+
+- **Re-ingest documents with top-level access restrictions.**
+  `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` and
+  `PgVectorRetriever` now store a document's top-level `acl` and
+  `requiredRole` (Pinecone, Weaviate and pgvector under the reserved
+  metadata key `rag_access`). Documents stored by earlier versions were
+  saved without them; re-ingest them. See
+  [Do I need to re-ingest?](https://devilsdev.github.io/rag-pipeline-utils/docs/Security#do-i-need-to-re-ingest)
+  to check a store. Thanks to a reader for suggesting this.
+- **`HybridRetriever` keeps the restrictions of every copy of a document.**
+  When two retrievers return the same document, the merged result requires
+  every restriction any copy sets, which can hide documents that were
+  visible before. The role `rag:no-access` is reserved: it restricts a
+  document to no one, and a user's permissions never match it.
+- **Blocked `GuardrailsPipeline` results carry no text.** A withheld result
+  has no answer, an empty `guardrails.postGeneration.sanitizedOutput`, and
+  guard summaries without the query, matched strings or document content.
+- **`hub install` scans more and passes less.** The security scan now
+  covers the package entry file whatever its extension and the files it
+  loads by relative path, so some installs that passed before are blocked;
+  the stage-contract check runs with only `PATH` (plus `SystemRoot` and
+  `TEMP` on Windows) from your environment.
+- **`hub certify` scans the entry file the same way as `hub install`.** Its
+  security score now covers the package entry file whatever its extension,
+  so some plugins score lower than before.
+- **`GuardrailsPipeline` buffers streamed answers.** With
+  `options.stream: true` and a post-generation guard, the answer is checked
+  as a whole and released as one token chunk followed by the done chunk;
+  buffering stops at the output guard's `maxResponseLength`, or 1,000,000
+  characters when none is set.
+- **`GuardrailsPipeline` withholds results the retrieval guard couldn't
+  check.** When the wrapped pipeline neither calls `options.filterResults`
+  nor returns `results`: with `enforceACL`, any successful result is
+  withheld (`success: false`) in both modes; with only other retrieval
+  checks, strict mode withholds it and non-strict mode returns it with
+  `guardrails.retrieval.skipped` and a one-time warning.
+- **Plugins configured in `.ragrc.json` are verified before they load.**
+  When the shared `pluginRegistry` verifies signatures (by default when
+  `NODE_ENV` is `production`), a configured plugin whose manifest fails
+  verification is no longer loaded. An unsigned plugin still loads, with a
+  one-time `RAG_PLUGIN_UNSIGNED` warning (refused with
+  `requireSignedPlugins`); a signed manifest without a `contentDigest`, or
+  with `contentDigest: null`, loads with a one-time
+  `RAG_PLUGIN_NO_CONTENT_DIGEST` warning (refused with
+  `requireContentDigest`).
+- **Plugins from a JSON plugin config warn when unsigned.** The async loader
+  for a JSON plugin config now emits the same one-time `RAG_PLUGIN_UNSIGNED`
+  warning for a plugin without a manifest as the `.ragrc.json` loader does.
+- **`@devilsdev/rag-mcp-server` limits tool inputs.** `check_answer`
+  accepts an answer of up to 50,000 characters and up to 100 sources of up
+  to 200,000 characters each; a `question` or `query` can be up to 10,000
+  characters. Larger input is rejected with an error. It also rejects input
+  that would take too long to check: more than 2,000,000 answer words ×
+  source clauses, or more than 3,000,000 answer sentences × source
+  characters. A check runs in a worker thread with at most 512 MB of heap,
+  and one that takes longer than 10 seconds is stopped with an error; at
+  most 2 checks run at once, up to 8 more wait, and further calls are
+  refused until one finishes. Each limit can be raised with a CLI flag or
+  environment variable (see the package README). `checkAnswer` itself is
+  unchanged: its cost grows with the size of the answer and the sources, so
+  cap untrusted input before checking it.
+- **`DevServer` checks the `Host` header of loopback requests whatever it is
+  bound to.** A server bound to `0.0.0.0` or `::` now refuses requests that
+  arrive from a loopback address with a non-loopback `Host` header.
+- **Plugin archives with a malformed extended (pax) header are refused.**
+  `hub install` rejects the whole archive instead of reading it in part.
+- **`AuditLogger` chains and verifies its records.** New records carry a
+  sequence number, a link to the previous record, a `keyId` and a keyed
+  hash over the whole record. `verifyIntegrity()` also returns
+  `integrityBreaks`, `missingLogs`, `unchained`, `otherKey` and
+  `secondWriter`; `tamperedLogs` has one entry per record, with `reason`
+  and `reasons`; a missing signature is reported only for records written
+  with signing on. Unreadable lines are reported instead of thrown, and
+  `queryLogs()` returns their count as `skippedLines`.
+- **`AuditLogger` stores a signing key when none is configured.** Without
+  `signingKey` or `RAG_AUDIT_SIGNING_KEY`, a key is generated once and
+  stored in `logDir/integrity/signing.key`, so records verify after a
+  restart, with a one-time `RAG_AUDIT_NO_SIGNING_KEY` warning; it only
+  detects accidental damage and casual edits. Records written with the
+  stored key count as `otherKey` once you configure a key.
+- **`AuditLogger` validates tenant filters.** `queryLogs()`,
+  `verifyIntegrity()` and `generateComplianceReport()` throw a `TypeError`
+  for a `tenantId` that is present but not a string, and no longer fall
+  back to `_tenantId` when `tenantId` is present. A compliance report
+  without a `tenantId` is deprecated: pass `allTenants: true` to cover
+  every tenant.
 
 ## [3.8.1] - 2026-11-07
 

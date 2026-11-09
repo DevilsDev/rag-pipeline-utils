@@ -475,8 +475,8 @@ What it does:
 
 1. Fetches the plugin. Registry downloads are checked against the registry's sha256, and a mismatch aborts.
 2. Unpacks it into `.rag/plugins/<stage>-<name>/` next to the config. Archive entries that would land outside that folder are rejected, and symlinks are skipped.
-3. Statically scans the code for risky capabilities: running processes, `eval`/`new Function`, `vm`, native addons, network access, file writes and environment access. High-risk findings block the install unless you pass `--allow-risky`.
-4. Loads the entry module in a separate Node process and checks it has the stage's methods (`llm`: `generate`; `embedder`: `embed`; `retriever`: `store` and `retrieve`; `reranker`: `rerank`; `loader`: `load`).
+3. Statically scans the code for risky capabilities: running processes, `eval`/`new Function`, `vm`, native addons, network access, file writes and environment access. High-risk findings block the install unless you pass `--allow-risky`. The entry file is scanned whatever its extension, and so is every file in the package it loads by a literal relative `require` or `import`; computed `require` calls are not followed.
+4. Loads the entry module in a separate Node process, which gets only `PATH` (plus `SystemRoot` and `TEMP` on Windows) from your environment, and checks it has the stage's methods (`llm`: `generate`; `embedder`: `embed`; `retriever`: `store` and `retrieve`; `reranker`: `rerank`; `loader`: `load`).
 5. Adds `plugins.<stage>.<name>` to `.ragrc.json`. To use the plugin, add `{ "stage": ..., "name": ... }` to `pipeline`.
 
 Stage and name come from `package.json` (`"ragPipeline": { "stage": "llm", "name": "echo" }`), or from `--stage` and `--name`. Install scripts are never run.

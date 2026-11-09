@@ -106,16 +106,18 @@ describe("AuditLogger memoryLimit", () => {
         const logger = new AuditLogger({ logDir: "afile/logs", encryption: false, realtimeEnabled: false, memoryLimit: 3, batchSize: 1 });
         const dropped = [];
         logger.on("events_dropped", (e) => dropped.push(e));
-        for (let i = 0; i < 5; i++) await logger.logAuthentication(${login});
+        // Records are numbered when they are written, so the kept ones are
+        // told apart by user
+        for (let i = 1; i <= 5; i++) await logger.logAuthentication({ _userId: "u" + i, _tenantId: "t1", method: "password", success: true });
         report({
-          kept: logger.logBuffer.map((l) => l.sequence),
+          kept: logger.logBuffer.map((l) => l.userId),
           dropped,
           total: logger.droppedEvents,
         });
       })();
     `);
     expect(result).toEqual({
-      kept: [3, 4, 5],
+      kept: ["u3", "u4", "u5"],
       dropped: [
         { count: 1, totalDropped: 1, stage: "file" },
         { count: 1, totalDropped: 2, stage: "file" },
@@ -202,87 +204,74 @@ describe("AuditLogger with a logDir", () => {
   });
 });
 
-// The daily file's events, and whether chain.json's last hash is the chain
-// of exactly those events, each once, in order
+// The daily file's events, chain.json's sequence, and whether the log
+// verifies: verifyIntegrity() checks the chain links and that chain.json
+// ends at the last record, so each event must be there once, in order
 const inspect = `
   const fs = require("fs");
-  const crypto = require("crypto");
-  const inspect = () => {
+  const inspect = async (logger) => {
     const dir = "logs/daily";
     const lines = fs.readdirSync(dir).flatMap((f) =>
       fs.readFileSync(dir + "/" + f, "utf8").trim().split("\\n").filter(Boolean));
     const logs = lines.map((l) => JSON.parse(l));
-    let hash = crypto.createHash("sha256").update("genesis").digest("hex");
-    for (const log of logs) {
-      hash = crypto.createHash("sha256").update(JSON.stringify({
-        sequence: log.sequence, timestamp: log.metadata.timestamp,
-        hash: log.integrity, previousHash: hash,
-      })).digest("hex");
-    }
     const chain = JSON.parse(fs.readFileSync("logs/integrity/chain.json", "utf8"));
-    return { file: logs.map((l) => l.sequence), chainMatches: chain.lastHash === hash, chainSequence: chain.sequence };
+    const { verified } = await logger.verifyIntegrity();
+    return { file: logs.map((l) => l.sequence), verified, chainSequence: chain.sequence };
   };
 `;
 
 describe("AuditLogger writes each event to the file once", () => {
-  test("a webhook that fails twice, then succeeds", () => {
-    const { result } = run(`
-      ${inspect}
-      (async () => {
-        const logger = new AuditLogger({ logDir: "logs", encryption: false, realtimeEnabled: false, webhookUrl: "https://hooks.example.com/audit" });
-        let calls = 0;
-        const sent = [];
-        logger._sendToWebhook = async (logs) => {
-          calls++;
-          if (calls <= 2) throw new Error("webhook down");
-          sent.push(...logs.map((l) => l.sequence));
-        };
-        let failures = 0;
-        logger.on("webhook_failed", () => failures++);
-        await logger.logAuthentication(${login});
-        await logger.logAuthentication(${login});
-        await logger._flushLogs();
-        const whileDown1 = inspect().file;
-        await logger.logAuthentication(${login});
-        await logger._flushLogs();
-        const whileDown2 = inspect().file;
-        await logger._flushLogs();
-        await logger._flushLogs();
-        report({ whileDown1, whileDown2, after: inspect(), sent, failures });
-      })();
-    `);
-    expect(result).toEqual({
-      whileDown1: [1, 2],
-      whileDown2: [1, 2, 3],
-      after: { file: [1, 2, 3], chainMatches: true, chainSequence: 3 },
-      sent: [1, 2, 3],
-      failures: 2,
-    });
-  });
-
-  test("an integrity-chain update that fails once", () => {
+  test("a chain file write that fails once", () => {
     const { result } = run(`
       ${inspect}
       (async () => {
         const logger = new AuditLogger({ logDir: "logs", encryption: false, realtimeEnabled: false });
-        const update = logger._updateIntegrityChain.bind(logger);
+        const persist = logger._persistChainState.bind(logger);
         let calls = 0;
-        logger._updateIntegrityChain = async (logs) => {
+        logger._persistChainState = async () => {
           if (++calls === 1) throw new Error("chain locked");
-          return update(logs);
+          return persist();
+        };
+        const failures = [];
+        logger.on("chain_failed", (e) => failures.push(e));
+        await logger.logAuthentication(${login});
+        await logger._flushLogs();
+        await logger.logAuthentication(${login});
+        await logger._flushLogs();
+        report({ after: await inspect(logger), failures });
+      })();
+    `);
+    expect(result).toEqual({
+      after: { file: [1, 2], verified: true, chainSequence: 2 },
+      failures: [{ error: "chain locked", count: 1 }],
+    });
+  });
+
+  test("a chain file write that keeps failing is retried on a flush with nothing new", () => {
+    const { result } = run(`
+      ${inspect}
+      (async () => {
+        const logger = new AuditLogger({ logDir: "logs", encryption: false, realtimeEnabled: false });
+        const persist = logger._persistChainState.bind(logger);
+        let failing = true;
+        logger._persistChainState = async () => {
+          if (failing) throw new Error("chain locked");
+          return persist();
         };
         let failures = 0;
         logger.on("chain_failed", () => failures++);
         await logger.logAuthentication(${login});
-        await logger._flushLogs();
         await logger.logAuthentication(${login});
         await logger._flushLogs();
-        report({ after: inspect(), failures });
+        await logger._flushLogs();
+        failing = false;
+        await logger._flushLogs();
+        report({ after: await inspect(logger), failures });
       })();
     `);
     expect(result).toEqual({
-      after: { file: [1, 2], chainMatches: true, chainSequence: 2 },
-      failures: 1,
+      after: { file: [1, 2], verified: true, chainSequence: 2 },
+      failures: 2,
     });
   });
 });
@@ -303,11 +292,12 @@ describe("AuditLogger with a listener that throws", () => {
         await logger._flushLogs();
         await logger.logAuthentication(${login});
         await logger._flushLogs();
-        setTimeout(() => report({ after: inspect(), calls, unhandled }), 50);
+        const after = await inspect(logger);
+        setTimeout(() => report({ after, calls, unhandled }), 50);
       })();
     `);
     expect(result).toEqual({
-      after: { file: [1, 2], chainMatches: true, chainSequence: 2 },
+      after: { file: [1, 2], verified: true, chainSequence: 2 },
       calls: 2,
       unhandled: [],
     });
@@ -319,9 +309,14 @@ describe("AuditLogger with a listener that throws", () => {
       const unhandled = [];
       process.on("unhandledRejection", (e) => unhandled.push(String(e)));
       (async () => {
-        // The webhook is always down, so its queue drops past memoryLimit
-        const logger = new AuditLogger({ logDir: "logs", encryption: false, realtimeEnabled: false, memoryLimit: 2, webhookUrl: "https://hooks.example.com/audit" });
-        logger._sendToWebhook = async () => { throw new Error("webhook down"); };
+        // The first two appends fail, so the buffer drops past memoryLimit
+        const logger = new AuditLogger({ logDir: "logs", encryption: false, realtimeEnabled: false, memoryLimit: 2 });
+        const append = fs.promises.appendFile;
+        let appends = 0;
+        fs.promises.appendFile = async (...args) => {
+          if (++appends <= 2) throw new Error("disk full");
+          return append(...args);
+        };
         let drops = 0;
         logger.on("events_dropped", () => {
           drops++;
@@ -331,20 +326,20 @@ describe("AuditLogger with a listener that throws", () => {
         await logger._flushLogs();
         await logger.logAuthentication(${login});
         await logger._flushLogs();
+        await logger._flushLogs();
+        const after = await inspect(logger);
         setTimeout(() => report({
-          after: inspect(),
+          after,
           drops,
           dropped: logger.droppedEvents,
-          webhookQueue: logger._webhookPending.map((l) => l.sequence),
           unhandled,
         }), 50);
       })();
     `);
     expect(result).toEqual({
-      after: { file: [1, 2, 3, 4], chainMatches: true, chainSequence: 4 },
+      after: { file: [1, 2], verified: true, chainSequence: 2 },
       drops: 2,
       dropped: 2,
-      webhookQueue: [3, 4],
       unhandled: [],
     });
   });

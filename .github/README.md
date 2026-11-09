@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/banner.svg" alt="rag-pipeline-utils: composable RAG for Node.js with grounded citations, evaluation, guardrails and a working CLI" width="100%">
+  <img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/banner.svg" alt="rag-pipeline-utils: RAG for Node.js that tells you when your LLM is making things up" width="100%">
 </p>
 
 <p align="center">
@@ -103,7 +103,7 @@ npm install @devilsdev/rag-pipeline-utils
 
 Requires Node.js 22 or later (2.x runs on Node.js 18 and later). The package ships CommonJS, ESM and TypeScript declarations. It also runs on [Cloudflare Workers](https://devilsdev.github.io/rag-pipeline-utils/docs/Deployment-Cloudflare-Workers) with the `nodejs_compat` flag, and `@devilsdev/rag-pipeline-utils/edge` runs without Node.js APIs, on Vercel Edge Functions, Workers without the flag, Deno and Netlify Edge ([Edge runtimes](https://devilsdev.github.io/rag-pipeline-utils/docs/Deployment-Edge)).
 
-You can also install only the parts you use: `@devilsdev/rag-core` (the pipeline), `@devilsdev/rag-connectors`, `@devilsdev/rag-eval` and `@devilsdev/rag-guardrails`. They are the full package's own parts, the same objects; `rag-eval` alone installs about 6 MB, against 33 MB for the full package. See [Packages](https://devilsdev.github.io/rag-pipeline-utils/docs/Packages).
+You can also install only the parts you use: `@devilsdev/rag-core` (the pipeline), `@devilsdev/rag-connectors`, `@devilsdev/rag-eval` and `@devilsdev/rag-guardrails`. They are the full package's own parts, the same objects; `rag-eval` alone installs about 6 MB, against 34 MB for the full package. See [Packages](https://devilsdev.github.io/rag-pipeline-utils/docs/Packages).
 
 Optional peer dependencies, installed only by projects that use them:
 

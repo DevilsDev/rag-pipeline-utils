@@ -2,6 +2,7 @@
 
 const { EventEmitter } = require('events');
 const { detectInjection } = require('./injection-detector');
+const { NO_ACCESS } = require('../retrieval/access-fields');
 const {
   resolveDetectors,
   runDetectorsSync,
@@ -164,7 +165,9 @@ class RetrievalGuard extends EventEmitter {
       // 3. ACL filter. Missing userPermissions fails closed: the user is
       // treated as having no roles, so restricted documents are removed.
       if (!dominated && this.config.enforceACL) {
-        const userPermissions = permissionsOf(context.userPermissions);
+        const userPermissions = permissionsOf(context.userPermissions).filter(
+          (role) => role !== NO_ACCESS,
+        );
         // Every restriction set on the result, its metadata or its doc must
         // be met; within one, any of its roles is enough.
         const hasAccess = restrictionsOf(result).every((roles) =>

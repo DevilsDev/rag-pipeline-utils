@@ -23,7 +23,7 @@ const KINDS = ['injection', 'pii'];
 
 /** The PII patterns PostGenerationGuard redacts by default. */
 const DEFAULT_PII_PATTERNS = {
-  email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+  email: /(?<![a-zA-Z0-9._%+-])[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
   phone: /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g,
   ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
   creditCard: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/g,
