@@ -280,7 +280,11 @@ page.
 - `GraphRetriever.store()` keeps entity sources across calls and gives
   documents without an id their own ids.
 - `CostCalculator` prices gpt-4.1, gpt-4.1-mini, gpt-4.1-nano and
-  gpt-4.5-preview on their own; they were priced as gpt-4.
+  gpt-4.5-preview on their own; they were priced as gpt-4. The
+  gpt-4.1-mini and gpt-4.1-nano prices match OpenAI's model pages (both
+  models are now deprecated or shut down); the gpt-4.1 and gpt-4.5-preview
+  prices are not verified, like the rest of the table
+  (`CostCalculator.getPricingMetadata().verified` is `false`).
 - The AI SDK adapter's generation cache key includes `presencePenalty` and
   `frequencyPenalty`.
 - `AgenticPipeline({ maxIterations })` is honoured.
