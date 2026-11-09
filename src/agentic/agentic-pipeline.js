@@ -187,7 +187,10 @@ class AgenticPipeline extends EventEmitter {
             signal,
           });
         },
-        { timeout: this.config.timeout / 2, priority: sq.priority },
+        // No node timeout: the run's own timeout (runAbort) covers a slow
+        // retrieval and rejects, rather than degrading to an answer
+        // without documents.
+        { priority: sq.priority },
       );
     }
 
