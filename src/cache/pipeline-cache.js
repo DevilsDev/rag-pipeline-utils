@@ -41,6 +41,8 @@ const GENERATION_OPTIONS = [
   'maxTokens',
   'maxOutputTokens',
   'topP',
+  'presencePenalty',
+  'frequencyPenalty',
   'model',
   'systemPrompt',
   'seed',

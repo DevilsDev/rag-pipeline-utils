@@ -50,12 +50,15 @@ function textCallOptions(model, query, docs, settings, signal, systemPrompt) {
   };
 }
 
-/** Per-call settings the pipeline may pass through to the model. */
+/**
+ * Per-call settings the pipeline may pass through to the model. `topK` is
+ * not one of them: in a pipeline run it is the number of passages to
+ * retrieve, not a sampling setting. Set a sampling topK in `settings`.
+ */
 const CALL_SETTINGS = [
   'temperature',
   'maxOutputTokens',
   'topP',
-  'topK',
   'presencePenalty',
   'frequencyPenalty',
   'seed',
