@@ -1547,7 +1547,11 @@ function restrictingClauses(statement) {
       conditionWords(statement.slice(0, start) + ' ' + statement.slice(end)),
     );
     const distinctive = words.filter((w) => !elsewhere.has(w));
-    return { text, words: distinctive.length > 0 ? distinctive : words };
+    return {
+      text,
+      words: distinctive.length > 0 ? distinctive : words,
+      start,
+    };
   });
 }
 
@@ -1616,13 +1620,81 @@ function sentenceStatements(sentence) {
       i > 0 && CONTRAST_BOUNDARY.test(parts[i - 1])
         ? narrowingClause(text, parts[i - 2])
         : null;
-    if (narrowing) statements[statements.length - 1].clauses.push(narrowing);
+    if (narrowing) {
+      // It narrows the end of the statement before it
+      const before = statements[statements.length - 1];
+      const last = before.parts[before.parts.length - 1];
+      before.clauses.push({ ...narrowing, start: last.start });
+    }
     statements.push({
       words: conditionWords(text),
       clauses: restrictingClauses(text),
+      parts: statementParts(text),
     });
   }
   return statements;
+}
+
+/**
+ * A statement's parts at a bare "and" ("Employees receive 20 days and
+ * contractors receive 10 days if ..."), each with where it starts and ends
+ * and its condition words. A restricting clause belongs to the part it
+ * starts in, so "with manager and HR approval" stays with its statement.
+ * @param {string} text
+ * @returns {Array<{start: number, end: number, words: string[]}>}
+ */
+function statementParts(text) {
+  const parts = [];
+  let start = 0;
+  for (const match of text.matchAll(/\band\b/gi)) {
+    parts.push({ start, end: match.index });
+    start = match.index + match[0].length;
+  }
+  parts.push({ start, end: text.length });
+  return parts.map((part) => ({
+    ...part,
+    words: conditionWords(text.slice(part.start, part.end)),
+  }));
+}
+
+/** The part of a statement a position falls in. */
+function partAt(parts, position) {
+  let found = parts[0];
+  for (const part of parts) if (part.start <= position) found = part;
+  return found;
+}
+
+/**
+ * The parts of a sentence's statements a claim restates: those sharing the
+ * most of its words, and any other part sharing a word of the claim that
+ * those don't ("contractors" in "Employees receive 20 days and contractors
+ * receive 10 days"). A part sharing only words the closest parts also have
+ * belongs to another statement (3.9).
+ * @param {Array<{parts: Array<{words: string[]}>}>} statements
+ * @param {Set<string>} claimWords
+ * @returns {Set<object>} the parts
+ */
+function restatedParts(statements, claimWords) {
+  const parts = statements.flatMap((statement) =>
+    statement.parts.map((part) => ({
+      part,
+      shared: new Set(part.words.filter((w) => claimWords.has(w))),
+    })),
+  );
+  let best = 0;
+  for (const { shared } of parts) best = Math.max(best, shared.size);
+  if (best === 0) return new Set();
+  const covered = new Set(
+    parts.filter(({ shared }) => shared.size === best).flatMap(({ shared }) => [...shared]),
+  );
+  return new Set(
+    parts
+      .filter(
+        ({ shared }) =>
+          shared.size === best || [...shared].some((w) => !covered.has(w)),
+      )
+      .map(({ part }) => part),
+  );
 }
 
 /**
@@ -1744,9 +1816,13 @@ function checkConditionConsistency(claimText, docText, answerText) {
   let first = null;
   for (const i of tied) {
     const { sentence, statements } = sentences[i];
+    const restated = restatedParts(statements(), claimWords);
     const missing = statements()
-      .filter((statement) => statement.words.some((w) => claimWords.has(w)))
-      .flatMap((statement) => statement.clauses)
+      .flatMap((statement) =>
+        statement.clauses.filter((clause) =>
+          restated.has(partAt(statement.parts, clause.start)),
+        ),
+      )
       .filter((clause) => !clause.words.some((w) => answerWords.has(w)))
       .map((clause) => clause.text);
     if (missing.length === 0) {
