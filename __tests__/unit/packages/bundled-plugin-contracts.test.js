@@ -43,18 +43,42 @@ describe("plugin contracts in a bundled registry", () => {
   it("rejects an llm plugin that breaks the contract", async () => {
     const registry = new PluginRegistry({});
     await expect(
-      registry.register("llm", "broken", { notGenerate() {} }),
-    ).rejects.toThrow();
+      registry.register("llm", "broken", {
+        metadata: { name: "broken", version: "1.0.0", type: "llm" },
+        notGenerate() {},
+      }),
+    ).rejects.toThrow(/generate/);
     expect(registry.list("llm")).toEqual([]);
   });
 
   it("accepts an llm plugin that follows the contract", async () => {
     const registry = new PluginRegistry({});
     await registry.register("llm", "ok", {
+      metadata: { name: "ok", version: "1.0.0", type: "llm" },
       async generate() {
         return "x";
       },
     });
     expect(registry.list("llm")).toContain("ok");
+  });
+});
+
+describe("bundled contracts", () => {
+  it("equal the JSON files in contracts/", () => {
+    const bundled = require("../../../src/core/bundled-contracts");
+    const dirOf = path.join(__dirname, "../../../contracts");
+    const read = (f) =>
+      JSON.parse(fs.readFileSync(path.join(dirOf, f), "utf8"));
+    expect(bundled.schema).toEqual(read("contract-schema.json"));
+    for (const type of Object.keys(bundled.contracts)) {
+      expect(bundled.contracts[type]).toEqual(read(`${type}-contract.json`));
+    }
+    expect(Object.keys(bundled.contracts).sort()).toEqual([
+      "embedder",
+      "llm",
+      "loader",
+      "reranker",
+      "retriever",
+    ]);
   });
 });

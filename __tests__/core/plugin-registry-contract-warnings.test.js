@@ -188,10 +188,13 @@ describe("Plugin Registry Contract Warnings", () => {
       // Simulate a missing loader contract (the contracts are bundled JSON)
       let warnSpy;
       jest.isolateModules(() => {
-        jest.doMock(
-          path.join(__dirname, "../../contracts/loader-contract.json"),
-          () => null,
-        );
+        jest.doMock("../../src/core/bundled-contracts", () => {
+          const real = jest.requireActual("../../src/core/bundled-contracts");
+          return {
+            ...real,
+            contracts: { ...real.contracts, loader: null },
+          };
+        });
         // The isolated registry has its own logger instance
         const isolatedLogger = require("../../src/utils/logger").logger;
         warnSpy = jest.spyOn(isolatedLogger, "warn").mockImplementation();
@@ -199,9 +202,7 @@ describe("Plugin Registry Contract Warnings", () => {
           PluginRegistry: IsolatedRegistry,
         } = require("../../src/core/plugin-registry");
         new IsolatedRegistry({ disableContractWarnings: false });
-        jest.dontMock(
-          path.join(__dirname, "../../contracts/loader-contract.json"),
-        );
+        jest.dontMock("../../src/core/bundled-contracts");
       });
 
       // Should warn for missing loader contract

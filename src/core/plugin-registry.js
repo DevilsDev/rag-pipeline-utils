@@ -8,26 +8,13 @@ const {
 const { logger } = require('../utils/logger');
 
 /**
- * The contract files, required by literal path so a bundler inlines them.
- * Reading them from disk found no contracts/ directory in the published
- * @devilsdev/rag-core (its bundle lives in dist/ and ships no contracts/),
- * so no plugin was ever checked.
+ * The contract schema and the contract per type, bundled as data (see
+ * bundled-contracts.js).
  *
- * @returns {{schema: Object, contracts: Object}} The schema and the contract per type
+ * @returns {{schema: Object, contracts: Object}} The schema and the contracts
  */
 function loadBundledContracts() {
-  /* eslint-disable global-require */
-  return {
-    schema: require('../../contracts/contract-schema.json'),
-    contracts: {
-      loader: require('../../contracts/loader-contract.json'),
-      embedder: require('../../contracts/embedder-contract.json'),
-      retriever: require('../../contracts/retriever-contract.json'),
-      llm: require('../../contracts/llm-contract.json'),
-      reranker: require('../../contracts/reranker-contract.json'),
-    },
-  };
-  /* eslint-enable global-require */
+  return require('./bundled-contracts'); // eslint-disable-line global-require
 }
 
 class PluginRegistry {

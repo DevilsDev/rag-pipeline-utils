@@ -66,19 +66,17 @@ describe("Contract Schema Validation", () => {
       // Simulate a schema that cannot be loaded (the contracts are bundled JSON)
       let registry;
       jest.isolateModules(() => {
-        jest.doMock(
-          path.join(__dirname, "../../contracts/contract-schema.json"),
-          () => {
+        jest.doMock("../../src/core/bundled-contracts", () => ({
+          get schema() {
             throw new Error("missing");
           },
-        );
+          contracts: {},
+        }));
         const {
           PluginRegistry: IsolatedRegistry,
         } = require("../../src/core/plugin-registry");
         registry = new IsolatedRegistry({ disableContractWarnings: true });
-        jest.dontMock(
-          path.join(__dirname, "../../contracts/contract-schema.json"),
-        );
+        jest.dontMock("../../src/core/bundled-contracts");
       });
 
       expect(registry._contractSchema).toBeNull();
@@ -450,27 +448,31 @@ describe("Contract Schema Validation", () => {
 
       expect(() => {
         jest.isolateModules(() => {
-          jest.doMock(
-            path.join(__dirname, "../../contracts/loader-contract.json"),
-            () => ({
-              type: "loader",
-              version: "invalid", // Invalid version format
-              title: "Test",
-              description: "Test",
-              methods: [],
-              properties: {},
-              required: [],
-            }),
-          );
+          jest.doMock("../../src/core/bundled-contracts", () => {
+            const real = jest.requireActual("../../src/core/bundled-contracts");
+            return {
+              ...real,
+              contracts: {
+                ...real.contracts,
+                loader: {
+                  type: "loader",
+                  version: "invalid", // Invalid version format
+                  title: "Test",
+                  description: "Test",
+                  methods: [],
+                  properties: {},
+                  required: [],
+                },
+              },
+            };
+          });
           const {
             PluginRegistry: IsolatedRegistry,
           } = require("../../src/core/plugin-registry");
           try {
             new IsolatedRegistry({ disableContractWarnings: true });
           } finally {
-            jest.dontMock(
-              path.join(__dirname, "../../contracts/loader-contract.json"),
-            );
+            jest.dontMock("../../src/core/bundled-contracts");
           }
         });
       }).toThrow(/Contract schema validation failed/);
