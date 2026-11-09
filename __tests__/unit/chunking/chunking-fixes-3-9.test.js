@@ -35,3 +35,52 @@ describe("recursive chunker keeps all text", () => {
     expect(engine.chunk("tiny note")).toEqual(["tiny note"]);
   });
 });
+
+describe("fixed-size chunker", () => {
+  const {
+    fixedSizeChunk,
+  } = require("../../../src/chunking/strategies/fixed-size");
+  const words = Array.from({ length: 60 }, (_, i) => `word${i}`);
+
+  test.each([0, 5, 10, 19])(
+    "every word survives with overlap %i",
+    (chunkOverlap) => {
+      const text = words.join(" ");
+      const chunks = fixedSizeChunk(text, {
+        chunkSize: 60,
+        chunkOverlap,
+        minChunkSize: 1,
+      });
+      const seen = new Set(chunks.join(" ").split(/\s+/));
+      for (const w of words) expect(seen.has(w)).toBe(true);
+    },
+  );
+
+  test("does not split an emoji", () => {
+    const text = "\u{1F600}".repeat(300);
+    const chunks = fixedSizeChunk(text, {
+      chunkSize: 51,
+      chunkOverlap: 5,
+      minChunkSize: 1,
+    });
+    for (const c of chunks) {
+      expect(c).not.toMatch(/^[\udc00-\udfff]|[\ud800-\udbff]$/);
+    }
+  });
+
+  test("overlap larger than half of chunkSize is rejected", () => {
+    expect(() =>
+      fixedSizeChunk("a ".repeat(500), { chunkSize: 100, chunkOverlap: 99 }),
+    ).toThrow(/chunkOverlap/);
+  });
+
+  test("1 MB of text with a valid overlap produces a bounded chunk count", () => {
+    const text = "abcdefghi ".repeat(100000);
+    const chunks = fixedSizeChunk(text, { chunkSize: 512, chunkOverlap: 50 });
+    expect(chunks.length).toBeLessThan(text.length / 400);
+  });
+
+  test("a short document is kept", () => {
+    expect(fixedSizeChunk("tiny", { minChunkSize: 50 })).toEqual(["tiny"]);
+  });
+});
