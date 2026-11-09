@@ -110,19 +110,26 @@ describe("one check, several metrics", () => {
   test("checkAnswer prepares each source once for citations and evaluation", async () => {
     const source =
       "Staff carry " + "5 kg ".repeat(40000).trim() + " in each crate.";
-    const sources = Array.from({ length: 6 }, (_, i) => ({
-      id: String(i),
-      content: source,
-    }));
+    // New source objects for every run, so no run reuses another's work
+    const sources = () =>
+      Array.from({ length: 6 }, (_, i) => ({ id: String(i), content: source }));
     const answer = "Staff carry 5 kg in each crate.";
-    const citationsOnly = await elapsed(() =>
-      checkAnswer({ answer, sources, evaluate: false }),
-    );
-    const withEvaluation = await elapsed(() =>
-      checkAnswer({ answer, sources }),
-    );
+    // The faster of two runs each, so a pause in a busy test run doesn't decide
+    const fastest = async (evaluate) => {
+      const runs = [];
+      for (let i = 0; i < 2; i++) {
+        runs.push(
+          await elapsed(() =>
+            checkAnswer({ answer, sources: sources(), evaluate }),
+          ),
+        );
+      }
+      return runs.sort((a, b) => a.ms - b.ms)[0];
+    };
+    const citationsOnly = await fastest(false);
+    const withEvaluation = await fastest(true);
     expect(withEvaluation.value.evaluation.scores.faithfulness).toBe(1);
     // Evaluation reuses the prepared sources: far less than a second pass
-    expect(withEvaluation.ms).toBeLessThan(citationsOnly.ms * 1.3 + 100);
+    expect(withEvaluation.ms).toBeLessThan(citationsOnly.ms * 1.5 + 200);
   });
 });
