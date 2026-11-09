@@ -659,6 +659,85 @@ function sameQuantity(a, b) {
   return Math.abs(a.value - b.value) <= tolerance;
 }
 
+/** A quantity's unit and whether it is a fraction ("three quarters of"). */
+const unitKey = (q) => `${q.unit} ${Boolean(q.fraction)}`;
+
+/**
+ * A source's quantities indexed by kind, then by value, so a claim
+ * quantity is looked up instead of compared with every one: per kind, how
+ * many there are, the numbers as written, and the distinct values in order
+ * (exact and approximate apart), each with the units it is stated in.
+ */
+function indexQuantities({ items, unitWords }) {
+  const kinds = new Map();
+  for (const d of items) {
+    let kind = kinds.get(d.kind);
+    if (!kind) {
+      kind = { count: 0, numbers: new Set(), values: new Map() };
+      kinds.set(d.kind, kind);
+    }
+    kind.count += 1;
+    kind.numbers.add(d.number);
+    const key = `${Boolean(d.approx)} ${d.value}`;
+    let entry = kind.values.get(key);
+    if (!entry) {
+      entry = { value: d.value, approx: Boolean(d.approx), units: new Set() };
+      kind.values.set(key, entry);
+    }
+    entry.units.add(unitKey(d));
+  }
+  for (const kind of kinds.values()) {
+    const entries = [...kind.values.values()];
+    const byValue = (a, b) => a.value - b.value;
+    const finite = (e) => Number.isFinite(e.value);
+    kind.exact = entries.filter((e) => !e.approx && finite(e)).sort(byValue);
+    kind.approx = entries.filter((e) => e.approx && finite(e)).sort(byValue);
+    // Not finite ("1" followed by hundreds of zeros): checked one by one
+    kind.other = entries.filter((e) => !finite(e));
+  }
+  return { kinds, unitWords };
+}
+
+/** The first index of sorted entries whose value is at least `value`. */
+function lowerBound(entries, value) {
+  let lo = 0;
+  let hi = entries.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (entries[mid].value < value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Whether a source states a quantity equal to `q` (sameQuantity), optionally
+ * only in the unit `unit` (unitKey). Equal values lie within a narrow
+ * window around q's value: 1 when either side is approximate, otherwise
+ * just over q's value times sameQuantity's relative tolerance.
+ */
+function statesQuantity(kind, q, unit) {
+  const fits = (e) => sameQuantity(e, q) && (!unit || e.units.has(unit));
+  if (!Number.isFinite(q.value)) {
+    return [...kind.exact, ...kind.approx, ...kind.other].some(fits);
+  }
+  const scan = (entries, width) => {
+    for (
+      let i = lowerBound(entries, q.value - width);
+      i < entries.length && entries[i].value <= q.value + width;
+      i++
+    ) {
+      if (fits(entries[i])) return true;
+    }
+    return false;
+  };
+  return (
+    scan(kind.exact, q.approx ? 1 : Math.abs(q.value) * 1.1e-9) ||
+    scan(kind.approx, 1) ||
+    kind.other.some(fits)
+  );
+}
+
 /** Hours of the clock times ("17:00") in a text, each also on a 12-hour clock. */
 function clockHours(text) {
   const hours24 = new Set();
@@ -737,13 +816,19 @@ function endsTime(text, end, next) {
   return AFTER_HOUR.has(next);
 }
 
-/** A text with these [start, end) spans blanked out. */
+/** A text with these [start, end) spans blanked out, in one pass. */
 function withoutSpans(text, spans) {
-  let out = String(text || '');
-  for (const [start, end] of [...spans].sort((a, b) => b[0] - a[0])) {
-    out = out.slice(0, start) + ' '.repeat(end - start) + out.slice(end);
+  const out = String(text || '');
+  const pieces = [];
+  let at = 0;
+  for (const [start, end] of [...spans].sort((a, b) => a[0] - b[0])) {
+    const from = Math.max(start, at);
+    if (end <= from) continue;
+    pieces.push(out.slice(at, from), ' '.repeat(end - from));
+    at = end;
   }
-  return out;
+  pieces.push(out.slice(at));
+  return pieces.join('');
 }
 
 /**
@@ -776,7 +861,7 @@ function sourceNumbers(doc) {
     ]);
     return {
       parts,
-      quantities: quantities(text),
+      quantities: indexQuantities(quantities(text)),
       clock: clockHours(text),
       numbers: new Set([
         ...parts,
@@ -816,28 +901,26 @@ function checkNumericConsistency(claimText, docText) {
   const missing = [];
   const claimNumbers = [];
   for (const q of cachedQuantities(claimQuantityCache, claim).items) {
-    const sameKind = doc.items.filter((d) => d.kind === q.kind);
-    const equal = sameKind.filter((d) => sameQuantity(d, q));
+    const kind = doc.kinds.get(q.kind);
+    const sameKind = kind ? kind.count : 0;
+    const equal = kind ? statesQuantity(kind, q) : false;
     const found =
-      equal.length > 0 ||
+      equal ||
       // the number with the same unit word elsewhere ("20 days" in "20
       // vacation days"), or with no other unit of this kind ("seven days a
       // week" against a source with "7:00")
       (docParts.has(q.number) &&
-        (doc.unitWords.has(q.unit) ||
-          !sameKind.some((d) => d.number === q.number)));
-    if (sameKind.length === 0 && !q.words && !found) continue;
+        (doc.unitWords.has(q.unit) || !(kind && kind.numbers.has(q.number))));
+    if (sameKind === 0 && !q.words && !found) continue;
     spans.push([q.start, q.end]);
     // Its words count as supported only when the source states it in
     // another unit ("90 minutes" for "one and a half hours"); "20 days"
     // against "twenty days" is left to the overlap, as before
-    const converted = (d) =>
-      d.unit !== q.unit || Boolean(d.fraction) !== Boolean(q.fraction);
-    if (equal.length > 0 && equal.every(converted)) {
+    if (equal && !statesQuantity(kind, q, unitKey(q))) {
       matched.push([q.start, q.end]);
     }
     claimNumbers.push(`${q.kind}:${q.number} ${q.unit}`);
-    if (!found && (sameKind.length > 0 || !q.words))
+    if (!found && (sameKind > 0 || !q.words))
       missing.push(`${q.kind}:${q.number} ${q.unit}`);
   }
   const clock = checkClockTimes(claim, source.clock);

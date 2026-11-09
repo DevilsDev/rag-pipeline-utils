@@ -75,3 +75,33 @@ describe("long sources", () => {
     expect(ms).toBeLessThan(1500);
   });
 });
+
+describe("many quantities", () => {
+  const { checkNumericConsistency } = require("../../../src/evaluate/scoring");
+
+  test("compares 12,000 claim quantities with 12,000 source quantities in linear time", () => {
+    const claim = "Pack " + "5 kg, ".repeat(12000) + "done.";
+    const source = "Each box holds 5 kg. ".repeat(12000) + "Also 5 g.";
+    const start = process.hrtime.bigint();
+    const result = checkNumericConsistency(claim, source);
+    const ms = Number(process.hrtime.bigint() - start) / 1e6;
+    expect(result.consistent).toBe(true);
+    expect(ms).toBeLessThan(1500);
+  });
+
+  test("still matches quantities converted between units", () => {
+    expect(
+      checkNumericConsistency("It weighs 1 lb.", "It weighs 16 oz.").consistent,
+    ).toBe(true);
+    expect(
+      checkNumericConsistency("It takes 90 minutes.", "It takes 1.5 hours.")
+        .matchedWords,
+    ).toEqual(["90", "minutes"]);
+    expect(
+      checkNumericConsistency("A third of staff.", "33% of staff.").consistent,
+    ).toBe(true);
+    expect(
+      checkNumericConsistency("It weighs 2 kg.", "It weighs 2 lb.").missing,
+    ).toEqual(["mass:2 kilogram"]);
+  });
+});
