@@ -245,7 +245,7 @@ describe("stores validate topK and the query vector the same way", () => {
     return { f, m };
   };
 
-  test.each([0, -1, NaN, 1.5, "abc"])(
+  test.each([-1, NaN, Infinity, -Infinity, 1.5, "abc"])(
     "topK %p is rejected by both stores",
     async (topK) => {
       const { f, m } = await build();
@@ -258,9 +258,22 @@ describe("stores validate topK and the query vector the same way", () => {
     },
   );
 
+  test("topK 0 returns an empty list from both stores", async () => {
+    const { f, m } = await build();
+    expect(await f.retrieve({ queryVector: [1, 0], topK: 0 })).toEqual([]);
+    expect(await m.retrieve({ queryVector: [1, 0], topK: 0 })).toEqual([]);
+    expect(await m.retrieve([1, 0], 0)).toEqual([]);
+    expect((await f.retrieve({ queryVector: [1, 0], topK: null })).length).toBe(
+      2,
+    );
+  });
+
   test("topK defaults when absent and accepts a numeric string", async () => {
     const { f, m } = await build();
     expect((await f.retrieve({ queryVector: [1, 0] })).length).toBe(2);
+    expect((await f.retrieve({ queryVector: [1, 0], topK: null })).length).toBe(
+      2,
+    );
     expect((await m.retrieve({ queryVector: [1, 0] })).length).toBe(2);
     expect((await f.retrieve({ queryVector: [1, 0], topK: "1" })).length).toBe(
       1,
