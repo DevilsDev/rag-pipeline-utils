@@ -712,7 +712,7 @@ See [Benchmarks](./Benchmarks.md) for methodology and for benchmarking your own 
 - **Use a reference answer.** Without one, context recall is skipped and groundedness rests on faithfulness and precision alone.
 - **Combine metrics.** Faithfulness catches unsupported claims; context precision and recall tell you whether retrieval or generation is the problem.
 - **Track trends, not absolutes.** Lexical scores depend on your corpus and phrasing. Compare runs on the same test set and evaluator options; scores from before 2.5.0 are not comparable with 2.5.0 scores.
-- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, units, multi-document claims) in mind.
+- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, currencies and temperatures, multi-document claims) in mind.
 
 ---
 
