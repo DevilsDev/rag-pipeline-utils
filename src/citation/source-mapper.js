@@ -2,6 +2,7 @@
 
 const {
   tokenize,
+  contentTokens,
   computeSupportScore,
   prepareDocument,
   sourceNorm,
@@ -15,11 +16,22 @@ const {
  * document was retrieved) still count instead of weighing zero. Identical
  * documents (the same text after normalisation) count once, so a duplicated
  * source doesn't move any weight (3.9, BH-7).
+ *
+ * With `options.sentence`, only the documents sharing a content word with
+ * that sentence count (3.9, BH-7): a source that shares nothing with a
+ * sentence can't move its score, and only the sentence's own words get a
+ * weight. CitationTracker, checkAnswer and computeFaithfulness weight each
+ * sentence this way.
  * @param {Array<{content?: string, text?: string}>} docs - Array of document objects
+ * @param {{sentence?: string}} [options]
  * @returns {Map<string, number>} Map of token to IDF weight
  */
-function buildIDFWeights(docs) {
+function buildIDFWeights(docs, options = {}) {
   if (docs.length === 0) return new Map();
+  const { sentence } = options;
+  const sentenceTokens =
+    typeof sentence === 'string' ? new Set(tokenize(sentence)) : null;
+  const words = sentenceTokens && new Set(contentTokens([...sentenceTokens]));
 
   const docFrequency = new Map();
   const seen = new Set();
@@ -29,9 +41,13 @@ function buildIDFWeights(docs) {
     const prepared = prepareDocument(doc, text);
     const key = sourceNorm(prepared);
     if (seen.has(key)) continue;
-    seen.add(key);
     const tokens = sourceTokenSet(prepared);
-    for (const token of tokens) {
+    if (words && ![...words].some((w) => tokens.has(w))) continue;
+    seen.add(key);
+    // For one sentence only its own words need a weight, so the work grows
+    // with the sentence, not with each source's vocabulary
+    for (const token of sentenceTokens || tokens) {
+      if (sentenceTokens && !tokens.has(token)) continue;
       docFrequency.set(token, (docFrequency.get(token) || 0) + 1);
     }
   }
