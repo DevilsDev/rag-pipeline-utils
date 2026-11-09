@@ -137,6 +137,43 @@ function sentencesWithOffsets(text) {
 const hasContent = (text) => contentTokens(tokenize(text)).length > 0;
 const overlaps = (a, b) => a.start < b.end && b.start < a.end;
 
+/**
+ * The parts of a sentence no claim covers that have content words: the
+ * whole sentence when no claim overlaps it, or the uncited text around a
+ * claim inside it (", and contractors receive forty days ..." after a cited
+ * "Employees receive twenty days"), without leading punctuation.
+ * @param {string} answer
+ * @param {{start: number, end: number}} sentence
+ * @param {Array<{start: number, end: number}>} claims
+ * @returns {Array<{text: string, start: number, end: number}>}
+ */
+function uncitedParts(answer, sentence, claims) {
+  const covering = claims
+    .filter((c) => overlaps(c, sentence))
+    .sort((a, b) => a.start - b.start);
+  const gaps = [];
+  let at = sentence.start;
+  for (const c of covering) {
+    // An introductory phrase before the first claim ("According to the
+    // handbook, ") frames it rather than stating something uncited
+    const intro =
+      at === sentence.start && /,\s*$/.test(answer.slice(at, c.start));
+    if (c.start > at && !intro) gaps.push([at, c.start]);
+    at = Math.max(at, c.end);
+  }
+  if (at < sentence.end) gaps.push([at, sentence.end]);
+  const out = [];
+  for (const [from, to] of gaps) {
+    const raw = answer.slice(from, to);
+    const lead = raw.length - raw.replace(/^[\s,;:)\]]+/, '').length;
+    const text = raw.slice(lead).trimEnd();
+    if (text && hasContent(text)) {
+      out.push({ text, start: from + lead, end: from + lead + text.length });
+    }
+  }
+  return out;
+}
+
 function documentId(documents, index, title) {
   const doc = Array.isArray(documents) ? documents[index] : undefined;
   if (doc && typeof doc === 'object') {
@@ -560,9 +597,8 @@ async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
     return { ...rest, score: canCheck ? round(combined) : null, ...v };
   });
 
-  const citedSpans = input.claims;
-  const uncited = sentencesWithOffsets(input.answer).filter(
-    (s) => hasContent(s.text) && !citedSpans.some((c) => overlaps(c, s)),
+  const uncited = sentencesWithOffsets(input.answer).flatMap((s) =>
+    uncitedParts(input.answer, s, input.claims),
   );
   const count = (verdict) => out.filter((c) => c.verdict === verdict).length;
   const citationCount = out.reduce((n, c) => n + c.citations.length, 0);
