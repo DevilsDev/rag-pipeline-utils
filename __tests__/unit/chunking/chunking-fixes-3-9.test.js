@@ -84,3 +84,45 @@ describe("fixed-size chunker", () => {
     expect(fixedSizeChunk("tiny", { minChunkSize: 50 })).toEqual(["tiny"]);
   });
 });
+
+describe("recursive chunker overlap", () => {
+  const words = Array.from({ length: 80 }, (_, i) => `w${i}x`);
+  const text = words.join(" ");
+
+  test("overlap is made of whole words, never glued or cut", () => {
+    const chunks = recursiveChunk(text, {
+      chunkSize: 60,
+      chunkOverlap: 15,
+      minChunkSize: 1,
+    });
+    expect(chunks.length).toBeGreaterThan(2);
+    const valid = new Set(words);
+    for (const c of chunks) {
+      for (const w of c.split(/\s+/)) expect(valid.has(w)).toBe(true);
+    }
+    // where there was room, a chunk starts with words that ended the previous one
+    const overlapping = chunks.filter(
+      (c, i) => i > 0 && chunks[i - 1].split(/\s+/).includes(c.split(/\s+/)[0]),
+    );
+    expect(overlapping.length).toBeGreaterThan(0);
+  });
+
+  test("chunks with overlap never exceed chunkSize", () => {
+    const chunks = recursiveChunk(text, {
+      chunkSize: 60,
+      chunkOverlap: 30,
+      minChunkSize: 1,
+    });
+    expect(Math.max(...chunks.map((c) => c.length))).toBeLessThanOrEqual(60);
+  });
+
+  test("no word of the text is lost", () => {
+    const chunks = recursiveChunk(text, {
+      chunkSize: 60,
+      chunkOverlap: 15,
+      minChunkSize: 1,
+    });
+    const seen = new Set(chunks.join(" ").split(/\s+/));
+    for (const w of words) expect(seen.has(w)).toBe(true);
+  });
+});

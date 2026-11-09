@@ -30,12 +30,47 @@ function recursiveChunk(text, options = {}) {
     return [];
   }
 
-  const results = _splitRecursive(text, separators, 0, chunkSize, chunkOverlap);
+  const results = _applyOverlap(
+    _splitRecursive(text, separators, 0, chunkSize),
+    chunkSize,
+    chunkOverlap,
+  );
 
   const nonEmpty = results.filter((chunk) => chunk.length > 0);
   const kept = nonEmpty.filter((chunk) => chunk.length >= minChunkSize);
   // A document whose chunks are all below minChunkSize is still kept.
   return kept.length > 0 ? kept : nonEmpty;
+}
+
+/**
+ * Prefix each chunk (except the first) with the last whole words of the
+ * chunk before it, joined by a space. The overlap is counted in chunkSize:
+ * a chunk plus its overlap never exceeds it, and a chunk with no room
+ * (or no word boundary to cut at) gets no overlap.
+ *
+ * @param {string[]} chunks - Chunks without overlap.
+ * @param {number} chunkSize - Maximum chunk size.
+ * @param {number} chunkOverlap - Maximum overlap size.
+ * @returns {string[]}
+ * @private
+ */
+function _applyOverlap(chunks, chunkSize, chunkOverlap) {
+  if (!(chunkOverlap > 0) || chunks.length < 2) return chunks;
+  const out = [chunks[0]];
+  for (let i = 1; i < chunks.length; i++) {
+    const room = Math.min(chunkOverlap, chunkSize - chunks[i].length - 1);
+    const words = chunks[i - 1].split(/\s+/).filter(Boolean);
+    const picked = [];
+    let used = 0;
+    for (let w = words.length - 1; w >= 0; w--) {
+      const next = used + words[w].length + (picked.length ? 1 : 0);
+      if (next > room) break;
+      picked.unshift(words[w]);
+      used = next;
+    }
+    out.push(picked.length ? `${picked.join(' ')} ${chunks[i]}` : chunks[i]);
+  }
+  return out;
 }
 
 /**
@@ -45,11 +80,10 @@ function recursiveChunk(text, options = {}) {
  * @param {string[]} separators - Separator hierarchy.
  * @param {number} sepIndex - Current separator index.
  * @param {number} chunkSize - Maximum chunk size.
- * @param {number} chunkOverlap - Overlap size.
- * @returns {string[]} Array of text chunks.
+ * @returns {string[]} Array of text chunks (without overlap).
  * @private
  */
-function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
+function _splitRecursive(text, separators, sepIndex, chunkSize) {
   // Base case: no more separators or text fits in one chunk
   if (text.length <= chunkSize) {
     return [text.trim()];
@@ -72,7 +106,6 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
       separators,
       sepIndex + 1,
       chunkSize,
-      chunkOverlap,
     );
   }
 
@@ -97,7 +130,6 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
           separators,
           sepIndex + 1,
           chunkSize,
-          chunkOverlap,
         );
         chunks.push(...subChunks);
         buffer = '';
@@ -109,23 +141,6 @@ function _splitRecursive(text, separators, sepIndex, chunkSize, chunkOverlap) {
 
   if (buffer.trim()) {
     chunks.push(buffer.trim());
-  }
-
-  // Apply overlap: prefix each chunk (except the first) with trailing text from previous chunk
-  if (chunkOverlap > 0 && chunks.length > 1) {
-    const overlapped = [chunks[0]];
-    for (let i = 1; i < chunks.length; i++) {
-      const prev = chunks[i - 1];
-      const overlapText = prev.slice(-chunkOverlap);
-      const combined = overlapText + chunks[i];
-      // Only add overlap if it doesn't push us way over chunkSize
-      if (combined.length <= chunkSize + chunkOverlap) {
-        overlapped.push(combined.trim());
-      } else {
-        overlapped.push(chunks[i]);
-      }
-    }
-    return overlapped;
   }
 
   return chunks;
