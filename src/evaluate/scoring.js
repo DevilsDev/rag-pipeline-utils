@@ -302,10 +302,14 @@ const NUMBER_SCALES = {
  * Digit numbers, optionally with thousands separators or a decimal part (a
  * trailing "%" is ignored). The lookbehind skips digits glued to letters (BM25),
  * but not to Chinese or Japanese characters, which aren't separated by spaces
- * ("年間20日").
+ * ("年間20日"). A minus sign ("-" or "−") not after a letter or digit is part
+ * of the number ("-18", not "5-10" or "COVID-19").
  */
 const DIGIT_NUMBER_RE =
-  /(?<!\p{N}|(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])\p{L})\d+(?:[.,]\d+)*/gu;
+  /(?:(?<![\p{L}\p{N}])[-−])?(?<!\p{N}|(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])\p{L})\d+(?:[.,]\d+)*/gu;
+
+/** A leading minus sign of a number DIGIT_NUMBER_RE or QUANTITY_TOKEN_RE found. */
+const MINUS = /^[-−]/;
 
 /**
  * Turn one run of number words into its value: "twenty five" -> 25,
@@ -346,14 +350,16 @@ function extractNumbers(text) {
   if (!text || typeof text !== 'string') return { values, parts };
 
   for (const match of text.matchAll(DIGIT_NUMBER_RE)) {
-    const raw = match[0];
+    const negative = MINUS.test(match[0]);
+    const raw = negative ? match[0].slice(1) : match[0];
     const pieces = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw)
       ? [raw.replace(/,/g, '')]
       : raw.split(',');
-    for (const piece of pieces) {
-      const n = Number(piece);
+    pieces.forEach((piece, i) => {
+      // the sign belongs to the first number of a list ("-1,2")
+      const n = Number(piece) * (negative && i === 0 ? -1 : 1);
       if (Number.isFinite(n)) values.push(String(n));
-    }
+    });
   }
 
   const words = text.toLowerCase().split(/[^\p{L}]+/u);
@@ -449,9 +455,16 @@ const FRACTION_WORDS = {
 };
 
 const QUANTITY_TOKEN_RE = /\d+(?:[.,:]\d+)*|\p{L}+|%/gu;
+/** QUANTITY_TOKEN_RE with a number's minus sign ("-3%"; see DIGIT_NUMBER_RE). */
+const SIGNED_QUANTITY_TOKEN_RE =
+  /(?:(?<![\p{L}\p{N}])[-−](?=\d))?\d+(?:[.,:]\d+)*|\p{L}+|%/gu;
 
-/** A digit token's value ("2,000" is 2000, "1.5" is 1.5); null for clock times and lists. */
+/** A digit token's value ("2,000" is 2000, "1.5" is 1.5, "-3" is -3); null for clock times and lists. */
 function digitValue(raw) {
+  if (MINUS.test(raw)) {
+    const n = digitValue(raw.slice(1));
+    return n === null ? null : -n;
+  }
   if (raw.includes(':')) return null;
   if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw))
     return Number(raw.replace(/,/g, ''));
@@ -475,7 +488,7 @@ const isNumberWord = (w) =>
 function quantities(text) {
   const items = [];
   const unitWords = new Set();
-  const tokens = [...String(text || '').matchAll(QUANTITY_TOKEN_RE)].map(
+  const tokens = [...String(text || '').matchAll(SIGNED_QUANTITY_TOKEN_RE)].map(
     (m) => ({
       t: m[0].toLowerCase(),
       start: m.index,
@@ -551,7 +564,7 @@ function quantities(text) {
     let value = null;
     let end = i;
     let words = false;
-    if (/^\d/.test(t)) {
+    if (/^[-−]?\d/.test(t)) {
       value = digitValue(t);
     } else if (isNumberWord(t)) {
       let j = i;
