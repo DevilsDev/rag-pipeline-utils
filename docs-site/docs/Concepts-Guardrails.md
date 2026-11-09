@@ -125,8 +125,13 @@ continues (PII is still redacted).
   tokens are collected until the source's done chunk, then checked and
   redacted as one answer, and released through the same async iterable: one
   token chunk with the sanitized answer, then the done chunk (redacted
-  citations and evaluation, plus `guardrails`). Nothing reaches the caller
-  before the whole answer is checked. Buffering stops at the guard's
+  citations and evaluation, plus `guardrails`). The done chunk is built from
+  a fixed list: `success`, `error`, `timing`, citations and evaluation, the
+  cache's per-layer status, and `route` and `packing` when they have the
+  expected types. It carries no `results`, so retrieved documents don't
+  reach the caller through a guarded stream; a non-streamed guarded run
+  returns the filtered `results`. Nothing reaches the caller before the
+  whole answer is checked. Buffering stops at the guard's
   `maxResponseLength`, or at 1,000,000 characters when none is set; the
   source is then closed and the answer is treated as over-long (truncated, or
   blocked in strict mode). `options.timeout` and `options.signal` apply while

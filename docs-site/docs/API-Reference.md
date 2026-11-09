@@ -14,7 +14,7 @@ The package has five entry points:
 | `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                    |
 | `@devilsdev/rag-pipeline-utils/edge`         | The library without Node.js APIs, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                              |
 | `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
-| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                              |
+| `@devilsdev/rag-pipeline-utils/cli`          | The bundled CLI module, which exports `run`; the command itself is `npx rag-pipeline` (see [CLI](./CLI))                                                                       |
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
@@ -214,8 +214,14 @@ Components receive the signal as follows (see [Plugin Contracts](#plugin-contrac
 | Retriever | `retriever.retrieve({ query, queryVector, topK, signal })`                    |
 | Reranker  | `reranker.rerank(query, docs, { topK, signal })`                              |
 | LLM       | `llm.generate(query, docs, { ...options, signal })`                           |
+| Router    | `llm.route(query, docs, { ...options, signal })`                              |
+| Filter    | `options.filterResults(docs, { signal })`                                     |
 
-Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. For a stream, the timeout covers the run up to the returned stream; a caller signal keeps cancelling the stream until it finishes.
+Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. `loader.load()` takes no signal; the run still settles on abort. For a stream, the timeout and a caller signal keep applying until the stream ends: a stream still running at the timeout is aborted and its iteration rejects with `Execution timeout`.
+
+:::info[Coming in 3.9.0]
+On 3.8.3 and earlier, the timeout stopped once the stream was returned, a stream whose model ignored the signal didn't settle on abort, and `llm.route()` and `filterResults()` got no signal.
+:::
 
 ---
 

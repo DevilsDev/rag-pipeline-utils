@@ -84,6 +84,20 @@ function computeQuality({ query, answer, results, options }) {
 }
 
 /**
+ * A source's chunk as a `{ token, done }` object: a string is a token, and
+ * anything else without a string token has an empty one.
+ */
+function normaliseChunk(chunk) {
+  if (typeof chunk === 'string') return { token: chunk, done: false };
+  if (chunk && typeof chunk === 'object') {
+    return typeof chunk.token === 'string'
+      ? chunk
+      : { ...chunk, token: String(chunk.token ?? '') };
+  }
+  return { token: '', done: false };
+}
+
+/**
  * Pass a token stream through, stopping when the run's signal aborts. When
  * citations or evaluation were requested, the streamed answer is accumulated
  * and the stream ends with one final chunk
@@ -97,6 +111,8 @@ function computeQuality({ query, answer, results, options }) {
  * @param {AsyncIterable<object|string>} source
  * @param {object} params
  * @param {AbortSignal} params.signal
+ * @param {(promise: Promise<any>) => Promise<any>} params.race - Settles
+ *   with the run's abort even when the source ignores the signal
  * @param {((text: string) => object)|null} params.finalize
  * @param {number} params.startedAt - performance.now() at the start of run()
  * @param {() => object} [params.doneFields] - More fields for the done chunk,
@@ -105,39 +121,68 @@ function computeQuality({ query, answer, results, options }) {
  */
 async function* guardStream(
   source,
-  { signal, finalize, startedAt, doneFields = () => ({}), onEnd },
+  { signal, race, finalize, startedAt, doneFields = () => ({}), onEnd },
 ) {
   let firstTokenMs = null;
   const timing = () => ({
     ...doneFields(),
     timing: { firstTokenMs, totalMs: performance.now() - startedAt },
   });
+  const iterator = source[Symbol.asyncIterator]();
+  let exhausted = false;
+  let sawDone = false;
+  // Close the source (runs its cleanup) unless it already ended.
+  const close = () => {
+    if (exhausted) return Promise.resolve();
+    exhausted = true;
+    return Promise.resolve(iterator.return?.()).catch(() => {});
+  };
   try {
     let text = '';
-    for await (const chunk of source) {
+    for (;;) {
+      // A source that ignores the signal must not hold the consumer: each
+      // read is raced against the abort.
+      const step = await race(iterator.next());
+      if (step.done) {
+        exhausted = true;
+        break;
+      }
+      const chunk = normaliseChunk(step.value);
       if (signal.aborted) throw signal.reason;
-      const token =
-        typeof chunk === 'string' ? chunk : String(chunk?.token ?? '');
+      const token = chunk.token;
       if (token && firstTokenMs === null) {
         firstTokenMs = performance.now() - startedAt;
       }
       if (!finalize) {
-        yield chunk && chunk.done ? { ...chunk, ...timing() } : chunk;
+        if (chunk.done) {
+          sawDone = true;
+          yield { ...chunk, ...timing() };
+        } else {
+          yield chunk;
+        }
         continue;
       }
       text += token;
-      if (chunk && chunk.done) {
+      if (chunk.done) {
         if (token) yield { ...chunk, token, done: false };
         break;
       }
       yield chunk;
     }
     if (signal.aborted) throw signal.reason;
+    await close();
     if (finalize) {
       yield { token: '', done: true, ...finalize(text), ...timing() };
+    } else if (!sawDone) {
+      // The source ended without a done chunk
+      yield { token: '', done: true, ...timing() };
     }
   } finally {
     onEnd();
+    // After an abort the source may be stuck in a read and never answer, so
+    // it is not waited for; otherwise its cleanup finishes before this ends.
+    if (signal.aborted) close();
+    else await close();
   }
 }
 
@@ -167,14 +212,16 @@ async function* reportWhenComplete(source, signal, onComplete) {
  *
  * `run({ query, queryVector, options })` options:
  * - `topK` (default 3)
- * - `timeout` (ms): aborts the run; resolves `{ success: false, error: 'Execution timeout' }`
+ * - `timeout` (ms): aborts the run, a stream included, until it ends; resolves
+ *   `{ success: false, error: 'Execution timeout' }`, or a stream's iteration
+ *   rejects with it
  * - `signal` (AbortSignal): caller cancellation; resolves
  *   `{ success: false, error: 'Execution aborted' }` when it aborts
  * - `stream`: return an async iterable of `{ token, done }` chunks; the
  *   done chunk carries `timing: { firstTokenMs, totalMs }`
  * - `citations`, `citationOptions`, `evaluate`, `evaluateOptions`,
  *   `referenceAnswer` (ground truth for context recall)
- * - `filterResults(docs)`: hook applied after retrieval
+ * - `filterResults(docs, { signal })`: hook applied after retrieval
  *
  * A successful result carries `timing: { totalMs }`, measured from the start
  * of run().
@@ -190,7 +237,8 @@ async function* reportWhenComplete(source, signal, onComplete) {
  * retrieval, generation }` ('hit', 'miss' or 'skip'), and the pipeline has
  * `cacheStats()`.
  *
- * Every component call receives the run's AbortSignal: `retriever.retrieve({
+ * Every component call except `loader.load()` receives the run's AbortSignal:
+ * `llm.route(query, docs, { ...options, signal })`, `retriever.retrieve({
  * ..., signal })`, `embedder.embedQuery(text, { signal })` /
  * `embedder.embed(text, { signal })`, `reranker.rerank(query, docs, { topK,
  * signal })` and `llm.generate(query, docs, { ...options, signal })`.
@@ -269,6 +317,14 @@ module.exports.createRagPipeline = function createRagPipeline({
       };
     };
 
+    // Embeddings and retrieval reach the cache only once the run has
+    // succeeded, so a failed run stores nothing.
+    const pendingWrites = [];
+    const deferWrite = (write) => pendingWrites.push(write);
+    const flushWrites = async () => {
+      for (const write of pendingWrites.splice(0)) await write();
+    };
+
     const doWork = (async () => {
       run.throwIfAborted();
       if (loaderI?.load) {
@@ -282,7 +338,7 @@ module.exports.createRagPipeline = function createRagPipeline({
         if (!vector) {
           vector = await embedQuery(embedderI, query, { signal });
           run.throwIfAborted();
-          if (pc) await pc.set('embeddings', key, vector);
+          if (pc) deferWrite(() => pc.set('embeddings', key, vector));
         }
         run.throwIfAborted();
       }
@@ -302,14 +358,14 @@ module.exports.createRagPipeline = function createRagPipeline({
         });
         run.throwIfAborted();
         if (pc && Array.isArray(docs)) {
-          await pc.set('retrieval', retrievalKey, docs);
+          deferWrite(() => pc.set('retrieval', retrievalKey, docs));
         }
       }
       run.throwIfAborted();
       // Hook for filtering (e.g. ACL guardrails) before anything downstream,
       // including the LLM, sees the retrieved documents.
       if (typeof opts.filterResults === 'function' && Array.isArray(docs)) {
-        docs = await opts.filterResults(docs);
+        docs = await opts.filterResults(docs, { signal });
         run.throwIfAborted();
       }
       let results = docs;
@@ -338,7 +394,7 @@ module.exports.createRagPipeline = function createRagPipeline({
       }
 
       if (llmI && typeof llmI.route === 'function') {
-        route = await llmI.route(query, results, opts);
+        route = await llmI.route(query, results, { ...opts, signal });
         run.throwIfAborted();
       }
       const genOptions = route
@@ -361,6 +417,7 @@ module.exports.createRagPipeline = function createRagPipeline({
           ? (text) =>
               computeQuality({ query, answer: text, results, options: opts })
           : null;
+        if (!llmI || typeof cachedAnswer === 'string') await flushWrites();
         if (!llmI) {
           // Retrieval only: no tokens, one done chunk carrying the results.
           const quality = computeQuality({
@@ -382,10 +439,11 @@ module.exports.createRagPipeline = function createRagPipeline({
         } else if (llmI.generate) {
           routed = Boolean(route);
           // Fallback: simulate streaming from regular generate
-          const answer =
-            (await llmI.generate(query, results, genOptions)) ?? '';
+          const answer = String(
+            (await llmI.generate(query, results, genOptions)) ?? '',
+          );
           source = (async function* gen() {
-            yield { token: String(answer || ''), done: false };
+            yield { token: answer, done: false };
             yield { token: '', done: true };
           })();
         }
@@ -397,21 +455,29 @@ module.exports.createRagPipeline = function createRagPipeline({
           run.throwIfAborted();
           streaming = true;
           if (pc && llmI && generationKey && typeof cachedAnswer !== 'string') {
-            source = reportWhenComplete(source, signal, (text) =>
-              pc.set('generation', generationKey, text),
-            );
+            source = reportWhenComplete(source, signal, async (text) => {
+              await flushWrites();
+              await pc.set('generation', generationKey, text);
+            });
           }
           return guardStream(source, {
             signal,
+            race: (promise) => run.race(promise),
             finalize,
             startedAt,
-            doneFields: () => (routed ? { route: { ...route } } : {}),
-            onEnd: run.detach,
+            // What run() reports besides the answer
+            doneFields: () => ({
+              results,
+              ...(pc && { cache: { ...cacheStatus } }),
+              ...(routed && { route: { ...route } }),
+            }),
+            onEnd: run.cleanup,
           });
         }
       }
 
       if (!llmI) {
+        await flushWrites();
         return withCache({
           success: true,
           query,
@@ -424,11 +490,13 @@ module.exports.createRagPipeline = function createRagPipeline({
       let answer;
       if (typeof cachedAnswer === 'string') {
         answer = cachedAnswer;
+        await flushWrites();
       } else {
         routed = Boolean(route);
         const raw = (await llmI.generate?.(query, results, genOptions)) ?? '';
         run.throwIfAborted();
         answer = String(raw);
+        await flushWrites();
         if (pc) await pc.set('generation', generationKey, answer);
         run.throwIfAborted();
       }
@@ -445,12 +513,12 @@ module.exports.createRagPipeline = function createRagPipeline({
     try {
       return await run.race(doWork);
     } catch (e) {
+      streaming = false;
       return { success: false, error: String(e?.message || e) };
     } finally {
-      // The timeout covers the run up to the returned stream; a caller
-      // signal keeps cancelling a stream until it finishes.
-      run.clearTimer();
-      if (!streaming) run.detach();
+      // A returned stream keeps the timeout and the caller's signal until it
+      // ends; guardStream's onEnd releases them.
+      if (!streaming) run.cleanup();
     }
   }
 

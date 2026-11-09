@@ -157,6 +157,25 @@ page.
 - `Histogram` keeps a sample of at most 10,000 observations for
   percentiles; count, sum, minimum, maximum, mean and standard deviation
   stay exact.
+- **A run's `timeout` covers a returned stream until it ends.** A stream
+  still running when it elapses is aborted, and iteration rejects with
+  `Execution timeout`; the timer used to stop once the stream was
+  returned. If you stream long answers, raise `timeout` (or the CLI's
+  `--timeout`) to cover the whole answer.
+- **A guarded stream's done chunk carries only known fields**: `success`,
+  `error`, `timing`, the redacted `citations` and `evaluation`, the cache's
+  per-layer status, and the router's `route` and the `packing` counters
+  when they have the expected types. It carries no `results`, so
+  retrieved documents never reach the caller that way; a non-streamed
+  guarded run still returns them.
+- **Plugins are checked against their contracts in `@devilsdev/rag-core`
+  too.** The contracts are bundled, so `register()` refuses a plugin that
+  has no `metadata` or lacks the contract's methods; the bundle used to
+  accept every plugin.
+- A failed run no longer caches the embeddings and retrieval it computed;
+  they are written once the run succeeds (a stream: when it completes).
+- `rag-pipeline config get <key>` for a key that isn't set prints
+  `Key not found` to stderr and exits 1; it printed to stdout and exited 0.
 
 ### Deprecated
 
@@ -295,6 +314,26 @@ page.
 - (Experimental) `TenantManager` enforces `maxWorkspaces`, keeps
   `pluginsEnabled: false`, and a hard delete removes the tenant's
   workspaces.
+- Streams: a stream settles on abort even when the model or source ignores
+  the signal, and its source is closed before the stream ends. String
+  chunks from `generateStream` are turned into `{ token, done }`, a stream
+  always ends with a done chunk, and the done chunk carries `results` (and
+  `cache`, with caching on) as `run()` does. A model that returns a falsy
+  value such as `0` streams the same text `run()` returns.
+- `llm.route()` and `filterResults()` receive the run's `AbortSignal`.
+- `import "@devilsdev/rag-pipeline-utils/cli"` no longer starts the CLI on
+  the host's arguments and exits: `./cli` maps to the bundled module. The
+  `rag-pipeline` command is unchanged.
+- Types: `@devilsdev/rag-pipeline-utils/edge` resolves under TypeScript's
+  `moduleResolution: node10`, and `/testing` and `/experimental` resolve to
+  their CommonJS builds under the `workerd` condition.
+- Project templates write `loader: auto` (the CLI rejected `markdown` and
+  `directory`) and depend on a version range of the library instead of
+  `latest`. The Workers starter no longer turns on `nodejs_compat`, which
+  the `/edge` entry it imports doesn't need.
+- `@devilsdev/rag-mcp-server`: a `check_answer` call the client cancels
+  leaves the queue or, if it is running, is stopped, and over stdio the
+  server closes, stopping its workers, when stdin ends.
 - Docs: the `checkNumericConsistency` examples show its actual output, the
   Usage page lists `cacheStats()`, and the built-in PII check is described
   as finding US phone numbers, which is all it finds.

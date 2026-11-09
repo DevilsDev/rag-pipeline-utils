@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 // ajv loads with the contracts; see _ensureContracts().
 const loadAjv = () => require('ajv'); // eslint-disable-line global-require
 const {
@@ -10,18 +8,13 @@ const {
 const { logger } = require('../utils/logger');
 
 /**
- * Locate the package's contracts/ directory. This file lives in src/core/ when
- * loaded from source but is inlined into dist/index.cjs when bundled, so
- * __dirname differs between the two layouts.
+ * The contract schema and the contract per type, bundled as data (see
+ * bundled-contracts.js).
  *
- * @returns {string} Absolute path to the contracts directory
+ * @returns {{schema: Object, contracts: Object}} The schema and the contracts
  */
-function resolveContractsDir() {
-  const candidates = [
-    path.join(__dirname, '../../contracts'),
-    path.join(__dirname, '../contracts'),
-  ];
-  return candidates.find((dir) => fs.existsSync(dir)) || candidates[0];
+function loadBundledContracts() {
+  return require('./bundled-contracts'); // eslint-disable-line global-require
 }
 
 class PluginRegistry {
@@ -120,14 +113,7 @@ class PluginRegistry {
    */
   _loadContractSchema() {
     try {
-      const schemaPath = path.join(
-        resolveContractsDir(),
-        'contract-schema.json',
-      );
-      if (fs.existsSync(schemaPath)) {
-        const schemaContent = fs.readFileSync(schemaPath, 'utf8');
-        return JSON.parse(schemaContent);
-      }
+      return JSON.parse(JSON.stringify(loadBundledContracts().schema));
     } catch (error) {
       if (
         process.env.NODE_ENV !== 'production' &&
@@ -296,24 +282,13 @@ class PluginRegistry {
   }
 
   _loadContracts() {
-    const contractsDir = resolveContractsDir();
-
     try {
-      const contractFiles = {
-        loader: 'loader-contract.json',
-        embedder: 'embedder-contract.json',
-        retriever: 'retriever-contract.json',
-        llm: 'llm-contract.json',
-        reranker: 'reranker-contract.json',
-      };
+      const bundled = loadBundledContracts().contracts;
 
-      for (const [type, filename] of Object.entries(contractFiles)) {
+      for (const type of Object.keys(bundled)) {
         try {
-          const contractPath = path.join(contractsDir, filename);
-          if (fs.existsSync(contractPath)) {
-            const contractContent = fs.readFileSync(contractPath, 'utf8');
-            const contract = JSON.parse(contractContent);
-
+          const contract = JSON.parse(JSON.stringify(bundled[type]));
+          if (contract) {
             // Validate contract against schema
             const validation = this._validateContractAgainstSchema(
               contract,
