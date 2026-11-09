@@ -125,7 +125,7 @@ rag-pipeline validate
 **Plugin Debugging**:
 
 ```javascript
-// Add logging to a custom loader plugin
+// Add logging to a plugin method
 class MyPlugin {
   async load(filePath) {
     console.log(`Loading file: ${filePath}`);

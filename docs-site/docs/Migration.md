@@ -381,7 +381,7 @@ class CustomRetriever {
 
 2. **Custom Chunking Logic**:
 
-Use the built-in `ChunkingEngine`, or keep your own function inside a loader plugin:
+Use the built-in `ChunkingEngine`, or keep your own function and call it from your ingestion code:
 
 ```javascript
 // Custom implementation
@@ -402,16 +402,15 @@ function chunkDocument(text, chunkSize = 1000) {
   return chunks;
 }
 
-// Use it from a loader plugin
-class CustomLoader {
-  async load(filePath) {
-    const text = await fs.promises.readFile(filePath, "utf8");
-    return chunkDocument(text).map((content, i) => ({
-      id: `${filePath}#${i}`,
-      content,
-      metadata: { source: filePath },
-    }));
-  }
+// Use it in your own ingestion code. The pipeline does not use the result
+// of a loader plugin's load(), so chunk, embed and store the documents yourself.
+async function readChunks(filePath) {
+  const text = await fs.promises.readFile(filePath, "utf8");
+  return chunkDocument(text).map((content, i) => ({
+    id: `${filePath}#${i}`,
+    content,
+    metadata: { source: filePath },
+  }));
 }
 ```
 
