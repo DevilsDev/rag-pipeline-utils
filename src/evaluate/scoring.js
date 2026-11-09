@@ -1194,6 +1194,30 @@ const NON_NEGATING_NEXT = {
   nothing: new Set(['but']),
 };
 
+/** Comparatives that make "no ... than" a limit, not a negation ("no later than"). */
+const NO_COMPARATIVES = new Set(
+  'more fewer less later earlier longer shorter greater sooner higher lower'.split(
+    ' ',
+  ),
+);
+
+/**
+ * Whether the "no" at tokens[i] states a limit, a price or a number rather
+ * than a negation: "no more than 8", "no later than Friday", "at no cost",
+ * "at no extra charge", "form No. 7" (tokenized "no 7").
+ */
+function isNonNegatingNo(tokens, i) {
+  const next = tokens[i + 1];
+  if (next === undefined) return false;
+  if (NO_COMPARATIVES.has(next) && tokens[i + 2] === 'than') return true;
+  if (/^\d/.test(next)) return true;
+  if (tokens[i - 1] === 'at') {
+    const priced = (w) => w === 'cost' || w === 'charge';
+    return priced(next) || priced(tokens[i + 2]);
+  }
+  return false;
+}
+
 /**
  * Whether a token list reads as negated: an odd number of negations, so
  * "not without approval" counts as positive.
@@ -1212,6 +1236,7 @@ function isNegated(tokens) {
     if (NON_NEGATING_NEXT[t] && NON_NEGATING_NEXT[t].has(tokens[i + 1])) {
       continue;
     }
+    if (t === 'no' && isNonNegatingNo(tokens, i)) continue;
     count += 1;
   }
   return count % 2 === 1;
