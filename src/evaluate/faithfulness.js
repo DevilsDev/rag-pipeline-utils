@@ -8,7 +8,7 @@ const {
   prepareAnswer,
   sourceTokenSet,
 } = require('./scoring');
-const { mapSentenceToSources } = require('../citation/source-mapper');
+const { buildIDFWeights } = require('../citation/source-mapper');
 
 /**
  * Compute faithfulness score for an answer against retrieved documents.
@@ -19,10 +19,13 @@ const { mapSentenceToSources } = require('../citation/source-mapper');
  * @param {object} [options={}] - Configuration options
  * @param {number} [options.threshold=0.5] - Minimum similarity score to consider a sentence faithful
  * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9 condition check (see computeSupportScore)
+ * @param {boolean} [options.useIDFWeighting=true] - Weight words by IDF over
+ *   the documents, as CitationTracker and checkAnswer do (3.9), so they agree
+ *   on every sentence
  * @returns {{ score: number, faithfulSentences: number, totalSentences: number, details: Array<{ sentence: string, score: number, isFaithful: boolean, bestSource: number }> }}
  */
 function computeFaithfulness(answer, retrievedDocs, options = {}) {
-  const { threshold = 0.5, conditionCheck } = options;
+  const { threshold = 0.5, conditionCheck, useIDFWeighting = true } = options;
 
   if (!answer || typeof answer !== 'string' || answer.trim().length === 0) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
@@ -56,6 +59,10 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
     return docContent ? prepareDocument(doc, docContent) : null;
   });
   const preparedAnswer = prepareAnswer(answer);
+  // The same word weights as CitationTracker, over the same documents
+  const idfWeights = useIDFWeighting
+    ? buildIDFWeights(retrievedDocs.filter((doc) => doc != null))
+    : null;
 
   const details = sentences.map((sentence) => {
     const sentenceTokens = tokenize(sentence);
@@ -72,7 +79,7 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
       const similarity = computeSupportScore(
         sentenceTokens,
         sourceTokenSet(doc),
-        null,
+        idfWeights,
         {
           claimText: sentence,
           docText: doc,
