@@ -1324,6 +1324,14 @@ function indexBy(items, keysOf) {
 }
 
 /**
+ * Most claim clauses whose verdict one source sentence keeps (see
+ * checkPolarityConsistency). A source reused across many answers would
+ * otherwise keep one entry per distinct clause; past the cap, verdicts are
+ * worked out each time instead of kept.
+ */
+const MAX_AGREED_PER_SENTENCE = 1024;
+
+/**
  * A source's sentences as the polarity check reads them: each clause's
  * negation and stems, a stem -> clause index per sentence and a stem ->
  * sentence index, prepared once per source.
@@ -1443,7 +1451,9 @@ function checkPolarityConsistency(claimText, docText) {
         );
       }
     }
-    sentence.agreed.set(key, result);
+    if (sentence.agreed.size < MAX_AGREED_PER_SENTENCE) {
+      sentence.agreed.set(key, result);
+    }
     return result;
   };
 
