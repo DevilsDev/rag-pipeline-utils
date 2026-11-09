@@ -68,7 +68,15 @@ jobs:
 
       # jest-junit writes ./junit.xml (gitignored) for the artifact below.
       - name: Test
+        # The timing-sensitive tests (jest.timing-tests.js) run in the next step
+        env:
+          RAG_SKIP_TIMING_TESTS: "1"
         run: npm test -- --ci --coverage --reporters=default --reporters=jest-junit
+
+      # Wall-clock limits (linear-time, ReDoS, MCP limits, SecureLogger), run
+      # one at a time so a busy parallel run can't push them over
+      - name: Timing-sensitive tests
+        run: npm run test:timing -- --ci
 
       # Installs the packed tarball into a clean project with production deps
       # only, so a dependency that is missing from package.json fails here.
