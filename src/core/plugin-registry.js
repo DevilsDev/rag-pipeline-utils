@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 // ajv loads with the contracts; see _ensureContracts().
 const loadAjv = () => require('ajv'); // eslint-disable-line global-require
 const {
@@ -10,18 +8,26 @@ const {
 const { logger } = require('../utils/logger');
 
 /**
- * Locate the package's contracts/ directory. This file lives in src/core/ when
- * loaded from source but is inlined into dist/index.cjs when bundled, so
- * __dirname differs between the two layouts.
+ * The contract files, required by literal path so a bundler inlines them.
+ * Reading them from disk found no contracts/ directory in the published
+ * @devilsdev/rag-core (its bundle lives in dist/ and ships no contracts/),
+ * so no plugin was ever checked.
  *
- * @returns {string} Absolute path to the contracts directory
+ * @returns {{schema: Object, contracts: Object}} The schema and the contract per type
  */
-function resolveContractsDir() {
-  const candidates = [
-    path.join(__dirname, '../../contracts'),
-    path.join(__dirname, '../contracts'),
-  ];
-  return candidates.find((dir) => fs.existsSync(dir)) || candidates[0];
+function loadBundledContracts() {
+  /* eslint-disable global-require */
+  return {
+    schema: require('../../contracts/contract-schema.json'),
+    contracts: {
+      loader: require('../../contracts/loader-contract.json'),
+      embedder: require('../../contracts/embedder-contract.json'),
+      retriever: require('../../contracts/retriever-contract.json'),
+      llm: require('../../contracts/llm-contract.json'),
+      reranker: require('../../contracts/reranker-contract.json'),
+    },
+  };
+  /* eslint-enable global-require */
 }
 
 class PluginRegistry {
@@ -120,14 +126,7 @@ class PluginRegistry {
    */
   _loadContractSchema() {
     try {
-      const schemaPath = path.join(
-        resolveContractsDir(),
-        'contract-schema.json',
-      );
-      if (fs.existsSync(schemaPath)) {
-        const schemaContent = fs.readFileSync(schemaPath, 'utf8');
-        return JSON.parse(schemaContent);
-      }
+      return JSON.parse(JSON.stringify(loadBundledContracts().schema));
     } catch (error) {
       if (
         process.env.NODE_ENV !== 'production' &&
@@ -296,24 +295,13 @@ class PluginRegistry {
   }
 
   _loadContracts() {
-    const contractsDir = resolveContractsDir();
-
     try {
-      const contractFiles = {
-        loader: 'loader-contract.json',
-        embedder: 'embedder-contract.json',
-        retriever: 'retriever-contract.json',
-        llm: 'llm-contract.json',
-        reranker: 'reranker-contract.json',
-      };
+      const bundled = loadBundledContracts().contracts;
 
-      for (const [type, filename] of Object.entries(contractFiles)) {
+      for (const type of Object.keys(bundled)) {
         try {
-          const contractPath = path.join(contractsDir, filename);
-          if (fs.existsSync(contractPath)) {
-            const contractContent = fs.readFileSync(contractPath, 'utf8');
-            const contract = JSON.parse(contractContent);
-
+          const contract = JSON.parse(JSON.stringify(bundled[type]));
+          if (contract) {
             // Validate contract against schema
             const validation = this._validateContractAgainstSchema(
               contract,

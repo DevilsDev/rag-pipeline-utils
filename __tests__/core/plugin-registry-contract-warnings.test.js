@@ -185,21 +185,27 @@ describe("Plugin Registry Contract Warnings", () => {
     });
 
     it("should warn when disableContractWarnings is false", () => {
-      // Mock missing contract
-      const originalExistsSync = fs.existsSync;
-      jest.spyOn(fs, "existsSync").mockImplementation((filePath) => {
-        if (filePath.includes("loader-contract.json")) {
-          return false; // Simulate missing loader contract
-        }
-        return originalExistsSync(filePath);
+      // Simulate a missing loader contract (the contracts are bundled JSON)
+      let warnSpy;
+      jest.isolateModules(() => {
+        jest.doMock(
+          path.join(__dirname, "../../contracts/loader-contract.json"),
+          () => null,
+        );
+        // The isolated registry has its own logger instance
+        const isolatedLogger = require("../../src/utils/logger").logger;
+        warnSpy = jest.spyOn(isolatedLogger, "warn").mockImplementation();
+        const {
+          PluginRegistry: IsolatedRegistry,
+        } = require("../../src/core/plugin-registry");
+        new IsolatedRegistry({ disableContractWarnings: false });
+        jest.dontMock(
+          path.join(__dirname, "../../contracts/loader-contract.json"),
+        );
       });
 
-      new PluginRegistry({ disableContractWarnings: false });
-
-      fs.existsSync.mockRestore();
-
       // Should warn for missing loader contract
-      expect(loggerWarnSpy).toHaveBeenCalledWith(
+      expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Missing Contract for 'loader'"),
       );
     });
