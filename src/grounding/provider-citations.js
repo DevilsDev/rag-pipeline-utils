@@ -468,8 +468,9 @@ const REASON_TEXT = {
  * @param {{generate: Function}} [options.judge] - Opt-in LLM judge for claims
  *   that failed for lack of word overlap (paraphrases), as in checkAnswer();
  *   it may only name a passage the claim cites, and never overturns a
- *   number or negation mismatch. One call at most. Errors from
- *   `judge.generate` are not caught.
+ *   number, negation or condition mismatch. One call at most. A reply with
+ *   no text (code NO_TEXT or MODEL_REFUSED) leaves the lexical verdicts and
+ *   sets `judge.error`; other errors from `judge.generate` are not caught.
  * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9
  *   condition check, as in checkAnswer
  * @returns {Promise<CitationVerification>}

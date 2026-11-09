@@ -49,6 +49,8 @@ class PipelineEvaluator extends EventEmitter {
    * @param {object} [options={}] - Configuration options
    * @param {string[]} [options.metrics] - List of metrics to compute
    * @param {number} [options.threshold] - Similarity threshold for metrics
+   *   (default 0.5); context precision uses threshold * 0.67 (0.335 at the
+   *   default), not computeContextPrecision's own default of 0.2
    * @param {boolean} [options.includeBLEU] - Whether to include BLEU score when reference answer is provided
    * @param {boolean} [options.includeROUGE] - Whether to include ROUGE score when reference answer is provided
    * @param {boolean} [options.conditionCheck=true] - false: faithfulness, context recall and groundedness skip the 3.9 condition check
