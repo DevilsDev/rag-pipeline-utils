@@ -54,9 +54,10 @@ class AgenticPipeline extends EventEmitter {
       approvalThreshold: this.config.critiqueThreshold,
     });
     if (this.config.enableIterativeRetrieval) {
-      this.iterativeRetriever = new IterativeRetriever(
-        options.iterativeOptions,
-      );
+      this.iterativeRetriever = new IterativeRetriever({
+        maxIterations: this.config.maxIterations,
+        ...options.iterativeOptions,
+      });
     }
   }
 
