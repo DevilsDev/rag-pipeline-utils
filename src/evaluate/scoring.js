@@ -582,8 +582,62 @@ function quantities(text) {
   return { items, unitWords };
 }
 
-// The same source is checked against every sentence of an answer: keep the
-// last few sources' quantities
+/**
+ * A source or an answer prepared for the claim checks. The same source is
+ * checked against every sentence of an answer, so what the checks read from
+ * it (its normalised text, tokens, sentences, clauses, numbers) is worked
+ * out on first use and kept on this object, not redone per sentence.
+ */
+const PREPARED = Symbol('prepared text');
+
+/**
+ * Prepare a source text for repeated checks. Pass the result where a check
+ * takes the document text; a prepared source is returned unchanged.
+ * @param {string|object} text
+ * @returns {object}
+ */
+function prepareSource(text) {
+  if (text && text[PREPARED] === 'source') return text;
+  return { [PREPARED]: 'source', input: text, memo: {}, byAnswer: new WeakMap() };
+}
+
+/**
+ * Prepare an answer whose sentences may restate a source's condition (see
+ * checkConditionConsistency).
+ * @param {string|object} text
+ * @returns {object}
+ */
+function prepareAnswer(text) {
+  if (text && text[PREPARED] === 'answer') return text;
+  return { [PREPARED]: 'answer', input: text, memo: {} };
+}
+
+const isPreparedAnswer = (value) =>
+  Boolean(value) && value[PREPARED] === 'answer';
+const isPreparedSource = (value) =>
+  Boolean(value) && value[PREPARED] === 'source';
+
+/** One analysis of a prepared text, computed on first use. */
+function once(prepared, key, compute) {
+  const { memo } = prepared;
+  if (!(key in memo)) memo[key] = compute();
+  return memo[key];
+}
+
+/** A document's text as the checks read it, normalised (see normalize-text.js). */
+function sourceNorm(doc) {
+  const prepared = prepareSource(doc);
+  return once(prepared, 'norm', () => normalizeText(prepared.input));
+}
+
+/** A source's tokens, as a Set (the words a claim can match). */
+function sourceTokenSet(doc) {
+  const prepared = prepareSource(doc);
+  return once(prepared, 'tokens', () => new Set(tokenize(prepared.input)));
+}
+
+// The same claim is checked against every source: keep the last few claims'
+// quantities
 const docQuantityCache = new Map();
 const claimQuantityCache = new Map();
 function cachedQuantities(cache, text) {
@@ -724,7 +778,7 @@ function footnotedYears(text) {
  */
 function checkNumericConsistency(claimText, docText) {
   claimText = normalizeText(claimText);
-  docText = normalizeText(docText);
+  docText = sourceNorm(docText);
   const claim = withoutReferences(claimText);
   const docParts = new Set([
     ...extractNumbers(docText).parts,
@@ -1022,7 +1076,7 @@ function isNegated(tokens) {
  */
 function checkPolarityConsistency(claimText, docText) {
   claimText = normalizeText(claimText);
-  docText = normalizeText(docText);
+  docText = sourceNorm(docText);
   // Negation is scoped to its clause (3.6): "requires X but not Y" negates
   // Y, not X, and "may not use X and may not park Y" has two negated
   // clauses, not an even count that reads as positive. Each clause of the
@@ -1302,6 +1356,42 @@ function restrictingClauses(statement) {
 }
 
 /**
+ * The condition words of an answer's sentences that this document supports
+ * (most of their content words are in it), worked out once per answer and
+ * document.
+ * @param {object} doc - prepareSource()
+ * @param {object} answer - prepareAnswer()
+ * @returns {string[]}
+ */
+function restatingWords(doc, answer) {
+  let words = doc.byAnswer.get(answer);
+  if (!words) {
+    // Other sentences of the answer count only when this document supports
+    // them: "Remote work requires manager approval." restates the source's
+    // approval; "Your manager sets the team schedule." (from another source)
+    // does not
+    const docWords = once(
+      doc,
+      'conditionWords',
+      () => new Set(conditionWords(sourceNorm(doc))),
+    );
+    const sentences = once(answer, 'conditionWords', () =>
+      splitSentences(normalizeText(answer.input)).map(conditionWords),
+    );
+    words = sentences
+      .filter(
+        (sentence) =>
+          sentence.length > 0 &&
+          sentence.filter((w) => docWords.has(w)).length / sentence.length >=
+            0.5,
+      )
+      .flat();
+    doc.byAnswer.set(answer, words);
+  }
+  return words;
+}
+
+/**
  * Condition consistency between a claim and a document. A claim that keeps
  * every noun and number of its source but drops a restriction on it grants
  * more than the source does: "Remote work is allowed two days per week"
@@ -1334,28 +1424,15 @@ function restrictingClauses(statement) {
  */
 function checkConditionConsistency(claimText, docText, answerText) {
   claimText = normalizeText(claimText);
-  docText = normalizeText(docText);
-  if (typeof answerText === 'string') answerText = normalizeText(answerText);
+  const doc = prepareSource(docText);
+  docText = sourceNorm(doc);
   const claimWords = new Set(conditionWords(claimText));
   if (claimWords.size === 0) {
     return { consistent: true, missing: [], sourceSentence: null };
   }
-  // Other sentences of the answer count only when this document supports
-  // them: "Remote work requires manager approval." restates the source's
-  // approval; "Your manager sets the team schedule." (from another source)
-  // does not
-  const docWords = new Set(conditionWords(docText));
   const restating =
-    typeof answerText === 'string'
-      ? splitSentences(answerText)
-          .map(conditionWords)
-          .filter(
-            (words) =>
-              words.length > 0 &&
-              words.filter((w) => docWords.has(w)).length / words.length >=
-                0.5,
-          )
-          .flat()
+    typeof answerText === 'string' || isPreparedAnswer(answerText)
+      ? restatingWords(doc, prepareAnswer(answerText))
       : [];
   const answerWords = new Set([...claimWords, ...restating]);
 
@@ -1475,7 +1552,9 @@ function computeSupportScore(
   if (matched === 0) return 0;
 
   const { claimText, docText } = options || {};
-  const texts = typeof claimText === 'string' && typeof docText === 'string';
+  const texts =
+    typeof claimText === 'string' &&
+    (typeof docText === 'string' || isPreparedSource(docText));
   const numeric = texts ? checkNumericConsistency(claimText, docText) : null;
   if (numeric && numeric.matchedWords.length) {
     const restated = new Set(numeric.matchedWords);
@@ -1524,4 +1603,7 @@ module.exports = {
   computeROUGE,
   splitSentences,
   computeJaccardSimilarity,
+  prepareSource,
+  prepareAnswer,
+  sourceTokenSet,
 };

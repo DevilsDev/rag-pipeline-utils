@@ -52,10 +52,14 @@ function computeGroundedness(query, answer, retrievedDocs, options = {}) {
   const { threshold = 0.5, referenceAnswer, conditionCheck } = options;
   const weights = { ...DEFAULT_WEIGHTS, ...(options.weights || {}) };
 
-  const faithfulness = computeFaithfulness(answer, retrievedDocs, {
-    threshold,
-    conditionCheck,
-  });
+  // PipelineEvaluator passes the faithfulness it already computed with the
+  // same threshold and condition check, so it isn't computed twice
+  const faithfulness =
+    options.faithfulness ||
+    computeFaithfulness(answer, retrievedDocs, {
+      threshold,
+      conditionCheck,
+    });
   const contextPrecision = computeContextPrecision(query, retrievedDocs, {
     threshold: threshold * 0.67,
   });

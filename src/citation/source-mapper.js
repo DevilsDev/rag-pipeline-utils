@@ -1,6 +1,11 @@
 'use strict';
 
-const { tokenize, computeSupportScore } = require('../evaluate/scoring');
+const {
+  tokenize,
+  computeSupportScore,
+  prepareSource,
+  sourceTokenSet,
+} = require('../evaluate/scoring');
 
 /**
  * Build IDF (Inverse Document Frequency) weights from a collection of documents.
@@ -45,6 +50,8 @@ function buildIDFWeights(docs) {
  *   from: a condition it restates in another sentence counts as kept
  * @param {boolean} [options.conditionCheck=true] - false: skip the condition
  *   check (see computeSupportScore)
+ * @param {object[]} [options.preparedSources] - prepareSource() of each doc,
+ *   in order, when the same docs are mapped for several sentences
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
  */
 function mapSentenceToSources(sentence, docs, options = {}) {
@@ -54,6 +61,7 @@ function mapSentenceToSources(sentence, docs, options = {}) {
     idfWeights = null,
     answerText,
     conditionCheck,
+    preparedSources,
   } = options;
 
   const sentenceTokens = tokenize(sentence);
@@ -63,15 +71,16 @@ function mapSentenceToSources(sentence, docs, options = {}) {
 
   for (let i = 0; i < docs.length; i++) {
     const doc = docs[i];
-    const docText = doc.content || doc.text || '';
-    const docTokens = tokenize(docText);
-    if (!docTokens.length) continue;
+    const prepared =
+      (preparedSources && preparedSources[i]) ||
+      prepareSource(doc.content || doc.text || '');
+    const docSet = sourceTokenSet(prepared);
+    if (docSet.size === 0) continue;
 
     // Share of the sentence's content tokens found in this document.
-    const docSet = new Set(docTokens);
     const score = computeSupportScore(sentenceTokens, docSet, idfWeights, {
       claimText: sentence,
-      docText,
+      docText: prepared,
       answerText,
       conditionCheck,
     });

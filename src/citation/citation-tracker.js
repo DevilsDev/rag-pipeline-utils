@@ -1,7 +1,11 @@
 'use strict';
 
 const { EventEmitter } = require('events');
-const { splitSentences, tokenize } = require('../evaluate/scoring');
+const {
+  splitSentences,
+  prepareSource,
+  prepareAnswer,
+} = require('../evaluate/scoring');
 const { mapSentenceToSources, buildIDFWeights } = require('./source-mapper');
 const { detectHallucinations } = require('./hallucination-detector');
 
@@ -114,13 +118,19 @@ class CitationTracker extends EventEmitter {
       ? buildIDFWeights(docs)
       : null;
 
-    // 5 & 6. Map each sentence to sources and build citations array
+    // 5 & 6. Map each sentence to sources and build citations array. Each
+    // source and the answer are prepared once for all the sentences.
+    const preparedSources = docs.map((doc) =>
+      prepareSource(doc.content || doc.text || ''),
+    );
+    const preparedAnswer = prepareAnswer(answer);
     const citations = sentences.map((sentence) => {
       const sources = mapSentenceToSources(sentence, docs, {
         maxCitations: this.config.maxCitationsPerSentence,
         threshold: this.config.similarityThreshold,
         idfWeights,
-        answerText: answer,
+        answerText: preparedAnswer,
+        preparedSources,
         conditionCheck: this.config.conditionCheck,
       });
 

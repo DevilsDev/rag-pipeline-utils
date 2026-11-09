@@ -87,6 +87,9 @@ class PipelineEvaluator extends EventEmitter {
     const metricsComputed = [];
     const metricsSkipped = [];
     const { metrics, threshold, conditionCheck } = this.config;
+    // Faithfulness computed from the answer and results, kept for
+    // groundedness, which uses the same computation
+    let computedFaithfulness;
 
     if (metrics.includes('faithfulness')) {
       let faithResult;
@@ -97,6 +100,7 @@ class PipelineEvaluator extends EventEmitter {
           threshold,
           conditionCheck,
         });
+        computedFaithfulness = faithResult;
       }
       scores.faithfulness = faithResult.score;
       details.faithfulness = faithResult;
@@ -150,6 +154,7 @@ class PipelineEvaluator extends EventEmitter {
         threshold,
         referenceAnswer: hasReference ? referenceAnswer : undefined,
         conditionCheck,
+        faithfulness: computedFaithfulness,
       });
       scores.groundedness = groundednessResult.score;
       details.groundedness = groundednessResult;

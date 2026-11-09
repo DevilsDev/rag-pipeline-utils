@@ -1,6 +1,13 @@
 'use strict';
 
-const { splitSentences, tokenize, computeSupportScore } = require('./scoring');
+const {
+  splitSentences,
+  tokenize,
+  computeSupportScore,
+  prepareSource,
+  prepareAnswer,
+  sourceTokenSet,
+} = require('./scoring');
 const { mapSentenceToSources } = require('../citation/source-mapper');
 
 /**
@@ -43,26 +50,36 @@ function computeFaithfulness(answer, retrievedDocs, options = {}) {
     return { score: 0, faithfulSentences: 0, totalSentences: 0, details: [] };
   }
 
+  // Each source and the answer are prepared once for all the sentences
+  const prepared = retrievedDocs.map((doc) => {
+    const docContent = doc && (doc.content || doc.text || '');
+    return docContent ? prepareSource(docContent) : null;
+  });
+  const preparedAnswer = prepareAnswer(answer);
+
   const details = sentences.map((sentence) => {
     const sentenceTokens = tokenize(sentence);
     let bestScore = 0;
     let bestSource = -1;
 
     for (let i = 0; i < retrievedDocs.length; i++) {
-      const doc = retrievedDocs[i];
-      const docContent = doc && (doc.content || doc.text || '');
+      const doc = prepared[i];
 
-      if (!docContent) {
+      if (!doc) {
         continue;
       }
 
-      const docTokens = tokenize(docContent);
-      const similarity = computeSupportScore(sentenceTokens, docTokens, null, {
-        claimText: sentence,
-        docText: docContent,
-        answerText: answer,
-        conditionCheck,
-      });
+      const similarity = computeSupportScore(
+        sentenceTokens,
+        sourceTokenSet(doc),
+        null,
+        {
+          claimText: sentence,
+          docText: doc,
+          answerText: preparedAnswer,
+          conditionCheck,
+        },
+      );
 
       if (similarity > bestScore) {
         bestScore = similarity;
