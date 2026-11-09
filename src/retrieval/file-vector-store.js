@@ -260,7 +260,7 @@ function cosine(query, magQuery, stored) {
       magStored += stored[k] * stored[k];
     }
   }
-  const magnitude = Math.sqrt(magQuery) * Math.sqrt(magStored);
+  const magnitude = magQuery * Math.sqrt(magStored);
   return magnitude === 0 ? 0 : dot / magnitude;
 }
 
