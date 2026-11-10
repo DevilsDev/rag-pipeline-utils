@@ -1,34 +1,10 @@
-/* The hero is navy in both colour modes, like the README banner. */
+/* The hero is dark ink in both colour modes, like the README banner. */
 .hero {
   position: relative;
   overflow: hidden;
   padding: 4.5rem 0 3rem;
-  background: linear-gradient(135deg, #0b1020 0%, #16213e 100%);
-  color: #f8fafc;
-}
-
-.grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%);
-}
-
-.glow {
-  position: absolute;
-  top: -20%;
-  right: -10%;
-  width: 60%;
-  height: 90%;
-  background: radial-gradient(
-    closest-side,
-    rgba(167, 139, 250, 0.22),
-    transparent
-  );
-  pointer-events: none;
+  background: var(--rag-inverse-bg);
+  color: var(--rag-inverse-strong);
 }
 
 .layout {
@@ -52,16 +28,16 @@
 
 .chip {
   padding: 0.25rem 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(179, 172, 161, 0.3);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
-  color: #cbd5e1;
+  color: var(--rag-inverse-soft);
   font-size: 0.8rem;
 }
 
 a.chip:hover {
-  color: #ffffff;
-  border-color: #a5b4fc;
+  color: var(--rag-inverse-strong);
+  border-color: var(--rag-inverse-primary);
   text-decoration: none;
 }
 
@@ -70,14 +46,11 @@ a.chip:hover {
   font-size: clamp(2.25rem, 4.5vw, 3.5rem);
   line-height: 1.08;
   letter-spacing: -0.035em;
-  color: #f8fafc;
+  color: var(--rag-inverse-strong);
 }
 
 .accent {
-  background: linear-gradient(90deg, #38bdf8, #a78bfa);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--rag-inverse-accent);
 }
 
 .tagline {
@@ -85,7 +58,7 @@ a.chip:hover {
   margin: 0 0 1.75rem;
   font-size: 1.15rem;
   line-height: 1.6;
-  color: #cbd5e1;
+  color: var(--rag-inverse-soft);
 }
 
 .actions {
@@ -96,15 +69,33 @@ a.chip:hover {
 }
 
 .ghost {
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(179, 172, 161, 0.35);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--rag-inverse-text);
 }
 
 .ghost:hover {
-  border-color: #a5b4fc;
+  border-color: var(--rag-inverse-primary);
   background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: var(--rag-inverse-strong);
+}
+
+/* On the dark hero the primary button uses the light ink in both modes. */
+.hero :global(.button--primary) {
+  --ifm-button-background-color: var(--rag-inverse-primary);
+  --ifm-button-border-color: var(--rag-inverse-primary);
+  color: var(--rag-inverse-bg);
+  box-shadow: none;
+}
+
+.hero :global(.button--primary:hover) {
+  --ifm-button-background-color: var(--rag-inverse-text);
+  --ifm-button-border-color: var(--rag-inverse-text);
+  color: var(--rag-inverse-bg);
+}
+
+.hero :focus-visible {
+  outline-color: var(--rag-inverse-accent);
 }
 
 .demo {
@@ -129,10 +120,10 @@ a.chip:hover {
 .stageFinal {
   position: relative;
   padding: 0.5rem 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid rgba(179, 172, 161, 0.28);
   border-radius: 10px;
-  background: rgba(17, 26, 51, 0.8);
-  color: #e2e8f0;
+  background: rgba(30, 27, 24, 0.8);
+  color: var(--rag-inverse-text);
 }
 
 .stage::after {
@@ -141,16 +132,13 @@ a.chip:hover {
   right: -1.65rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: var(--rag-inverse-dim);
 }
 
 .stageFinal {
-  border-color: transparent;
-  background:
-    linear-gradient(#0f2a3a, #0f2a3a) padding-box,
-    linear-gradient(90deg, #38bdf8, #a78bfa) border-box;
-  border: 1px solid transparent;
-  color: #ffffff;
+  border-color: var(--rag-inverse-accent);
+  background: var(--rag-inverse-panel);
+  color: var(--rag-inverse-strong);
 }
 
 @media (max-width: 996px) {

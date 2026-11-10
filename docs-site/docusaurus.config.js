@@ -12,7 +12,10 @@
 
 const path = require("path");
 const { themes: prismThemes } = require("prism-react-renderer");
-const { accessiblePrismTheme } = require("./src/lib/accessiblePrismTheme");
+const {
+  accessiblePrismTheme,
+  onBackground,
+} = require("./src/lib/accessiblePrismTheme");
 // Read once at config-load. Docusaurus invokes this file at build time,
 // so picking up the version from the root package.json is fine here.
 const ROOT_PKG = require(path.resolve(__dirname, "..", "package.json"));
@@ -129,7 +132,7 @@ const config = {
           "rag, retrieval-augmented generation, llm, nodejs, citations, evaluation, guardrails",
       },
       { name: "author", content: "Ali Kahwaji" },
-      { name: "theme-color", content: "#0b1020" },
+      { name: "theme-color", content: "#1f3a5a" },
     ],
     // Open Graph / Twitter card, generated from assets/banner.svg.
     image: "img/social-card.png",
@@ -148,13 +151,17 @@ const config = {
     },
 
     mermaid: {
+      // Base palettes only; src/css/custom.css sets the theme's colours.
       theme: { light: "neutral", dark: "dark" },
     },
 
     prism: {
-      // Token colours raised to WCAG AA (4.5:1) against each background.
-      theme: accessiblePrismTheme(prismThemes.github),
-      darkTheme: accessiblePrismTheme(prismThemes.oneDark),
+      // Code blocks sit on the theme's card colour; token colours are raised
+      // to WCAG AA (4.5:1) against it.
+      theme: accessiblePrismTheme(onBackground(prismThemes.github, "#fffdf8")),
+      darkTheme: accessiblePrismTheme(
+        onBackground(prismThemes.oneDark, "#1e1b18"),
+      ),
       additionalLanguages: ["bash", "json", "yaml", "diff"],
     },
 

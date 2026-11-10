@@ -75,4 +75,9 @@ function accessiblePrismTheme(theme, minRatio = 4.5) {
   };
 }
 
-module.exports = { accessiblePrismTheme, contrast, parse };
+/** Copy of `theme` drawn on `backgroundColor` (fix() then checks against it). */
+function onBackground(theme, backgroundColor) {
+  return { ...theme, plain: { ...theme.plain, backgroundColor } };
+}
+
+module.exports = { accessiblePrismTheme, onBackground, contrast, parse };
