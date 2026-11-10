@@ -406,14 +406,19 @@ function features() {
 
 /* ---------- Logo ---------- */
 
-function logo({ radius = 14 } = {}) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="rag-pipeline-utils">
-  <rect width="64" height="64" rx="${radius}" fill="${C.primary}"/>
+/** The logo's shapes on a 64x64 grid, without the <svg> wrapper. */
+function logoShapes({ radius = 14 } = {}) {
+  return `<rect width="64" height="64" rx="${radius}" fill="${C.primary}"/>
   <!-- Three pipeline stages flowing into a cited answer. -->
   <path d="M14 22h10M14 32h18M14 42h10" stroke="${C.primaryLight}" stroke-width="4" stroke-linecap="round"/>
   <path d="M24 22c8 0 8 10 14 10M24 42c8 0 8-10 14-10" fill="none" stroke="${C.accentLight}" stroke-width="4" stroke-linecap="round"/>
   <circle cx="44" cy="32" r="7" fill="none" stroke="${C.accentLight}" stroke-width="4"/>
-  <circle cx="44" cy="32" r="2.5" fill="${C.paper}"/>
+  <circle cx="44" cy="32" r="2.5" fill="${C.paper}"/>`;
+}
+
+function logo(options) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="rag-pipeline-utils">
+  ${logoShapes(options)}
 </svg>
 `;
 }
@@ -424,10 +429,6 @@ function socialCard() {
   const W = 1200;
   const H = 630;
   const P = 64;
-  const mark = logo()
-    .replace(/<svg[^>]*>/, "")
-    .replace("</svg>", "")
-    .replace(/<!--.*?-->/, "");
   const t1 = "RAG for Node.js that tells you";
   const t2 = "when your LLM is making things up.";
   const size = Math.min(
@@ -436,7 +437,7 @@ function socialCard() {
   );
   const parts = [
     `<rect width="${W}" height="${H}" fill="${C.paper}"/>`,
-    `<g transform="translate(${P} 56) scale(0.875)">${mark}</g>`,
+    `<g transform="translate(${P} 56) scale(0.875)">${logoShapes()}</g>`,
     text(F.serif, 34, "rag-pipeline-utils", P + 76, 99, C.primary).svg,
     text(F.serif, size, t1, P, 228, C.primary).svg,
     text(F.serif, size, t2, P, 228 + size * 1.18, C.primary).svg,
