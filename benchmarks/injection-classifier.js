@@ -4,9 +4,10 @@
  * adapter is shown on the Guardrails docs page, so the published numbers
  * are for that code.
  *
- * Needs `npm install @huggingface/transformers`; it is not a dependency of
- * the library or of this repository. The model is 738 MB and is downloaded
- * on first use into transformers.js's cache.
+ * Needs `npm install --no-save @huggingface/transformers` (`--no-save`
+ * keeps package.json unchanged); it is not a dependency of the library or of
+ * this repository. The model is 738 MB and is downloaded on first use into
+ * transformers.js's cache.
  */
 
 "use strict";
