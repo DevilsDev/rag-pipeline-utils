@@ -320,7 +320,7 @@ select {
 
 code {
   border: 1px solid var(--rag-border);
-  padding: 0.1rem 0.35rem;
+  padding: 0.1rem 0.2em;
 }
 
 pre code {

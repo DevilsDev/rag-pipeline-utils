@@ -5,6 +5,9 @@ sidebar_label: Comparison
 description: Honest comparison of @devilsdev/rag-pipeline-utils with LangChain.js, Mastra and the Vercel AI SDK, including where we lose, and what to do now that LlamaIndex.TS is deprecated.
 ---
 
+import ComparisonTable from "@site/src/components/ComparisonTable";
+import MigrationCards from "@site/src/components/MigrationCards";
+
 # Comparison vs Other Frameworks
 
 This page exists to give you a decision framework, not to sell you on
@@ -13,7 +16,7 @@ Mastra and the Vercel AI SDK, are as often used **together with** this
 library as instead of it, so the page says how they combine too.
 
 > **Currency**: this comparison reflects each project as of
-> **November 2026** (this library 3.9.0; Mastra `@mastra/core` 1.81, AI SDK 7.0). The
+> **November 2026** (this library 3.9.0; Mastra `@mastra/core` 1.82, AI SDK 7.0). The
 > JS AI ecosystem moves fast; if you read this months later, check the
 > points where each project has likely improved.
 
@@ -25,6 +28,8 @@ its repository archived in 2026; the last release is 0.12.1 (December
 :::
 
 ## At a glance
+
+<ComparisonTable>
 
 | Dimension                 | `@devilsdev/rag-pipeline-utils`                                                                                                                                             | LangChain.js                                                                                               | Mastra                                                                                           | Vercel AI SDK                                                               |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
@@ -42,6 +47,8 @@ its repository archived in 2026; the last release is 0.12.1 (December
 | **Install size**          | 34 MB full; `@devilsdev/rag-eval` alone about 6 MB                                                                                                                          | About 66 MB (`langchain` + `@langchain/core`)                                                              | About 148 MB (`@mastra/core` alone)                                                              | About 25 MB (`ai` alone; providers separate)                                |
 | **Module format**         | ESM and CommonJS                                                                                                                                                            | ESM and CommonJS                                                                                           | ESM and CommonJS                                                                                 | ESM only (since AI SDK 7)                                                   |
 | **Stability policy**      | ✅ Documented [SEMVER policy](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/SEMVER.md)                                                                          | Versioned per package                                                                                      | Versioned per package                                                                            | Versioned, with codemods for majors                                         |
+
+</ComparisonTable>
 
 ### Sources
 
@@ -111,12 +118,16 @@ Install sizes: node_modules after a fresh install of the named packages, measure
 
 ## Migration friction
 
+<MigrationCards archived="LlamaIndex.TS">
+
 | From             | Effort     | What's involved                                                                                                                                                          |
 | ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | LlamaIndex.TS    | Low–Medium | Vector-index RAG maps directly; see [Coming from LlamaIndex.TS](./Migration-LlamaIndex). Summary, tree and keyword-table indexes have no equivalent and need rethinking. |
 | LangChain.js     | Medium     | Chain composition becomes a pipeline; keep custom retrievers and prompts with light wrapping. Or keep the chain and add `checkAnswer` and `rag-pipeline eval` alongside. |
 | AI SDK (DIY RAG) | Low        | Pass your AI SDK models through `createAiSdkAdapter`; your retrieval code becomes a retriever plugin.                                                                    |
 | Custom in-house  | Low–Medium | The plugin contracts let you keep your retriever and embedder code; `runContractTests` checks they behave as the pipeline expects.                                       |
+
+</MigrationCards>
 
 ## Cost considerations
 

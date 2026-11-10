@@ -1,3 +1,5 @@
+import KnownGapsChart from "@site/src/components/KnownGapsChart";
+
 # Evaluation Framework
 
 **@devilsdev/rag-pipeline-utils** ships a set of lexical evaluation metrics for RAG output: answer-level scores (BLEU, ROUGE), grounding metrics (faithfulness, answer relevance, context precision and recall, groundedness), citation tracking and hallucination detection. All of them run locally, synchronously and without calling a model.
@@ -35,15 +37,19 @@ Some phrases look like conditions and restrict nothing, so leaving them out is f
 
 To compare with a baseline saved on 3.8 or earlier, turn the check off: `checkAnswer({ ..., conditionCheck: false })`, `new CitationTracker({ conditionCheck: false })` (or `citationOptions: { conditionCheck: false }` on a run, which its evaluation follows), `new PipelineEvaluator({ conditionCheck: false })` and the same option on `computeFaithfulness`, `computeContextRecall` and `computeGroundedness`, `verifyCitations(input, { conditionCheck: false })`, `expect(answer).toBeGroundedIn(sources, { conditionCheck: false })` and `rag-pipeline eval --no-condition-check`. Everything else in 3.9 still applies, so other scores can move a little.
 
-The check catches restrictions that are left out, not other changes of meaning that keep the source's words. These still pass the lexical check (miss rates from the [loophole hunt](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/loophole-hunt-findings.md), about 30 generated cases per category):
+The check catches restrictions that are left out, not other changes of meaning that keep the source's words. These still pass the lexical check (how many of each category's confirmed generated cases got through, from the [loophole hunt](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/loophole-hunt-findings.md)):
 
-- **Role swap** (100% missed): who does what to whom ("the employee reimburses the company" from "the company reimburses the employee").
-- **Attribution** (100%): a claim stated as fact where the source attributes it ("according to the survey", "the company claims").
-- **Scope** (93%): "all" for "some", "every site" for "the main site".
-- **Comparison direction** (93%): "lower" for "higher", "before" for "after".
-- **Modality** (93%): "must" for "may", "will" for "could".
-- **Time bounds** (93%): "within 30 days" for "after 30 days", "since 2019" for "until 2019".
-- **Hedges** (90%): a claim stated as fact where the source says "may" or "is thought to".
+<KnownGapsChart caption="Confirmed generated cases the lexical check missed">
+
+- **Role swap**, 30 of 30 (100%) missed: who does what to whom ("the employee reimburses the company" from "the company reimburses the employee").
+- **Attribution**, 29 of 29 (100%): a claim stated as fact where the source attributes it ("according to the survey", "the company claims").
+- **Scope**, 28 of 30 (93%): "all" for "some", "every site" for "the main site".
+- **Comparison direction**, 28 of 30 (93%): "lower" for "higher", "before" for "after".
+- **Modality**, 26 of 28 (93%): "must" for "may", "will" for "could".
+- **Time bounds**, 26 of 28 (93%): "within 30 days" for "after 30 days", "since 2019" for "until 2019".
+- **Hedges**, 26 of 29 (90%): a claim stated as fact where the source says "may" or "is thought to".
+
+</KnownGapsChart>
 
 They pass the word-overlap test, so the [judge](#paraphrases-the-optional-llm-judge), which only rules on sentences that fail for low overlap, doesn't see them either.
 
