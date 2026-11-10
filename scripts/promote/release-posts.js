@@ -57,11 +57,20 @@ function findBlogPost(version) {
   return null;
 }
 
-/** Plain text of a Markdown sentence: no emphasis, code ticks or links. */
+/**
+ * Plain text of a Markdown sentence: links become their text, code spans
+ * keep their content as written (`nodejs_compat` stays nodejs_compat),
+ * and * and _ are dropped only as emphasis markers, not inside words
+ * (snake_case).
+ */
 function plain(md) {
+  const code = [];
   return md
+    .replace(/`([^`]*)`/g, (_m, c) => `\u0000${code.push(c) - 1}\u0000`)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[*_`]/g, "")
+    .replace(/(\*\*?)(?=\S)([^*]*?\S)\1/g, "$2")
+    .replace(/(?<![\p{L}\p{N}])(__?)(?=\S)(.*?\S)\1(?![\p{L}\p{N}])/gu, "$2")
+    .replace(/\u0000(\d+)\u0000/g, (_m, i) => code[Number(i)])
     .replace(/\s+/g, " ")
     .trim();
 }

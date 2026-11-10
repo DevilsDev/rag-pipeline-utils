@@ -8,6 +8,8 @@ import { makeChecks, worker } from "./checks.js";
 
 const {
   AnthropicConnector,
+  CostCalculator,
+  GuardrailsPipeline,
   LocalEmbedder,
   MemoryRetriever,
   QdrantRetriever,
@@ -62,6 +64,98 @@ checks["cache keys (sha256) match the Node build"] = async (env) => {
   if (r.cache.retrieval !== "hit") throw new Error(JSON.stringify(r.cache));
   return { key, cache: r.cache };
 };
+
+// Warnings: Node's process.emitWarning doesn't exist here, so the library
+// warns through console.warn instead. Captures what it writes.
+async function warningsDuring(fn) {
+  const original = console.warn;
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args.map(String).join(" "));
+  try {
+    return { value: await fn(), warnings };
+  } finally {
+    console.warn = original;
+  }
+}
+
+checks["cached pipeline with a component that has no cache key"] = async () => {
+  // An embedder with no cacheKey or getCacheKey(): the embeddings layer is
+  // skipped, with a one-time warning.
+  const embedder = {
+    async embed(text) {
+      return [text.length, 1];
+    },
+  };
+  const retriever = new MemoryRetriever();
+  await retriever.store([
+    { id: "v", content: "twenty vacation days", vector: [20, 1] },
+  ]);
+  const { value: r, warnings } = await warningsDuring(() =>
+    createRagPipeline({ embedder, retriever, cache: true }).run({
+      query: "vacation days",
+    }),
+  );
+  if (!r.success) throw new Error(r.error);
+  if (r.cache.embeddings !== "skip") throw new Error(JSON.stringify(r.cache));
+  if (!warnings.some((w) => w.includes("RagCacheWarning"))) {
+    throw new Error(`no cache warning: ${JSON.stringify(warnings)}`);
+  }
+  return { cache: r.cache, warning: warnings[0] };
+};
+
+checks["CostCalculator.estimate() for a model with no price"] = async () => {
+  const { value: cost, warnings } = await warningsDuring(() =>
+    new CostCalculator().estimate("no-such-model", 1000, 500),
+  );
+  if (cost.totalCost !== 0) throw new Error(JSON.stringify(cost));
+  if (!warnings.some((w) => w.includes("RAG_UNKNOWN_MODEL_PRICING"))) {
+    throw new Error(`no pricing warning: ${JSON.stringify(warnings)}`);
+  }
+  return { totalCost: cost.totalCost, warning: warnings[0] };
+};
+
+checks["AnthropicConnector drops a temperature the model rejects"] =
+  async () => {
+    const llm = new AnthropicConnector({
+      apiKey: "k",
+      baseURL: "https://upstream.test",
+      model: "claude-default-temperature-only",
+      temperature: 0.2,
+      maxRetries: 0,
+    });
+    const { value: answer, warnings } = await warningsDuring(() =>
+      llm.generate("How many vacation days?"),
+    );
+    if (!/twenty days/i.test(answer)) throw new Error(String(answer));
+    if (!warnings.some((w) => w.includes("RAG_ANTHROPIC_TEMPERATURE"))) {
+      throw new Error(`no temperature warning: ${JSON.stringify(warnings)}`);
+    }
+    return { answer, warning: warnings[0] };
+  };
+
+checks["GuardrailsPipeline warns when the retrieval guard was skipped"] =
+  async () => {
+    // A wrapped pipeline that answers without returning results or calling
+    // options.filterResults, so the configured retrieval guard sees nothing.
+    const inner = {
+      async run() {
+        return { success: true, answer: "Employees get twenty days." };
+      },
+    };
+    const guarded = new GuardrailsPipeline(inner, {
+      preRetrieval: false,
+      retrieval: { enforceACL: false, minRelevanceScore: 0.5 },
+      postGeneration: false,
+    });
+    const { value: r, warnings } = await warningsDuring(() =>
+      guarded.run({ query: "vacation days" }),
+    );
+    if (!r.success) throw new Error(r.error);
+    if (!warnings.some((w) => w.includes("RAG_GUARDRAILS_RETRIEVAL_SKIPPED"))) {
+      throw new Error(`no skipped warning: ${JSON.stringify(warnings)}`);
+    }
+    return { skipped: r.guardrails.retrieval.skipped, warning: warnings[0] };
+  };
 
 checks["QdrantRetriever.store point ids (sha256)"] = async () => {
   const q = new QdrantRetriever({
