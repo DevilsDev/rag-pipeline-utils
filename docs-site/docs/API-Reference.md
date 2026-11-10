@@ -221,9 +221,7 @@ Components receive the signal as follows (see [Plugin Contracts](#plugin-contrac
 
 Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. `loader.load()` takes no signal; the run still settles on abort. For a stream, the timeout and a caller signal keep applying until the stream ends: a stream still running at the timeout is aborted and its iteration rejects with `Execution timeout`.
 
-:::info[Coming in 3.9.0]
-On 3.8.3 and earlier, the timeout stopped once the stream was returned, a stream whose model ignored the signal didn't settle on abort, and `llm.route()` and `filterResults()` got no signal.
-:::
+Before 3.9.0, the timeout stopped once the stream was returned, a stream whose model ignored the signal didn't settle on abort, and `llm.route()` and `filterResults()` got no signal.
 
 ---
 
@@ -255,9 +253,7 @@ function packContext(
 - The budget covers the documents and the `<document index="n">` wrapper the built-in connectors put around each one. The system prompt, the instructions around the documents and the question come on top.
 - For exact counts, pass your model's tokenizer as `countTokens`.
 
-:::info[Coming in 3.9.0]
-On 3.8.0 and earlier, a budget smaller than one word and the wrapper drops the top document too.
-:::
+Before 3.9.0, a budget smaller than one word and the wrapper dropped the top document too.
 
 ```javascript
 const result = await pipeline.run({
@@ -343,9 +339,7 @@ A retriever backed by a JSON file. It is the index used by `rag-pipeline ingest`
 - `store()` checks the whole batch first, so a batch with an invalid document stores nothing. A batch with a new vector size must replace every stored document (as `ingest` and `ai train` do after refitting the local embedder); otherwise it throws and asks you to re-ingest with `--rebuild`. `MemoryRetriever` checks the same way. Documents are copied on the way in and results on the way out.
 - `save()` re-reads the file and applies only this instance's changes, so several processes can ingest into one index, and `load()` picks up a newer file when this instance has no unsaved changes. There is no lock: if two processes write the same id at the same instant, the last save wins. Use one writer for the same ids.
 
-:::info[Coming in 3.9.0]
-On 3.8.3 and earlier, scores grew with the query vector's length (an identical vector could score above 2), so a `minRelevanceScore` tuned on them needs re-tuning; a negative `topK` returned all but the last few results; and a save replaced documents another process had saved since this one read the file.
-:::
+Before 3.9.0, scores grew with the query vector's length (an identical vector could score above 2), so a `minRelevanceScore` tuned on them needs re-tuning; a negative `topK` returned all but the last few results; and a save replaced documents another process had saved since this one read the file.
 
 **Constructor:**
 
@@ -737,9 +731,7 @@ validate(): boolean // true, or throws
 - `addNode(id, fn, { timeout })` fails the node with "Node &lt;id&gt; timed out after &lt;n&gt; ms" when it runs longer than `timeout` milliseconds (or `RAG_NODE_TIMEOUT`). A node without one has no limit. A timed-out node's work is abandoned, not cancelled, so it can still finish in the background.
 - `execute(seed, { concurrency })` runs up to `concurrency` independent nodes at a time (default: `RAG_MAX_CONCURRENCY`, or one at a time).
 
-:::info[Coming in 3.9.0]
-On 3.8.3 and earlier, a node's `timeout` was ignored and `concurrency` ran the nodes one at a time.
-:::
+Before 3.9.0, a node's `timeout` was ignored and `concurrency` ran the nodes one at a time.
 
 **Example:**
 
@@ -835,9 +827,7 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 
 **Daily files.** An event goes in the file named for its UTC date. An event older than the newest file goes in the newest file, so the files stay in sequence order for `verifyIntegrity()`.
 
-:::info[Coming in 3.9.0]
-On 3.8.0 and earlier, the constructor creates the log folders at once, a directory that can't be created ends the process, a failed integrity-chain update writes the batch to the file again, and the default `logDir` doesn't warn. 3.8.0 only logged that it would send to `webhookUrl`, and 3.8.1 to 3.8.3 ignored it with a warning. A daily file was named for the day of the flush, and there was no `close()`.
-:::
+Before 3.9.0, the constructor created the log folders at once, a directory that couldn't be created ended the process, and the default `logDir` didn't warn; on 3.8.1 and earlier, a failed integrity-chain update also wrote the batch to the file again. 3.8.0 only logged that it would send to `webhookUrl`, and 3.8.1 to 3.8.3 ignored it with a warning. A daily file was named for the day of the flush, and there was no `close()`.
 
 **Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity`, `close` (all async).
 

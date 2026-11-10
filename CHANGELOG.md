@@ -9,7 +9,20 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
-## [Unreleased]
+## [3.9.0] - 2026-11-10
+
+A minor release. Answer checks now catch an answer that drops its source's
+condition, and are much faster on long answers: a sentence that leaves out
+a condition ("with manager approval", "but not for guests") is no longer
+grounded, text from PDFs and web pages is normalised before it's compared,
+and long answers are checked in linear time (a 1,000-sentence answer in
+under half a second). It also fixes the chunkers, the vector stores,
+streaming, cost budgets, the DAG engine and `AuditLogger`, which gains
+`close()` and a working webhook. Some of these change behaviour; act on
+these when you upgrade: re-tune a `minRelevanceScore` set against
+`FileVectorStore`, re-ingest to pick up the chunker fixes, raise `timeout`
+if you stream long answers, and regenerate saved baselines that compare
+multi-source scores or hallucination classes.
 
 ### Added
 

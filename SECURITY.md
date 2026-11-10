@@ -12,7 +12,8 @@ from 3.4.0 `@devilsdev/rag-mcp-server` and from 3.6.0 `create-rag-pipeline`, whi
 
 | Version | Supported                                                    |
 | ------- | ------------------------------------------------------------ |
-| 3.8.x   | :white_check_mark:                                           |
+| 3.9.x   | :white_check_mark:                                           |
+| 3.8.x   | Security fixes for 30 days after the 3.9.0 release, then :x: |
 | 3.7.x   | Security fixes for 30 days after the 3.8.0 release, then :x: |
 | 3.6.x   | Security fixes for 30 days after the 3.7.0 release, then :x: |
 | 3.5.x   | Security fixes for 30 days after the 3.6.0 release, then :x: |

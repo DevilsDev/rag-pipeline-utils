@@ -24,9 +24,7 @@ This page covers the supported building blocks in **@devilsdev/rag-pipeline-util
 
 `AuditLogger` writes audit events as JSON lines under `logDir/daily/`, creating the folders on the first write. Without a `logDir` it uses `.rag-enterprise/audit-logs` in the working directory and warns once that this default is deprecated (removed in 4.0). Each event is numbered, chained and appended to the daily file once; writing the chain state to `integrity/chain.json` is a separate stage that retries on its own, so a failure there never writes events again. A write that fails logs one warning until it succeeds and emits `flush_failed` (the events are kept for the next flush) or `chain_failed`. While writes fail, at most `memoryLimit` events (default 10,000) are kept; older ones are dropped, reported with `events_dropped` (`{ count, totalDropped }`) and in the warning, and counted in `audit.droppedEvents`. Dropped events were never numbered, so they leave no gap in the chain. A listener that throws doesn't stop a flush: it is logged once, and the rest of the flush and later flushes still run. Each event gets a sequence number, an integrity hash and an HMAC signature. With an encryption key, sensitive fields are encrypted with AES-GCM, using a random IV per field.
 
-:::info[Coming in 3.9.0]
-On 3.8.3 and earlier, the constructor creates the log folders (and the stored signing key) at once, a directory that can't be created ends the process, a failed chain file write warns on every flush, and the default `logDir` doesn't warn. On 3.8.1 and earlier, a failed integrity-chain update also writes the batch to the file again.
-:::
+Before 3.9.0, the constructor created the log folders (and the stored signing key) at once, a directory that couldn't be created ended the process, a failed chain file write warned on every flush, and the default `logDir` didn't warn. On 3.8.1 and earlier, a failed integrity-chain update also wrote the batch to the file again.
 
 ```javascript no-run
 const { once } = require("events");

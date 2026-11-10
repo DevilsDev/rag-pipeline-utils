@@ -933,9 +933,7 @@ Provider citations on SciFact (`verifyCitations`): the share of cited claims sup
 
 ## Conditions left out (3.9)
 
-:::info[Coming in 3.9.0]
-The condition check is in 3.9.0; 3.8.0 grounds a sentence that leaves out its source's condition.
-:::
+The condition check is new in 3.9.0; earlier versions ground a sentence that leaves out its source's condition.
 
 A sentence can keep every noun and number of its source and still claim more than it: "Remote work is allowed two days per week" against "Remote work is allowed two days per week with manager approval". 3.9 adds a check for a restricting clause left out (see [Known limitations](./Evaluation.md#known-limitations)). This benchmark measures it on generated cases: claims that drop an approval, a condition, an "unless", a proviso, a waiting period or an eligibility rule or exception; "near miss" claims, where another sentence of the answer reuses a word of the dropped restriction; and controls that must stay supported (paraphrases that keep the condition, dropped contrasting clauses, and "if"s and "except"s that don't restrict). The plan, committed before any case existed: [condition-dropped-plan.md](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/condition-dropped-plan.md).
 

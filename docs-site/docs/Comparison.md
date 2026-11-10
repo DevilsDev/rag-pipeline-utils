@@ -13,7 +13,7 @@ Mastra and the Vercel AI SDK, are as often used **together with** this
 library as instead of it, so the page says how they combine too.
 
 > **Currency**: this comparison reflects each project as of
-> **November 2026** (this library 3.8.3; Mastra `@mastra/core` 1.81, AI SDK 7.0). The
+> **November 2026** (this library 3.9.0; Mastra `@mastra/core` 1.81, AI SDK 7.0). The
 > JS AI ecosystem moves fast; if you read this months later, check the
 > points where each project has likely improved.
 
