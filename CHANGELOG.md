@@ -9,6 +9,11 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+> **Upgrading from 3.8.1 or earlier?** Upgrade to 3.8.2 or later for its
+> security fixes; 3.9.0 is recommended. If you store documents with
+> top-level access restrictions in Qdrant, Pinecone, Weaviate or pgvector,
+> re-ingest them: see [3.8.2](#382---2026-11-09).
+
 ## [3.9.0] - 2026-11-10
 
 A minor release. Answer checks now catch an answer that drops its source's
