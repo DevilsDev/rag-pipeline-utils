@@ -169,9 +169,13 @@ page.
 - **A guarded stream's done chunk carries only known fields**: `success`,
   `error`, `timing`, the redacted `citations` and `evaluation`, the cache's
   per-layer status, and the router's `route` and the `packing` counters
-  when they have the expected types. It carries no `results`, so
-  retrieved documents never reach the caller that way; a non-streamed
-  guarded run still returns them.
+  when they have the expected types, plus the guard summary
+  (`guardrails`) without raw text: the documents the retrieval guard let
+  through are listed by id, the query is left out and the copy of the
+  redacted answer is empty (issues and counts stay). It carries no
+  `results`, so retrieved documents, the query and PII the guard found
+  never reach the caller that way; a non-streamed guarded run still
+  returns its results and full summary.
 - **Plugins are checked against their contracts in `@devilsdev/rag-core`
   too.** The contracts are bundled, so `register()` refuses a plugin that
   has no `metadata` or lacks the contract's methods; the bundle used to

@@ -170,6 +170,27 @@ function packingInfo(packing) {
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/**
+ * The guard summaries in a guarded stream's done chunk: as withheldSummary,
+ * but the documents the retrieval guard let through stay listed, by id. The
+ * stream already released the answer; the query, document content and
+ * matched strings are not repeated in the summary (a non-streamed run
+ * returns its results and full summaries by design).
+ *
+ * @param {object} guardrails
+ * @returns {object}
+ */
+function streamSummary(guardrails) {
+  const out = withheldSummary(guardrails);
+  if (guardrails.retrieval && Array.isArray(guardrails.retrieval.results)) {
+    out.retrieval = {
+      ...out.retrieval,
+      results: guardrails.retrieval.results.map((doc) => ({ id: doc && doc.id })),
+    };
+  }
+  return out;
+}
+
 /** @returns {{success: false, error: string, guardrails: object}} */
 function withheld(error, guardrails) {
   return { success: false, error, guardrails: withheldSummary(guardrails) };
@@ -495,7 +516,10 @@ class GuardrailsPipeline extends EventEmitter {
     let doneChunk;
 
     if (!text) {
-      doneChunk = { ...this._safeDoneFields(done, []), guardrails };
+      doneChunk = {
+        ...this._safeDoneFields(done, []),
+        guardrails: streamSummary(guardrails),
+      };
     } else {
       const check = await this.postGuard.checkAsync(
         text,
@@ -526,7 +550,7 @@ class GuardrailsPipeline extends EventEmitter {
       } else {
         doneChunk = {
           ...this._safeDoneFields(done, detectedText(check)),
-          guardrails,
+          guardrails: streamSummary(guardrails),
         };
         if (check.sanitizedOutput) {
           tokenChunk = { token: check.sanitizedOutput, done: false };

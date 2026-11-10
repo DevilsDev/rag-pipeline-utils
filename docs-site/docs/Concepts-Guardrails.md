@@ -128,10 +128,14 @@ continues (PII is still redacted).
   citations and evaluation, plus `guardrails`). The done chunk is built from
   a fixed list: `success`, `error`, `timing`, citations and evaluation, the
   cache's per-layer status, and `route` and `packing` when they have the
-  expected types. It carries no `results`, so retrieved documents don't
-  reach the caller through a guarded stream; a non-streamed guarded run
-  returns the filtered `results`. Nothing reaches the caller before the
-  whole answer is checked. Buffering stops at the guard's
+  expected types. Its `guardrails` summary keeps the verdicts, issues and
+  counts but no raw text: `retrieval.results` and `retrieval.removed` list
+  documents by id, the query (`preRetrieval.sanitizedQuery`) is left out,
+  and `postGeneration.sanitizedOutput` is empty (the answer is in the
+  token chunk). So retrieved documents, the query and PII the guard found
+  don't reach the caller through a guarded stream; a non-streamed guarded
+  run returns the filtered `results` and the full summary. Nothing reaches
+  the caller before the whole answer is checked. Buffering stops at the guard's
   `maxResponseLength`, or at 1,000,000 characters when none is set; the
   source is then closed and the answer is treated as over-long (truncated, or
   blocked in strict mode). `options.timeout` and `options.signal` apply while
