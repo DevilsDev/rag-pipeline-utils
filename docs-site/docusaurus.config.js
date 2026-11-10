@@ -134,7 +134,7 @@ const config = {
       { name: "author", content: "Ali Kahwaji" },
       { name: "theme-color", content: "#1f3a5a" },
     ],
-    // Open Graph / Twitter card, generated from assets/banner.svg.
+    // Open Graph / Twitter card, built by scripts/build-readme-images.js --png.
     image: "img/social-card.png",
 
     colorMode: {

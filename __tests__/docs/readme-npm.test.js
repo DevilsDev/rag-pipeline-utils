@@ -79,4 +79,29 @@ describe("README.md on npmjs.com", () => {
     expect(pinned).toContain(`rag-pipeline-utils@v${version}/assets/`);
     expect(restore(pinned)).toBe(readme);
   });
+
+  // The "New in" section covers the current minor version: rewrite it and
+  // its heading at each minor release (3.10, 3.11, ...). Patches keep the
+  // heading, so this fails only when package.json reaches a new minor.
+  test('the "New in" section names the package.json minor version', () => {
+    const { version } = require("../../package.json");
+    const minor = version.split(".").slice(0, 2).join(".");
+    const headings = [...readme.matchAll(/^## New in (\S+)$/gm)].map(
+      (m) => m[1],
+    );
+    expect(headings).toEqual([minor]);
+  });
+
+  // assets/features.svg draws these titles; rerun `npm run images:readme`
+  // after changing them in scripts/build-readme-images.js.
+  test("the feature strip image has the list's titles, in order", () => {
+    const { FEATURES } = require("../../scripts/build-readme-images");
+    const section = readme
+      .split("## Why people reach for it")[1]
+      .split("\n## ")[0];
+    const titles = [...section.matchAll(/^- \*\*(.+?)\.\*\*/gm)].map(
+      (m) => m[1],
+    );
+    expect(titles).toEqual(FEATURES);
+  });
 });
