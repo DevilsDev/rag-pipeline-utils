@@ -311,24 +311,33 @@ Already on LangChain, Mastra, the AI SDK or LlamaIndex? `checkAnswer` checks the
 import { checkAnswer } from "@devilsdev/rag-pipeline-utils";
 
 const check = await checkAnswer({
-  question: "How many vacation days do I get?",
-  answer: "Full-time employees receive thirty days of paid vacation per year.",
+  question: "How many vacation days do I get, and can I work remotely?",
+  answer:
+    "Full-time employees receive thirty days of paid vacation per year. " +
+    "Remote work is allowed two days per week.",
   sources: [
     {
       pageContent:
         "Full-time employees receive twenty days of paid vacation per year.",
       metadata: { source: "handbook.md" },
     },
+    {
+      pageContent:
+        "Remote work is allowed two days per week with manager approval.",
+      metadata: { source: "handbook.md" },
+    },
   ],
 });
 
 console.log(check.grounded); // false
-console.log(check.unsupported.length); // 1
+console.log(check.unsupported.length); // 2
 ```
+
+<img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/check-result.svg" alt="What checkAnswer catches: sentence 1 states the wrong number (thirty where the source says twenty); sentence 2 drops the condition &quot;with manager approval&quot;. grounded: false." width="100%">
 
 [Run it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-answer.js&startScript=check-answer), or [paste an answer of your own](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) and its sources to see which sentences they don't support. No install or API key.
 
-The check compares words, numbers and negation, so a correct paraphrase ("Staff working full time get 20 days of paid leave annually") is reported unsupported too. From 3.4.0, pass any LLM as `judge` and it rules on the sentences that failed for lack of word overlap, in one call per answer:
+The check compares words, numbers, negation and conditions, so a correct paraphrase ("Staff working full time get 20 days of paid leave annually") is reported unsupported too. From 3.4.0, pass any LLM as `judge` and it rules on the sentences that failed for lack of word overlap, in one call per answer:
 
 ```ts
 const check = await checkAnswer({ answer, sources, judge: openai }); // any llm with generate()
