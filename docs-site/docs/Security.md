@@ -480,6 +480,10 @@ class OutputFilter {
 }
 ```
 
+### **Rendering loader output and retrieved text**
+
+Loaders return plain text, not HTML. Since 3.9.0, `MarkdownLoader` decodes HTML entities, so a document that contains `&lt;script&gt;` yields the text `<script>`. Loader output, retrieved passages, answers and citations are plain text: escape them before you render them as HTML, as you would any untrusted text.
+
 ### **Path Handling**
 
 The package does not export a path sanitizer. If your application turns user input into file paths (for example a document viewer or an ingestion endpoint), resolve the path against a fixed base directory and reject anything that escapes it:

@@ -199,6 +199,9 @@ multi-source scores or hallucination classes.
   they are written once the run succeeds (a stream: when it completes).
 - `rag-pipeline config get <key>` for a key that isn't set prints
   `Key not found` to stderr and exits 1; it printed to stdout and exited 0.
+- **`MarkdownLoader` decodes HTML entities**, so text such as
+  `&lt;script&gt;` becomes `<script>`. Loader output and retrieved text are
+  plain text: escape them before rendering them as HTML.
 
 ### Deprecated
 
