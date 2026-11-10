@@ -878,6 +878,438 @@
           }
         }
       }
+    },
+    "lexical-release": {
+      "test": {
+        "tp": 73,
+        "fp": 13,
+        "fn": 11,
+        "tn": 73,
+        "cases": 170,
+        "precision": 0.8488,
+        "recall": 0.869,
+        "f1": 0.8588,
+        "accuracy": 0.8588,
+        "precisionInterval": [0.7584, 0.9095],
+        "recallInterval": [0.7805, 0.9253],
+        "perStratum": {
+          "approval": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 12,
+            "flagged": 10,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 8,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 37,
+            "flagged": 5,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "tp": 85,
+        "fp": 16,
+        "fn": 6,
+        "tn": 72,
+        "cases": 179,
+        "precision": 0.8416,
+        "recall": 0.9341,
+        "f1": 0.8854,
+        "accuracy": 0.8771,
+        "precisionInterval": [0.7581, 0.9001],
+        "recallInterval": [0.8635, 0.9694],
+        "perStratum": {
+          "approval": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 13,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 13,
+            "flagged": 8,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 12,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 38,
+            "flagged": 3,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 13,
+            "flagged": 1,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
+    },
+    "claude-haiku-5-5-release": {
+      "test": {
+        "tp": 73,
+        "fp": 5,
+        "fn": 11,
+        "tn": 81,
+        "cases": 170,
+        "precision": 0.9359,
+        "recall": 0.869,
+        "f1": 0.9012,
+        "accuracy": 0.9059,
+        "precisionInterval": [0.8586, 0.9723],
+        "recallInterval": [0.7805, 0.9253],
+        "perStratum": {
+          "approval": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 12,
+            "flagged": 10,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 5,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 37,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "tp": 85,
+        "fp": 14,
+        "fn": 6,
+        "tn": 74,
+        "cases": 179,
+        "precision": 0.8586,
+        "recall": 0.9341,
+        "f1": 0.8947,
+        "accuracy": 0.8883,
+        "precisionInterval": [0.7765, 0.9139],
+        "recallInterval": [0.8635, 0.9694],
+        "perStratum": {
+          "approval": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 13,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 13,
+            "flagged": 8,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 11,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 38,
+            "flagged": 3,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
+    },
+    "claude-sonnet-5-5-release": {
+      "test": {
+        "tp": 73,
+        "fp": 5,
+        "fn": 11,
+        "tn": 81,
+        "cases": 170,
+        "precision": 0.9359,
+        "recall": 0.869,
+        "f1": 0.9012,
+        "accuracy": 0.9059,
+        "precisionInterval": [0.8586, 0.9723],
+        "recallInterval": [0.7805, 0.9253],
+        "perStratum": {
+          "approval": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 12,
+            "flagged": 10,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 12,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 12,
+            "flagged": 9,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 5,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 37,
+            "flagged": 0,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 12,
+            "flagged": 0,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 4,
+            "flagged": 0
+          }
+        }
+      },
+      "dev": {
+        "tp": 85,
+        "fp": 14,
+        "fn": 6,
+        "tn": 74,
+        "cases": 179,
+        "precision": 0.8586,
+        "recall": 0.9341,
+        "f1": 0.8947,
+        "accuracy": 0.8883,
+        "precisionInterval": [0.7765, 0.9139],
+        "recallInterval": [0.8635, 0.9694],
+        "perStratum": {
+          "approval": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "condition": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "unless": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "proviso": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "waiting-period": {
+            "n": 13,
+            "flagged": 13,
+            "expected": "unsupported"
+          },
+          "eligibility-exception": {
+            "n": 13,
+            "flagged": 12,
+            "expected": "unsupported"
+          },
+          "near-miss": {
+            "n": 13,
+            "flagged": 8,
+            "expected": "unsupported"
+          },
+          "paraphrase-keeps-condition": {
+            "n": 37,
+            "flagged": 11,
+            "expected": "supported"
+          },
+          "contrast-dropped": {
+            "n": 38,
+            "flagged": 3,
+            "expected": "supported"
+          },
+          "non-restricting": {
+            "n": 13,
+            "flagged": 0,
+            "expected": "supported"
+          }
+        },
+        "perSubLabel": {
+          "except-as-required-by-law": {
+            "n": 2,
+            "flagged": 0
+          }
+        }
+      }
     }
   },
   "disagreements": [
@@ -14704,6 +15136,16 @@
       "inputTokens": 15654,
       "outputTokens": 3854,
       "costUSD": 0.0698
+    }
+  },
+  "release": {
+    "generatedAt": "2026-11-10T03:54:35.041Z",
+    "environment": {
+      "libraryVersion": "3.9.0",
+      "commit": "040e0b79",
+      "node": "v22.14.0",
+      "platform": "win32 10.0.26300",
+      "runner": "local"
     }
   }
 }

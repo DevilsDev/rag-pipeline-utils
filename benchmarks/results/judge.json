@@ -1,9 +1,9 @@
 {
   "benchmark": "judge",
-  "createdAt": "2026-11-05T23:43:39.920Z",
+  "createdAt": "2026-11-10T03:51:05.188Z",
   "environment": {
-    "libraryVersion": "3.6.0",
-    "commit": "b16d317",
+    "libraryVersion": "3.9.0",
+    "commit": "040e0b79",
     "node": "v22.14.0",
     "platform": "win32 10.0.26300",
     "runner": "local"
@@ -34,73 +34,73 @@
           "cases": 450,
           "unsupported": {
             "cases": 450,
-            "tp": 215,
-            "fp": 184,
-            "fn": 10,
-            "tn": 41,
-            "precision": 0.5388,
-            "recall": 0.9556,
-            "f1": 0.6891,
-            "accuracy": 0.5689,
-            "precisionInterval": [0.4898, 0.5872],
-            "recallInterval": [0.9201, 0.9757]
+            "tp": 217,
+            "fp": 191,
+            "fn": 8,
+            "tn": 34,
+            "precision": 0.5319,
+            "recall": 0.9644,
+            "f1": 0.6856,
+            "accuracy": 0.5578,
+            "precisionInterval": [0.4834, 0.5798],
+            "recallInterval": [0.9314, 0.9819]
           },
           "supported": {
-            "precision": 0.8039,
-            "recall": 0.1822,
-            "f1": 0.2971,
-            "precisionInterval": [0.6754, 0.8898],
-            "recallInterval": [0.1373, 0.2379]
+            "precision": 0.8095,
+            "recall": 0.1511,
+            "f1": 0.2547,
+            "precisionInterval": [0.667, 0.9002],
+            "recallInterval": [0.1102, 0.2037]
           },
-          "flaggedShare": 0.8867
+          "flaggedShare": 0.9067
         },
         "QA": {
           "cases": 150,
           "unsupported": {
             "cases": 150,
-            "tp": 73,
-            "fp": 51,
-            "fn": 2,
-            "tn": 24,
-            "precision": 0.5887,
-            "recall": 0.9733,
-            "f1": 0.7337,
-            "accuracy": 0.6467,
-            "precisionInterval": [0.5007, 0.6714],
-            "recallInterval": [0.9079, 0.9927]
+            "tp": 74,
+            "fp": 55,
+            "fn": 1,
+            "tn": 20,
+            "precision": 0.5736,
+            "recall": 0.9867,
+            "f1": 0.7255,
+            "accuracy": 0.6267,
+            "precisionInterval": [0.4874, 0.6556],
+            "recallInterval": [0.9283, 0.9976]
           },
           "supported": {
-            "precision": 0.9231,
-            "recall": 0.32,
-            "f1": 0.4752,
-            "precisionInterval": [0.7586, 0.9786],
-            "recallInterval": [0.2254, 0.4321]
+            "precision": 0.9524,
+            "recall": 0.2667,
+            "f1": 0.4167,
+            "precisionInterval": [0.7733, 0.9915],
+            "recallInterval": [0.1798, 0.3763]
           },
-          "flaggedShare": 0.8267
+          "flaggedShare": 0.86
         },
         "Summary": {
           "cases": 150,
           "unsupported": {
             "cases": 150,
-            "tp": 67,
-            "fp": 58,
-            "fn": 8,
-            "tn": 17,
-            "precision": 0.536,
-            "recall": 0.8933,
-            "f1": 0.67,
-            "accuracy": 0.56,
-            "precisionInterval": [0.4488, 0.621],
-            "recallInterval": [0.8034, 0.945]
+            "tp": 68,
+            "fp": 61,
+            "fn": 7,
+            "tn": 14,
+            "precision": 0.5271,
+            "recall": 0.9067,
+            "f1": 0.6667,
+            "accuracy": 0.5467,
+            "precisionInterval": [0.4414, 0.6113],
+            "recallInterval": [0.8197, 0.9541]
           },
           "supported": {
-            "precision": 0.68,
-            "recall": 0.2267,
-            "f1": 0.34,
-            "precisionInterval": [0.4841, 0.828],
-            "recallInterval": [0.1466, 0.3334]
+            "precision": 0.6667,
+            "recall": 0.1867,
+            "f1": 0.2917,
+            "precisionInterval": [0.4537, 0.8281],
+            "recallInterval": [0.1146, 0.2893]
           },
-          "flaggedShare": 0.8333
+          "flaggedShare": 0.86
         },
         "Data2txt": {
           "cases": 150,
@@ -128,8 +128,8 @@
         }
       },
       "latencyMs": {
-        "p50": 9.5,
-        "p95": 27.2
+        "p50": 4.1,
+        "p95": 9.9
       }
     },
     "models": {
@@ -139,204 +139,25 @@
             "cases": 450,
             "unsupported": {
               "cases": 450,
-              "tp": 209,
-              "fp": 154,
-              "fn": 16,
-              "tn": 71,
-              "precision": 0.5758,
-              "recall": 0.9289,
-              "f1": 0.7109,
-              "accuracy": 0.6222,
-              "precisionInterval": [0.5244, 0.6255],
-              "recallInterval": [0.8876, 0.9558]
-            },
-            "supported": {
-              "precision": 0.8161,
-              "recall": 0.3156,
-              "f1": 0.4551,
-              "precisionInterval": [0.7219, 0.8835],
-              "recallInterval": [0.2584, 0.3789]
-            },
-            "flaggedShare": 0.8067
-          },
-          "QA": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 70,
-              "fp": 43,
-              "fn": 5,
-              "tn": 32,
-              "precision": 0.6195,
+              "tp": 210,
+              "fp": 160,
+              "fn": 15,
+              "tn": 65,
+              "precision": 0.5676,
               "recall": 0.9333,
-              "f1": 0.7447,
-              "accuracy": 0.68,
-              "precisionInterval": [0.5274, 0.7037],
-              "recallInterval": [0.8532, 0.9712]
+              "f1": 0.7059,
+              "accuracy": 0.6111,
+              "precisionInterval": [0.5166, 0.6171],
+              "recallInterval": [0.8929, 0.9592]
             },
             "supported": {
-              "precision": 0.8649,
-              "recall": 0.4267,
-              "f1": 0.5714,
-              "precisionInterval": [0.7202, 0.9409],
-              "recallInterval": [0.321, 0.5395]
+              "precision": 0.8125,
+              "recall": 0.2889,
+              "f1": 0.4262,
+              "precisionInterval": [0.7134, 0.8829],
+              "recallInterval": [0.2336, 0.3513]
             },
-            "flaggedShare": 0.7533
-          },
-          "Summary": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 66,
-              "fp": 44,
-              "fn": 9,
-              "tn": 31,
-              "precision": 0.6,
-              "recall": 0.88,
-              "f1": 0.7135,
-              "accuracy": 0.6467,
-              "precisionInterval": [0.5066, 0.6867],
-              "recallInterval": [0.7874, 0.9356]
-            },
-            "supported": {
-              "precision": 0.775,
-              "recall": 0.4133,
-              "f1": 0.5391,
-              "precisionInterval": [0.625, 0.8768],
-              "recallInterval": [0.3088, 0.5263]
-            },
-            "flaggedShare": 0.7333
-          },
-          "Data2txt": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 73,
-              "fp": 67,
-              "fn": 2,
-              "tn": 8,
-              "precision": 0.5214,
-              "recall": 0.9733,
-              "f1": 0.6791,
-              "accuracy": 0.54,
-              "precisionInterval": [0.4392, 0.6025],
-              "recallInterval": [0.9079, 0.9927]
-            },
-            "supported": {
-              "precision": 0.8,
-              "recall": 0.1067,
-              "f1": 0.1882,
-              "precisionInterval": [0.4902, 0.9433],
-              "recallInterval": [0.055, 0.1966]
-            },
-            "flaggedShare": 0.9333
-          }
-        },
-        "checksWithCall": 361,
-        "calls": 361,
-        "errors": 1,
-        "errorKinds": {
-          "judge output is not valid JSON": 1
-        },
-        "truncated": 0,
-        "firstBlockNotText": 0,
-        "usageReportedByCheckAnswer": 361,
-        "usageMatchesApi": 361,
-        "inputTokens": 382518,
-        "outputTokens": 79798,
-        "costUSD": 0.7815,
-        "costPer1000ChecksUSD": 1.74,
-        "latencyMs": {
-          "p50": 2090.7,
-          "p95": 4669.1
-        },
-        "latencyMsWithCall": {
-          "p50": 2503.8,
-          "p95": 4855.3
-        },
-        "sentences": {
-          "sentences": 3263,
-          "unlocated": 0,
-          "lexicalMismatches": 0,
-          "lexical": {
-            "cases": 3263,
-            "tp": 313,
-            "fp": 1467,
-            "fn": 109,
-            "tn": 1374,
-            "precision": 0.1758,
-            "recall": 0.7417,
-            "f1": 0.2843,
-            "accuracy": 0.517,
-            "precisionInterval": [0.1589, 0.1942],
-            "recallInterval": [0.6979, 0.7812]
-          },
-          "judge": {
-            "cases": 3263,
-            "tp": 270,
-            "fp": 709,
-            "fn": 152,
-            "tn": 2132,
-            "precision": 0.2758,
-            "recall": 0.6398,
-            "f1": 0.3854,
-            "accuracy": 0.7361,
-            "precisionInterval": [0.2487, 0.3046],
-            "recallInterval": [0.5929, 0.6842]
-          },
-          "byLexicalReason": {
-            "supported": {
-              "sentences": 1483,
-              "labelledUnsupported": 109,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "low_overlap": {
-              "sentences": 1448,
-              "labelledUnsupported": 236,
-              "judgeSupported": 801,
-              "judgeSupportedButLabelledUnsupported": 43
-            },
-            "number_mismatch": {
-              "sentences": 228,
-              "labelledUnsupported": 66,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "polarity_mismatch": {
-              "sentences": 104,
-              "labelledUnsupported": 11,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            }
-          }
-        }
-      },
-      "claude-haiku-5-5": {
-        "metrics": {
-          "all": {
-            "cases": 450,
-            "unsupported": {
-              "cases": 450,
-              "tp": 212,
-              "fp": 166,
-              "fn": 13,
-              "tn": 59,
-              "precision": 0.5608,
-              "recall": 0.9422,
-              "f1": 0.7032,
-              "accuracy": 0.6022,
-              "precisionInterval": [0.5105, 0.61],
-              "recallInterval": [0.9037, 0.9659]
-            },
-            "supported": {
-              "precision": 0.8194,
-              "recall": 0.2622,
-              "f1": 0.3973,
-              "precisionInterval": [0.7152, 0.8913],
-              "recallInterval": [0.2091, 0.3233]
-            },
-            "flaggedShare": 0.84
+            "flaggedShare": 0.8222
           },
           "QA": {
             "cases": 150,
@@ -367,24 +188,394 @@
             "unsupported": {
               "cases": 150,
               "tp": 66,
-              "fp": 49,
+              "fp": 47,
               "fn": 9,
-              "tn": 26,
-              "precision": 0.5739,
+              "tn": 28,
+              "precision": 0.5841,
               "recall": 0.88,
-              "f1": 0.6947,
-              "accuracy": 0.6133,
-              "precisionInterval": [0.4826, 0.6605],
+              "f1": 0.7021,
+              "accuracy": 0.6267,
+              "precisionInterval": [0.4919, 0.6707],
               "recallInterval": [0.7874, 0.9356]
             },
             "supported": {
-              "precision": 0.7429,
-              "recall": 0.3467,
-              "f1": 0.4727,
-              "precisionInterval": [0.5793, 0.8584],
-              "recallInterval": [0.2488, 0.4595]
+              "precision": 0.7568,
+              "recall": 0.3733,
+              "f1": 0.5,
+              "precisionInterval": [0.5988, 0.8664],
+              "recallInterval": [0.2726, 0.4865]
             },
-            "flaggedShare": 0.7667
+            "flaggedShare": 0.7533
+          },
+          "Data2txt": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 73,
+              "fp": 68,
+              "fn": 2,
+              "tn": 7,
+              "precision": 0.5177,
+              "recall": 0.9733,
+              "f1": 0.6759,
+              "accuracy": 0.5333,
+              "precisionInterval": [0.4359, 0.5986],
+              "recallInterval": [0.9079, 0.9927]
+            },
+            "supported": {
+              "precision": 0.7778,
+              "recall": 0.0933,
+              "f1": 0.1667,
+              "precisionInterval": [0.4526, 0.9368],
+              "recallInterval": [0.0459, 0.1803]
+            },
+            "flaggedShare": 0.94
+          }
+        },
+        "checksWithCall": 373,
+        "calls": 373,
+        "errors": 1,
+        "errorKinds": {
+          "judge output is not valid JSON": 1
+        },
+        "truncated": 0,
+        "firstBlockNotText": 0,
+        "usageReportedByCheckAnswer": 373,
+        "usageMatchesApi": 373,
+        "inputTokens": 390042,
+        "outputTokens": 84362,
+        "costUSD": 0.8119,
+        "costPer1000ChecksUSD": 1.8,
+        "latencyMs": {
+          "p50": 2123.8,
+          "p95": 4758.3
+        },
+        "latencyMsWithCall": {
+          "p50": 2425.4,
+          "p95": 4967.5
+        },
+        "sentences": {
+          "sentences": 3264,
+          "unlocated": 0,
+          "lexicalMismatches": 0,
+          "lexical": {
+            "cases": 3264,
+            "tp": 292,
+            "fp": 1491,
+            "fn": 87,
+            "tn": 1394,
+            "precision": 0.1638,
+            "recall": 0.7704,
+            "f1": 0.2701,
+            "accuracy": 0.5165,
+            "precisionInterval": [0.1473, 0.1817],
+            "recallInterval": [0.7255, 0.8099]
+          },
+          "judge": {
+            "cases": 3264,
+            "tp": 248,
+            "fp": 739,
+            "fn": 131,
+            "tn": 2146,
+            "precision": 0.2513,
+            "recall": 0.6544,
+            "f1": 0.3631,
+            "accuracy": 0.7335,
+            "precisionInterval": [0.2252, 0.2793],
+            "recallInterval": [0.6051, 0.7005]
+          },
+          "byLexicalReason": {
+            "low_overlap": {
+              "sentences": 1544,
+              "labelledUnsupported": 242,
+              "judgeSupported": 796,
+              "judgeSupportedButLabelledUnsupported": 44
+            },
+            "supported": {
+              "sentences": 1481,
+              "labelledUnsupported": 87,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "number_mismatch": {
+              "sentences": 123,
+              "labelledUnsupported": 40,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "polarity_mismatch": {
+              "sentences": 109,
+              "labelledUnsupported": 10,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "condition_mismatch": {
+              "sentences": 7,
+              "labelledUnsupported": 0,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            }
+          }
+        }
+      },
+      "claude-haiku-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 450,
+            "unsupported": {
+              "cases": 450,
+              "tp": 212,
+              "fp": 172,
+              "fn": 13,
+              "tn": 53,
+              "precision": 0.5521,
+              "recall": 0.9422,
+              "f1": 0.6962,
+              "accuracy": 0.5889,
+              "precisionInterval": [0.5021, 0.6011],
+              "recallInterval": [0.9037, 0.9659]
+            },
+            "supported": {
+              "precision": 0.803,
+              "recall": 0.2356,
+              "f1": 0.3643,
+              "precisionInterval": [0.6916, 0.8811],
+              "recallInterval": [0.1848, 0.2952]
+            },
+            "flaggedShare": 0.8533
+          },
+          "QA": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 71,
+              "fp": 47,
+              "fn": 4,
+              "tn": 28,
+              "precision": 0.6017,
+              "recall": 0.9467,
+              "f1": 0.7358,
+              "accuracy": 0.66,
+              "precisionInterval": [0.5115, 0.6855],
+              "recallInterval": [0.8707, 0.9791]
+            },
+            "supported": {
+              "precision": 0.875,
+              "recall": 0.3733,
+              "f1": 0.5234,
+              "precisionInterval": [0.7193, 0.9503],
+              "recallInterval": [0.2726, 0.4865]
+            },
+            "flaggedShare": 0.7867
+          },
+          "Summary": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 66,
+              "fp": 52,
+              "fn": 9,
+              "tn": 23,
+              "precision": 0.5593,
+              "recall": 0.88,
+              "f1": 0.6839,
+              "accuracy": 0.5933,
+              "precisionInterval": [0.4693, 0.6456],
+              "recallInterval": [0.7874, 0.9356]
+            },
+            "supported": {
+              "precision": 0.7188,
+              "recall": 0.3067,
+              "f1": 0.4299,
+              "precisionInterval": [0.5463, 0.8444],
+              "recallInterval": [0.2139, 0.4183]
+            },
+            "flaggedShare": 0.7867
+          },
+          "Data2txt": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 75,
+              "fp": 73,
+              "fn": 0,
+              "tn": 2,
+              "precision": 0.5068,
+              "recall": 1,
+              "f1": 0.6726,
+              "accuracy": 0.5133,
+              "precisionInterval": [0.4271, 0.5861],
+              "recallInterval": [0.9513, 1]
+            },
+            "supported": {
+              "precision": 1,
+              "recall": 0.0267,
+              "f1": 0.0519,
+              "precisionInterval": [0.3424, 1],
+              "recallInterval": [0.0073, 0.0921]
+            },
+            "flaggedShare": 0.9867
+          }
+        },
+        "checksWithCall": 373,
+        "calls": 373,
+        "errors": 4,
+        "errorKinds": {
+          "judge output is not valid JSON": 4
+        },
+        "truncated": 1,
+        "firstBlockNotText": 353,
+        "usageReportedByCheckAnswer": 373,
+        "usageMatchesApi": 373,
+        "inputTokens": 531215,
+        "outputTokens": 266337,
+        "costUSD": 0.1863,
+        "costPer1000ChecksUSD": 0.41,
+        "latencyMs": {
+          "p50": 2998.9,
+          "p95": 6521.8
+        },
+        "latencyMsWithCall": {
+          "p50": 3528.9,
+          "p95": 6628.1
+        },
+        "sentences": {
+          "sentences": 3264,
+          "unlocated": 0,
+          "lexicalMismatches": 0,
+          "lexical": {
+            "cases": 3264,
+            "tp": 292,
+            "fp": 1491,
+            "fn": 87,
+            "tn": 1394,
+            "precision": 0.1638,
+            "recall": 0.7704,
+            "f1": 0.2701,
+            "accuracy": 0.5165,
+            "precisionInterval": [0.1473, 0.1817],
+            "recallInterval": [0.7255, 0.8099]
+          },
+          "judge": {
+            "cases": 3264,
+            "tp": 281,
+            "fp": 899,
+            "fn": 98,
+            "tn": 1986,
+            "precision": 0.2381,
+            "recall": 0.7414,
+            "f1": 0.3605,
+            "accuracy": 0.6945,
+            "precisionInterval": [0.2147, 0.2633],
+            "recallInterval": [0.6951, 0.7829]
+          },
+          "byLexicalReason": {
+            "low_overlap": {
+              "sentences": 1544,
+              "labelledUnsupported": 242,
+              "judgeSupported": 603,
+              "judgeSupportedButLabelledUnsupported": 11
+            },
+            "supported": {
+              "sentences": 1481,
+              "labelledUnsupported": 87,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "number_mismatch": {
+              "sentences": 123,
+              "labelledUnsupported": 40,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "polarity_mismatch": {
+              "sentences": 109,
+              "labelledUnsupported": 10,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "condition_mismatch": {
+              "sentences": 7,
+              "labelledUnsupported": 0,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            }
+          }
+        }
+      },
+      "claude-sonnet-5-5": {
+        "metrics": {
+          "all": {
+            "cases": 450,
+            "unsupported": {
+              "cases": 450,
+              "tp": 214,
+              "fp": 171,
+              "fn": 11,
+              "tn": 54,
+              "precision": 0.5558,
+              "recall": 0.9511,
+              "f1": 0.7016,
+              "accuracy": 0.5956,
+              "precisionInterval": [0.5059, 0.6047],
+              "recallInterval": [0.9146, 0.9725]
+            },
+            "supported": {
+              "precision": 0.8308,
+              "recall": 0.24,
+              "f1": 0.3724,
+              "precisionInterval": [0.7218, 0.9028],
+              "recallInterval": [0.1889, 0.2999]
+            },
+            "flaggedShare": 0.8556
+          },
+          "QA": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 73,
+              "fp": 47,
+              "fn": 2,
+              "tn": 28,
+              "precision": 0.6083,
+              "recall": 0.9733,
+              "f1": 0.7487,
+              "accuracy": 0.6733,
+              "precisionInterval": [0.5189, 0.691],
+              "recallInterval": [0.9079, 0.9927]
+            },
+            "supported": {
+              "precision": 0.9333,
+              "recall": 0.3733,
+              "f1": 0.5333,
+              "precisionInterval": [0.7868, 0.9815],
+              "recallInterval": [0.2726, 0.4865]
+            },
+            "flaggedShare": 0.8
+          },
+          "Summary": {
+            "cases": 150,
+            "unsupported": {
+              "cases": 150,
+              "tp": 66,
+              "fp": 52,
+              "fn": 9,
+              "tn": 23,
+              "precision": 0.5593,
+              "recall": 0.88,
+              "f1": 0.6839,
+              "accuracy": 0.5933,
+              "precisionInterval": [0.4693, 0.6456],
+              "recallInterval": [0.7874, 0.9356]
+            },
+            "supported": {
+              "precision": 0.7188,
+              "recall": 0.3067,
+              "f1": 0.4299,
+              "precisionInterval": [0.5463, 0.8444],
+              "recallInterval": [0.2139, 0.4183]
+            },
+            "flaggedShare": 0.7867
           },
           "Data2txt": {
             "cases": 150,
@@ -411,259 +602,86 @@
             "flaggedShare": 0.98
           }
         },
-        "checksWithCall": 361,
-        "calls": 361,
-        "errors": 5,
+        "checksWithCall": 373,
+        "calls": 373,
+        "errors": 6,
         "errorKinds": {
-          "judge output is not valid JSON": 5
-        },
-        "truncated": 1,
-        "firstBlockNotText": 340,
-        "usageReportedByCheckAnswer": 361,
-        "usageMatchesApi": 361,
-        "inputTokens": 521264,
-        "outputTokens": 250059,
-        "costUSD": 0.1772,
-        "costPer1000ChecksUSD": 0.39,
-        "latencyMs": {
-          "p50": 2783.3,
-          "p95": 6467.1
-        },
-        "latencyMsWithCall": {
-          "p50": 3456.7,
-          "p95": 6589.2
-        },
-        "sentences": {
-          "sentences": 3263,
-          "unlocated": 0,
-          "lexicalMismatches": 0,
-          "lexical": {
-            "cases": 3263,
-            "tp": 313,
-            "fp": 1467,
-            "fn": 109,
-            "tn": 1374,
-            "precision": 0.1758,
-            "recall": 0.7417,
-            "f1": 0.2843,
-            "accuracy": 0.517,
-            "precisionInterval": [0.1589, 0.1942],
-            "recallInterval": [0.6979, 0.7812]
-          },
-          "judge": {
-            "cases": 3263,
-            "tp": 303,
-            "fp": 895,
-            "fn": 119,
-            "tn": 1946,
-            "precision": 0.2529,
-            "recall": 0.718,
-            "f1": 0.3741,
-            "accuracy": 0.6892,
-            "precisionInterval": [0.2291, 0.2783],
-            "recallInterval": [0.6733, 0.7588]
-          },
-          "byLexicalReason": {
-            "supported": {
-              "sentences": 1483,
-              "labelledUnsupported": 109,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "low_overlap": {
-              "sentences": 1448,
-              "labelledUnsupported": 236,
-              "judgeSupported": 582,
-              "judgeSupportedButLabelledUnsupported": 10
-            },
-            "number_mismatch": {
-              "sentences": 228,
-              "labelledUnsupported": 66,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            },
-            "polarity_mismatch": {
-              "sentences": 104,
-              "labelledUnsupported": 11,
-              "judgeSupported": 0,
-              "judgeSupportedButLabelledUnsupported": 0
-            }
-          }
-        }
-      },
-      "claude-sonnet-5-5": {
-        "metrics": {
-          "all": {
-            "cases": 450,
-            "unsupported": {
-              "cases": 450,
-              "tp": 213,
-              "fp": 164,
-              "fn": 12,
-              "tn": 61,
-              "precision": 0.565,
-              "recall": 0.9467,
-              "f1": 0.7076,
-              "accuracy": 0.6089,
-              "precisionInterval": [0.5145, 0.6141],
-              "recallInterval": [0.9091, 0.9692]
-            },
-            "supported": {
-              "precision": 0.8356,
-              "recall": 0.2711,
-              "f1": 0.4094,
-              "precisionInterval": [0.7343, 0.9034],
-              "recallInterval": [0.2172, 0.3327]
-            },
-            "flaggedShare": 0.8378
-          },
-          "QA": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 72,
-              "fp": 44,
-              "fn": 3,
-              "tn": 31,
-              "precision": 0.6207,
-              "recall": 0.96,
-              "f1": 0.7539,
-              "accuracy": 0.6867,
-              "precisionInterval": [0.5299, 0.7038],
-              "recallInterval": [0.8889, 0.9863]
-            },
-            "supported": {
-              "precision": 0.9118,
-              "recall": 0.4133,
-              "f1": 0.5688,
-              "precisionInterval": [0.7704, 0.9695],
-              "recallInterval": [0.3088, 0.5263]
-            },
-            "flaggedShare": 0.7733
-          },
-          "Summary": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 66,
-              "fp": 49,
-              "fn": 9,
-              "tn": 26,
-              "precision": 0.5739,
-              "recall": 0.88,
-              "f1": 0.6947,
-              "accuracy": 0.6133,
-              "precisionInterval": [0.4826, 0.6605],
-              "recallInterval": [0.7874, 0.9356]
-            },
-            "supported": {
-              "precision": 0.7429,
-              "recall": 0.3467,
-              "f1": 0.4727,
-              "precisionInterval": [0.5793, 0.8584],
-              "recallInterval": [0.2488, 0.4595]
-            },
-            "flaggedShare": 0.7667
-          },
-          "Data2txt": {
-            "cases": 150,
-            "unsupported": {
-              "cases": 150,
-              "tp": 75,
-              "fp": 71,
-              "fn": 0,
-              "tn": 4,
-              "precision": 0.5137,
-              "recall": 1,
-              "f1": 0.6787,
-              "accuracy": 0.5267,
-              "precisionInterval": [0.4333, 0.5934],
-              "recallInterval": [0.9513, 1]
-            },
-            "supported": {
-              "precision": 1,
-              "recall": 0.0533,
-              "f1": 0.1013,
-              "precisionInterval": [0.5101, 1],
-              "recallInterval": [0.0209, 0.1293]
-            },
-            "flaggedShare": 0.9733
-          }
-        },
-        "checksWithCall": 361,
-        "calls": 361,
-        "errors": 5,
-        "errorKinds": {
-          "judge output is not valid JSON": 5
+          "judge output is not valid JSON": 6
         },
         "truncated": 0,
-        "firstBlockNotText": 28,
-        "usageReportedByCheckAnswer": 361,
-        "usageMatchesApi": 361,
-        "inputTokens": 521264,
-        "outputTokens": 101721,
-        "costUSD": 2.0597,
-        "costPer1000ChecksUSD": 4.58,
+        "firstBlockNotText": 25,
+        "usageReportedByCheckAnswer": 373,
+        "usageMatchesApi": 373,
+        "inputTokens": 531215,
+        "outputTokens": 105391,
+        "costUSD": 2.1163,
+        "costPer1000ChecksUSD": 4.7,
         "latencyMs": {
-          "p50": 2484.9,
-          "p95": 4801.9
+          "p50": 2473.6,
+          "p95": 4461.9
         },
         "latencyMsWithCall": {
-          "p50": 2857,
-          "p95": 5005.6
+          "p50": 2786.8,
+          "p95": 4546.6
         },
         "sentences": {
-          "sentences": 3263,
+          "sentences": 3264,
           "unlocated": 0,
           "lexicalMismatches": 0,
           "lexical": {
-            "cases": 3263,
-            "tp": 313,
-            "fp": 1467,
-            "fn": 109,
-            "tn": 1374,
-            "precision": 0.1758,
-            "recall": 0.7417,
-            "f1": 0.2843,
-            "accuracy": 0.517,
-            "precisionInterval": [0.1589, 0.1942],
-            "recallInterval": [0.6979, 0.7812]
+            "cases": 3264,
+            "tp": 292,
+            "fp": 1491,
+            "fn": 87,
+            "tn": 1394,
+            "precision": 0.1638,
+            "recall": 0.7704,
+            "f1": 0.2701,
+            "accuracy": 0.5165,
+            "precisionInterval": [0.1473, 0.1817],
+            "recallInterval": [0.7255, 0.8099]
           },
           "judge": {
-            "cases": 3263,
-            "tp": 307,
-            "fp": 924,
-            "fn": 115,
-            "tn": 1917,
-            "precision": 0.2494,
-            "recall": 0.7275,
-            "f1": 0.3714,
-            "accuracy": 0.6816,
-            "precisionInterval": [0.226, 0.2743],
-            "recallInterval": [0.6831, 0.7678]
+            "cases": 3264,
+            "tp": 287,
+            "fp": 954,
+            "fn": 92,
+            "tn": 1931,
+            "precision": 0.2313,
+            "recall": 0.7573,
+            "f1": 0.3543,
+            "accuracy": 0.6795,
+            "precisionInterval": [0.2087, 0.2555],
+            "recallInterval": [0.7116, 0.7977]
           },
           "byLexicalReason": {
+            "low_overlap": {
+              "sentences": 1544,
+              "labelledUnsupported": 242,
+              "judgeSupported": 542,
+              "judgeSupportedButLabelledUnsupported": 5
+            },
             "supported": {
-              "sentences": 1483,
-              "labelledUnsupported": 109,
+              "sentences": 1481,
+              "labelledUnsupported": 87,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
-            "low_overlap": {
-              "sentences": 1448,
-              "labelledUnsupported": 236,
-              "judgeSupported": 549,
-              "judgeSupportedButLabelledUnsupported": 6
-            },
             "number_mismatch": {
-              "sentences": 228,
-              "labelledUnsupported": 66,
+              "sentences": 123,
+              "labelledUnsupported": 40,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             },
             "polarity_mismatch": {
-              "sentences": 104,
-              "labelledUnsupported": 11,
+              "sentences": 109,
+              "labelledUnsupported": 10,
+              "judgeSupported": 0,
+              "judgeSupportedButLabelledUnsupported": 0
+            },
+            "condition_mismatch": {
+              "sentences": 7,
+              "labelledUnsupported": 0,
               "judgeSupported": 0,
               "judgeSupportedButLabelledUnsupported": 0
             }
@@ -1028,10 +1046,10 @@
       }
     },
     "lexicalFalseAlarms": {
-      "answers": 184,
-      "onlyLowOverlap": 99,
-      "withNumberMismatch": 42,
-      "withPolarityMismatch": 46
+      "answers": 191,
+      "onlyLowOverlap": 106,
+      "withNumberMismatch": 36,
+      "withPolarityMismatch": 49
     },
     "cases": [
       {
@@ -1042,9 +1060,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1055,9 +1071,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1068,9 +1082,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1081,9 +1093,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1094,9 +1104,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1107,9 +1115,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1120,9 +1126,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1133,9 +1137,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1146,9 +1148,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1159,9 +1159,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1172,9 +1170,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1185,9 +1181,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1198,9 +1192,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1211,9 +1203,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1224,9 +1214,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1237,9 +1225,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1250,9 +1236,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1263,9 +1247,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1276,9 +1258,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1289,9 +1269,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1302,9 +1280,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1315,9 +1291,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1328,9 +1302,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1340,10 +1312,8 @@
         "lexicalFlagged": true,
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1354,9 +1324,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1367,9 +1335,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1380,9 +1346,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1393,9 +1357,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1406,9 +1368,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1419,9 +1379,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1432,9 +1390,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1445,9 +1401,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1458,9 +1412,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1471,9 +1423,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1484,9 +1434,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1497,9 +1445,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1510,9 +1456,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1523,9 +1467,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1536,9 +1478,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1549,9 +1489,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1562,9 +1500,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1575,9 +1511,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1588,9 +1522,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1601,9 +1533,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1614,9 +1544,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1627,9 +1555,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1640,9 +1566,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1653,9 +1577,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1666,9 +1588,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1679,9 +1599,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1692,9 +1610,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1705,9 +1621,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1718,9 +1632,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1731,9 +1643,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1744,9 +1654,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1757,9 +1665,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1770,9 +1676,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -1783,9 +1687,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1796,22 +1698,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-15010",
         "task": "QA",
         "hallucinated": true,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1822,9 +1720,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1835,9 +1731,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1848,9 +1742,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1861,9 +1753,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1874,9 +1764,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1887,9 +1775,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1900,9 +1786,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1913,9 +1797,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1926,9 +1808,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1939,9 +1819,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1952,9 +1830,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1965,9 +1841,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -1978,9 +1852,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -1991,9 +1863,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2004,9 +1874,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2017,9 +1885,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2030,9 +1896,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2043,9 +1907,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2056,9 +1918,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2069,9 +1929,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2082,9 +1940,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2095,35 +1951,29 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-16799",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-17056",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2134,9 +1984,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2147,9 +1995,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2160,22 +2006,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-15460",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2186,9 +2028,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2199,9 +2039,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2212,9 +2050,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2225,9 +2061,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2238,9 +2072,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2251,9 +2083,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2264,9 +2094,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2277,9 +2105,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2290,9 +2116,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2303,22 +2127,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-12912",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2329,9 +2149,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2342,9 +2160,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2355,9 +2171,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2368,9 +2182,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2381,22 +2193,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
         "id": "ragtruth-14746",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2407,9 +2215,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2420,22 +2226,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-15714",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2446,9 +2248,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2459,9 +2259,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2472,9 +2270,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2485,9 +2281,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2498,9 +2292,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2511,9 +2303,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2524,9 +2314,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2537,9 +2325,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2550,9 +2336,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2563,9 +2347,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2576,9 +2358,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2589,9 +2369,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2602,9 +2380,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2615,9 +2391,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2628,9 +2402,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2641,9 +2413,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2654,9 +2424,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2667,22 +2435,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-15553",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2693,9 +2457,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2706,9 +2468,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2719,9 +2479,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2732,9 +2490,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2745,9 +2501,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2758,9 +2512,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2771,9 +2523,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2784,9 +2534,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2797,9 +2545,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2810,9 +2556,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2823,9 +2567,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2836,9 +2578,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2849,9 +2589,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2862,9 +2600,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2875,22 +2611,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
         "id": "ragtruth-15924",
         "task": "QA",
         "hallucinated": false,
-        "lexicalFlagged": true,
+        "lexicalFlagged": false,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": true,
-          "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-haiku-4-5-20251001": false,
+          "claude-haiku-5-5": false,
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2901,9 +2633,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2914,9 +2644,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2927,9 +2655,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2940,9 +2666,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2953,9 +2677,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -2966,9 +2688,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2979,9 +2699,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -2992,9 +2710,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3005,9 +2721,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3018,9 +2732,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3031,9 +2743,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3044,9 +2754,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3057,9 +2765,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3070,9 +2776,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3083,9 +2787,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3096,9 +2798,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3109,9 +2809,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3122,9 +2820,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3135,9 +2831,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3148,9 +2842,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3161,9 +2853,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3174,9 +2864,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3187,9 +2875,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3200,9 +2886,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3213,9 +2897,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3226,9 +2908,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3239,9 +2919,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3252,9 +2930,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3265,9 +2941,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3278,9 +2952,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3291,9 +2963,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3304,9 +2974,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3317,9 +2985,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3330,9 +2996,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3343,9 +3007,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3356,9 +3018,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3369,9 +3029,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3382,9 +3040,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3395,9 +3051,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3408,9 +3062,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3421,9 +3073,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3434,9 +3084,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3447,9 +3095,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3460,9 +3106,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3473,9 +3117,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3486,9 +3128,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3499,9 +3139,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3512,9 +3150,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3525,9 +3161,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3538,9 +3172,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3551,9 +3183,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3564,9 +3194,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3577,22 +3205,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-122",
         "task": "Summary",
         "hallucinated": true,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3603,9 +3227,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3616,9 +3238,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3629,9 +3249,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3642,9 +3260,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3655,9 +3271,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3668,9 +3282,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3681,9 +3293,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3694,9 +3304,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3707,9 +3315,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3720,9 +3326,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3733,9 +3337,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3746,9 +3348,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3759,9 +3359,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3772,9 +3370,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3785,9 +3381,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3798,9 +3392,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3811,9 +3403,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3824,9 +3414,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3837,9 +3425,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3850,9 +3436,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3863,9 +3447,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3876,9 +3458,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3889,9 +3469,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3902,9 +3480,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3915,9 +3491,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3928,9 +3502,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3941,9 +3513,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3954,9 +3524,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3967,9 +3535,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -3980,9 +3546,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -3993,9 +3557,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4006,9 +3568,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4019,9 +3579,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4032,9 +3590,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4045,9 +3601,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4058,9 +3612,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4071,9 +3623,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4084,9 +3634,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4097,9 +3645,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4110,9 +3656,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4123,9 +3667,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4136,9 +3678,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4149,9 +3689,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4162,9 +3700,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4175,9 +3711,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4188,9 +3722,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4201,9 +3733,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4214,9 +3744,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4227,9 +3755,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4240,9 +3766,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4253,9 +3777,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4266,9 +3788,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4279,9 +3799,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4292,9 +3810,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4305,9 +3821,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4318,9 +3832,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4331,9 +3843,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4344,9 +3854,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4357,9 +3865,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4370,9 +3876,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4383,9 +3887,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4396,9 +3898,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4409,9 +3909,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4422,9 +3920,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4435,9 +3931,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4448,9 +3942,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4461,9 +3953,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4474,9 +3964,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4487,9 +3975,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4500,9 +3986,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4513,9 +3997,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4526,9 +4008,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4539,9 +4019,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4552,9 +4030,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4565,9 +4041,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4578,9 +4052,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4591,9 +4063,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4604,9 +4074,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4617,9 +4085,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4630,9 +4096,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4643,9 +4107,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4656,9 +4118,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4669,9 +4129,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4682,9 +4140,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4695,22 +4151,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
         "id": "ragtruth-4572",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4721,9 +4173,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4734,9 +4184,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4747,9 +4195,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4760,9 +4206,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4773,9 +4217,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4786,9 +4228,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4799,9 +4239,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4812,9 +4250,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4825,9 +4261,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4838,22 +4272,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
         "id": "ragtruth-774",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4864,22 +4294,18 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
         "id": "ragtruth-249",
         "task": "Summary",
         "hallucinated": false,
-        "lexicalFlagged": false,
+        "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4890,9 +4316,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4903,9 +4327,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4916,9 +4338,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4929,9 +4349,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -4942,9 +4360,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4955,9 +4371,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4968,9 +4382,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4981,9 +4393,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -4994,9 +4404,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5007,9 +4415,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5020,9 +4426,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5033,9 +4437,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5046,9 +4448,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5059,9 +4459,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5072,9 +4470,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5085,9 +4481,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5098,9 +4492,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5111,9 +4503,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5124,9 +4514,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5137,9 +4525,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5150,9 +4536,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5163,9 +4547,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5176,9 +4558,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5189,9 +4569,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5202,9 +4580,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5215,9 +4591,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5228,9 +4602,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5241,9 +4613,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5254,9 +4624,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5267,9 +4635,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5280,9 +4646,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5293,9 +4657,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5306,9 +4668,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5319,9 +4679,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5332,9 +4690,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5345,9 +4701,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5358,9 +4712,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5371,9 +4723,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5384,9 +4734,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5397,9 +4745,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5410,9 +4756,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5423,9 +4767,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5436,9 +4778,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5449,9 +4789,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5462,9 +4800,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5475,9 +4811,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5488,9 +4822,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5501,9 +4833,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5514,9 +4844,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5527,9 +4855,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5540,9 +4866,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5553,9 +4877,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5566,9 +4888,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5579,9 +4899,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5592,9 +4910,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5605,9 +4921,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5618,9 +4932,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5631,9 +4943,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5644,9 +4954,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5657,9 +4965,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5670,9 +4976,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5683,9 +4987,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5696,9 +4998,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5709,9 +5009,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5722,9 +5020,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5735,9 +5031,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5748,9 +5042,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5761,9 +5053,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5774,9 +5064,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5787,9 +5075,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5800,9 +5086,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5813,9 +5097,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5826,9 +5108,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5839,9 +5119,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5852,9 +5130,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5865,9 +5141,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5878,9 +5152,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5891,9 +5163,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5904,9 +5174,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5917,9 +5185,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5930,9 +5196,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5943,9 +5207,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5956,9 +5218,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5969,9 +5229,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -5982,9 +5240,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -5995,9 +5251,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6008,9 +5262,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6021,9 +5273,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6034,9 +5284,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6047,9 +5295,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6060,9 +5306,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6073,9 +5317,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6086,9 +5328,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -6099,9 +5339,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6112,9 +5350,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6125,9 +5361,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6138,9 +5372,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6151,9 +5383,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6164,9 +5394,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6177,9 +5405,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": false
         }
       },
       {
@@ -6190,9 +5416,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6203,9 +5427,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6216,9 +5438,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6229,9 +5449,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": false
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6242,9 +5460,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6255,9 +5471,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6268,9 +5482,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6281,9 +5493,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6294,9 +5504,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6307,9 +5515,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6320,9 +5526,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6333,9 +5537,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6346,9 +5548,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6359,9 +5559,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6372,9 +5570,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6385,9 +5581,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6398,9 +5592,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6411,9 +5603,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6424,9 +5614,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6437,9 +5625,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6450,9 +5636,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6463,9 +5647,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6476,9 +5658,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6489,9 +5669,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6502,9 +5680,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6515,9 +5691,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6528,9 +5702,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6541,9 +5713,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6554,9 +5724,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6567,9 +5735,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6580,9 +5746,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6593,9 +5757,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6606,9 +5768,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6619,9 +5779,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6632,9 +5790,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6645,9 +5801,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6658,9 +5812,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": false,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6671,9 +5823,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6684,9 +5834,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6697,9 +5845,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6710,9 +5856,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6723,9 +5867,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6736,9 +5878,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6749,9 +5889,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6762,9 +5900,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6775,9 +5911,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6788,9 +5922,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6801,9 +5933,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6812,11 +5942,9 @@
         "hallucinated": false,
         "lexicalFlagged": true,
         "judgeFlagged": {
-          "claude-haiku-4-5-20251001": false,
-          "claude-haiku-5-5": false,
-          "claude-sonnet-5-5": false,
-          "claude-opus-5-5": false,
-          "claude-fable-5-1": false
+          "claude-haiku-4-5-20251001": true,
+          "claude-haiku-5-5": true,
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6827,9 +5955,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6840,9 +5966,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6853,9 +5977,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6866,9 +5988,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       },
       {
@@ -6879,9 +5999,7 @@
         "judgeFlagged": {
           "claude-haiku-4-5-20251001": true,
           "claude-haiku-5-5": true,
-          "claude-sonnet-5-5": true,
-          "claude-opus-5-5": true,
-          "claude-fable-5-1": true
+          "claude-sonnet-5-5": true
         }
       }
     ]
@@ -7205,12 +6323,7 @@
           "answer": "Dr. Jonas Weber chairs the ethics board.",
           "sentences": [
             {
-              "sentence": "Dr.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            },
-            {
-              "sentence": "Jonas Weber chairs the ethics board.",
+              "sentence": "Dr. Jonas Weber chairs the ethics board.",
               "verdict": "supported",
               "lexicalReason": "supported"
             }
@@ -7370,11 +6483,11 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 55,
+        "correct": 56,
         "cases": 72,
-        "accuracy": 0.7639,
-        "accuracyInterval": [0.654, 0.847],
-        "falseAlarms": 5,
+        "accuracy": 0.7778,
+        "accuracyInterval": [0.6691, 0.8583],
+        "falseAlarms": 4,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -7384,10 +6497,10 @@
         "categories": {
           "paraphrase": {
             "cases": 5,
-            "correct": 4,
-            "falseAlarms": 1,
+            "correct": 5,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 4
+            "judgeRuled": 5
           },
           "numbers-words-digits": {
             "cases": 5,
@@ -7496,23 +6609,6 @@
           }
         },
         "failures": [
-          {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
           {
             "id": "units-5",
             "category": "units-conversions",
@@ -7641,14 +6737,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -7797,11 +6886,11 @@
         "errors": 0
       },
       "claude-haiku-5-5": {
-        "correct": 55,
+        "correct": 56,
         "cases": 72,
-        "accuracy": 0.7639,
-        "accuracyInterval": [0.654, 0.847],
-        "falseAlarms": 5,
+        "accuracy": 0.7778,
+        "accuracyInterval": [0.6691, 0.8583],
+        "falseAlarms": 4,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -7811,10 +6900,10 @@
         "categories": {
           "paraphrase": {
             "cases": 5,
-            "correct": 4,
-            "falseAlarms": 1,
+            "correct": 5,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 4
+            "judgeRuled": 5
           },
           "numbers-words-digits": {
             "cases": 5,
@@ -7923,23 +7012,6 @@
           }
         },
         "failures": [
-          {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
           {
             "id": "units-5",
             "category": "units-conversions",
@@ -8068,14 +7140,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -8224,11 +7289,11 @@
         "errors": 0
       },
       "claude-sonnet-5-5": {
-        "correct": 54,
+        "correct": 55,
         "cases": 72,
-        "accuracy": 0.75,
-        "accuracyInterval": [0.6391, 0.8356],
-        "falseAlarms": 6,
+        "accuracy": 0.7639,
+        "accuracyInterval": [0.654, 0.847],
+        "falseAlarms": 5,
         "misses": 12,
         "sentences": {
           "scored": 10,
@@ -8238,10 +7303,10 @@
         "categories": {
           "paraphrase": {
             "cases": 5,
-            "correct": 4,
-            "falseAlarms": 1,
+            "correct": 5,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 4
+            "judgeRuled": 5
           },
           "numbers-words-digits": {
             "cases": 5,
@@ -8350,23 +7415,6 @@
           }
         },
         "failures": [
-          {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
           {
             "id": "units-5",
             "category": "units-conversions",
@@ -8495,14 +7543,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -12620,12 +11661,7 @@
           "answer": "Dr. Jonas Weber chairs the ethics board.",
           "sentences": [
             {
-              "sentence": "Dr.",
-              "verdict": "supported",
-              "lexicalReason": "supported"
-            },
-            {
-              "sentence": "Jonas Weber chairs the ethics board.",
+              "sentence": "Dr. Jonas Weber chairs the ethics board.",
               "verdict": "supported",
               "lexicalReason": "supported"
             }
@@ -13115,11 +12151,11 @@
     },
     "models": {
       "claude-haiku-4-5-20251001": {
-        "correct": 101,
+        "correct": 102,
         "cases": 136,
-        "accuracy": 0.7426,
-        "accuracyInterval": [0.6632, 0.8087],
-        "falseAlarms": 11,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.671, 0.8152],
+        "falseAlarms": 10,
         "misses": 24,
         "sentences": {
           "scored": 18,
@@ -13129,10 +12165,10 @@
         "categories": {
           "paraphrase": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 7
+            "judgeRuled": 8
           },
           "numbers-words-digits": {
             "cases": 8,
@@ -13270,23 +12306,6 @@
         },
         "failures": [
           {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
             "id": "units-5",
             "category": "units-conversions",
             "expected": "unsupported",
@@ -13414,14 +12433,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -13879,11 +12891,11 @@
         "costUSD": 0.0299
       },
       "claude-haiku-5-5": {
-        "correct": 101,
+        "correct": 102,
         "cases": 136,
-        "accuracy": 0.7426,
-        "accuracyInterval": [0.6632, 0.8087],
-        "falseAlarms": 11,
+        "accuracy": 0.75,
+        "accuracyInterval": [0.671, 0.8152],
+        "falseAlarms": 10,
         "misses": 24,
         "sentences": {
           "scored": 18,
@@ -13893,10 +12905,10 @@
         "categories": {
           "paraphrase": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 7
+            "judgeRuled": 8
           },
           "numbers-words-digits": {
             "cases": 8,
@@ -14034,23 +13046,6 @@
         },
         "failures": [
           {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
             "id": "units-5",
             "category": "units-conversions",
             "expected": "unsupported",
@@ -14178,14 +13173,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -14643,11 +13631,11 @@
         "costUSD": 0.0049
       },
       "claude-sonnet-5-5": {
-        "correct": 102,
+        "correct": 103,
         "cases": 136,
-        "accuracy": 0.75,
-        "accuracyInterval": [0.671, 0.8152],
-        "falseAlarms": 10,
+        "accuracy": 0.7574,
+        "accuracyInterval": [0.6789, 0.8217],
+        "falseAlarms": 9,
         "misses": 24,
         "sentences": {
           "scored": 18,
@@ -14657,10 +13645,10 @@
         "categories": {
           "paraphrase": {
             "cases": 8,
-            "correct": 7,
-            "falseAlarms": 1,
+            "correct": 8,
+            "falseAlarms": 0,
             "misses": 0,
-            "judgeRuled": 7
+            "judgeRuled": 8
           },
           "numbers-words-digits": {
             "cases": 8,
@@ -14798,23 +13786,6 @@
         },
         "failures": [
           {
-            "id": "paraphrase-3",
-            "category": "paraphrase",
-            "expected": "supported",
-            "got": "unsupported",
-            "kind": "false_alarm",
-            "answer": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-            "sentences": [
-              {
-                "sentence": "Members can borrow electronic book devices from the Ravenmoor library at no cost.",
-                "verdict": "unsupported",
-                "lexicalReason": "polarity_mismatch",
-                "decidedBy": "lexical",
-                "reason": "judge said supported, but the negation does not match source \"1\"; kept unsupported"
-              }
-            ]
-          },
-          {
             "id": "units-5",
             "category": "units-conversions",
             "expected": "unsupported",
@@ -14942,14 +13913,7 @@
             "answer": "Dr. Jonas Weber chairs the ethics board.",
             "sentences": [
               {
-                "sentence": "Dr.",
-                "verdict": "supported",
-                "lexicalReason": "supported",
-                "decidedBy": "lexical",
-                "reason": "supported by word overlap with a source"
-              },
-              {
-                "sentence": "Jonas Weber chairs the ethics board.",
+                "sentence": "Dr. Jonas Weber chairs the ethics board.",
                 "verdict": "supported",
                 "lexicalReason": "supported",
                 "decidedBy": "lexical",
@@ -16894,9 +15858,9 @@
       },
       "pricesChecked": "2026-11-05",
       "temperatureDropped": false,
-      "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 392,
-      "totalCostUSD": 0.8114
+      "callDates": ["2026-11-05", "2026-11-10"],
+      "totalCalls": 404,
+      "totalCostUSD": 0.8418
     },
     "claude-haiku-5-5": {
       "pricesPerMTok": {
@@ -16911,9 +15875,9 @@
       },
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
-      "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 392,
-      "totalCostUSD": 0.182
+      "callDates": ["2026-11-05", "2026-11-10"],
+      "totalCalls": 404,
+      "totalCostUSD": 0.1912
     },
     "claude-sonnet-5-5": {
       "pricesPerMTok": {
@@ -16923,9 +15887,9 @@
       },
       "pricesChecked": "2026-11-05",
       "temperatureDropped": true,
-      "callDates": ["2026-11-05", "2026-11-05"],
-      "totalCalls": 392,
-      "totalCostUSD": 2.1469
+      "callDates": ["2026-11-05", "2026-11-10"],
+      "totalCalls": 404,
+      "totalCostUSD": 2.2035
     },
     "claude-opus-5-5": {
       "pricesPerMTok": {
@@ -16950,6 +15914,16 @@
       "callDates": ["2026-11-05", "2026-11-05"],
       "totalCalls": 392,
       "totalCostUSD": 14.8211
+    }
+  },
+  "notRerun": {
+    "claude-opus-5-5": {
+      "version": "3.7.0",
+      "commit": "b16d317"
+    },
+    "claude-fable-5-1": {
+      "version": "3.7.0",
+      "commit": "b16d317"
     }
   }
 }

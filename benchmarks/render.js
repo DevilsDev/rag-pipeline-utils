@@ -213,7 +213,7 @@ const VERSION_BLOCKS = [
         ' Of the 3.6 false alarms, 16 are new: the clause rule flags a claim whose subject the source names only in another, positive clause ("varenicline was not more effective than combination NRT" against "Varenicline was more effective than nicotine patch …, but was not more effective than combination NRT"), or whose framing clause ("Based on these data, …") has no negation.',
     },
   ],
-  ["versions-3.7", { from: "3.6.0", label: "3.7" }],
+  ["versions-3.7", { from: "3.6.0", to: "3.7.0", label: "3.7" }],
 ];
 
 const MODEL_NAMES = {
@@ -308,6 +308,15 @@ function renderConditionDropped(report) {
     ["claude-haiku-5-5-after", "Judge Claude Haiku 5.5, 3.9"],
     ["claude-sonnet-5-5-before", "Judge Claude Sonnet 5.5, 3.8.0"],
     ["claude-sonnet-5-5-after", "Judge Claude Sonnet 5.5, 3.9"],
+    ["lexical-release", "Lexical, 3.9.0 release (not held out)"],
+    [
+      "claude-haiku-5-5-release",
+      "Judge Claude Haiku 5.5, 3.9.0 release (not held out)",
+    ],
+    [
+      "claude-sonnet-5-5-release",
+      "Judge Claude Sonnet 5.5, 3.9.0 release (not held out)",
+    ],
   ].filter(([key]) => report.runs[key]);
   const groups = Object.keys(report.runs["lexical-after"].test.perStratum);
   const flagged = (key, split, stratum) => {
@@ -323,7 +332,10 @@ function renderConditionDropped(report) {
   return [
     `${num(report.n.all)} cases (${num(report.n.dev)} dev, ${num(report.n.test)} test), written by Claude Sonnet 5.5 and split by seed ${report.seed}; labels are the generator's and still need human review. Positive class: the claim leaves out a restriction (unsupported). Run ${report.generatedAt.slice(0, 10)}.`,
     "",
-    "**Test split.** The 3.9 code was frozen, and committed, before the test split ran.",
+    "**Test split.** The 3.9 code was frozen, and committed, before the test split ran." +
+      (report.release
+        ? ` The "3.9.0 release" rows are the released code (commit \`${report.release.environment.commit}\`, run ${report.release.generatedAt.slice(0, 10)}), which changed after the test split had been seen, so they are not a held-out measure.`
+        : ""),
     "",
     table(
       ["Run", "Precision", "Recall", "F1", "TP / FP / FN / TN"],

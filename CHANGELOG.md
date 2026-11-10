@@ -38,7 +38,8 @@ page.
   on 3.8.0. After the legal-boilerplate rule, which was decided on that
   split and so is not a held-out measure, it was 86.9% and 90.1%, measured
   before the text normalisation, sentence-splitting and abbreviation fixes
-  below; with them it is 86.4% and 89.6% (one more false alarm). Verdicts
+  below; on the released 3.9.0 code it is 85.9% lexical and 90.1% with a
+  judge. Verdicts
   can change: re-save the report you pass to `rag-pipeline eval --baseline`,
   or turn the condition check off with the option below.
 - **`conditionCheck: false` turns the condition check off**, for a

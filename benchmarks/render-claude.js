@@ -17,7 +17,11 @@ const NAMES = {
   "claude-opus-5-5": "Claude Opus 5.5",
   "claude-fable-5-1": "Claude Fable 5.1",
 };
-const nameOf = (id) => NAMES[id] || id;
+// Judges kept from an earlier report (report.notRerun), named as such
+let notRerun = {};
+const nameOf = (id) =>
+  (NAMES[id] || id) +
+  (notRerun[id] ? ` (measured on ${notRerun[id].version}, not rerun)` : "");
 
 function table(header, rows) {
   return [
@@ -174,6 +178,7 @@ function judgeEdgeBlock(edge, models, title) {
 }
 
 function renderJudge(report) {
+  notRerun = report.notRerun || {};
   const rt = report.ragtruth;
   const d = rt.dataset;
   const models = Object.keys(rt.models);
@@ -415,6 +420,7 @@ const MUTATIONS = {
 };
 
 function renderClaudeCitations(report) {
+  notRerun = {};
   const models = Object.keys(report.models);
   const d = report.dataset;
   const parts = [
@@ -806,7 +812,9 @@ function renderJudgeMore(report) {
     `${measuredLine(report.environment)} API calls made on ${callDates(report.models)}. Sample sizes, seeds and rules were committed before these runs in \`${report.plan}\`.`,
     "",
   ];
+  const kept = report.notRerun || {};
   const full = report.ragtruthFull;
+  notRerun = kept.ragtruthFull || {};
   if (full) {
     const d = full.dataset;
     const models = Object.keys(full.models);
@@ -875,6 +883,7 @@ function renderJudgeMore(report) {
     );
   }
   const v = report.variance;
+  notRerun = kept.variance || {};
   if (v) {
     const models = Object.keys(v.models);
     parts.push(
@@ -903,6 +912,7 @@ function renderJudgeMore(report) {
     );
   }
   const h = report.halueval;
+  notRerun = {};
   if (h) {
     const d = h.dataset;
     const models = Object.keys(h.models);
@@ -949,6 +959,7 @@ function renderJudgeMore(report) {
 // --- claude-latency.json ---------------------------------------------------
 
 function renderLatency(report) {
+  notRerun = {};
   const s = report.setup;
   const models = Object.keys(report.models);
   return [
