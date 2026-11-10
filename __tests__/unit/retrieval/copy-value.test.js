@@ -128,3 +128,26 @@ describe("copyValue", () => {
     expect(copy.b[0]).toBe(copy.a);
   });
 });
+
+describe("copyValue without Node.js globals (Workers without nodejs_compat)", () => {
+  test("copies values when Buffer is not defined", () => {
+    const saved = globalThis.Buffer;
+    try {
+      delete globalThis.Buffer;
+      expect(typeof Buffer).toBe("undefined");
+      const source = {
+        tags: ["a"],
+        when: new Date(1700000000000),
+        vector: new Float32Array([0.5, 1.5]),
+        nested: { map: new Map([["k", { v: 1 }]]) },
+      };
+      const copy = copyValue(source);
+      expect(copy.tags).toEqual(["a"]);
+      expect(copy.when.getTime()).toBe(1700000000000);
+      expect(Array.from(copy.vector)).toEqual([0.5, 1.5]);
+      expect(copy.nested.map.get("k")).toEqual({ v: 1 });
+    } finally {
+      globalThis.Buffer = saved;
+    }
+  });
+});

@@ -36,7 +36,8 @@ function copyInto(value, seen) {
   let out;
   if (tag === '[object Date]') {
     out = new Date(value.getTime());
-  } else if (Buffer.isBuffer(value)) {
+  } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(value)) {
+    // Buffer is Node.js only: Workers without nodejs_compat have none
     out = Buffer.from(value);
   } else if (tag === '[object ArrayBuffer]') {
     out = value.slice(0);
