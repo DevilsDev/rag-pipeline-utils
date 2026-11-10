@@ -64,6 +64,10 @@ function isAsyncIterable(value) {
   );
 }
 
+/** "Potential prompt injection detected: <id> ("<matched text>")" */
+const INJECTION_ISSUE_MATCH =
+  /^(Potential prompt injection detected: [^\s(]+) \(".*"\)$/s;
+
 /**
  * The guard summaries of a withheld response: counts, kinds and reasons stay;
  * the answer, the query text, matched strings and document content do not.
@@ -74,9 +78,15 @@ function isAsyncIterable(value) {
 function withheldSummary(guardrails) {
   const out = { ...guardrails };
   if (out.preRetrieval) {
-    const { sanitizedQuery, injection, ...rest } = out.preRetrieval;
+    const { sanitizedQuery, injection, issues, ...rest } = out.preRetrieval;
     out.preRetrieval = {
       ...rest,
+      // An injection issue ends with the matched text from the query, quoted
+      ...(Array.isArray(issues) && {
+        issues: issues.map((issue) =>
+          String(issue).replace(INJECTION_ISSUE_MATCH, '$1'),
+        ),
+      }),
       ...(injection && {
         injection: {
           detected: injection.detected,

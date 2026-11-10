@@ -131,8 +131,9 @@ continues (PII is still redacted).
   expected types. Its `guardrails` summary keeps the verdicts, issues and
   counts but no raw text: `retrieval.results` and `retrieval.removed` list
   documents by id, the query (`preRetrieval.sanitizedQuery`) is left out,
-  and `postGeneration.sanitizedOutput` is empty (the answer is in the
-  token chunk). So retrieved documents, the query and PII the guard found
+  an injection issue names its pattern without the text it matched, and
+  `postGeneration.sanitizedOutput` is empty (the answer is in the token
+  chunk). So retrieved documents, the query and PII the guard found
   don't reach the caller through a guarded stream; a non-streamed guarded
   run returns the filtered `results` and the full summary. Nothing reaches
   the caller before the whole answer is checked. Buffering stops at the guard's

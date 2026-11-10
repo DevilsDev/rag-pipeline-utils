@@ -172,7 +172,8 @@ page.
   when they have the expected types, plus the guard summary
   (`guardrails`) without raw text: the documents the retrieval guard let
   through are listed by id, the query is left out and the copy of the
-  redacted answer is empty (issues and counts stay). It carries no
+  redacted answer is empty (issues and counts stay, and an injection issue
+  names its pattern without the text it matched). It carries no
   `results`, so retrieved documents, the query and PII the guard found
   never reach the caller that way; a non-streamed guarded run still
   returns its results and full summary.
