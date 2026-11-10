@@ -9,6 +9,7 @@ const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 const { writeThirdPartyLicenses } = require("./lib/third-party-licenses");
+const { EDGE_PROCESS_BANNER } = require("./lib/edge-process-banner");
 const {
   assignFiles,
   scopedModulesPlugin,
@@ -140,10 +141,11 @@ async function main() {
       "@opentelemetry/api": path.join(edgeDir, "no-otel-api.js"),
       ...Object.fromEntries(NODE_STUBS.map((name) => [name, unavailable])),
     },
-    // Vercel Edge has process.env; Workers without nodejs_compat and browsers
-    // have no process at all.
+    // Vercel Edge has process.env but no process.emitWarning; Workers
+    // without nodejs_compat and browsers have no process at all. See
+    // lib/edge-process-banner.js.
     banner: {
-      js: "var process = globalThis.process || { env: {} };",
+      js: EDGE_PROCESS_BANNER,
     },
     metafile: true,
     logLevel: "warning",

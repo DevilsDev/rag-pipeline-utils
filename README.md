@@ -27,6 +27,7 @@ Node.js 22+. CommonJS, ESM and TypeScript types out of the box.
 - **Dropped conditions are caught.** An answer that leaves out a condition its source sets, like "with manager approval", now fails the check.
 - **Much faster on long answers.** A 1,000-sentence answer is checked in under half a second.
 - **Cleaner text from PDFs and web pages.** It's normalised before it's compared.
+- **`/edge` without `nodejs_compat` (3.9.1).** Cached pipelines and cost estimates on Cloudflare Workers no longer throw "process.emitWarning is not a function"; the warning goes to `console.warn`.
 
 [Release notes](https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.9.0) · [Changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)
 

@@ -162,3 +162,7 @@ starters:
 guardrails:
   label: Guardrails
   permalink: /guardrails
+
+edge:
+  label: Edge
+  permalink: /edge

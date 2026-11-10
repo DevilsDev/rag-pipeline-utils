@@ -418,6 +418,20 @@ describe("release-posts", () => {
     expect(firstSentence("A **patch** release. More text.\n\nNext")).toBe(
       "A patch release.",
     );
+    // Code spans keep their text; an _ inside a word isn't emphasis.
+    expect(
+      firstSentence(
+        "Workers without `nodejs_compat` and snake_case, _emphasis_ and *one*. Next",
+      ),
+    ).toBe("Workers without nodejs_compat and snake_case, emphasis and one.");
+    // 3.9.1's first sentence, which the short posts lead with.
+    expect(
+      firstSentence(
+        "A patch release: `/edge` without `nodejs_compat` no longer throws `process.emitWarning is not a function`.\n\nNext",
+      ),
+    ).toBe(
+      "A patch release: /edge without nodejs_compat no longer throws process.emitWarning is not a function.",
+    );
     expect(absolutize("See [CLI](/docs/CLI) and [x](https://a.b/c)")).toBe(
       "See [CLI](https://devilsdev.github.io/rag-pipeline-utils/docs/CLI) and [x](https://a.b/c)",
     );

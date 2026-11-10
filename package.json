@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-pipeline-utils",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "RAG for Node.js that tells you when your LLM is making things up",
   "main": "dist/index.cjs",
   "type": "commonjs",
@@ -268,10 +268,10 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "@devilsdev/rag-connectors": "3.9.0",
-    "@devilsdev/rag-core": "3.9.0",
-    "@devilsdev/rag-eval": "3.9.0",
-    "@devilsdev/rag-guardrails": "3.9.0",
+    "@devilsdev/rag-connectors": "3.9.1",
+    "@devilsdev/rag-core": "3.9.1",
+    "@devilsdev/rag-eval": "3.9.1",
+    "@devilsdev/rag-guardrails": "3.9.1",
     "ajv": "^8.17.1",
     "axios": "^1.21.0",
     "chokidar": "^4.0.3",

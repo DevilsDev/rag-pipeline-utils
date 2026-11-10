@@ -1,6 +1,6 @@
 {
   "name": "@devilsdev/rag-core",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "description": "createRagPipeline and its building blocks: retrieval, reranking, caching, cost tracking and model routing.",
   "keywords": [
     "rag",

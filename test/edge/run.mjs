@@ -281,6 +281,22 @@ async function upstream(request) {
   const question = JSON.stringify(body);
 
   if (url.pathname === "/v1/messages") {
+    // Like Claude 4.7 and later: any temperature but the default is a 400.
+    if (
+      body.model === "claude-default-temperature-only" &&
+      "temperature" in body
+    ) {
+      return new Response(
+        JSON.stringify({
+          type: "error",
+          error: {
+            type: "invalid_request_error",
+            message: "temperature: only the default value is supported",
+          },
+        }),
+        { status: 400, headers: { "content-type": "application/json" } },
+      );
+    }
     if (body.stream) {
       // The probe asks "unicode-check" to get multi-byte characters, which
       // chunked() splits across chunks.

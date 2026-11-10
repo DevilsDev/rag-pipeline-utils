@@ -14,6 +14,34 @@ page.
 > top-level access restrictions in Qdrant, Pinecone, Weaviate or pgvector,
 > re-ingest them: see [3.8.2](#382---2026-11-09).
 
+## [3.9.1] - 2026-11-11
+
+A patch release: `/edge` on Cloudflare Workers without `nodejs_compat` no
+longer fails where the library warns, and the README has new images. No
+new features or options.
+
+### Fixed
+
+- **`/edge` on Workers without `nodejs_compat` no longer throws
+  "process.emitWarning is not a function"** for cached pipelines and cost
+  estimates: a cached pipeline whose embedder, retriever or LLM has no
+  cache key failed its run, and `CostCalculator.estimate()` for a model
+  with no price threw. The `/edge` bundle's `process` stand-in now has an
+  `emitWarning` that writes the warning with `console.warn` ("[CODE] Type:
+  message"). Node's own `process` is used as it is, and a `process` without
+  `emitWarning` (Vercel Edge) is wrapped, not changed. The same fix covers
+  the other two warnings `/edge` can raise: `AnthropicConnector` sending a
+  request again without a temperature the model rejects, and
+  `GuardrailsPipeline` when its retrieval guard was skipped. The workerd
+  edge test checks all four without `nodejs_compat`.
+
+### Changed
+
+- **The README's new images and badges:** a new banner, a "What
+  checkAnswer catches" card and a feature strip, drawn in the docs site's
+  fonts and colours, and badges in the same colours. npm shows them from
+  this release, with the images pinned to its tag.
+
 ## [3.9.0] - 2026-11-10
 
 A minor release. Answer checks now catch an answer that drops its source's
