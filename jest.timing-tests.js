@@ -13,6 +13,7 @@ module.exports = [
   "__tests__/unit/evaluate/text-normalisation.test.js",
   "__tests__/unit/graph/entity-extractor-linear-time.test.js",
   "__tests__/unit/guardrails/linear-time-patterns.test.js",
+  "__tests__/unit/packages/rag-mcp-server-cancel.test.js",
   "__tests__/unit/packages/rag-mcp-server-check-timeout.test.js",
   "__tests__/unit/packages/rag-mcp-server-clause-limit.test.js",
   "__tests__/unit/packages/rag-mcp-server-html.test.js",

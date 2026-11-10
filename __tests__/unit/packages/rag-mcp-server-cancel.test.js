@@ -4,7 +4,10 @@
  * request's cancellation signal, `extra.signal`). Over stdio, the server
  * closes when stdin ends, which stops the workers.
  *
- * Time limits are fixed ceilings measured with performance.now().
+ * Time limits are fixed ceilings measured with performance.now(). The
+ * checks to cancel run in a test-only worker (slow-check.js) that never
+ * finishes one whose answer is SLOW_ANSWER, so the tests don't depend on
+ * how fast checkAnswer is on the machine.
  */
 
 const { spawn } = require("child_process");
@@ -14,6 +17,22 @@ const path = require("path");
 const { performance } = require("perf_hooks");
 const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { InMemoryTransport } = require("@modelcontextprotocol/sdk/inMemory.js");
+const useCheckWorker = require("../../fixtures/mcp-check-worker/use-check-worker");
+const { SLOW_ANSWER } = require("../../fixtures/mcp-check-worker/slow-answer");
+
+const FIXTURES = path.join(
+  __dirname,
+  "..",
+  "..",
+  "fixtures",
+  "mcp-check-worker",
+);
+const SLOW_WORKER = path.join(FIXTURES, "slow-check.js");
+// The rag-mcp-server command with SLOW_WORKER as its check worker
+const SLOW_SERVER = path.join(FIXTURES, "slow-server.js");
+
+// createServer's checks run in SLOW_WORKER (before server.js loads)
+useCheckWorker(SLOW_WORKER);
 const { createServer } = require("../../../packages/rag-mcp-server/lib/server");
 const {
   createCheckRunner,
@@ -21,27 +40,13 @@ const {
   CheckQueueFullError,
 } = require("../../../packages/rag-mcp-server/lib/check-runner");
 
-const BIN = path.join(
-  __dirname,
-  "..",
-  "..",
-  "..",
-  "packages",
-  "rag-mcp-server",
-  "bin",
-  "rag-mcp-server.js",
-);
-
 jest.setTimeout(60000);
 
 // The suite runs on fake timers; these tests need real ones.
 beforeEach(() => jest.useRealTimers());
 
-const quantities = (n) => `Staff carry ${"5 kg ".repeat(n).trim()}.`;
-const SOURCE = quantities(39995);
-// About 12 s to check here, past every ceiling below, and past the 10 s
-// default limit, on a faster machine too.
-const slow = { answer: quantities(4000), sources: [SOURCE] };
+// Never finishes in SLOW_WORKER: runs until it is cancelled or stopped
+const slow = { answer: SLOW_ANSWER, sources: [SLOW_ANSWER] };
 const quick = { answer: "Hi.", sources: ["Hi."] };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -58,6 +63,7 @@ describe("the check runner and a cancellation signal", () => {
       timeoutMs: 60000,
       maxConcurrent: 1,
       maxQueue: 1,
+      file: SLOW_WORKER,
     });
     const running = new AbortController();
     const waiting = new AbortController();
@@ -86,7 +92,11 @@ describe("the check runner and a cancellation signal", () => {
   });
 
   test("a running check the caller abandons is stopped", async () => {
-    const runner = createCheckRunner({ timeoutMs: 60000, maxConcurrent: 1 });
+    const runner = createCheckRunner({
+      timeoutMs: 60000,
+      maxConcurrent: 1,
+      file: SLOW_WORKER,
+    });
     const controller = new AbortController();
     try {
       const outcome = settled(runner.run(slow, { signal: controller.signal }));
@@ -144,7 +154,7 @@ describe("a client that cancels check_answer", () => {
         arguments: quick,
       });
       expect(reply.isError).toBeFalsy();
-      // Behind the abandoned check it would wait for the rest of its ~12 s
+      // Behind the abandoned check it would wait forever
       expect(performance.now() - start).toBeLessThan(6000);
     } finally {
       await client.close();
@@ -156,7 +166,7 @@ describe("over stdio, the server closes when stdin ends", () => {
   test("a running check is stopped and the process exits well before the time limit", async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rag-mcp-stdin-"));
     fs.writeFileSync(path.join(tmp, "a.md"), "Twenty days of vacation.\n");
-    const child = spawn(process.execPath, [BIN, tmp], {
+    const child = spawn(process.execPath, [SLOW_SERVER, tmp], {
       stdio: ["pipe", "pipe", "pipe"],
     });
     let stdout = "";
@@ -191,7 +201,7 @@ describe("over stdio, the server closes when stdin ends", () => {
         method: "tools/call",
         params: { name: "check_answer", arguments: slow },
       });
-      // Let the check start in its worker (the default limit is 10 s)
+      // Let the check start in its worker (it would run to the 10 s limit)
       await sleep(1500);
       const start = performance.now();
       child.stdin.end();
