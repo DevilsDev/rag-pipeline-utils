@@ -24,8 +24,6 @@ export default function HomepageHeader() {
 
   return (
     <header className={styles.hero}>
-      <div className={styles.grid} aria-hidden="true" />
-      <div className={styles.glow} aria-hidden="true" />
       <div className="container">
         <div className={styles.layout}>
           <div className={styles.copy}>

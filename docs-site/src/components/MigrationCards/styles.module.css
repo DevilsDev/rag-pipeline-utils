@@ -1,0 +1,122 @@
+.wrap {
+  margin: 1.5rem 0 2rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--rag-control-border);
+  border-radius: 999px;
+  background: var(--rag-bg);
+  color: var(--rag-text);
+  font: 500 0.875rem/1 var(--ifm-font-family-base);
+  cursor: pointer;
+}
+
+.pill:hover {
+  border-color: var(--rag-primary);
+}
+
+.pillOn,
+.pillOn:hover {
+  border-color: var(--rag-primary);
+  background: var(--rag-primary);
+  color: var(--rag-on-primary);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Beats `.markdown li` spacing. */
+.cards > li.card {
+  margin: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.4rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 14px;
+  background: var(--rag-card);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Beats the `.markdown h3` sizes. */
+.card h3.from {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.archived {
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background: var(--rag-accent-soft);
+  color: var(--rag-accent-soft-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.effort {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.effortLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.meter {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.seg {
+  width: 28px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--rag-border);
+}
+
+.segOn {
+  background: var(--rag-primary);
+}
+
+.card p.text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--rag-text);
+}

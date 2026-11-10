@@ -3,12 +3,12 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg" alt="npm version"></a>
-  <a href="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml"><img src="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils.svg" alt="Downloads"></a>
-  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils.svg" alt="TypeScript types"></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg" alt="Node.js version"></a>
-  <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils?label=npm&labelColor=1f3a5a&color=b93815" alt="npm version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/DevilsDev/rag-pipeline-utils/ci.yml?branch=main&label=CI&labelColor=1f3a5a" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/dm/@devilsdev/rag-pipeline-utils?labelColor=1f3a5a&color=57534e" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils?labelColor=1f3a5a&color=57534e" alt="TypeScript types"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils?labelColor=1f3a5a&color=57534e" alt="Node.js version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-57534e?labelColor=1f3a5a" alt="License: MIT"></a>
 </p>
 
 <p align="center">

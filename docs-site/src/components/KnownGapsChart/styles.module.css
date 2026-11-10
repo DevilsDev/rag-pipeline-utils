@@ -1,0 +1,70 @@
+.figure {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--rag-border);
+  border-radius: 12px;
+  background: var(--rag-card);
+}
+
+.caption {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--rag-muted);
+}
+
+/* Beats `.markdown ul` spacing. */
+.figure ul.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.figure li.row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr) 8.5rem;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+}
+
+.label {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.track {
+  display: block;
+  height: 14px;
+  border-radius: 0 6px 6px 0;
+  background: var(--rag-panel);
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 0 6px 6px 0;
+  background: var(--rag-primary);
+}
+
+.value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .figure li.row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.3rem 0.75rem;
+  }
+
+  .track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

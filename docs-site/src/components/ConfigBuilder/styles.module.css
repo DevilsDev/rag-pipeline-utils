@@ -80,7 +80,7 @@
 .option input {
   width: 100%;
   padding: 0.45rem 0.6rem;
-  border: 1px solid var(--rag-border);
+  border: 1px solid var(--rag-control-border);
   border-radius: 8px;
   background: var(--ifm-background-color);
   color: var(--ifm-font-color-base);
@@ -110,11 +110,7 @@
 .valid {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #047857;
-}
-
-[data-theme="dark"] .valid {
-  color: #6ee7b7;
+  color: var(--rag-good);
 }
 
 .valid::before {

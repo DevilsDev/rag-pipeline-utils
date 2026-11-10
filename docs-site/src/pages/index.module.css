@@ -110,7 +110,7 @@
   overflow: hidden;
   border: 1px solid var(--rag-border);
   box-shadow: var(--rag-card-shadow);
-  background: #1e1e2e;
+  background: var(--rag-inverse-panel);
 }
 
 .terminal img {
@@ -194,22 +194,22 @@
   margin-bottom: 0;
 }
 
-/* Closing call to action, navy like the hero. */
+/* Closing call to action, dark ink like the hero. */
 
 .cta {
   padding: 5rem 0;
   text-align: center;
-  background: linear-gradient(135deg, #0b1020 0%, #16213e 100%);
-  color: #f8fafc;
+  background: var(--rag-inverse-bg);
+  color: var(--rag-inverse-strong);
 }
 
 .cta h2 {
   font-size: clamp(1.75rem, 3vw, 2.35rem);
-  color: #f8fafc;
+  color: var(--rag-inverse-strong);
 }
 
 .cta p {
-  color: #cbd5e1;
+  color: var(--rag-inverse-soft);
   font-size: 1.1rem;
   margin-bottom: 1.75rem;
 }
@@ -219,14 +219,31 @@
 }
 
 .ctaGhost {
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(179, 172, 161, 0.35);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--rag-inverse-text);
 }
 
 .ctaGhost:hover {
-  border-color: #a5b4fc;
-  color: #ffffff;
+  border-color: var(--rag-inverse-primary);
+  color: var(--rag-inverse-strong);
+}
+
+.cta :global(.button--primary) {
+  --ifm-button-background-color: var(--rag-inverse-primary);
+  --ifm-button-border-color: var(--rag-inverse-primary);
+  color: var(--rag-inverse-bg);
+  box-shadow: none;
+}
+
+.cta :global(.button--primary:hover) {
+  --ifm-button-background-color: var(--rag-inverse-text);
+  --ifm-button-border-color: var(--rag-inverse-text);
+  color: var(--rag-inverse-bg);
+}
+
+.cta :focus-visible {
+  outline-color: var(--rag-inverse-accent);
 }
 
 @media (max-width: 996px) {

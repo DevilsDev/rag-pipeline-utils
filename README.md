@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils.svg" alt="npm version"></a>
-  <a href="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml"><img src="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils.svg" alt="TypeScript types"></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils.svg" alt="Node.js version"></a>
-  <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/v/@devilsdev/rag-pipeline-utils?label=npm&labelColor=1f3a5a&color=b93815" alt="npm version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/DevilsDev/rag-pipeline-utils/ci.yml?branch=main&label=CI&labelColor=1f3a5a" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils"><img src="https://img.shields.io/npm/types/@devilsdev/rag-pipeline-utils?labelColor=1f3a5a&color=57534e" alt="TypeScript types"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@devilsdev/rag-pipeline-utils?labelColor=1f3a5a&color=57534e" alt="Node.js version"></a>
+  <a href="https://github.com/DevilsDev/rag-pipeline-utils/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-57534e?labelColor=1f3a5a" alt="License: MIT"></a>
 </p>
 
 # rag-pipeline-utils
@@ -21,6 +21,16 @@ npm install @devilsdev/rag-pipeline-utils
 ```
 
 Node.js 22+. CommonJS, ESM and TypeScript types out of the box.
+
+## New in 3.9
+
+- **Dropped conditions are caught.** An answer that leaves out a condition its source sets, like "with manager approval", now fails the check.
+- **Much faster on long answers.** A 1,000-sentence answer is checked in under half a second.
+- **Cleaner text from PDFs and web pages.** It's normalised before it's compared.
+
+[Release notes](https://github.com/DevilsDev/rag-pipeline-utils/releases/tag/v3.9.0) · [Changelog](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md)
+
+> **Upgrading from 3.8.1 or earlier?** Upgrade to 3.8.2 or later for its security fixes; 3.9.0 is recommended. If you store documents with top-level access restrictions in Qdrant, Pinecone, Weaviate or pgvector, re-ingest them: see [3.8.2](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/CHANGELOG.md#382---2026-11-09).
 
 ## Catch the made-up bits
 
@@ -49,6 +59,8 @@ console.log(check.grounded); // false
 console.log(check.groundedness); // 0
 console.log(check.unsupported); // ["Full-time employees receive thirty days of paid vacation per year.", "Remote work is allowed two days per week."]
 ```
+
+<img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/check-result.svg" alt="What checkAnswer catches: sentence 1 states the wrong number (thirty where the source says twenty); sentence 2 drops the condition &quot;with manager approval&quot;. grounded: false." width="100%">
 
 Both sentences are caught: the first states the wrong number, and the second drops the "with manager approval" its source requires, which makes it claim more than the handbook says. That runs locally, with no API key and nothing sent anywhere. Worried about paraphrases? Add `judge` and your LLM gets asked about the sentences that failed on wording alone, and nothing else. [Try it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) with an answer of your own.
 
@@ -84,6 +96,8 @@ console.log(result.results[0].id); // "vacation"
 Rather start from a working app? `npm create rag-pipeline@latest` scaffolds one for Next.js with the AI SDK, Mastra, or Cloudflare Workers.
 
 ## Why people reach for it
+
+<img src="https://cdn.jsdelivr.net/gh/DevilsDev/rag-pipeline-utils@main/assets/features.svg" alt="Nine reasons: grounding you can see, regressions fail the build, plays well with your stack, guardrails with receipts, ready for production, connectors included, a real CLI, runs at the edge, talk to it from Claude." width="100%">
 
 - **Grounding you can see.** Per-sentence citations and a groundedness score, with numbers, units, dates and negation actually checked. `verifyCitations()` double-checks the citations Claude and OpenAI hand back.
 - **Regressions fail the build.** `rag-pipeline eval` scores a test set in CI and goes red when answers get worse. [rag-eval-action](https://github.com/DevilsDev/rag-eval-action) posts the results on your pull request.
