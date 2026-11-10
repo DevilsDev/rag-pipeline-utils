@@ -12,7 +12,7 @@ The package has five entry points:
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `@devilsdev/rag-pipeline-utils`              | The supported API documented on this page                                                                                                                                      |
 | `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                    |
-| `@devilsdev/rag-pipeline-utils/edge`         | The library without Node.js APIs, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                              |
+| `@devilsdev/rag-pipeline-utils/edge`         | The library without Node.js modules, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                           |
 | `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
 | `@devilsdev/rag-pipeline-utils/cli`          | The bundled CLI module, which exports `run`; the command itself is `npx rag-pipeline` (see [CLI](./CLI))                                                                       |
 

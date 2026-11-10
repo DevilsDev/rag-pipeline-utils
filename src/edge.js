@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @devilsdev/rag-pipeline-utils/edge: the library without Node.js APIs, for
+ * @devilsdev/rag-pipeline-utils/edge: the library without Node.js modules, for
  * runtimes that only have Web APIs (Vercel Edge Functions, Cloudflare
  * Workers without nodejs_compat, Deno, Netlify Edge Functions, browsers).
  *

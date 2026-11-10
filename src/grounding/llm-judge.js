@@ -8,7 +8,7 @@
  * Every rule here fails closed: anything the judge says that is not a clear,
  * well-formed "supported" naming a real source keeps the sentence
  * unsupported. A "supported" verdict is also re-checked against the cited
- * source's numbers and negation before it counts.
+ * source's numbers, negation and conditions before it counts.
  */
 
 const {

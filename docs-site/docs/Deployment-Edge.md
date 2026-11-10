@@ -1,12 +1,12 @@
 ---
 sidebar_position: 23
 title: Edge runtimes
-description: The /edge entry runs without Node.js APIs, on Vercel Edge Functions, Cloudflare Workers without nodejs_compat, Deno and Netlify Edge Functions.
+description: The /edge entry runs without Node.js modules, on Vercel Edge Functions, Cloudflare Workers without nodejs_compat, Deno and Netlify Edge Functions.
 ---
 
 # Edge runtimes
 
-`@devilsdev/rag-pipeline-utils/edge` is the library without Node.js APIs: one ES module that needs only Web APIs (`fetch`, `crypto.getRandomValues`, `TextEncoder`, streams). Use it where Node.js modules don't exist:
+`@devilsdev/rag-pipeline-utils/edge` is the library without Node.js modules: one ES module that needs only Web APIs (`fetch`, `crypto.getRandomValues`, `TextEncoder`, streams). Use it where Node.js modules don't exist:
 
 - Vercel Edge Functions
 - Cloudflare Workers without `nodejs_compat`
