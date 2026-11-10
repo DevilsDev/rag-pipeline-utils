@@ -3,7 +3,7 @@
 /**
  * Opt-in LLM judge for checkAnswer: rules on sentences the lexical check
  * failed for lack of word overlap (correct paraphrases), never on sentences
- * that failed a number or negation check.
+ * that failed a number, negation or condition check.
  *
  * Every rule here fails closed: anything the judge says that is not a clear,
  * well-formed "supported" naming a real source keeps the sentence
@@ -16,8 +16,13 @@ const {
   computeSupportScore,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
   extractNumbers,
+  withoutMarkers,
   isNegated,
+  prepareDocument,
+  prepareAnswer,
+  sourceTokenSet,
 } = require('../evaluate/scoring');
 const { buildIDFWeights } = require('../citation/source-mapper');
 const { DEFAULT_CONFIG } = require('../citation/citation-tracker');
@@ -28,12 +33,13 @@ const REASONS = {
   lowOverlap: 'low_overlap',
   numberMismatch: 'number_mismatch',
   polarityMismatch: 'polarity_mismatch',
+  conditionMismatch: 'condition_mismatch',
   noSources: 'no_sources',
 };
 
 /**
  * Why a sentence the lexical check did not ground failed. A sentence only
- * "failed because of" numbers or negation when some source supports its
+ * "failed because of" numbers, negation or a dropped condition when some source supports its
  * words (plain overlap at or above the threshold) and then fails that
  * check; a sentence stating numbers that no source contains also counts as
  * a number mismatch. Everything else failed for lack of overlap.
@@ -42,34 +48,63 @@ const REASONS = {
  * @param {Array<{content: string}>} docs
  * @param {Map<string, number>|null} idfWeights
  * @param {number} threshold
+ * @param {string} [answerText] - The whole answer, for conditions restated
+ *   in another sentence
+ * @param {boolean} [conditionCheck=true] - false: no condition_mismatch
+ * @param {Map<object, object>} [prepared] - prepareDocument() of each doc
  * @returns {string} one of REASONS (never 'supported')
  */
-function classifyFailure(sentence, docs, idfWeights, threshold) {
+function classifyFailure(
+  sentence,
+  docs,
+  idfWeights,
+  threshold,
+  answerText,
+  conditionCheck = true,
+  prepared = new Map(),
+) {
   if (docs.length === 0) return REASONS.noSources;
   const tokens = tokenize(sentence);
+  const source = (doc) => prepared.get(doc) || prepareDocument(doc, doc.content);
 
   let numberMismatch = false;
   let polarityMismatch = false;
+  let conditionMismatch = false;
   for (const doc of docs) {
-    const docSet = new Set(tokenize(doc.content));
-    const overlap = computeSupportScore(tokens, docSet, idfWeights);
+    const text = source(doc);
+    const overlap = computeSupportScore(
+      tokens,
+      sourceTokenSet(text),
+      idfWeights,
+    );
     if (overlap < threshold) continue;
-    if (!checkNumericConsistency(sentence, doc.content).consistent) {
+    if (!checkNumericConsistency(sentence, text).consistent) {
       numberMismatch = true;
     }
-    if (!checkPolarityConsistency(sentence, doc.content).consistent) {
+    if (!checkPolarityConsistency(sentence, text).consistent) {
       polarityMismatch = true;
+    }
+    if (
+      conditionCheck &&
+      !checkConditionConsistency(sentence, text, answerText).consistent
+    ) {
+      conditionMismatch = true;
     }
   }
 
-  if (!numberMismatch && extractNumbers(sentence).values.length > 0) {
+  // Citation markers ("[1]", "1. ") aren't numbers the source must state
+  if (
+    !numberMismatch &&
+    extractNumbers(withoutMarkers(sentence)).values.length > 0
+  ) {
     numberMismatch = !docs.some(
-      (doc) => checkNumericConsistency(sentence, doc.content).consistent,
+      (doc) => checkNumericConsistency(sentence, source(doc)).consistent,
     );
   }
 
   if (numberMismatch) return REASONS.numberMismatch;
   if (polarityMismatch) return REASONS.polarityMismatch;
+  if (conditionMismatch) return REASONS.conditionMismatch;
   return REASONS.lowOverlap;
 }
 
@@ -81,20 +116,30 @@ function classifyFailure(sentence, docs, idfWeights, threshold) {
  * @param {Array<{id?: string, content: string}>} docs
  * @param {Array<string[]>} [allowed] - Per sentence, the ids of the only
  *   docs that may support it (verifyCitations: the passages it cites)
+ * @param {{ conditionCheck?: boolean }} [options] - conditionCheck false: no
+ *   condition_mismatch
  * @returns {string[]}
  */
-function lexicalReasons(sentences, docs, allowed) {
-  const idfWeights = DEFAULT_CONFIG.useIDFWeighting
-    ? buildIDFWeights(docs)
-    : null;
+function lexicalReasons(sentences, docs, allowed, { conditionCheck } = {}) {
+  // Word weights per sentence, as CitationTracker weights them
+  const idfWeightsFor = (sentence) =>
+    DEFAULT_CONFIG.useIDFWeighting
+      ? buildIDFWeights(docs, { sentence })
+      : null;
+  // Each source and the answer are prepared once for all the sentences
+  const answerText = prepareAnswer(sentences.map((s) => s.text).join(' '));
+  const prepared = new Map(docs.map((d) => [d, prepareDocument(d, d.content)]));
   return sentences.map((s, i) =>
     s.classification === 'grounded'
       ? REASONS.supported
       : classifyFailure(
           s.text,
           allowed ? docs.filter((d) => allowed[i].includes(d.id)) : docs,
-          idfWeights,
+          idfWeightsFor(s.text),
           DEFAULT_CONFIG.similarityThreshold,
+          answerText,
+          conditionCheck !== false,
+          prepared,
         ),
   );
 }
@@ -268,6 +313,12 @@ function parseJudgeVerdicts(raw, claimCount) {
   return { verdicts, error: null };
 }
 
+/**
+ * Connector error codes for a reply with no text (AnthropicConnector):
+ * judge errors, not failures of the check.
+ */
+const REPLY_ERRORS = new Set(['NO_TEXT', 'MODEL_REFUSED']);
+
 /** Readable text for each lexical reason. */
 const REASON_TEXT = {
   [REASONS.supported]: 'supported by word overlap with a source',
@@ -276,6 +327,8 @@ const REASON_TEXT = {
     'states a number its source does not contain; the judge is not asked',
   [REASONS.polarityMismatch]:
     'negated where its source is not, or the reverse; the judge is not asked',
+  [REASONS.conditionMismatch]:
+    'leaves out a condition its source states (an approval, exception or eligibility rule); the judge is not asked',
   [REASONS.noSources]: 'no sources to check against',
 };
 
@@ -295,10 +348,14 @@ const REASON_TEXT = {
  * @param {Array<string[]>} [params.allowed] - Per sentence, the ids of the
  *   only docs that may support it; a verdict naming another doc is kept
  *   unsupported. Default: any doc.
+ * @param {boolean} [params.conditionCheck=true] - false: the condition check
+ *   neither fails a sentence nor blocks an overturn
  * @returns {Promise<{verdicts: Array<Object>, calls: number, usage?: Object, error?: string}>}
+ *   error: why the judge's reply couldn't be used (no text, or not the
+ *   expected JSON); those sentences keep their lexical verdict
  */
-async function runJudge({ judge, sentences, docs, allowed }) {
-  const reasons = lexicalReasons(sentences, docs, allowed);
+async function runJudge({ judge, sentences, docs, allowed, conditionCheck }) {
+  const reasons = lexicalReasons(sentences, docs, allowed, { conditionCheck });
   const verdicts = sentences.map((s, i) => {
     const supported = reasons[i] === REASONS.supported;
     const best = s.bestSource;
@@ -332,7 +389,22 @@ async function runJudge({ judge, sentences, docs, allowed }) {
     typeof judge.generateWithUsage === 'function'
       ? judge.generateWithUsage
       : judge.generate;
-  const raw = await call.call(judge, prompt, [], { temperature: 0 });
+  let raw;
+  try {
+    raw = await call.call(judge, prompt, [], { temperature: 0 });
+  } catch (error) {
+    // A reply the connector couldn't turn into text (cut off at maxTokens,
+    // or refused) is a judge error, like a reply that isn't JSON: the
+    // lexical verdicts stand (BH-15). Network and auth errors still reject.
+    if (!REPLY_ERRORS.has(error && error.code)) throw error;
+    result.calls = 1;
+    result.error = `judge returned no text (${error.message})`;
+    for (const i of pending) {
+      verdicts[i].decidedBy = 'judge';
+      verdicts[i].reason = `judge gave no usable verdict (${result.error}); kept unsupported`;
+    }
+    return result;
+  }
   result.calls = 1;
   const usage = resultUsage(raw);
   if (usage) result.usage = usage;
@@ -397,6 +469,19 @@ async function runJudge({ judge, sentences, docs, allowed }) {
       entry.decidedBy = 'lexical';
       entry.lexicalReason = REASONS.polarityMismatch;
       entry.reason = `judge said supported, but the negation does not match source "${ruling.source}"; kept unsupported`;
+      return;
+    }
+    // A dropped condition (an approval, exception or eligibility rule) is
+    // never overturned either
+    const answerText = verdicts.map((v) => v.sentence).join(' ');
+    if (
+      conditionCheck !== false &&
+      !checkConditionConsistency(entry.sentence, doc.content, answerText)
+        .consistent
+    ) {
+      entry.decidedBy = 'lexical';
+      entry.lexicalReason = REASONS.conditionMismatch;
+      entry.reason = `judge said supported, but the sentence leaves out a condition of source "${ruling.source}"; kept unsupported`;
       return;
     }
     entry.verdict = 'supported';

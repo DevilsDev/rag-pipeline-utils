@@ -8,7 +8,7 @@
  * memory on the first request with the built-in TF-IDF embedder, so there is
  * no database and no embedding API. Set the ANTHROPIC_API_KEY secret to
  * generate answers with Claude; without it the Worker returns the passages.
- * Needs the nodejs_compat compatibility flag (see wrangler.toml).
+ * Needs no compatibility flags: the /edge entry uses Web APIs only.
  */
 
 import {

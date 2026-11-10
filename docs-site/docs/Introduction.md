@@ -95,13 +95,13 @@ graph TD
 
 Each stage is a plugin that implements one contract method: loader `load()`, embedder `embed()` (optionally `embedQuery()`), retriever `store()` and `retrieve()`, llm `generate()` (optionally `generateStream()`), reranker `rerank()`. Built-in implementations:
 
-| Stage     | Library classes                                                                                                   | `.ragrc.json` names (CLI)                    |
-| --------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| Loader    | (bring your own)                                                                                                  | `auto` (.md, .html, .csv, .txt)              |
-| Embedder  | `LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`                                          | `local`, `openai`, `ollama`, `cohere`        |
-| Retriever | `MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, `PgVectorRetriever`, `QdrantRetriever` | `memory`, `file-store`, `pgvector`, `qdrant` |
-| LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                                                        | `openai`, `anthropic`, `ollama`              |
-| Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector`                                      | `scoring`                                    |
+| Stage     | Library classes                                                                                                                                             | `.ragrc.json` names (CLI)                                            |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Loader    | (bring your own)                                                                                                                                            | `auto` (.md, .html, .csv, .txt)                                      |
+| Embedder  | `LocalEmbedder`, `OpenAIConnector`, `OllamaConnector`, `CohereConnector`                                                                                    | `local`, `openai`, `ollama`, `cohere`                                |
+| Retriever | `MemoryRetriever`, `FileVectorStore`, `HybridRetriever`, `GraphRetriever`, `PgVectorRetriever`, `QdrantRetriever`, `PineconeRetriever`, `WeaviateRetriever` | `memory`, `file-store`, `pgvector`, `qdrant`, `pinecone`, `weaviate` |
+| LLM       | `OpenAIConnector`, `AnthropicConnector`, `OllamaConnector`                                                                                                  | `openai`, `anthropic`, `ollama`, `router`                            |
+| Reranker  | `ScoringReranker`, `EmbeddingReranker`, `CascadeReranker`, `CohereConnector`                                                                                | `scoring`                                                            |
 
 Qdrant (`QdrantRetriever`), Pinecone (`PineconeRetriever`), Weaviate (`WeaviateRetriever`, 3.7.0) and PostgreSQL with pgvector (`PgVectorRetriever`, needs `npm install pg`) are built in. Connect other vector databases (Chroma and others) with a custom retriever plugin (see [Plugins](./Plugins.md)).
 

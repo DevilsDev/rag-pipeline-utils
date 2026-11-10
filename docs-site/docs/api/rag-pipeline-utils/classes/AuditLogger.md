@@ -37,12 +37,46 @@ new AuditLogger(_options?): AuditLogger;
 
 ## Properties
 
-| Property                                            | Type                                      |
-| --------------------------------------------------- | ----------------------------------------- |
-| <a id="property-encryptionkey"></a> `encryptionKey` | `string` \| `Buffer`\<`ArrayBufferLike`\> |
-| <a id="property-flushtimer"></a> `flushTimer`       | `Timeout`                                 |
-| <a id="property-logbuffer"></a> `logBuffer`         | `any`[]                                   |
-| <a id="property-signingkey"></a> `signingKey`       | `string` \| `Buffer`\<`ArrayBufferLike`\> |
+| Property                                            | Type                                      | Description                                                    |
+| --------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------- |
+| <a id="property-droppedevents"></a> `droppedEvents` | `number`                                  | Events discarded by memoryLimit so far (see 'events_dropped'). |
+| <a id="property-encryptionkey"></a> `encryptionKey` | `string` \| `Buffer`\<`ArrayBufferLike`\> | -                                                              |
+| <a id="property-flushtimer"></a> `flushTimer`       | `Timeout`                                 | -                                                              |
+| <a id="property-logbuffer"></a> `logBuffer`         | `any`[]                                   | -                                                              |
+
+## Accessors
+
+### signingKey
+
+#### Get Signature
+
+```ts
+get signingKey(): string | Buffer<ArrayBufferLike>;
+```
+
+The key for the integrity hashes and signatures: the signingKey option,
+then RAG_AUDIT_SIGNING_KEY, then the key stored in
+`logDir/integrity/signing.key`. Resolved on first use.
+
+##### Returns
+
+`string` \| `Buffer`\<`ArrayBufferLike`\>
+
+#### Set Signature
+
+```ts
+set signingKey(key): void;
+```
+
+##### Parameters
+
+| Parameter | Type                                      | Description |
+| --------- | ----------------------------------------- | ----------- |
+| `key`     | `string` \| `Buffer`\<`ArrayBufferLike`\> | -           |
+
+##### Returns
+
+`void`
 
 ## Methods
 
@@ -68,6 +102,39 @@ Cleanup old logs based on retention policy
 
 ---
 
+### close()
+
+```ts
+close(): Promise<{
+  pending: {
+     chain: boolean;
+     events: number;
+     webhook: number;
+  };
+}>;
+```
+
+Shut the logger down: stop the flush timer, wait for log calls in
+progress, write the buffered events and the pending chain state, and
+retry any stage that failed once more. Call it before the process
+exits (for example on SIGTERM). Resolves, never rejects, with what is
+still pending: `{ pending: { events, chain, webhook } }`. Calls made
+while a close is running share it. A log call after close() still
+buffers and flushes as before, but there is no timer any more; call
+close() again to write it.
+
+#### Returns
+
+`Promise`\<\{
+`pending`: \{
+`chain`: `boolean`;
+`events`: `number`;
+`webhook`: `number`;
+\};
+\}\>
+
+---
+
 ### generateComplianceReport()
 
 ```ts
@@ -88,6 +155,7 @@ generateComplianceReport(_options): Promise<{
      totalEvents: number;
   };
   summary: {
+     apiAccessEvents: number;
      authenticationEvents: number;
      authorizationEvents: number;
      complianceEvents: number;
@@ -95,6 +163,7 @@ generateComplianceReport(_options): Promise<{
      dataAccessEvents: number;
      dataModificationEvents: number;
      failedEvents: number;
+     otherEvents: number;
      systemChangeEvents: number;
   };
 }>;
@@ -127,6 +196,7 @@ Generate compliance report
 `totalEvents`: `number`;
 \};
 `summary`: \{
+`apiAccessEvents`: `number`;
 `authenticationEvents`: `number`;
 `authorizationEvents`: `number`;
 `complianceEvents`: `number`;
@@ -134,6 +204,7 @@ Generate compliance report
 `dataAccessEvents`: `number`;
 `dataModificationEvents`: `number`;
 `failedEvents`: `number`;
+`otherEvents`: `number`;
 `systemChangeEvents`: `number`;
 \};
 \}\>

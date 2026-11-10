@@ -62,7 +62,7 @@ layer to disable it; the others still run.
 | `RetrievalGuard`: ACL filter             | `enforceACL: true` checks each document's `requiredRole` / `acl` (on the result or in its `metadata`, as all built-in stores and `HybridRetriever` keep it) against `context.userPermissions`. Fails closed when `userPermissions` is missing. |
 | `RetrievalGuard`: freshness              | `maxAgeDays` (0 disables it).                                                                                                                                                                                                                  |
 | `RetrievalGuard`: injection scan         | `detectInjection: true` scans retrieved text; `injectionAction: 'remove'` (default) or `'flag'`.                                                                                                                                               |
-| `PostGenerationGuard`: PII detection     | Regex patterns for emails, phone numbers, SSNs and credit cards; detected PII is redacted in the answer, citations and evaluation details.                                                                                                     |
+| `PostGenerationGuard`: PII detection     | Regex patterns for emails, US phone numbers (10 digits, such as 555-123-4567), SSNs and credit cards; detected PII is redacted in the answer, citations and evaluation details.                                                                |
 | `PostGenerationGuard`: groundedness      | Flags answers below `groundednessThreshold` (default 0.3).                                                                                                                                                                                     |
 | `PostGenerationGuard`: length            | `minResponseLength` / `maxResponseLength`; PII is redacted before an over-long answer is cut.                                                                                                                                                  |
 | `detectInjection(text)`                  | The injection detector as a standalone function.                                                                                                                                                                                               |
@@ -125,8 +125,18 @@ continues (PII is still redacted).
   tokens are collected until the source's done chunk, then checked and
   redacted as one answer, and released through the same async iterable: one
   token chunk with the sanitized answer, then the done chunk (redacted
-  citations and evaluation, plus `guardrails`). Nothing reaches the caller
-  before the whole answer is checked. Buffering stops at the guard's
+  citations and evaluation, plus `guardrails`). The done chunk is built from
+  a fixed list: `success`, `error`, `timing`, citations and evaluation, the
+  cache's per-layer status, and `route` and `packing` when they have the
+  expected types. Its `guardrails` summary keeps the verdicts, issues and
+  counts but no raw text: `retrieval.results` and `retrieval.removed` list
+  documents by id, the query (`preRetrieval.sanitizedQuery`) is left out,
+  an injection issue names its pattern without the text it matched, and
+  `postGeneration.sanitizedOutput` is empty (the answer is in the token
+  chunk). So retrieved documents, the query and PII the guard found
+  don't reach the caller through a guarded stream; a non-streamed guarded
+  run returns the filtered `results` and the full summary. Nothing reaches
+  the caller before the whole answer is checked. Buffering stops at the guard's
   `maxResponseLength`, or at 1,000,000 characters when none is set; the
   source is then closed and the answer is treated as over-long (truncated, or
   blocked in strict mode). `options.timeout` and `options.signal` apply while
@@ -308,10 +318,15 @@ detailed scorecard. Headlines:
   attacks may slip through, and on public test sets the patterns miss
   most injections ([measured recall](./Benchmarks#guardrail-accuracy)).
   Add a model-based [detector](#plug-in-your-own-detectors) and output-side checks.
+- Encoded payloads are not decoded before scanning: an instruction
+  written in base64 passes the injection patterns. In the 3.9 bug hunt
+  they caught 0 of 15 base64 instructions in retrieved documents (3 of
+  the 15 documents were flagged, for a "[system]" marker in the text
+  around the payload, not for the payload).
 - PII detection uses heuristics; high-stakes compliance needs a
   dedicated classifier and human review.
-- Groundedness scoring is lexical plus numeric-consistency and polarity checks, with no LLM judge; paraphrase and units are not
-  checked. It's a confidence
+- Groundedness scoring is lexical plus numeric-consistency, polarity and (from 3.9.0) condition checks, with no LLM judge; paraphrase and units
+  it does not know (currencies, temperatures) are not checked. It's a confidence
   signal, not a guarantee.
 
 ## Stability

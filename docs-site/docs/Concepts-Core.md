@@ -12,24 +12,28 @@ The framework is internally organized around four conceptual modules.
 pipeline needs, regardless of which connectors, evaluators, or
 guardrails you bolt on top.
 
-> **Why "concepts" and not separate packages?**
-> Today everything ships as one npm package. The conceptual modules
-> describe **what code is responsible for what** so you can reason
-> about blast radius, security review scope, and dependency footprint
-> without us splitting the codebase. Splitting into scoped packages is on the
-> [roadmap](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/.github/PROJECT_ROADMAP.md) for 3.x.
+> **Concepts and packages.**
+> Since 3.2.0 each conceptual module is also an npm package:
+> `@devilsdev/rag-core`, `rag-connectors`, `rag-eval` and `rag-guardrails`.
+> The full package, `@devilsdev/rag-pipeline-utils`, re-exports all four, and
+> they share the same objects. See [Packages](./Packages) for what each one
+> installs. The concepts describe **what code is responsible for what** so
+> you can reason about blast radius, security review scope, and dependency
+> footprint.
 
 ## What's in rag-core
 
-| Surface                                                                              | Purpose                                                                                                                                                                     |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache })` | The factory. Wires the components into a runnable pipeline and returns `{ run, cleanup, cacheStats }`; `cache` is described in [Caching](./Caching).                        |
-| `run({ query, queryVector, options })`                                               | The main execution entry point. Resolves `{ success, query, results, answer, citations?, evaluation? }`; failures, timeouts and aborts resolve `{ success: false, error }`. |
-| `pluginRegistry`                                                                     | Holds registered loader, embedder, retriever, reranker, LLM and evaluator plugins by name. Validates them against the contract schemas in `contracts/`.                     |
-| Plugin contracts                                                                     | JSON files in `contracts/` that define the required methods for each plugin type.                                                                                           |
-| Cancellation                                                                         | Each run creates an `AbortController`; its signal reaches every component call. `options.signal` lets callers cancel and `options.timeout` aborts the run.                  |
-| `retry` / `withRetry`                                                                | Retry helpers with backoff for your own components (the built-in connectors already retry transient failures).                                                              |
-| `logger`                                                                             | `pino`-based structured logger.                                                                                                                                             |
+The table lists what is part of the core. `@devilsdev/rag-core` exports the factory and its building blocks (the retrieval, reranking, cache and cost classes are listed in [Packages](./Packages)); `pluginRegistry`, the contract files and `logger` come with the full package.
+
+| Surface                                                                                         | Purpose                                                                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRagPipeline({ loader, embedder, retriever, llm, reranker, registry, cache, telemetry })` | The factory. Wires the components into a runnable pipeline and returns `{ run, cleanup, cacheStats }`; `cache` is described in [Caching](./Caching) and `telemetry` in [Observability](./Observability#opentelemetry). |
+| `run({ query, queryVector, options })`                                                          | The main execution entry point. Resolves `{ success, query, results, answer, citations?, evaluation? }`; failures, timeouts and aborts resolve `{ success: false, error }`.                                            |
+| `pluginRegistry`                                                                                | Holds registered loader, embedder, retriever, reranker, LLM and evaluator plugins by name. Validates them against the contract schemas in `contracts/`.                                                                |
+| Plugin contracts                                                                                | JSON files in `contracts/` that define the required methods for each plugin type.                                                                                                                                      |
+| Cancellation                                                                                    | Each run creates an `AbortController`; its signal reaches every component call. `options.signal` lets callers cancel and `options.timeout` aborts the run.                                                             |
+| `retry` / `withRetry`                                                                           | Retry helpers with backoff for your own components (the built-in connectors already retry transient failures).                                                                                                         |
+| `logger`                                                                                        | `pino`-based structured logger.                                                                                                                                                                                        |
 
 ## Minimum viable pipeline
 

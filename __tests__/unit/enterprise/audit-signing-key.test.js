@@ -107,8 +107,10 @@ describe("a stored signing key", () => {
   test("is readable by its owner only", async () => {
     if (process.platform === "win32") return; // Windows ignores POSIX modes
     const dir = tmpDir();
-    await makeLogger(dir);
+    // The key is created with the log folders, on the first write
+    await writeRecords(await makeLogger(dir), 1);
     expect(fs.statSync(keyFile(dir)).mode & 0o777).toBe(0o600);
+    expect(fs.statSync(path.dirname(keyFile(dir))).mode & 0o777).toBe(0o700);
   });
 
   test("two loggers created together on an empty directory share one key", async () => {
@@ -124,8 +126,8 @@ describe("a stored signing key", () => {
 
   test("warns once per process, saying a stored key only detects casual changes", async () => {
     const dir = tmpDir();
-    await makeLogger(dir);
-    await makeLogger(dir);
+    await writeRecords(await makeLogger(dir), 1);
+    await writeRecords(await makeLogger(dir), 1);
 
     expect(warnings()).toHaveLength(1);
     const [message, options] = warnings()[0];

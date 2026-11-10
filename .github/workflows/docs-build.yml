@@ -7,6 +7,12 @@ on:
       - "docs/**"
       - "docs-site/**"
       - ".github/workflows/docs-build.yml"
+      # A release changes the site without touching docs-site/: the version
+      # comes from package.json and the Changelog page from CHANGELOG.md
+      # (docs-site/scripts/sync-changelog.js), so a release merge rebuilds it
+      - "CHANGELOG.md"
+      - "package.json"
+      - "release-notes/**"
   pull_request:
     branches: [main]
     paths:

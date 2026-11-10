@@ -2,7 +2,7 @@
 
 const { EventEmitter } = require('events');
 const { retry } = require('../utils/retry');
-const { tokenize, computeJaccardSimilarity } = require('../evaluate/scoring');
+const { tokenize } = require('../evaluate/scoring');
 const { embedQuery, canEmbed } = require('../utils/embed-query');
 
 /**
@@ -76,9 +76,15 @@ class IterativeRetriever extends EventEmitter {
     const resultText = results
       .map((r) => r?.content || r?.text || r?.chunk || '')
       .join(' ');
-    const resultTokens = tokenize(resultText);
+    const resultTokens = new Set(tokenize(resultText));
 
-    return computeJaccardSimilarity(queryTokens, resultTokens);
+    // The share of the query's words found in the results. (Jaccard
+    // similarity against all result words stayed low however well the
+    // results covered the query, so retrieval never converged.)
+    const words = new Set(queryTokens);
+    let found = 0;
+    for (const word of words) if (resultTokens.has(word)) found += 1;
+    return found / words.size;
   }
 
   /**

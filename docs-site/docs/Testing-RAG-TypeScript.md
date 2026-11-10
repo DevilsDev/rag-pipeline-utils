@@ -161,7 +161,7 @@ The first test runs a whole pipeline with `createTestPipeline()`: a `HashEmbedde
 
 - **`toBeGroundedIn()`**: every sentence is supported by the retrieved passages (`result.results`), checking content words, numbers and negation.
 - **`toCite("vacation")`**: at least one sentence is supported by the `vacation` document.
-- **`toContainNoPII()`**: no email address, phone number, US social security number or card number anywhere in the result.
+- **`toContainNoPII()`**: no email address, US phone number, US social security number or card number anywhere in the result.
 
 The second test is the failure this library exists for: an answer that says thirty days when the source says twenty. `not.toBeGroundedIn(sources)` passes, and `checkAnswer` returns the exact sentence in `unsupported`, so a failing test tells you what went wrong.
 

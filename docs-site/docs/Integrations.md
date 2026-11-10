@@ -126,7 +126,7 @@ How the adapter behaves:
 - **Embedding:** `embedder.embedBatch(texts)` uses `embedMany` when you pass it.
 - **Streaming:** `run({ options: { stream: true } })` streams through `streamText` when you pass it.
 - **Cancellation:** the run's `AbortSignal` is passed to every AI SDK call as `abortSignal`.
-- **Settings:** `settings` applies to every text call. Per-run `temperature`, `maxOutputTokens` and similar options override it.
+- **Settings:** `settings` applies to every text call. Per-run `temperature`, `maxOutputTokens` and similar options override it. A run's `topK` is the number of passages to retrieve and is not sent to the model; put a sampling topK in `settings.topK`.
 - **Providers:** any AI SDK provider works (OpenAI, Anthropic, Google, Mistral, Ollama and others), and so do the AI SDK's test models.
 
 Tested against AI SDK 6 and 7.
@@ -296,13 +296,13 @@ const agent = new Agent({
 });
 ```
 
-| Option         | Default    | What it does                                                                                                                               |
-| -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `injection`    | `true`     | Check the last user message; `false` to skip, or `PreRetrievalGuard` options                                                               |
-| `pii`          | `"redact"` | Replace emails, phone numbers, US SSNs and card numbers in the answer with `[REDACTED]`; `"block"` aborts the run instead; `false` to skip |
-| `piiPatterns`  |            | Extra patterns by name, such as `{ employeeId: /EMP-\d{5}/g }`                                                                             |
-| `piiDetectors` |            | (from 3.5.0) PII [detectors](./Concepts-Guardrails#plug-in-your-own-detectors) to run on the answer too; their matches are redacted        |
-| `piiBuiltIn`   | `true`     | (from 3.5.0) `false` uses only `piiDetectors`, not the built-in patterns                                                                   |
+| Option         | Default    | What it does                                                                                                                                  |
+| -------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `injection`    | `true`     | Check the last user message; `false` to skip, or `PreRetrievalGuard` options                                                                  |
+| `pii`          | `"redact"` | Replace emails, US phone numbers, US SSNs and card numbers in the answer with `[REDACTED]`; `"block"` aborts the run instead; `false` to skip |
+| `piiPatterns`  |            | Extra patterns by name, such as `{ employeeId: /EMP-\d{5}/g }`                                                                                |
+| `piiDetectors` |            | (from 3.5.0) PII [detectors](./Concepts-Guardrails#plug-in-your-own-detectors) to run on the answer too; their matches are redacted           |
+| `piiBuiltIn`   | `true`     | (from 3.5.0) `false` uses only `piiDetectors`, not the built-in patterns                                                                      |
 
 Both checks are pattern-based by default, unlike Mastra's `PromptInjectionDetector` and `PIIDetector`, which call a model: they are free and fast, and catch less. Use whichever fits, or both. From 3.5.0, `injection: { detectors }` and `piiDetectors` add a model or service of your own; with any detector configured, the processor's hooks return promises, which Mastra awaits.
 

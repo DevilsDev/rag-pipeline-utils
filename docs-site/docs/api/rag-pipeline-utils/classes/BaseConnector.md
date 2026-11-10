@@ -50,10 +50,55 @@ new BaseConnector(options?): BaseConnector;
 | ------------------------------------------- | --------- |
 | <a id="property-connected"></a> `connected` | `boolean` |
 | <a id="property-name"></a> `name`           | `string`  |
-| <a id="property-options"></a> `options`     | `object`  |
-| `options.name?`                             | `string`  |
+
+## Accessors
+
+### config
+
+#### Get Signature
+
+```ts
+get config(): object;
+```
+
+Connector settings. Secret fields such as `apiKey` are readable here but
+not enumerable, so they don't appear when the connector is logged.
+
+##### Returns
+
+`object`
+
+#### Set Signature
+
+```ts
+set config(value): void;
+```
+
+##### Parameters
+
+| Parameter | Type     |
+| --------- | -------- |
+| `value`   | `object` |
+
+##### Returns
+
+`void`
 
 ## Methods
+
+### \[custom\]()
+
+```ts
+[custom](): string;
+```
+
+What console.log and util.inspect show: no settings, no credentials.
+
+#### Returns
+
+`string`
+
+---
 
 ### connect()
 
@@ -129,6 +174,32 @@ Override in subclass for custom health checks.
 #### Returns
 
 `Promise`\<`boolean`\>
+
+---
+
+### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+What JSON.stringify sees: no settings, no credentials.
+
+#### Returns
+
+`object`
+
+##### connected
+
+```ts
+connected: boolean;
+```
+
+##### name
+
+```ts
+name: string;
+```
 
 ---
 

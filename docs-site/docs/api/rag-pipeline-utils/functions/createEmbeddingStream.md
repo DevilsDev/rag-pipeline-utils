@@ -10,24 +10,7 @@ function createEmbeddingStream(
   documents,
   embedder,
   options?,
-): AsyncGenerator<
-  | {
-      backpressure?: boolean;
-      error?: undefined;
-      id: string;
-      index: number;
-      progress: number;
-      vector: any;
-    }
-  | {
-      error: any;
-      id: string;
-      index: number;
-      progress: number;
-    },
-  void,
-  unknown
->;
+): AsyncGenerator<any, void, unknown>;
 ```
 
 Async generator that streams embedding results for a collection of documents.
@@ -54,21 +37,7 @@ without losing the rest of the stream.
 
 ## Returns
 
-`AsyncGenerator`\<
-\| \{
-`backpressure?`: `boolean`;
-`error?`: `undefined`;
-`id`: `string`;
-`index`: `number`;
-`progress`: `number`;
-`vector`: `any`;
-\}
-\| \{
-`error`: `any`;
-`id`: `string`;
-`index`: `number`;
-`progress`: `number`;
-\}, `void`, `unknown`\>
+`AsyncGenerator`\<`any`, `void`, `unknown`\>
 
 ## Yields
 

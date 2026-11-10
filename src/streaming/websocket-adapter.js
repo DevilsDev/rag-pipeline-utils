@@ -81,6 +81,7 @@ class WebSocketAdapter extends EventEmitter {
     }
 
     let connectionClosed = false;
+    let sentDone = false;
 
     // --- 2. Connection lifecycle handlers --------------------------------
     const onClose = () => {
@@ -88,7 +89,9 @@ class WebSocketAdapter extends EventEmitter {
     };
     const onError = (err) => {
       connectionClosed = true;
-      this.emit('error', err);
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', err);
+      }
     };
 
     if (typeof wsConnection.on === 'function') {
@@ -106,7 +109,12 @@ class WebSocketAdapter extends EventEmitter {
         }
 
         if (value && value.done) {
-          this._send(wsConnection, { type: this.config.doneType });
+          // Forward the chunk's extra fields (citations, evaluation, ...) once.
+          const { token: _t, done: _d, ...rest } = value;
+          const msg = { type: this.config.doneType };
+          if (Object.keys(rest).length > 0) msg.data = rest;
+          this._send(wsConnection, msg);
+          sentDone = true;
           this.emit('done');
           break;
         }
@@ -120,18 +128,19 @@ class WebSocketAdapter extends EventEmitter {
       }
 
       // Generator exhausted without explicit done flag
-      if (!connectionClosed && this._isOpen(wsConnection)) {
+      if (!sentDone && !connectionClosed && this._isOpen(wsConnection)) {
         this._send(wsConnection, { type: this.config.doneType });
         this.emit('done');
       }
     } catch (err) {
-      this.emit('error', err);
-
       if (!connectionClosed && this._isOpen(wsConnection)) {
         this._send(wsConnection, {
           type: this.config.errorType,
           data: { message: err.message || 'Internal streaming error' },
         });
+      }
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', err);
       }
     } finally {
       if (typeof wsConnection.removeListener === 'function') {

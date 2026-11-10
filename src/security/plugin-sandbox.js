@@ -1,6 +1,8 @@
 /**
- * @fileoverview Plugin sandboxing system for secure execution of third-party plugins.
- * Implements isolated-vm based isolation with resource limits, permission controls, and audit trails.
+ * @fileoverview Experimental and non-functional: an unfinished plugin sandbox
+ * built on isolated-vm. It runs no plugin code (execute() fails before calling
+ * a plugin), so plugins are not isolated; they run in-process with the host's
+ * permissions. Exported only from /experimental.
  *
  * @author DevilsDev Team
  * @since 2.1.0

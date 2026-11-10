@@ -15,11 +15,17 @@ const {
   StdioServerTransport,
 } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { z } = require("zod");
-const { LocalEmbedder, MemoryRetriever } = require("./library");
+const {
+  LocalEmbedder,
+  MemoryRetriever,
+  splitSentences,
+  splitClauses,
+} = require("./library");
 const {
   createCheckRunner,
   CheckTimeoutError,
   CheckQueueFullError,
+  CheckAbortedError,
 } = require("./check-runner");
 const { readPassages, SUPPORTED_EXTENSIONS } = require("./documents");
 const { version } = require("../package.json");
@@ -125,48 +131,14 @@ const toolError = (text) => ({
   content: [{ type: "text", text }],
 });
 
-// Sentence and clause splitting as in checkAnswer (rag-eval's
-// src/evaluate/scoring.js), so the counts below follow the comparisons it
-// makes.
-const CLAUSE_BOUNDARY_WORDS = new Set(
-  "but whereas although though while however yet and or except unlike".split(
-    " ",
-  ),
-);
-const tokenize = (text) =>
-  text
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .split(" ")
-    .filter(Boolean);
-const splitSentences = (text) =>
-  text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
-
-/** The word count of each clause of a sentence. */
-function clauseWords(sentence) {
-  const out = [];
-  for (const part of sentence.split(/[,;:()[\]]+/)) {
-    let words = 0;
-    for (const token of tokenize(part)) {
-      if (CLAUSE_BOUNDARY_WORDS.has(token)) {
-        if (words) out.push(words);
-        words = 0;
-      } else {
-        words += 1;
-      }
-    }
-    if (words) out.push(words);
-  }
-  return out;
-}
-
 /**
  * Whether checkAnswer can check `answer` against `docs` in bounded time. Its
  * cost grows with answer sentences × source characters (each sentence is
  * compared with every source) and with answer words × source clauses (each
  * clause of the answer is compared with the source's clauses; a sentence
- * with no words counts as one clause).
+ * with no words counts as one clause). It counts with rag-eval's own
+ * splitSentences and splitClauses, so the counts are the ones checkAnswer
+ * works with.
  *
  * @returns {string|null} An error message, or null when within the limits
  */
@@ -179,12 +151,12 @@ function checkSize(answer, docs, { maxClausePairs, maxSentenceSourceChars }) {
   }
   let answerWords = 0;
   for (const sentence of sentences) {
-    for (const words of clauseWords(sentence)) answerWords += words;
+    for (const clause of splitClauses(sentence)) answerWords += clause.length;
   }
   let sourceClauses = 0;
   for (const doc of docs) {
     for (const sentence of splitSentences(doc.content)) {
-      sourceClauses += Math.max(1, clauseWords(sentence).length);
+      sourceClauses += Math.max(1, splitClauses(sentence).length);
     }
   }
   if (answerWords * sourceClauses > maxClausePairs) {
@@ -356,7 +328,7 @@ function createServer(
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ answer, question, sources, topK }) => {
+    async ({ answer, question, sources, topK }, extra) => {
       let docs;
       if (sources) {
         docs = sources.map((s, i) =>
@@ -381,13 +353,16 @@ function createServer(
       if (tooLarge) return toolError(tooLarge);
       let check;
       try {
-        check = await checks.run({
-          answer,
-          question,
-          sources: docs,
-          evaluate: false,
-        });
+        // extra.signal aborts when the client cancels the request: the call
+        // leaves the queue, or its running check is stopped
+        check = await checks.run(
+          { answer, question, sources: docs, evaluate: false },
+          { signal: extra?.signal },
+        );
       } catch (error) {
+        if (error instanceof CheckAbortedError) {
+          return toolError("check_answer was cancelled.");
+        }
         if (error instanceof CheckTimeoutError) {
           return toolError(
             `check_answer took longer than ${checkTimeoutMs} ms and was stopped. Shorten the answer or sources, or raise --check-timeout-ms.`,
@@ -559,6 +534,16 @@ async function main(argv) {
   }
   const server = createServer(index, { defaultTopK, folder, ...limits });
   await server.connect(new StdioServerTransport());
+  // The client is gone when stdin ends: close, which stops the check workers
+  // and rejects the queue, so the process can exit.
+  let closing = false;
+  const closeOnStdinEnd = () => {
+    if (closing) return;
+    closing = true;
+    server.close().catch(() => {});
+  };
+  process.stdin.once("end", closeOnStdinEnd);
+  process.stdin.once("close", closeOnStdinEnd);
   log(
     `indexed ${index.size} passages from ${index.files} files in ${folder}; serving search_documents and check_answer over stdio`,
   );

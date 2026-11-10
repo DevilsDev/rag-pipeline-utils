@@ -5,6 +5,8 @@
  * Author: Ali Kahwaji
  */
 
+const { normalizeText, normalizeWithOffsets } = require('./normalize-text');
+
 /**
  * Tokenize a string by words
  * @param {string} text
@@ -13,8 +15,9 @@
 function tokenize(text) {
   // Unicode-aware: keep letters/digits in any script, drop apostrophes so
   // "don't" stays one token, and treat every other character (including
-  // newlines and hyphens) as a separator.
-  return String(text)
+  // newlines and hyphens) as a separator. Normalised first, so a
+  // zero-width space doesn't split a word and full-width digits are digits.
+  return normalizeText(text)
     .toLowerCase()
     .replace(/['’]/g, '')
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
@@ -87,14 +90,130 @@ function scoreAnswer(_actual, _expected) {
   };
 }
 
+/** A sentence end: `.`, `!` or `?`, closing quotes or brackets, then space. */
+const SENTENCE_END = /[.!?]["'’”)\]]*\s+/gu;
+
 /**
- * Split text into sentences on sentence-ending punctuation
+ * A sentence end with no space after it: "works.Wireless", "$65.Alcohol"
+ * (BH-3). Two letters or digits before it, so "U.S.Army" and "e.g.The"
+ * stay whole.
+ */
+const UNSPACED_END = /(?<=[\p{L}\p{N}]{2}[.!?])(?=\p{Lu})/gu;
+
+/**
+ * A Chinese or Japanese sentence end, which has no space after it: "。",
+ * or "！" / "？" (NFKC "!" / "?") after a Chinese or Japanese character,
+ * with any closing quotes or brackets.
+ */
+const CJK_END =
+  /(?:。|(?<=[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])[!?])["'’”)\]」』）]*\s*/gu;
+
+/** A line that starts a list item or heading: "- ", "* ", "• ", "2. ", "3) ", "# ". */
+const LIST_ITEM = /^[ \t]*(?:[-*•‣◦▪]|\d{1,3}[.)]|#{1,6})[ \t]/u;
+
+/**
+ * Words whose full stop doesn't end a sentence even before a capital:
+ * titles ("Dr. Lee") and Latin abbreviations ("e.g. Paris"). Before a
+ * lowercase word no full stop ends a sentence ("10 a.m. and", "the U.S.
+ * government"), so these are only the ones commonly followed by a capital.
+ */
+const ABBREVIATIONS = new Set([
+  'mr',
+  'mrs',
+  'ms',
+  'dr',
+  'prof',
+  'sr',
+  'jr',
+  'st',
+  'vs',
+  'e.g',
+  'i.e',
+  'cf',
+]);
+
+/**
+ * Where each sentence of a normalised text starts, after the first.
+ * @param {string} text - normalised text
+ * @returns {number[]}
+ */
+function sentenceStarts(text) {
+  const starts = new Set();
+  for (const match of text.matchAll(SENTENCE_END)) {
+    const end = match.index + match[0].length;
+    if (end >= text.length) continue;
+    if (text[match.index] === '.') {
+      if (/\p{Ll}/u.test(text[end])) continue;
+      // Look back a few characters only, so long texts split in linear time
+      const from = Math.max(0, match.index - 12);
+      const before = text.slice(from, match.index);
+      // The number of a list item: "1. Annual leave"
+      const listNumber =
+        from === 0 ? /(?:^|\n)[ \t]*\d{1,3}$/ : /\n[ \t]*\d{1,3}$/;
+      if (listNumber.test(before)) continue;
+      const word = /[\p{L}.]*$/u.exec(before)[0];
+      if (ABBREVIATIONS.has(word.toLowerCase())) continue;
+      // "form No. 7": a capitalised "No." before a number is an abbreviation
+      if (word === 'No' && /\p{N}/u.test(text[end])) continue;
+    }
+    starts.add(end);
+  }
+  for (const match of text.matchAll(UNSPACED_END)) starts.add(match.index);
+  for (const match of text.matchAll(CJK_END)) {
+    const end = match.index + match[0].length;
+    if (end < text.length) starts.add(end);
+  }
+
+  // Lines: a blank line ends a sentence, and so does the line break before
+  // or after a list item or heading, whose lines often have no full stop
+  // (BH-4). A single line break inside a paragraph doesn't, so hard-wrapped
+  // text stays whole.
+  const lines = text.split('\n');
+  let at = 0;
+  for (let i = 0; i < lines.length - 1; i++) {
+    at += lines[i].length + 1;
+    const next = lines[i + 1];
+    if (
+      lines[i].trim() === '' ||
+      next.trim() === '' ||
+      LIST_ITEM.test(lines[i]) ||
+      LIST_ITEM.test(next)
+    ) {
+      starts.add(at);
+    }
+  }
+  return [...starts].sort((a, b) => a - b);
+}
+
+/**
+ * Split text into sentences. Boundaries are found on the normalised text
+ * (see normalize-text.js), so zero-width characters, no-break spaces and
+ * full-width punctuation don't move them; the sentences returned are the
+ * original text, trimmed.
+ *
+ * A sentence ends at `.`, `!` or `?` followed by a space, or directly by a
+ * capital after a lowercase word ("works.Wireless"); a full stop before a
+ * lowercase word ("10 a.m. and") or after a title or Latin abbreviation
+ * ("Dr. Lee", "e.g. Paris") doesn't end one. A blank line, and the line
+ * break around a list item or heading, end one too.
+ *
  * @param {string} text
  * @returns {string[]}
  */
 function splitSentences(text) {
   if (!text || typeof text !== 'string') return [];
-  return text.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+  const normalised = normalizeWithOffsets(text);
+  const cuts = sentenceStarts(normalised.text).map(
+    (i) => normalised.offsets[i],
+  );
+  const sentences = [];
+  let from = 0;
+  for (const cut of [...cuts, text.length]) {
+    const sentence = text.slice(from, cut).trim();
+    if (normalizeText(sentence).trim().length > 0) sentences.push(sentence);
+    from = cut;
+  }
+  return sentences;
 }
 
 /**
@@ -181,9 +300,16 @@ const NUMBER_SCALES = {
 
 /**
  * Digit numbers, optionally with thousands separators or a decimal part (a
- * trailing "%" is ignored). The lookbehind skips digits glued to letters (BM25).
+ * trailing "%" is ignored). The lookbehind skips digits glued to letters (BM25),
+ * but not to Chinese or Japanese characters, which aren't separated by spaces
+ * ("年間20日"). A minus sign ("-" or "−") not after a letter or digit is part
+ * of the number ("-18", not "5-10" or "COVID-19").
  */
-const DIGIT_NUMBER_RE = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)*/gu;
+const DIGIT_NUMBER_RE =
+  /(?:(?<![\p{L}\p{N}])[-−])?(?<!\p{N}|(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}])\p{L})\d+(?:[.,]\d+)*/gu;
+
+/** A leading minus sign of a number DIGIT_NUMBER_RE or QUANTITY_TOKEN_RE found. */
+const MINUS = /^[-−]/;
 
 /**
  * Turn one run of number words into its value: "twenty five" -> 25,
@@ -207,10 +333,32 @@ function parseNumberWords(words) {
   return total + current;
 }
 
+/** Digits, then a scale word: "5 million", "2.5 billion", "12 thousand". */
+const SCALED_DIGITS_RE =
+  /(?<![\p{L}\p{N}.,])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s+(thousand|million|billion|trillion)\b/giu;
+
+/**
+ * A text with "<digits> <scale word>" written as one number ("5 million"
+ * as "5000000"), so it matches the same number in digits.
+ * @param {string} text
+ * @returns {string}
+ */
+function withScaledDigits(text) {
+  return text.replace(SCALED_DIGITS_RE, (whole, digits, scale) => {
+    const value =
+      Number(digits.replace(/,/g, '')) * NUMBER_SCALES[scale.toLowerCase()];
+    // toPrecision: 1.1 * 1e9 is 1100000000.0000002 in floating point
+    return Number.isFinite(value)
+      ? String(Number(value.toPrecision(15)))
+      : whole;
+  });
+}
+
 /**
  * Extract the numbers stated in a text, as normalised value strings, so
  * "20", "20%", "twenty" and "Twenty" all yield "20", "1,000" yields "1000"
- * and "2.5" yields "2.5".
+ * and "2.5" yields "2.5". Digits followed by thousand, million, billion or
+ * trillion are one value: "5 million" and "5,000,000" both yield "5000000".
  *
  * @param {string} text
  * @returns {{ values: string[], parts: string[] }} values: one entry per
@@ -222,16 +370,19 @@ function extractNumbers(text) {
   const values = [];
   const parts = [];
   if (!text || typeof text !== 'string') return { values, parts };
+  text = withScaledDigits(text);
 
   for (const match of text.matchAll(DIGIT_NUMBER_RE)) {
-    const raw = match[0];
+    const negative = MINUS.test(match[0]);
+    const raw = negative ? match[0].slice(1) : match[0];
     const pieces = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw)
       ? [raw.replace(/,/g, '')]
       : raw.split(',');
-    for (const piece of pieces) {
-      const n = Number(piece);
+    pieces.forEach((piece, i) => {
+      // the sign belongs to the first number of a list ("-1,2")
+      const n = Number(piece) * (negative && i === 0 ? -1 : 1);
       if (Number.isFinite(n)) values.push(String(n));
-    }
+    });
   }
 
   const words = text.toLowerCase().split(/[^\p{L}]+/u);
@@ -327,9 +478,16 @@ const FRACTION_WORDS = {
 };
 
 const QUANTITY_TOKEN_RE = /\d+(?:[.,:]\d+)*|\p{L}+|%/gu;
+/** QUANTITY_TOKEN_RE with a number's minus sign ("-3%"; see DIGIT_NUMBER_RE). */
+const SIGNED_QUANTITY_TOKEN_RE =
+  /(?:(?<![\p{L}\p{N}])[-−](?=\d))?\d+(?:[.,:]\d+)*|\p{L}+|%/gu;
 
-/** A digit token's value ("2,000" is 2000, "1.5" is 1.5); null for clock times and lists. */
+/** A digit token's value ("2,000" is 2000, "1.5" is 1.5, "-3" is -3); null for clock times and lists. */
 function digitValue(raw) {
+  if (MINUS.test(raw)) {
+    const n = digitValue(raw.slice(1));
+    return n === null ? null : -n;
+  }
   if (raw.includes(':')) return null;
   if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(raw))
     return Number(raw.replace(/,/g, ''));
@@ -353,7 +511,7 @@ const isNumberWord = (w) =>
 function quantities(text) {
   const items = [];
   const unitWords = new Set();
-  const tokens = [...String(text || '').matchAll(QUANTITY_TOKEN_RE)].map(
+  const tokens = [...String(text || '').matchAll(SIGNED_QUANTITY_TOKEN_RE)].map(
     (m) => ({
       t: m[0].toLowerCase(),
       start: m.index,
@@ -429,7 +587,7 @@ function quantities(text) {
     let value = null;
     let end = i;
     let words = false;
-    if (/^\d/.test(t)) {
+    if (/^[-−]?\d/.test(t)) {
       value = digitValue(t);
     } else if (isNumberWord(t)) {
       let j = i;
@@ -475,9 +633,83 @@ function quantities(text) {
   return { items, unitWords };
 }
 
-// The same source is checked against every sentence of an answer: keep the
-// last few sources' quantities
-const docQuantityCache = new Map();
+/**
+ * A source or an answer prepared for the claim checks. The same source is
+ * checked against every sentence of an answer, so what the checks read from
+ * it (its normalised text, tokens, sentences, clauses, numbers) is worked
+ * out on first use and kept on this object, not redone per sentence.
+ */
+const PREPARED = Symbol('prepared text');
+
+/**
+ * Prepare a source text for repeated checks. Pass the result where a check
+ * takes the document text; a prepared source is returned unchanged.
+ * @param {string|object} text
+ * @returns {object}
+ */
+function prepareSource(text) {
+  if (text && text[PREPARED] === 'source') return text;
+  return { [PREPARED]: 'source', input: text, memo: {}, byAnswer: new WeakMap() };
+}
+
+/** Prepared texts of document objects, so every check of one call shares them. */
+const preparedByDocument = new WeakMap();
+
+/**
+ * prepareSource() of a document object's text, shared by the checks that
+ * read the same document (citations, faithfulness, the judge's reasons), so
+ * checkAnswer prepares each source once. A changed text is prepared again.
+ * @param {object} doc
+ * @param {string} text - the document's text as the caller reads it
+ * @returns {object}
+ */
+function prepareDocument(doc, text) {
+  if (!doc || typeof doc !== 'object') return prepareSource(text);
+  let prepared = preparedByDocument.get(doc);
+  if (!prepared || prepared.input !== text) {
+    prepared = prepareSource(text);
+    preparedByDocument.set(doc, prepared);
+  }
+  return prepared;
+}
+
+/**
+ * Prepare an answer whose sentences may restate a source's condition (see
+ * checkConditionConsistency).
+ * @param {string|object} text
+ * @returns {object}
+ */
+function prepareAnswer(text) {
+  if (text && text[PREPARED] === 'answer') return text;
+  return { [PREPARED]: 'answer', input: text, memo: {} };
+}
+
+const isPreparedAnswer = (value) =>
+  Boolean(value) && value[PREPARED] === 'answer';
+const isPreparedSource = (value) =>
+  Boolean(value) && value[PREPARED] === 'source';
+
+/** One analysis of a prepared text, computed on first use. */
+function once(prepared, key, compute) {
+  const { memo } = prepared;
+  if (!(key in memo)) memo[key] = compute();
+  return memo[key];
+}
+
+/** A document's text as the checks read it, normalised (see normalize-text.js). */
+function sourceNorm(doc) {
+  const prepared = prepareSource(doc);
+  return once(prepared, 'norm', () => normalizeText(prepared.input));
+}
+
+/** A source's tokens, as a Set (the words a claim can match). */
+function sourceTokenSet(doc) {
+  const prepared = prepareSource(doc);
+  return once(prepared, 'tokens', () => new Set(tokenize(prepared.input)));
+}
+
+// The same claim is checked against every source: keep the last few claims'
+// quantities
 const claimQuantityCache = new Map();
 function cachedQuantities(cache, text) {
   const key = String(text || '');
@@ -489,7 +721,6 @@ function cachedQuantities(cache, text) {
   }
   return hit;
 }
-const docQuantities = (text) => cachedQuantities(docQuantityCache, text);
 
 /** Whether two quantities of one kind are equal (thirds are compared to the nearest point). */
 function sameQuantity(a, b) {
@@ -498,6 +729,85 @@ function sameQuantity(a, b) {
       ? 1
       : Math.max(Math.abs(a.value), Math.abs(b.value)) * 1e-9;
   return Math.abs(a.value - b.value) <= tolerance;
+}
+
+/** A quantity's unit and whether it is a fraction ("three quarters of"). */
+const unitKey = (q) => `${q.unit} ${Boolean(q.fraction)}`;
+
+/**
+ * A source's quantities indexed by kind, then by value, so a claim
+ * quantity is looked up instead of compared with every one: per kind, how
+ * many there are, the numbers as written, and the distinct values in order
+ * (exact and approximate apart), each with the units it is stated in.
+ */
+function indexQuantities({ items, unitWords }) {
+  const kinds = new Map();
+  for (const d of items) {
+    let kind = kinds.get(d.kind);
+    if (!kind) {
+      kind = { count: 0, numbers: new Set(), values: new Map() };
+      kinds.set(d.kind, kind);
+    }
+    kind.count += 1;
+    kind.numbers.add(d.number);
+    const key = `${Boolean(d.approx)} ${d.value}`;
+    let entry = kind.values.get(key);
+    if (!entry) {
+      entry = { value: d.value, approx: Boolean(d.approx), units: new Set() };
+      kind.values.set(key, entry);
+    }
+    entry.units.add(unitKey(d));
+  }
+  for (const kind of kinds.values()) {
+    const entries = [...kind.values.values()];
+    const byValue = (a, b) => a.value - b.value;
+    const finite = (e) => Number.isFinite(e.value);
+    kind.exact = entries.filter((e) => !e.approx && finite(e)).sort(byValue);
+    kind.approx = entries.filter((e) => e.approx && finite(e)).sort(byValue);
+    // Not finite ("1" followed by hundreds of zeros): checked one by one
+    kind.other = entries.filter((e) => !finite(e));
+  }
+  return { kinds, unitWords };
+}
+
+/** The first index of sorted entries whose value is at least `value`. */
+function lowerBound(entries, value) {
+  let lo = 0;
+  let hi = entries.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (entries[mid].value < value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Whether a source states a quantity equal to `q` (sameQuantity), optionally
+ * only in the unit `unit` (unitKey). Equal values lie within a narrow
+ * window around q's value: 1 when either side is approximate, otherwise
+ * just over q's value times sameQuantity's relative tolerance.
+ */
+function statesQuantity(kind, q, unit) {
+  const fits = (e) => sameQuantity(e, q) && (!unit || e.units.has(unit));
+  if (!Number.isFinite(q.value)) {
+    return [...kind.exact, ...kind.approx, ...kind.other].some(fits);
+  }
+  const scan = (entries, width) => {
+    for (
+      let i = lowerBound(entries, q.value - width);
+      i < entries.length && entries[i].value <= q.value + width;
+      i++
+    ) {
+      if (fits(entries[i])) return true;
+    }
+    return false;
+  };
+  return (
+    scan(kind.exact, q.approx ? 1 : Math.abs(q.value) * 1.1e-9) ||
+    scan(kind.approx, 1) ||
+    kind.other.some(fits)
+  );
 }
 
 /** Hours of the clock times ("17:00") in a text, each also on a 12-hour clock. */
@@ -521,12 +831,12 @@ function clockHours(text) {
  * "5 pm" must be a 17:00 in the source, and a bare hour after "at", "from",
  * "to" or "until" ("open from 9 to 5") an hour of the source on a 12-hour
  * clock. Returns the claim's spans it checked and the times it didn't find.
+ * The second argument is clockHours() of the source.
  */
-function checkClockTimes(claimText, docText) {
+function checkClockTimes(claimText, { hours24, hours12 }) {
   const spans = [];
   const matched = [];
   const missing = [];
-  const { hours24, hours12 } = clockHours(docText);
   if (hours24.size === 0) return { spans, matched, missing };
   const tokens = [...String(claimText || '').matchAll(QUANTITY_TOKEN_RE)].map(
     (m) => ({
@@ -578,13 +888,19 @@ function endsTime(text, end, next) {
   return AFTER_HOUR.has(next);
 }
 
-/** A text with these [start, end) spans blanked out. */
+/** A text with these [start, end) spans blanked out, in one pass. */
 function withoutSpans(text, spans) {
-  let out = String(text || '');
-  for (const [start, end] of [...spans].sort((a, b) => b[0] - a[0])) {
-    out = out.slice(0, start) + ' '.repeat(end - start) + out.slice(end);
+  const out = String(text || '');
+  const pieces = [];
+  let at = 0;
+  for (const [start, end] of [...spans].sort((a, b) => a[0] - b[0])) {
+    const from = Math.max(start, at);
+    if (end <= from) continue;
+    pieces.push(out.slice(at, from), ' '.repeat(end - from));
+    at = end;
   }
-  return out;
+  pieces.push(out.slice(at));
+  return pieces.join('');
 }
 
 /**
@@ -603,6 +919,32 @@ function footnotedYears(text) {
 }
 
 /**
+ * What the number check reads from a source, prepared once per source: the
+ * numbers it states (with each number word on its own, and years with a
+ * footnote marker), its quantities, clock times, and every number, month
+ * and identifier it states.
+ */
+function sourceNumbers(doc) {
+  return once(prepareSource(doc), 'numbers', () => {
+    const text = sourceNorm(doc);
+    const parts = new Set([
+      ...extractNumbers(text).parts,
+      ...footnotedYears(text),
+    ]);
+    return {
+      parts,
+      quantities: indexQuantities(quantities(text)),
+      clock: clockHours(text),
+      numbers: new Set([
+        ...parts,
+        ...docMonths(text).map((m) => `month:${m}`),
+        ...identifiers(text),
+      ]),
+    };
+  });
+}
+
+/**
  * Numeric consistency between a claim and a document: every number the claim
  * states (digits, decimals, percentages or number words) must also appear in
  * the document. Lexical overlap alone would ground "thirty days" against a
@@ -616,47 +958,44 @@ function footnotedYears(text) {
  *   counts them as matched
  */
 function checkNumericConsistency(claimText, docText) {
+  claimText = withoutMarkers(claimText);
+  const source = sourceNumbers(docText);
   const claim = withoutReferences(claimText);
-  const docParts = new Set([
-    ...extractNumbers(docText).parts,
-    ...footnotedYears(docText),
-  ]);
+  const docParts = source.parts;
 
   // Quantities with a unit (3.7): "2 kg" is checked as a mass, so it
   // matches "2,000 grams" and not "2 pounds". A quantity the source states
   // in no comparable unit falls back to the plain number check, unless it
   // was written in words ("three quarters of"), which has no plain number.
-  const doc = docQuantities(docText);
+  const doc = source.quantities;
   const spans = [];
   const matched = [];
   const missing = [];
   const claimNumbers = [];
   for (const q of cachedQuantities(claimQuantityCache, claim).items) {
-    const sameKind = doc.items.filter((d) => d.kind === q.kind);
-    const equal = sameKind.filter((d) => sameQuantity(d, q));
+    const kind = doc.kinds.get(q.kind);
+    const sameKind = kind ? kind.count : 0;
+    const equal = kind ? statesQuantity(kind, q) : false;
     const found =
-      equal.length > 0 ||
+      equal ||
       // the number with the same unit word elsewhere ("20 days" in "20
       // vacation days"), or with no other unit of this kind ("seven days a
       // week" against a source with "7:00")
       (docParts.has(q.number) &&
-        (doc.unitWords.has(q.unit) ||
-          !sameKind.some((d) => d.number === q.number)));
-    if (sameKind.length === 0 && !q.words && !found) continue;
+        (doc.unitWords.has(q.unit) || !(kind && kind.numbers.has(q.number))));
+    if (sameKind === 0 && !q.words && !found) continue;
     spans.push([q.start, q.end]);
     // Its words count as supported only when the source states it in
     // another unit ("90 minutes" for "one and a half hours"); "20 days"
     // against "twenty days" is left to the overlap, as before
-    const converted = (d) =>
-      d.unit !== q.unit || Boolean(d.fraction) !== Boolean(q.fraction);
-    if (equal.length > 0 && equal.every(converted)) {
+    if (equal && !statesQuantity(kind, q, unitKey(q))) {
       matched.push([q.start, q.end]);
     }
     claimNumbers.push(`${q.kind}:${q.number} ${q.unit}`);
-    if (!found && (sameKind.length > 0 || !q.words))
+    if (!found && (sameKind > 0 || !q.words))
       missing.push(`${q.kind}:${q.number} ${q.unit}`);
   }
-  const clock = checkClockTimes(claim, docText);
+  const clock = checkClockTimes(claim, source.clock);
   spans.push(...clock.spans);
   matched.push(...clock.matched);
   missing.push(...clock.missing);
@@ -675,11 +1014,7 @@ function checkNumericConsistency(claimText, docText) {
   if (claimNumbers.length === 0) {
     return { consistent: true, claimNumbers, missing: [], matchedWords };
   }
-  const docNumbers = new Set([
-    ...docParts,
-    ...docMonths(docText).map((m) => `month:${m}`),
-    ...identifiers(docText),
-  ]);
+  const docNumbers = source.numbers;
   missing.push(...plain.filter((n) => !docNumbers.has(n)));
   return {
     consistent: missing.length === 0,
@@ -717,6 +1052,31 @@ function identifiers(text) {
       ),
     ),
   ];
+}
+
+/**
+ * Citation markers in a claim: bracketed numbers ("[1]", ".[2]", "[1, 3]",
+ * "[2-4]"), superscript digits after punctuation or a word of three or more
+ * letters ("year.¹", "year¹"; not after a digit or a short unit, so "10³"
+ * and "m²" stay), and the number of a list item at its start ("1. ",
+ * "2) "). They say where a sentence comes from or where it sits in a list,
+ * not a number its source must state.
+ */
+const SUPERSCRIPT_MARKER_RE = /(?<=\p{P}|\p{L}{3})[⁰¹²³⁴⁵⁶⁷⁸⁹]+/gu;
+const BRACKET_MARKER_RE = /\[\s*\d{1,3}(?:\s*[,;–-]\s*\d{1,3})*\s*\]/g;
+const LIST_NUMBER_RE = /^\s*\d{1,3}[.)]\s+/;
+
+/**
+ * A claim's text, normalised, without citation markers. Superscripts are
+ * removed before normalising, which would turn them into plain digits.
+ * @param {string} text
+ * @returns {string}
+ */
+function withoutMarkers(text) {
+  if (typeof text !== 'string') return normalizeText(text);
+  return normalizeText(text.replace(SUPERSCRIPT_MARKER_RE, ' '))
+    .replace(LIST_NUMBER_RE, '')
+    .replace(BRACKET_MARKER_RE, ' ');
 }
 
 /** A claim's text without reference phrases and identifier numbers. */
@@ -836,6 +1196,19 @@ const FRAMING_WORDS = new Set(
   ),
 );
 
+/**
+ * Split a sentence into clauses as the polarity check reads them: at
+ * commas, semicolons, colons and brackets, and at but, whereas, although,
+ * though, while, however, yet, and, or, except and unlike (left out). Each
+ * clause is its tokens (see tokenize). The text is normalised first.
+ *
+ * @param {string} text
+ * @returns {string[][]}
+ */
+function splitClauses(text) {
+  return clauseTokens(normalizeText(text));
+}
+
 /** A sentence's clauses, each as its tokens. */
 function clauseTokens(text) {
   const out = [];
@@ -870,6 +1243,30 @@ const NON_NEGATING_NEXT = {
   nothing: new Set(['but']),
 };
 
+/** Comparatives that make "no ... than" a limit, not a negation ("no later than"). */
+const NO_COMPARATIVES = new Set(
+  'more fewer less later earlier longer shorter greater sooner higher lower'.split(
+    ' ',
+  ),
+);
+
+/**
+ * Whether the "no" at tokens[i] states a limit, a price or a number rather
+ * than a negation: "no more than 8", "no later than Friday", "at no cost",
+ * "at no extra charge", "form No. 7" (tokenized "no 7").
+ */
+function isNonNegatingNo(tokens, i) {
+  const next = tokens[i + 1];
+  if (next === undefined) return false;
+  if (NO_COMPARATIVES.has(next) && tokens[i + 2] === 'than') return true;
+  if (/^\d/.test(next)) return true;
+  if (tokens[i - 1] === 'at') {
+    const priced = (w) => w === 'cost' || w === 'charge';
+    return priced(next) || priced(tokens[i + 2]);
+  }
+  return false;
+}
+
 /**
  * Whether a token list reads as negated: an odd number of negations, so
  * "not without approval" counts as positive.
@@ -888,9 +1285,73 @@ function isNegated(tokens) {
     if (NON_NEGATING_NEXT[t] && NON_NEGATING_NEXT[t].has(tokens[i + 1])) {
       continue;
     }
+    if (t === 'no' && isNonNegatingNo(tokens, i)) continue;
     count += 1;
   }
   return count % 2 === 1;
+}
+
+/**
+ * The document sentences sharing most of these (distinct) words, in
+ * document order, looked up in a word -> sentence index.
+ * @param {Iterable<string>} words
+ * @param {Map<string, number[]>} byWord
+ * @returns {number[]}
+ */
+function closest(words, byWord) {
+  const shared = new Map();
+  for (const w of words) {
+    for (const i of byWord.get(w) || []) shared.set(i, (shared.get(i) || 0) + 1);
+  }
+  let best = 0;
+  for (const n of shared.values()) if (n > best) best = n;
+  const out = [];
+  for (const [i, n] of shared) if (n === best) out.push(i);
+  return out.sort((a, b) => a - b);
+}
+
+/** Add each item's keys to a key -> item indices index, each index once per key. */
+function indexBy(items, keysOf) {
+  const index = new Map();
+  items.forEach((item, i) => {
+    for (const key of keysOf(item)) {
+      const list = index.get(key);
+      if (!list) index.set(key, [i]);
+      else if (list[list.length - 1] !== i) list.push(i);
+    }
+  });
+  return index;
+}
+
+/**
+ * Most claim clauses whose verdict one source sentence keeps (see
+ * checkPolarityConsistency). A source reused across many answers would
+ * otherwise keep one entry per distinct clause; past the cap, verdicts are
+ * worked out each time instead of kept.
+ */
+const MAX_AGREED_PER_SENTENCE = 1024;
+
+/**
+ * A source's sentences as the polarity check reads them: each clause's
+ * negation and stems, a stem -> clause index per sentence and a stem ->
+ * sentence index, prepared once per source.
+ */
+function polaritySentences(doc) {
+  return once(prepareSource(doc), 'polarity', () => {
+    const sentences = splitSentences(sourceNorm(doc)).map((sentence) => {
+      const clauses = clauseTokens(sentence).map((tokens, i) => ({
+        negated: isNegated(tokens),
+        stems: new Set(tokens.map(stem)),
+        // "... but was not better than Y", "... but did not reduce Y": no
+        // subject of its own, so it continues the first clause's (3.7)
+        continues: i > 0 && ELLIPTICAL_START.has(tokens[0]),
+      }));
+      const clausesByStem = indexBy(clauses, (c) => c.stems);
+      return { sentence, clauses, clausesByStem, agreed: new Map() };
+    });
+    const sentencesByStem = indexBy(sentences, (s) => s.clausesByStem.keys());
+    return { sentences, sentencesByStem };
+  });
 }
 
 /**
@@ -912,6 +1373,8 @@ function isNegated(tokens) {
  *   sourceSentence: the closest document sentence the claim was compared with
  */
 function checkPolarityConsistency(claimText, docText) {
+  claimText = normalizeText(claimText);
+  const doc = prepareSource(docText);
   // Negation is scoped to its clause (3.6): "requires X but not Y" negates
   // Y, not X, and "may not use X and may not park Y" has two negated
   // clauses, not an even count that reads as positive. Each clause of the
@@ -939,17 +1402,7 @@ function checkPolarityConsistency(claimText, docText) {
     return { consistent: true, claimNegated, sourceSentence: null };
   }
 
-  const sentences = splitSentences(docText).map((sentence) => {
-    const clauses = clauseTokens(sentence).map((tokens, i) => ({
-      negated: isNegated(tokens),
-      stems: new Set(tokens.map(stem)),
-      // "... but was not better than Y", "... but did not reduce Y": no
-      // subject of its own, so it continues the first clause's (3.7)
-      continues: i > 0 && ELLIPTICAL_START.has(tokens[0]),
-    }));
-    const stems = new Set(clauses.flatMap((c) => [...c.stems]));
-    return { sentence, clauses, stems };
-  });
+  const { sentences, sentencesByStem } = polaritySentences(doc);
 
   /**
    * Whether one claim clause agrees with one document sentence. The claim's
@@ -957,14 +1410,19 @@ function checkPolarityConsistency(claimText, docText) {
    * clause must be negated exactly when the claim clause is ("allowed on
    * Mondays" fails against "allowed on Fridays, whereas it is not allowed
    * on Mondays", because "Mondays" is only in the negated clause). With no
-   * such word, the closest clause decides.
+   * such word, the closest clause decides. The sentence's clauses are
+   * looked up by stem, and an answer of repeated clauses is decided once
+   * per sentence.
    */
   const agrees = (clause, sentence) => {
     const negated = isNegated(clause.tokens);
+    const key = `${negated} ${clause.words.join(' ')}`;
+    if (sentence.agreed.has(key)) return sentence.agreed.get(key);
+    const owners = (w) => sentence.clausesByStem.get(w) || [];
     let distinctive = clause.words
-      .map((w) => sentence.clauses.filter((c) => c.stems.has(w)))
-      .filter((owners) => owners.length === 1)
-      .map((owners) => owners[0]);
+      .map(owners)
+      .filter((list) => list.length === 1)
+      .map((list) => sentence.clauses[list[0]]);
     // A subject named once, in the first clause, also belongs to a later
     // clause that continues it: when such a clause holds some of the
     // claim's words, the first clause's words don't decide on their own
@@ -974,41 +1432,41 @@ function checkPolarityConsistency(claimText, docText) {
     if (distinctive.some((c) => c.continues)) {
       distinctive = distinctive.filter((c) => c !== first);
     }
+    let result;
     if (distinctive.length > 0) {
-      return distinctive.every((c) => c.negated === negated);
+      result = distinctive.every((c) => c.negated === negated);
+    } else {
+      // The clauses sharing most of the claim clause's words decide
+      const support = new Map();
+      for (const w of clause.words) {
+        for (const i of owners(w)) support.set(i, (support.get(i) || 0) + 1);
+      }
+      if (support.size === 0) {
+        result = true;
+      } else {
+        let best = 0;
+        for (const n of support.values()) if (n > best) best = n;
+        result = [...support].some(
+          ([i, n]) => n === best && sentence.clauses[i].negated === negated,
+        );
+      }
     }
-    const ranked = sentence.clauses
-      .map((c) => ({
-        c,
-        support: clause.words.filter((w) => c.stems.has(w)).length,
-      }))
-      .filter((r) => r.support > 0)
-      .sort((a, b) => b.support - a.support);
-    if (ranked.length === 0) return true;
-    const best = ranked[0].support;
-    return ranked
-      .filter((r) => r.support === best)
-      .some((r) => r.c.negated === negated);
+    if (sentence.agreed.size < MAX_AGREED_PER_SENTENCE) {
+      sentence.agreed.set(key, result);
+    }
+    return result;
   };
 
   let consistent = true;
   let sourceSentence = null;
   for (const clause of claimClauses) {
-    const candidates = sentences
-      .map((s) => ({
-        ...s,
-        support:
-          clause.words.filter((w) => s.stems.has(w)).length /
-          clause.words.length,
-      }))
-      .filter((s) => s.support > 0)
-      .sort((a, b) => b.support - a.support);
-    if (candidates.length === 0) continue;
     // Only the closest sentences: "contractors receive paid vacation" must be
     // judged by "contractors do not receive paid vacation", not by a sentence
     // about employees that happens to share "receive paid vacation".
-    const best = candidates[0].support;
-    const compared = candidates.filter((s) => s.support === best);
+    const compared = closest(clause.words, sentencesByStem).map(
+      (i) => sentences[i],
+    );
+    if (compared.length === 0) continue;
     const match = compared.find((s) => agrees(clause, s));
     if (!match) consistent = false;
     if (sourceSentence === null || !match) {
@@ -1019,11 +1477,495 @@ function checkPolarityConsistency(claimText, docText) {
 }
 
 /**
+ * Markers that open a restricting clause: a condition, an approval, an
+ * exception or an eligibility rule. Dropping one broadens what the claim
+ * grants ("allowed two days per week" from "... with manager approval").
+ * Contrasting markers (but, whereas, while, however) are not here: dropping
+ * a contrasting clause usually leaves a narrower claim that is still true;
+ * one that narrows the statement before it is handled by narrowingClause
+ * (3.9). For
+ * "for <people> who/with ...", the restriction starts at who/with: the
+ * people are who it applies to.
+ */
+const NUMBER_WORD =
+  '(?:\\d[\\d,.]*|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirty|sixty|ninety)';
+const RESTRICTING_MARKERS = [
+  /\bwith\b(?:\s+[\w'’-]+){0,4}?\s+(?:approval|permission|consent|sign-?off|authori[sz]ation)\b/g,
+  /\bonly\s+(?:if|when)\b/g,
+  // not "even if" (concessive) or "if any", "if applicable" (no condition on
+  // the statement): the condition-dropped dev split (3.9). Not "if
+  // necessary", "if needed", "if possible" closing their clause, or an
+  // anaphoric "if not," / "if so," (it points back at another sentence):
+  // first seen as false alarms on RAGTruth, fixed on new dev cases
+  /(?<!\beven\s)\bif\b(?!\s+(?:any|applicable)\b)(?!\s+(?:necessary|needed|need\s+be|possible)\s*(?:[,;:.!?)]|$|\s(?:and|or|but)\b))(?!\s+(?:not|so)\s*,)/g,
+  /\bunless\b/g,
+  /\bprovided(?:\s+that)?\b/g,
+  /\bsubject\s+to\b/g,
+  /\bas\s+long\s+as\b/g,
+  new RegExp(
+    `\\bafter\\s+${NUMBER_WORD}\\s+(?:hours?|days?|weeks?|months?|years?)\\b`,
+    'g',
+  ),
+  /\bfor\s+(?:[\w'’-]+\s+){1,3}?(?=(?:who|with|whose)\b)/g,
+  // legal boilerplate ("except as required by law") restricts nothing the
+  // reader can act on (3.9)
+  /\bexcept\b(?!\s+(?:as|where)\s+(?:required|permitted)\s+by\s+(?:applicable\s+)?law\b)/g,
+];
+
+/** Words that only mark a restriction, not what it requires. */
+const MARKER_WORDS = new Set([
+  'with',
+  'only',
+  'if',
+  'when',
+  'unless',
+  'provided',
+  'that',
+  'subject',
+  'to',
+  'as',
+  'long',
+  'after',
+  'for',
+  'who',
+  'whose',
+  'except',
+]);
+
+/**
+ * Coordinators that join independent statements: a restriction in one of
+ * them does not restrict the other ("..., and the office is open on
+ * weekends"). Commas alone are not here, so "If approved, ..." and "...,
+ * subject to approval" stay with their statement. "and" needs a comma before
+ * it, so "with manager and HR approval" stays one restriction (the
+ * condition-dropped dev split, 3.9).
+ */
+const STATEMENT_BOUNDARY =
+  /\s*;\s*|,\s+and\s+|,?\s+\b(?:but|whereas|while|however)\b\s+/i;
+
+/** Where a restricting clause ends: punctuation or a coordinator. */
+const CLAUSE_END = /[,;:.!?]|\s(?:and|but|whereas|while|however)\s/gi;
+
+/**
+ * Words whose full stop doesn't end a restricting clause: the sentence
+ * splitter's titles and Latin abbreviations, and company and number
+ * abbreviations ("Acme Inc. or its subsidiaries", "form No. 7").
+ */
+const CLAUSE_ABBREVIATIONS = new Set([
+  ...ABBREVIATIONS,
+  'inc',
+  'ltd',
+  'co',
+  'corp',
+  'no',
+]);
+
+/**
+ * Where the restricting clause at the start of `text` (lowercased) ends, or
+ * -1 when it runs to the end. A full stop inside a word or number ("U.S",
+ * "2.5"), after a single letter ("U.S.", "e.g.", "i.e.") or after an
+ * abbreviation ("Inc.", "No.") doesn't end it, so "if the U.S. economy
+ * grows" is one clause, not "if the U" (3.9, on new dev cases).
+ * @param {string} text
+ * @returns {number}
+ */
+function clauseEnd(text) {
+  for (const match of text.matchAll(CLAUSE_END)) {
+    if (match[0] === '.') {
+      const next = text[match.index + 1];
+      if (next !== undefined && /[\p{L}\p{N}]/u.test(next)) continue;
+      const before = text.slice(Math.max(0, match.index - 12), match.index);
+      const word = /[\p{L}.]*$/u.exec(before)[0];
+      if (/(?:^|\.)\p{L}$/u.test(word) || CLAUSE_ABBREVIATIONS.has(word)) {
+        continue;
+      }
+    }
+    return match.index;
+  }
+  return -1;
+}
+
+/**
+ * Text as the condition check reads it: an initialism with full stops reads
+ * as one word ("U.S." as "US", so an answer writing "US" keeps a "U.S."
+ * restriction), and "e.g." and "i.e." restrict nothing.
+ * @param {string} text
+ * @returns {string}
+ */
+const conditionText = (text) =>
+  normalizeText(text)
+    .replace(/\b(?:e\.g|i\.e)\b\.?/gi, ' ')
+    .replace(/(?<![\p{L}.])(?:\p{Lu}\.){2,}(?!\p{L})/gu, (initialism) =>
+      initialism.replace(/\./g, ''),
+    );
+
+/** Light stemming for matching a restriction: approval/approves/approve. */
+const conditionStem = (t) => {
+  const s = stem(t.replace(/['’]s$/, ''));
+  return s.length > 5 ? s.replace(/al$/, '') : s;
+};
+const conditionWords = (text) =>
+  contentTokens(tokenize(conditionText(text)))
+    .filter((t) => !MARKER_WORDS.has(t))
+    .map(conditionStem);
+
+/**
+ * The restricting clauses of one statement, each with its distinctive
+ * content words: those the rest of the statement doesn't also use. A word
+ * the restriction shares with the main statement ("... a workplace injury
+ * ... if the injury requires treatment") is in the claim either way, so it
+ * can't show the restriction was kept. A clause with no distinctive word
+ * keeps all its words.
+ * @param {string} statement
+ * @returns {Array<{text: string, words: string[]}>}
+ */
+function restrictingClauses(statement) {
+  const lower = statement.toLowerCase();
+  const found = [];
+  for (const marker of RESTRICTING_MARKERS) {
+    marker.lastIndex = 0;
+    let m;
+    while ((m = marker.exec(lower)) !== null) {
+      const matchEnd = m.index + m[0].length;
+      const start = m[0].startsWith('for ') ? matchEnd : m.index;
+      // "with ... approval" ends at its match; the others run to the end of
+      // their clause
+      const rest = lower.slice(matchEnd);
+      const until = clauseEnd(rest);
+      const end = m[0].startsWith('with ')
+        ? matchEnd
+        : matchEnd + (until < 0 ? rest.length : until);
+      if (found.some((f) => start >= f.start && start < f.end)) continue;
+      const text = statement.slice(start, end).trim();
+      const words = conditionWords(text);
+      if (words.length > 0) found.push({ start, end, text, words });
+    }
+  }
+  return found.map(({ start, end, text, words }) => {
+    const elsewhere = new Set(
+      conditionWords(statement.slice(0, start) + ' ' + statement.slice(end)),
+    );
+    const distinctive = words.filter((w) => !elsewhere.has(w));
+    return {
+      text,
+      words: distinctive.length > 0 ? distinctive : words,
+      start,
+    };
+  });
+}
+
+/** A statement boundary, kept when splitting, and the contrasting ones. */
+const STATEMENT_SPLIT = new RegExp(`(${STATEMENT_BOUNDARY.source})`, 'i');
+const CONTRAST_BOUNDARY = /\b(?:but|whereas|while|however)\b/i;
+
+/** Prepositions that open the scope a contrast clause narrows ("not for guests"). */
+const SCOPE_PREPOSITIONS =
+  'for|on|in|at|during|to|from|by|with|before|after|under|over|within|between|outside|inside|until';
+
+/**
+ * The start of a contrast clause that narrows or negates what came before
+ * (3.9): a negation or a limit on a scope ("but not for guests", "but only
+ * on Fridays", "but never at night"), an exclusion ("but except ...",
+ * "but unless ...", "but excluding ...", "but other than ...") or "for X
+ * only". Group 1 is the scope's preposition.
+ */
+const NARROWING_START = new RegExp(
+  `^(?:(?:not|no|never|nobody|only|just|solely)\\s+(${SCOPE_PREPOSITIONS})\\b|(?:except|excluding|unless|other\\s+than)\\b|for\\b[^,;]*\\bonly\\b)`,
+  'i',
+);
+
+/**
+ * A contrast clause that restricts the statement before it, as a
+ * restricting clause of that statement, or null. A clause that names its
+ * scope with a preposition the statement already uses ("reduced blood
+ * pressure in adults, but not in children") contrasts a second scope
+ * rather than narrowing the first, and so does one with no preposition
+ * ("dental coverage for full-time staff, but not part-time staff"): either
+ * can be left out.
+ * @param {string} clause - the text after "but", "whereas", "while" or "however"
+ * @param {string} before - the statement before it
+ * @returns {{text: string, words: string[]}|null}
+ */
+function narrowingClause(clause, before) {
+  const match = NARROWING_START.exec(clause.trim());
+  if (!match) return null;
+  // Up to the end of the clause, as for the other restricting clauses
+  const end = clauseEnd(clause.trim().toLowerCase());
+  const text = (end < 0 ? clause.trim() : clause.trim().slice(0, end)).trim();
+  if (match[1] && tokenize(before).includes(match[1].toLowerCase())) {
+    return null;
+  }
+  const words = conditionWords(text);
+  if (words.length === 0) return null;
+  const elsewhere = new Set(conditionWords(before));
+  const distinctive = words.filter((w) => !elsewhere.has(w));
+  return { text, words: distinctive.length > 0 ? distinctive : words };
+}
+
+/**
+ * A source sentence's statements (see STATEMENT_BOUNDARY), each with its
+ * condition words and restricting clauses. A contrast clause that narrows
+ * the statement before it (narrowingClause) is also a restricting clause of
+ * that statement, so leaving it out is a dropped condition.
+ * @param {string} sentence
+ * @returns {Array<{words: string[], clauses: Array<{text: string, words: string[]}>}>}
+ */
+function sentenceStatements(sentence) {
+  const parts = sentence.split(STATEMENT_SPLIT);
+  const statements = [];
+  for (let i = 0; i < parts.length; i += 2) {
+    const text = parts[i];
+    const narrowing =
+      i > 0 && CONTRAST_BOUNDARY.test(parts[i - 1])
+        ? narrowingClause(text, parts[i - 2])
+        : null;
+    if (narrowing) {
+      // It narrows the end of the statement before it
+      const before = statements[statements.length - 1];
+      const last = before.parts[before.parts.length - 1];
+      before.clauses.push({ ...narrowing, start: last.start });
+    }
+    statements.push({
+      words: conditionWords(text),
+      clauses: restrictingClauses(text),
+      parts: statementParts(text),
+    });
+  }
+  return statements;
+}
+
+/**
+ * A statement's parts at a bare "and" ("Employees receive 20 days and
+ * contractors receive 10 days if ..."), each with where it starts and ends
+ * and its condition words. A restricting clause belongs to the part it
+ * starts in, so "with manager and HR approval" stays with its statement.
+ * @param {string} text
+ * @returns {Array<{start: number, end: number, words: string[]}>}
+ */
+function statementParts(text) {
+  const parts = [];
+  let start = 0;
+  for (const match of text.matchAll(/\band\b/gi)) {
+    parts.push({ start, end: match.index });
+    start = match.index + match[0].length;
+  }
+  parts.push({ start, end: text.length });
+  return parts.map((part) => ({
+    ...part,
+    words: conditionWords(text.slice(part.start, part.end)),
+  }));
+}
+
+/** The part of a statement a position falls in. */
+function partAt(parts, position) {
+  let found = parts[0];
+  for (const part of parts) if (part.start <= position) found = part;
+  return found;
+}
+
+/**
+ * The parts of a sentence's statements a claim restates: those sharing the
+ * most of its words, and any other part sharing a word of the claim that
+ * those don't ("contractors" in "Employees receive 20 days and contractors
+ * receive 10 days"). A part sharing only words the closest parts also have
+ * belongs to another statement (3.9).
+ * @param {Array<{parts: Array<{words: string[]}>}>} statements
+ * @param {Set<string>} claimWords
+ * @returns {Set<object>} the parts
+ */
+function restatedParts(statements, claimWords) {
+  const parts = statements.flatMap((statement) =>
+    statement.parts.map((part) => ({
+      part,
+      shared: new Set(part.words.filter((w) => claimWords.has(w))),
+    })),
+  );
+  let best = 0;
+  for (const { shared } of parts) best = Math.max(best, shared.size);
+  if (best === 0) return new Set();
+  const covered = new Set(
+    parts.filter(({ shared }) => shared.size === best).flatMap(({ shared }) => [...shared]),
+  );
+  return new Set(
+    parts
+      .filter(
+        ({ shared }) =>
+          shared.size === best || [...shared].some((w) => !covered.has(w)),
+      )
+      .map(({ part }) => part),
+  );
+}
+
+/**
+ * A source's sentences as the condition check reads them: each sentence's
+ * condition words, a word -> sentence index and, on first use, its
+ * statements with their restricting clauses, prepared once per source.
+ */
+function conditionSentences(doc) {
+  return once(prepareSource(doc), 'conditionSentences', () => {
+    const sentences = splitSentences(sourceNorm(doc)).map((sentence) => {
+      let statements = null;
+      return {
+        sentence,
+        words: new Set(conditionWords(sentence)),
+        statements: () => {
+          if (!statements) statements = sentenceStatements(sentence);
+          return statements;
+        },
+      };
+    });
+    const sentencesByWord = indexBy(sentences, (s) => s.words);
+    return { sentences, sentencesByWord };
+  });
+}
+
+/**
+ * The condition words of an answer's sentences that this document supports
+ * (most of their content words are in it), worked out once per answer and
+ * document.
+ * @param {object} doc - prepareSource()
+ * @param {object} answer - prepareAnswer()
+ * @returns {string[]}
+ */
+function restatingWords(doc, answer) {
+  let words = doc.byAnswer.get(answer);
+  if (!words) {
+    // Other sentences of the answer count only when this document supports
+    // them: "Remote work requires manager approval." restates the source's
+    // approval; "Your manager sets the team schedule." (from another source)
+    // does not
+    const docWords = once(
+      doc,
+      'conditionWords',
+      () => new Set(conditionWords(sourceNorm(doc))),
+    );
+    const sentences = once(answer, 'conditionWords', () =>
+      splitSentences(normalizeText(answer.input)).map(conditionWords),
+    );
+    words = sentences
+      .filter(
+        (sentence) =>
+          sentence.length > 0 &&
+          sentence.filter((w) => docWords.has(w)).length / sentence.length >=
+            0.5,
+      )
+      .flat();
+    doc.byAnswer.set(answer, words);
+  }
+  return words;
+}
+
+/**
+ * Condition consistency between a claim and a document. A claim that keeps
+ * every noun and number of its source but drops a restriction on it grants
+ * more than the source does: "Remote work is allowed two days per week"
+ * from "Remote work is allowed two days per week with manager approval".
+ * Word overlap passes it, so it is checked here (3.9).
+ *
+ * The claim is compared with the document sentence that shares most of its
+ * content words (any of them, on a tie). In the statements of that sentence
+ * that hold the claim's words (a sentence is split at and, but, whereas,
+ * while, however and semicolons, not at commas), each restricting clause
+ * ("with ... approval", "only if", "if", "unless", "provided", "subject to",
+ * "as long as", "after <number> <unit>", "for <people> who/with ...",
+ * "except") must be kept: at least one of its distinctive words (see
+ * restrictingClauses) must appear in the claim, or in another sentence of
+ * the answer that this document supports (most of its content words are in
+ * the document), so a condition restated from the same source still counts
+ * and a word from a sentence about something else doesn't. Contrasting
+ * clauses that add or contrast something ("but not in children" after "in
+ * adults", "but it may take a few minutes") may be left out, as the
+ * polarity check allows since 3.6; since 3.9 one that narrows or negates
+ * the statement before it ("but not for guests", "but only on Fridays",
+ * "but except ...") is a restricting clause of that statement and must be
+ * kept. Phrases that restrict nothing are not restrictions:
+ * "even if", "if any", "if applicable", "if necessary", "if needed", "if
+ * need be", "if possible", an anaphoric "If not," or "If so,", and "except
+ * as required (or permitted) by law". A source with no space after a
+ * sentence's full stop ("per week.If you need") is split there too.
+ *
+ * @param {string} claimText
+ * @param {string} docText
+ * @param {string} [answerText] - The whole answer; defaults to the claim
+ * @returns {{ consistent: boolean, missing: string[], sourceSentence: string|null }}
+ *   missing: the restricting clauses the claim leaves out
+ */
+function checkConditionConsistency(claimText, docText, answerText) {
+  claimText = normalizeText(claimText);
+  const doc = prepareSource(docText);
+  const claimWords = new Set(conditionWords(claimText));
+  if (claimWords.size === 0) {
+    return { consistent: true, missing: [], sourceSentence: null };
+  }
+  const restating =
+    typeof answerText === 'string' || isPreparedAnswer(answerText)
+      ? restatingWords(doc, prepareAnswer(answerText))
+      : [];
+  const answerWords = new Set([...claimWords, ...restating]);
+  const whole = keptConditions(doc, claimWords, answerWords);
+  if (!whole.consistent) return whole;
+  // A claim joining two statements ("..., and additional storage costs
+  // $2") restates each from its own source sentence: each is checked too
+  const statements = claimText
+    .split(STATEMENT_BOUNDARY)
+    .map((statement) => new Set(conditionWords(statement)))
+    .filter((words) => words.size > 0);
+  if (statements.length > 1) {
+    for (const words of statements) {
+      const result = keptConditions(doc, words, answerWords);
+      if (!result.consistent) return result;
+    }
+  }
+  return whole;
+}
+
+/**
+ * checkConditionConsistency for one set of claim words: the restricting
+ * clauses of the closest source sentence's restated parts must be kept.
+ */
+function keptConditions(doc, claimWords, answerWords) {
+  // splitSentences also splits a source scraped without a space between
+  // sentences ("...per week.If you need"), which would otherwise lend one
+  // sentence the next one's restriction (first seen on RAGTruth, fixed on
+  // new dev cases)
+  const { sentences, sentencesByWord } = conditionSentences(doc);
+  const tied = closest(claimWords, sentencesByWord);
+  if (tied.length === 0) {
+    return { consistent: true, missing: [], sourceSentence: null };
+  }
+  let first = null;
+  for (const i of tied) {
+    const { sentence, statements } = sentences[i];
+    const restated = restatedParts(statements(), claimWords);
+    const missing = statements()
+      .flatMap((statement) =>
+        statement.clauses.filter((clause) =>
+          restated.has(partAt(statement.parts, clause.start)),
+        ),
+      )
+      .filter((clause) => !clause.words.some((w) => answerWords.has(w)))
+      .map((clause) => clause.text);
+    if (missing.length === 0) {
+      return { consistent: true, missing: [], sourceSentence: sentence };
+    }
+    if (!first) first = { consistent: false, missing, sourceSentence: sentence };
+  }
+  return first;
+}
+
+/**
  * Multiplier applied to the support score when a claim's polarity
  * contradicts the document (see checkPolarityConsistency). It keeps the
  * score below 0.4, under the default 0.5 support threshold.
  */
 const POLARITY_MISMATCH_FACTOR = 0.4;
+
+/**
+ * Multiplier applied to the support score when a claim leaves out a
+ * restricting clause of its source (see checkConditionConsistency). It keeps
+ * the score below 0.4, under the default 0.5 support threshold.
+ */
+const CONDITION_MISMATCH_FACTOR = 0.4;
 
 /**
  * Multiplier applied to the support score when a claim states numbers the
@@ -1047,12 +1989,18 @@ const NUMERIC_MISMATCH_FACTOR = 0.4;
  * Polarity consistency: with the same texts, a claim that is negated where
  * the document is not, or the reverse (see checkPolarityConsistency), has its
  * score multiplied by POLARITY_MISMATCH_FACTOR (0.4).
+ * Condition consistency: a claim that leaves out a restricting clause of its
+ * source, and doesn't restate it elsewhere in `options.answerText` (see
+ * checkConditionConsistency), has its score multiplied by
+ * CONDITION_MISMATCH_FACTOR (0.4); `options.conditionCheck: false` turns this
+ * check off, for scores comparable with a baseline saved before 3.9.
  *
  * @param {string[]} claimTokens - Tokens of the sentence/claim/query
  * @param {string[]|Set<string>} docTokens - Tokens of the document
  * @param {Map<string, number>|null} [idfWeights] - Optional token weights
- * @param {{ claimText?: string, docText?: string }} [options] - Raw texts
- *   enabling the numeric and polarity consistency checks
+ * @param {{ claimText?: string, docText?: string, answerText?: string, conditionCheck?: boolean }} [options] - Raw texts
+ *   enabling the numeric, polarity and condition consistency checks;
+ *   `answerText` is the whole answer the claim comes from
  * @returns {number} Support score between 0 and 1
  */
 function computeSupportScore(
@@ -1061,12 +2009,17 @@ function computeSupportScore(
   idfWeights = null,
   options = {},
 ) {
-  // A reference phrase ("Document 3 shows", "Table 2") names where a claim
-  // comes from, not what it says: leave it out of the words to support.
+  // A reference phrase ("Document 3 shows", "Table 2") or a citation marker
+  // ("[1]", "¹") names where a claim comes from, not what it says: leave it
+  // out of the words to support.
   const rawClaim = options && options.claimText;
+  const cleaned =
+    typeof rawClaim === 'string'
+      ? withoutReferences(withoutMarkers(rawClaim))
+      : rawClaim;
   const fromText =
-    typeof rawClaim === 'string' && rawClaim !== withoutReferences(rawClaim)
-      ? tokenize(withoutReferences(rawClaim))
+    typeof rawClaim === 'string' && cleaned !== normalizeText(rawClaim)
+      ? tokenize(cleaned)
       : claimTokens;
   const claim = [...new Set(contentTokens(fromText))];
   if (claim.length === 0) return 0;
@@ -1087,7 +2040,9 @@ function computeSupportScore(
   if (matched === 0) return 0;
 
   const { claimText, docText } = options || {};
-  const texts = typeof claimText === 'string' && typeof docText === 'string';
+  const texts =
+    typeof claimText === 'string' &&
+    (typeof docText === 'string' || isPreparedSource(docText));
   const numeric = texts ? checkNumericConsistency(claimText, docText) : null;
   if (numeric && numeric.matchedWords.length) {
     const restated = new Set(numeric.matchedWords);
@@ -1107,6 +2062,13 @@ function computeSupportScore(
     if (!checkPolarityConsistency(claimText, docText).consistent) {
       score *= POLARITY_MISMATCH_FACTOR;
     }
+    if (
+      options.conditionCheck !== false &&
+      !checkConditionConsistency(claimText, docText, options.answerText)
+        .consistent
+    ) {
+      score *= CONDITION_MISMATCH_FACTOR;
+    }
   }
   return score;
 }
@@ -1117,8 +2079,11 @@ module.exports = {
   computeSupportScore,
   checkNumericConsistency,
   checkPolarityConsistency,
+  checkConditionConsistency,
+  CONDITION_MISMATCH_FACTOR,
   isNegated,
   extractNumbers,
+  withoutMarkers,
   NUMERIC_MISMATCH_FACTOR,
   POLARITY_MISMATCH_FACTOR,
   scoreAnswer,
@@ -1126,5 +2091,11 @@ module.exports = {
   computeBLEU,
   computeROUGE,
   splitSentences,
+  splitClauses,
   computeJaccardSimilarity,
+  prepareSource,
+  prepareDocument,
+  prepareAnswer,
+  sourceNorm,
+  sourceTokenSet,
 };

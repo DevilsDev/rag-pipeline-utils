@@ -4,6 +4,10 @@
  * reuseHeapLimitMb (256 MB by default). checkAnswer caches the quantities
  * of recent sources, so without this a worker that checks many distinct
  * large sources runs out of memory.
+ *
+ * The tests of the reuse limit use a test-only worker (heavy-check.js) that
+ * keeps about 1 MB of heap after every check, so they fill a worker's heap
+ * however little checkAnswer itself keeps.
  */
 
 const path = require("path");
@@ -30,14 +34,22 @@ const WITH_THREAD_ID = path.join(
   "mcp-check-worker",
   "with-thread-id.js",
 );
+// WITH_THREAD_ID, keeping about 1 MB of heap after every check
+const HEAVY = path.join(
+  __dirname,
+  "..",
+  "..",
+  "fixtures",
+  "mcp-check-worker",
+  "heavy-check.js",
+);
 
 jest.setTimeout(120000);
 
 // The suite runs on fake timers; the runner's time limit needs real ones.
 beforeEach(() => jest.useRealTimers());
 
-// A distinct 50 KB source of quantities each time: its quantities are
-// cached in the worker (about 1 MB each)
+// A distinct 50 KB source of quantities each time
 const largeSource = (i) =>
   `Staff carry ${1000 + i} kg ${"5 kg ".repeat(10000).trim()}.`;
 const largeCheck = (i) => ({
@@ -79,8 +91,8 @@ test("the check worker reports its heap after each check", async () => {
 });
 
 describe("checks against distinct large sources", () => {
-  // A 40 MB heap holds about 30 cached sources; 45 are checked. (In the
-  // server: a 512 MB heap, 200 KB sources and a 256 MB reuse limit.)
+  // A 40 MB heap holds about 30 of HEAVY's 1 MB; 45 checks are run. (In
+  // the server: a 512 MB heap, 200 KB sources and a 256 MB reuse limit.)
   const limits = { maxOldGenerationSizeMb: 40 };
   const REUSE_LIMIT_MB = 30;
 
@@ -89,7 +101,7 @@ describe("checks against distinct large sources", () => {
       timeoutMs: 60000,
       resourceLimits: limits,
       reuseHeapLimitMb: Infinity,
-      file: WITH_THREAD_ID,
+      file: HEAVY,
     });
     try {
       const { checks, error } = await runAll(runner, 45, largeCheck);
@@ -106,7 +118,7 @@ describe("checks against distinct large sources", () => {
       timeoutMs: 60000,
       resourceLimits: limits,
       reuseHeapLimitMb: REUSE_LIMIT_MB,
-      file: WITH_THREAD_ID,
+      file: HEAVY,
     });
     try {
       const { checks, error } = await runAll(runner, 45, largeCheck);

@@ -10,6 +10,8 @@ const path = require('path');
 // eslint-disable-line global-require
 const crypto = require('crypto');
 // eslint-disable-line global-require
+const http = require('http');
+const https = require('https');
 const { EventEmitter } = require('events');
 // eslint-disable-line global-require
 const { logger } = require('../utils/logger');
@@ -30,6 +32,69 @@ const SIGNING_KEY_BYTES = 64;
 const NO_SIGNING_KEY_WARNING_CODE = 'RAG_AUDIT_NO_SIGNING_KEY';
 const REPORT_TENANT_WARNING_CODE = 'RAG_DEP_AUDIT_REPORT_NO_TENANT';
 const FAR_FUTURE = new Date('9999-12-31T00:00:00Z');
+
+// Report summary counter for each event category
+const SUMMARY_KEYS = {
+  authentication: 'authenticationEvents',
+  authorization: 'authorizationEvents',
+  dataAccess: 'dataAccessEvents',
+  dataModification: 'dataModificationEvents',
+  systemChanges: 'systemChangeEvents',
+  apiAccess: 'apiAccessEvents',
+  complianceEvents: 'complianceEvents',
+};
+
+// An empty signing.key older than this is a crashed write, not a live one
+const STALE_KEY_FILE_MS = 5000;
+const WEBHOOK_TIMEOUT_MS = 5000;
+const WEBHOOK_RETRY_MS = 1000;
+const WEBHOOK_MAX_RETRY_MS = 60000;
+// Headers the webhook always sets itself
+const WEBHOOK_FIXED_HEADERS = new Set([
+  'content-type',
+  'content-length',
+  'host',
+  'connection',
+  'transfer-encoding',
+]);
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+/**
+ * Check the webhookUrl and webhookHeaders options. The URL must be https,
+ * or http for localhost. Messages never repeat the URL or a header value,
+ * which can hold a token.
+ */
+function checkWebhookOptions(url, headers) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new TypeError('AuditLogger: webhookUrl must be a valid URL');
+  }
+  const local = LOCAL_HOSTS.has(parsed.hostname);
+  if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && local)) {
+    throw new TypeError(
+      'AuditLogger: webhookUrl must be an https URL (http is allowed only for localhost)',
+    );
+  }
+  if (headers !== undefined) {
+    const valid =
+      headers &&
+      typeof headers === 'object' &&
+      !Array.isArray(headers) &&
+      Object.entries(headers).every(
+        ([name, value]) =>
+          /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name) &&
+          typeof value === 'string' &&
+          !/[\r\n]/.test(value),
+      );
+    if (!valid) {
+      throw new TypeError(
+        'AuditLogger: webhookHeaders must be an object of header names to string values',
+      );
+    }
+  }
+}
 
 const warnedKinds = new Set();
 
@@ -125,9 +190,8 @@ class AuditLogger extends EventEmitter {
     super();
 
     this._config = {
-      logDir:
-        _options.logDir ||
-        path.join(process.cwd(), '.rag-enterprise', 'audit-logs'),
+      logDir: _options.logDir,
+      memoryLimit: _options.memoryLimit,
       retention: {
         days: _options.retentionDays || 2555, // 7 years default for compliance
         maxSizeMB: _options.maxLogSizeMB || 1000,
@@ -159,20 +223,69 @@ class AuditLogger extends EventEmitter {
       ..._options,
     };
 
+    // Defaults after the spread, so an explicit undefined still gets them
+    if (!this._config.logDir) {
+      // Deprecated in 3.9, removed in 4.0: the folder is created on the
+      // first write, not here (BH-13)
+      this._config.logDir = path.join(
+        process.cwd(),
+        '.rag-enterprise',
+        'audit-logs',
+      );
+      warnOnce(
+        'RAG_DEP_AUDIT_LOG_DIR',
+        'AuditLogger: no logDir option, so logs go to .rag-enterprise/audit-logs ' +
+          'in the working directory. This default folder is deprecated and will ' +
+          'be removed in 4.0; set the logDir option.',
+      );
+    }
+    if (
+      !(
+        Number.isFinite(this._config.memoryLimit) &&
+        this._config.memoryLimit > 0
+      )
+    ) {
+      this._config.memoryLimit = 10000;
+    }
+
     this.logBuffer = [];
     this.encryptionKey = this._resolveEncryptionKey(_options);
-    this.signingKey = this._resolveSigningKey(_options);
+    // Resolved on first use (see the signingKey getter), not here: a stored
+    // key is created with the log folders, so creating a logger never
+    // writes to disk (BH-13)
+    this._signingKeyOptions = { signingKey: _options.signingKey };
+    this._signingKey = undefined;
 
     this._chainState = null;
     this._chainLoad = null;
+    // chain.json is behind the records in the file: the chain stage of the
+    // next flush writes it, so a failure there never writes records again
     this._chainDirty = false;
+    this._chainUnsaved = 0;
+    this._storageReady = null;
+    /** Events discarded by memoryLimit so far (see 'events_dropped'). */
+    this.droppedEvents = 0;
+    this._failing = {};
     this._flushQueue = Promise.resolve();
+    this._drops = [];
+    this._listenerWarned = new Set();
+    this._flushErrorWarned = false;
+    this._writes = new Set();
+    // Day of the newest daily file (read on the first flush)
+    this._newestDay = undefined;
+    this._closing = null;
 
+    // Events written to the log are also POSTed to the webhook, on their own
+    // stage: a queue that is retried on later flushes and never holds up
+    // the log file or the chain.
+    this._webhookQueue = [];
+    this._webhookRun = null;
+    this._webhookFailures = 0;
+    this._webhookRetryAt = 0;
     if (this._config.realtime.webhookUrl) {
-      logger.warn(
-        'AuditLogger: the webhook isn\'t implemented in this release; ' +
-          'webhookUrl is ignored and no events are sent. Ship the log files ' +
-          'with a log shipper instead.',
+      checkWebhookOptions(
+        this._config.realtime.webhookUrl,
+        _options.webhookHeaders,
       );
     }
 
@@ -180,22 +293,12 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Initialize audit logging system
+   * Start the periodic flush. Nothing touches the file system here: the log
+   * folders and integrity chain are created on the first flush, so creating
+   * a logger never writes to disk and a folder that can't be created is a
+   * flush failure, not an error the caller can't catch (BH-13, BH-14).
    */
-  async _initializeAuditSystem() {
-    // Create audit log directories
-    await fs.mkdir(this._config.logDir, { recursive: true });
-    await fs.mkdir(path.join(this._config.logDir, 'daily'), {
-      recursive: true,
-    });
-    await fs.mkdir(path.join(this._config.logDir, 'archived'), {
-      recursive: true,
-    });
-    await fs.mkdir(path.join(this._config.logDir, 'integrity'), {
-      recursive: true,
-    });
-
-    // Start periodic flush
+  _initializeAuditSystem() {
     if (this._config.realtime.enabled) {
       this.flushTimer = setInterval(() => {
         this._flushLogs();
@@ -203,7 +306,49 @@ class AuditLogger extends EventEmitter {
       if (typeof this.flushTimer.unref === 'function') this.flushTimer.unref();
     }
 
-    this.emit('audit_system_initialized');
+    // Emitted asynchronously so a listener added after the constructor sees it
+    process.nextTick(() => this.emit('audit_system_initialized'));
+  }
+
+  /**
+   * Create the log folders once; a failure is retried on the next flush.
+   * integrity/ is owner-only (0o700), as the stored signing key needs; the
+   * chain state is loaded by the first flush (_loadChainState).
+   * @private
+   */
+  _ensureStorage() {
+    if (!this._storageReady) {
+      this._storageReady = (async () => {
+        for (const dir of ['daily', 'archived', 'integrity']) {
+          await fs.mkdir(path.join(this._config.logDir, dir), {
+            recursive: true,
+            ...(dir === 'integrity' ? { mode: 0o700 } : {}),
+          });
+        }
+      })().catch((error) => {
+        this._storageReady = null;
+        throw error;
+      });
+    }
+    return this._storageReady;
+  }
+
+  /**
+   * The key for the integrity hashes and signatures: the signingKey option,
+   * then RAG_AUDIT_SIGNING_KEY, then the key stored in
+   * `logDir/integrity/signing.key`. Resolved on first use.
+   * @returns {Buffer|string}
+   */
+  get signingKey() {
+    if (this._signingKey === undefined) {
+      this._signingKey = this._resolveSigningKey(this._signingKeyOptions);
+    }
+    return this._signingKey;
+  }
+
+  /** @param {Buffer|string} key */
+  set signingKey(key) {
+    this._signingKey = key;
   }
 
   /**
@@ -465,9 +610,19 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Write audit log with integrity protection
+   * Write audit log with integrity protection. Tracks the call so close()
+   * can wait for log calls that haven't finished.
    */
-  async _writeAuditLog(auditEvent) {
+  _writeAuditLog(auditEvent) {
+    const write = this._writeAuditLogNow(auditEvent);
+    this._writes.add(write);
+    const done = () => this._writes.delete(write);
+    write.then(done, done);
+    return write;
+  }
+
+  /** @private */
+  async _writeAuditLogNow(auditEvent) {
     // The sequence, chain link, integrity hash and signature are assigned
     // when the record is written (see _flushOnce), so they follow the order
     // records reach the file and continue across restarts.
@@ -502,63 +657,373 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Flush logs to persistent storage. Flushes run one at a time, so records
-   * are numbered and chained in the order they are appended.
+   * Flush buffered events in two stages: number and chain them and append
+   * them to the daily file, then write the chain state to chain.json. Each
+   * stage retries on the next flush, so events are appended to the file
+   * exactly once, and a chain.json failure neither repeats nor blocks file
+   * writes. Never rejects: a failed stage emits its event (`flush_failed`,
+   * `chain_failed`) and logs one warning until it succeeds again (BH-14).
+   * The buffer keeps at most memoryLimit events while writes fail; older
+   * ones are dropped and reported (`events_dropped`). Flushes run one at a
+   * time, so records are numbered and chained in the order they are
+   * appended, and the queue always settles: an error in one flush is logged
+   * once and the next flush still runs.
    */
   _flushLogs() {
-    const run = this._flushQueue.then(() => this._flushOnce());
-    this._flushQueue = run.catch(() => {});
-    return run;
+    this._flushQueue = this._flushQueue
+      .then(() => this._flushOnce())
+      .catch((error) => {
+        if (!this._flushErrorWarned) {
+          this._flushErrorWarned = true;
+          logger.warn(`AuditLogger: a flush failed: ${error.message}`);
+        }
+      });
+    return this._flushQueue;
   }
 
+  /**
+   * Shut the logger down: stop the flush timer, wait for log calls in
+   * progress, write the buffered events and the pending chain state, and
+   * retry any stage that failed once more. Call it before the process
+   * exits (for example on SIGTERM). Resolves, never rejects, with what is
+   * still pending: `{ pending: { events, chain, webhook } }`. Calls made
+   * while a close is running share it. A log call after close() still
+   * buffers and flushes as before, but there is no timer any more; call
+   * close() again to write it.
+   * @returns {Promise<{pending: {events: number, chain: boolean, webhook: number}}>}
+   */
+  close() {
+    if (!this._closing) {
+      this._closing = (async () => {
+        if (this.flushTimer) {
+          clearInterval(this.flushTimer);
+          this.flushTimer = null;
+        }
+        await Promise.allSettled([...this._writes]);
+        await this._flushLogs();
+        // One more pass for a stage that failed during the first
+        if (this.logBuffer.length > 0 || this._chainDirty) {
+          await this._flushLogs();
+        }
+        // The webhook: wait for the delivery under way, then try what is
+        // left once more, ignoring the retry delay
+        await this._deliverWebhook(true);
+        await this._deliverWebhook(true);
+        return {
+          pending: {
+            events: this.logBuffer.length,
+            chain: this._chainDirty,
+            webhook: this._webhookQueue.length,
+          },
+        };
+      })().finally(() => {
+        this._closing = null;
+      });
+    }
+    return this._closing;
+  }
+
+  /** @private */
   async _flushOnce() {
-    if (this.logBuffer.length === 0) {
-      if (this._chainDirty) await this._persistChainState();
-      return;
+    if (this.logBuffer.length > 0) {
+      const batch = this.logBuffer;
+      this.logBuffer = [];
+      let advanced = null;
+      let written = 0;
+      let failure = null;
+      const flushed = [];
+      try {
+        await this._ensureStorage();
+        advanced = { ...(await this._loadChainState()) };
+        // One file per day of the events, each group numbered and appended
+        // in turn, so a failure part-way leaves only whole groups written.
+        for (const { day, records } of await this._groupByDay(batch)) {
+          const logFile = path.join(
+            this._config.logDir,
+            'daily',
+            `audit-${day}.jsonl`,
+          );
+          const next = { ...advanced };
+          await this._numberRecords(records, next);
+          // An earlier failed append can leave half a line; start on a new
+          // line so the next record isn't glued onto it.
+          const prefix = (await this._endsMidLine(logFile)) ? '\n' : '';
+          await fs.appendFile(
+            logFile,
+            prefix +
+              records.map((log) => JSON.stringify(log)).join('\n') +
+              '\n',
+          );
+          advanced = next;
+          written += records.length;
+          this._newestDay = day;
+          flushed.push({ count: records.length, file: logFile });
+        }
+      } catch (error) {
+        failure = error;
+      }
+      if (failure) {
+        // Put the records that were not written back unnumbered: the retry
+        // numbers them again from the same chain state.
+        const rest = batch.slice(written);
+        for (const log of rest) this._stripChainFields(log);
+        this.logBuffer = this._bounded([...rest, ...this.logBuffer], 'file');
+        this._emitDrops();
+        this._stageFailed('file', 'flush_failed', failure, rest.length);
+      } else {
+        this._stageSucceeded('file');
+      }
+      if (written > 0) {
+        // The records are in the file; the chain state moves with them even
+        // if writing chain.json fails (the chain stage retries it).
+        this._chainState = advanced;
+        this._chainDirty = true;
+        this._chainUnsaved += written;
+        if (!failure) this._emitDrops();
+        for (const entry of flushed) this._emitSafely('logs_flushed', entry);
+        if (this._config.realtime.webhookUrl) {
+          this._webhookQueue = this._bounded(
+            [...this._webhookQueue, ...batch.slice(0, written)],
+            'webhook',
+          );
+          this._emitDrops();
+        }
+      }
     }
 
-    const logsToFlush = this.logBuffer;
-    this.logBuffer = [];
+    if (this._chainDirty) {
+      try {
+        await this._persistChainState();
+        this._chainUnsaved = 0;
+        this._stageSucceeded('chain');
+      } catch (error) {
+        this._stageFailed('chain', 'chain_failed', error, this._chainUnsaved);
+      }
+    }
 
-    const today = new Date().toISOString().split('T')[0];
-    const logFile = path.join(
-      this._config.logDir,
-      'daily',
-      `audit-${today}.jsonl`,
-    );
+    // The webhook runs on its own; this only starts a delivery (or a retry).
+    this._deliverWebhook();
+  }
 
-    let advanced;
-    try {
-      const state = await this._loadChainState();
-      advanced = { ...state };
-      await this._numberRecords(logsToFlush, advanced);
-
-      // Write logs in JSONL format
-      const logLines =
-        logsToFlush.map((log) => JSON.stringify(log)).join('\n') + '\n';
-      // An earlier failed append can leave half a line; start on a new line
-      // so the next record isn't glued onto it.
-      const prefix = (await this._endsMidLine(logFile)) ? '\n' : '';
-      await fs.appendFile(logFile, prefix + logLines);
-    } catch (error) {
-      // Put the records back unnumbered: the retry numbers them again from
-      // the same chain state.
-      for (const log of logsToFlush) this._stripChainFields(log);
-      this.logBuffer.unshift(...logsToFlush);
-      this.emit('flush_failed', {
-        error: error.message,
-        count: logsToFlush.length,
+  /**
+   * Start delivering the webhook queue unless a delivery is running or the
+   * retry delay after a failure has not passed (`force` ignores the delay).
+   * Never rejects; the promise settles when the delivery ends.
+   * @private
+   */
+  _deliverWebhook(force = false) {
+    if (this._webhookRun) return this._webhookRun;
+    if (this._webhookQueue.length === 0) return Promise.resolve();
+    if (!force && Date.now() < this._webhookRetryAt) return Promise.resolve();
+    const size = this._config.realtime.batchSize;
+    this._webhookRun = (async () => {
+      while (this._webhookQueue.length > 0) {
+        const chunk = this._webhookQueue.slice(0, size);
+        try {
+          await this._postWebhook(chunk);
+        } catch (error) {
+          this._webhookFailures += 1;
+          const base = this._config.webhookRetryMs ?? WEBHOOK_RETRY_MS;
+          this._webhookRetryAt =
+            Date.now() +
+            Math.min(
+              WEBHOOK_MAX_RETRY_MS,
+              base * 2 ** (this._webhookFailures - 1),
+            );
+          this._stageFailed(
+            'webhook',
+            'webhook_failed',
+            error,
+            this._webhookQueue.length,
+          );
+          return;
+        }
+        // Sent: take them out by identity (the queue may have been trimmed
+        // or grown while the request was running)
+        const sent = new Set(chunk);
+        this._webhookQueue = this._webhookQueue.filter((r) => !sent.has(r));
+        this._webhookFailures = 0;
+        this._webhookRetryAt = 0;
+        this._stageSucceeded('webhook');
+      }
+    })()
+      .catch(() => {})
+      .finally(() => {
+        this._webhookRun = null;
       });
+    return this._webhookRun;
+  }
+
+  /**
+   * POST events to the webhook as `{ events: [...] }`. Resolves on a 2xx
+   * answer. A redirect, any other status, a network error and a timeout
+   * reject with a short message that holds neither the URL, nor a header,
+   * nor the events.
+   * @private
+   */
+  _postWebhook(events) {
+    const url = new URL(this._config.realtime.webhookUrl);
+    const timeoutMs = this._config.webhookTimeoutMs ?? WEBHOOK_TIMEOUT_MS;
+    const body = JSON.stringify({ events });
+    const headers = {};
+    for (const [name, value] of Object.entries(
+      this._config.webhookHeaders || {},
+    )) {
+      if (!WEBHOOK_FIXED_HEADERS.has(name.toLowerCase())) headers[name] = value;
+    }
+    headers['Content-Type'] = 'application/json';
+    headers['Content-Length'] = Buffer.byteLength(body);
+    const client = url.protocol === 'https:' ? https : http;
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const done = (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      };
+      const request = client.request(
+        url,
+        { method: 'POST', headers, agent: false },
+        (response) => {
+          response.resume();
+          response.on('end', () => {
+            const ok = response.statusCode >= 200 && response.statusCode < 300;
+            done(ok ? null : new Error(`HTTP ${response.statusCode}`));
+          });
+          response.on('error', () => done(new Error('response failed')));
+        },
+      );
+      const timer = setTimeout(() => {
+        done(new Error(`timed out after ${timeoutMs} ms`));
+        request.destroy();
+      }, timeoutMs);
+      if (typeof timer.unref === 'function') timer.unref();
+      request.on('error', (error) =>
+        done(new Error(error.code || 'request failed')),
+      );
+      request.end(body);
+    });
+  }
+
+  /**
+   * Split a batch into runs of records that go in the same daily file, in
+   * batch order. A record goes in the file of the day it happened (UTC, as
+   * the file names are), never later than today and never earlier than the
+   * newest file, so the files stay in the order of the sequence numbers and
+   * verifyIntegrity() reads them as one chain.
+   * @private
+   */
+  async _groupByDay(batch) {
+    if (this._newestDay === undefined) {
+      this._newestDay = await this._newestLogDay();
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const groups = [];
+    let newest = this._newestDay;
+    for (const record of batch) {
+      const at = new Date(record.metadata && record.metadata.timestamp);
+      let day = Number.isNaN(at.getTime()) ? today : at.toISOString().slice(0, 10);
+      if (day > today) day = today;
+      if (newest && day < newest) day = newest;
+      newest = day;
+      const last = groups[groups.length - 1];
+      if (last && last.day === day) last.records.push(record);
+      else groups.push({ day, records: [record] });
+    }
+    return groups;
+  }
+
+  /** The day of the newest daily file, or null when there is none. @private */
+  async _newestLogDay() {
+    let names;
+    try {
+      names = await fs.readdir(path.join(this._config.logDir, 'daily'));
+    } catch (error) {
+      if (error.code === 'ENOENT') return null;
       throw error;
     }
+    let newest = null;
+    for (const name of names) {
+      const match = /^audit-(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(name);
+      if (match && (!newest || match[1] > newest)) newest = match[1];
+    }
+    return newest;
+  }
 
-    // The records are in the file; the chain state moves with them even if
-    // writing chain.json fails (it is rewritten on the next flush).
-    this._chainState = advanced;
-    this._chainDirty = true;
-    await this._persistChainState();
+  /**
+   * The latest memoryLimit events of the buffer; the rest are dropped and
+   * counted in droppedEvents. The 'events_dropped' event is emitted by
+   * _emitDrops, once the caller has updated the buffer. Dropped events were
+   * never numbered, so they leave no gap in the chain.
+   * @private
+   */
+  _bounded(events, stage) {
+    const excess = events.length - this._config.memoryLimit;
+    if (excess <= 0) return events;
+    this.droppedEvents += excess;
+    const failing = this._failing[stage];
+    if (failing && !failing.droppedWarned) {
+      failing.droppedWarned = true;
+      logger.warn(
+        `AuditLogger: ${excess} event${excess === 1 ? '' : 's'} dropped (${this.droppedEvents} in all): ` +
+          `the ${stage} stage is still failing and keeps only the latest ${this._config.memoryLimit}.`,
+      );
+    }
+    this._drops.push({
+      count: excess,
+      totalDropped: this.droppedEvents,
+      stage,
+    });
+    return events.slice(excess);
+  }
 
-    this.emit('logs_flushed', { count: logsToFlush.length, file: logFile });
+  /** @private */
+  _stageFailed(stage, eventName, error, count) {
+    if (!this._failing[stage]) {
+      this._failing[stage] = { droppedWarned: false };
+      logger.warn(
+        stage === 'file'
+          ? `AuditLogger could not write to ${this._config.logDir}: ${error.message}. Events are kept in memory ` +
+              `(up to ${this._config.memoryLimit}) and retried on the next flush; ` +
+              `${this.droppedEvents} events dropped so far.`
+          : stage === 'webhook'
+            ? `AuditLogger could not deliver events to the webhook: ${error.message}. The events are in the ` +
+              `log file; they are kept in memory (up to ${this._config.memoryLimit}) and sent on a later flush.`
+            : `AuditLogger could not write the integrity chain file: ${error.message}. The events are in the ` +
+              'log file; the chain file is written on the next flush.',
+      );
+    }
+    this._emitSafely(eventName, { error: error.message, count });
+  }
+
+  /** @private */
+  _emitDrops() {
+    const drops = this._drops;
+    this._drops = [];
+    for (const drop of drops) this._emitSafely('events_dropped', drop);
+  }
+
+  /**
+   * Emit a flush event; a listener that throws is logged once per event
+   * name, so it can't stop the remaining stages or later flushes.
+   * @private
+   */
+  _emitSafely(name, payload) {
+    try {
+      this.emit(name, payload);
+    } catch (error) {
+      if (!this._listenerWarned.has(name)) {
+        this._listenerWarned.add(name);
+        logger.warn(`AuditLogger: a '${name}' listener threw: ${error.message}`);
+      }
+    }
+  }
+
+  /** @private */
+  _stageSucceeded(stage) {
+    delete this._failing[stage];
   }
 
   async _endsMidLine(file) {
@@ -634,7 +1099,10 @@ class AuditLogger extends EventEmitter {
     // is read.
     this._resolveTenantFilter(query);
 
-    const results = [];
+    // Every match is counted (total, hasMore); only the requested page is
+    // kept and decrypted.
+    const page = [];
+    let matched = 0;
     let skippedLines = 0;
     const startTime = startDate
       ? new Date(startDate)
@@ -651,23 +1119,19 @@ class AuditLogger extends EventEmitter {
 
       for (const log of logs) {
         if (this._matchesQuery(log, query)) {
-          results.push(await this._decryptAuditEvent(log));
-
-          if (results.length >= limit + offset) {
-            break;
-          }
+          matched += 1;
+          if (matched > offset && matched <= offset + limit) page.push(log);
         }
-      }
-
-      if (results.length >= limit + offset) {
-        break;
       }
     }
 
+    const results = [];
+    for (const log of page) results.push(await this._decryptAuditEvent(log));
+
     return {
-      results: results.slice(offset, offset + limit),
-      total: results.length,
-      hasMore: results.length > limit + offset,
+      results,
+      total: matched,
+      hasMore: matched > offset + limit,
       // Lines that could not be parsed and were left out of the results.
       skippedLines,
     };
@@ -723,7 +1187,9 @@ class AuditLogger extends EventEmitter {
         dataAccessEvents: 0,
         dataModificationEvents: 0,
         systemChangeEvents: 0,
+        apiAccessEvents: 0,
         complianceEvents: 0,
+        otherEvents: 0,
         criticalEvents: 0,
         failedEvents: 0,
       },
@@ -737,7 +1203,11 @@ class AuditLogger extends EventEmitter {
 
     // Analyze logs for compliance
     for (const log of logs.results) {
-      report.summary[log._category + 'Events']++;
+      report.summary[
+        Object.hasOwn(SUMMARY_KEYS, log._category)
+          ? SUMMARY_KEYS[log._category]
+          : 'otherEvents'
+      ]++;
 
       if (log.metadata._severity === 'CRITICAL') {
         report.summary.criticalEvents++;
@@ -755,7 +1225,7 @@ class AuditLogger extends EventEmitter {
 
       if (includeEvidence && complianceCheck.evidence) {
         report.evidence.push({
-          logId: log.metadata._correlationId,
+          logId: log.metadata.correlationId,
           requirement: complianceCheck.requirement,
           evidence: complianceCheck.evidence,
         });
@@ -1438,19 +1908,42 @@ class AuditLogger extends EventEmitter {
     const fail = (reason) => ({ key: null, file, reason });
     try {
       fsSync.mkdirSync(dir, { recursive: true, mode: 0o700 });
-      try {
-        fsSync.writeFileSync(
-          file,
-          `${crypto.randomBytes(SIGNING_KEY_BYTES).toString('hex')}\n`,
-          { flag: 'wx', mode: 0o600 },
-        );
-      } catch (error) {
-        if (error.code !== 'EEXIST') throw error;
-      }
       for (let attempt = 0; ; attempt++) {
-        const text = fsSync.readFileSync(file, 'utf8').trim();
+        try {
+          fsSync.writeFileSync(
+            file,
+            `${crypto.randomBytes(SIGNING_KEY_BYTES).toString('hex')}\n`,
+            { flag: 'wx', mode: 0o600 },
+          );
+        } catch (error) {
+          if (error.code !== 'EEXIST') throw error;
+        }
+        let text;
+        try {
+          text = fsSync.readFileSync(file, 'utf8').trim();
+        } catch (error) {
+          // Another process is replacing an empty file: look again
+          if (error.code === 'ENOENT' && attempt < 20) {
+            sleepSync(10);
+            continue;
+          }
+          throw error;
+        }
         if (text.length === hexLength && /^[0-9a-f]+$/.test(text)) {
           return { key: Buffer.from(text, 'hex'), file };
+        }
+        // Empty for longer than any process takes to write it: a crash
+        // between creating and writing it. Move it aside (only one process
+        // wins the rename) and create a new one on the next turn.
+        if (text.length === 0 && this._isStale(file)) {
+          const stale = `${file}.stale-${process.pid}`;
+          try {
+            fsSync.renameSync(file, stale);
+            fsSync.rmSync(stale, { force: true });
+          } catch {
+            // lost the race: the winner's new file is read next turn
+          }
+          continue;
         }
         // Still being written by another process: wait a little.
         if (text.length >= hexLength || attempt >= 20) {
@@ -1460,6 +1953,15 @@ class AuditLogger extends EventEmitter {
       }
     } catch (error) {
       return fail(error.message);
+    }
+  }
+
+  /** Whether a file was last changed more than a few seconds ago. @private */
+  _isStale(file) {
+    try {
+      return Date.now() - fsSync.statSync(file).mtimeMs > STALE_KEY_FILE_MS;
+    } catch {
+      return false;
     }
   }
 
@@ -1712,8 +2214,8 @@ class AuditLogger extends EventEmitter {
   }
 
   /**
-   * Write chain.json with the latest state. If the write fails the state is
-   * kept and written on the next flush.
+   * Write chain.json with the latest state. If the write fails it rejects,
+   * and the state is kept and written on the next flush.
    * @private
    */
   async _persistChainState() {
@@ -1740,9 +2242,8 @@ class AuditLogger extends EventEmitter {
       this._chainDirty = false;
     } catch (error) {
       await fs.rm(temp, { force: true }).catch(() => {});
-      logger.warn(
-        `AuditLogger: could not write the integrity chain file (${error.message}); it will be written on the next flush`,
-      );
+      // _flushOnce reports it (chain_failed, one warning) and retries
+      throw error;
     }
   }
 
@@ -1880,7 +2381,7 @@ class AuditLogger extends EventEmitter {
     return {
       requirement: requirements[standard]?.[0] || 'general_compliance',
       violation: false,
-      evidence: log.metadata._correlationId,
+      evidence: log.metadata.correlationId,
     };
   }
 

@@ -14,10 +14,42 @@ The grounding metrics (citations, faithfulness, context precision and recall, gr
 - **Threshold 0.5.** A sentence counts as supported when its score reaches the per-sentence threshold, now `0.5` by default (it was `0.3`). This applies to `CitationTracker.similarityThreshold`, `PipelineEvaluator`'s `threshold` and the `threshold` option of faithfulness, recall and the hallucination detector. Aggregate thresholds (`groundednessThreshold`, `approvalThreshold`) are unchanged.
 - **Numeric consistency.** A sentence whose numbers (digits, decimals, percentages, number words) do not appear in the source scores below 0.4 and is not grounded. "20" and "twenty" are treated as equal, so "thirty days" is not supported by "twenty days" while "20 days" is.
 - **Tokenizer.** Non-ASCII letters are kept (`Política` no longer becomes `poltica`), and words are split on newlines and hyphens. This also affects BM25, BLEU/ROUGE and the scoring reranker.
+- **Text normalisation (3.9).** Before tokenizing, splitting into sentences and the number, negation and condition checks, text is normalised: zero-width characters, soft hyphens and other invisible format characters are removed, and full-width digits and letters and no-break spaces become plain ones (Unicode NFKC). Text extracted from PDFs and web pages then reads like typed text: "Annual leave" with a zero-width space (U+200B) inside "Annual" supports "Annual leave", and "４５" matches "45".
+- **Sentences (3.9).** A sentence ends at `.`, `!` or `?` followed by a space, or directly by a capital after a lowercase word ("works.Wireless"). A full stop before a lowercase word ("10 a.m. and", "the U.S. government") or after a title or Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't end one. A blank line, and the line break before or after a list item or heading, do, so list items without full stops are separate sentences; a single line break inside a paragraph doesn't. The sentences reported (`citations`, `unsupported`) are the original text.
+
+Before 3.9.0, text wasn't normalised, every full stop before a space ended a sentence, and list lines without full stops were one sentence.
 
 ### Known limitations
 
-Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"); versions before 3.3.0 don't have the polarity check. The polarity check looks for negation words (not, no, never, without, don't and the like, and from 3.6.0 German, Spanish and French ones), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one (from 3.4.0 an optional [LLM judge](#paraphrases-the-optional-llm-judge) can rule on paraphrases). From 3.6.0 it compares clause by clause, so a negation in a clause the sentence leaves out ("binds to the receptor but does not activate it" supports "binds to the receptor") no longer fails it, and from 3.7.0 a clause that continues the first clause's subject ("... but did not reduce mortality") and an opening framing clause ("Based on these results, …") are read as such; reference numbers ("Document 3", "Table 2") are not compared as facts, and identifiers ("kinesin-8", "IL-2") are compared whole; and "12 May 2019" matches "12/05/2019" and "2019-05-12". From 3.7.0 a number with a unit is checked as a quantity, converted exactly within its kind ("2 kg" matches "2,000 grams", "2 pounds" doesn't match "2 kilograms"; a month is not converted to days), "three quarters of" reads as 75%, and "5 pm" matches 17:00 when the source states clock times. It does not handle ordinals, a lone "one", differently split decimals, units it doesn't know (currencies, temperatures), or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
+Grounding is lexical plus a numeric-consistency check and a polarity check: a sentence that is negated where its closest source sentence is not, or the reverse, is not grounded ("employees never receive paid vacation" against "employees receive twenty days of paid vacation"); versions before 3.3.0 don't have the polarity check. The polarity check looks for negation words (not, no, never, without, don't and the like, and from 3.6.0 German, Spanish and French ones), so a source that negates in other words ("contractors are excluded") does not support a negated sentence, and it can't tell a correct paraphrase from a wrong one (from 3.4.0 an optional [LLM judge](#paraphrases-the-optional-llm-judge) can rule on paraphrases). From 3.6.0 it compares clause by clause, so a negation in a clause the sentence leaves out ("binds to the receptor but does not activate it" supports "binds to the receptor") no longer fails it, and from 3.7.0 a clause that continues the first clause's subject ("... but did not reduce mortality") and an opening framing clause ("Based on these results, …") are read as such; reference numbers ("Document 3", "Table 2") are not compared as facts, and identifiers ("kinesin-8", "IL-2") are compared whole; and "12 May 2019" matches "12/05/2019" and "2019-05-12".
+
+Before 3.9.0, a sentence that leaves out a restricting clause of its source was grounded.
+
+Leaving out a clause is fine when the clause contrasts, and not when it restricts. A contrasting clause (but, whereas, while, however) states something else, so leaving it out leaves a narrower claim that is still true: "The drug reduced blood pressure in adults" is supported by "The drug reduced blood pressure in adults, but not in children under twelve". A restricting clause limits the statement itself: an approval ("with manager approval"), a condition ("only if", "if", "unless", "provided", "subject to", "as long as"), a waiting period ("after 90 days of service"), an eligibility rule ("for employees with at least one year of service") or an exception ("except contractors"). Leaving it out makes the claim broader than the source, so from 3.9.0 "Remote work is allowed two days per week" is not supported by "Remote work is allowed two days per week with manager approval" (`lexicalReason: "condition_mismatch"`, which the [judge](#paraphrases-the-optional-llm-judge) never overturns). The condition counts as kept when any of its words appear in the sentence or anywhere else in the answer, so "Remote work is allowed two days per week. Remote work requires manager approval." is grounded. The check reads only the source sentence closest to the claim, and only the part of it the claim comes from: "Remote work is allowed two days per week, and the office is open on weekends" has no restriction on remote work.
+
+From 3.9.0 a contrasting clause that narrows the statement before it counts as a restriction too: "Access is allowed" is not supported by "Access is allowed, but not for guests", and neither are "Refunds are available" by "Refunds are available, except for sale items" or "Remote work is allowed" by "Remote work is allowed, but only on Fridays". A clause starting with "except", "excluding", "unless" or "other than", or ending in "only" after "for ...", always narrows. One starting with "not", "no", "never", "nobody", "only", "just" or "solely" narrows only when a scope word follows ("for", "on", "in", "at", "during", "under", "from" and the like) that the statement before it doesn't already use, so "in adults, but not in children under twelve" above still contrasts. A clause that adds something ("The upgrade is free, but it may take a few minutes") can still be left out.
+
+Known gaps, planned for a later release: a negated contrasting clause with no scope word, whether a bare noun ("Access is allowed, but not guests") or a clause with its own subject ("Access is allowed, but guests are not admitted"), is not read as a restriction, so an answer that leaves it out is still grounded. Nor is a restriction attached to a different subject: "Staff may enter" is grounded by "Guests may enter, but staff need approval", because the check doesn't track which subject a clause is about, and "need approval" as a clause of its own isn't read as a restriction.
+
+Some phrases look like conditions and restrict nothing, so leaving them out is fine: "even if", "if any", "if applicable", "if necessary", "if needed", "if need be" and "if possible" (when they close their clause), an "If not," or "If so," that points back at the previous sentence, and legal boilerplate: "except as required by law", "except as permitted by law", "to the extent permitted by law" and "as required by applicable law". "Customer data is never shared with third parties" is supported by "Customer data is never shared with third parties except as required by law". A source scraped without a space between sentences ("...at reception.Visitors may park ... if they show a badge") is read as two sentences, so one doesn't take the other's condition. A full stop inside an abbreviation ("U.S.", "e.g.", "i.e.", "Inc.", "No.") doesn't end a condition, so "if the U.S. economy grows" is one condition and `missing` reports all of it, and "US" in an answer keeps a "U.S." condition.
+
+To compare with a baseline saved on 3.8 or earlier, turn the check off: `checkAnswer({ ..., conditionCheck: false })`, `new CitationTracker({ conditionCheck: false })` (or `citationOptions: { conditionCheck: false }` on a run, which its evaluation follows), `new PipelineEvaluator({ conditionCheck: false })` and the same option on `computeFaithfulness`, `computeContextRecall` and `computeGroundedness`, `verifyCitations(input, { conditionCheck: false })`, `expect(answer).toBeGroundedIn(sources, { conditionCheck: false })` and `rag-pipeline eval --no-condition-check`. Everything else in 3.9 still applies, so other scores can move a little.
+
+The check catches restrictions that are left out, not other changes of meaning that keep the source's words. These still pass the lexical check (miss rates from the [loophole hunt](https://github.com/DevilsDev/rag-pipeline-utils/blob/main/benchmarks/fixtures/loophole-hunt-findings.md), about 30 generated cases per category):
+
+- **Role swap** (100% missed): who does what to whom ("the employee reimburses the company" from "the company reimburses the employee").
+- **Attribution** (100%): a claim stated as fact where the source attributes it ("according to the survey", "the company claims").
+- **Scope** (93%): "all" for "some", "every site" for "the main site".
+- **Comparison direction** (93%): "lower" for "higher", "before" for "after".
+- **Modality** (93%): "must" for "may", "will" for "could".
+- **Time bounds** (93%): "within 30 days" for "after 30 days", "since 2019" for "until 2019".
+- **Hedges** (90%): a claim stated as fact where the source says "may" or "is thought to".
+
+They pass the word-overlap test, so the [judge](#paraphrases-the-optional-llm-judge), which only rules on sentences that fail for low overlap, doesn't see them either.
+
+An abbreviation followed by a capital ends a sentence: "Funding comes from the U.S. Department of Energy" is split after "U.S.", because a full stop there can't be told from a sentence end ("It was made in the U.S. The plant closed in 2020."). A condition that runs past it is cut there, and a claim is compared with the two parts separately.
+
+From 3.7.0 a number with a unit is checked as a quantity, converted exactly within its kind ("2 kg" matches "2,000 grams", "2 pounds" doesn't match "2 kilograms"; a month is not converted to days), "three quarters of" reads as 75%, and "5 pm" matches 17:00 when the source states clock times. It does not handle ordinals, a lone "one", differently split decimals, units it doesn't know (currencies, temperatures), or claims that combine facts from several documents. Document-side matching is lenient: "twenty-five" in a source also supports "twenty" or "five". Treat the scores as a regression signal, not as proof of correctness.
 
 `checkAnswer`'s cost grows with answer words × source clauses and with answer sentences × source length, so cap the size of untrusted answers and sources before you check them.
 
@@ -49,9 +81,9 @@ check.judge.usage; // { inputTokens, outputTokens, totalTokens } when the LLM re
 The deterministic check stays in charge:
 
 - **It runs first, and without `judge` nothing changes**: same result, same shape, no model call.
-- **The judge only sees sentences that failed for lack of word overlap** (`lexicalReason: "low_overlap"`). A sentence that failed because a number doesn't match its source (`"number_mismatch"`) or because it is negated where its source is not (`"polarity_mismatch"`) is never sent, and stays unsupported.
+- **The judge only sees sentences that failed for lack of word overlap** (`lexicalReason: "low_overlap"`). A sentence that failed because a number doesn't match its source (`"number_mismatch"`), because it is negated where its source is not (`"polarity_mismatch"`) or, from 3.9.0, because it leaves out a condition its source states (`"condition_mismatch"`) is never sent, and stays unsupported.
 - **A "supported" verdict must name a source, and that source must pass the number and negation checks** against the sentence; a negated sentence also needs a negated source sentence that shares its words. Otherwise the sentence stays unsupported, so the judge can't accept "30 days" against a source that says twenty, or "workers aren't entitled to holidays" against one that grants them.
-- **It fails closed.** Output that isn't the expected JSON (a code fence around it is fine), a missing or malformed verdict, or an unknown source id leaves the sentence unsupported, with the reason in `verdicts[i].reason`. An error thrown by `generate()` is not caught.
+- **It fails closed.** Output that isn't the expected JSON (a code fence around it is fine), a missing or malformed verdict, or an unknown source id leaves the sentence unsupported, with the reason in `verdicts[i].reason`. An error thrown by `generate()` is not caught, except a reply with no text from `AnthropicConnector` (error code `NO_TEXT`, or `MODEL_REFUSED` when the model refused): the sentences keep their lexical verdict, `check.judge.error` says why, and each affected verdict's `reason` reads "judge gave no usable verdict".
 - **Sources are untrusted data.** They go to the judge inside `<reference_documents>` delimiters, with an instruction not to follow instructions inside them; the answer's sentences are delimited the same way.
 - **One call per answer**, for all the sentences that need it, and none when the lexical check settles everything. `check.judge.calls` counts the calls and `check.judge.usage` sums the token usage the LLM result reports (`usage` with `inputTokens`/`outputTokens` or `prompt_tokens`/`completion_tokens`). From 3.5.0 `AnthropicConnector` reports it (the judge calls its `generateWithUsage()` when an LLM has one); the other built-in connectors return plain text, so they report calls only.
 - **Any current Claude model works as the judge.** The judge asks for temperature 0; Claude 4.7 and later models reject any temperature but the default, so from 3.5.0 `AnthropicConnector` sends the request again without it, once per model, with a `RAG_ANTHROPIC_TEMPERATURE` warning. (Before 3.5.0 the judge failed with HTTP 400 on those models, including the connector's default, `claude-sonnet-5-5`.)
@@ -93,7 +125,7 @@ The result has the shape `{ scores, details, metadata }`:
 
 - **`scores.faithfulness`** -- share of answer sentences supported by the retrieved documents
 - **`scores.relevance`** -- how directly the answer addresses the query
-- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query
+- **`scores.contextPrecision`** -- share of retrieved documents that are relevant to the query. A document is relevant when it contains at least `threshold * 0.67` of the query's content terms (0.335 with the default threshold of 0.5), the same factor `computeGroundedness` uses; `computeContextPrecision` on its own takes its own `options.threshold` (default 0.2)
 - **`scores.contextRecall`** -- share of the **reference answer's** sentences that the retrieved documents support (did retrieval find everything needed?)
 - **`scores.groundedness`** -- composite score (see [`computeGroundedness`](#computegroundedness))
 - **`details.<metric>`** -- the full output of each metric function
@@ -146,17 +178,17 @@ computeContextRecall("Refunds are accepted within 30 days.", docs);
 
 Signatures:
 
-| Function                                                        | Arguments                                                         |
-| --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5)                                 |
-| `computeAnswerRelevance(query, answer, options)`                |                                                                   |
-| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2)                                 |
-| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5)                                 |
-| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer` |
+| Function                                                        | Arguments                                                                                                |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `computeFaithfulness(answer, retrievedDocs, options)`           | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeAnswerRelevance(query, answer, options)`                |                                                                                                          |
+| `computeContextPrecision(query, retrievedDocs, options)`        | `options.threshold` (default 0.2; `computeGroundedness` and `PipelineEvaluator` pass `threshold * 0.67`) |
+| `computeContextRecall(referenceAnswer, retrievedDocs, options)` | `options.threshold` (default 0.5), `options.conditionCheck` (3.9)                                        |
+| `computeGroundedness(query, answer, retrievedDocs, options)`    | `options.weights`, `options.threshold`, `options.referenceAnswer`, `options.conditionCheck` (3.9)        |
 
-### Numeric and polarity consistency helpers
+### Numeric, polarity and condition consistency helpers
 
-The numeric and polarity checks used by the grounding metrics are exported as well:
+The numeric, polarity and condition checks used by the grounding metrics are exported as well:
 
 ```javascript
 const {
@@ -165,10 +197,10 @@ const {
 } = require("@devilsdev/rag-pipeline-utils");
 
 checkNumericConsistency("Returns within thirty days", "Returns within 30 days");
-// { consistent: true, claimNumbers: ["30"], missing: [] }  ("thirty" equals "30")
+// { consistent: true, claimNumbers: ["duration:30 day"], missing: [], matchedWords: [] }  ("thirty" equals "30")
 
 checkNumericConsistency("Returns within 45 days", "Returns within 30 days");
-// { consistent: false, claimNumbers: ["45"], missing: ["45"] }
+// { consistent: false, claimNumbers: ["duration:45 day"], missing: ["duration:45 day"], matchedWords: [] }
 
 extractNumbers("20 items, 3.5% and twenty");
 // { values: ["20", "3.5", "20"], parts: [...] }
@@ -187,6 +219,19 @@ checkPolarityConsistency(
 //   sourceSentence: "Contractors do not receive paid vacation." }
 ```
 
+`checkConditionConsistency` (3.9.0) compares a claim with the source sentence closest to it and lists the restricting clauses the claim leaves out. The optional third argument is the whole answer: a condition restated in another sentence of it counts.
+
+```js no-run
+const { checkConditionConsistency } = require("@devilsdev/rag-pipeline-utils");
+
+checkConditionConsistency(
+  "Remote work is allowed two days per week.",
+  "Remote work is allowed two days per week with manager approval.",
+);
+// { consistent: false, missing: ["with manager approval"],
+//   sourceSentence: "Remote work is allowed two days per week with manager approval." }
+```
+
 ---
 
 ## **computeGroundedness**
@@ -196,6 +241,8 @@ checkPolarityConsistency(
 1. **Faithfulness** -- the answer's sentences are supported by the retrieved context
 2. **Context Precision** -- the retrieved chunks are relevant rather than noisy
 3. **Context Recall** -- the retrieved chunks support the reference answer (only with `options.referenceAnswer`)
+
+`options.threshold` (default 0.5) is passed to faithfulness and context recall as it is. Context precision gets `threshold * 0.67`, so 0.335 with the default.
 
 The score is a weighted mean over the available components, `sum(w * m) / sum(w)`. With the default weights (0.4, 0.3, 0.3) and a reference answer:
 
@@ -552,6 +599,10 @@ const report = detectHallucinations(cited.citations, { threshold: 0.5 });
 
 With zero retrieved documents, `track()` does not throw; every sentence is reported as unsupported. `retrievedDocs` must be an array.
 
+A sentence that some document supports below the threshold is a `likely_hallucination`, with its best score; one that no document shares a content word with is a `definite_hallucination`.
+
+From 3.9.0, identical sources count once in the IDF word weights, and each sentence's weights come only from the sources that share a content word with it, so a duplicated or unrelated source doesn't change a verdict; checks against a single source are unaffected. `computeFaithfulness` (and so groundedness and `PipelineEvaluator`) uses the same IDF weights as `checkAnswer` and `CitationTracker`; pass `useIDFWeighting: false` for the scores of earlier versions. Context recall still scores without IDF. Before 3.9.0, a sentence below the threshold was a `definite_hallucination` with score 0, so hallucination classes changed in many cases while `hallucinationRate`, groundedness and which sentences are unsupported didn't. Baselines saved with earlier versions for multi-source answers or hallucination classes need regenerating.
+
 ### Verify the citations a model returns
 
 When the model cites its own sources (Claude's citations, OpenAI's file search), a citation can point at a real document and still not say what the sentence claims. `verifyCitations()` checks each claim against the passages it cites, with the same word-overlap, number and negation checks as `checkAnswer`, and the optional [LLM judge](#paraphrases-the-optional-llm-judge) for paraphrases.
@@ -617,7 +668,7 @@ const check = await verifyCitations(fromOpenAIFileCitations(response));
 What the result reports:
 
 - **`verified`**: true only when there is at least one cited claim, every claim is supported and every citation could be checked. It covers what the model cited: an answer with no citations is never verified, and sentences without a citation are listed in `uncited`, not counted against it.
-- **`claims`**: one per cited claim, with `verdict` (`supported`, `unsupported` or `unverifiable`), `lexicalReason` (`supported`, `low_overlap`, `number_mismatch`, `polarity_mismatch` or `unverifiable`), `reason` in words, `decidedBy` (`lexical` or `judge`), `score`, and each citation's `sourceId`, `location`, own `score` and `supports`. A claim is checked against all its cited passages together, so a sentence taking one fact from each of two passages is supported even though neither passage supports it alone.
+- **`claims`**: one per cited claim, with `verdict` (`supported`, `unsupported` or `unverifiable`), `lexicalReason` (`supported`, `low_overlap`, `number_mismatch`, `polarity_mismatch`, `condition_mismatch` from 3.9.0, or `unverifiable`), `reason` in words, `decidedBy` (`lexical` or `judge`), `score`, and each citation's `sourceId`, `location`, own `score` and `supports`. A claim is checked against all its cited passages together, so a sentence taking one fact from each of two passages is supported even though neither passage supports it alone.
 - **`uncited`**: sentences with content that no citation covers.
 - **`summary`**: counts of claims by verdict, citations, unverifiable citations and uncited sentences; `skipped` counts citations of other kinds (OpenAI's web and container citations).
 
@@ -680,7 +731,7 @@ See [Benchmarks](./Benchmarks.md) for methodology and for benchmarking your own 
 - **Use a reference answer.** Without one, context recall is skipped and groundedness rests on faithfulness and precision alone.
 - **Combine metrics.** Faithfulness catches unsupported claims; context precision and recall tell you whether retrieval or generation is the problem.
 - **Track trends, not absolutes.** Lexical scores depend on your corpus and phrasing. Compare runs on the same test set and evaluator options; scores from before 2.5.0 are not comparable with 2.5.0 scores.
-- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, units, multi-document claims) in mind.
+- **Review failures by hand.** Check the `details` of low-scoring cases, and keep the known limitations (paraphrase, currencies and temperatures, multi-document claims) in mind.
 
 ---
 

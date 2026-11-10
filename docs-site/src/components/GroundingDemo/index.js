@@ -25,7 +25,7 @@ export default function GroundingDemo() {
           <i />
         </span>
         <span className={styles.file}>
-          pipeline.run({"{ citations: true }"})
+          pipeline.run({"{ query, options: { citations: true } }"})
         </span>
       </div>
 

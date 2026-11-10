@@ -5,8 +5,9 @@ mdx:
 
 # Class: Histogram
 
-Histogram with cumulative bucket counts. It also keeps every observed value
-in memory to compute percentiles and standard deviation.
+Histogram with cumulative bucket counts. It keeps a bounded random sample
+of the observed values (at most 10000) to compute percentiles; count, sum,
+min, max, mean and standard deviation are exact.
 
 ## Constructors
 
@@ -193,6 +194,9 @@ observe(v): void;
 ```
 
 Record a value. Non-numbers and NaN are ignored.
+Count, sum, min, max, mean and standard deviation are exact; percentiles
+come from a uniform random sample of at most MAX_SAMPLE observations, so
+they are exact up to that many and estimates beyond it.
 
 #### Parameters
 

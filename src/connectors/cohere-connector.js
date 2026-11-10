@@ -10,6 +10,7 @@ const {
   missingApiKeyError,
   resolveApiKey,
   throwIfAborted,
+  withKeyId,
 } = require('./connector-utils');
 
 const API_KEY_ENV = 'COHERE_API_KEY';
@@ -49,11 +50,14 @@ class CohereConnector extends BaseConnector {
   getCacheKey(role) {
     if (role !== 'embedder') return null;
     const c = this.config;
-    return componentCacheKey('cohere-embed', {
+    return componentCacheKey(
+      'cohere-embed',
+      withKeyId({
       baseURL: c.baseURL,
       model: c.embeddingModel,
       queryInputType: c.queryInputType,
-    });
+    }, c.apiKey),
+    );
   }
 
   /**
@@ -148,7 +152,7 @@ class CohereConnector extends BaseConnector {
       },
       options.signal,
     );
-    return data.embeddings[0];
+    return firstEmbedding(data);
   }
 
   /**
@@ -170,7 +174,7 @@ class CohereConnector extends BaseConnector {
       },
       options.signal,
     );
-    return data.embeddings[0];
+    return firstEmbedding(data);
   }
 
   /**
@@ -197,10 +201,15 @@ class CohereConnector extends BaseConnector {
       options.signal,
     );
 
-    return data.results.map((result) => ({
-      ...documents[result.index],
-      score: result.relevance_score,
-    }));
+    if (!data || !Array.isArray(data.results)) {
+      throw new Error('Cohere rerank returned no results');
+    }
+    return data.results.map((result) => {
+      const doc = documents[result.index];
+      // Strings become { content }; spreading a string would give a map of characters
+      const base = typeof doc === 'string' ? { content: doc } : { ...doc };
+      return { ...base, relevanceScore: result.relevance_score };
+    });
   }
 
   /**
@@ -215,6 +224,18 @@ class CohereConnector extends BaseConnector {
       return false;
     }
   }
+}
+
+/**
+ * @param {object} data - Cohere /embed response body
+ * @returns {number[]}
+ */
+function firstEmbedding(data) {
+  const vector = data && Array.isArray(data.embeddings) && data.embeddings[0];
+  if (!vector) {
+    throw new Error('Cohere embed returned no embeddings');
+  }
+  return vector;
 }
 
 module.exports = { CohereConnector, DEFAULT_CONFIG };

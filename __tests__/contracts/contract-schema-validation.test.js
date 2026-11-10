@@ -63,20 +63,21 @@ describe("Contract Schema Validation", () => {
     });
 
     it("should handle missing schema file gracefully", () => {
-      // Mock fs.existsSync to simulate missing schema
-      const originalExistsSync = fs.existsSync;
-      jest.spyOn(fs, "existsSync").mockImplementation((filePath) => {
-        if (filePath.includes("contract-schema.json")) {
-          return false;
-        }
-        return originalExistsSync(filePath);
+      // Simulate a schema that cannot be loaded (the contracts are bundled JSON)
+      let registry;
+      jest.isolateModules(() => {
+        jest.doMock("../../src/core/bundled-contracts", () => ({
+          get schema() {
+            throw new Error("missing");
+          },
+          contracts: {},
+        }));
+        const {
+          PluginRegistry: IsolatedRegistry,
+        } = require("../../src/core/plugin-registry");
+        registry = new IsolatedRegistry({ disableContractWarnings: true });
+        jest.dontMock("../../src/core/bundled-contracts");
       });
-
-      const registry = new PluginRegistry({
-        disableContractWarnings: true,
-      });
-
-      fs.existsSync.mockRestore();
 
       expect(registry._contractSchema).toBeNull();
     });
@@ -445,47 +446,36 @@ describe("Contract Schema Validation", () => {
     it("should throw on invalid contract in development", () => {
       process.env.NODE_ENV = "development";
 
-      // Create invalid contract file
-      const invalidPath = path.join(
-        __dirname,
-        "../fixtures/invalid-contract-test.json",
-      );
-
-      const originalReadFileSync = fs.readFileSync;
-      const originalExistsSync = fs.existsSync;
-
-      jest.spyOn(fs, "existsSync").mockImplementation((filePath) => {
-        if (filePath.includes("invalid-contract-test.json")) {
-          return true;
-        }
-        return originalExistsSync(filePath);
-      });
-
-      jest
-        .spyOn(fs, "readFileSync")
-        .mockImplementation((filePath, encoding) => {
-          if (filePath.includes("loader-contract.json")) {
-            return JSON.stringify({
-              type: "loader",
-              version: "invalid", // Invalid version format
-              title: "Test",
-              description: "Test",
-              methods: [],
-              properties: {},
-              required: [],
-            });
-          }
-          return originalReadFileSync(filePath, encoding);
-        });
-
       expect(() => {
-        new PluginRegistry({
-          disableContractWarnings: true,
+        jest.isolateModules(() => {
+          jest.doMock("../../src/core/bundled-contracts", () => {
+            const real = jest.requireActual("../../src/core/bundled-contracts");
+            return {
+              ...real,
+              contracts: {
+                ...real.contracts,
+                loader: {
+                  type: "loader",
+                  version: "invalid", // Invalid version format
+                  title: "Test",
+                  description: "Test",
+                  methods: [],
+                  properties: {},
+                  required: [],
+                },
+              },
+            };
+          });
+          const {
+            PluginRegistry: IsolatedRegistry,
+          } = require("../../src/core/plugin-registry");
+          try {
+            new IsolatedRegistry({ disableContractWarnings: true });
+          } finally {
+            jest.dontMock("../../src/core/bundled-contracts");
+          }
         });
       }).toThrow(/Contract schema validation failed/);
-
-      fs.existsSync.mockRestore();
-      fs.readFileSync.mockRestore();
     });
 
     it("should log error but continue in production", () => {

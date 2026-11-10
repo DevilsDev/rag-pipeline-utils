@@ -78,12 +78,19 @@ describe("toBeGroundedIn", () => {
 
 describe("toCite", () => {
   const answer =
-    "Full-time employees receive twenty days of paid vacation per year. Remote work is allowed two days per week.";
+    "Full-time employees receive twenty days of paid vacation per year. Remote work is allowed two days per week with manager approval.";
 
   test("passes when a sentence is supported by each id", () => {
     expect(answer).toCite("vacation", [POLICY, REMOTE]);
     expect(answer).toCite(["vacation", "remote"], [POLICY, REMOTE]);
     expect(POLICY.content).not.toCite("remote", [POLICY, REMOTE]);
+  });
+
+  test("a sentence that drops its source's condition does not cite it (3.9)", () => {
+    expect("Remote work is allowed two days per week.").not.toCite("remote", [
+      POLICY,
+      REMOTE,
+    ]);
   });
 
   test("works on a run() result", async () => {

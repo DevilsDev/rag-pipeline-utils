@@ -233,7 +233,7 @@ rag-pipeline query "remote work" --top-k 5 --json
 | `--top-k <n>`    | Passages to retrieve (default 3)                                                                                                                 |
 | `--json`         | Print `{ answer, results, citations }` as JSON (`answer` is `null` and `citations` absent without an `llm`)                                      |
 | `--streaming`    | Print the answer as the model generates it (needs an `llm` stage)                                                                                |
-| `--timeout <ms>` | Abort the query after this many milliseconds; exits `1` with `Execution timeout`                                                                 |
+| `--timeout <ms>` | Abort the query after this many milliseconds, a streamed answer included; exits `1` with `Execution timeout`                                     |
 | `--trace`        | Time spent in each stage: embed, retrieve, rerank, generate. With `--streaming`, also the time to first token; with a `router`, the chosen model |
 | `--explain`      | Each passage's rank and score, and which passages support each sentence of the answer; sentences no passage supports are flagged                 |
 | `--stats`        | Latency, passage count and estimated tokens; estimated cost when the `llm` model is in the [pricing table](./API-Reference.md#pricing_metadata)  |
@@ -276,7 +276,10 @@ A source id matches a retrieved passage's `id` or its `metadata.source`, so with
 | `--concurrency <n>`    | Cases run at the same time (default 1)                                                                                     |
 | `--timeout <ms>`       | Abort each case after this many milliseconds; the case is recorded as failed                                               |
 | `--top-k <n>`          | Passages to retrieve (default 3)                                                                                           |
+| `--no-condition-check` | Turn off the 3.9 condition check, to compare with a baseline saved before 3.9; other 3.9 scoring changes still apply       |
 | `--json`               | Print `{ passed, reasons, thresholds, summary, comparison }` as JSON                                                       |
+
+`--no-condition-check` is new in 3.9.0, with the condition check it turns off.
 
 The metrics are `faithfulness`, `relevance`, `contextPrecision`, `contextRecall` (cases with `expected`), `groundedness`, `citationCoverage` and `sourceRecall` (cases with `sourceIds`); see [Run a test set and compare configurations](./Evaluation.md#run-a-test-set-and-compare-configurations). Without an `llm` stage only `sourceRecall` is measured.
 
@@ -438,6 +441,8 @@ rag-pipeline config show --section pipeline
 rag-pipeline config get metadata.name
 rag-pipeline config set metadata.description "Support docs index"
 ```
+
+`config get` prints the value as JSON. A key that isn't set prints `Key not found` to stderr and exits `1`.
 
 ---
 

@@ -1,4 +1,13 @@
 "use strict";
+const timingTests = require("./jest.timing-tests.js");
+
+// Left out of the run with RAG_SKIP_TIMING_TESTS=1 (CI's main run); CI runs
+// them on their own with npm run test:timing.
+const timingTestPatterns = timingTests.map(
+  (file) => `<rootDir>/${file.replace(/[.]/g, "[.]")}$`,
+);
+const skipTimingTests = process.env.RAG_SKIP_TIMING_TESTS === "1";
+
 module.exports = {
   testEnvironment: "node",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
@@ -14,8 +23,11 @@ module.exports = {
     "/__tests__/e2e/_debug-open-handles.js",
     // live API tests run only with npm run test:live (they need a key)
     "/__tests__/live/",
+    // bug-hunt reproductions fail on purpose until fixed: npm run test:bug-hunt
+    "/__tests__/bug-hunt/",
     // git worktrees (e.g. agent checkouts) contain full copies of the tests
     "<rootDir>/.claude/",
+    ...(skipTimingTests ? timingTestPatterns : []),
   ],
   // transform ESM deps like inquirer to CJS so require() won't crash
   transform: { "^.+\\.js$": "babel-jest" },
@@ -62,3 +74,9 @@ module.exports = {
     },
   },
 };
+
+// Not a Jest option: read by jest.timing.config.js, which runs these tests
+Object.defineProperty(module.exports, "timingTestPatterns", {
+  value: timingTestPatterns,
+  enumerable: false,
+});

@@ -9,8 +9,9 @@ mdx:
 function patternPIIDetector(options?): object;
 ```
 
-The built-in PII check as a detector: emails, phone numbers, US social
-security numbers and card numbers, by pattern.
+The built-in PII check as a detector: emails, US phone numbers (10 digits,
+such as 555-123-4567), US social security numbers and card numbers, by
+pattern.
 
 ## Parameters
 

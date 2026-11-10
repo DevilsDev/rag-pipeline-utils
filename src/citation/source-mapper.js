@@ -1,29 +1,58 @@
 'use strict';
 
-const { tokenize, computeSupportScore } = require('../evaluate/scoring');
+const {
+  tokenize,
+  contentTokens,
+  computeSupportScore,
+  prepareDocument,
+  sourceNorm,
+  sourceTokenSet,
+} = require('../evaluate/scoring');
 
 /**
  * Build IDF (Inverse Document Frequency) weights from a collection of documents.
  * IDF = log(1 + totalDocs / docsContainingToken). The +1 keeps weights
  * positive, so tokens found in every document (and every token when only one
- * document was retrieved) still count instead of weighing zero.
+ * document was retrieved) still count instead of weighing zero. Identical
+ * documents (the same text after normalisation) count once, so a duplicated
+ * source doesn't move any weight (3.9, BH-7).
+ *
+ * With `options.sentence`, only the documents sharing a content word with
+ * that sentence count (3.9, BH-7): a source that shares nothing with a
+ * sentence can't move its score, and only the sentence's own words get a
+ * weight. CitationTracker, checkAnswer and computeFaithfulness weight each
+ * sentence this way.
  * @param {Array<{content?: string, text?: string}>} docs - Array of document objects
+ * @param {{sentence?: string}} [options]
  * @returns {Map<string, number>} Map of token to IDF weight
  */
-function buildIDFWeights(docs) {
-  const totalDocs = docs.length;
-  if (totalDocs === 0) return new Map();
+function buildIDFWeights(docs, options = {}) {
+  if (docs.length === 0) return new Map();
+  const { sentence } = options;
+  const sentenceTokens =
+    typeof sentence === 'string' ? new Set(tokenize(sentence)) : null;
+  const words = sentenceTokens && new Set(contentTokens([...sentenceTokens]));
 
   const docFrequency = new Map();
+  const seen = new Set();
 
   for (const doc of docs) {
     const text = doc.content || doc.text || '';
-    const tokens = new Set(tokenize(text));
-    for (const token of tokens) {
+    const prepared = prepareDocument(doc, text);
+    const key = sourceNorm(prepared);
+    if (seen.has(key)) continue;
+    const tokens = sourceTokenSet(prepared);
+    if (words && ![...words].some((w) => tokens.has(w))) continue;
+    seen.add(key);
+    // For one sentence only its own words need a weight, so the work grows
+    // with the sentence, not with each source's vocabulary
+    for (const token of sentenceTokens || tokens) {
+      if (sentenceTokens && !tokens.has(token)) continue;
       docFrequency.set(token, (docFrequency.get(token) || 0) + 1);
     }
   }
 
+  const totalDocs = seen.size;
   const idfWeights = new Map();
   for (const [token, df] of docFrequency) {
     idfWeights.set(token, Math.log(1 + totalDocs / df));
@@ -41,10 +70,27 @@ function buildIDFWeights(docs) {
  * @param {number} [options.maxCitations=3] - Maximum number of citations to return
  * @param {number} [options.threshold=0.5] - Minimum similarity threshold
  * @param {Map<string, number>|null} [options.idfWeights=null] - Optional IDF weights for weighted similarity
+ * @param {string} [options.answerText] - The whole answer the sentence comes
+ *   from: a condition it restates in another sentence counts as kept
+ * @param {boolean} [options.conditionCheck=true] - false: skip the condition
+ *   check (see computeSupportScore)
+ * @param {{bestScore: number}} [options.best] - Filled with the best score of
+ *   any document, also when below the threshold (CitationTracker's near
+ *   misses)
+ * @param {object[]} [options.preparedSources] - prepareDocument() of each doc,
+ *   in order, when the same docs are mapped for several sentences
  * @returns {Array<{docIndex: number, docId: string|undefined, score: number, matchedTokens: string[]}>}
  */
 function mapSentenceToSources(sentence, docs, options = {}) {
-  const { maxCitations = 3, threshold = 0.5, idfWeights = null } = options;
+  const {
+    maxCitations = 3,
+    threshold = 0.5,
+    idfWeights = null,
+    answerText,
+    conditionCheck,
+    preparedSources,
+    best,
+  } = options;
 
   const sentenceTokens = tokenize(sentence);
   if (!sentenceTokens.length) return [];
@@ -53,17 +99,21 @@ function mapSentenceToSources(sentence, docs, options = {}) {
 
   for (let i = 0; i < docs.length; i++) {
     const doc = docs[i];
-    const docText = doc.content || doc.text || '';
-    const docTokens = tokenize(docText);
-    if (!docTokens.length) continue;
+    const prepared =
+      (preparedSources && preparedSources[i]) ||
+      prepareDocument(doc, doc.content || doc.text || '');
+    const docSet = sourceTokenSet(prepared);
+    if (docSet.size === 0) continue;
 
     // Share of the sentence's content tokens found in this document.
-    const docSet = new Set(docTokens);
     const score = computeSupportScore(sentenceTokens, docSet, idfWeights, {
       claimText: sentence,
-      docText,
+      docText: prepared,
+      answerText,
+      conditionCheck,
     });
     const matched = [...new Set(sentenceTokens)].filter((t) => docSet.has(t));
+    if (best && score > best.bestScore) best.bestScore = score;
 
     if (score >= threshold) {
       results.push({

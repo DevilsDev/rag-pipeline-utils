@@ -5,6 +5,8 @@ const {
   tokenize,
   checkPolarityConsistency,
   computeSupportScore,
+  prepareSource,
+  prepareDocument,
 } = require("../../../src/evaluate/scoring");
 const { computeFaithfulness } = require("../../../src/evaluate/faithfulness");
 const {
@@ -184,4 +186,62 @@ test("context recall does not count a contradicted reference claim", () => {
 
 test("checkPolarityConsistency is exported", () => {
   expect(rag.checkPolarityConsistency).toBe(checkPolarityConsistency);
+});
+
+describe("the polarity check's per-claim memo", () => {
+  // MAX_AGREED_PER_SENTENCE in src/evaluate/scoring.js
+  const CAP = 1024;
+  const DOC =
+    "Full-time employees receive twenty days of paid vacation per year. " +
+    "Contractors do not receive paid vacation.";
+  const memoSizes = (prepared) =>
+    prepared.memo.polarity.sentences.map((s) => s.agreed.size);
+
+  test("stays capped on a source reused across many distinct claims", () => {
+    const doc = { id: "policy", content: DOC };
+    const prepared = prepareDocument(doc, doc.content);
+    for (let i = 0; i < 6000; i++) {
+      checkPolarityConsistency(
+        `Full-time employees receive paid vacation code${i}.`,
+        prepareDocument(doc, doc.content),
+      );
+    }
+    expect(prepareDocument(doc, doc.content)).toBe(prepared);
+    for (const size of memoSizes(prepared)) {
+      expect(size).toBeLessThanOrEqual(CAP);
+    }
+    expect(Math.max(...memoSizes(prepared))).toBe(CAP);
+  });
+
+  test("gives the same verdicts before and after the memo fills", () => {
+    const claims = [
+      "Employees never receive paid vacation.",
+      "Contractors receive paid vacation.",
+      "Contractors do not receive paid vacation.",
+      POLICY,
+    ];
+    const unseen = [
+      "Full-time employees do not receive paid vacation.",
+      "Contractors receive twenty days of paid vacation.",
+    ];
+    const prepared = prepareSource(DOC);
+    const before = claims.map((c) => checkPolarityConsistency(c, prepared));
+    for (let i = 0; i < 6000; i++) {
+      checkPolarityConsistency(
+        `Contractors do not receive paid vacation code${i}.`,
+        prepared,
+      );
+      checkPolarityConsistency(
+        `Full-time employees receive paid vacation code${i}.`,
+        prepared,
+      );
+    }
+    for (const size of memoSizes(prepared)) expect(size).toBe(CAP);
+    expect(claims.map((c) => checkPolarityConsistency(c, prepared))).toEqual(
+      before,
+    );
+    expect(unseen.map((c) => checkPolarityConsistency(c, prepared))).toEqual(
+      unseen.map((c) => checkPolarityConsistency(c, DOC)),
+    );
+  });
 });

@@ -213,7 +213,7 @@ const VERSION_BLOCKS = [
         ' Of the 3.6 false alarms, 16 are new: the clause rule flags a claim whose subject the source names only in another, positive clause ("varenicline was not more effective than combination NRT" against "Varenicline was more effective than nicotine patch …, but was not more effective than combination NRT"), or whose framing clause ("Based on these data, …") has no negation.',
     },
   ],
-  ["versions-3.7", { from: "3.6.0", label: "3.7" }],
+  ["versions-3.7", { from: "3.6.0", to: "3.7.0", label: "3.7" }],
 ];
 
 const MODEL_NAMES = {
@@ -297,6 +297,207 @@ function renderClaudeUsage(report) {
   ].join("\n");
 }
 
+/** The condition-dropped benchmark (3.9; condition-dropped-plan.md). */
+function renderConditionDropped(report) {
+  const pct = (x) =>
+    x === null || x === undefined ? "-" : `${(x * 100).toFixed(1)}%`;
+  const runs = [
+    ["lexical-before", "Lexical, 3.8.0"],
+    ["lexical-after", "Lexical, 3.9"],
+    ["claude-haiku-5-5-before", "Judge Claude Haiku 5.5, 3.8.0"],
+    ["claude-haiku-5-5-after", "Judge Claude Haiku 5.5, 3.9"],
+    ["claude-sonnet-5-5-before", "Judge Claude Sonnet 5.5, 3.8.0"],
+    ["claude-sonnet-5-5-after", "Judge Claude Sonnet 5.5, 3.9"],
+    ["lexical-release", "Lexical, 3.9.0 release (not held out)"],
+    [
+      "claude-haiku-5-5-release",
+      "Judge Claude Haiku 5.5, 3.9.0 release (not held out)",
+    ],
+    [
+      "claude-sonnet-5-5-release",
+      "Judge Claude Sonnet 5.5, 3.9.0 release (not held out)",
+    ],
+  ].filter(([key]) => report.runs[key]);
+  const groups = Object.keys(report.runs["lexical-after"].test.perStratum);
+  const flagged = (key, split, stratum) => {
+    const s = report.runs[key] && report.runs[key][split].perStratum[stratum];
+    return s ? `${s.flagged}/${s.n}` : "-";
+  };
+  const sub = (key, split) => {
+    const s =
+      report.runs[key] &&
+      report.runs[key][split].perSubLabel["except-as-required-by-law"];
+    return s ? `${s.flagged}/${s.n}` : "-";
+  };
+  return [
+    `${num(report.n.all)} cases (${num(report.n.dev)} dev, ${num(report.n.test)} test), written by Claude Sonnet 5.5 and split by seed ${report.seed}; labels are the generator's and still need human review. Positive class: the claim leaves out a restriction (unsupported). Run ${report.generatedAt.slice(0, 10)}.`,
+    "",
+    "**Test split.** The 3.9 code was frozen, and committed, before the test split ran." +
+      (report.release
+        ? ` The "3.9.0 release" rows are the released code (commit \`${report.release.environment.commit}\`, run ${report.release.generatedAt.slice(0, 10)}), which changed after the test split had been seen, so they are not a held-out measure.`
+        : ""),
+    "",
+    table(
+      ["Run", "Precision", "Recall", "F1", "TP / FP / FN / TN"],
+      runs.map(([key, label]) => {
+        const t = report.runs[key].test;
+        return [
+          label,
+          pct(t.precision),
+          pct(t.recall),
+          pct(t.f1),
+          `${t.tp} / ${t.fp} / ${t.fn} / ${t.tn}`,
+        ];
+      }),
+    ),
+    "",
+    "**Flagged per group, test split** (a positive group should be flagged, a control group not):",
+    "",
+    table(
+      [
+        "Group",
+        "Expected",
+        "Lexical, 3.8.0",
+        "Lexical, 3.9",
+        "Judge Haiku 5.5, 3.9",
+        "Judge Sonnet 5.5, 3.9",
+      ],
+      [
+        ...groups.map((g) => [
+          `\`${g}\``,
+          report.runs["lexical-after"].test.perStratum[g].expected,
+          flagged("lexical-before", "test", g),
+          flagged("lexical-after", "test", g),
+          flagged("claude-haiku-5-5-after", "test", g),
+          flagged("claude-sonnet-5-5-after", "test", g),
+        ]),
+        [
+          "of which `except-as-required-by-law`",
+          "supported",
+          sub("lexical-before", "test"),
+          sub("lexical-after", "test"),
+          sub("claude-haiku-5-5-after", "test"),
+          sub("claude-sonnet-5-5-after", "test"),
+        ],
+      ],
+    ),
+    "",
+    `Dev split, lexical: F1 ${pct(report.runs["lexical-before"].dev.f1)} on 3.8.0, ${pct(report.runs["lexical-after"].dev.f1)} on 3.9. The dev split informed four changes before the test split ran: a restriction word the main statement also uses doesn't count as keeping it; another sentence of the answer restates a restriction only when the same source supports it; "even if", "if any" and "if applicable" aren't conditions; and "and" splits statements only after a comma.`,
+  ].join("\n");
+}
+
+/** The condition check's follow-up after the public-set reruns (3.9). */
+function renderConditionFollowup(report) {
+  const pct = (x) => `${(x * 100).toFixed(1)}%`;
+  const versions = [
+    "3.8.0",
+    "3.9 before fix",
+    "3.9 after fix",
+    "3.9 after bug-hunt fixes",
+    "3.9 after abbreviation fix",
+  ].filter((v) => report.publicSets[v]);
+  const heading = {
+    "3.8.0": "3.8.0",
+    "3.9 before fix": "3.9 before the fix",
+    "3.9 after fix": "after the fix",
+    "3.9 after bug-hunt fixes": "after the bug-hunt fixes",
+    "3.9 after abbreviation fix": "after the abbreviation fix",
+  };
+  // Judge rows were rerun on the later stages for Claude Haiku 5.5 only
+  const NOT_RERUN = "not rerun on the bug-hunt fixes";
+  const LATER = new Set([
+    "3.9 after bug-hunt fixes",
+    "3.9 after abbreviation fix",
+  ]);
+  const sets = Object.keys(report.publicSets["3.8.0"]).filter(
+    (k) => !k.startsWith("SciFact"),
+  );
+  const scifact = Object.keys(report.publicSets["3.8.0"]).filter((k) =>
+    k.startsWith("SciFact"),
+  );
+  const pretty = (k) =>
+    k
+      .replace("claude-haiku-4-5-20251001", "Claude Haiku 4.5")
+      .replace(
+        /claude-(\w+)-(\d)-(\d)/,
+        (_, n, a, b) => `Claude ${n[0].toUpperCase()}${n.slice(1)} ${a}.${b}`,
+      );
+  const whenLabel = {
+    before: "3.9 (frozen)",
+    after: "3.9 after the legal-boilerplate rule (not held out)",
+    bughunt: "3.9 after the bug-hunt fixes (not held out)",
+    abbreviations: "3.9 after the abbreviation fix (not held out)",
+  };
+  const labels = {
+    "lexical-after": "Lexical",
+    "claude-haiku-5-5-after": "Judge Claude Haiku 5.5",
+    "claude-sonnet-5-5-after": "Judge Claude Sonnet 5.5",
+  };
+  return [
+    'The false alarms the public sets showed on 3.9 ("if necessary", an "If not," that points back at the previous sentence, and sources with no space between sentences) were first observed on those sets, on RAGTruth. The fix was written against new dev cases, not cases from the public sets, and the public sets were rerun once after it. Legal boilerplate ("except as required by law" and similar) became non-restricting by a decision taken after the test split above showed 4 of 4 false alarms on it, so the test-split rows after the fix are not a held-out measure; all of their change (4 fewer false alarms) is those four cases. The fix removes 1 of the 3 false alarms the condition check added on the RAGTruth sample, 3 of 17 on the full split, 1 of 1 on HaluEval and none of those on SciFact. Known causes of the rest, left alone then because they were found on the public sets: a clause cut at the full stop of an abbreviation ("if the U.S." read as "if the U"; fixed later on new dev cases, below), and structured sources (JSON records with review text) read as one sentence, so an "if" in the review text restricts the facts of the record. Positive class: the answer is hallucinated (unsupported); "clean" is the number of answers labelled correct.',
+    "",
+    'Later, the bug-hunt fixes (text normalisation and sentence splitting, BH-1 to BH-6) and then a fix for full stops inside abbreviations in restricting clauses ("if the U.S." is no longer read as "if the U", and "US" in an answer matches "U.S."), written against new dev cases, were measured once each. Lexical, SciFact and condition-dropped rows are exact (every judge call they need was cached); of the public-set judges only Claude Haiku 5.5 was rerun, after both fixes. With the BH-15 fix in 3.9, a judge reply with no text (cut off at its token limit) is a judge error and the lexical verdict stands, where checkAnswer used to reject; the 3.8.0 run had no such reply, and at least one full-split answer on this rerun did. Each cell: false alarms (FP), then precision / F1.',
+    "",
+    table(
+      ["Set", "Clean / hallucinated", ...versions.map((v) => heading[v])],
+      sets.map((k) => {
+        const m = versions.map((v) => report.publicSets[v][k]);
+        return [
+          pretty(k),
+          `${num(m[0].clean)} / ${num(m[0].hallucinated)}`,
+          ...m.map((x, i) =>
+            x
+              ? `${num(x.fp)}; ${pct(x.precision)} / ${pct(x.f1)}`
+              : LATER.has(versions[i])
+                ? NOT_RERUN
+                : "not run",
+          ),
+        ];
+      }),
+    ),
+    "",
+    `SciFact (no unsupported labels; claims flagged, lower is better): ${scifact
+      .map((k) => {
+        const m = versions.map((v) => report.publicSets[v][k]);
+        const model = pretty(k.match(/\((.*)\)/)[1]);
+        return `${model} ${m.map((x) => x.flagged).join(" / ")} of ${num(m[0].claims)}`;
+      })
+      .join("; ")} (${versions.map((v) => heading[v]).join(" / ")}).`,
+    "",
+    "**Condition-dropped benchmark after the fix.** The headline numbers are the frozen-code test split above (F1 84.9% lexical, 87.9% with either judge). The rows after the fix were measured after the legal-boilerplate rule, which was decided on that test split, so they are not held out, and the same holds for the rows after the bug-hunt and abbreviation fixes.",
+    "",
+    table(
+      [
+        "Run",
+        "Split",
+        "Precision",
+        "Recall",
+        "F1",
+        "Non-restricting flagged",
+        "Of which legal boilerplate",
+      ],
+      Object.entries(report.conditionDropped).flatMap(([key, splits]) =>
+        ["test", "dev"].flatMap((split) =>
+          ["before", "after", "bughunt", "abbreviations"]
+            .filter((when) => splits[split][when])
+            .map((when) => {
+              const r = splits[split][when];
+              return [
+                `${labels[key]}, ${whenLabel[when]}`,
+                split,
+                pct(r.precision),
+                pct(r.recall),
+                pct(r.f1),
+                `${r.nonRestricting.flagged}/${r.nonRestricting.n}`,
+                `${r.exceptAsRequiredByLaw.flagged}/${r.exceptAsRequiredByLaw.n}`,
+              ];
+            }),
+        ),
+      ),
+    ),
+  ].join("\n");
+}
+
 const RENDERERS = {
   speed: renderSpeed,
   quality: renderQuality,
@@ -306,6 +507,8 @@ const RENDERERS = {
   "judge-more": renderJudgeMore,
   "claude-latency": renderLatency,
   "claude-usage": renderClaudeUsage,
+  "condition-dropped": renderConditionDropped,
+  "condition-followup": renderConditionFollowup,
 };
 
 function render(content) {

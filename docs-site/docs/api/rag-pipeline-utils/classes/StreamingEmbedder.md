@@ -103,21 +103,7 @@ Convenience method that collects all embeddings into an array.
 ### embedStream()
 
 ```ts
-embedStream(documents): AsyncGenerator<
-  | {
-  backpressure?: boolean;
-  error?: undefined;
-  id: string;
-  index: number;
-  progress: number;
-  vector: any;
-}
-  | {
-  error: any;
-  id: string;
-  index: number;
-  progress: number;
-}, void, unknown>;
+embedStream(documents): AsyncGenerator<any, void, unknown>;
 ```
 
 Async generator that yields embeddings while emitting lifecycle events.
@@ -130,21 +116,7 @@ Async generator that yields embeddings while emitting lifecycle events.
 
 #### Returns
 
-`AsyncGenerator`\<
-\| \{
-`backpressure?`: `boolean`;
-`error?`: `undefined`;
-`id`: `string`;
-`index`: `number`;
-`progress`: `number`;
-`vector`: `any`;
-\}
-\| \{
-`error`: `any`;
-`id`: `string`;
-`index`: `number`;
-`progress`: `number`;
-\}, `void`, `unknown`\>
+`AsyncGenerator`\<`any`, `void`, `unknown`\>
 
 #### Yields
 

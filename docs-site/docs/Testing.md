@@ -98,11 +98,11 @@ test("answers vacation questions from the handbook", async () => {
 });
 ```
 
-| Matcher                                   | Passes when                                                                                                                                               |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `toBeGroundedIn(sources?, { threshold })` | Every sentence of the answer is supported by a source: its content words, numbers and negation match, as in `checkAnswer`                                 |
-| `toCite(id \| ids, sources?)`             | At least one sentence is supported by each given source                                                                                                   |
-| `toContainNoPII({ patterns })`            | No email, phone number, US SSN or card number (the post-generation guard's patterns, plus yours) appears in the string, or in any string inside an object |
+| Matcher                                                   | Passes when                                                                                                                                                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `toBeGroundedIn(sources?, { threshold, conditionCheck })` | Every sentence of the answer is supported by a source: its content words, numbers and negation match, as in `checkAnswer`; `conditionCheck: false` turns off the 3.9 condition check |
+| `toCite(id \| ids, sources?)`                             | At least one sentence is supported by each given source                                                                                                                              |
+| `toContainNoPII({ patterns })`                            | No email, US phone number, US SSN or card number (the post-generation guard's patterns, plus yours) appears in the string, or in any string inside an object                         |
 
 The value under test is an answer string or anything with an `answer`, such as a `pipeline.run()` result. Without `sources`, `toBeGroundedIn` and `toCite` use the result's `results`. Sources can be in any shape `checkAnswer` reads: strings, `{ id, content }`, LangChain `Document`s or LlamaIndex nodes, so you can test answers from another framework too:
 

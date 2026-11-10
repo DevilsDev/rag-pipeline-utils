@@ -19,12 +19,24 @@ function fixedSizeChunk(text, options = {}) {
     return [];
   }
 
-  const step = chunkSize - chunkOverlap;
-  if (step <= 0) {
-    throw new Error('chunkSize must be greater than chunkOverlap');
+  if (chunkOverlap < 0 || chunkOverlap > chunkSize / 2) {
+    throw new Error(
+      'chunkOverlap must be between 0 and half of chunkSize (chunkSize must be greater than chunkOverlap)',
+    );
   }
 
-  const chunks = [];
+  const isHigh = (i) => {
+    const c = text.charCodeAt(i);
+    return c >= 0xd800 && c <= 0xdbff;
+  };
+  const isLow = (i) => {
+    const c = text.charCodeAt(i);
+    return c >= 0xdc00 && c <= 0xdfff;
+  };
+  // Move a boundary so it never falls between the halves of a surrogate pair.
+  const align = (i) => (i > 0 && i < text.length && isLow(i) && isHigh(i - 1) ? i - 1 : i);
+
+  const all = [];
   let pos = 0;
 
   while (pos < text.length) {
@@ -35,20 +47,26 @@ function fixedSizeChunk(text, options = {}) {
       const lookbackStart = Math.max(end - 20, pos);
       const segment = text.slice(lookbackStart, end);
       const lastSpace = segment.lastIndexOf(' ');
-      if (lastSpace !== -1) {
+      if (lastSpace !== -1 && lookbackStart + lastSpace > pos) {
         end = lookbackStart + lastSpace;
       }
     }
+    end = align(end);
+    if (end <= pos) end = Math.min(pos + 2, text.length);
 
     const chunk = text.slice(pos, end).trim();
-    if (chunk.length >= minChunkSize) {
-      chunks.push(chunk);
-    }
+    if (chunk.length > 0) all.push(chunk);
 
-    pos += step;
+    if (end >= text.length) break;
+    // Step back by the overlap but always make progress.
+    let next = align(Math.max(end - chunkOverlap, pos + 1));
+    if (next <= pos) next = pos + (isHigh(pos) ? 2 : 1);
+    pos = next;
   }
 
-  return chunks;
+  const kept = all.filter((chunk) => chunk.length >= minChunkSize);
+  // A document whose chunks are all below minChunkSize is still kept.
+  return kept.length > 0 ? kept : all;
 }
 
 module.exports = { fixedSizeChunk };

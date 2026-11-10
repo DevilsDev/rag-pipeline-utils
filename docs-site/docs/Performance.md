@@ -23,7 +23,7 @@ rag-pipeline doctor --category performance
 
 ### **In your application**
 
-`ExecutionTracer` wraps a pipeline and records the duration of each run and its steps:
+`ExecutionTracer` wraps a pipeline and records the duration of each run. A trace has one step, `pipeline.run`, so it does not break a run down by stage (use [OpenTelemetry spans](./Observability#opentelemetry) for that):
 
 ```javascript no-run
 const {
@@ -39,10 +39,7 @@ const traced = tracer.trace(pipeline);
 await traced.run({ query: "What is RAG?" });
 
 const [trace] = tracer.getTraces();
-console.log(
-  trace.totalDurationMs,
-  trace.steps.map((s) => s.durationMs),
-);
+console.log(trace.totalDurationMs, trace.steps[0].durationMs);
 ```
 
 `MetricsAggregator` keeps rolling latency, throughput, cost and error statistics, and `DashboardGenerator` renders them as a self-contained HTML page or a text report:
@@ -279,7 +276,7 @@ console.log(complex.route.model); // "claude-sonnet-5-5"
 - **Prices.** Each route's price comes from `CostCalculator` by `model` (built in for the OpenAI, Anthropic and Cohere models in its table, including Claude Haiku 4.5, Sonnet 5.5 and Opus 5.5), or from `pricing: { input, output, unit }` in USD per `unit` tokens (default 1000). A route with no price is an error when the router is created, rather than counting as free. The expected answer length is the run's `maxTokens`, or `expectedOutputTokens` (default 300).
 - **Reporting.** `result.route` (and a stream's done chunk) is `{ class, model, estimatedCost }`, present when the router generated the answer (not on a cached one). With `telemetry`, the `chat` span is named after the chosen model and the run span carries `rag.route.class`, `rag.route.model` and `rag.route.estimated_cost`. `CostTracker` prices routed runs at the chosen model.
 - **Fallback.** With `fallback: true`, a model that fails hands the query to the next cheapest route for its class (a stream only before its first token; never on abort), and `result.route` adds `fallbackFrom: [models]`. Connectors already retry, so it is off by default.
-- **Caching.** The router has a cache key when every route's llm has one; with a custom `classify`, also pass `cacheKey` (a version string for your classifier), or the generation cache stays off.
+- **Caching.** The router has a cache key when every route's llm has one; with a custom `classify`, also pass `cacheKey` (a version string for your classifier), or the generation cache stays off. Answers are cached only when the route chosen for the query has `config.temperature` of 0: a route with a higher or unknown temperature samples, so its answers are not cached, while queries sent to a temperature-0 route still are (`routeTemperature(model)` reports what the cache sees).
 
 The router works on its own too (`await llm.generate(query, docs)`), for example as `AgenticPipeline`'s llm; only `createRagPipeline` reports the decision.
 

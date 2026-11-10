@@ -12,18 +12,13 @@ const {
   signalOptions,
   textChunks,
   throwIfAborted,
+  withKeyId,
 } = require('./connector-utils');
 const { buildRagPrompt } = require('./rag-prompt');
 const { componentCacheKey } = require('../cache/component-keys');
 
 const API_KEY_ENV = 'ANTHROPIC_API_KEY';
 
-/**
- * Default configuration for the Anthropic connector.
- * `apiKey` is a getter so the environment is read when a connector is
- * constructed, not when this module is first required.
- * @type {Object}
- */
 /**
  * The Messages API's own default temperature. Claude 4.7 and later models
  * accept only this value, so the connector leaves `temperature` out of the
@@ -96,6 +91,12 @@ function responseText(data) {
   throw error;
 }
 
+/**
+ * Default configuration for the Anthropic connector.
+ * `apiKey` is a getter so the environment is read when a connector is
+ * constructed, not when this module is first required.
+ * @type {Object}
+ */
 const DEFAULT_CONFIG = {
   model: 'claude-sonnet-5-5',
   baseURL: 'https://api.anthropic.com',
@@ -124,13 +125,16 @@ class AnthropicConnector extends BaseConnector {
   getCacheKey(role) {
     if (role !== 'llm') return null;
     const c = this.config;
-    return componentCacheKey('anthropic', {
+    return componentCacheKey(
+      'anthropic',
+      withKeyId({
       baseURL: c.baseURL,
       model: c.model,
       temperature: c.temperature,
       maxTokens: c.maxTokens,
       systemPrompt: c.systemPrompt,
-    });
+    }, c.apiKey),
+    );
   }
 
   /**

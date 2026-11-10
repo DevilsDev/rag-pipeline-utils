@@ -36,11 +36,16 @@ const { ChunkingEngine, MemoryRetriever } = load(
   "core.js",
 );
 const { LocalEmbedder } = load("@devilsdev/rag-connectors", "connectors.js");
-const { checkAnswer } = load("@devilsdev/rag-eval", "eval.js");
+const { checkAnswer, splitSentences, splitClauses } = load(
+  "@devilsdev/rag-eval",
+  "eval.js",
+);
 
 module.exports = {
   ChunkingEngine,
   MemoryRetriever,
   LocalEmbedder,
   checkAnswer,
+  splitSentences,
+  splitClauses,
 };

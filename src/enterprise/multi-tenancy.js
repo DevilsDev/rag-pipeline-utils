@@ -95,7 +95,7 @@ class TenantManager extends EventEmitter {
 
     // Check workspace quota
     const existingWorkspaces = Array.from(this.workspaces.values()).filter(
-      (w) => w.tenantId === _tenantId,
+      (w) => w._tenantId === _tenantId,
     );
 
     if (existingWorkspaces.length >= tenant.quotas.maxWorkspaces) {
@@ -112,7 +112,7 @@ class TenantManager extends EventEmitter {
       settings: {
         privacy: workspaceData.privacy || 'private',
         collaborationEnabled: workspaceData.collaborationEnabled || false,
-        pluginsEnabled: workspaceData.pluginsEnabled || true,
+        pluginsEnabled: workspaceData.pluginsEnabled ?? true,
         ...workspaceData.settings,
       },
       resources: {
@@ -289,7 +289,7 @@ class TenantManager extends EventEmitter {
 
     // Hard delete - remove all data
     const workspaces = Array.from(this.workspaces.values()).filter(
-      (w) => w.tenantId === _tenantId,
+      (w) => w._tenantId === _tenantId,
     );
 
     for (const workspace of workspaces) {
@@ -297,7 +297,7 @@ class TenantManager extends EventEmitter {
     }
 
     // Remove tenant data directory
-    await fs.rmdir(tenant.isolation.dataPath, { recursive: true });
+    await fs.rm(tenant.isolation.dataPath, { recursive: true, force: true });
 
     this.tenants.delete(_tenantId);
 
@@ -326,7 +326,7 @@ class TenantManager extends EventEmitter {
     }
 
     // Hard delete
-    await fs.rmdir(workspace.isolation.dataPath, { recursive: true });
+    await fs.rm(workspace.isolation.dataPath, { recursive: true, force: true });
     this.workspaces.delete(_workspaceId);
 
     this.emit('workspace_hard_deleted', { _workspaceId });

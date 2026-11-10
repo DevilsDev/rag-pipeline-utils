@@ -29,6 +29,20 @@ const RETRIEVAL_SKIPPED_REASON =
   'retrieval guard could not run: the wrapped pipeline neither called filterResults nor returned results; answer withheld';
 
 /**
+ * The only fields of a wrapped pipeline's done chunk a guarded stream passes
+ * on (see _safeDoneFields): these as they are, and the second list redacted.
+ */
+const SAFE_DONE_FIELDS = ['success', 'error', 'timing'];
+const REDACTED_DONE_FIELDS = ['citations', 'evaluation'];
+/** The pipeline cache's per-layer status (see src/cache/pipeline-cache.js). */
+const CACHE_LAYERS = ['embeddings', 'retrieval', 'generation'];
+const CACHE_STATUSES = new Set(['hit', 'miss', 'skip']);
+/** Context packing's counters (see src/core/context-packing.js). */
+const PACKING_FIELDS = ['tokens', 'maxTokens', 'kept', 'dropped', 'truncated'];
+/** Longest route class or model name a guarded stream passes on. */
+const MAX_ROUTE_NAME = 100;
+
+/**
  * Reduce removed documents to their ids so filtered-out (possibly
  * access-controlled) content is never returned to the caller.
  *
@@ -50,6 +64,10 @@ function isAsyncIterable(value) {
   );
 }
 
+/** "Potential prompt injection detected: <id> ("<matched text>")" */
+const INJECTION_ISSUE_MATCH =
+  /^(Potential prompt injection detected: [^\s(]+) \(".*"\)$/s;
+
 /**
  * The guard summaries of a withheld response: counts, kinds and reasons stay;
  * the answer, the query text, matched strings and document content do not.
@@ -60,9 +78,15 @@ function isAsyncIterable(value) {
 function withheldSummary(guardrails) {
   const out = { ...guardrails };
   if (out.preRetrieval) {
-    const { sanitizedQuery, injection, ...rest } = out.preRetrieval;
+    const { sanitizedQuery, injection, issues, ...rest } = out.preRetrieval;
     out.preRetrieval = {
       ...rest,
+      // An injection issue ends with the matched text from the query, quoted
+      ...(Array.isArray(issues) && {
+        issues: issues.map((issue) =>
+          String(issue).replace(INJECTION_ISSUE_MATCH, '$1'),
+        ),
+      }),
       ...(injection && {
         injection: {
           detected: injection.detected,
@@ -80,6 +104,99 @@ function withheldSummary(guardrails) {
   }
   if (out.postGeneration) {
     out.postGeneration = { ...out.postGeneration, sanitizedOutput: '' };
+  }
+  return out;
+}
+
+/**
+ * The cache status of a done chunk, copied key by key: only the known layers,
+ * and only a status string ('hit', 'miss', 'skip') or a boolean. Anything
+ * else is left out; null when nothing is left.
+ *
+ * @param {*} cache
+ * @returns {Object<string, string|boolean>|null}
+ */
+function cacheFlags(cache) {
+  if (!cache || typeof cache !== 'object' || Array.isArray(cache)) return null;
+  const flags = {};
+  for (const layer of CACHE_LAYERS) {
+    const value = cache[layer];
+    if (typeof value === 'boolean' || CACHE_STATUSES.has(value)) {
+      flags[layer] = value;
+    }
+  }
+  return Object.keys(flags).length > 0 ? flags : null;
+}
+
+function isRouteName(value) {
+  return typeof value === 'string' && value.length <= MAX_ROUTE_NAME;
+}
+
+/**
+ * The model router's decision from a done chunk (createModelRouter), copied
+ * only when class and model are short strings and estimatedCost is a finite
+ * number; fallbackFrom is kept when it is an array of short strings. null
+ * otherwise, so CostTracker still prices a guarded routed stream at the
+ * model that ran.
+ *
+ * @param {*} route
+ * @returns {{class: string, model: string, estimatedCost: number, fallbackFrom?: string[]}|null}
+ */
+function routeInfo(route) {
+  if (!route || typeof route !== 'object' || Array.isArray(route)) return null;
+  if (!isRouteName(route.class) || !isRouteName(route.model)) return null;
+  if (!Number.isFinite(route.estimatedCost)) return null;
+  const out = {
+    class: route.class,
+    model: route.model,
+    estimatedCost: route.estimatedCost,
+  };
+  if (
+    Array.isArray(route.fallbackFrom) &&
+    route.fallbackFrom.every(isRouteName)
+  ) {
+    out.fallbackFrom = [...route.fallbackFrom];
+  }
+  return out;
+}
+
+/**
+ * Context packing's counters from a done chunk, copied key by key: only its
+ * five fields, and only finite numbers or booleans. null when nothing is
+ * left.
+ *
+ * @param {*} packing
+ * @returns {Object<string, number|boolean>|null}
+ */
+function packingInfo(packing) {
+  if (!packing || typeof packing !== 'object' || Array.isArray(packing)) {
+    return null;
+  }
+  const out = {};
+  for (const key of PACKING_FIELDS) {
+    const value = packing[key];
+    if (typeof value === 'boolean' || Number.isFinite(value)) out[key] = value;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+/**
+ * The guard summaries in a guarded stream's done chunk: as withheldSummary,
+ * but the documents the retrieval guard let through stay listed, by id. The
+ * stream already released the answer; the query, document content and
+ * matched strings are not repeated in the summary (a non-streamed run
+ * returns its results and full summaries by design).
+ *
+ * @param {object} guardrails
+ * @returns {object}
+ */
+function streamSummary(guardrails) {
+  const out = withheldSummary(guardrails);
+  if (guardrails.retrieval && Array.isArray(guardrails.retrieval.results)) {
+    out.retrieval = {
+      ...out.retrieval,
+      results: guardrails.retrieval.results.map((doc) => ({ id: doc && doc.id })),
+    };
   }
   return out;
 }
@@ -409,7 +526,10 @@ class GuardrailsPipeline extends EventEmitter {
     let doneChunk;
 
     if (!text) {
-      doneChunk = { ...done, token: '', done: true, guardrails };
+      doneChunk = {
+        ...this._safeDoneFields(done, []),
+        guardrails: streamSummary(guardrails),
+      };
     } else {
       const check = await this.postGuard.checkAsync(
         text,
@@ -438,19 +558,9 @@ class GuardrailsPipeline extends EventEmitter {
           ...(done && done.timing && { timing: done.timing }),
         };
       } else {
-        const found = detectedText(check);
-        const { citations, evaluation, ...rest } = done || {};
         doneChunk = {
-          ...rest,
-          token: '',
-          done: true,
-          ...(citations !== undefined && {
-            citations: this._redactDeep(citations, found),
-          }),
-          ...(evaluation !== undefined && {
-            evaluation: this._redactDeep(evaluation, found),
-          }),
-          guardrails,
+          ...this._safeDoneFields(done, detectedText(check)),
+          guardrails: streamSummary(guardrails),
         };
         if (check.sanitizedOutput) {
           tokenChunk = { token: check.sanitizedOutput, done: false };
@@ -467,6 +577,39 @@ class GuardrailsPipeline extends EventEmitter {
       enumerable: false,
     });
     return stream;
+  }
+
+  /**
+   * The done chunk of a guarded stream, built only from fields known to be
+   * safe: success, error and timing as they are, the cache's per-layer
+   * status flags, the router's decision and context packing's counters
+   * (type-checked), and citations and evaluation redacted. Everything else in
+   * the wrapped pipeline's done chunk (results, or a field added later) is
+   * dropped, so document content never reaches the caller this way.
+   *
+   * @param {object} [done] - The wrapped pipeline's done chunk
+   * @param {string[]} found - Strings found by PII detectors
+   * @returns {object}
+   * @private
+   */
+  _safeDoneFields(done, found) {
+    const source = done || {};
+    const chunk = { token: '', done: true };
+    for (const key of SAFE_DONE_FIELDS) {
+      if (source[key] !== undefined) chunk[key] = source[key];
+    }
+    for (const key of REDACTED_DONE_FIELDS) {
+      if (source[key] !== undefined) {
+        chunk[key] = this._redactDeep(source[key], found);
+      }
+    }
+    const cache = cacheFlags(source.cache);
+    if (cache) chunk.cache = cache;
+    const route = routeInfo(source.route);
+    if (route) chunk.route = route;
+    const packing = packingInfo(source.packing);
+    if (packing) chunk.packing = packing;
+    return chunk;
   }
 
   /**

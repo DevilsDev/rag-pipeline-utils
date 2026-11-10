@@ -42,6 +42,7 @@ class HTMLLoader {
    * @returns {string[]}
    */
   _chunkText(input, maxLen = 500) {
+    if (!input || !String(input).trim()) return [];
     const { ChunkingEngine } = require('../chunking/chunking-engine');
     const engine = new ChunkingEngine({ strategy: 'sentence', maxLen });
     return engine.chunk(input);

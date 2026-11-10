@@ -106,7 +106,7 @@ function normalizeSources(sources) {
  * @property {'supported'|'unsupported'} verdict - The combined verdict
  * @property {string|null} sourceId - Id of the supporting source, when supported
  * @property {string} reason - Why, in words (the judge's reason when it decided)
- * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'no_sources'} lexicalReason
+ * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'condition_mismatch'|'no_sources'} lexicalReason
  *   - What the lexical check found. Only `low_overlap` sentences go to the judge
  * @property {'lexical'|'judge'} decidedBy
  */
@@ -119,7 +119,10 @@ function normalizeSources(sources) {
  * @property {number} calls - Calls made to `judge.generate` (0 or 1)
  * @property {{inputTokens: number, outputTokens: number, totalTokens: number}} [usage]
  *   - Token usage summed over the calls, when the LLM result carries `usage`
- * @property {string} [error] - Why the judge's reply could not be parsed
+ * @property {string} [error] - Why the judge's reply couldn't be used: no
+ *   text (cut off at its token limit, or a refusal) or not the expected
+ *   JSON. Those sentences keep their lexical verdict; checkAnswer doesn't
+ *   reject because of a judge reply
  */
 
 /**
@@ -144,14 +147,21 @@ function normalizeSources(sources) {
  * @param {Object} [params.embedder] - With a referenceAnswer, adds
  *   `evaluation.scores.semanticSimilarity` (computeSemanticSimilarity)
  * @param {boolean} [params.evaluate=true] - Also compute evaluation scores
+ * @param {boolean} [params.conditionCheck=true] - false: a sentence that
+ *   leaves out a restricting condition of its source (an approval,
+ *   exception or eligibility rule) is no longer unsupported for that
+ *   reason, as on 3.8 and earlier; for comparisons with saved baselines
  * @param {JudgeLLM} [params.judge] - Opt-in LLM judge for sentences the
  *   lexical check failed for lack of word overlap (correct paraphrases).
- *   It never overturns a sentence that failed the number or negation check,
- *   and a "supported" verdict must name a source whose numbers and negation
- *   match the sentence. Unparseable output keeps a sentence unsupported.
- *   With a judge, `grounded`, `groundedness` and `unsupported` combine both
- *   checks and `judge` reports the verdicts; `citations` and `evaluation`
- *   stay lexical. Errors thrown by `judge.generate` are not caught.
+ *   It never overturns a sentence that failed the number, negation or
+ *   condition check, and a "supported" verdict must name a source whose
+ *   numbers and negation match the sentence. Unparseable output keeps a
+ *   sentence unsupported. With a judge, `grounded`, `groundedness` and
+ *   `unsupported` combine both checks and `judge` reports the verdicts;
+ *   `citations` and `evaluation` stay lexical. A reply with no text (a
+ *   connector error with code NO_TEXT or MODEL_REFUSED) is a judge error:
+ *   the lexical verdicts stand and `judge.error` says why. Any other error
+ *   thrown by `judge.generate` is not caught.
  * @returns {Promise<AnswerCheck>}
  */
 async function checkAnswer({
@@ -162,6 +172,7 @@ async function checkAnswer({
   embedder,
   evaluate = true,
   judge,
+  conditionCheck = true,
 } = {}) {
   if (typeof answer !== 'string') {
     throw new TypeError('answer must be a string');
@@ -185,7 +196,7 @@ async function checkAnswer({
     };
   }
 
-  const tracked = new CitationTracker().track(answer, docs);
+  const tracked = new CitationTracker({ conditionCheck }).track(answer, docs);
   const sentences =
     (tracked.hallucinationReport && tracked.hallucinationReport.sentences) ||
     [];
@@ -196,7 +207,7 @@ async function checkAnswer({
 
   let judged;
   if (judge != null) {
-    judged = await runJudge({ judge, sentences, docs });
+    judged = await runJudge({ judge, sentences, docs, conditionCheck });
     unsupported = judged.verdicts
       .filter((v) => v.verdict !== 'supported')
       .map((v) => v.sentence);
@@ -208,7 +219,7 @@ async function checkAnswer({
 
   let evaluation;
   if (evaluate) {
-    evaluation = await new PipelineEvaluator().evaluate(
+    evaluation = await new PipelineEvaluator({ conditionCheck }).evaluate(
       { query: question || '', answer, results: docs },
       referenceAnswer ? { referenceAnswer } : {},
     );

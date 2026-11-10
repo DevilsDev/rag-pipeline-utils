@@ -6,6 +6,8 @@ jest.setTimeout(30000);
  */
 
 const fs = require("fs");
+const os = require("os");
+const path = require("path");
 // Jest is available globally in CommonJS mode;
 const { createRagPipeline } = require("../../src/index.js");
 const {
@@ -17,118 +19,35 @@ describe("Plugin Security and Isolation", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
-  describe("plugin sandboxing", () => {
-    it("should isolate plugin execution contexts", async () => {
-      const maliciousPlugin = {
-        async generate(prompt, options = {}) {
-          // Attempt to access global scope
-          try {
-            global.maliciousData = "compromised";
-            process.env.MALICIOUS_VAR = "injected";
-            return "Malicious response";
-          } catch (error) {
-            return "Sandboxed response";
-          }
-        },
-      };
-
-      const securePlugin = {
-        async generate(prompt, options = {}) {
-          // Check if global scope was compromised
-          const isCompromised =
-            global.maliciousData || process.env.MALICIOUS_VAR;
-          return isCompromised ? "Security breach detected" : "Secure response";
-        },
-      };
-
-      // Test plugin isolation
-      const maliciousResult = await maliciousPlugin.generate("test");
-
-      // Simulate sandboxing by cleaning up globals (in real implementation, this would be automatic)
-      delete global.maliciousData;
-      delete process.env.MALICIOUS_VAR;
-
-      const result = await securePlugin.generate("test");
-
-      // Verify the malicious plugin ran but was sandboxed
-      expect(maliciousResult).toBe("Malicious response"); // It did run and modify globals
-      expect(result).toBe("Secure response"); // But globals were cleaned up
-    });
-
-    it("should prevent unauthorized file system access", async () => {
-      // This test verifies that proper sandboxing would prevent file access
-      // In a real sandboxed environment, this would fail. Here we test the error handling.
-      const fileSystemPlugin = {
-        async generate(prompt, options = {}) {
-          const fs = await import("fs");
-
-          try {
-            // Attempt unauthorized file access (in production, sandbox would block this)
-            // In CI, /etc/passwd exists, so we check that plugins should be sandboxed
-            const sensitiveData = fs.readFileSync("/etc/passwd", "utf8");
-
-            // If we reach here in CI, it means file was accessible
-            // In production with proper sandboxing, this would throw
-            if (process.env.CI) {
-              // In CI, just verify the file exists and return expected result
-              // Real implementation would use isolated-vm or similar
-              return "File access properly restricted";
-            }
-            return `Unauthorized access: ${sensitiveData}`;
-          } catch (error) {
-            return "File access properly restricted";
-          }
-        },
-      };
-
-      const result = await fileSystemPlugin.generate("test");
-      expect(result).toBe("File access properly restricted");
-    });
-
-    it("should limit network access in plugins", async () => {
-      // Mock fetch to simulate network restriction
-      const originalFetch = global.fetch;
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error("Network access blocked"));
-
-      const networkPlugin = {
-        async generate(prompt, options = {}) {
-          try {
-            // Attempt unauthorized network request
-            const response = await fetch("https://malicious-site.com/data");
-            return "Unauthorized network access succeeded";
-          } catch (error) {
-            return "Network access properly restricted";
-          }
-        },
-      };
-
-      const result = await networkPlugin.generate("test");
-      expect(result).toBe("Network access properly restricted");
-
-      // Restore original fetch
-      global.fetch = originalFetch;
-    });
-
-    it("should enforce memory limits for plugins", async () => {
-      const memoryHogPlugin = {
-        async generate(prompt, options = {}) {
-          try {
-            // Ask for more than an array can hold. This used to fill a
-            // 100M-element array: ~800 MB that took 40-100 s and left the
-            // worker too slow to exit, so Jest force-killed it.
-            const largeArray = new Array(2 ** 32).fill("memory-hog");
-            return `Memory consumption: ${largeArray.length}`;
-          } catch (error) {
-            return "Memory limit enforced";
-          }
-        },
-      };
-
-      const result = await memoryHogPlugin.generate("test");
-      // Should either limit memory or handle gracefully
-      expect(typeof result).toBe("string");
+  // There is no plugin sandbox: plugins run in-process with the host's
+  // permissions (docs-site/docs/Security.md, "Plugin trust"). This checks
+  // that behaviour through the pipeline, so a claim that plugins are
+  // isolated has to change a real test first.
+  describe("plugins run in-process, with no sandbox", () => {
+    it("an llm plugin run by the pipeline can read files and set globals", async () => {
+      const secretFile = path.join(
+        os.tmpdir(),
+        `plugin-isolation-${process.pid}.txt`,
+      );
+      fs.writeFileSync(secretFile, "host file contents");
+      try {
+        const llm = {
+          async generate() {
+            global.__pluginWasHere = true;
+            return require("fs").readFileSync(secretFile, "utf8");
+          },
+        };
+        const pipeline = createRagPipeline({
+          retriever: { retrieve: async () => [{ id: "d", content: "doc" }] },
+          llm,
+        });
+        const result = await pipeline.run({ query: "q", queryVector: [1] });
+        expect(result.answer).toBe("host file contents");
+        expect(global.__pluginWasHere).toBe(true);
+      } finally {
+        delete global.__pluginWasHere;
+        fs.rmSync(secretFile, { force: true });
+      }
     });
   });
 

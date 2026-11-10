@@ -53,7 +53,7 @@ COHERE_API_KEY=your_cohere_api_key
 
 ### **Basic Pipeline Setup**
 
-`createRagPipeline` takes component instances (or names registered on `pluginRegistry`) for the stages `loader`, `embedder`, `retriever`, `llm` and `reranker`, plus an optional `registry`. It returns `{ run, cleanup }`.
+`createRagPipeline` takes component instances (or names registered on `pluginRegistry`) for the stages `loader`, `embedder`, `retriever`, `llm` and `reranker`, plus an optional `registry`. It returns `{ run, cleanup, cacheStats }`; `cacheStats()` returns the cache's hits and misses per layer, or `null` without the `cache` option.
 
 ```javascript
 const {
@@ -157,7 +157,7 @@ For an index that persists to disk, use `FileVectorStore` as the retriever (see 
 
 ### **Indexing Documents**
 
-The pipeline object only exposes `run()` and `cleanup()`; there is no separate ingest method. Index documents by embedding them and calling your retriever's `store()` (as in the example above), or use the CLI's `rag-pipeline ingest <path>`, which loads, embeds and stores files into a local `FileVectorStore` index.
+The pipeline object only exposes `run()`, `cleanup()` and `cacheStats()`; there is no separate ingest method. Index documents by embedding them and calling your retriever's `store()` (as in the example above), or use the CLI's `rag-pipeline ingest <path>`, which loads, embeds and stores files into a local `FileVectorStore` index.
 
 ### **Querying & Response Generation**
 
@@ -182,17 +182,29 @@ console.log(detailed.answer, detailed.citations, detailed.evaluation);
 // Streaming responses (resolves to an async iterable when stream: true)
 const stream = await pipeline.run({
   query: "How do I optimize performance?",
-  options: { stream: true },
+  options: { stream: true, timeout: 60000 }, // the timeout covers the whole stream
 });
 
-for await (const chunk of stream) {
-  if (!chunk.done) {
-    process.stdout.write(chunk.token);
+if (stream.success === false) {
+  // failed before streaming started (embedding, retrieval or the timeout)
+  console.error(stream.error);
+} else {
+  try {
+    for await (const chunk of stream) {
+      if (!chunk.done) {
+        process.stdout.write(chunk.token);
+      }
+    }
+  } catch (error) {
+    // failed while streaming: the model errored, or the run was aborted or timed out
+    console.error(error.message);
   }
 }
 ```
 
-With `citations` or `evaluate` in stream mode, the stream ends with one `{ token: '', done: true, citations, evaluation }` chunk.
+If the run fails before streaming starts, `run()` resolves `{ success: false, error }` instead of a stream. A failure after streaming has started makes the `for await` loop throw. `timeout` limits the whole run, the stream included: a stream still running when it elapses is aborted and iteration throws `Execution timeout`, so set it long enough for your longest answers.
+
+A stream always ends with one done chunk, `{ token: '', done: true }`, which carries `results` (and `cache`, with caching on) as a non-streamed result does, and `citations` and `evaluation` when you ask for them.
 
 The done chunk also carries `timing: { firstTokenMs, totalMs }`. `firstTokenMs` is the time to first token: how long after `run()` was called the first non-empty token arrived, retrieval and reranking included, so it is the wait your users see. It is `null` when the model produced no tokens. A non-streamed result carries `timing: { totalMs }`.
 

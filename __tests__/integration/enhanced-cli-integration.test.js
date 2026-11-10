@@ -423,7 +423,8 @@ describe("Enhanced CLI Integration Tests", () => {
         "get",
         "missing.key",
       ]);
-      expect(result.stdout).toContain("❌ Key not found");
+      expect(result.stderr).toContain("❌ Key not found");
+      expect(result.code).toBe(1);
     });
 
     it("should set configuration value", async () => {

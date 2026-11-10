@@ -9,6 +9,380 @@ Older history (pre-2.4.0) is preserved in the
 [GitHub releases](https://github.com/DevilsDev/rag-pipeline-utils/releases)
 page.
 
+## [3.9.0] - 2026-11-10
+
+A minor release. Answer checks now catch an answer that drops its source's
+condition, and are much faster on long answers: a sentence that leaves out
+a condition ("with manager approval", "but not for guests") is no longer
+grounded, text from PDFs and web pages is normalised before it's compared,
+and long answers are checked in linear time (a 1,000-sentence answer in
+under half a second). It also fixes the chunkers, the vector stores,
+streaming, cost budgets, the DAG engine and `AuditLogger`, which gains
+`close()` and a working webhook. Some of these change behaviour; act on
+these when you upgrade: re-tune a `minRelevanceScore` set against
+`FileVectorStore`, re-ingest to pick up the chunker fixes, raise `timeout`
+if you stream long answers, and regenerate saved baselines that compare
+multi-source scores or hallucination classes.
+
+### Added
+
+- **The answer check catches a condition left out.** A sentence that keeps
+  every noun and number of its source but drops a restricting clause
+  claims more than the source does: "Remote work is allowed two days per
+  week" against "Remote work is allowed two days per week with manager
+  approval", the docs homepage's own example, was grounded. Thanks to the
+  reader who reported it. `checkConditionConsistency()` (exported next to
+  `checkPolarityConsistency()`) finds the restricting clauses of the closest
+  source sentence (an approval, "only if", "if", "unless", "provided",
+  "subject to", "as long as", "after 90 days", "for employees with ...",
+  "except"), and a sentence that keeps none of a clause's words, in itself
+  or anywhere else in the answer, is not grounded. `checkAnswer`,
+  `CitationTracker`, faithfulness, context recall and `verifyCitations`
+  apply it, with the new `lexicalReason` `condition_mismatch`, which the
+  judge never overturns. Contrasting clauses ("..., but not in children")
+  can still be left out, as since 3.6.0. Phrases that restrict nothing
+  don't count as conditions: "even if", "if any", "if applicable", "if
+  necessary", "if needed", "if need be", "if possible", an "If not," or
+  "If so," that points back at the previous sentence, and legal boilerplate ("except as required by
+  law", "to the extent permitted by law"); a source with no space between
+  sentences is read as separate sentences for this check. On the
+  condition-dropped benchmark's test split, with the code frozen before it
+  ran, F1 is 84.9% lexical and 87.9% with a judge, up from 6.1% and 6.5%
+  on 3.8.0. After the legal-boilerplate rule, which was decided on that
+  split and so is not a held-out measure, it was 86.9% and 90.1%, measured
+  before the text normalisation, sentence-splitting and abbreviation fixes
+  below; on the released 3.9.0 code it is 85.9% lexical and 90.1% with a
+  judge. Verdicts
+  can change: re-save the report you pass to `rag-pipeline eval --baseline`,
+  or turn the condition check off with the option below.
+- **`conditionCheck: false` turns the condition check off**, for a
+  baseline saved before 3.9: `checkAnswer` (its evaluation too),
+  `CitationTracker` (and `citationOptions` on a run, which the run's
+  evaluation follows), `PipelineEvaluator`, `computeFaithfulness`,
+  `computeContextRecall`, `computeGroundedness`, `verifyCitations` and
+  `toBeGroundedIn` take it, and `rag-pipeline eval` takes
+  `--no-condition-check`. The other 3.9 changes (text normalisation and
+  sentence splitting, below) still apply, so some scores can still move.
+- **`splitSentences` and `splitClauses`** are exported from the main
+  entry and `@devilsdev/rag-eval`: the sentence and clause splitters the
+  grounding checks use.
+- **`AuditLogger` delivers events to its webhook.** With `webhookUrl` set
+  (https, or http for localhost; anything else throws when the logger is
+  created), each written event is POSTed as `{ events: [...] }`.
+  `webhookHeaders` adds headers such as `Authorization`,
+  `webhookTimeoutMs` sets the request timeout (default 5,000) and
+  `webhookRetryMs` the first retry delay (default 1,000, doubling up to
+  60 s). Events that weren't delivered are kept, up to `memoryLimit`, and
+  sent on a later flush, and each failure emits `webhook_failed`
+  (`{ error, count }`). Delivery is at least once, so de-duplicate on
+  `sequence`. 3.8.0 only logged that it would send, and 3.8.1 to 3.8.3
+  ignored `webhookUrl` with a warning.
+- **`AuditLogger.close()`** writes the buffered events and the chain state,
+  tries a failed stage once more, and resolves with what is still pending,
+  `{ pending: { events, chain, webhook } }`. Call it before the process
+  exits, for example on SIGTERM.
+
+### Changed
+
+- **A contrast clause that narrows its statement is a restriction.**
+  "Access is allowed" is no longer supported by "Access is allowed, but
+  not for guests" (`condition_mismatch`), nor are "except for sale items"
+  and "but only on Fridays" left out. A clause that adds something ("...,
+  but it may take a few minutes") or contrasts a different case ("in
+  adults, but not in children") may still be left out. Known gaps: a
+  negated clause with no scope word ("but not guests", "but guests are
+  not admitted") is still not read as a restriction, and neither is a
+  restriction attached to a different subject ("Staff may enter" against
+  "Guests may enter, but staff need approval").
+- **Long answers and sources are checked in linear time.** Each source and
+  answer is prepared once per check (sentences, clauses, numbers and an
+  index of its quantities), so a 1,000-sentence answer that took about 9 s
+  takes under half a second. Results don't change.
+- **Faithfulness uses the same word weights as `checkAnswer`.**
+  `computeFaithfulness` (and so groundedness and `PipelineEvaluator`'s
+  faithfulness) weights words by IDF, like `checkAnswer` and
+  `CitationTracker`; `useIDFWeighting: false` keeps the old scores.
+  Context recall still scores without IDF. `checkAnswer` verdicts don't
+  change.
+- **Scores move for answers checked against several sources.** Identical
+  sources count once in the word weights, and each sentence's weights
+  come only from the sources that share a content word with it, so a
+  duplicated or unrelated source no longer changes a verdict. Checks
+  against a single source are unaffected. On the condition-dropped
+  benchmark's test split, lexical F1 is now 85.9% (was 86.4%): one more
+  false alarm. Dev F1 is unchanged at 88.5%.
+- **Hallucination classes change in many cases; rates and verdicts
+  don't.** A sentence that some source supports below the threshold is
+  now a `likely_hallucination` with its best score; it was a
+  `definite_hallucination` with score 0. On the golden set, classes
+  changed in 577 of 2,010 cases. `hallucinationRate`, groundedness and
+  which sentences are unsupported are unchanged. Re-save baselines that
+  compare classes.
+- **`FileVectorStore` scores are cosine similarity.** An identical vector
+  scores 1, as in `MemoryRetriever`; scores used to grow with the query
+  vector's length (an identical vector could score 2.236). If you set
+  `minRelevanceScore` (or any other score cut-off) against
+  `FileVectorStore` results, re-tune it.
+- **`MemoryRetriever` and `FileVectorStore` check `topK` and the query
+  vector the same way.** `topK: 0` returns no results (`MemoryRetriever`
+  used to return the default number); a negative, fractional, NaN or
+  non-numeric `topK` throws (a negative one used to return all but the
+  last few results); and NaN or Infinity in the query vector throws.
+  Leaving `topK` out still uses the default.
+- **Reciprocal rank fusion scores rank 1 as `1/(k+1)`**, not `1/k` (1/61
+  with the default `k` of 60), and an id repeated within one list counts
+  once, at its first position. Fused scores change, and so can the order
+  of results whose scores were close.
+- **`CohereConnector.rerank` puts Cohere's score in `relevanceScore`**, like
+  the other rerankers, and string documents come back as
+  `{ content, relevanceScore }`. Object documents keep their own `score`,
+  which `rerank` used to overwrite: read `relevanceScore` instead.
+- **The `fixed-size` chunker rejects a `chunkOverlap` above half of
+  `chunkSize`**, or a negative one; such an overlap used to produce about
+  one chunk per character.
+- **An audit daily file is named for the day of its events** (UTC), not
+  the day of the flush, so events from just before midnight no longer land
+  in the next day's file. An event older than the newest file goes in the
+  newest file, so the files stay in sequence order.
+- **A DAG node's `timeout` (or `RAG_NODE_TIMEOUT`) is enforced**: the node
+  fails with "timed out" when it runs longer. It used to be ignored. The
+  30 s default is still not applied to a node without one, and a timed-out
+  node's work is abandoned, not cancelled. `concurrency` now really runs
+  independent nodes in parallel.
+- **A model router's answers are generation-cached only when the route
+  that answers has `config.temperature` of 0.** A route with an unknown or
+  higher temperature samples, so its answers are not cached; they used to
+  be cached as if no route sampled. Queries sent to a temperature-0 route
+  are still cached when another route samples. The router has a new
+  `routeTemperature(model?)`.
+- **The AI SDK adapter no longer sends the run's `topK`** (the number of
+  passages to retrieve) to the model as a sampling setting. Put a sampling
+  topK in `settings.topK`.
+- `AuditLogger.queryLogs()` counts every match in `total`, so `hasMore`
+  works, and the compliance report counts `apiAccessEvents` and
+  `otherEvents`.
+- A cache store's own `ttlSeconds` applies unless `cache.ttlSeconds` sets
+  one for the layer.
+- `IterativeRetriever` coverage is the share of query words found in the
+  results.
+- `AgenticPipeline` returns `success: false` with an `error` when
+  generation fails, and keeps failed nodes out of its results.
+- `CostTracker` refuses a run the budget can't cover before it runs, and
+  records runs that go over. Streams are costed from their tokens, and a
+  generation cache hit costs nothing.
+- `StreamingEmbedder` and `createEmbeddingStream` embed one text at a time
+  (or through `embedBatch`) and honour `maxConcurrency`.
+- `Histogram` keeps a sample of at most 10,000 observations for
+  percentiles; count, sum, minimum, maximum, mean and standard deviation
+  stay exact.
+- **A run's `timeout` covers a returned stream until it ends.** A stream
+  still running when it elapses is aborted, and iteration rejects with
+  `Execution timeout`; the timer used to stop once the stream was
+  returned. If you stream long answers, raise `timeout` (or the CLI's
+  `--timeout`) to cover the whole answer.
+- **A guarded stream's done chunk carries only known fields**: `success`,
+  `error`, `timing`, the redacted `citations` and `evaluation`, the cache's
+  per-layer status, and the router's `route` and the `packing` counters
+  when they have the expected types, plus the guard summary
+  (`guardrails`) without raw text: the documents the retrieval guard let
+  through are listed by id, the query is left out and the copy of the
+  redacted answer is empty (issues and counts stay, and an injection issue
+  names its pattern without the text it matched). It carries no
+  `results`, so retrieved documents, the query and PII the guard found
+  never reach the caller that way; a non-streamed guarded run still
+  returns its results and full summary.
+- **Plugins are checked against their contracts in `@devilsdev/rag-core`
+  too.** The contracts are bundled, so `register()` refuses a plugin that
+  has no `metadata` or lacks the contract's methods; the bundle used to
+  accept every plugin.
+- A failed run no longer caches the embeddings and retrieval it computed;
+  they are written once the run succeeds (a stream: when it completes).
+- `rag-pipeline config get <key>` for a key that isn't set prints
+  `Key not found` to stderr and exits 1; it printed to stdout and exited 0.
+- **`MarkdownLoader` decodes HTML entities**, so text such as
+  `&lt;script&gt;` becomes `<script>`. Loader output and retrieved text are
+  plain text: escape them before rendering them as HTML.
+
+### Deprecated
+
+- **`AuditLogger`'s default `logDir`.** Without a `logDir` option it still
+  writes to `.rag-enterprise/audit-logs` in the working directory, and now
+  warns once per process (`RAG_DEP_AUDIT_LOG_DIR`) that this default is
+  deprecated. It will be removed in 4.0: set `logDir`.
+
+### Fixed
+
+- **Text from PDFs and web pages reads like typed text.** Tokenizing,
+  sentence splitting and the number, negation and condition checks share
+  one normalisation: zero-width characters, soft hyphens and other format
+  characters are removed, and full-width digits and letters and no-break
+  spaces become plain ones (NFKC). A source word with a zero-width space
+  inside no longer fails to support the sentence that quotes it, and
+  "４５" matches "45".
+- **Sentences end where a reader would end them.** A full stop followed
+  directly by a capital ("works.Wireless") ends a sentence; one before a
+  lowercase word ("10 a.m. and", "the U.S. government") or after a title or
+  Latin abbreviation ("Dr. Lee", "e.g. Paris") doesn't; a blank line, and
+  the line break around a list item or heading, do. The sentences returned
+  are still the original text.
+- **A condition with an abbreviation in it is read whole.** A full stop
+  inside an abbreviation ("U.S.", "e.g.", "i.e.", "Inc.", "No.") no longer
+  ends a restricting clause, so "if the U.S. economy grows" is one
+  condition, not "if the U", and the clause reported in `missing` is all
+  of it. "US" in an answer keeps a "U.S." condition of its source, and "No."
+  before a number ("form No. 7") no longer ends a sentence.
+- `packContext` keeps the top document's first word when the budget is
+  too small for one word beside the wrapper, as documented; it was
+  dropped.
+- `FileVectorStore` rejects a query vector of the wrong length when the
+  index has no embedder info too; it scored every document 0.
+- **A judge reply that can't be used no longer makes `checkAnswer` reject.**
+  A reply with no text (cut off at the connector's `maxTokens`, or a
+  refusal) is now a judge error, like a reply that isn't valid JSON:
+  `judge.error` says why, and those sentences keep their lexical verdict.
+  This applies to `verifyCitations`' judge too. Network and authentication
+  errors still reject.
+- Creating an `AuditLogger` no longer writes to disk: its log folders, and
+  the stored signing key when no key is configured, are created on the
+  first write, so a logger that never logs leaves no `.rag-enterprise/`
+  folder behind.
+- An `AuditLogger` whose `logDir` can't be written (a read-only working
+  directory, as on AWS Lambda, or a path under a file) no longer ends the
+  process with an unhandled rejection. A failed write logs one warning
+  until a write succeeds, emits `flush_failed`, and keeps the events for
+  the next flush; a log call never rejects because of it.
+- `AuditLogger` keeps at most `memoryLimit` events (a new option, default
+  10,000) while writes fail; older ones are dropped, reported with an
+  `events_dropped` event (`{ count, totalDropped }`) and in the warning,
+  and counted in `droppedEvents`. Dropped events were never numbered, so
+  they leave no gap in the chain. A failed write of the integrity chain
+  file now emits `chain_failed` and logs one warning until it succeeds,
+  instead of a warning on every flush; it is still retried on the next
+  flush without writing the events again. A listener that throws (on
+  `logs_flushed`, `events_dropped` or a failure event) is logged once and
+  can't stop the rest of the flush or later flushes.
+- Citation markers (`[1]`, `.[2]`, `¹`) and a leading list number (`1.`,
+  `2)`) are no longer read as numbers the source must state.
+- A restriction of another statement in the same source sentence, joined
+  by "and", no longer flags a claim, and each statement of a claim that
+  joins two is checked against its own closest source sentence.
+- Chinese and Japanese sentences are split at 。！？, and digits next to
+  Chinese or Japanese characters are read. Number words in those
+  languages are still not read.
+- "no more than", "no later than", "at no cost", "at no charge" and "No. 7"
+  are no longer read as negations.
+- A minus sign is part of a number: "-3%" doesn't match "3%".
+- "5 million" matches "5,000,000".
+- `verifyCitations` reports the uncited text inside a sentence that starts
+  in a cited block.
+- A null source (`CitationTracker`), a null citation, and a claim without
+  citations no longer throw.
+- The polarity check keeps at most 1,024 verdicts per source sentence, so
+  a document object reused across many answers no longer grows its memo
+  without bound. Results don't change.
+- **The `recursive` chunker, the default, no longer drops text.** Text
+  with no separator left is cut into consecutive slices (only the first
+  `chunkSize` characters used to be kept), a short document is no longer
+  dropped by `minChunkSize`, and the overlap is whole words counted inside
+  `chunkSize` (it used to glue words together and exceed it). Chunks can
+  change, so re-ingest to pick this up.
+- The `fixed-size` chunker no longer skips text when the overlap is under
+  20 characters, and neither it nor the `recursive` chunker splits an
+  emoji.
+- The `sentence` chunker honours `chunkSize` (`maxLen` still works) and
+  splits text with no sentence punctuation at line breaks, then words.
+- A blank `.txt`, `.md` or `.html` file yields no chunks instead of
+  failing the whole ingest.
+- `MarkdownLoader` returns plain characters instead of HTML entities
+  (`&amp;`, `&lt;`, `&#39;`).
+- Stores copy documents on the way in and results on the way out, so
+  editing a result no longer changes the store. Copies keep Map, Set,
+  Date, Buffer and typed arrays, and circular references.
+- `FileVectorStore` keeps documents another process saved: `save()`
+  re-reads the file and applies only its own changes, and `load()` picks
+  up a newer file. There is no lock, so two saves of the same id at the
+  same instant still race. A batch with an invalid document stores
+  nothing, mixed-dimension or non-finite vectors are rejected, and the id
+  `__proto__` works. A batch with a new vector size must replace every
+  stored document (as `ingest` and `ai train` do after refitting the local
+  embedder); otherwise it throws and asks you to re-ingest with
+  `--rebuild`. `MemoryRetriever` checks the same way.
+- `BM25Search.index([])` clears the index.
+- Empty Cohere `rerank` and `embed` responses give a clear error.
+- The Pinecone freshness wait stops as soon as the request is aborted.
+- API keys no longer show when a connector is logged, inspected or
+  serialised, and connectors with different API keys no longer share
+  cache entries (the cache identity holds a short SHA-256 hash of the key,
+  never the key).
+- The SSE and WebSocket adapters send the final chunk's fields (citations,
+  evaluation, timing) once, and end with a single `[DONE]` or `done`. A
+  token stream that throws writes an error frame, with no unhandled
+  rejection.
+- A failed retrieval in the DAG's parallel path is no longer passed to the
+  LLM as a document.
+- `StreamingEmbedder` no longer sends arrays to embedders that take one
+  string, and one failed document no longer ends the stream.
+- `GraphRetriever.store()` keeps entity sources across calls and gives
+  documents without an id their own ids.
+- `CostCalculator` prices gpt-4.1, gpt-4.1-mini, gpt-4.1-nano and
+  gpt-4.5-preview on their own; they were priced as gpt-4. The
+  gpt-4.1-mini and gpt-4.1-nano prices match OpenAI's model pages (both
+  models are now deprecated or shut down); the gpt-4.1 and gpt-4.5-preview
+  prices are not verified, like the rest of the table
+  (`CostCalculator.getPricingMetadata().verified` is `false`).
+- The AI SDK adapter's generation cache key includes `presencePenalty` and
+  `frequencyPenalty`.
+- `AgenticPipeline({ maxIterations })` is honoured.
+- An audit signing key file left empty by a crash is replaced after 5 s,
+  instead of the process falling back to a key of its own.
+- SSO `cleanupExpiredSessions()` and `getActiveSessions()` no longer throw
+  while a login is pending.
+- (Experimental) `TenantManager` enforces `maxWorkspaces`, keeps
+  `pluginsEnabled: false`, and a hard delete removes the tenant's
+  workspaces.
+- Streams: a stream settles on abort even when the model or source ignores
+  the signal, and its source is closed before the stream ends. String
+  chunks from `generateStream` are turned into `{ token, done }`, a stream
+  always ends with a done chunk, and the done chunk carries `results` (and
+  `cache`, with caching on) as `run()` does. A model that returns a falsy
+  value such as `0` streams the same text `run()` returns.
+- `llm.route()` and `filterResults()` receive the run's `AbortSignal`.
+- `import "@devilsdev/rag-pipeline-utils/cli"` no longer starts the CLI on
+  the host's arguments and exits: `./cli` maps to the bundled module. The
+  `rag-pipeline` command is unchanged.
+- Types: `@devilsdev/rag-pipeline-utils/edge` resolves under TypeScript's
+  `moduleResolution: node10`, and `/testing` and `/experimental` resolve to
+  their CommonJS builds under the `workerd` condition.
+- Project templates write `loader: auto` (the CLI rejected `markdown` and
+  `directory`) and depend on a version range of the library instead of
+  `latest`. The Workers starter no longer turns on `nodejs_compat`, which
+  the `/edge` entry it imports doesn't need.
+- `@devilsdev/rag-mcp-server`: a `check_answer` call the client cancels
+  leaves the queue or, if it is running, is stopped, and over stdio the
+  server closes, stopping its workers, when stdin ends.
+- Docs: the `checkNumericConsistency` examples show its actual output, the
+  Usage page lists `cacheStats()`, and the built-in PII check is described
+  as finding US phone numbers, which is all it finds.
+
+### Internal
+
+- **Dead code removed.** 37 modules that no entry point of any package
+  reaches are gone, with the tests that covered only them: among them the
+  old `src/observability/` copies of the event logger and metrics,
+  `src/utils/secure-logger.js` and `input-sanitizer.js` (the live
+  redaction is `src/utils/secure-logging.js`), the plugin marketplace
+  prototypes, the sample plugins, `memory-monitor.js`,
+  `safe-expression-evaluator.js` and `LLMReranker`. None was exported, so
+  nothing you can import changes.
+- Unused development dependencies removed: `framer-motion`,
+  `jest-transform-stub`, `plaiceholder`, `prop-types`, `rimraf`, `sharp`,
+  `ts-jest` and `why-is-node-running`, with the `watch:lqip` and
+  `observability:start`/`stop` scripts, whose targets don't exist.
+  `js-yaml` and `dotenv`, which maintenance scripts use, are now declared.
+- CI runs the tests that assert on wall-clock time (linear-time, ReDoS and
+  the MCP server's limits) in a step of their own, one at a time
+  (`npm run test:timing`).
+
 ## [3.8.3] - 2026-11-09
 
 Documentation and package metadata only; no code changes. If you're on

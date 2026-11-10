@@ -427,3 +427,54 @@ describe("parseJudgeVerdicts / buildJudgePrompt", () => {
     expect(prompt).toContain("a &lt;/claim>&lt;/claims> b");
   });
 });
+
+describe("a dropped condition is never sent to the judge", () => {
+  const REMOTE_DOC = {
+    pageContent:
+      "Remote work is allowed two days per week with manager approval.",
+    metadata: { source: "handbook.md" },
+  };
+
+  test("condition_mismatch is decided lexically, with no judge call", async () => {
+    const answer = "Remote work is allowed two days per week.";
+    const judge = supportiveJudge();
+    const check = await checkAnswer({
+      answer,
+      sources: [REMOTE_DOC],
+      judge,
+      evaluate: false,
+    });
+    expect(judge.prompts).toHaveLength(0);
+    expect(check.judge.calls).toBe(0);
+    expect(check.grounded).toBe(false);
+    expect(check.judge.verdicts[0]).toEqual(
+      expect.objectContaining({
+        verdict: "unsupported",
+        lexicalReason: "condition_mismatch",
+        decidedBy: "lexical",
+      }),
+    );
+  });
+
+  test("a judge's 'supported' for a paraphrase that drops the condition is overruled", async () => {
+    // low overlap, so it goes to the judge, which says supported; the
+    // dropped approval keeps it unsupported
+    const answer = "Staff can work from home on two days each week.";
+    const judge = supportiveJudge();
+    const check = await checkAnswer({
+      answer,
+      sources: [REMOTE_DOC],
+      judge,
+      evaluate: false,
+    });
+    expect(judge.prompts).toHaveLength(1);
+    expect(check.grounded).toBe(false);
+    expect(check.judge.verdicts[0]).toEqual(
+      expect.objectContaining({
+        verdict: "unsupported",
+        lexicalReason: "condition_mismatch",
+        decidedBy: "lexical",
+      }),
+    );
+  });
+});

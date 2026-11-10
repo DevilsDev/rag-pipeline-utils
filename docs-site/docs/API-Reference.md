@@ -14,7 +14,7 @@ The package has five entry points:
 | `@devilsdev/rag-pipeline-utils/experimental` | Simulated or incomplete modules; see [Experimental modules](./Experimental)                                                                                                    |
 | `@devilsdev/rag-pipeline-utils/edge`         | The library without Node.js APIs, for Vercel Edge, Workers without `nodejs_compat`, Deno and Netlify Edge; see [Edge runtimes](./Deployment-Edge)                              |
 | `@devilsdev/rag-pipeline-utils/testing`      | Offline test stand-ins (`HashEmbedder`, `EchoLLM`, `fixtures`, `createTestPipeline`) and plugin contract tests (`runContractTests`, `checkContract`); see [Testing](./Testing) |
-| `@devilsdev/rag-pipeline-utils/cli`          | The `rag-pipeline` command line; see [CLI](./CLI)                                                                                                                              |
+| `@devilsdev/rag-pipeline-utils/cli`          | The bundled CLI module, which exports `run`; the command itself is `npx rag-pipeline` (see [CLI](./CLI))                                                                       |
 
 Both CommonJS (`require`) and ESM (`import`) are supported. TypeScript declarations are generated from the JSDoc of every runtime export.
 
@@ -37,6 +37,7 @@ function createRagPipeline(config?: {
   reranker?: Reranker | string;
   registry?: PluginRegistry;
   cache?: boolean | CacheBackend | CacheOptions;
+  telemetry?: boolean | TelemetryOptions;
 }): {
   run(input: RunInput): Promise<RunResult | AsyncIterable<StreamChunk>>;
   cleanup(): void;
@@ -46,15 +47,16 @@ function createRagPipeline(config?: {
 
 **Parameters:**
 
-| Parameter          | Type                                | Required | Description                                                                     |
-| ------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                       |
-| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed               |
-| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                          |
-| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                      |
-| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                     |
-| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)               |
-| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching) |
+| Parameter          | Type                                | Required | Description                                                                                  |
+| ------------------ | ----------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `config.loader`    | `Loader \| string`                  | No       | Loader instance or registered plugin name                                                    |
+| `config.embedder`  | `Embedder \| string`                | No       | Embedder; used to embed the query when no `queryVector` is passed                            |
+| `config.retriever` | `Retriever \| string`               | No       | Retriever; without one, retrieval returns no documents                                       |
+| `config.llm`       | `LLM \| string`                     | No       | Language model; without one the pipeline is retrieval-only                                   |
+| `config.reranker`  | `Reranker \| string`                | No       | Reranker applied to the retrieved documents                                                  |
+| `config.registry`  | `PluginRegistry`                    | No       | Registry used to resolve string names (default: `pluginRegistry`)                            |
+| `config.cache`     | `boolean \| CacheBackend \| object` | No       | Cache query embeddings, retrieval results and answers; see [Caching](./Caching)              |
+| `config.telemetry` | `boolean \| object`                 | No       | Record each run as an OpenTelemetry span; see [Observability](./Observability#opentelemetry) |
 
 String names are resolved from `registry`, or from the exported `pluginRegistry` when no registry is given.
 
@@ -214,8 +216,12 @@ Components receive the signal as follows (see [Plugin Contracts](#plugin-contrac
 | Retriever | `retriever.retrieve({ query, queryVector, topK, signal })`                    |
 | Reranker  | `reranker.rerank(query, docs, { topK, signal })`                              |
 | LLM       | `llm.generate(query, docs, { ...options, signal })`                           |
+| Router    | `llm.route(query, docs, { ...options, signal })`                              |
+| Filter    | `options.filterResults(docs, { signal })`                                     |
 
-Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. For a stream, the timeout covers the run up to the returned stream; a caller signal keeps cancelling the stream until it finishes.
+Components that ignore the signal still work: the run settles on abort anyway. All built-in connectors and rerankers honour it, and `AgenticPipeline` and `IterativeRetriever` propagate it. `loader.load()` takes no signal; the run still settles on abort. For a stream, the timeout and a caller signal keep applying until the stream ends: a stream still running at the timeout is aborted and its iteration rejects with `Execution timeout`.
+
+Before 3.9.0, the timeout stopped once the stream was returned, a stream whose model ignored the signal didn't settle on abort, and `llm.route()` and `filterResults()` got no signal.
 
 ---
 
@@ -242,10 +248,12 @@ function packContext(
 ```
 
 - Documents keep their order. Each one that fits is kept; one that doesn't is skipped, and later, shorter documents may still fit.
-- The top document is always included. When it alone exceeds the budget it is cut at a word boundary (with `truncate: false` it is dropped instead), so a small budget never leaves the model with no context.
+- The top document is always included. When it alone exceeds the budget it is cut at a word boundary (with `truncate: false` it is dropped instead), so a small budget never leaves the model with no context. When the budget is too small for even one word beside the wrapper, the first word is kept and `tokens` is above `maxTokens`.
 - A cut document is a copy marked `metadata.truncated: true`; the documents you pass in are never modified, so cached retrieval results stay whole.
 - The budget covers the documents and the `<document index="n">` wrapper the built-in connectors put around each one. The system prompt, the instructions around the documents and the question come on top.
 - For exact counts, pass your model's tokenizer as `countTokens`.
+
+Before 3.9.0, a budget smaller than one word and the wrapper dropped the top document too.
 
 ```javascript
 const result = await pipeline.run({
@@ -327,6 +335,11 @@ A retriever backed by a JSON file. It is the index used by `rag-pipeline ingest`
 - The index records which embedder produced the vectors (name, dimensions, optional serialized state) and rejects query vectors whose dimension does not match.
 - Mostly-zero vectors are stored sparsely and values are rounded to 7 significant digits.
 - `removeBySource()` supports re-ingesting one source file.
+- Scores are cosine similarity (1 for an identical vector), as in `MemoryRetriever`. `topK` must be a whole number of 0 or more (0 returns no results), and a query vector with NaN or Infinity is rejected.
+- `store()` checks the whole batch first, so a batch with an invalid document stores nothing. A batch with a new vector size must replace every stored document (as `ingest` and `ai train` do after refitting the local embedder); otherwise it throws and asks you to re-ingest with `--rebuild`. `MemoryRetriever` checks the same way. Documents are copied on the way in and results on the way out.
+- `save()` re-reads the file and applies only this instance's changes, so several processes can ingest into one index, and `load()` picks up a newer file when this instance has no unsaved changes. There is no lock: if two processes write the same id at the same instant, the last save wins. Use one writer for the same ids.
+
+Before 3.9.0, scores grew with the query vector's length (an identical vector could score above 2), so a `minRelevanceScore` tuned on them needs re-tuning; a negative `topK` returned all but the last few results; and a save replaced documents another process had saved since this one read the file.
 
 **Constructor:**
 
@@ -337,8 +350,8 @@ new FileVectorStore({ path: string });
 **Methods:**
 
 ```typescript
-load(): object                      // read the index (cached after the first call)
-save(): void                        // write the index atomically
+load(): object                      // read the index (cached; reread when the file changes)
+save(): void                        // merge with the file on disk and write it atomically
 store(docs: Array<{ id: string; vector: number[]; content: string; metadata?: object }>): Promise<void>
 retrieve(request: { queryVector: number[]; topK?: number }): Promise<Array<{ id; score; content; metadata }>>
 removeBySource(source: string): number   // removes docs whose metadata.source matches
@@ -408,6 +421,7 @@ new PipelineEvaluator({
   threshold?: number;   // per-sentence similarity threshold (default: 0.5)
   includeBLEU?: boolean;
   includeROUGE?: boolean;
+  conditionCheck?: boolean; // false: faithfulness, context recall and groundedness skip the condition check (3.9)
 })
 
 evaluate(
@@ -448,8 +462,9 @@ Claim support also checks numbers: a sentence whose numbers (digits, decimals, p
 extractNumbers(text: string): { values: string[]; parts: string[] }
 checkNumericConsistency(claimText: string, docText: string): {
   consistent: boolean;
-  claimNumbers: string[];
+  claimNumbers: string[]; // each quantity as "kind:value unit", e.g. "duration:20 day"
   missing: string[];
+  matchedWords: string[]; // claim words the source states another way ("90 minutes" for "one and a half hours")
 }
 ```
 
@@ -457,7 +472,7 @@ checkNumericConsistency(claimText: string, docText: string): {
 import { checkNumericConsistency } from "@devilsdev/rag-pipeline-utils";
 
 checkNumericConsistency("It takes twenty days.", "Processing takes 20 days.");
-// { consistent: true, claimNumbers: ["20"], missing: [] }
+// { consistent: true, claimNumbers: ["duration:20 day"], missing: [], matchedWords: [] }
 ```
 
 ### checkPolarityConsistency
@@ -482,7 +497,32 @@ checkPolarityConsistency(
 // { consistent: false, claimNegated: true, sourceSentence: "Employees receive twenty days of paid vacation per year." }
 ```
 
-Not checked: paraphrase (from 3.4.0, `checkAnswer({ judge })` can ask an LLM about sentences that fail for lack of word overlap only; see [Evaluation](./Evaluation#paraphrases-the-optional-llm-judge)), negation expressed without a negation word ("excluded", "denied"), units ("20 hours" vs "20 days"), ordinals, a lone "one", and claims that combine facts from several documents.
+### checkConditionConsistency
+
+Claim support also checks restricting clauses (from 3.9.0): a sentence that keeps the words of its closest source sentence but leaves out an approval, "only if", "if", "unless", "provided", "subject to", "as long as", a waiting period, an eligibility rule or an exception is not grounded (`lexicalReason: "condition_mismatch"`). See [Evaluation](./Evaluation#known-limitations) for what counts as a restriction.
+
+```typescript
+checkConditionConsistency(claimText: string, docText: string, answerText?: string): {
+  consistent: boolean;
+  missing: string[]; // the restricting clauses the claim leaves out
+  sourceSentence: string | null; // the source sentence it was compared with
+}
+```
+
+`answerText` is the whole answer. A condition restated in another sentence of the answer that the same source supports counts as kept. It defaults to the claim.
+
+```js no-run
+import { checkConditionConsistency } from "@devilsdev/rag-pipeline-utils";
+
+checkConditionConsistency(
+  "Remote work is allowed two days per week.",
+  "Remote work is allowed two days per week with manager approval.",
+);
+// { consistent: false, missing: ["with manager approval"],
+//   sourceSentence: "Remote work is allowed two days per week with manager approval." }
+```
+
+Not checked: paraphrase (from 3.4.0, `checkAnswer({ judge })` can ask an LLM about sentences that fail for lack of word overlap only; see [Evaluation](./Evaluation#paraphrases-the-optional-llm-judge)), negation expressed without a negation word ("excluded", "denied"), units it does not know (currencies, temperatures), ordinals, a lone "one", and claims that combine facts from several documents.
 
 ---
 
@@ -634,6 +674,7 @@ createModelRouter(options: {
   generate(query, docs?, options?): Promise<string>;
   generateStream(query, docs?, options?): AsyncIterable<{ token: string; done: boolean }>;
   getCacheKey(role): string | null;
+  routeTemperature(model?): number | undefined; // that route's llm config.temperature; the highest over all routes without a model
   readonly routes: Array<{ model; handles; pricing }>;
 }
 ```
@@ -686,6 +727,11 @@ connect(fromId: string, toId: string): void
 execute(seed?: any, options?: object): Promise<any>
 validate(): boolean // true, or throws
 ```
+
+- `addNode(id, fn, { timeout })` fails the node with "Node &lt;id&gt; timed out after &lt;n&gt; ms" when it runs longer than `timeout` milliseconds (or `RAG_NODE_TIMEOUT`). A node without one has no limit. A timed-out node's work is abandoned, not cancelled, so it can still finish in the background.
+- `execute(seed, { concurrency })` runs up to `concurrency` independent nodes at a time (default: `RAG_MAX_CONCURRENCY`, or one at a time).
+
+Before 3.9.0, a node's `timeout` was ignored and `concurrency` ran the nodes one at a time.
 
 **Example:**
 
@@ -764,15 +810,28 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 
 **Options (selection):**
 
-| Option              | Description                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `logDir`            | Directory for log files (default: `.rag-enterprise/audit-logs`)                                   |
-| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                 |
-| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning              |
-| `signingKey`        | HMAC key; random per process if omitted, so `verifyIntegrity` flags records from before a restart |
-| `retentionDays`     | Retention period (default: 2555)                                                                  |
+| Option              | Description                                                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logDir`            | Directory for log files, created on the first write (default: `.rag-enterprise/audit-logs` in the working directory, deprecated: it warns once and is removed in 4.0)                           |
+| `memoryLimit`       | Events kept per stage (file, chain, webhook) while it fails, for the next flush (default: 10000); older ones are dropped and reported (`events_dropped`, `droppedEvents`)                       |
+| `encryptionKey`     | Encryption key; falls back to the `RAG_AUDIT_ENCRYPTION_KEY` environment variable                                                                                                               |
+| `requireEncryption` | `true` makes a missing key an error; otherwise encryption is disabled with a warning                                                                                                            |
+| `signingKey`        | HMAC key; falls back to `RAG_AUDIT_SIGNING_KEY`, else a key generated once and stored in `logDir/integrity/signing.key` (with a one-time warning)                                               |
+| `retentionDays`     | Retention period (default: 2555)                                                                                                                                                                |
+| `webhookUrl`        | Also POST each written event to this URL as `{ events: [...] }`: https, or http for localhost; anything else throws when the logger is created                                                  |
+| `webhookHeaders`    | Extra request headers, as an object of names to string values (for example `Authorization`); `Content-Type`, `Content-Length`, `Host`, `Connection` and `Transfer-Encoding` can't be overridden |
+| `webhookTimeoutMs`  | Request timeout (default: 5000)                                                                                                                                                                 |
+| `webhookRetryMs`    | First retry delay after a failed delivery (default: 1000), doubling up to 60 s                                                                                                                  |
 
-**Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity` (all async).
+**Webhook.** Events go to the webhook after they are written to the log file, on their own queue, so a slow or failing endpoint never holds up the file or the chain. A delivery that fails (a non-2xx answer, a redirect, a network error or the timeout) emits `webhook_failed` (`{ error, count }`) and is retried on a later flush; redirects are not followed, and the error never contains the URL, a header or an event. Delivery is at least once (a retry after a lost answer sends the events again), so de-duplicate on `sequence`. Encrypted fields are sent as stored.
+
+**Daily files.** An event goes in the file named for its UTC date. An event older than the newest file goes in the newest file, so the files stay in sequence order for `verifyIntegrity()`.
+
+Before 3.9.0, the constructor created the log folders at once, a directory that couldn't be created ended the process, and the default `logDir` didn't warn; on 3.8.1 and earlier, a failed integrity-chain update also wrote the batch to the file again. 3.8.0 only logged that it would send to `webhookUrl`, and 3.8.1 to 3.8.3 ignored it with a warning. A daily file was named for the day of the flush, and there was no `close()`.
+
+**Methods:** `logAuthentication`, `logAuthorization`, `logDataAccess`, `logDataModification`, `logSystemChanges`, `logAPIAccess`, `logComplianceEvent`, `queryLogs`, `generateComplianceReport`, `verifyIntegrity`, `close` (all async).
+
+`close()` stops the flush timer, writes the buffered events and the chain state, tries a failed stage (the file, the chain or the webhook) once more, and resolves, never rejects, with what is still pending: `{ pending: { events, chain, webhook } }`. Call it before the process exits, for example on SIGTERM. `queryLogs()` returns `total` (every match) and `hasMore`; the compliance report's summary counts each category, including `apiAccessEvents` and `otherEvents`.
 
 **Example:**
 
@@ -780,6 +839,7 @@ Append-only audit logging with HMAC signatures and optional field encryption.
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
+  logDir: "./audit-logs", // without it: .rag-enterprise/audit-logs, deprecated
   encryptionKey: process.env.RAG_AUDIT_ENCRYPTION_KEY,
   signingKey: process.env.RAG_AUDIT_SIGNING_KEY,
   requireEncryption: true,

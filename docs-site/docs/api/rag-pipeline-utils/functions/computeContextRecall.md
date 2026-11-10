@@ -21,12 +21,13 @@ the numeric consistency check.
 
 ## Parameters
 
-| Parameter            | Type                          | Description                                                               |
-| -------------------- | ----------------------------- | ------------------------------------------------------------------------- |
-| `referenceAnswer`    | `string`                      | The reference (ground-truth) answer text                                  |
-| `retrievedDocs`      | `object`[]                    | Array of retrieved documents                                              |
-| `options?`           | \{ `threshold?`: `number`; \} | Configuration options                                                     |
-| `options.threshold?` | `number`                      | Minimum share of a claim's content terms a doc must contain to support it |
+| Parameter                 | Type                                                        | Description                                                               |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `referenceAnswer`         | `string`                                                    | The reference (ground-truth) answer text                                  |
+| `retrievedDocs`           | `object`[]                                                  | Array of retrieved documents                                              |
+| `options?`                | \{ `conditionCheck?`: `boolean`; `threshold?`: `number`; \} | Configuration options                                                     |
+| `options.conditionCheck?` | `boolean`                                                   | false: skip the 3.9 condition check (see computeSupportScore)             |
+| `options.threshold?`      | `number`                                                    | Minimum share of a claim's content terms a doc must contain to support it |
 
 ## Returns
 

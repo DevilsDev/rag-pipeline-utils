@@ -14,6 +14,36 @@ const path = require('path');
 const loadMarked = () => require('marked'); // eslint-disable-line global-require
 // eslint-disable-line global-require
 
+const NAMED_ENTITIES = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: '\'',
+  nbsp: ' ',
+};
+
+/**
+ * Turn the entities the Markdown renderer writes (&amp; &lt; &#39; ...)
+ * back into characters. One pass, so "&amp;lt;" becomes "&lt;", not "<".
+ * @param {string} text
+ * @returns {string}
+ */
+function decodeEntities(text) {
+  return text.replace(
+    /&(?:#(\d+)|#[xX]([0-9a-fA-F]+)|([a-zA-Z]+));/g,
+    (match, dec, hex, name) => {
+      if (name) return NAMED_ENTITIES[name] ?? match;
+      const code = dec ? Number(dec) : parseInt(hex, 16);
+      try {
+        return String.fromCodePoint(code);
+      } catch {
+        return match;
+      }
+    },
+  );
+}
+
 /**
  * MarkdownLoader reads and parses .md files into plain text chunks.
  * Implements the Loader interface.
@@ -28,7 +58,7 @@ class MarkdownLoader {
     const absPath = path.resolve(_filePath);
     const raw = await fs.readFile(absPath, 'utf-8');
     const html = loadMarked().marked(raw);
-    const text = html.replace(/<[^>]+>/g, ''); // strip tags
+    const text = decodeEntities(html.replace(/<[^>]+>/g, '')); // strip tags
 
     return [
       {
@@ -44,6 +74,7 @@ class MarkdownLoader {
    * @returns {string[]}
    */
   _chunkText(input, maxLen = 500) {
+    if (!input || !String(input).trim()) return [];
     const { ChunkingEngine } = require('../chunking/chunking-engine');
     const engine = new ChunkingEngine({ strategy: 'sentence', maxLen });
     return engine.chunk(input);

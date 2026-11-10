@@ -23,7 +23,6 @@ const { createAiSdkAdapter } = require("../../src/adapters/ai-sdk");
 const { groundingMiddleware } = require("../../src/adapters/ai-sdk-middleware");
 const { AgenticPipeline } = require("../../src/agentic/agentic-pipeline");
 const { QueryPlanner } = require("../../src/agentic/query-planner");
-const { LLMReranker } = require("../../src/reranker/llm-reranker");
 const { createModelRouter } = require("../../src/cost/model-router");
 const { CostTracker } = require("../../src/cost/cost-tracker");
 const { generateSyntheticDataset } = require("../../src/evaluate/synthetic");
@@ -158,15 +157,6 @@ describeLive("Claude through the package's features, live", () => {
     const result = await pipeline.run({ query: "How many vacation days?" });
     expect(result.cost.estimatedCost).toBeGreaterThan(0);
     expect(result.cost.inputTokens).toBeGreaterThan(0);
-  });
-
-  test("LLMReranker puts the relevant document first", async () => {
-    const reranker = new LLMReranker({ llm: claude() });
-    const ranked = await reranker.rerank(
-      "Where do visitors park?",
-      [DOCS[0], DOCS[1], DOCS[2]].map((d) => ({ ...d, text: d.content })),
-    );
-    expect(ranked[0].id).toBe("parking");
   });
 
   test("QueryPlanner splits a compound question with Claude", async () => {

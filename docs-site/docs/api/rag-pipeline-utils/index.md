@@ -126,6 +126,7 @@ RAG Pipeline Utils - TypeScript Definitions
 
 - [buildIDFWeights](functions/buildIDFWeights.md)
 - [checkAnswer](functions/checkAnswer.md)
+- [checkConditionConsistency](functions/checkConditionConsistency.md)
 - [checkNumericConsistency](functions/checkNumericConsistency.md)
 - [checkPolarityConsistency](functions/checkPolarityConsistency.md)
 - [classifyQuery](functions/classifyQuery.md)
@@ -173,6 +174,8 @@ RAG Pipeline Utils - TypeScript Definitions
 - [retry](functions/retry.md)
 - [runEvaluation](functions/runEvaluation.md)
 - [scoreAnswer](functions/scoreAnswer.md)
+- [splitClauses](functions/splitClauses.md)
+- [splitSentences](functions/splitSentences.md)
 - [toLangfuseScores](functions/toLangfuseScores.md)
 - [validateDataset](functions/validateDataset.md)
 - [validateInput](functions/validateInput.md)

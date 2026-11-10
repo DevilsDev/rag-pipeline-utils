@@ -1,5 +1,7 @@
 'use strict';
 
+const { copyValue } = require('./copy-value');
+
 const ACCESS_KEYS = ['requiredRole', 'acl'];
 
 // Where stores without a free-form document keep the access fields: a
@@ -19,8 +21,10 @@ const NO_ACCESS = 'rag:no-access';
  */
 function accessFields(doc) {
   const fields = {};
-  if (doc.acl !== undefined) fields.acl = doc.acl;
-  if (doc.requiredRole !== undefined) fields.requiredRole = doc.requiredRole;
+  if (doc.acl !== undefined) fields.acl = copyValue(doc.acl);
+  if (doc.requiredRole !== undefined) {
+    fields.requiredRole = copyValue(doc.requiredRole);
+  }
   return fields;
 }
 

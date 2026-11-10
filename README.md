@@ -14,7 +14,7 @@
 
 **RAG for Node.js that tells you when your LLM is making things up.**
 
-Your chatbot just told someone they get _thirty_ vacation days. The handbook says twenty. This library catches that: it checks every sentence of an answer against the sources it was given, numbers and "not"s included, with no extra model calls. It also builds the pipeline for you, if you want one.
+Your chatbot just told someone they get _thirty_ vacation days. The handbook says twenty. This library catches that: it checks every sentence of an answer against the sources it was given, numbers, "not"s and conditions included, with no extra model calls. It also builds the pipeline for you, if you want one.
 
 ```bash
 npm install @devilsdev/rag-pipeline-utils
@@ -46,11 +46,11 @@ const check = await checkAnswer({
 });
 
 console.log(check.grounded); // false
-console.log(check.groundedness); // 0.5
-console.log(check.unsupported); // ["Full-time employees receive thirty days of paid vacation per year."]
+console.log(check.groundedness); // 0
+console.log(check.unsupported); // ["Full-time employees receive thirty days of paid vacation per year.", "Remote work is allowed two days per week."]
 ```
 
-That runs locally, with no API key and nothing sent anywhere. Worried about paraphrases? Add `judge` and your LLM gets asked about the sentences that failed on wording alone, and nothing else. [Try it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) with an answer of your own.
+Both sentences are caught: the first states the wrong number, and the second drops the "with manager approval" its source requires, which makes it claim more than the handbook says. That runs locally, with no API key and nothing sent anywhere. Worried about paraphrases? Add `judge` and your LLM gets asked about the sentences that failed on wording alone, and nothing else. [Try it on StackBlitz](https://stackblitz.com/github/DevilsDev/rag-pipeline-utils/tree/main/examples/use-cases?file=check-your-answer.js) with an answer of your own.
 
 ## A pipeline in a dozen lines
 
@@ -102,7 +102,7 @@ The main package has everything. The smaller ones are there if install size matt
 | Package                                                                                        | What you get                                             | Installed   |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------- |
 | [`@devilsdev/rag-pipeline-utils`](https://www.npmjs.com/package/@devilsdev/rag-pipeline-utils) | Everything, including the CLI                            | about 34 MB |
-| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrievers and checks                      | about 6 MB  |
+| [`@devilsdev/rag-core`](https://www.npmjs.com/package/@devilsdev/rag-core)                     | The pipeline, retrieval, caching and cost tracking       | about 6 MB  |
 | [`@devilsdev/rag-connectors`](https://www.npmjs.com/package/@devilsdev/rag-connectors)         | Model and vector store connectors                        | about 10 MB |
 | [`@devilsdev/rag-eval`](https://www.npmjs.com/package/@devilsdev/rag-eval)                     | Evaluation and answer checks                             | about 6 MB  |
 | [`@devilsdev/rag-guardrails`](https://www.npmjs.com/package/@devilsdev/rag-guardrails)         | Injection detection, ACL filtering and PII redaction     | about 6 MB  |

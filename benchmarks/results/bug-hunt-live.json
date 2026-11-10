@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-11-06T12:44:55.984Z",
+  "environment": {
+    "libraryVersion": "3.8.0",
+    "commit": "53ca1f3",
+    "node": "v22.14.0",
+    "platform": "win32 10.0.26300",
+    "runner": "local"
+  },
+  "model": "claude-haiku-5-5",
+  "checks": {
+    "temperatureRetry": {
+      "claude-sonnet-5-5": [
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 2482,
+          "failedRequestMs": 0
+        },
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 1354,
+          "failedRequestMs": 0
+        },
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 1349,
+          "failedRequestMs": 0
+        }
+      ],
+      "claude-haiku-5-5": [
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 819,
+          "failedRequestMs": 0
+        },
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 1289,
+          "failedRequestMs": 0
+        },
+        {
+          "requests": 1,
+          "statuses": [200],
+          "totalMs": 1389,
+          "failedRequestMs": 0
+        }
+      ]
+    },
+    "parity": {
+      "finalChunkHasCitations": true,
+      "finalChunkHasEvaluation": true,
+      "firstTokenMs": 599.107,
+      "runAndStreamAgree": false
+    },
+    "abort": {
+      "chunksAfterAbort": 1,
+      "error": "canceled",
+      "doneChunkWithQuality": false,
+      "requests": 1
+    },
+    "timeout": {
+      "ms": 9,
+      "result": "Execution timeout"
+    },
+    "costTracker": {
+      "tracked": {
+        "inputTokens": 237,
+        "outputTokens": 70,
+        "estimatedCost": 0.000058700000000000004,
+        "model": "claude-haiku-5.5",
+        "requestedModel": "claude-haiku-5-5",
+        "currency": "USD",
+        "tokensEstimated": true
+      },
+      "actual": {
+        "input": 297,
+        "output": 80,
+        "cost": 0.0000697
+      },
+      "pricesTable": {
+        "input": 0.1,
+        "output": 0.5,
+        "cacheRead": 0.01,
+        "above100k": {
+          "input": 0.5,
+          "output": 2.5,
+          "cacheRead": 0.05
+        }
+      }
+    },
+    "router": {
+      "route": {
+        "class": "simple",
+        "model": "claude-haiku-5-5",
+        "estimatedCost": 0.0001637
+      }
+    },
+    "packContext": {
+      "estimated": 657,
+      "counted": 832,
+      "ratio": 0.7896634615384616,
+      "status": 200
+    },
+    "verifyCitations": {
+      "claims": 4,
+      "verdicts": [
+        {
+          "verdict": "supported",
+          "lexicalReason": "supported",
+          "text": "Full-time employees receive twenty days of paid vacation per year."
+        },
+        {
+          "verdict": "supported",
+          "lexicalReason": "supported",
+          "text": "Unused days can be carried over for up to twelve months."
+        },
+        {
+          "verdict": "supported",
+          "lexicalReason": "supported",
+          "text": "Remote work is allowed two days per week with manager approval."
+        },
+        {
+          "verdict": "supported",
+          "lexicalReason": "supported",
+          "text": "Employees must be reachable from 10:00 to 15:00."
+        }
+      ]
+    }
+  },
+  "leads": [
+    {
+      "check": "run vs stream",
+      "detail": "for the same answer, run() and the stream's final chunk differ: stream {\"citations\":{\"citations\":[{\"sentence\":\"Full-time employees receive 20 days of paid vacation per year.\",\"sources\":[{\"docId\":\"vacation\",\"docIndex\":0,\"score\":0.896599309210942}]},{\"sentence\":\"Unused days can be carried over for up to 12 months.\",\"sources\":[{\"docId\":\"vacation\",\"docIndex\":0,\"score\":0.86 vs run {\"citations\":{\"citations\":[{\"sentence\":\"Full-time employees receive 20 days of paid vacation per year.\",\"sources\":[{\"docId\":\"vacation\",\"docIndex\":0,\"score\":0.896599309210942}]},{\"sentence\":\"Unused days can be carried over for up to 12 months.\",\"sources\":[{\"docId\":\"vacation\",\"docIndex\":0,\"score\":0.86"
+    }
+  ]
+}

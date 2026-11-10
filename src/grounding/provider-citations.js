@@ -77,7 +77,7 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * @property {number} start
  * @property {number} end
  * @property {'supported'|'unsupported'|'unverifiable'} verdict
- * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'unverifiable'} lexicalReason
+ * @property {'supported'|'low_overlap'|'number_mismatch'|'polarity_mismatch'|'condition_mismatch'|'unverifiable'} lexicalReason
  * @property {string} reason - Why, in words
  * @property {'lexical'|'judge'} decidedBy
  * @property {number|null} score - Support of the claim by all its cited passages together, 0..1
@@ -99,7 +99,11 @@ const THRESHOLD = DEFAULT_CONFIG.similarityThreshold;
  * @property {{calls: number, usage?: Object, error?: string}} [judge] - Only with the `judge` option
  */
 
-/** Sentences of `text` with their offsets (the splitSentences rule). */
+/**
+ * Sentences of `text` with their offsets: a sentence ends at . ! or ?
+ * before whitespace, or at any line break (stricter about lines than
+ * splitSentences, so a heading is never part of the cited sentence).
+ */
 function sentencesWithOffsets(text) {
   const out = [];
   // A sentence ends at . ! or ? before whitespace, or at a line break: a
@@ -132,6 +136,43 @@ function sentencesWithOffsets(text) {
 
 const hasContent = (text) => contentTokens(tokenize(text)).length > 0;
 const overlaps = (a, b) => a.start < b.end && b.start < a.end;
+
+/**
+ * The parts of a sentence no claim covers that have content words: the
+ * whole sentence when no claim overlaps it, or the uncited text around a
+ * claim inside it (", and contractors receive forty days ..." after a cited
+ * "Employees receive twenty days"), without leading punctuation.
+ * @param {string} answer
+ * @param {{start: number, end: number}} sentence
+ * @param {Array<{start: number, end: number}>} claims
+ * @returns {Array<{text: string, start: number, end: number}>}
+ */
+function uncitedParts(answer, sentence, claims) {
+  const covering = claims
+    .filter((c) => overlaps(c, sentence))
+    .sort((a, b) => a.start - b.start);
+  const gaps = [];
+  let at = sentence.start;
+  for (const c of covering) {
+    // An introductory phrase before the first claim ("According to the
+    // handbook, ") frames it rather than stating something uncited
+    const intro =
+      at === sentence.start && /,\s*$/.test(answer.slice(at, c.start));
+    if (c.start > at && !intro) gaps.push([at, c.start]);
+    at = Math.max(at, c.end);
+  }
+  if (at < sentence.end) gaps.push([at, sentence.end]);
+  const out = [];
+  for (const [from, to] of gaps) {
+    const raw = answer.slice(from, to);
+    const lead = raw.length - raw.replace(/^[\s,;:)\]]+/, '').length;
+    const text = raw.slice(lead).trimEnd();
+    if (text && hasContent(text)) {
+      out.push({ text, start: from + lead, end: from + lead + text.length });
+    }
+  }
+  return out;
+}
 
 function documentId(documents, index, title) {
   const doc = Array.isArray(documents) ? documents[index] : undefined;
@@ -245,6 +286,7 @@ function fromAnthropicCitations(message, { documents } = {}) {
     answer += block.text;
     const citations = [];
     for (const c of block.citations || []) {
+      if (c == null) continue;
       const citation = anthropicCitation(c, documents);
       if (citation) citations.push(citation);
       else skipped[c.type] = (skipped[c.type] || 0) + 1;
@@ -411,6 +453,8 @@ const REASON_TEXT = {
   [REASONS.numberMismatch]: 'the numbers do not match the cited passages',
   [REASONS.polarityMismatch]:
     'the cited passages say the opposite (negation does not match)',
+  [REASONS.conditionMismatch]:
+    'the claim leaves out a condition the cited passages state',
   unverifiable: 'no cited text to check',
 };
 
@@ -424,12 +468,26 @@ const REASON_TEXT = {
  * @param {{generate: Function}} [options.judge] - Opt-in LLM judge for claims
  *   that failed for lack of word overlap (paraphrases), as in checkAnswer();
  *   it may only name a passage the claim cites, and never overturns a
- *   number or negation mismatch. One call at most. Errors from
- *   `judge.generate` are not caught.
+ *   number, negation or condition mismatch. One call at most. A reply with
+ *   no text (code NO_TEXT or MODEL_REFUSED) leaves the lexical verdicts and
+ *   sets `judge.error`; other errors from `judge.generate` are not caught.
+ * @param {boolean} [options.conditionCheck=true] - false: skip the 3.9
+ *   condition check, as in checkAnswer
  * @returns {Promise<CitationVerification>}
  */
-async function verifyCitations(input, { judge } = {}) {
+async function verifyCitations(input, { judge, conditionCheck = true } = {}) {
   checkInput(input);
+  // A null claim or citation is skipped; a claim without citations has
+  // nothing to check (unverifiable)
+  input = {
+    ...input,
+    claims: input.claims
+      .filter((claim) => claim != null)
+      .map((claim) => ({
+        ...claim,
+        citations: (claim.citations || []).filter((c) => c != null),
+      })),
+  };
   if (judge != null && typeof judge.generate !== 'function') {
     throw new TypeError('judge must have a generate() method');
   }
@@ -446,20 +504,33 @@ async function verifyCitations(input, { judge } = {}) {
     ),
   );
   // Terms weighted over the cited passages, as checkAnswer weights over
-  // its sources
-  const idfWeights = DEFAULT_CONFIG.useIDFWeighting
-    ? buildIDFWeights(passageDocs)
-    : null;
+  // its sources: per claim, over the passages sharing a word with it
+  const weightsByClaim = new Map();
+  const idfWeightsFor = (text) => {
+    if (!DEFAULT_CONFIG.useIDFWeighting) return null;
+    if (!weightsByClaim.has(text)) {
+      weightsByClaim.set(text, buildIDFWeights(passageDocs, { sentence: text }));
+    }
+    return weightsByClaim.get(text);
+  };
   const byId = new Map(passageDocs.map((d) => [d.id, d]));
 
+  // The cited answer as a whole: a condition one claim restates in another
+  // counts as kept
+  const answerText = input.claims.map((c) => c.text).join(' ');
   const score = (text, contents) =>
     contents.length === 0
       ? 0
       : computeSupportScore(
           tokenize(text),
           new Set(tokenize(contents.join('\n'))),
-          idfWeights,
-          { claimText: text, docText: contents.join('\n') },
+          idfWeightsFor(text),
+          {
+            claimText: text,
+            docText: contents.join('\n'),
+            answerText,
+            conditionCheck,
+          },
         );
 
   const claims = input.claims.map((claim, ci) => {
@@ -499,7 +570,9 @@ async function verifyCitations(input, { judge } = {}) {
     bestSource: null,
   }));
   const allowed = verifiable.map((i) => claimPassageIds[i]);
-  let verdicts = lexicalReasons(sentences, passageDocs, allowed).map(
+  let verdicts = lexicalReasons(sentences, passageDocs, allowed, {
+    conditionCheck,
+  }).map(
     (reason) => ({
       verdict: reason === REASONS.supported ? 'supported' : 'unsupported',
       lexicalReason: reason,
@@ -509,7 +582,13 @@ async function verifyCitations(input, { judge } = {}) {
   );
   let judged;
   if (judge != null && sentences.length > 0) {
-    judged = await runJudge({ judge, sentences, docs: passageDocs, allowed });
+    judged = await runJudge({
+      judge,
+      sentences,
+      docs: passageDocs,
+      allowed,
+      conditionCheck,
+    });
     verdicts = judged.verdicts.map((v) => ({
       verdict: v.verdict,
       lexicalReason: v.lexicalReason,
@@ -536,9 +615,8 @@ async function verifyCitations(input, { judge } = {}) {
     return { ...rest, score: canCheck ? round(combined) : null, ...v };
   });
 
-  const citedSpans = input.claims;
-  const uncited = sentencesWithOffsets(input.answer).filter(
-    (s) => hasContent(s.text) && !citedSpans.some((c) => overlaps(c, s)),
+  const uncited = sentencesWithOffsets(input.answer).flatMap((s) =>
+    uncitedParts(input.answer, s, input.claims),
   );
   const count = (verdict) => out.filter((c) => c.verdict === verdict).length;
   const citationCount = out.reduce((n, c) => n + c.citations.length, 0);

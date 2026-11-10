@@ -231,7 +231,7 @@ services:
       - NODE_ENV=production
       - LOG_LEVEL=info
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - VECTOR_DB_URL=http://qdrant:6333
+      - QDRANT_URL=http://qdrant:6333
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
     volumes:
@@ -347,8 +347,8 @@ OPENAI_API_KEY=sk-...
 PINECONE_API_KEY=...
 COHERE_API_KEY=...
 
-# Database
-VECTOR_DB_URL=http://qdrant:6333
+# Database (the Qdrant retriever reads QDRANT_URL and QDRANT_API_KEY)
+QDRANT_URL=http://qdrant:6333
 REDIS_URL=redis://redis:6379
 REDIS_PASSWORD=strong_password_here
 
@@ -380,9 +380,13 @@ services:
     secrets:
       - openai_api_key
       - jwt_secret
-    environment:
-      - OPENAI_API_KEY_FILE=/run/secrets/openai_api_key
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+    # The library reads OPENAI_API_KEY from the environment, not from a
+    # *_FILE variable, so the container reads the secret file at start.
+    # Replace <your start command> with the command that starts your app.
+    command:
+      - sh
+      - -c
+      - export OPENAI_API_KEY="$$(cat /run/secrets/openai_api_key)" && exec <your start command>
 
 secrets:
   openai_api_key:
@@ -390,6 +394,8 @@ secrets:
   jwt_secret:
     file: ./secrets/jwt_secret.txt
 ```
+
+`jwt_secret` is for your own application code; the library reads no JWT variable.
 
 ## Container Optimization
 

@@ -48,9 +48,10 @@ function track(answer, docs, options = {}) {
   if (!answer.trim()) {
     return { tracked: { groundednessScore: 0, citations: [] }, sentences: [] };
   }
-  const tracker = new CitationTracker(
-    options.threshold != null ? { similarityThreshold: options.threshold } : {},
-  );
+  const tracker = new CitationTracker({
+    ...(options.threshold != null && { similarityThreshold: options.threshold }),
+    ...(options.conditionCheck === false && { conditionCheck: false }),
+  });
   const tracked = tracker.track(answer, docs);
   const sentences =
     (tracked.hallucinationReport && tracked.hallucinationReport.sentences) ||
@@ -66,7 +67,9 @@ const list = (items) => items.map((s) => `  - ${s}`).join('\n');
  *
  * @param {string|{answer: string, results?: Array}} received - An answer, or a run() result
  * @param {Array} [sources] - Defaults to the run() result's `results`
- * @param {{threshold?: number}} [options] - Support threshold per sentence (default 0.5)
+ * @param {{threshold?: number, conditionCheck?: boolean}} [options] - Support
+ *   threshold per sentence (default 0.5); `conditionCheck: false` skips the
+ *   3.9 condition check, as in checkAnswer
  */
 function toBeGroundedIn(received, sources, options) {
   const answer = answerOf(received, 'toBeGroundedIn');

@@ -1,0 +1,2032 @@
+[
+  {
+    "name": "Riverside Community Hospital",
+    "documents": [
+      {
+        "id": "rch-visiting",
+        "content": "General visiting hours at Riverside Community Hospital are 10:00 a.m. to 8:00 p.m. daily. ICU visits are limited to two visitors at a time for 30 minutes. Children under 12 must be accompanied by an adult.",
+        "roles": []
+      },
+      {
+        "id": "rch-diabetes-class",
+        "content": "Riverside offers a free Diabetes Self-Management class every second Tuesday at 6:00 p.m. in Conference Room B. Registered dietitians cover meal planning, glucose monitoring, and medication basics. Registration is available at the front desk or online.",
+        "roles": []
+      },
+      {
+        "id": "rch-payment-plans",
+        "content": "Patients may request an interest-free payment plan for balances over $500, with terms up to 24 months. Financial counselors are available Monday to Friday from 9:00 a.m. to 4:00 p.m. Charity care applications require proof of household income.",
+        "roles": []
+      },
+      {
+        "id": "rch-privacy-notice",
+        "content": "Riverside follows HIPAA and gives every patient a Notice of Privacy Practices at registration. Patients can request an accounting of disclosures by writing to the Privacy Office. Suspected privacy violations can be reported to the compliance hotline at extension 5520.",
+        "roles": []
+      },
+      {
+        "id": "rch-patient-note-gonzalez",
+        "content": "Maria Gonzalez (MRN 448210) was seen on 2024-03-14 for type 2 diabetes with an A1C of 9.2%. Metformin was increased to 1000 mg twice daily and a referral to endocrinology was placed with Dr. Priya Raman. Follow-up is scheduled for 2024-06-11.",
+        "roles": ["clinician"]
+      },
+      {
+        "id": "rch-sepsis-protocol",
+        "content": "Internal sepsis protocol: draw lactate and blood cultures within 30 minutes of a positive screen, then start broad-spectrum antibiotics within one hour. Piperacillin-tazobactam 4.5 g IV is first-line unless a penicillin allergy is documented. Escalate to the rapid response team if the MAP stays below 65 after a 30 mL/kg fluid bolus.",
+        "roles": ["clinician"]
+      },
+      {
+        "id": "rch-claim-denial-oneil",
+        "content": "Aetna denied claim CL-77309 for $18,450 for James O'Neil's knee replacement on 2024-04-02, citing missing prior authorization. The appeal is due by 2024-07-01 and must include surgeon Dr. Hall's letter of medical necessity. Expected recovery if overturned is $15,900.",
+        "roles": ["billing"]
+      },
+      {
+        "id": "rch-privacy-incident",
+        "content": "On 2024-02-02 a nurse in the east wing accessed the records of 14 patients without a treatment relationship. The Privacy Office reported the incident to HHS on 2024-03-01, and the nurse, employee ID 20931, was suspended for 30 days. Corrective action includes quarterly access audits at an estimated cost of $48,000 per year.",
+        "roles": ["compliance"]
+      },
+      {
+        "id": "rch-cardiology-budget",
+        "content": "The 2025 capital budget allocates $12.4 million to the new cardiology wing, with groundbreaking planned for 2025-03-10. Vendor Stellar Imaging was selected for two cath labs at $3.1 million. The CFO flagged a $900,000 contingency shortfall.",
+        "roles": ["admin"]
+      },
+      {
+        "id": "rch-cardiology-clinic",
+        "content": "The outpatient cardiology clinic is open Monday to Friday from 8:00 a.m. to 5:00 p.m. on the second floor. Patients can book echocardiograms and stress tests by phone. A cardiology wing expansion is planned to shorten wait times.",
+        "roles": []
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Alan Weiss",
+        "userPermissions": ["clinician"]
+      },
+      {
+        "name": "Brenda Cho",
+        "userPermissions": ["billing"]
+      },
+      {
+        "name": "Tom Ellis",
+        "userPermissions": ["compliance", "admin"]
+      },
+      {
+        "name": "Guest Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What diabetes management resources and treatment plans are available?",
+      "How are insurance claim denials handled and what payment options exist for patients?",
+      "What are the rules and past incidents about accessing patient records?",
+      "What is the plan for the cardiology department?"
+    ]
+  },
+  {
+    "name": "Hartwell & Associates LLP",
+    "documents": [
+      {
+        "id": "hw-practice-areas",
+        "content": "Hartwell & Associates LLP represents clients in employment law, commercial litigation, and mergers and acquisitions. The firm has offices in Chicago and Milwaukee. New clients can request a consultation through the website.",
+        "roles": []
+      },
+      {
+        "id": "hw-intake-faq",
+        "content": "Prospective clients complete an intake form, and the firm runs a conflicts check within two business days. Initial consultations are 30 minutes and cost $150, credited toward fees if the firm is retained. Information shared during intake is kept confidential.",
+        "roles": []
+      },
+      {
+        "id": "hw-noncompete-update",
+        "content": "The firm's public newsletter notes that several states have narrowed enforcement of employee non-compete agreements in 2024. Employers should review agreements for reasonable scope and duration. The firm offers a free 20-minute checklist review.",
+        "roles": []
+      },
+      {
+        "id": "hw-delgado-memo",
+        "content": "Privileged memo: in Delgado v. Pacific Freight (Case No. 23-CV-4412), we assess a settlement range of $850,000 to $1.1 million. Lead counsel Lena Park recommends opening at $700,000 before the 2024-09-12 mediation. Key risk is the unfavorable testimony of driver Raymond Tully.",
+        "roles": ["attorney"]
+      },
+      {
+        "id": "hw-okafor-merger",
+        "content": "Okafor Holdings plans to acquire Brightline Components for $46 million, subject to due diligence completed by 2024-08-30. Attorneys identified an undisclosed $2.3 million environmental liability at the Gary, Indiana plant. This information is attorney-client privileged.",
+        "roles": ["attorney", "partner"]
+      },
+      {
+        "id": "hw-deposition-schedule",
+        "content": "Deposition schedule for Delgado v. Pacific Freight: Raymond Tully on 2024-07-23 at 9:30 a.m., and Pacific Freight safety director Colleen Marsh on 2024-07-25 at 1:00 p.m. Paralegals must book the court reporter and Conference Room 4. Exhibit binders are due to the attorneys three days before.",
+        "roles": ["paralegal", "attorney"]
+      },
+      {
+        "id": "hw-partner-comp",
+        "content": "Partner compensation for 2024: Marcus Doyle's draw is $485,000 with a $120,000 origination bonus. Equity partners voted 5 to 1 on 2024-01-15 to raise the minimum partner draw to $400,000. Discussion of these figures is limited to the partnership.",
+        "roles": ["partner"]
+      },
+      {
+        "id": "hw-billing-rates",
+        "content": "Internal billing rates effective 2024-01-01: partners $725 per hour, senior associates $480, associates $360, paralegals $190. Rate exceptions require approval from the finance committee. Client Okafor Holdings has a negotiated 12% discount.",
+        "roles": ["partner", "finance"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Lena Park",
+        "userPermissions": ["attorney", "paralegal"]
+      },
+      {
+        "name": "Marcus Doyle",
+        "userPermissions": ["partner", "attorney"]
+      },
+      {
+        "name": "Isabel Ruiz",
+        "userPermissions": ["paralegal"]
+      },
+      {
+        "name": "Walk-in Prospect",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the details of the Delgado v. Pacific Freight case?",
+      "How much does the firm charge for legal services?",
+      "What is going on with the Okafor Holdings acquisition?",
+      "Can you tell me about employment law and non-compete agreements?"
+    ]
+  },
+  {
+    "name": "Northbeam Logistics HR",
+    "documents": [
+      {
+        "id": "nb-pto-policy",
+        "content": "Full-time employees accrue 15 days of PTO per year, increasing to 20 days after five years of service. Up to 5 unused days can be carried over into the next calendar year. PTO requests should be submitted at least two weeks in advance.",
+        "roles": []
+      },
+      {
+        "id": "nb-open-enrollment",
+        "content": "Open enrollment runs from November 1 to November 15 each year. Employees can choose between the PPO plan and the HDHP with a company-funded HSA. Changes outside this window require a qualifying life event.",
+        "roles": []
+      },
+      {
+        "id": "nb-code-of-conduct",
+        "content": "Northbeam's code of conduct prohibits harassment, discrimination, and retaliation. Employees can report concerns to HR, their manager, or the anonymous ethics line at 1-800-555-0142. Reports are investigated promptly and confidentially.",
+        "roles": []
+      },
+      {
+        "id": "nb-performance-guidelines",
+        "content": "Public performance review guidelines state that reviews occur twice a year, in June and December. Employees receive a rating from 1 to 5 and a written summary. Pay increases are tied to the December review.",
+        "roles": []
+      },
+      {
+        "id": "nb-investigation-marsh",
+        "content": "HR investigation 2024-017: on 2024-05-09 Priya Nair filed a harassment complaint against warehouse supervisor Kevin Marsh. Three witnesses corroborated two of the five allegations. Marsh received a final written warning and mandatory training by 2024-07-15.",
+        "roles": ["hr"]
+      },
+      {
+        "id": "nb-manager-ratings",
+        "content": "Q2 team calibration for Dispatch: Luis Ortega 4.5, Hannah Brooks 3.0, and Devon Pruitt 2.0. Pruitt is recommended for a 60-day performance improvement plan beginning 2024-07-08. Ratings are not to be shared with employees before individual meetings.",
+        "roles": ["manager", "hr"]
+      },
+      {
+        "id": "nb-salary-data",
+        "content": "Payroll record: Jenna Alvarez, Senior Planner, earns $142,000 per year with a 2024 merit increase of 4.5% effective 2024-04-01. Her bonus target is 10%. Salary band for the role is $120,000 to $155,000.",
+        "roles": ["payroll", "hr"]
+      },
+      {
+        "id": "nb-reorg-plan",
+        "content": "Executive-only plan: Northbeam intends to eliminate 120 positions across the Memphis and Dallas hubs in Q3 2024, saving $9.6 million annually. Announcements are planned for 2024-08-19. Severance is set at two weeks per year of service, capped at 26 weeks.",
+        "roles": ["exec"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Rosa Mendes",
+        "userPermissions": ["hr", "payroll"]
+      },
+      {
+        "name": "Greg Tanaka",
+        "userPermissions": ["manager"]
+      },
+      {
+        "name": "Carla Whitfield",
+        "userPermissions": ["exec", "hr"]
+      },
+      {
+        "name": "New Hire Sam",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How do performance reviews and ratings work?",
+      "What is the process for reporting harassment and what happens after a complaint?",
+      "How are salaries and pay increases determined?",
+      "Are there any plans for workforce changes or layoffs?"
+    ]
+  },
+  {
+    "name": "Calloway Capital Management",
+    "documents": [
+      {
+        "id": "cc-fund-factsheet",
+        "content": "The Calloway Growth Fund (CGRFX) returned 11.8% over the trailing twelve months through 2024-06-30. The fund has an expense ratio of 0.82% and holds 54 positions. Its top sectors are technology, healthcare, and industrials.",
+        "roles": []
+      },
+      {
+        "id": "cc-market-commentary",
+        "content": "Q2 2024 market commentary: equities extended gains as inflation cooled, though valuations in large-cap technology look stretched. Calloway remains modestly overweight healthcare. The firm expects two rate cuts before year-end.",
+        "roles": []
+      },
+      {
+        "id": "cc-fee-schedule",
+        "content": "Advisory fees are 1.00% on the first $1 million, 0.85% on the next $4 million, and 0.65% above $5 million. Accounts under $250,000 are subject to a $2,500 minimum annual fee. Fees are billed quarterly in arrears.",
+        "roles": []
+      },
+      {
+        "id": "cc-client-benson",
+        "content": "Client Harold Benson holds a $2.3 million portfolio: 55% equities, 35% bonds, and 10% cash. He plans to retire on 2026-03-01 and requested a $180,000 annual withdrawal. Advisor Nina Vasquez recommends moving $250,000 into municipal bonds.",
+        "roles": ["advisor"]
+      },
+      {
+        "id": "cc-analyst-target",
+        "content": "Analyst note: we raise our price target for Halcyon Medical (HLCN) from $64 to $78 ahead of the 2024-08-06 earnings release. Our model assumes a 14% revenue increase and an operating margin of 21%. This note is internal and not for client distribution.",
+        "roles": ["analyst"]
+      },
+      {
+        "id": "cc-compliance-sar",
+        "content": "Compliance flagged account 7741-B for unusual activity: five wire transfers totaling $487,000 between 2024-05-02 and 2024-05-20 to an overseas entity. A suspicious activity report was filed on 2024-06-03. Staff must not alert the account holder.",
+        "roles": ["compliance"]
+      },
+      {
+        "id": "cc-acquisition-talks",
+        "content": "Executive memo: Calloway is in confidential talks to acquire Pinecrest Advisors, which manages $1.4 billion, for about $95 million. Due diligence is scheduled to end 2024-09-20. Employees may not discuss the deal.",
+        "roles": ["executive"]
+      },
+      {
+        "id": "cc-fee-waiver-list",
+        "content": "Approved fee waivers for 2024: the Whitaker Family Trust has a 0.50% rate through 2025, and Dr. Elaine Romero has a 0.60% rate. Waivers above 0.25% off the schedule need executive approval. The list is for advisors and compliance only.",
+        "roles": ["advisor", "compliance"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Nina Vasquez",
+        "userPermissions": ["advisor"]
+      },
+      {
+        "name": "Oliver Grant",
+        "userPermissions": ["analyst"]
+      },
+      {
+        "name": "Dana Kessler",
+        "userPermissions": ["compliance", "executive"]
+      },
+      {
+        "name": "Prospective Investor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What fees does Calloway charge for managing client accounts?",
+      "What is the outlook for healthcare stocks?",
+      "Has the firm reported any suspicious account activity or large transfers?",
+      "Is Calloway planning any acquisitions or growth?"
+    ]
+  },
+  {
+    "name": "Vireo Robotics Engineering",
+    "documents": [
+      {
+        "id": "vr-api-docs",
+        "content": "The Vireo Fleet API uses REST endpoints with OAuth 2.0 bearer tokens. Requests are rate limited to 600 per minute per API key. Status codes and error formats are documented at developers.vireo.example.",
+        "roles": []
+      },
+      {
+        "id": "vr-release-notes",
+        "content": "Release 3.2.0 shipped on 2024-06-04 with improved path planning and a fix for intermittent lidar dropouts. The minimum supported firmware is now 2.9.1. Upgrade instructions are in the public changelog.",
+        "roles": []
+      },
+      {
+        "id": "vr-contributing",
+        "content": "Contributions to the open-source SDK follow a fork-and-pull-request workflow. Every pull request needs passing unit tests and one maintainer review. Security issues should be reported privately to the security contact.",
+        "roles": []
+      },
+      {
+        "id": "vr-public-roadmap",
+        "content": "The public roadmap highlights multi-robot coordination and an improved web dashboard for later in 2024. Dates are estimates and may change. Customer feedback is gathered through the community forum.",
+        "roles": []
+      },
+      {
+        "id": "vr-outage-rca",
+        "content": "Root cause analysis for the 2024-06-18 outage: a failed database failover in us-east-1 caused 47 minutes of downtime affecting 312 customer fleets. The replica was 9 minutes behind because of a misconfigured replication slot. Owner Priya Nandakumar will add automated failover tests by 2024-07-31.",
+        "roles": ["engineering"]
+      },
+      {
+        "id": "vr-pentest",
+        "content": "The Q2 penetration test by Blackfoot Security found a critical issue: the telemetry service accepted unsigned firmware manifests (finding PT-2024-03). An exposed AWS access key beginning AKIA7Q was rotated on 2024-05-22. Fixes are due by 2024-07-15.",
+        "roles": ["security"]
+      },
+      {
+        "id": "vr-product-roadmap",
+        "content": "Confidential product plan: the Atlas warehouse robot launches on 2024-10-15 at a list price of $38,500. Pilot customers include Harbor Foods and Delmar Pharma, each with 40-unit commitments. The target gross margin is 41%.",
+        "roles": ["product", "exec"]
+      },
+      {
+        "id": "vr-funding",
+        "content": "Board-only update: Vireo is closing a $60 million Series C led by Northgate Ventures at a $420 million pre-money valuation. The term sheet was signed on 2024-06-27. The round is expected to close by 2024-08-09.",
+        "roles": ["exec"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Priya Nandakumar",
+        "userPermissions": ["engineering"]
+      },
+      {
+        "name": "Wes Holloway",
+        "userPermissions": ["security", "engineering"]
+      },
+      {
+        "name": "Marta Lindqvist",
+        "userPermissions": ["product", "exec"]
+      },
+      {
+        "name": "External Developer",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What happened in the recent outage and what is being done to prevent it?",
+      "What are the security issues with firmware and telemetry?",
+      "What is the roadmap and release plan for upcoming products?",
+      "What are the latest software releases and what has changed?"
+    ]
+  },
+  {
+    "name": "Lakeshore University",
+    "documents": [
+      {
+        "id": "lu-academic-calendar",
+        "content": "Fall 2024 classes begin on August 26, and the last day to add or drop without a grade is September 6. Final exams run from December 9 to December 13. The university is closed November 28 and 29 for Thanksgiving.",
+        "roles": []
+      },
+      {
+        "id": "lu-tuition",
+        "content": "Undergraduate tuition for 2024-25 is $14,200 per semester for full-time students, with a technology fee of $350. Payment is due by August 15 unless a payment plan is approved. Residence hall rates range from $4,100 to $5,600 per semester.",
+        "roles": []
+      },
+      {
+        "id": "lu-scholarships",
+        "content": "The Lakeshore Merit Scholarship awards up to $8,000 per year to incoming students with a GPA of 3.7 or higher. Applications are due February 1. Need-based aid requires the FAFSA, with a priority deadline of March 1.",
+        "roles": []
+      },
+      {
+        "id": "lu-probation-policy",
+        "content": "Students whose cumulative GPA falls below 2.0 are placed on academic probation for one semester. They must meet with an academic advisor and complete a success plan. Failure to raise the GPA may lead to dismissal.",
+        "roles": []
+      },
+      {
+        "id": "lu-student-record-ortiz",
+        "content": "Student record: Daniel Ortiz (ID 20418833) has a cumulative GPA of 1.94 and was placed on academic probation on 2024-05-20. He failed MATH 140 and received a D in PHYS 101. His advisor, Dr. Helen Frost, scheduled a meeting for 2024-06-03.",
+        "roles": ["registrar"]
+      },
+      {
+        "id": "lu-chem-final",
+        "content": "CHEM 201 final exam answer key, Section A: question 1 is B, question 2 is D, and question 3 is the 0.25 M solution (50 mL). The exam is on 2024-12-11 at 8:00 a.m. in Hall 3. Do not share this key with students or teaching assistants.",
+        "roles": ["faculty"]
+      },
+      {
+        "id": "lu-aid-rahman",
+        "content": "Financial aid award for Aisha Rahman (ID 20512290) for 2024-25: $14,500 in grants, $5,500 in federal loans, and a $3,000 work-study allocation. Her expected family contribution is $2,100. Verification documents were received on 2024-04-18.",
+        "roles": ["financial-aid"]
+      },
+      {
+        "id": "lu-budget-deficit",
+        "content": "The Board's finance committee projects a $3.2 million operating deficit for FY2025. A hiring freeze begins 2024-07-01, and a 2% cut is planned for departmental budgets. Tuition may rise by 4.5% next year.",
+        "roles": ["admin"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Helen Frost",
+        "userPermissions": ["faculty"]
+      },
+      {
+        "name": "Marcus Bell",
+        "userPermissions": ["registrar", "financial-aid"]
+      },
+      {
+        "name": "Provost Linda Okoye",
+        "userPermissions": ["admin", "faculty"]
+      },
+      {
+        "name": "Prospective Student",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What happens to students with low GPAs and academic probation?",
+      "How much does tuition cost and what financial aid is available?",
+      "What does the CHEM 201 final exam cover?",
+      "What is the university's financial outlook and tuition plan?"
+    ]
+  },
+  {
+    "name": "Brightmart Retail",
+    "documents": [
+      {
+        "id": "bm-return-policy",
+        "content": "Brightmart accepts returns within 30 days of purchase with a receipt for a full refund. Electronics must be returned within 15 days and opened items may carry a 15% restocking fee. Refunds go to the original form of payment.",
+        "roles": []
+      },
+      {
+        "id": "bm-holiday-hours",
+        "content": "Stores are open from 7:00 a.m. to 11:00 p.m. during the holiday season, from November 25 through December 23. Brightmart is closed on Thanksgiving Day and Christmas Day. Hours may vary by location.",
+        "roles": []
+      },
+      {
+        "id": "bm-loyalty",
+        "content": "Brightmart Rewards members earn 1 point per dollar spent, and 500 points equals a $5 reward. Members receive early access to seasonal sales. Points expire after 12 months of inactivity.",
+        "roles": []
+      },
+      {
+        "id": "bm-black-friday-public",
+        "content": "Brightmart will offer doorbuster deals on Black Friday, starting online at midnight and in stores at 6:00 a.m. Featured categories include electronics, kitchen appliances, and toys. Full ad details will be published in mid-November.",
+        "roles": []
+      },
+      {
+        "id": "bm-buyer-contract",
+        "content": "Supplier contract with Nordic Home: Brightmart will purchase 85,000 units of the Fjord cookware set at a $21.40 cost per unit, for a total of $1.82 million. Delivery is due by 2024-09-15, and payment terms are net 45. The retail price is $59.99.",
+        "roles": ["buyer"]
+      },
+      {
+        "id": "bm-marketing-campaign",
+        "content": "Embargoed Black Friday plan: 40% off the Fjord cookware set ($35.99), TVs from $199, and a loyalty double-points event on 2024-11-29. The paid media budget is $2.4 million, with 60% allocated to streaming and social. Nothing may be released before 2024-11-01.",
+        "roles": ["marketing", "corporate"]
+      },
+      {
+        "id": "bm-loss-prevention",
+        "content": "Loss prevention report for Store 212 (Dayton): inventory shrink was 3.9% in Q2, or $187,000. Cashier employee ID 40817, Tyrone Hale, is under investigation for 23 voided transactions totaling $4,260. Do not discuss with store staff.",
+        "roles": ["loss-prevention"]
+      },
+      {
+        "id": "bm-closures",
+        "content": "Corporate-only plan: Brightmart will close 14 underperforming stores by 2025-01-31, including Store 212 in Dayton and Store 078 in Tulsa. About 410 employees will be affected. Estimated lease termination costs are $11.5 million.",
+        "roles": ["corporate"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Stacy Nguyen",
+        "userPermissions": ["store-manager"]
+      },
+      {
+        "name": "Raj Patel",
+        "userPermissions": ["buyer", "marketing"]
+      },
+      {
+        "name": "Elena Brandt",
+        "userPermissions": ["corporate", "loss-prevention"]
+      },
+      {
+        "name": "Online Shopper",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What Black Friday deals are planned?",
+      "What are the details for the Fjord cookware set?",
+      "What are the policies on returns and refund losses?",
+      "Are any stores closing or having problems with shrink?"
+    ]
+  },
+  {
+    "name": "City of Eastport",
+    "documents": [
+      {
+        "id": "ep-council-schedule",
+        "content": "The Eastport City Council meets on the first and third Tuesday of each month at 7:00 p.m. in City Hall chambers. Agendas are posted 72 hours in advance. Residents may speak during the public comment period for up to three minutes.",
+        "roles": []
+      },
+      {
+        "id": "ep-permit-process",
+        "content": "Residential building permits are submitted online through the Planning portal and typically take 10 to 15 business days. Fees begin at $125 for minor renovations. Inspections must be scheduled 24 hours in advance.",
+        "roles": []
+      },
+      {
+        "id": "ep-budget-summary",
+        "content": "The adopted FY2025 budget totals $84.6 million, including $21.3 million for public safety and $9.8 million for road maintenance. The property tax rate remains at 1.12%. A full budget book is available at the library and online.",
+        "roles": []
+      },
+      {
+        "id": "ep-police-public",
+        "content": "The Eastport Police Department publishes monthly crime statistics and holds community forums quarterly. Residents can report non-emergency incidents by calling 555-0188 or online. Body camera policy is available at the department's website.",
+        "roles": []
+      },
+      {
+        "id": "ep-police-case",
+        "content": "Investigation 24-0713: detectives identified a confidential informant, code name Harbor-2, who provided information about a burglary ring operating near Pier 9. Search warrants are planned for 2024-07-19 with SWAT support. Suspects include Dale Kriner and Tomas Reyes.",
+        "roles": ["police"]
+      },
+      {
+        "id": "ep-land-acquisition",
+        "content": "Closed-session item: the city will bid up to $2.7 million for parcel 114-22 on Harbor Road, owned by the Whitlock estate, for a new fire station. The offer deadline is 2024-08-02. Disclosing the ceiling price would weaken the city's negotiating position.",
+        "roles": ["planning", "council"]
+      },
+      {
+        "id": "ep-audit-finding",
+        "content": "The internal audit found that $63,400 in overtime payments in the Public Works department lacked supervisor approval between January and March 2024. Supervisor Glen Maddox approved 41 of the 58 flagged timesheets. The finding is confidential until the audit report is presented on 2024-08-20.",
+        "roles": ["finance-dept", "council"]
+      },
+      {
+        "id": "ep-union-negotiation",
+        "content": "Confidential bargaining position: the city may offer the firefighters union a 3.5% raise, with a ceiling of 4.25%. Negotiations resume on 2024-07-30 with attorney Joyce Lindgren. The budget includes $1.1 million for the settlement.",
+        "roles": ["council", "finance-dept"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Officer Dana Whitfield",
+        "userPermissions": ["police"]
+      },
+      {
+        "name": "Raymond Cho",
+        "userPermissions": ["planning", "finance-dept"]
+      },
+      {
+        "name": "Councilwoman Alicia Torres",
+        "userPermissions": ["council"]
+      },
+      {
+        "name": "Resident Citizen",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the city planning for the new fire station and public safety spending?",
+      "How much is being spent on overtime and employee wages?",
+      "What are the police doing about burglaries near the pier?",
+      "When does the council meet and what is on the agenda for land purchases?"
+    ]
+  },
+  {
+    "name": "Meridian Biosciences",
+    "documents": [
+      {
+        "id": "mb-company-overview",
+        "content": "Meridian Biosciences is a clinical-stage company developing therapies for autoimmune diseases. The company is headquartered in Cambridge, Massachusetts and employs about 220 people. Its lead programs are in rheumatoid arthritis and lupus.",
+        "roles": []
+      },
+      {
+        "id": "mb-trial-public",
+        "content": "Meridian's Phase 2 trial of MBX-204 in rheumatoid arthritis, registered as NCT05512345, is enrolling adults at 38 sites. Primary completion is expected in the second half of 2025. Patients can find eligibility details on ClinicalTrials.gov.",
+        "roles": []
+      },
+      {
+        "id": "mb-safety-reporting",
+        "content": "Participants and physicians can report adverse events to the Meridian safety hotline at 1-855-555-0170. All reports are reviewed by the pharmacovigilance team. Serious events are reported to regulators within required timelines.",
+        "roles": []
+      },
+      {
+        "id": "mb-careers-publications",
+        "content": "Meridian scientists presented preclinical MBX-204 data at the 2024 EULAR congress. The poster showed a dose-dependent reduction in inflammatory markers in mouse models. Reprints are available on the company website.",
+        "roles": []
+      },
+      {
+        "id": "mb-research-data",
+        "content": "Internal research data: in the MBX-204 cohort, 62% of patients reached ACR20 at week 12 versus 31% on placebo. Compound batch MB204-17 showed 4% degradation after 6 months at 25 C. Dr. Samuel Okeke leads the analysis.",
+        "roles": ["researcher"]
+      },
+      {
+        "id": "mb-clinical-safety",
+        "content": "Confidential safety signal: three patients (sites 014, 022, and 031) had grade 3 liver enzyme elevations, ALT above 5 times the upper limit of normal, between 2024-04-10 and 2024-05-28. The DSMB meets on 2024-07-09 to decide on a dose reduction. Patient IDs are MB-014-007, MB-022-003, and MB-031-011.",
+        "roles": ["clinical-ops"]
+      },
+      {
+        "id": "mb-regulatory-fda",
+        "content": "FDA meeting minutes from 2024-05-16 show the agency requested an additional 12-month hepatotoxicity study before Phase 3. The company intends to submit the revised protocol by 2024-08-30. Regulatory lead Naomi Feld is responsible.",
+        "roles": ["regulatory", "exec"]
+      },
+      {
+        "id": "mb-exec-partnership",
+        "content": "Executive-only: Meridian is negotiating a licensing deal with Orion Pharma worth $75 million upfront and up to $410 million in milestones for MBX-204 ex-US rights. The term sheet is due 2024-07-26. Cash runway is 14 months without the deal.",
+        "roles": ["exec"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Samuel Okeke",
+        "userPermissions": ["researcher"]
+      },
+      {
+        "name": "Carmen Ibarra",
+        "userPermissions": ["clinical-ops", "regulatory"]
+      },
+      {
+        "name": "Naomi Feld",
+        "userPermissions": ["regulatory", "exec"]
+      },
+      {
+        "name": "Patient Advocate",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the results and safety information for the MBX-204 trial?",
+      "What did the FDA say about the next phase of development?",
+      "How is the company funding its programs and partnering?",
+      "What data has Meridian shared about MBX-204 in rheumatoid arthritis?"
+    ]
+  },
+  {
+    "name": "Summit Mutual Insurance",
+    "documents": [
+      {
+        "id": "sm-auto-coverage",
+        "content": "Summit Mutual auto policies include liability, collision, and comprehensive coverage. Standard deductibles are $500 or $1,000, and rental reimbursement is available for $30 per day. Customers can add roadside assistance for $4.50 per month.",
+        "roles": []
+      },
+      {
+        "id": "sm-claims-process",
+        "content": "To file a claim, customers can call 1-800-555-0123 or use the mobile app. An adjuster will contact the customer within one business day. Most simple claims are settled within 7 to 10 days.",
+        "roles": []
+      },
+      {
+        "id": "sm-fraud-awareness",
+        "content": "Summit Mutual works to detect and prevent insurance fraud, which raises costs for all customers. Suspected fraud can be reported anonymously through the fraud tip line. Staged accidents and inflated repair estimates are common scams.",
+        "roles": []
+      },
+      {
+        "id": "sm-rate-factors",
+        "content": "Premiums are influenced by driving record, vehicle type, location, and annual mileage. Customers can lower costs through multi-policy and safe driver discounts of up to 25%. Rates are filed with the state department of insurance.",
+        "roles": []
+      },
+      {
+        "id": "sm-claim-file-ramirez",
+        "content": "Claim 2024-AU-55821: policyholder Elena Ramirez reported a collision on 2024-05-30 on I-80. The adjuster, Kyle Brandt, approved $14,870 for repairs to her 2021 Honda CR-V, less the $500 deductible. Payment was issued to Precision Auto Body on 2024-06-12.",
+        "roles": ["claims-adjuster"]
+      },
+      {
+        "id": "sm-fraud-investigation",
+        "content": "Special Investigations Unit case SIU-0412: a ring of five claimants tied to Valley Auto Repair submitted 19 inflated claims totaling $212,500 between January and May 2024. Investigator Marcus Ode referred the case to the state fraud bureau on 2024-06-20. Claims staff must not discuss this case with the claimants.",
+        "roles": ["fraud"]
+      },
+      {
+        "id": "sm-underwriting-guidelines",
+        "content": "Underwriting guideline update: drivers with two or more at-fault accidents in 36 months receive a surcharge of 35%. Applicants with a DUI conviction in the past five years are declined in Texas and Florida. The new rules take effect 2024-09-01.",
+        "roles": ["underwriter"]
+      },
+      {
+        "id": "sm-actuarial-loss",
+        "content": "Actuarial analysis projects a 2024 auto loss ratio of 71.4%, above the 66% target. The pricing team recommends a 6.8% statewide rate increase in Ohio and 9.1% in Florida, effective 2025-01-15. Reserves were increased by $18.6 million in Q2.",
+        "roles": ["actuary", "underwriter"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Kyle Brandt",
+        "userPermissions": ["claims-adjuster"]
+      },
+      {
+        "name": "Marcus Ode",
+        "userPermissions": ["fraud", "claims-adjuster"]
+      },
+      {
+        "name": "Priyanka Shah",
+        "userPermissions": ["underwriter", "actuary"]
+      },
+      {
+        "name": "Policyholder Portal User",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How are auto claims handled and what has been approved recently?",
+      "What is being done about insurance fraud and inflated repair claims?",
+      "How are premiums and rate increases decided?",
+      "What are the rules for drivers with accidents or DUI convictions?"
+    ]
+  },
+  {
+    "name": "Riverbend Regional Hospital",
+    "documents": [
+      {
+        "id": "rh-visit",
+        "content": "General visiting hours at Riverbend Regional Hospital are 9am to 8pm daily. ICU visits are limited to two visitors at a time and must be approved by the charge nurse.",
+        "roles": []
+      },
+      {
+        "id": "rh-sepsis-edu",
+        "content": "Warning signs of sepsis include fever, rapid heart rate, confusion, and low blood pressure. Patients and families should alert nursing staff immediately if these symptoms appear after surgery or infection.",
+        "roles": []
+      },
+      {
+        "id": "rh-billing-faq",
+        "content": "Patients can apply for financial assistance through the Patient Financial Services office. Payment plans are available for balances over $500 with no interest for up to 24 months.",
+        "roles": []
+      },
+      {
+        "id": "rh-chart-delgado",
+        "content": "Maria Delgado (MRN 483920) was admitted on 2024-03-12 with sepsis secondary to a urinary tract infection. She is receiving vancomycin 1.25 g IV every 12 hours and her lactate fell from 4.1 to 2.2 mmol/L.",
+        "roles": ["clinician"]
+      },
+      {
+        "id": "rh-claim-delgado",
+        "content": "Claim 77-1209 for Maria Delgado's sepsis admission was denied by Aetna for $48,200 citing lack of medical necessity. The appeal must be filed by April 30 with supporting notes from Dr. Kwame Osei.",
+        "roles": ["billing"]
+      },
+      {
+        "id": "rh-peer-review",
+        "content": "Dr. Priya Raman has been placed under focused peer review after three surgical complications in Q1 2024. The credentialing committee will meet May 6 to decide whether to restrict her operating privileges.",
+        "roles": ["admin"]
+      },
+      {
+        "id": "rh-trial",
+        "content": "Trial NCT-05512 on post-sepsis care has enrolled 142 patients, and interim analysis shows an 18% reduction in 30-day readmissions. The study is funded by Halvorsen Pharma with a $2.3M grant through December 2025.",
+        "roles": ["researcher", "admin"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dana Whitfield",
+        "userPermissions": ["clinician"]
+      },
+      {
+        "name": "Omar Baig",
+        "userPermissions": ["billing"]
+      },
+      {
+        "name": "Lena Fischer",
+        "userPermissions": ["admin", "researcher"]
+      },
+      {
+        "name": "Guest Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the signs of sepsis and how is it treated at the hospital?",
+      "How do I handle a denied insurance claim or get help paying a hospital bill?",
+      "Are there any studies on reducing readmissions after sepsis?",
+      "What are the rules for ICU visits and who decides on exceptions?"
+    ]
+  },
+  {
+    "name": "Calloway & Pryce LLP",
+    "documents": [
+      {
+        "id": "cp-practice",
+        "content": "Calloway & Pryce LLP represents clients in commercial litigation, employment disputes, and intellectual property matters. The firm has offices in Chicago and Minneapolis.",
+        "roles": []
+      },
+      {
+        "id": "cp-conflicts",
+        "content": "All new matters must clear a conflict check before engagement letters are sent. Requests are submitted through the intake portal and are normally resolved within two business days.",
+        "roles": []
+      },
+      {
+        "id": "cp-settlement",
+        "content": "In Hartwell v. Brandt Logistics, the client has authorized settlement up to $1.8M, with an opening offer of $650,000. Partner Ellen Caruso will present the offer at mediation on June 14.",
+        "roles": ["partner"]
+      },
+      {
+        "id": "cp-memo",
+        "content": "Associate research memo concludes the statute of limitations on Hartwell's breach of contract claim expires on November 3, 2025. The memo recommends citing Rowan v. Ames Freight, 412 F.3d 880, for tolling arguments.",
+        "roles": ["associate", "partner"]
+      },
+      {
+        "id": "cp-deadlines",
+        "content": "The response to the motion to dismiss in Hartwell v. Brandt is due July 9 in the Northern District of Illinois. Paralegal Tom Reyes is assembling Exhibits A through K.",
+        "roles": ["paralegal", "associate", "partner"]
+      },
+      {
+        "id": "cp-billing",
+        "content": "Brandt Logistics' counterpart, Hartwell Freight, has been billed $212,450 through May at a blended rate of $485 per hour. Invoice 2291 is 45 days overdue and a payment plan is under discussion.",
+        "roles": ["billing", "partner"]
+      },
+      {
+        "id": "cp-lateral",
+        "content": "The firm is negotiating a lateral move with Sofia Mendel from Dorsey Hale, with a proposed guarantee of $780,000 for two years. The partnership vote is scheduled for August 2.",
+        "roles": ["partner"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Ellen Caruso",
+        "userPermissions": ["partner"]
+      },
+      {
+        "name": "Jin Park",
+        "userPermissions": ["associate"]
+      },
+      {
+        "name": "Tom Reyes",
+        "userPermissions": ["paralegal"]
+      },
+      {
+        "name": "Front Desk Temp",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the status of the Hartwell v. Brandt case?",
+      "What deadlines are coming up in our litigation matters?",
+      "How much has been billed to Hartwell and what are the settlement numbers?",
+      "What is the process for starting a new client matter?"
+    ]
+  },
+  {
+    "name": "Northfield Manufacturing HR",
+    "documents": [
+      {
+        "id": "nf-pto",
+        "content": "Full-time employees accrue 15 days of PTO per year in their first five years, increasing to 20 days afterward. Unused PTO up to 40 hours carries over into the next calendar year.",
+        "roles": []
+      },
+      {
+        "id": "nf-enroll",
+        "content": "Open enrollment for health benefits runs from November 1 to November 15. Employees can choose between the Silver PPO and the Gold HDHP with an HSA.",
+        "roles": []
+      },
+      {
+        "id": "nf-bands",
+        "content": "Salary bands for Senior Process Engineer (Grade 9) range from $98,000 to $127,000. Plant managers in Grade 12 are paid $142,000 to $178,000 plus a bonus up to 15%.",
+        "roles": ["hr", "executive"]
+      },
+      {
+        "id": "nf-invest",
+        "content": "HR investigation 24-017 found that shift supervisor Greg Dunmore violated the harassment policy in complaints filed by two employees on February 20. Recommended action is termination effective March 29 after legal review.",
+        "roles": ["hr"]
+      },
+      {
+        "id": "nf-layoff",
+        "content": "The executive team plans to eliminate 64 positions at the Dayton plant in Q3, saving an estimated $4.1M annually. Announcement is planned for September 9 and severance is two weeks per year of service.",
+        "roles": ["executive"]
+      },
+      {
+        "id": "nf-payroll",
+        "content": "Payroll correction for employee ID 30418, Carla Nguyen, adds $3,275 in unpaid overtime to the March 15 run. The garnishment of $410 per period remains in place.",
+        "roles": ["payroll", "hr"]
+      },
+      {
+        "id": "nf-manager",
+        "content": "Managers must submit PTO approvals within three business days of an employee request. Blackout dates for the Dayton plant are the last two weeks of December.",
+        "roles": ["manager", "hr", "executive"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Priya Shah",
+        "userPermissions": ["hr"]
+      },
+      {
+        "name": "Marcus Bell",
+        "userPermissions": ["manager"]
+      },
+      {
+        "name": "Helen Ortiz",
+        "userPermissions": ["executive"]
+      },
+      {
+        "name": "New Hire Onboarding Account",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How much PTO do employees get and who approves it?",
+      "What are the pay ranges for engineers and plant managers?",
+      "Are there any upcoming workforce changes at the Dayton plant?",
+      "What happens when an employee files a complaint against a supervisor?"
+    ]
+  },
+  {
+    "name": "Meridian Community Bank",
+    "documents": [
+      {
+        "id": "mb-rates",
+        "content": "Meridian Community Bank currently offers a 12-month CD at 4.60% APY with a minimum deposit of $1,000. Savings accounts earn 3.85% APY on balances above $500.",
+        "roles": []
+      },
+      {
+        "id": "mb-fraud-pub",
+        "content": "Customers should never share one-time passcodes with anyone, including bank employees. Suspicious transactions can be reported 24/7 through the mobile app or at 1-800-555-0142.",
+        "roles": []
+      },
+      {
+        "id": "mb-loan-policy",
+        "content": "Small business loans up to $250,000 require two years of tax returns and a debt service coverage ratio of at least 1.25. Decisions are normally made within seven business days.",
+        "roles": []
+      },
+      {
+        "id": "mb-credit",
+        "content": "Credit committee approved a $1.4M line of credit for Ostrander Farm Supply on May 8 at prime plus 1.75%. The loan is secured by equipment valued at $2.1M and personally guaranteed by Walt Ostrander.",
+        "roles": ["lending", "executive"]
+      },
+      {
+        "id": "mb-sar",
+        "content": "Suspicious activity report 2024-0311 concerns account ending 6672 held by Dmitri Volkov, which received 14 cash deposits of $9,500 over 3 weeks. Filing with FinCEN is due by June 10 and the customer must not be notified.",
+        "roles": ["compliance"]
+      },
+      {
+        "id": "mb-fraud-case",
+        "content": "The fraud team recovered $38,900 from a business email compromise targeting Lakeshore Dental on April 2. Losses of $12,400 were not recoverable and will be written off.",
+        "roles": ["fraud", "compliance", "executive"]
+      },
+      {
+        "id": "mb-board",
+        "content": "Q1 net income was $6.2M, down 9% from last year, due to a $2.7M provision increase for commercial real estate loans. The CEO plans to recommend a dividend cut from $0.32 to $0.28 per share at the July board meeting.",
+        "roles": ["executive"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Aisha Karim",
+        "userPermissions": ["lending"]
+      },
+      {
+        "name": "Robert Chen",
+        "userPermissions": ["compliance", "fraud"]
+      },
+      {
+        "name": "Susan Albright",
+        "userPermissions": ["executive"]
+      },
+      {
+        "name": "Public Website Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the requirements and approvals for business loans?",
+      "How does the bank handle suspicious transactions and fraud?",
+      "How is the bank performing financially this quarter?",
+      "What rates are available on deposit products?"
+    ]
+  },
+  {
+    "name": "Helix Robotics Engineering",
+    "documents": [
+      {
+        "id": "hx-api",
+        "content": "The Helix Fleet API exposes endpoints for robot status, task assignment, and telemetry export. Rate limits are 600 requests per minute per API key, and v1 will be deprecated on January 31, 2026.",
+        "roles": []
+      },
+      {
+        "id": "hx-onboard",
+        "content": "New engineers must complete secure coding training within 30 days of starting. Pull requests require one approval and passing CI before merging into the main branch.",
+        "roles": []
+      },
+      {
+        "id": "hx-postmortem",
+        "content": "Incident 2024-06 caused a 47-minute outage of fleet telemetry on June 18 when a misconfigured Kafka partition filled disk on broker kafka-prod-3. Root cause was owned by SRE lead Anita Rao and the fix was merged in PR 8841.",
+        "roles": ["engineering", "sre"]
+      },
+      {
+        "id": "hx-vuln",
+        "content": "Penetration test found an authentication bypass in the robot firmware updater (CVE-2024-31877 pending) affecting firmware 3.2 to 3.4. Patch 3.4.1 is scheduled for July 12 and customers must not be told before then.",
+        "roles": ["security"]
+      },
+      {
+        "id": "hx-vendor",
+        "content": "The contract with Torvane Sensors for lidar modules is $3.6M for 18,000 units, with delivery beginning October 1. A late-delivery penalty of 2% per week applies after November 15.",
+        "roles": ["procurement", "leadership"]
+      },
+      {
+        "id": "hx-roadmap",
+        "content": "The Atlas warehouse robot will launch in March 2026 with a target unit cost of $14,800 and a price of $26,500. Leadership has approved a headcount increase of 22 engineers for the program.",
+        "roles": ["leadership"]
+      },
+      {
+        "id": "hx-oncall",
+        "content": "The primary on-call rotation for fleet services changes every Monday at 10am Pacific. Escalations go to the SRE lead if not acknowledged within 15 minutes.",
+        "roles": ["engineering", "sre"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Kenji Watanabe",
+        "userPermissions": ["engineering"]
+      },
+      {
+        "name": "Anita Rao",
+        "userPermissions": ["engineering", "sre"]
+      },
+      {
+        "name": "Carla Mendez",
+        "userPermissions": ["security"]
+      },
+      {
+        "name": "Contract Tech Writer",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What caused recent outages and how are they handled?",
+      "What security issues exist in the firmware and when will they be fixed?",
+      "What are the details of our hardware suppliers and delivery timelines?",
+      "How does the Fleet API work and what limits apply?"
+    ]
+  },
+  {
+    "name": "Lakeshore University Administration",
+    "documents": [
+      {
+        "id": "lu-calendar",
+        "content": "Fall semester classes begin on August 26 and the final day to drop without a W grade is September 13. Final exams run December 9 through December 14.",
+        "roles": []
+      },
+      {
+        "id": "lu-aid-pub",
+        "content": "Students apply for financial aid by submitting the FAFSA, with a priority deadline of March 1. Lakeshore offers merit scholarships from $2,000 to $12,000 per year.",
+        "roles": []
+      },
+      {
+        "id": "lu-transcript",
+        "content": "Student Jordan Ellis (ID 20931847) has a cumulative GPA of 2.31 and is on academic probation after the spring term. Jordan failed CHEM 201 and must meet with advisor Dr. Moreau by September 6.",
+        "roles": ["registrar", "faculty"]
+      },
+      {
+        "id": "lu-aid-award",
+        "content": "Jordan Ellis was awarded a $9,500 merit scholarship that will be rescinded if the GPA stays below 2.5 after fall. Remaining need is covered by a $5,500 Pell Grant and a $3,500 subsidized loan.",
+        "roles": ["financial-aid"]
+      },
+      {
+        "id": "lu-admit",
+        "content": "The admissions committee admitted 2,140 of 6,480 applicants for fall, an acceptance rate of 33%. Applicant Natalia Brandt (ID A-77120) was waitlisted with an SAT of 1280 and a 3.6 GPA.",
+        "roles": ["admissions"]
+      },
+      {
+        "id": "lu-tenure",
+        "content": "The tenure committee voted 5 to 2 against promoting Dr. Samuel Ito to associate professor in the Economics Department. The dean will notify him by October 15, and he may appeal within 30 days.",
+        "roles": ["dean"]
+      },
+      {
+        "id": "lu-budget",
+        "content": "The College of Sciences is projected to have a $1.2M deficit for FY25 because of lower lab fee revenue. The dean has proposed freezing two faculty hires and reducing adjunct sections by 12%.",
+        "roles": ["dean"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Claire Moreau",
+        "userPermissions": ["faculty"]
+      },
+      {
+        "name": "Ben Hartigan",
+        "userPermissions": ["registrar", "financial-aid"]
+      },
+      {
+        "name": "Dean Alicia Torres",
+        "userPermissions": ["dean", "faculty"]
+      },
+      {
+        "name": "Prospective Student",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What happens to students who are on academic probation?",
+      "How does financial aid and scholarship eligibility work?",
+      "How many applicants are admitted and how are decisions made?",
+      "What is the budget situation for the College of Sciences?"
+    ]
+  },
+  {
+    "name": "Greenfield Home & Garden Retail",
+    "documents": [
+      {
+        "id": "gf-return",
+        "content": "Customers may return unused items within 90 days with a receipt for a full refund. Live plants carry a 30-day guarantee and require the original tag.",
+        "roles": []
+      },
+      {
+        "id": "gf-promo",
+        "content": "The Spring Garden Sale runs April 5 through April 21 with 20% off all perennials and 15% off outdoor furniture. Loyalty members receive an additional 5% off with the app.",
+        "roles": []
+      },
+      {
+        "id": "gf-sales",
+        "content": "Store 114 in Plano posted $1.86M in March sales, 8% above plan, with a basket average of $64.20. Manager Rita Salazar earns a bonus if Q2 sales exceed $5.4M.",
+        "roles": ["store-manager", "executive"]
+      },
+      {
+        "id": "gf-buyer",
+        "content": "The buyer team negotiated a cost of $41 per unit for the Orsini patio dining set with Casa Verde Imports, ordering 3,200 units for a retail price of $129. Delivery is expected on March 22 to the Memphis distribution center.",
+        "roles": ["buyer", "executive"]
+      },
+      {
+        "id": "gf-lp",
+        "content": "Loss prevention identified employee Caleb Rourke in a return-fraud scheme worth $14,300 across 47 transactions at Store 092. Police report 24-55021 was filed on May 3 and he was suspended pending termination.",
+        "roles": ["loss-prevention"]
+      },
+      {
+        "id": "gf-exec",
+        "content": "Greenfield plans to close four underperforming stores in Tulsa, Wichita, Omaha, and Toledo by January 31 at an estimated cost of $7.8M. The announcement is confidential until the November earnings call.",
+        "roles": ["executive"]
+      },
+      {
+        "id": "gf-schedule",
+        "content": "Seasonal hiring for spring begins March 1 with 220 openings across the region. Store managers must submit staffing requests to HR by February 15.",
+        "roles": ["store-manager", "executive"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Rita Salazar",
+        "userPermissions": ["store-manager"]
+      },
+      {
+        "name": "Hector Lim",
+        "userPermissions": ["buyer"]
+      },
+      {
+        "name": "Nadia Petrov",
+        "userPermissions": ["loss-prevention", "store-manager"]
+      },
+      {
+        "name": "Online Shopper Bot",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the return policy and how do we handle return fraud?",
+      "How are spring sales and promotions performing?",
+      "What are the costs and prices for patio furniture?",
+      "Are any stores closing or are there staffing changes?"
+    ]
+  },
+  {
+    "name": "City of Alderbrook Government",
+    "documents": [
+      {
+        "id": "ab-permit",
+        "content": "Residential building permits are reviewed within 15 business days and require site plans and a $275 application fee. Applications can be submitted online through the Alderbrook Permit Portal.",
+        "roles": []
+      },
+      {
+        "id": "ab-meeting",
+        "content": "The City Council meets on the first and third Tuesday of each month at 7pm in City Hall. Agendas are posted publicly 72 hours before each meeting.",
+        "roles": []
+      },
+      {
+        "id": "ab-bid",
+        "content": "Procurement received three sealed bids for the Mill Street bridge repair: Keystone Civil at $2.84M, Ardent Builders at $3.12M, and RoadPro at $2.97M. Bids are confidential until the award recommendation on August 20.",
+        "roles": ["procurement"]
+      },
+      {
+        "id": "ab-police",
+        "content": "Police Detective Marsha Boyd is investigating a series of 11 burglaries on the east side with suspect Anthony Vega identified from surveillance. An arrest warrant request will be filed with the county court on June 4.",
+        "roles": ["police"]
+      },
+      {
+        "id": "ab-zoning",
+        "content": "Planning staff recommend approving rezoning of 14 acres on Harlan Road from agricultural to mixed use for developer Brightwater Partners. The staff report notes a traffic impact of 2,300 additional daily trips and a developer contribution of $480,000.",
+        "roles": ["planning", "council-staff"]
+      },
+      {
+        "id": "ab-budget",
+        "content": "The draft FY26 budget has a $3.4M shortfall in the general fund. The City Manager proposes a 4% utility rate increase and a hiring freeze in all departments except police and fire.",
+        "roles": ["council-staff"]
+      },
+      {
+        "id": "ab-legal",
+        "content": "The city attorney advises settling the Delancey sidewalk injury lawsuit for $185,000 rather than going to trial, which carries potential exposure of $600,000. The council will discuss in closed session on July 16.",
+        "roles": ["council-staff", "legal"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Gloria Ramsey",
+        "userPermissions": ["procurement"]
+      },
+      {
+        "name": "Marsha Boyd",
+        "userPermissions": ["police"]
+      },
+      {
+        "name": "Tyrell Washington",
+        "userPermissions": ["planning", "council-staff"]
+      },
+      {
+        "name": "Resident Portal User",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the status of the Mill Street bridge repair?",
+      "What projects are coming up for council review or approval?",
+      "How is the city handling its budget and lawsuits?",
+      "How do I apply for permits and what do they cost?"
+    ]
+  },
+  {
+    "name": "Summit Insurance Claims & Underwriting",
+    "documents": [
+      {
+        "id": "si-faq",
+        "content": "Policyholders should report auto claims within 30 days using the Summit app or by calling the claims line. Rental reimbursement is covered up to $40 per day for 30 days on comprehensive plans.",
+        "roles": []
+      },
+      {
+        "id": "si-guide",
+        "content": "Homeowners policies cover wind and fire damage but exclude flood unless a separate flood rider is purchased. Annual premiums start at $1,150 for a standard 2,000 square foot home.",
+        "roles": []
+      },
+      {
+        "id": "si-claim",
+        "content": "Claim HX-55821 for policyholder Linda Marsh covers roof damage from the May 11 hailstorm, with an adjuster estimate of $23,640. The deductible of $2,500 applies and payment was approved on May 29.",
+        "roles": ["adjuster"]
+      },
+      {
+        "id": "si-siu",
+        "content": "The Special Investigations Unit suspects staged-accident fraud involving Reliant Collision and attorney Gary Voss across 19 claims totaling $412,000. Surveillance began April 15 and no payments should be released without SIU approval.",
+        "roles": ["siu"]
+      },
+      {
+        "id": "si-uw",
+        "content": "Underwriting guidelines allow a 12% surcharge for coastal properties within 5 miles of the shoreline in Brevard County. The Seaview Condos portfolio of 240 units was priced at $1.9M in annual premium.",
+        "roles": ["underwriter"]
+      },
+      {
+        "id": "si-reserve",
+        "content": "Catastrophe reserves for the May hailstorm were increased to $31.5M after 4,200 claims were reported. The CFO expects reinsurance recovery of $11M under the Atlas Re treaty.",
+        "roles": ["executive"]
+      },
+      {
+        "id": "si-complaint",
+        "content": "A regulatory complaint filed by Marcus Yoon with the state department alleges Summit delayed his water damage claim for 94 days. Compliance must respond by June 25 and the proposed settlement is $18,000.",
+        "roles": ["compliance", "executive"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Paula Greene",
+        "userPermissions": ["adjuster"]
+      },
+      {
+        "name": "Victor Stone",
+        "userPermissions": ["siu", "compliance"]
+      },
+      {
+        "name": "Imani Brooks",
+        "userPermissions": ["underwriter"]
+      },
+      {
+        "name": "Customer Chatbot",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How are hail damage claims handled and what do they cost?",
+      "Are there any fraud investigations related to auto claims?",
+      "How are coastal properties priced for homeowners coverage?",
+      "What happens when a customer complains about a delayed claim?"
+    ]
+  },
+  {
+    "name": "Harbor Light Nonprofit Foundation",
+    "documents": [
+      {
+        "id": "hl-mission",
+        "content": "Harbor Light Foundation funds youth literacy and after-school programs across Cuyahoga County. Grant applications open each January and awards range from $10,000 to $75,000.",
+        "roles": []
+      },
+      {
+        "id": "hl-volunteer",
+        "content": "Volunteers must complete a background check and a two-hour orientation before working with children. Orientation sessions are held on the second Saturday of every month.",
+        "roles": []
+      },
+      {
+        "id": "hl-grants",
+        "content": "The grants committee approved $60,000 for Eastside Reading Collective and $45,000 for Bright Paths Tutoring on March 14. Awards for Southgate Youth Center were declined due to incomplete financial statements.",
+        "roles": ["program-staff", "board"]
+      },
+      {
+        "id": "hl-donor",
+        "content": "Donor Eleanor Whitcomb pledged $500,000 over five years, with the first $100,000 payment due July 1. She asked to remain anonymous and prefers contact only through development director Sam Okafor.",
+        "roles": ["development"]
+      },
+      {
+        "id": "hl-budget",
+        "content": "The foundation ended FY24 with $412,000 in unrestricted reserves and an operating budget of $3.1M. The finance committee projects a $240,000 gap if two major grants are not renewed.",
+        "roles": ["board", "finance"]
+      },
+      {
+        "id": "hl-hr",
+        "content": "Executive Director Monica Reyes will receive a salary of $128,000 under the new contract, with a 3% annual increase. The board will vote on the contract in executive session on September 12.",
+        "roles": ["board"]
+      },
+      {
+        "id": "hl-child",
+        "content": "Volunteer incident report 24-06 describes a minor named Devon, age 9, who was injured at the Eastside site on April 9. The parent was notified and the volunteer coordinator Alice Tran is reviewing site supervision.",
+        "roles": ["program-staff"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Alice Tran",
+        "userPermissions": ["program-staff"]
+      },
+      {
+        "name": "Sam Okafor",
+        "userPermissions": ["development"]
+      },
+      {
+        "name": "Harold Pike",
+        "userPermissions": ["board", "finance"]
+      },
+      {
+        "name": "New Volunteer",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "Which organizations received grants and how much did they get?",
+      "How is the foundation doing financially and what are the funding risks?",
+      "What are the rules for volunteers working with children?",
+      "Who are our major donors and what have they pledged?"
+    ]
+  },
+  {
+    "name": "Riverside Community Clinic",
+    "documents": [
+      {
+        "id": "hc1-hours",
+        "content": "Riverside Community Clinic is open Monday to Friday from 8:00 AM to 6:00 PM and Saturdays from 9:00 AM to 1:00 PM. Walk-in flu shots are available through November 30 with no appointment needed.",
+        "roles": []
+      },
+      {
+        "id": "hc1-billing-public",
+        "content": "Patients can pay by card, check, or an interest-free payment plan of up to 12 months. Questions about statements can be directed to the front desk or the billing hotline.",
+        "roles": []
+      },
+      {
+        "id": "hc1-diabetes-class",
+        "content": "The clinic offers a free diabetes education class every Tuesday at 5:30 PM in Room 2. The class covers nutrition, glucose monitoring, and medication basics.",
+        "roles": []
+      },
+      {
+        "id": "hc1-diabetes-protocol",
+        "content": "Clinical protocol for type 2 diabetes: target HbA1c below 7.0% for most adults, with first-line metformin starting at 500 mg daily. Escalate to endocrinology referral if A1c remains above 9.0% after two consecutive quarterly checks.",
+        "roles": ["clinician"]
+      },
+      {
+        "id": "hc1-case-delgado",
+        "content": "Patient Maria Delgado (MRN 48213) had an HbA1c of 9.4% on 2024-03-12 and was started on metformin 500 mg twice daily. Dr. Lin placed an endocrinology referral and scheduled a follow-up for 2024-06-11.",
+        "roles": ["clinician"]
+      },
+      {
+        "id": "hc1-claims-audit",
+        "content": "Q1 2024 claims audit: Aetna denied 41 claims totaling $12,480 due to missing prior authorization on diabetic supplies. Billing must resubmit by May 15, 2024 to avoid timely-filing loss.",
+        "roles": ["billing"]
+      },
+      {
+        "id": "hc1-writeoff",
+        "content": "Approved write-off of $3,275 for patient account 77120 following a hardship review on 2024-02-27. Approval was signed by finance manager Dana Whitfield.",
+        "roles": ["billing", "admin"]
+      },
+      {
+        "id": "hc1-staffing-budget",
+        "content": "The FY2024 nurse overtime budget is $86,000, and 62% has already been spent by end of March. Dr. Anil Patel's contract renewal at $248,000 per year is pending board approval.",
+        "roles": ["admin"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Lin",
+        "userPermissions": ["clinician"]
+      },
+      {
+        "name": "Hannah Brooks",
+        "userPermissions": ["billing"]
+      },
+      {
+        "name": "Omar Reyes",
+        "userPermissions": ["admin", "billing"]
+      },
+      {
+        "name": "Guest Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What does the clinic offer for patients with diabetes?",
+      "How are billing issues and denied claims handled?",
+      "What are the clinic's costs and budget for staff this year?",
+      "What is the follow-up plan for patients with high HbA1c?"
+    ]
+  },
+  {
+    "name": "Hartwell & Associates Law Firm",
+    "documents": [
+      {
+        "id": "lg1-practice-areas",
+        "content": "Hartwell & Associates represents clients in commercial litigation, employment law, and intellectual property. The firm has offices in Chicago and Milwaukee.",
+        "roles": []
+      },
+      {
+        "id": "lg1-intake-public",
+        "content": "New clients can request a consultation through the website intake form. Initial consultations are 30 minutes and conflicts are checked before any substantive discussion.",
+        "roles": []
+      },
+      {
+        "id": "lg1-billing-rates-public",
+        "content": "The firm bills hourly, with rates depending on the attorney's seniority and matter type. Fee agreements are provided in writing before work begins.",
+        "roles": []
+      },
+      {
+        "id": "lg1-matter-orion",
+        "content": "Orion Freight v. Calloway Logistics: Case No. 23-CV-4471 in Cook County. Our client Orion seeks $4.2 million in damages, and a settlement offer of $1.9 million was rejected on 2024-04-02.",
+        "roles": ["attorney"]
+      },
+      {
+        "id": "lg1-strategy-memo",
+        "content": "Privileged memo: Partner Elena Marsh recommends deposing Calloway CFO Victor Haas before the June 14 discovery cutoff. Weakness in our case is the missing 2022 delivery logs.",
+        "roles": ["attorney"]
+      },
+      {
+        "id": "lg1-billing-wip",
+        "content": "Work-in-progress report: Orion Freight matter has $312,450 in unbilled time and a $95,000 outstanding invoice aged 75 days. Partner approval is required for write-downs above $10,000.",
+        "roles": ["billing", "partner"]
+      },
+      {
+        "id": "lg1-partner-comp",
+        "content": "FY2023 partner distributions: Elena Marsh $540,000, David Okafor $485,000. The compensation committee will meet on 2024-07-09 to review origination credit.",
+        "roles": ["partner"]
+      },
+      {
+        "id": "lg1-paralegal-checklist",
+        "content": "Paralegal checklist for discovery: log all productions with Bates prefix HA-ORN, and calendar deadlines in the docketing system. Escalate privilege questions to the supervising attorney.",
+        "roles": ["attorney", "paralegal"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Elena Marsh",
+        "userPermissions": ["attorney", "partner"]
+      },
+      {
+        "name": "Priya Nair",
+        "userPermissions": ["paralegal"]
+      },
+      {
+        "name": "Greg Tomlin",
+        "userPermissions": ["billing"]
+      },
+      {
+        "name": "Website Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the status of the Orion Freight litigation?",
+      "How does the firm bill clients and what is outstanding?",
+      "What are the discovery deadlines and procedures?",
+      "What is the firm's compensation structure for partners?"
+    ]
+  },
+  {
+    "name": "Brightpath HR Portal",
+    "documents": [
+      {
+        "id": "hr1-pto-policy",
+        "content": "Full-time employees accrue 15 days of PTO per year, increasing to 20 days after five years of service. Unused PTO up to 5 days may be carried over into the next calendar year.",
+        "roles": []
+      },
+      {
+        "id": "hr1-holidays",
+        "content": "Company holidays for 2024 include New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving, and December 24 to 26. The office is closed on these dates.",
+        "roles": []
+      },
+      {
+        "id": "hr1-benefits-public",
+        "content": "Open enrollment runs November 1 to November 15 each year. Employees can choose between a PPO and an HDHP medical plan, plus dental and vision coverage.",
+        "roles": []
+      },
+      {
+        "id": "hr1-salary-bands",
+        "content": "2024 salary bands: Software Engineer II is $108,000 to $138,000, Senior Engineer is $135,000 to $172,000. Band adjustments take effect on July 1, 2024.",
+        "roles": ["hr", "manager"]
+      },
+      {
+        "id": "hr1-investigation",
+        "content": "Investigation 2024-017: Complaint filed against Tyler Benson in Sales by Karen Osei on 2024-03-04 alleging repeated inappropriate comments. Interviews were completed on March 19 and a written warning is recommended.",
+        "roles": ["hr"]
+      },
+      {
+        "id": "hr1-severance",
+        "content": "Reduction in force plan for Q3: 14 positions in Customer Support will be eliminated, with severance of two weeks per year of service up to 26 weeks. Notifications are scheduled for August 6, 2024.",
+        "roles": ["hr"]
+      },
+      {
+        "id": "hr1-perf-review",
+        "content": "Manager guide for performance cycle: ratings are submitted by May 31 and calibrated by the department head. Employee Jasmine Cole is rated 'Exceeds' with a proposed 6% merit increase.",
+        "roles": ["manager"]
+      },
+      {
+        "id": "hr1-payroll-garnish",
+        "content": "Payroll note: employee ID 20441 has a wage garnishment of $350 per pay period for child support starting 2024-02-16. Do not discuss with managers.",
+        "roles": ["hr", "payroll"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Nadia Hossain",
+        "userPermissions": ["hr", "payroll"]
+      },
+      {
+        "name": "Marcus Lee",
+        "userPermissions": ["manager"]
+      },
+      {
+        "name": "Sophie Tran",
+        "userPermissions": []
+      },
+      {
+        "name": "Paul Greer",
+        "userPermissions": ["payroll"]
+      }
+    ],
+    "queries": [
+      "What are the salary and merit increase details for engineers?",
+      "How much PTO do employees get and what happens to unused time?",
+      "Are there any upcoming layoffs or severance policies?",
+      "What is the process for handling employee complaints?"
+    ]
+  },
+  {
+    "name": "Meridian Credit Union Finance",
+    "documents": [
+      {
+        "id": "fn1-rates-public",
+        "content": "Meridian Credit Union currently offers a 12-month certificate at 4.75% APY and a 60-month certificate at 4.10% APY. Minimum deposit is $500.",
+        "roles": []
+      },
+      {
+        "id": "fn1-loan-public",
+        "content": "Auto loans start at 5.99% APR for members with strong credit and terms up to 72 months. Applications can be completed online or at any branch.",
+        "roles": []
+      },
+      {
+        "id": "fn1-hours-public",
+        "content": "Branches are open 9:00 AM to 5:00 PM on weekdays, and the call center is open until 8:00 PM. Members can reach support through secure messaging in the mobile app.",
+        "roles": []
+      },
+      {
+        "id": "fn1-loan-committee",
+        "content": "Loan committee minutes of 2024-05-08: approved a $2.4 million commercial line for Baxter Dairy Co. at prime plus 1.25%. Collateral includes equipment appraised at $3.1 million.",
+        "roles": ["lending"]
+      },
+      {
+        "id": "fn1-delinquency",
+        "content": "Delinquency report: 38 auto loans are over 60 days past due, totaling $412,900. The largest is member account 55208 with $28,640 outstanding.",
+        "roles": ["lending", "risk"]
+      },
+      {
+        "id": "fn1-aml-case",
+        "content": "SAR case 2024-09: account 90331 had 14 cash deposits of $9,500 between April 1 and April 22. Filing is due to FinCEN by May 28, 2024; do not disclose to the member.",
+        "roles": ["compliance"]
+      },
+      {
+        "id": "fn1-board-financials",
+        "content": "Q1 2024 net income was $3.8 million, up 11% from the prior year, with net interest margin of 3.42%. CEO Laura Quinn will propose a $1.2 million technology investment at the June board meeting.",
+        "roles": ["executive"]
+      },
+      {
+        "id": "fn1-risk-limits",
+        "content": "Concentration limit for commercial real estate is 250% of net worth, and current exposure stands at 231%. Risk committee will review stress test results on 2024-06-20.",
+        "roles": ["risk", "executive"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Carla Mendes",
+        "userPermissions": ["lending", "risk"]
+      },
+      {
+        "name": "Raj Patel",
+        "userPermissions": ["compliance"]
+      },
+      {
+        "name": "Laura Quinn",
+        "userPermissions": ["executive", "risk"]
+      },
+      {
+        "name": "Member Services Temp",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the current loan rates and who has been approved for large loans?",
+      "How many loans are delinquent?",
+      "How is the credit union performing financially this quarter?",
+      "What deposit products are available and what are the rates?"
+    ]
+  },
+  {
+    "name": "Apex Aerospace Engineering",
+    "documents": [
+      {
+        "id": "en1-company-overview",
+        "content": "Apex Aerospace designs lightweight composite structures for regional aircraft and unmanned systems. The Wichita facility employs about 420 engineers and technicians.",
+        "roles": []
+      },
+      {
+        "id": "en1-safety-public",
+        "content": "All visitors to the composite lab must wear safety glasses, nitrile gloves, and sign in at the front desk. Resin handling is restricted to trained personnel.",
+        "roles": []
+      },
+      {
+        "id": "en1-standards-public",
+        "content": "Engineering drawings follow ASME Y14.5 standards and are revised through the document control system. Each revision requires a change request number.",
+        "roles": []
+      },
+      {
+        "id": "en1-wing-spar-test",
+        "content": "Project Kestrel wing spar test on 2024-02-21 failed at 118% of limit load, below the required 150%. Delamination was found near rib station 14, and layup schedule CF-22B is under review.",
+        "roles": ["engineer"]
+      },
+      {
+        "id": "en1-supplier-pricing",
+        "content": "Carbon fiber prepreg from Toray is quoted at $64 per kg for 5,000 kg orders, with a 6% discount if signed by June 30. Backup supplier Hexcel quoted $69 per kg.",
+        "roles": ["procurement"]
+      },
+      {
+        "id": "en1-itar-spec",
+        "content": "ITAR-controlled: Kestrel UAV payload bay dimensions are 1.2 m by 0.6 m with a 45 kg maximum payload. Access is limited to US persons on the export control list.",
+        "roles": ["itar-cleared"]
+      },
+      {
+        "id": "en1-contract-darpa",
+        "content": "Contract W911-24-C-0087 awards Apex $18.6 million over 30 months for Kestrel development. Milestone 2 payment of $4.1 million is due on September 15, 2024.",
+        "roles": ["program-manager"]
+      },
+      {
+        "id": "en1-design-review",
+        "content": "Preliminary design review for Kestrel is set for 2024-07-10 with program manager Tomas Reyes chairing. Engineers must submit stress analysis packages by July 1.",
+        "roles": ["engineer", "program-manager"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Sam Okoye",
+        "userPermissions": ["engineer"]
+      },
+      {
+        "name": "Tomas Reyes",
+        "userPermissions": ["program-manager", "engineer", "itar-cleared"]
+      },
+      {
+        "name": "Linda Park",
+        "userPermissions": ["procurement"]
+      },
+      {
+        "name": "Lab Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the results and requirements for the Kestrel project?",
+      "What materials are used and what do they cost?",
+      "What safety rules apply in the composite lab?",
+      "What is the schedule and funding for Kestrel?"
+    ]
+  },
+  {
+    "name": "Lakeview School District",
+    "documents": [
+      {
+        "id": "ed1-calendar",
+        "content": "The 2024-25 school year begins August 21 and ends June 5. Winter break runs from December 23 to January 3.",
+        "roles": []
+      },
+      {
+        "id": "ed1-lunch-public",
+        "content": "Free and reduced-price lunch applications are available at every school office and online. Families can apply at any time during the school year.",
+        "roles": []
+      },
+      {
+        "id": "ed1-grading-policy",
+        "content": "Grades are posted in the parent portal every Friday by 5:00 PM. Report cards are issued at the end of each nine-week term.",
+        "roles": []
+      },
+      {
+        "id": "ed1-student-iep",
+        "content": "Student Ethan Ruiz (ID 330218), grade 4, has an IEP for dyslexia with 45 minutes of daily reading intervention. The next IEP review is scheduled for 2024-10-03.",
+        "roles": ["special-ed"]
+      },
+      {
+        "id": "ed1-discipline",
+        "content": "Disciplinary record: Jordan Whitaker, grade 9, received a 3-day suspension on 2024-02-12 for a fight in the cafeteria. A parent conference was held on February 15 with Assistant Principal Mills.",
+        "roles": ["administrator"]
+      },
+      {
+        "id": "ed1-teacher-eval",
+        "content": "Teacher evaluation: Ms. Carolyn Dietz, 7th grade math, was rated 'Proficient' with a growth target of raising state assessment scores by 8%. Observation notes cite strong questioning but weak pacing.",
+        "roles": ["administrator"]
+      },
+      {
+        "id": "ed1-budget",
+        "content": "The 2024-25 district budget totals $87.3 million, including a 3.5% salary increase for teachers. Superintendent Dr. Alvarez proposes closing Pine Grove Elementary, saving $1.6 million per year.",
+        "roles": ["administrator", "board"]
+      },
+      {
+        "id": "ed1-lesson-plan",
+        "content": "Grade 7 math unit on ratios runs from September 9 to October 4 with a unit test on October 7. Teachers should use the district-approved Illustrative Mathematics curriculum.",
+        "roles": ["teacher", "administrator"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Ms. Dietz",
+        "userPermissions": ["teacher"]
+      },
+      {
+        "name": "Principal Carter",
+        "userPermissions": ["administrator", "teacher"]
+      },
+      {
+        "name": "Mr. Boyd",
+        "userPermissions": ["special-ed", "teacher"]
+      },
+      {
+        "name": "Parent Guest",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How are students and teachers evaluated?",
+      "What support is provided for students with reading difficulties?",
+      "What does the district budget look like for next year?",
+      "What is the schedule for the school year and math curriculum?"
+    ]
+  },
+  {
+    "name": "Northwind Retail Group",
+    "documents": [
+      {
+        "id": "rt1-return-policy",
+        "content": "Customers may return unworn items within 30 days with a receipt for a full refund. Items without a receipt receive store credit at the lowest sale price.",
+        "roles": []
+      },
+      {
+        "id": "rt1-loyalty-public",
+        "content": "Northwind Rewards members earn 1 point per dollar spent and receive a $10 reward for every 200 points. Members also get early access to seasonal sales.",
+        "roles": []
+      },
+      {
+        "id": "rt1-holiday-hours",
+        "content": "Stores open at 7:00 AM on Black Friday and close at 10:00 PM. Online orders placed by December 18 will arrive before Christmas with standard shipping.",
+        "roles": []
+      },
+      {
+        "id": "rt1-vendor-terms",
+        "content": "Vendor agreement with Alder Apparel: 2024 fall order of $1.85 million with net-60 terms and a 4% early-payment discount. Minimum order quantity is 12,000 units.",
+        "roles": ["buyer"]
+      },
+      {
+        "id": "rt1-store-sales",
+        "content": "Store 114 (Denver) posted Q4 sales of $3.2 million, 9% below plan, and shrink of 2.1%. Regional manager Alicia Cho has ordered a loss prevention audit for January 15.",
+        "roles": ["store-manager", "finance"]
+      },
+      {
+        "id": "rt1-markdown-plan",
+        "content": "Markdown plan: winter outerwear will drop 40% on January 5 and 60% on January 26. Projected margin impact is negative $420,000.",
+        "roles": ["buyer", "finance"]
+      },
+      {
+        "id": "rt1-security-incident",
+        "content": "Security incident 2024-11: point-of-sale terminal at Store 207 was found with a skimming device on November 22. About 310 cards may be affected and the card processor was notified.",
+        "roles": ["security"]
+      },
+      {
+        "id": "rt1-employee-discount",
+        "content": "Associates receive a 30% discount on regular-priced merchandise, capped at $2,000 per year. Discounts do not apply to gift cards.",
+        "roles": ["associate", "store-manager"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Bianca Ruiz",
+        "userPermissions": ["buyer"]
+      },
+      {
+        "name": "Alicia Cho",
+        "userPermissions": ["store-manager", "associate"]
+      },
+      {
+        "name": "Devon Shaw",
+        "userPermissions": ["finance"]
+      },
+      {
+        "name": "Online Shopper",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What are the plans for markdowns and sales this winter?",
+      "How did our stores perform last quarter?",
+      "What discounts and rewards are available?",
+      "What happened with the point-of-sale terminals?"
+    ]
+  },
+  {
+    "name": "City of Fairmont Government",
+    "documents": [
+      {
+        "id": "gv1-permit-public",
+        "content": "Building permit applications are accepted online and in person at City Hall, Room 104. Standard residential permits are reviewed within 10 business days.",
+        "roles": []
+      },
+      {
+        "id": "gv1-council-schedule",
+        "content": "The City Council meets on the first and third Tuesday of each month at 7:00 PM. Agendas are posted 72 hours before each meeting.",
+        "roles": []
+      },
+      {
+        "id": "gv1-budget-public",
+        "content": "The adopted FY2025 city budget funds road maintenance, parks, and public safety. Residents can view a summary on the city website and comment during the June hearing.",
+        "roles": []
+      },
+      {
+        "id": "gv1-closed-session",
+        "content": "Closed session memo: the city will negotiate to purchase the Henley Street parcel for up to $2.75 million for a new fire station. Council voted 5-2 on May 7 to authorize City Manager Rhonda Vega to make an offer.",
+        "roles": ["council", "legal"]
+      },
+      {
+        "id": "gv1-personnel",
+        "content": "Personnel file: Police Sergeant Marcus Doyle is under internal investigation (Case IA-2024-006) opened April 9, 2024. He was placed on paid administrative leave pending the outcome.",
+        "roles": ["hr-dept"]
+      },
+      {
+        "id": "gv1-contract-bid",
+        "content": "Bid evaluation for the Elm Avenue repaving project: Redstone Paving bid $1,184,000 and Calder Construction bid $1,261,500. Staff recommends Redstone, with award on June 18.",
+        "roles": ["procurement", "council"]
+      },
+      {
+        "id": "gv1-audit",
+        "content": "Internal audit found $46,200 in unreconciled purchasing card charges in the Parks Department for 2023. Findings are confidential until the audit committee meets on July 2.",
+        "roles": ["audit"]
+      },
+      {
+        "id": "gv1-staff-permits",
+        "content": "Permit staff guidance: expedite requests for essential facilities may be approved by the Building Official. Fee waivers above $500 require written approval from the Finance Director.",
+        "roles": ["staff"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Rhonda Vega",
+        "userPermissions": ["council", "legal", "staff"]
+      },
+      {
+        "name": "Terry Alvarez",
+        "userPermissions": ["procurement", "staff"]
+      },
+      {
+        "name": "Priscilla Hung",
+        "userPermissions": ["audit"]
+      },
+      {
+        "name": "Resident",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "What is the city planning for the fire station?",
+      "How is the city budget being spent and are there any issues?",
+      "Who won or is recommended for the Elm Avenue repaving contract?",
+      "How do I get a permit and are there fee waivers?"
+    ]
+  },
+  {
+    "name": "Cedar Ridge Hospital Research & Pharmacy",
+    "documents": [
+      {
+        "id": "hp1-pharmacy-hours",
+        "content": "The outpatient pharmacy is open daily from 8:00 AM to 8:00 PM, with prescription refills available through the patient portal. Most prescriptions are ready within 30 minutes.",
+        "roles": []
+      },
+      {
+        "id": "hp1-trial-public",
+        "content": "Cedar Ridge is recruiting adults aged 40 to 70 for a heart failure study sponsored by Corvane Therapeutics. Interested individuals can call the research office to check eligibility.",
+        "roles": []
+      },
+      {
+        "id": "hp1-visitor-policy",
+        "content": "Visitors are limited to two per patient at a time, and visiting hours are 10:00 AM to 8:00 PM. Children under 12 must be accompanied by an adult.",
+        "roles": []
+      },
+      {
+        "id": "hp1-trial-enrollment",
+        "content": "Study CR-HF-204 has enrolled 58 of 120 participants as of 2024-05-30. Two serious adverse events were reported, including one hospitalization for subject 0317 on May 12.",
+        "roles": ["research-staff"]
+      },
+      {
+        "id": "hp1-trial-budget",
+        "content": "Corvane Therapeutics pays $9,800 per enrolled participant, for a total contract value of $1.18 million. Principal Investigator Dr. Helen Ostrow receives 8% overhead on grant funds.",
+        "roles": ["research-admin"]
+      },
+      {
+        "id": "hp1-formulary",
+        "content": "Formulary committee decision of 2024-04-17: add semaglutide with prior authorization and remove brand-name atorvastatin. Estimated annual savings are $640,000.",
+        "roles": ["pharmacist"]
+      },
+      {
+        "id": "hp1-controlled-sub",
+        "content": "Controlled substance audit found a discrepancy of 120 oxycodone 5 mg tablets in the Unit 4 dispensing cabinet on 2024-05-03. Pharmacist Ben Alvarez is leading the investigation.",
+        "roles": ["pharmacist", "compliance"]
+      },
+      {
+        "id": "hp1-irb",
+        "content": "IRB approval for CR-HF-204 was renewed on 2024-03-01 and expires 2025-02-28. Any protocol deviations must be reported within 5 business days.",
+        "roles": ["research-staff", "research-admin"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Dr. Ostrow",
+        "userPermissions": ["research-staff", "research-admin"]
+      },
+      {
+        "name": "Ben Alvarez",
+        "userPermissions": ["pharmacist"]
+      },
+      {
+        "name": "Keisha Monroe",
+        "userPermissions": ["compliance"]
+      },
+      {
+        "name": "Patient Visitor",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How is the heart failure study progressing?",
+      "What medications were recently added or removed from the formulary?",
+      "How much does the study sponsor pay?",
+      "Have there been any problems with medication supplies or safety events?"
+    ]
+  },
+  {
+    "name": "Summit Mutual Insurance Claims",
+    "documents": [
+      {
+        "id": "in1-claims-process",
+        "content": "Policyholders can file a claim online, by phone, or through the mobile app. An adjuster is assigned within 2 business days and contacts the customer to schedule any inspection.",
+        "roles": []
+      },
+      {
+        "id": "in1-coverage-faq",
+        "content": "Standard homeowners policies cover wind, fire, and theft but exclude flood and earthquake damage. Flood coverage can be added through a separate endorsement.",
+        "roles": []
+      },
+      {
+        "id": "in1-catastrophe-public",
+        "content": "After a declared catastrophe, Summit Mutual opens a temporary claims center and extends the reporting deadline. Customers can receive advance payments for emergency housing.",
+        "roles": []
+      },
+      {
+        "id": "in1-claim-hail",
+        "content": "Claim HO-558210 for policyholder Grace Mitchell: hail damage to roof at 41 Alder Lane, estimated at $18,740 after a $1,500 deductible. Adjuster Tom Rudd inspected the property on 2024-05-22.",
+        "roles": ["adjuster"]
+      },
+      {
+        "id": "in1-fraud-referral",
+        "content": "SIU referral 2024-031: claim HO-559904 shows a $42,000 jewelry theft with receipts matching a prior claim from 2022. Case assigned to investigator Lena Fischer; do not contact the policyholder until review.",
+        "roles": ["siu"]
+      },
+      {
+        "id": "in1-reserves",
+        "content": "Q2 2024 catastrophe reserves are set at $58 million following the April hailstorm, with 3,420 open claims. Chief Actuary Priya Venkat expects an additional $7 million in development.",
+        "roles": ["actuary", "executive"]
+      },
+      {
+        "id": "in1-settlement-authority",
+        "content": "Adjuster settlement authority: Level 1 up to $10,000, Level 2 up to $50,000, and anything above requires manager approval. Tom Rudd is currently at Level 2.",
+        "roles": ["adjuster", "claims-manager"]
+      },
+      {
+        "id": "in1-litigation",
+        "content": "Litigation file: Mitchell v. Summit Mutual (filed 2024-06-03) alleges bad-faith delay on a $210,000 fire claim. Outside counsel Hargrove LLP recommends settling for no more than $165,000.",
+        "roles": ["legal"]
+      }
+    ],
+    "users": [
+      {
+        "name": "Tom Rudd",
+        "userPermissions": ["adjuster"]
+      },
+      {
+        "name": "Lena Fischer",
+        "userPermissions": ["siu", "adjuster"]
+      },
+      {
+        "name": "Priya Venkat",
+        "userPermissions": ["actuary", "executive"]
+      },
+      {
+        "name": "Call Center Trainee",
+        "userPermissions": []
+      }
+    ],
+    "queries": [
+      "How are hail damage claims handled and what is the amount for recent claims?",
+      "What are the reserves after the storm?",
+      "What is the process for investigating suspicious claims?",
+      "How much authority does an adjuster have to settle claims?"
+    ]
+  }
+]

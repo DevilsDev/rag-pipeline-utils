@@ -13,6 +13,7 @@ const textLoader = {
     return [
       {
         chunk: () => {
+          if (!text.trim()) return [];
           const { ChunkingEngine } = require('../chunking/chunking-engine');
           return new ChunkingEngine({
             strategy: 'sentence',
@@ -37,9 +38,8 @@ const SUPPORTED_EXTENSIONS = Object.keys(LOADERS_BY_EXTENSION);
 
 /**
  * Read a file or every supported file under a directory and return its
- * chunks together with the file they came from. Unlike DirectoryLoader this
- * keeps the source path, which ingestion needs for stable chunk ids,
- * re-ingestion and citations.
+ * chunks together with the file they came from. It keeps the source path,
+ * which ingestion needs for stable chunk ids, re-ingestion and citations.
  *
  * @param {string} inputPath - File or directory
  * @param {object} [options]

@@ -6,7 +6,8 @@
  *
  * Options: --baseline <report.json>, --output <report.json>, --report
  * <file.html|file.md>, --min <metric=value> (repeatable), --tolerance,
- * --case-tolerance, --concurrency, --timeout, --top-k, --json.
+ * --case-tolerance, --concurrency, --timeout, --top-k, --no-condition-check,
+ * --json.
  */
 
 const fs = require("fs");
@@ -127,7 +128,12 @@ async function handleEval(globalOptions, datasetPath, options = {}) {
     const report = await runEvaluation(checked.cases, pipeline, {
       concurrency: options.concurrency || 1,
       ...(options.timeout && { timeout: options.timeout }),
-      runOptions: { topK: options.topK || 3 },
+      runOptions: {
+        topK: options.topK || 3,
+        ...(options.conditionCheck === false && {
+          citationOptions: { conditionCheck: false },
+        }),
+      },
       onCase: () => {
         done += 1;
         if (!quiet && process.stderr.isTTY) {

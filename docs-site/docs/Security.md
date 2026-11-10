@@ -338,7 +338,7 @@ const encryptedConfig = encryption.encrypt(sensitiveConfig);
 
 **Data in Transit**:
 
-`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, cache, registry }`. The built-in connectors default to HTTPS endpoints (OpenAI through the optional `openai` SDK, Anthropic and Cohere through axios); a custom `baseURL` is your responsibility. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
+`createRagPipeline` has no transport or TLS settings; it accepts only `{ loader, embedder, retriever, llm, reranker, cache, telemetry, registry }`. The built-in connectors default to HTTPS endpoints (OpenAI through the optional `openai` SDK, Anthropic and Cohere through axios); a custom `baseURL` is your responsibility. Enforce TLS at your own HTTP layer (load balancer, reverse proxy or Node `https` server), and keep `rag-pipeline serve` / `DevServer` on loopback: they bind to `127.0.0.1` by default, accept JSON only with a 64 KB body limit, send no CORS headers and are meant for local use.
 
 ### **Data Sanitization**
 
@@ -480,6 +480,10 @@ class OutputFilter {
 }
 ```
 
+### **Rendering loader output and retrieved text**
+
+Loaders return plain text, not HTML. Since 3.9.0, `MarkdownLoader` decodes HTML entities, so a document that contains `&lt;script&gt;` yields the text `<script>`. Loader output, retrieved passages, answers and citations are plain text: escape them before you render them as HTML, as you would any untrusted text.
+
 ### **Path Handling**
 
 The package does not export a path sanitizer. If your application turns user input into file paths (for example a document viewer or an ingestion endpoint), resolve the path against a fixed base directory and reject anything that escapes it:
@@ -554,6 +558,7 @@ if (!result.verified) throw new Error(result.error);
 import { AuditLogger } from "@devilsdev/rag-pipeline-utils";
 
 const audit = new AuditLogger({
+  logDir: "./audit-logs", // without it: .rag-enterprise/audit-logs, deprecated
   encryptionKey: process.env.RAG_AUDIT_ENCRYPTION_KEY, // or set the env var
   requireEncryption: true, // a missing key is an error instead of a warning
   signingKey: process.env.RAG_AUDIT_SIGNING_KEY, // stable HMAC key across restarts
@@ -969,8 +974,8 @@ Upgrading doesn't change what an earlier version already stored. To check a stor
 
 Checks the generated answer:
 
-- **PII detection**: email addresses, phone numbers, Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
-- **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus numeric-consistency and polarity checks; paraphrase and units are not checked), against `groundednessThreshold` (default 0.3).
+- **PII detection**: email addresses, US phone numbers (10 digits, such as 555-123-4567), Social Security numbers and credit card numbers. Since 2.5.0 PII is also redacted in citations and evaluation details, and strict-mode blocks no longer return the raw answer.
+- **Groundedness check**: scores how much of each sentence is supported by the retrieved documents (lexical support plus numeric-consistency, polarity and, from 3.9.0, condition checks; paraphrase and units it does not know are not checked), against `groundednessThreshold` (default 0.3).
 - **Length validation**: `minResponseLength` / `maxResponseLength` (characters). PII is redacted before an over-long answer is truncated, so a value cut at the limit is never left partly visible.
 - **Streamed answers** (`options.stream: true`): since 3.8.2 the answer is buffered and checked as a whole before any of it is released (see [Concepts: rag-guardrails](./Concepts-Guardrails.md#streaming-custom-pipelines-and-blocked-results)).
 - **Blocked results carry no text**: a withheld result has no answer, `guardrails.postGeneration.sanitizedOutput` is empty, and the guard summaries keep counts, kinds and reasons but not the query, matched strings or document content.

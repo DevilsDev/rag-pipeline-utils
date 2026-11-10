@@ -49,24 +49,24 @@ Saved as a test set, the same questions become your baseline: run `rag-pipeline 
 
 ## Concepts
 
-| LlamaIndex.TS                                            | Here                                                                                                                                  |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `new Document({ text, id_, metadata })`                  | A plain object `{ id, content, metadata }`                                                                                            |
-| `SimpleDirectoryReader().loadData(dir)`                  | `rag-pipeline ingest <dir>` (Markdown, text, HTML and CSV), or read the files yourself; extract PDFs to text first                    |
-| `SentenceSplitter` / node parsers                        | `ChunkingEngine` (`recursive`, `sentence`, `semantic`, `fixed-size` and `structure-aware` strategies); `ingest` chunks for you        |
-| `Settings.llm = new OpenAI(...)`                         | Pass the LLM to the pipeline: `createRagPipeline({ llm: new OpenAIConnector() })`; no global settings                                 |
-| `Settings.embedModel`                                    | `embedder`: `OpenAIConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, or an AI SDK model via `createAiSdkAdapter`     |
-| `VectorStoreIndex.fromDocuments(docs)`                   | Embed the documents and `retriever.store()` them: `MemoryRetriever`, `FileVectorStore`, `PgVectorRetriever` or `QdrantRetriever`      |
-| `index.asRetriever({ similarityTopK })`                  | The retriever itself: `retriever.retrieve({ query, queryVector, topK })`                                                              |
-| `index.asQueryEngine()` + `queryEngine.query({ query })` | `createRagPipeline({ embedder, retriever, llm })` + `pipeline.run({ query, options: { topK } })`                                      |
-| `response.message.content` / `response.sourceNodes`      | `result.answer` / `result.results`; add `options: { citations: true }` for `result.citations`                                         |
-| `nodePostprocessors: [new CohereRerank()]`               | `reranker`: `CohereConnector`, `ScoringReranker`, `EmbeddingReranker` or `CascadeReranker`                                            |
-| `BM25Retriever`                                          | `BM25Search`, and `HybridRetriever` to fuse it with vector search                                                                     |
-| `queryEngine.query({ query, stream: true })`             | `pipeline.run({ query, options: { stream: true } })`                                                                                  |
-| `FaithfulnessEvaluator`                                  | `checkAnswer` or `computeFaithfulness`: no judge model, so no extra calls (see the trade-off below)                                   |
-| `RelevancyEvaluator`                                     | `computeAnswerRelevance` and `computeContextPrecision`                                                                                |
-| `CorrectnessEvaluator`                                   | A test set with `expected` answers, scored by `rag-pipeline eval` or `runEvaluation`                                                  |
-| `PineconeVectorStore` and other stores                   | pgvector and Qdrant ship; for others, write a small retriever plugin (`store()` and `retrieve()`) and test it with `runContractTests` |
+| LlamaIndex.TS                                            | Here                                                                                                                                                                                                  |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `new Document({ text, id_, metadata })`                  | A plain object `{ id, content, metadata }`                                                                                                                                                            |
+| `SimpleDirectoryReader().loadData(dir)`                  | `rag-pipeline ingest <dir>` (Markdown, text, HTML and CSV), or read the files yourself; extract PDFs to text first                                                                                    |
+| `SentenceSplitter` / node parsers                        | `ChunkingEngine` (`recursive`, `sentence`, `semantic`, `fixed-size` and `structure-aware` strategies); `ingest` chunks for you                                                                        |
+| `Settings.llm = new OpenAI(...)`                         | Pass the LLM to the pipeline: `createRagPipeline({ llm: new OpenAIConnector() })`; no global settings                                                                                                 |
+| `Settings.embedModel`                                    | `embedder`: `OpenAIConnector`, `CohereConnector`, `OllamaConnector`, `LocalEmbedder`, or an AI SDK model via `createAiSdkAdapter`                                                                     |
+| `VectorStoreIndex.fromDocuments(docs)`                   | Embed the documents and `retriever.store()` them: `MemoryRetriever`, `FileVectorStore`, `PgVectorRetriever`, `QdrantRetriever`, `PineconeRetriever` or `WeaviateRetriever`                            |
+| `index.asRetriever({ similarityTopK })`                  | The retriever itself: `retriever.retrieve({ query, queryVector, topK })`                                                                                                                              |
+| `index.asQueryEngine()` + `queryEngine.query({ query })` | `createRagPipeline({ embedder, retriever, llm })` + `pipeline.run({ query, options: { topK } })`                                                                                                      |
+| `response.message.content` / `response.sourceNodes`      | `result.answer` / `result.results`; add `options: { citations: true }` for `result.citations`                                                                                                         |
+| `nodePostprocessors: [new CohereRerank()]`               | `reranker`: `CohereConnector`, `ScoringReranker`, `EmbeddingReranker` or `CascadeReranker`                                                                                                            |
+| `BM25Retriever`                                          | `BM25Search`, and `HybridRetriever` to fuse it with vector search                                                                                                                                     |
+| `queryEngine.query({ query, stream: true })`             | `pipeline.run({ query, options: { stream: true } })`                                                                                                                                                  |
+| `FaithfulnessEvaluator`                                  | `checkAnswer` or `computeFaithfulness`: no judge model by default, so no extra calls (see the trade-off below)                                                                                        |
+| `RelevancyEvaluator`                                     | `computeAnswerRelevance` and `computeContextPrecision`                                                                                                                                                |
+| `CorrectnessEvaluator`                                   | A test set with `expected` answers, scored by `rag-pipeline eval` or `runEvaluation`                                                                                                                  |
+| `PineconeVectorStore` and other stores                   | `PineconeRetriever`, `PgVectorRetriever`, `QdrantRetriever` and `WeaviateRetriever` ship; for others, write a small retriever plugin (`store()` and `retrieve()`) and test it with `runContractTests` |
 
 ## A query engine, rewritten
 

@@ -74,22 +74,54 @@ function validateEmbedder(embedder) {
 }
 
 /**
- * Embeds a single document using the best available method on the embedder.
- *
- * Prefers `.embed()` (which typically accepts an array and returns an array of
- * vectors) but falls back to `.embedQuery()` for single-document embedders.
+ * Embeds one document's text. The built-in embedders take a string, so a
+ * string is what `embed()` gets; an embedder that only takes arrays (its
+ * `embed()` says so) is called with a one-item array instead, and one that
+ * only has `embedQuery()` gets that. `state.arrayOnly` remembers the array
+ * form for the rest of the stream.
  *
  * @param {Object} embedder - Embedder instance
  * @param {string} content - Text content to embed
+ * @param {{arrayOnly: boolean}} state - Per-stream embedder form
  * @returns {Promise<number[]>} The embedding vector
  * @private
  */
-async function embedOne(embedder, content) {
-  if (typeof embedder.embed === 'function') {
-    const result = await embedder.embed([content]);
-    return Array.isArray(result) ? result[0] : result;
+async function embedOne(embedder, content, state) {
+  if (typeof embedder.embed !== 'function') {
+    return embedder.embedQuery(content);
   }
-  return embedder.embedQuery(content);
+  const first = (result) => (Array.isArray(result?.[0]) ? result[0] : result);
+  if (state.arrayOnly) return first(await embedder.embed([content]));
+  try {
+    return await embedder.embed(content);
+  } catch (err) {
+    if (!/array/i.test(String(err && err.message))) throw err;
+    state.arrayOnly = true;
+    return first(await embedder.embed([content]));
+  }
+}
+
+/**
+ * Runs `fn` over `items` with at most `limit` calls in flight; resolves with
+ * one `{ value }` or `{ error }` per item, in order.
+ * @private
+ */
+async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      try {
+        out[i] = { value: await fn(items[i], i) };
+      } catch (error) {
+        out[i] = { error };
+      }
+    }
+  };
+  const workers = Math.max(1, Math.min(limit || 1, items.length));
+  await Promise.all(Array.from({ length: workers }, worker));
+  return out;
 }
 
 /**
@@ -147,49 +179,44 @@ async function* createEmbeddingStream(documents, embedder, options = {}) {
       await delay(100);
     }
 
-    // --- Embed the batch (isolate errors per batch) ---
-    try {
-      // Attempt bulk embed if the embedder supports arrays natively
-      if (typeof embedder.embed === 'function') {
-        const contents = batch.map((doc) => doc.content || '');
-        const vectors = await embedder.embed(contents);
-        const vectorArray = Array.isArray(vectors) ? vectors : [vectors];
+    // --- Embed the batch: embedBatch(texts) when the embedder has it,
+    // otherwise one text at a time, maxConcurrency at a time. A document
+    // that fails is reported on its own; the others carry on. ---
+    const entry = (j, fields) => {
+      const globalIndex = batchStart + j;
+      return {
+        id: batch[j].id,
+        ...fields,
+        index: globalIndex,
+        progress: (globalIndex + 1) / total,
+        ...(backpressureApplied && !fields.error ? { backpressure: true } : {}),
+      };
+    };
+    const texts = batch.map((doc) => doc.content || '');
 
+    if (typeof embedder.embedBatch === 'function') {
+      try {
+        const vectors = await embedder.embedBatch(texts);
         for (let j = 0; j < batch.length; j++) {
-          const globalIndex = batchStart + j;
-          yield {
-            id: batch[j].id,
-            vector: vectorArray[j] || [],
-            index: globalIndex,
-            progress: (globalIndex + 1) / total,
-            ...(backpressureApplied ? { backpressure: true } : {}),
-          };
+          const vector = Array.isArray(vectors) ? vectors[j] : undefined;
+          yield vector
+            ? entry(j, { vector })
+            : entry(j, { error: new Error('Embedder returned no vector') });
         }
-      } else {
-        // Fall back to embedQuery one at a time
-        for (let j = 0; j < batch.length; j++) {
-          const globalIndex = batchStart + j;
-          const vector = await embedder.embedQuery(batch[j].content || '');
-          yield {
-            id: batch[j].id,
-            vector,
-            index: globalIndex,
-            progress: (globalIndex + 1) / total,
-            ...(backpressureApplied ? { backpressure: true } : {}),
-          };
-        }
+      } catch (err) {
+        for (let j = 0; j < batch.length; j++) yield entry(j, { error: err });
       }
-    } catch (err) {
-      // Yield error entries for each document in the failed batch
-      for (let j = 0; j < batch.length; j++) {
-        const globalIndex = batchStart + j;
-        yield {
-          id: batch[j].id,
-          error: err,
-          index: globalIndex,
-          progress: (globalIndex + 1) / total,
-        };
-      }
+      continue;
+    }
+
+    const state = { arrayOnly: false };
+    const settled = await mapLimit(texts, config.maxConcurrency, (text) =>
+      embedOne(embedder, text, state),
+    );
+    for (let j = 0; j < batch.length; j++) {
+      yield settled[j].error
+        ? entry(j, { error: settled[j].error })
+        : entry(j, { vector: settled[j].value });
     }
   }
 }

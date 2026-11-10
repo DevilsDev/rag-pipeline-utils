@@ -6,6 +6,10 @@
 const path = require("path");
 const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { InMemoryTransport } = require("@modelcontextprotocol/sdk/inMemory.js");
+const { SLOW_ANSWER } = require("./slow-answer");
+
+// Checks run in slow-check.js, which never finishes SLOW_ANSWER
+require("./use-check-worker")(path.join(__dirname, "slow-check.js"));
 const { createServer } = require(
   path.join(__dirname, "../../../packages/rag-mcp-server/lib/server"),
 );
@@ -22,10 +26,7 @@ const { createServer } = require(
   const call = (args) =>
     client.callTool({ name: "check_answer", arguments: args });
   const ok = await call({ answer: "Cats sleep.", sources: ["Cats sleep."] });
-  const slow = await call({
-    answer: `Staff carry ${"5 kg ".repeat(500).trim()}.`,
-    sources: [`Staff carry ${"5 kg ".repeat(39995).trim()}.`],
-  });
+  const slow = await call({ answer: SLOW_ANSWER, sources: [SLOW_ANSWER] });
   await client.close();
   process.stdout.write(JSON.stringify([!!ok.isError, !!slow.isError]));
 })();

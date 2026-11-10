@@ -445,7 +445,11 @@ describe("AuditLogger across restarts and writers", () => {
     const append = jest
       .spyOn(fs.promises, "appendFile")
       .mockRejectedValueOnce(new Error("disk full"));
-    await expect(logger._flushLogs()).rejects.toThrow("disk full");
+    // A failed write is reported, not thrown (3.9, BH-14)
+    const failed = [];
+    logger.on("flush_failed", (e) => failed.push(e));
+    await logger._flushLogs();
+    expect(failed).toEqual([{ error: "disk full", count: 2 }]);
     append.mockImplementation(realAppend);
     await logger._flushLogs();
 
@@ -506,6 +510,7 @@ describe("AuditLogger across restarts and writers", () => {
       legacyLines.push(JSON.stringify(event));
     }
     fs.mkdirSync(dailyDir(dir), { recursive: true });
+    fs.mkdirSync(path.dirname(chainPath(dir)), { recursive: true });
     writeLines(path.join(dailyDir(dir), `audit-${today}.jsonl`), legacyLines);
     fs.writeFileSync(
       chainPath(dir),
@@ -643,34 +648,18 @@ describe("AuditLogger two writers on one directory", () => {
 });
 
 describe("AuditLogger webhookUrl", () => {
-  test("warns once that the webhook is not implemented and sends nothing", async () => {
+  test("a webhookUrl is accepted without a warning that it is ignored", async () => {
     const { logger: log } = require("../../../src/utils/logger");
     const warn = jest.spyOn(log, "warn").mockImplementation(() => {});
-    const http = require("http");
-    const https = require("https");
-    const httpRequest = jest.spyOn(http, "request");
-    const httpsRequest = jest.spyOn(https, "request");
-    const fetchMock = jest.fn();
-    const realFetch = global.fetch;
-    global.fetch = fetchMock;
-    try {
-      const logger = await makeLogger(tmpDir(), {
-        webhookUrl: "https://example.invalid/audit",
-      });
-      await writeRecords(logger, 2);
-      await writeRecords(logger, 2);
-
-      const warnings = warn.mock.calls.filter((c) =>
-        /webhook/i.test(String(c[0])),
-      );
-      expect(warnings).toHaveLength(1);
-      expect(String(warnings[0][0])).toMatch(/isn't implemented/);
-      expect(httpRequest).not.toHaveBeenCalled();
-      expect(httpsRequest).not.toHaveBeenCalled();
-      expect(fetchMock).not.toHaveBeenCalled();
-    } finally {
-      global.fetch = realFetch;
-    }
+    const logger = await makeLogger(tmpDir(), {
+      webhookUrl: "https://example.invalid/audit",
+    });
+    logger.on("webhook_failed", () => {});
+    await writeRecords(logger, 2);
+    const warnings = warn.mock.calls.filter((c) =>
+      /isn't implemented|is ignored/i.test(String(c[0])),
+    );
+    expect(warnings).toHaveLength(0);
   });
 
   test("does not warn when no webhookUrl is set", async () => {

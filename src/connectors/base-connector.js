@@ -1,6 +1,7 @@
 'use strict';
 
 const { EventEmitter } = require('events');
+const util = require('util');
 const {
   abortableSleep,
   computeRetryDelay,
@@ -11,6 +12,29 @@ const {
   raceAbort,
   throwIfAborted,
 } = require('./connector-utils');
+
+const SECRET_KEYS = ['apiKey'];
+
+/**
+ * A shallow copy of `source` whose secret fields stay readable but are no
+ * longer enumerable, so printing, JSON.stringify and spreading skip them.
+ * @param {object} source
+ * @returns {object}
+ */
+function withHiddenSecrets(source) {
+  const copy = { ...source };
+  for (const key of SECRET_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(copy, key)) {
+      Object.defineProperty(copy, key, {
+        value: copy[key],
+        enumerable: false,
+        writable: true,
+        configurable: true,
+      });
+    }
+  }
+  return copy;
+}
 
 /**
  * Abstract base class for all connectors.
@@ -24,9 +48,42 @@ class BaseConnector extends EventEmitter {
    */
   constructor(options = {}) {
     super();
-    this.options = options;
+    Object.defineProperty(this, 'options', {
+      value: withHiddenSecrets(options),
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    });
     this.connected = false;
     this.name = options.name || this.constructor.name;
+  }
+
+  /**
+   * Connector settings. Secret fields such as `apiKey` are readable here but
+   * not enumerable, so they don't appear when the connector is logged.
+   * @type {object}
+   */
+  get config() {
+    return this._config;
+  }
+
+  set config(value) {
+    Object.defineProperty(this, '_config', {
+      value: value && typeof value === 'object' ? withHiddenSecrets(value) : value,
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  /** What console.log and util.inspect show: no settings, no credentials. */
+  [util.inspect.custom]() {
+    return `${this.constructor.name} { name: ${JSON.stringify(this.name)}, connected: ${this.connected} }`;
+  }
+
+  /** What JSON.stringify sees: no settings, no credentials. */
+  toJSON() {
+    return { name: this.name, connected: this.connected };
   }
 
   /**

@@ -27,7 +27,6 @@ const {
 } = require("../../../src/reranker/embedding-reranker");
 const { ScoringReranker } = require("../../../src/reranker/scoring-reranker");
 const { CascadeReranker } = require("../../../src/reranker/cascade-reranker");
-const { LLMReranker } = require("../../../src/reranker/llm-reranker");
 const { RAG_SYSTEM_PROMPT } = require("../../../src/connectors/rag-prompt");
 
 const httpError = (status, headers) =>
@@ -556,15 +555,6 @@ describe("AbortSignal support", () => {
       expect(embedder.embedQuery.mock.calls[0][1].signal).toBeInstanceOf(
         AbortSignal,
       );
-    });
-
-    test("LLMReranker propagates the abort instead of falling back", async () => {
-      const llm = { generate: jest.fn(() => hang()) };
-      const reranker = new LLMReranker({ llm });
-      await expectAbortsPromptly((signal) =>
-        reranker.rerank("q", [{ text: "a" }, { text: "b" }], { signal }),
-      );
-      expect(llm.generate.mock.calls[0][2].signal).toBeInstanceOf(AbortSignal);
     });
 
     test("ScoringReranker and CascadeReranker reject when aborted", async () => {

@@ -687,7 +687,8 @@ class PluginAnalytics {
   }
 }
 
-// Plugin Sandbox class for isolated execution
+// A manifest scan (dependencies, permissions) and a simulated install. It
+// runs no plugin code and isolates nothing, despite its name.
 class PluginSandbox {
   constructor(_config) {
     this._config = _config;

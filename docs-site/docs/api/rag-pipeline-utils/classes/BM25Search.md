@@ -101,7 +101,8 @@ uniqueTerms: number;
 index(documents): void;
 ```
 
-Index documents for BM25 search
+Index documents for BM25 search. Each call replaces the whole corpus
+(indexing an empty array clears it); pass every document each time.
 
 #### Parameters
 

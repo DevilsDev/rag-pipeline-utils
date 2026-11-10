@@ -125,13 +125,13 @@ rag-pipeline validate
 **Plugin Debugging**:
 
 ```javascript
-// Add logging to a custom loader plugin
+// Add logging to a plugin method
 class MyPlugin {
-  async load(filePath) {
-    console.log(`Loading file: ${filePath}`);
+  async retrieve({ query, queryVector, topK }) {
+    console.log(`Retrieving for: ${query}`);
     try {
-      const result = await this.processFile(filePath);
-      console.log(`Successfully loaded: ${result.length} chunks`);
+      const result = await this.search(queryVector, topK);
+      console.log(`Retrieved ${result.length} documents`);
       return result;
     } catch (error) {
       console.error(`Plugin error: ${error.message}`);
