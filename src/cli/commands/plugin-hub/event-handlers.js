@@ -26,7 +26,6 @@ function setupEventListeners(hub, certification) {
       security_scan: "🔍 Running security scan...",
       downloading: "⬇️  Downloading plugin...",
       verifying: "✅ Verifying integrity...",
-      sandbox_install: "🏗️  Installing in sandbox...",
       installing: "📦 Installing to system...",
     };
     console.log(
