@@ -16,6 +16,8 @@ const {
   accessiblePrismTheme,
   onBackground,
 } = require("./src/lib/accessiblePrismTheme");
+// Scroll boxes and numeric columns for Markdown tables.
+const rehypeTables = require("./src/lib/rehypeTables");
 // Read once at config-load. Docusaurus invokes this file at build time,
 // so picking up the version from the root package.json is fine here.
 const ROOT_PKG = require(path.resolve(__dirname, "..", "package.json"));
@@ -67,8 +69,12 @@ const config = {
   // Read by the homepage hero.
   customFields: { version: PKG_VERSION },
 
-  // Fonts are self-hosted; see src/fonts.js.
-  clientModules: [require.resolve("./src/fonts.js")],
+  // Fonts are self-hosted (src/fonts.js); wide tables take keyboard focus
+  // (src/tableScroll.js).
+  clientModules: [
+    require.resolve("./src/fonts.js"),
+    require.resolve("./src/tableScroll.js"),
+  ],
 
   plugins: [
     [
@@ -282,6 +288,7 @@ const config = {
       {
         docs: {
           sidebarPath: "./sidebars.js",
+          rehypePlugins: [rehypeTables],
           lastVersion: "current",
           versions: {
             current: {
@@ -292,9 +299,13 @@ const config = {
         },
         blog: {
           showReadingTime: true,
+          rehypePlugins: [rehypeTables],
           blogSidebarTitle: "All Posts",
           blogSidebarCount: "ALL",
           onUntruncatedBlogPosts: "ignore",
+        },
+        pages: {
+          rehypePlugins: [rehypeTables],
         },
         theme: {
           customCss: "./src/css/custom.css",

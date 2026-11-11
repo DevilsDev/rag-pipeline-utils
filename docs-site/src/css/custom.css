@@ -415,7 +415,10 @@ pre code {
 
 /* ---------- Tables ---------- */
 
-/* Readable on narrow screens and in both modes. */
+/* Readable on narrow screens and in both modes. Markdown tables sit in a
+   .table-scroll box (added at build time by src/lib/rehypeTables.js) that
+   scrolls sideways when the table is wider than the content column, so the
+   page never does; the box carries the border. */
 .markdown table {
   display: table;
   width: 100%;
@@ -424,8 +427,22 @@ pre code {
   border: 1px solid var(--rag-border);
   border-radius: 12px;
   overflow: hidden;
-  font-size: 0.925rem;
+  font-size: 16px;
   line-height: 1.55;
+}
+
+.markdown .table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--rag-border);
+  border-radius: 12px;
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+
+.markdown .table-scroll > table {
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  margin: 0;
 }
 
 .markdown table thead tr {
@@ -458,11 +475,15 @@ pre code {
   background: var(--rag-card);
 }
 
-@media (max-width: 996px) {
-  .markdown table {
-    display: block;
-    overflow-x: auto;
-  }
+/* Numeric columns (marked by rehypeTables.js): right-aligned, figures of
+   equal width, and a value kept on one line with its unit. */
+.markdown table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.markdown table td.num {
+  white-space: nowrap;
 }
 
 /* ---------- Admonitions ---------- */
