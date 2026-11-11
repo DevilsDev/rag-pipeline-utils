@@ -71,6 +71,38 @@ jobs:
         with:
           path: ./docs-site/build
 
+  # Every docs page at 1440 and 390px wide: fails if a page scrolls sideways
+  # or anything runs past the article column (a wide table has to scroll in
+  # its own box). See docs-site/scripts/check-page-overflow.js. A job of its
+  # own, so it never holds up the Pages deploy.
+  overflow:
+    name: Page width check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: CI=true npm ci --prefer-offline
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build documentation
+        run: npm run docs:build
+
+      - name: Check page widths
+        run: npm run docs:check-overflow
+
   deploy:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main'

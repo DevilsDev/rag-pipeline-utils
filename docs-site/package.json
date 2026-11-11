@@ -19,6 +19,7 @@
     "start": "docusaurus start",
     "deploy": "docusaurus deploy",
     "check:links": "docusaurus build --no-minify",
+    "check:overflow": "node scripts/check-page-overflow.js",
     "typecheck": "tsc -p . || echo \"no tsconfig\"",
     "docusaurus": "docusaurus",
     "swizzle": "docusaurus swizzle",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.10.2",
     "@docusaurus/types": "3.10.2",
+    "playwright": "1.65.0",
     "rimraf": "^6.1.4"
   },
   "browserslist": {
